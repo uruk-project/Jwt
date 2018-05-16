@@ -1,4 +1,4 @@
-#JSON Web Token  for .Net
+JSON Web Token  for .Net
 ===========
 
 Provides support for JWT. 
