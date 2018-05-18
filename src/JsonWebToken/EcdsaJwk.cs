@@ -92,6 +92,26 @@ namespace JsonWebToken
             }
         }
 
+        public override int SignatureSize
+        {
+            get
+            {
+                switch (Crv)
+                {
+                    case JsonWebKeyECTypes.P256:
+                        return 64;
+                    case JsonWebKeyECTypes.P384:
+                        return 96;
+                    case JsonWebKeyECTypes.P521:
+                        return 132;
+                    default:
+                        throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
+                }
+
+                throw new InvalidOperationException();
+            }
+        }
+
         public ECDsaCng CreateECDsa(string algorithm, bool usePrivateKey)
         {
             if (Crv == null)

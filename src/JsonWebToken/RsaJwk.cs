@@ -74,6 +74,26 @@ namespace JsonWebToken
 
         public override int KeySize => RawN?.Length != 0 ? RawN.Length << 3 : 0;
 
+        public override int SignatureSize
+        {
+            get
+            {
+                switch (KeySize)
+                {
+                    case 512:
+                        return 64;
+                    case 1024:
+                        return 128;
+                    case 2048:
+                        return 256;
+                    case 4096:
+                        return 512;
+                }
+
+                throw new InvalidOperationException();
+            }
+        }
+
         /// <summary>
         /// Gets or sets the 'dp' (First Factor CRT Exponent).
         /// </summary>

@@ -1,7 +1,9 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -334,6 +336,12 @@ namespace JsonWebToken
             return Base64UrlEncoder.Encode(SerializeToJson());
         }
 
+        public bool TryBase64UrlEncode(Span<byte> destination, out int bytesWritten)
+        {
+            var status = Base64UrlEncoder.Base64UrlEncode(Encoding.UTF8.GetBytes(SerializeToJson()), destination,  out int bytesConsumed, out bytesWritten);
+            return status == OperationStatus.Done;
+        }
+
         /// <summary>
         /// Deserializes Base64UrlEncoded JSON into a <see cref="JwtPayload"/> instance.
         /// </summary>
@@ -342,6 +350,10 @@ namespace JsonWebToken
         public static JwtPayload Base64UrlDeserialize(string base64UrlEncodedJsonString)
         {
             return Deserialize(Base64UrlEncoder.Decode(base64UrlEncodedJsonString));
+        }
+        public static JwtPayload Base64UrlDeserialize(ReadOnlySpan<char> base64UrlEncodedJsonString)
+        {
+            return Deserialize(Encoding.UTF8.GetString(Base64UrlEncoder.Base64UrlDecode(base64UrlEncodedJsonString)));
         }
 
         private static JwtPayload Deserialize(string jsonString)

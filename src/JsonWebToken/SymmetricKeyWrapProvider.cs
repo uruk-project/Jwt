@@ -320,6 +320,78 @@ namespace JsonWebToken
             }
         }
 
+
+#if NETCOREAPP2_1
+        /// <summary>
+        /// Unwrap a key using RSA decryption.
+        /// </summary>
+        /// <param name="keyBytes">the bytes to unwrap.</param>
+        /// <returns>Unwrapped key</returns>
+        public override bool UnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWriten)
+        {
+            if (keyBytes == null || keyBytes.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(keyBytes));
+            }
+
+            if (keyBytes.Length % 8 != 0)
+            {
+                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.KeySizeMustBeMultipleOf64, keyBytes.Length << 3), nameof(keyBytes));
+            }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().ToString());
+            }
+
+            try
+            {
+                destination = UnwrapKeyPrivate(keyBytes.ToArray(), 0, keyBytes.Length);
+                bytesWriten = keyBytes.Length;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
+            }
+        }
+
+        /// <summary>
+        /// Wrap a key using RSA encryption.
+        /// </summary>
+        /// <param name="keyBytes">the key to be wrapped</param>
+        /// <returns>A wrapped key</returns>
+        public override bool WrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWriten)
+        {
+            if (keyBytes == null || keyBytes.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(keyBytes));
+            }
+
+            if (keyBytes.Length % 8 != 0)
+            {
+                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.KeySizeMustBeMultipleOf64, keyBytes.Length << 3), nameof(keyBytes));
+            }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().ToString());
+            }
+
+            try
+            {
+                destination = WrapKeyPrivate(keyBytes.ToArray(), 0, keyBytes.Length);
+                bytesWriten = keyBytes.Length;
+                return true;
+                
+            }
+            catch (Exception ex)
+            {
+                throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
+            }
+        }
+#endif
+
         private byte[] WrapKeyPrivate(byte[] inputBuffer, int inputOffset, int inputCount)
         {
             /*
@@ -354,7 +426,7 @@ namespace JsonWebToken
             byte[] r = new byte[n << 3];
 
             Array.Copy(inputBuffer, inputOffset, r, 0, inputCount);
-
+            
             if (_symmetricAlgorithmEncryptor == null)
             {
                 lock (_encryptorLock)

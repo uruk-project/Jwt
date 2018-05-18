@@ -77,6 +77,28 @@ namespace JsonWebToken
             _ecdsa = ResolveAlgorithm(key, algorithm, willCreateSignatures);
         }
 
+#if NETCOREAPP2_1
+        public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
+        {
+            if (input == null || input.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().ToString());
+            }
+
+            if (_ecdsa != null)
+            {
+                return _ecdsa.TrySignData(input, destination, _hashAlgorithm, out bytesWritten);
+            }
+
+            throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, _hashAlgorithm));
+        }
+#endif
+
         /// <summary>
         /// Produces a signature over the 'input' using the <see cref="ASymmetricJwk"/> and algorithm passed to <see cref="AsymmetricSignatureProvider( JsonWebKey, string, bool )"/>.
         /// </summary>
@@ -133,6 +155,32 @@ namespace JsonWebToken
             return _ecdsa.VerifyData(input, signature, _hashAlgorithm);
         }
 
+#if NETCOREAPP2_1
+        public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
+        {
+            if (input == null || input.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            if (signature == null || signature.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(signature));
+            }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().ToString());
+            }
+
+            if (_ecdsa == null)
+            {
+                throw new InvalidOperationException(ErrorMessages.NotSupportedUnwrap);
+            }
+
+            return _ecdsa.VerifyData(input, signature, _hashAlgorithm);
+        }
+#endif
         /// <summary>
         /// Calls <see cref="HashAlgorithm.Dispose()"/> to release this managed resources.
         /// </summary>

@@ -103,6 +103,23 @@ namespace JsonWebToken
             return _keyedHash.ComputeHash(input);
         }
 
+#if NETCOREAPP2_1
+        public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
+        {
+            if (input == null || input.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().ToString());
+            }
+
+            return _keyedHash.TryComputeHash(input, destination, out bytesWritten);
+        }
+#endif
+
         /// <summary>
         /// Verifies that a signature created over the 'input' matches the signature. Using <see cref="SymmetricJwk"/> and 'algorithm' passed to <see cref="SymmetricSignatureProvider( JsonWebKey, string )"/>.
         /// </summary>
@@ -125,7 +142,7 @@ namespace JsonWebToken
             {
                 throw new ObjectDisposedException(typeof(SymmetricSignatureProvider).ToString());
             }
-            
+
             return AreEqual(signature, _keyedHash.ComputeHash(input));
         }
 
@@ -160,6 +177,55 @@ namespace JsonWebToken
 
             return AreEqual(signature, _keyedHash.ComputeHash(input), length);
         }
+
+#if NETCOREAPP2_1
+        public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
+        {
+            if (input == null || input.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            if (signature == null || signature.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(signature));
+            }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(typeof(SymmetricSignatureProvider).ToString());
+            }
+
+            var hash = new byte[signature.Length];
+            return _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash);
+        }
+
+        public bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature, int length)
+        {
+            if (input == null || input.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            if (signature == null || signature.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(signature));
+            }
+
+            if (length <= 0)
+            {
+                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.MustBeGreaterThanZero, nameof(length), length));
+            }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(typeof(SymmetricSignatureProvider).ToString());
+            }
+
+            var hash = new byte[signature.Length];
+            return _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash, length);
+        }
+#endif
 
         /// <summary>
         /// Disposes of internal components.
@@ -228,6 +294,38 @@ namespace JsonWebToken
             return result == 0;
         }
 
+        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
+        private static bool AreEqual(ReadOnlySpan<byte> a, byte[] b, int length)
+        {
+            byte[] s_bytesA = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
+            byte[] s_bytesB = new byte[] { 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
+
+            int result = 0;
+            int lenToUse = 0;
+            ReadOnlySpan<byte> a1, a2;
+
+            if (((a == null) || (b == null))
+            || (a.Length < length || b.Length < length))
+            {
+                a1 = s_bytesA;
+                a2 = s_bytesB;
+                lenToUse = a1.Length;
+            }
+            else
+            {
+                a1 = a;
+                a2 = b;
+                lenToUse = length;
+            }
+
+            for (int i = 0; i < lenToUse; i++)
+            {
+                result |= a1[i] ^ a2[i];
+            }
+
+            return result == 0;
+        }
+
         /// <summary>
         /// Compares two byte arrays for equality. Hash size is fixed normally it is 32 bytes.
         /// The attempt here is to take the same time if an attacker shortens the signature OR changes some of the signed contents.
@@ -249,6 +347,35 @@ namespace JsonWebToken
 
             int result = 0;
             byte[] a1, a2;
+
+            if (((a == null) || (b == null))
+            || (a.Length != b.Length))
+            {
+                a1 = s_bytesA;
+                a2 = s_bytesB;
+            }
+            else
+            {
+                a1 = a;
+                a2 = b;
+            }
+
+            for (int i = 0; i < a1.Length; i++)
+            {
+                result |= a1[i] ^ a2[i];
+            }
+
+            return result == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
+        private static bool AreEqual(ReadOnlySpan<byte> a, byte[] b)
+        {
+            byte[] s_bytesA = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
+            byte[] s_bytesB = new byte[] { 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
+
+            int result = 0;
+            ReadOnlySpan<byte> a1, a2;
 
             if (((a == null) || (b == null))
             || (a.Length != b.Length))

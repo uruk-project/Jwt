@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,6 +33,18 @@ namespace JsonWebToken
         {
         }
 
+        private class TokenReadContext
+        {
+            public byte[] Token { get; set; }
+
+            public TokenValidationStatus Status { get; set; }
+
+            public TokenValidationParameters ValidationParameters { get; set; }
+
+            public int[] Separators { get; } = new int[5];
+            public int SegmentCount { get; internal set; }
+        }
+
         /// <summary>
         /// Reads and validates a 'JSON Web Token' (JWT) encoded as a JWS or JWE in Compact Serialized Format.
         /// </summary>
@@ -57,10 +70,76 @@ namespace JsonWebToken
                 return TokenValidationResult.MalformedToken();
             }
 
-            int segmentCount = GetSegmentCount(token);
-            if (segmentCount == JwtConstants.JweSegmentCount)
+#if NETCOREAPP2_1
+            var separators = GetSegmentCount(token);
+            if (separators.Count + 1 == JwtConstants.JwsSegmentCount || separators.Count + 1 == JwtConstants.JweSegmentCount)
             {
-                var result = ReadJwtToken(token, segmentCount, validationParameters);
+                if (!CanReadToken(token, validationParameters))
+                {
+                    return TokenValidationResult.MalformedToken();
+                }
+
+                JsonWebToken jwt;
+                if (separators.Count + 1 == JwtConstants.JwsSegmentCount)
+                {
+                    jwt = new JsonWebToken(token, separators.ToArray());
+                }
+                else if (separators.Count + 1 == JwtConstants.JweSegmentCount)
+                {
+                    jwt = new JsonWebToken(token, separators.ToArray());
+
+                    if (string.IsNullOrEmpty(jwt.Header.Enc))
+                    {
+                        return TokenValidationResult.MissingEncryptionAlgorithm(jwt);
+                    }
+
+                    var keys = GetContentEncryptionKeys(jwt);
+
+                    string decryptedToken = null;
+                    for (int i = 0; i < keys.Count; i++)
+                    {
+                        decryptedToken = DecryptToken(jwt, keys[i]);
+                        if (decryptedToken != null)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (decryptedToken == null)
+                    {
+                        return TokenValidationResult.DecryptionFailed(jwt);
+                    }
+
+                    var innerSeparators = GetSegmentCount(decryptedToken);
+                    if (!CanReadToken(decryptedToken, validationParameters))
+                    {
+                        // The decrypted payload is not a JWT
+                        jwt.PlainText = decryptedToken;
+                        return TokenValidationResult.Success(jwt);
+                    }
+
+                    var decryptionResult = ReadJwtToken(decryptedToken, innerSeparators, validationParameters);
+                    if (!decryptionResult.Succedeed)
+                    {
+                        return decryptionResult;
+                    }
+
+                    var decryptedJwt = decryptionResult.Token;
+                    jwt.InnerToken = decryptedJwt;
+                    return ValidateToken(decryptedJwt, validationParameters);
+                }
+                else
+                {
+                    return TokenValidationResult.MalformedToken();
+                }
+
+                return TryValidateToken(jwt, validationParameters);
+            }
+#else
+            var separators = GetSegmentCount(token);
+            if (separators.Count+1 == JwtConstants.JweSegmentCount)
+            {
+                var result = ReadJwtToken(token, separators, validationParameters);
                 if (!result.Succedeed)
                 {
                     return result;
@@ -89,7 +168,7 @@ namespace JsonWebToken
                     return TokenValidationResult.DecryptionFailed(jwtToken);
                 }
 
-                int innerSegmentCount = GetSegmentCount(decryptedToken);
+                var innerSeparators = GetSegmentCount(decryptedToken);
                 if (!CanReadToken(decryptedToken, validationParameters))
                 {
                     // The decrypted payload is not a JWT
@@ -97,7 +176,7 @@ namespace JsonWebToken
                     return TokenValidationResult.Success(jwtToken);
                 }
 
-                var decryptionResult = ReadJwtToken(decryptedToken, innerSegmentCount, validationParameters);
+                var decryptionResult = ReadJwtToken(decryptedToken, innerSeparators, validationParameters);
                 if (!decryptionResult.Succedeed)
                 {
                     return decryptionResult;
@@ -107,9 +186,9 @@ namespace JsonWebToken
                 jwtToken.InnerToken = decryptedJwt;
                 return ValidateToken(decryptedJwt, validationParameters);
             }
-            else if (segmentCount == JwtConstants.JwsSegmentCount)
+            else if (separators.Count+1 == JwtConstants.JwsSegmentCount)
             {
-                var result = ReadJwtToken(token, segmentCount, validationParameters);
+                var result = ReadJwtToken(token, separators, validationParameters);
                 if (!result.Succedeed)
                 {
                     return result;
@@ -119,35 +198,31 @@ namespace JsonWebToken
                 return ValidateToken(jwtToken, validationParameters);
             }
 
+#endif
             return TokenValidationResult.MalformedToken();
         }
 
-        private TokenValidationResult ValidateToken(JsonWebToken token, TokenValidationParameters validationParameters)
+        private static IList<int> GetSegmentCount(string input)
         {
-            var result = ValidateSignature(token, validationParameters);
-            if (!result.Succedeed)
-            {
-                return result;
-            }
-
-            result = ValidateTokenPayload(token, validationParameters);
-            return result;
-        }
-
-        private static int GetSegmentCount(string token)
-        {
+            int next = 0;
+            int current = 0;
+            int i = 0;
             int segmentCount = 1;
-            int next = -1;
-            while ((next = token.IndexOf('.', next + 1)) != -1)
+            List<int> separators = new List<int>();
+
+            while ((next = input.IndexOf('.', next+1)) != -1)
             {
-                segmentCount++;
-                if (segmentCount > JwtConstants.MaxJwtSegmentCount)
+                separators.Add(next - current);
+                if (segmentCount++ > JwtConstants.MaxJwtSegmentCount)
                 {
                     break;
                 }
+
+                i++;
+                current = next;
             }
 
-            return segmentCount;
+            return separators;
         }
 
         private bool CanReadToken(string token, TokenValidationParameters validationParameters)
@@ -173,7 +248,30 @@ namespace JsonWebToken
             return true;
         }
 
-        private TokenValidationResult ReadJwtToken(string token, int segmentCount, TokenValidationParameters validationParameters)
+        private bool CanReadToken(ReadOnlySpan<char> token, TokenValidationParameters validationParameters)
+        {
+            if (token == null)
+            {
+                return false;
+            }
+
+            if (token.Length * 2 > validationParameters.MaximumTokenSizeInBytes)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < token.Length; i++)
+            {
+                if (!JwsCharacters.Contains(token[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private TokenValidationResult ReadJwtToken(string token, IList<int> separators, TokenValidationParameters validationParameters)
         {
             if (string.IsNullOrEmpty(token))
             {
@@ -186,13 +284,39 @@ namespace JsonWebToken
             }
 
             JsonWebToken jwt;
-            if (segmentCount == JwtConstants.JwsSegmentCount)
+            if (separators.Count + 1 == JwtConstants.JwsSegmentCount)
             {
-                jwt = JsonWebToken.FromJws(token);
+                jwt = new JsonWebToken(token, separators.ToArray());
             }
             else
             {
-                jwt = JsonWebToken.FromJwe(token);
+                jwt = new JsonWebToken(token, separators.ToArray());
+            }
+
+            return TokenValidationResult.Success(jwt);
+        }
+
+        private TokenValidationResult ReadJwtToken(string token, int[] separators, TokenValidationParameters validationParameters)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            if (!CanReadToken(token, validationParameters))
+            {
+                return TokenValidationResult.MalformedToken();
+            }
+
+            JsonWebToken jwt;
+            if (separators.Length + 1 == JwtConstants.JwsSegmentCount)
+            {
+                jwt = new JsonWebToken(token, separators);
+            }
+            else
+            {
+                throw new NotSupportedException();
+                //     jwt = JsonWebToken.FromJwe(token);
             }
 
             return TokenValidationResult.Success(jwt);
@@ -204,7 +328,37 @@ namespace JsonWebToken
         /// <param name="jwtToken">The token to validate.</param>
         /// <param name="validationParameters">Contains validation parameters for the <see cref="JsonWebToken"/>.</param>
         /// <returns>A <see cref="TokenValidationResult"/> with the JWT if succeeded.</returns>
-        private TokenValidationResult ValidateTokenPayload(JsonWebToken jwtToken, TokenValidationParameters validationParameters)
+        private TokenValidationResult ValidatePayload(JsonWebToken jwtToken, TokenValidationParameters validationParameters)
+        {
+            var expires = jwtToken.Payload.Exp;
+            var result = ValidateLifetime(jwtToken.Payload.Nbf, expires, jwtToken, validationParameters);
+            if (!result.Succedeed)
+            {
+                return result;
+            }
+
+            result = ValidateAudience(jwtToken.Audiences, jwtToken, validationParameters);
+            if (!result.Succedeed)
+            {
+                return result;
+            }
+
+            result = ValidateIssuer(jwtToken.Issuer, jwtToken, validationParameters);
+            if (!result.Succedeed)
+            {
+                return result;
+            }
+
+            result = ValidateTokenReplay(expires, jwtToken, validationParameters);
+            if (!result.Succedeed)
+            {
+                return result;
+            }
+
+            return TokenValidationResult.Success(jwtToken);
+        }
+
+        private TokenValidationResult TryValidatePayload(JsonWebToken jwtToken, TokenValidationParameters validationParameters)
         {
             var expires = jwtToken.Payload.Exp;
             var result = ValidateLifetime(jwtToken.Payload.Nbf, expires, jwtToken, validationParameters);
@@ -252,6 +406,112 @@ namespace JsonWebToken
             }
         }
 
+#if NETCOREAPP2_1
+        private TokenValidationResult TryValidateToken(JsonWebToken token, TokenValidationParameters validationParameters)
+        {
+            var result = TryValidateSignature(token, validationParameters);
+            if (!result.Succedeed)
+            {
+                return result;
+            }
+
+            result = TryValidatePayload(token, validationParameters);
+            return result;
+        }
+
+        private TokenValidationResult TryValidateSignature(JsonWebToken jwtToken, TokenValidationParameters validationParameters)
+        {
+            if (jwtToken == null)
+            {
+                throw new ArgumentNullException(nameof(jwtToken));
+            }
+
+            if (validationParameters == null)
+            {
+                throw new ArgumentNullException(nameof(validationParameters));
+            }
+
+            if (!jwtToken.HasSignature)
+            {
+                if (validationParameters.RequireSignedTokens)
+                {
+                    return TokenValidationResult.MissingSignature(jwtToken);
+                }
+                else
+                {
+                    return TokenValidationResult.Success(jwtToken);
+                }
+            }
+
+            bool keysTried = false;
+            ReadOnlySpan<byte> signatureBytes;
+            try
+            {
+                signatureBytes = jwtToken.GetSignatureBytes();
+            }
+            catch (FormatException)
+            {
+                return TokenValidationResult.MalformedSignature(jwtToken);
+            }
+
+            int length = jwtToken.Separators[0] + jwtToken.Separators[1];
+            byte[] encodedBytes = ArrayPool<byte>.Shared.Rent(length);
+            try
+            {
+                Span<byte> encodedSpan = encodedBytes.AsSpan(0, length);
+                Encoding.UTF8.GetBytes(jwtToken.RawData.AsSpan().Slice(0, length), encodedSpan);
+
+                var keys = ResolveSigningKey(jwtToken);
+                foreach (var key in keys)
+                {
+                    try
+                    {
+                        if (TryValidateSignature(encodedSpan, signatureBytes, key, jwtToken.Header.Alg, validationParameters))
+                        {
+                            jwtToken.Header.SigningKey = key;
+                            return TokenValidationResult.Success(jwtToken);
+                        }
+                    }
+                    catch
+                    {
+                        // swallow exception
+                    }
+
+                    keysTried = true;
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(encodedBytes);
+            }
+
+            if (keysTried)
+            {
+                return TokenValidationResult.InvalidSignature(jwtToken);
+            }
+
+            return TokenValidationResult.KeyNotFound(jwtToken);
+        }
+
+
+        private bool TryValidateSignature(ReadOnlySpan<byte> encodedBytes, ReadOnlySpan<byte> signature, JsonWebKey key, string algorithm, TokenValidationParameters validationParameters)
+        {
+            var signatureProvider = key.CreateSignatureProvider(algorithm, false);
+            if (signatureProvider == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                return signatureProvider.Verify(encodedBytes, signature);
+            }
+            finally
+            {
+                key.ReleaseSignatureProvider(signatureProvider);
+            }
+        }
+#endif
         private TokenValidationResult ValidateSignature(JsonWebToken jwtToken, TokenValidationParameters validationParameters)
         {
             if (jwtToken == null)
@@ -264,7 +524,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(validationParameters));
             }
 
-            if (string.IsNullOrEmpty(jwtToken.RawSignature))
+            if (!jwtToken.HasSignature)
             {
                 if (validationParameters.RequireSignedTokens)
                 {
@@ -280,14 +540,14 @@ namespace JsonWebToken
             byte[] signatureBytes;
             try
             {
-                signatureBytes = Base64UrlEncoder.DecodeBytes(jwtToken.RawSignature);
+                signatureBytes = Base64UrlEncoder.Base64UrlDecode(jwtToken.RawSignature);
             }
             catch (FormatException)
             {
                 return TokenValidationResult.MalformedSignature(jwtToken);
             }
 
-            byte[] encodedBytes = Encoding.UTF8.GetBytes(jwtToken.RawHeader + "." + jwtToken.RawPayload);
+            byte[] encodedBytes = Encoding.UTF8.GetBytes(string.Concat(jwtToken.RawHeader.ToString(), ".", jwtToken.RawPayload.ToString()));
 
             var keys = ResolveSigningKey(jwtToken);
             foreach (var key in keys)
@@ -314,6 +574,18 @@ namespace JsonWebToken
             }
 
             return TokenValidationResult.KeyNotFound(jwtToken);
+        }
+
+        private TokenValidationResult ValidateToken(JsonWebToken token, TokenValidationParameters validationParameters)
+        {
+            var result = ValidateSignature(token, validationParameters);
+            if (!result.Succedeed)
+            {
+                return result;
+            }
+
+            result = ValidatePayload(token, validationParameters);
+            return result;
         }
 
         private TokenValidationResult ValidateAudience(IEnumerable<string> audiences, JsonWebToken jwtToken, TokenValidationParameters validationParameters)
@@ -347,10 +619,10 @@ namespace JsonWebToken
             try
             {
                 var decryptedToken = decryptionProvider.Decrypt(
-                    Base64UrlEncoder.DecodeBytes(jwtToken.RawCiphertext),
-                    Encoding.ASCII.GetBytes(jwtToken.RawHeader),
-                    Base64UrlEncoder.DecodeBytes(jwtToken.RawInitializationVector),
-                    Base64UrlEncoder.DecodeBytes(jwtToken.RawAuthenticationTag));
+                    Base64UrlEncoder.DecodeBytes(jwtToken.RawCiphertext.ToString()),
+                    Encoding.ASCII.GetBytes(jwtToken.RawHeader.ToString()),
+                    Base64UrlEncoder.DecodeBytes(jwtToken.RawInitializationVector.ToString()),
+                    Base64UrlEncoder.DecodeBytes(jwtToken.RawAuthenticationTag.ToString()));
                 if (decryptedToken == null)
                 {
                     return null;
@@ -381,7 +653,7 @@ namespace JsonWebToken
                 {
                     if (kwp != null)
                     {
-                        var unwrappedKey = kwp.UnwrapKey(Base64UrlEncoder.DecodeBytes(jwtToken.RawEncryptedKey));
+                        var unwrappedKey = kwp.UnwrapKey(Base64UrlEncoder.DecodeBytes(jwtToken.RawEncryptedKey.ToString()));
                         unwrappedKeys.Add(SymmetricJwk.FromByteArray(unwrappedKey));
                     }
                 }

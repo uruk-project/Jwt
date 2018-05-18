@@ -130,6 +130,80 @@ namespace JsonWebToken
             }
         }
 
+#if NETCOREAPP2_1
+        /// <summary>
+        /// Unwrap a key using RSA decryption.
+        /// </summary>
+        /// <param name="keyBytes">the bytes to unwrap.</param>
+        /// <returns>Unwrapped key</returns>
+        public override bool UnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWriten)
+        {
+            if (keyBytes == null || keyBytes.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(keyBytes));
+            }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().ToString());
+            }
+
+            var padding = (Algorithm.Equals(SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal))
+                        ? RSAEncryptionPadding.OaepSHA1
+                        : RSAEncryptionPadding.Pkcs1;
+
+            if (_rsa == null)
+            {
+                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
+            }
+
+            try
+            {
+                return _rsa.TryDecrypt(keyBytes, destination, padding, out bytesWriten);
+            }
+            catch (Exception ex)
+            {
+                throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
+            }
+        }
+
+        /// <summary>
+        /// Wrap a key using RSA encryption.
+        /// </summary>
+        /// <param name="keyBytes">the key to be wrapped</param>
+        /// <returns>A wrapped key</returns>
+        public override bool WrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWriten)
+        {
+            if (keyBytes == null || keyBytes.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(keyBytes));
+            }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().ToString());
+            }
+
+            var padding = Algorithm.Equals(SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal)
+                        ? RSAEncryptionPadding.OaepSHA1
+                        : RSAEncryptionPadding.Pkcs1;
+
+            if (_rsa == null)
+            {
+                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
+            }
+
+            try
+            {
+                return _rsa.TryEncrypt(keyBytes, destination, padding, out bytesWriten);
+            }
+            catch (Exception ex)
+            {
+                throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
+            }
+        }
+#endif
+
         private static RSA ResolveRsaAlgorithm(RsaJwk key, string algorithm)
         {
             RSAParameters parameters = key.CreateRsaParameters();

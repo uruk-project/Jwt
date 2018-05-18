@@ -41,6 +41,24 @@ namespace JsonWebToken
 
         public override int KeySize => RawK?.Length != 0 ? RawK.Length << 3 : 0;
 
+        public override int SignatureSize
+        {
+            get
+            {
+                switch (Alg)
+                {
+                    case SecurityAlgorithms.HmacSha256:
+                        return 32;
+                    case SecurityAlgorithms.HmacSha384:
+                        return 48;
+                    case SecurityAlgorithms.HmacSha512:
+                        return 64;
+                }
+
+                throw new InvalidOperationException();
+            }
+        }
+
         /// <summary>
         /// Returns a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Buffers;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -10,6 +12,8 @@ namespace JsonWebToken
     public class JsonWebTokenWriter
     {
         private int _defaultTokenLifetimeInMinutes = DefaultTokenLifetimeInMinutes;
+
+        private static readonly byte dot = Convert.ToByte('.');
 
         /// <summary>
         /// Default lifetime of tokens created. When creating tokens, if 'expires' and 'notbefore' are both null, then a default will be set to: expires = DateTime.UtcNow, notbefore = DateTime.UtcNow + TimeSpan.FromMinutes(TokenLifetimeInMinutes).
@@ -51,7 +55,7 @@ namespace JsonWebToken
         /// <remarks>See: <see cref="DefaultTokenLifetimeInMinutes"/>, <see cref="TokenLifetimeInMinutes"/> for defaults and configuration.</remarks>
         public bool SetDefaultTimesOnTokenCreation { get; set; } = false;
 
-        public string WriteToken(JsonWebTokenDescriptor descriptor)
+        public string WriteToken(JsonWebTokenDescriptor descriptor, bool useSpan = false)
         {
             if (descriptor == null)
             {
@@ -78,12 +82,44 @@ namespace JsonWebToken
             {
                 header[item.Key] = item.Value;
             }
+#if NETCOREAPP2_1
+            string rawData = null;
+            if (useSpan)
+            {
+                unsafe
+                {
+                    //Span<byte> buffer = new byte[2 * 1024 * 10];
+                    var array = ArrayPool<byte>.Shared.Rent(2 * 1024);
+                    Span<byte> buffer = array;
+                    header.TryBase64UrlEncode(buffer, out int headerBytesWritten);
+                    buffer[headerBytesWritten] = dot;
+                    payload.TryBase64UrlEncode(buffer.Slice(headerBytesWritten + 1), out int payloadBytesWritten);
+                    buffer[payloadBytesWritten + headerBytesWritten + 1] = dot;
+                    int sigBytesWritten = 0;
+                    if (descriptor.SigningKey != null)
+                    {
+                        TryCreateEncodedSignature(buffer, buffer.Slice(payloadBytesWritten + headerBytesWritten + 2), descriptor.SigningKey, out sigBytesWritten);
+                    }
 
+                    rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 2 + sigBytesWritten));
+                    ArrayPool<byte>.Shared.Return(array);
+                }
+            }
+            else
+            {
+                string rawHeader = header.Base64UrlEncode();
+                string rawPayload = payload.Base64UrlEncode();
+                string rawSignature = descriptor.SigningKey == null ? string.Empty : CreateEncodedSignature(string.Concat(rawHeader, ".", rawPayload), descriptor.SigningKey, useSpan);
+
+                rawData = string.Concat(rawHeader, ".", rawPayload, ".", rawSignature);
+            }
+#else
             string rawHeader = header.Base64UrlEncode();
             string rawPayload = payload.Base64UrlEncode();
-            string rawSignature = descriptor.SigningKey == null ? string.Empty : CreateEncodedSignature(string.Concat(rawHeader, ".", rawPayload), descriptor.SigningKey);
+            string rawSignature = descriptor.SigningKey == null ? string.Empty : CreateEncodedSignature(string.Concat(rawHeader, ".", rawPayload), descriptor.SigningKey, useSpan);
 
             var rawData = string.Concat(rawHeader, ".", rawPayload, ".", rawSignature);
+#endif
             if (descriptor.EncryptingKey != null)
             {
                 rawData = EncryptToken(rawData, descriptor.EncryptingKey, descriptor.EncryptionAlgorithm);
@@ -161,7 +197,7 @@ namespace JsonWebToken
                 var encryptionProvider = symmetricKey.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);
                 if (encryptionProvider == null)
                 {
-                    throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant( ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
+                    throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
                 }
 
                 try
@@ -206,7 +242,46 @@ namespace JsonWebToken
             return key;
         }
 
-        private string CreateEncodedSignature(string input, JsonWebKey key)
+#if NETCOREAPP2_1
+        private OperationStatus TryCreateEncodedSignature(ReadOnlySpan<byte> input, Span<byte> destination, JsonWebKey key, out int bytesWritten)
+        {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            var signatureProvider = key.CreateSignatureProvider(key.Alg, true);
+            if (signatureProvider == null)
+            {
+                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, (key == null ? "Null" : key.ToString()), (key.Alg ?? "Null")));
+            }
+
+            var signature = ArrayPool<byte>.Shared.Rent(key.SignatureSize);
+            Span<byte> temp = signature;
+            try
+            {
+                if (signatureProvider.TrySign(input, signature, out int signLength))
+                {
+                    return Base64UrlEncoder.Base64UrlEncode(temp.Slice(0, signLength), destination, out int bytesConsumed, out bytesWritten);
+                }
+                else
+                {
+                    throw new Exception("Key : " + key.Alg + " / " + key.KeySize + " / " + signLength);
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(signature);
+                key.ReleaseSignatureProvider(signatureProvider);
+            }
+        }
+#endif
+        private string CreateEncodedSignature(string input, JsonWebKey key, bool useSpan)
         {
             if (input == null)
             {
@@ -226,11 +301,6 @@ namespace JsonWebToken
 
             try
             {
-                //var data = Encoding.UTF8.GetBytes(input);
-                //var buffer = new char[Base64UrlEncoder.GetArraySizeRequiredToEncode(data.Length)];
-                //var numBase64Chars = Base64UrlEncoder.Base64UrlEncode(data, offset: 0, buffer, outputOffset: 0, count: data.Length);
-                //var span = new Span<char>();
-                //Base64UrlEncoder.Base64UrlEncode(Encoding.UTF8.GetBytes(input), span);
                 return Base64UrlEncoder.Encode(signatureProvider.Sign(Encoding.UTF8.GetBytes(input)));
             }
             finally

@@ -99,12 +99,8 @@ namespace JsonWebToken
             throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, algorithm, key));
         }
 
-        /// <summary>
-        /// Produces a signature over the 'input' using the <see cref="ASymmetricJwk"/> and algorithm passed to <see cref="AsymmetricSignatureProvider( JsonWebKey, string, bool )"/>.
-        /// </summary>
-        /// <param name="input">The bytes to be signed.</param>
-        /// <returns>A signature over the input.</returns>
-        public override byte[] Sign(byte[] input)
+#if NETCOREAPP2_1
+        public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {
             if (input == null || input.Length == 0)
             {
@@ -118,7 +114,33 @@ namespace JsonWebToken
 
             if (_rsa != null)
             {
-                //_rsa.TrySignData(input, _hashAlgorithm)
+                return _rsa.TrySignData(input, destination, _hashAlgorithm, RSASignaturePadding.Pkcs1, out bytesWritten);
+            }
+
+            throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, _hashAlgorithm));
+        }
+#endif
+
+        /// <summary>
+        /// Produces a signature over the 'input' using the <see cref="ASymmetricJwk"/> and algorithm passed to <see cref="AsymmetricSignatureProvider( JsonWebKey, string, bool )"/>.
+        /// </summary>
+        /// <param name="input">The bytes to be signed.</param>
+        /// <returns>A signature over the input.</returns>
+        public override byte[] Sign(byte[] input)
+
+        {
+            if (input == null || input.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().ToString());
+            }
+
+            if (_rsa != null)
+            {
                 return _rsa.SignData(input, _hashAlgorithm, RSASignaturePadding.Pkcs1);
             }
 
@@ -155,6 +177,33 @@ namespace JsonWebToken
 
             throw new InvalidOperationException(ErrorMessages.NotSupportedUnwrap);
         }
+
+#if NETCOREAPP2_1
+        public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
+        {
+            if (input == null || input.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            if (signature == null || signature.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(signature));
+            }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().ToString());
+            }
+
+            if (_rsa != null)
+            {
+                return _rsa.VerifyData(input, signature, _hashAlgorithm, RSASignaturePadding.Pkcs1);
+            }
+
+            throw new InvalidOperationException(ErrorMessages.NotSupportedUnwrap);
+        }
+#endif
 
         /// <summary>
         /// Calls <see cref="HashAlgorithm.Dispose()"/> to release this managed resources.

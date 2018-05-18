@@ -127,12 +127,15 @@ namespace JsonWebToken
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.X5u, Required = Required.Default)]
         public string X5u { get; set; }
-        
+
         /// <summary>
         /// Gets the key size of <see cref="JsonWebKey"/>.
         /// </summary>
         [JsonIgnore]
         public abstract int KeySize { get; }
+
+        [JsonIgnore]
+        public abstract int SignatureSize { get; }
 
         /// <summary>
         /// Gets a bool that determines if the 'key_ops' (Key Operations) property should be serialized.

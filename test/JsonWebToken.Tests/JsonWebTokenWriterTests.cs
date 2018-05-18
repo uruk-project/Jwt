@@ -1,21 +1,24 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using Xunit;
 
 namespace JsonWebToken.Tests
 {
     public class JsonWebTokenWriterTests
     {
+        public JsonWebTokenWriterTests()
+        {
+            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
+        }
 
         [Theory]
         [MemberData(nameof(GetDescriptors))]
-        public void Write(JsonWebTokenDescriptor descriptor)
+        public void Write(JsonWebTokenDescriptor descriptor, JsonWebKey key)
         {
             JsonWebTokenWriter writer = new JsonWebTokenWriter();
-            var value = writer.WriteToken(descriptor);
+            descriptor.SigningKey = key;
+            var value = writer.WriteToken(descriptor, useSpan: true);
 
             var handler = new JwtSecurityTokenHandler();
             var jwt = handler.ReadJwtToken(value);
@@ -31,7 +34,10 @@ namespace JsonWebToken.Tests
         {
             foreach (var jwt in Tokens.Descriptors)
             {
-                yield return new[] { jwt };
+                foreach (var key in Keys.Jwks.Keys)
+                {
+                    yield return new object[] { jwt, key };
+                }
             }
         }
     }

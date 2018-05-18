@@ -17,7 +17,7 @@ namespace JsonWebToken
             Key = key ?? throw new ArgumentNullException(nameof(key));
             Algorithm = algorithm;
         }
-    
+
         /// <summary>
         /// Gets the <see cref="JsonWebKey"/>.
         /// </summary>
@@ -33,16 +33,22 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="input">bytes to sign.</param>
         /// <returns>signed bytes</returns>
-        public abstract byte[] Sign(byte[] input);
 
+        public abstract byte[] Sign(byte[] input);
+#if NETCOREAPP2_1
+        public abstract bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten);
+#endif
         /// <summary>
         /// This must be overridden to verify a signature created over the 'input'.
         /// </summary>
         /// <param name="input">bytes to verify.</param>
         /// <param name="signature">signature to compare against.</param>
         /// <returns>true if the computed signature matches the signature parameter, false otherwise.</returns>
+
         public abstract bool Verify(byte[] input, byte[] signature);
-        
+#if NETCOREAPP2_1
+        public abstract bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature);
+#endif
         /// <summary>
         /// Calls <see cref="Dispose(bool)"/> and <see cref="GC.SuppressFinalize"/>
         /// </summary>
