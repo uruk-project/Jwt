@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
@@ -39,6 +40,8 @@ namespace JsonWebToken
 
             _keyedHash = GetKeyedHashAlgorithm(key.RawK, algorithm);
         }
+
+        public override int HashSize => _keyedHash.HashSize;
 
         /// <summary>
         /// Gets or sets the minimum <see cref="SymmetricJwk"/>.KeySize"/>.
@@ -88,22 +91,6 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="input">The bytes to sign.</param>
         /// <returns>Signed bytes</returns>
-        public override byte[] Sign(byte[] input)
-        {
-            if (input == null || input.Length == 0)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().ToString());
-            }
-
-            return _keyedHash.ComputeHash(input);
-        }
-
-#if NETCOREAPP2_1
         public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {
             if (input == null || input.Length == 0)
@@ -116,69 +103,35 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(GetType().ToString());
             }
 
-            return _keyedHash.TryComputeHash(input, destination, out bytesWritten);
-        }
-#endif
-
-        /// <summary>
-        /// Verifies that a signature created over the 'input' matches the signature. Using <see cref="SymmetricJwk"/> and 'algorithm' passed to <see cref="SymmetricSignatureProvider( JsonWebKey, string )"/>.
-        /// </summary>
-        /// <param name="input">The bytes to verify.</param>
-        /// <param name="signature">signature to compare against.</param>
-        /// <returns>true if computed signature matches the signature parameter, false otherwise.</returns>
-        public override bool Verify(byte[] input, byte[] signature)
-        {
-            if (input == null || input.Length == 0)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-
-            if (signature == null || signature.Length == 0)
-            {
-                throw new ArgumentNullException(nameof(signature));
-            }
-
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(typeof(SymmetricSignatureProvider).ToString());
-            }
-
-            return AreEqual(signature, _keyedHash.ComputeHash(input));
-        }
-
-        /// <summary>
-        /// Verifies that a signature created over the 'input' matches the signature. Using <see cref="SymmetricJwk"/> and 'algorithm' passed to <see cref="SymmetricSignatureProvider( JsonWebKey, string )"/>.
-        /// </summary>
-        /// <param name="input">The bytes to verify.</param>
-        /// <param name="signature">signature to compare against.</param>
-        /// <param name="length">number of bytes of signature to use.</param>
-        /// <returns>true if computed signature matches the signature parameter, false otherwise.</returns>
-        public bool Verify(byte[] input, byte[] signature, int length)
-        {
-            if (input == null || input.Length == 0)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-
-            if (signature == null || signature.Length == 0)
-            {
-                throw new ArgumentNullException(nameof(signature));
-            }
-
-            if (length <= 0)
-            {
-                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.MustBeGreaterThanZero, nameof(length), length));
-            }
-
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(typeof(SymmetricSignatureProvider).ToString());
-            }
-
-            return AreEqual(signature, _keyedHash.ComputeHash(input), length);
-        }
-
 #if NETCOREAPP2_1
+            return _keyedHash.TryComputeHash(input, destination, out bytesWritten);
+#else
+            try
+            {
+                var result = _keyedHash.ComputeHash(input.ToArray());
+                bytesWritten = input.Length;
+                result.CopyTo(destination);
+                return true;
+            }
+            catch
+            {
+                bytesWritten = 0;
+                return false;
+            }
+#endif
+        }
+
+        public byte[] TrySign(byte[] input)
+        {
+            return _keyedHash.ComputeHash(input);
+        }
+
+        /// <summary>
+        /// Verifies that a signature created over the 'input' matches the signature. Using <see cref="SymmetricJwk"/> and 'algorithm' passed to <see cref="SymmetricSignatureProvider( JsonWebKey, string )"/>.
+        /// </summary>
+        /// <param name="input">The bytes to verify.</param>
+        /// <param name="signature">signature to compare against.</param>
+        /// <returns>true if computed signature matches the signature parameter, false otherwise.</returns>
         public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
         {
             if (input == null || input.Length == 0)
@@ -196,10 +149,24 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(typeof(SymmetricSignatureProvider).ToString());
             }
 
-            var hash = new byte[signature.Length];
-            return _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash);
+#if NETCOREAPP2_1
+            unsafe
+            {
+                Span<byte> hash = stackalloc byte[_keyedHash.HashSize / 8];
+                return _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash);
+            }
+#else
+            return AreEqual(signature, _keyedHash.ComputeHash(input.ToArray()));
+#endif
         }
 
+        /// <summary>
+        /// Verifies that a signature created over the 'input' matches the signature. Using <see cref="SymmetricJwk"/> and 'algorithm' passed to <see cref="SymmetricSignatureProvider( JsonWebKey, string )"/>.
+        /// </summary>
+        /// <param name="input">The bytes to verify.</param>
+        /// <param name="signature">signature to compare against.</param>
+        /// <param name="length">number of bytes of signature to use.</param>
+        /// <returns>true if computed signature matches the signature parameter, false otherwise.</returns>
         public bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature, int length)
         {
             if (input == null || input.Length == 0)
@@ -222,10 +189,16 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(typeof(SymmetricSignatureProvider).ToString());
             }
 
-            var hash = new byte[signature.Length];
-            return _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash, length);
-        }
+#if NETCOREAPP2_1
+            unsafe
+            {
+                Span<byte> hash = stackalloc byte[_keyedHash.HashSize / 8];
+                return _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash, length);
+            }
+#else
+            return AreEqual(signature, _keyedHash.ComputeHash(input.ToArray()), length);
 #endif
+        }
 
         /// <summary>
         /// Disposes of internal components.
@@ -295,7 +268,7 @@ namespace JsonWebToken
         }
 
         [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
-        private static bool AreEqual(ReadOnlySpan<byte> a, byte[] b, int length)
+        private static bool AreEqual(ReadOnlySpan<byte> a, Span<byte> b, int length)
         {
             byte[] s_bytesA = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
             byte[] s_bytesB = new byte[] { 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
@@ -369,7 +342,7 @@ namespace JsonWebToken
         }
 
         [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
-        private static bool AreEqual(ReadOnlySpan<byte> a, byte[] b)
+        private static bool AreEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
         {
             byte[] s_bytesA = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
             byte[] s_bytesB = new byte[] { 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };

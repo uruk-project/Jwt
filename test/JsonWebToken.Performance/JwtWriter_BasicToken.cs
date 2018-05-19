@@ -24,7 +24,7 @@ namespace JsonWebToken.Performance
 "}";
 
         private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SharedKey);
-        private static readonly SymmetricJwk CustomSharedKey = JsonWebKey.FromJson(SharedKey) as SymmetricJwk;
+        private static readonly SymmetricJwk CustomSharedKey = JsonWebKey.FromJson<SymmetricJwk>(SharedKey);
 
         //private static readonly SecurityTokenDescriptor WilsonEmptyDescriptor;
         private static readonly SecurityTokenDescriptor WilsonSmallDescriptor = CreateWilsonSmallDescriptor();
@@ -63,17 +63,17 @@ namespace JsonWebToken.Performance
             var value = Writer.WriteToken(CustomSmallDescriptor);
         }
 
-        [Benchmark]
-        public void JoseDotNet()
-        {
-            var value = Jose.JWT.Encode(JoseDotNetSmallDescriptor, JoseDotNetSharedKey, JwsAlgorithm.HS256);
-        }
+        //[Benchmark]
+        //public void JoseDotNet()
+        //{
+        //    var value = Jose.JWT.Encode(JoseDotNetSmallDescriptor, JoseDotNetSharedKey, JwsAlgorithm.HS256);
+        //}
 
-        [Benchmark]
-        public void JwtDotNet()
-        {
-            var value = JwtDotNetEncoder.Encode(JoseDotNetSmallDescriptor, CustomSharedKey.RawK);
-        }
+        //[Benchmark]
+        //public void JwtDotNet()
+        //{
+        //    var value = JwtDotNetEncoder.Encode(JoseDotNetSmallDescriptor, CustomSharedKey.RawK);
+        //}
 
         private static JsonWebTokenDescriptor CreateCustomSmallDescriptor()
         {

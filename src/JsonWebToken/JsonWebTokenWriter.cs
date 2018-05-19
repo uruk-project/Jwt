@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -55,7 +57,7 @@ namespace JsonWebToken
         /// <remarks>See: <see cref="DefaultTokenLifetimeInMinutes"/>, <see cref="TokenLifetimeInMinutes"/> for defaults and configuration.</remarks>
         public bool SetDefaultTimesOnTokenCreation { get; set; } = false;
 
-        public string WriteToken(JsonWebTokenDescriptor descriptor, bool useSpan = false)
+        public string WriteToken(JsonWebTokenDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -82,50 +84,60 @@ namespace JsonWebToken
             {
                 header[item.Key] = item.Value;
             }
-#if NETCOREAPP2_1
-            string rawData = null;
-            if (useSpan)
+
+            unsafe
             {
-                unsafe
+                var headerJson = header.SerializeToJson();
+                var payloadJson = payload.SerializeToJson();
+                SignatureProvider signatureProvider = null;
+                if (descriptor.SigningKey != null)
                 {
-                    //Span<byte> buffer = new byte[2 * 1024 * 10];
-                    var array = ArrayPool<byte>.Shared.Rent(2 * 1024);
-                    Span<byte> buffer = array;
-                    header.TryBase64UrlEncode(buffer, out int headerBytesWritten);
-                    buffer[headerBytesWritten] = dot;
-                    payload.TryBase64UrlEncode(buffer.Slice(headerBytesWritten + 1), out int payloadBytesWritten);
-                    buffer[payloadBytesWritten + headerBytesWritten + 1] = dot;
-                    int sigBytesWritten = 0;
-                    if (descriptor.SigningKey != null)
+                    var key = descriptor.SigningKey;
+                    signatureProvider = key.CreateSignatureProvider(key.Alg, true);
+                    if (signatureProvider == null)
                     {
-                        TryCreateEncodedSignature(buffer, buffer.Slice(payloadBytesWritten + headerBytesWritten + 2), descriptor.SigningKey, out sigBytesWritten);
+                        throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, (key == null ? "Null" : key.Kid), (key.Alg ?? "Null")));
                     }
-
-                    rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 2 + sigBytesWritten));
-                    ArrayPool<byte>.Shared.Return(array);
                 }
-            }
-            else
-            {
-                string rawHeader = header.Base64UrlEncode();
-                string rawPayload = payload.Base64UrlEncode();
-                string rawSignature = descriptor.SigningKey == null ? string.Empty : CreateEncodedSignature(string.Concat(rawHeader, ".", rawPayload), descriptor.SigningKey, useSpan);
 
-                rawData = string.Concat(rawHeader, ".", rawPayload, ".", rawSignature);
-            }
+                int length = Base64Url.GetArraySizeRequiredToEncode(headerJson.Length) 
+                    + Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
+                    + Base64Url.GetArraySizeRequiredToEncode(signatureProvider?.HashSize ?? 0)
+                    + 2;
+                Span<byte> buffer = stackalloc byte[length];
+
+                header.TryBase64UrlEncode(buffer, out int headerBytesWritten);
+                buffer[headerBytesWritten] = dot;
+                payload.TryBase64UrlEncode(buffer.Slice(headerBytesWritten + 1), out int payloadBytesWritten);
+                buffer[payloadBytesWritten + headerBytesWritten + 1] = dot;
+                int signatureBytesWritten = 0;
+                if (signatureProvider != null)
+                {
+                    //TryCreateEncodedSignature(buffer, buffer.Slice(payloadBytesWritten + headerBytesWritten + 2), descriptor.SigningKey, out signatureBytesWritten);
+                    Span<byte> signature = stackalloc byte[signatureProvider.HashSize];
+                    try
+                    {
+                        signatureProvider.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signLength);
+                        Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + 2), out int bytesConsumed, out signatureBytesWritten);
+                    }
+                    finally
+                    {
+                        descriptor.SigningKey.ReleaseSignatureProvider(signatureProvider);
+                    }
+                }
+
+#if NETCOREAPP2_1
+                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 2 + signatureBytesWritten));
 #else
-            string rawHeader = header.Base64UrlEncode();
-            string rawPayload = payload.Base64UrlEncode();
-            string rawSignature = descriptor.SigningKey == null ? string.Empty : CreateEncodedSignature(string.Concat(rawHeader, ".", rawPayload), descriptor.SigningKey, useSpan);
-
-            var rawData = string.Concat(rawHeader, ".", rawPayload, ".", rawSignature);
+                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 2 + signatureBytesWritten).ToArray());
 #endif
-            if (descriptor.EncryptingKey != null)
-            {
-                rawData = EncryptToken(rawData, descriptor.EncryptingKey, descriptor.EncryptionAlgorithm);
-            }
+                if (descriptor.EncryptingKey != null)
+                {
+                    rawData = EncryptToken(rawData, descriptor.EncryptingKey, descriptor.EncryptionAlgorithm);
+                }
 
-            return rawData;
+                return rawData;
+            }
         }
 
         private string EncryptToken(string payload, JsonWebKey key, string encryptionAlgorithm)
@@ -147,9 +159,9 @@ namespace JsonWebToken
                         ".",
                         header.Base64UrlEncode(),
                         string.Empty,
-                        Base64UrlEncoder.Encode(encryptionResult.IV),
-                        Base64UrlEncoder.Encode(encryptionResult.Ciphertext),
-                        Base64UrlEncoder.Encode(encryptionResult.AuthenticationTag));
+                        Base64Url.Encode(encryptionResult.IV),
+                        Base64Url.Encode(encryptionResult.Ciphertext),
+                        Base64Url.Encode(encryptionResult.AuthenticationTag));
                 }
                 catch (Exception ex)
                 {
@@ -202,15 +214,15 @@ namespace JsonWebToken
 
                 try
                 {
-                    var header = new JwtHeader(key);
+                    var header = new JwtHeader(key, encryptionAlgorithm);
                     var encryptionResult = encryptionProvider.Encrypt(Encoding.UTF8.GetBytes(payload), Encoding.ASCII.GetBytes(header.Base64UrlEncode()));
                     return string.Join(
                         ".",
                         header.Base64UrlEncode(),
-                        Base64UrlEncoder.Encode(wrappedKey),
-                        Base64UrlEncoder.Encode(encryptionResult.IV),
-                        Base64UrlEncoder.Encode(encryptionResult.Ciphertext),
-                        Base64UrlEncoder.Encode(encryptionResult.AuthenticationTag));
+                        Base64Url.Encode(wrappedKey),
+                        Base64Url.Encode(encryptionResult.IV),
+                        Base64Url.Encode(encryptionResult.Ciphertext),
+                        Base64Url.Encode(encryptionResult.AuthenticationTag));
                 }
                 catch (Exception ex)
                 {
@@ -232,7 +244,7 @@ namespace JsonWebToken
                 int halfSizeInBytes = sizeInBits >> 4;
                 key = new byte[halfSizeInBytes << 1];
                 aes.KeySize = sizeInBits >> 1;
-                // The design of AuthenticatedEncryption needs two keys of the same size - generate them, each half size of what's required
+
                 aes.GenerateKey();
                 Array.Copy(aes.Key, key, halfSizeInBytes);
                 aes.GenerateKey();
@@ -242,71 +254,28 @@ namespace JsonWebToken
             return key;
         }
 
+        //private OperationStatus TryCreateEncodedSignature(ReadOnlySpan<byte> input, Span<byte> destination, JsonWebKey key, out int bytesWritten)
+        //{
+
+        //}
+
+        public bool TryBase64UrlEncode(JObject jObject, Span<byte> destination, out int bytesWritten)
+        {
+            var json = jObject.ToString(Formatting.None);
 #if NETCOREAPP2_1
-        private OperationStatus TryCreateEncodedSignature(ReadOnlySpan<byte> input, Span<byte> destination, JsonWebKey key, out int bytesWritten)
-        {
-            if (input == null)
+            unsafe
             {
-                throw new ArgumentNullException(nameof(input));
+                Span<byte> encodedBytes = stackalloc byte[json.Length];
+                Encoding.UTF8.GetBytes(json, encodedBytes);
+                var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
+                return status == OperationStatus.Done;
             }
+#else
+            var encodedBytes = Encoding.UTF8.GetBytes(json);
 
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            var signatureProvider = key.CreateSignatureProvider(key.Alg, true);
-            if (signatureProvider == null)
-            {
-                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, (key == null ? "Null" : key.ToString()), (key.Alg ?? "Null")));
-            }
-
-            var signature = ArrayPool<byte>.Shared.Rent(key.SignatureSize);
-            Span<byte> temp = signature;
-            try
-            {
-                if (signatureProvider.TrySign(input, signature, out int signLength))
-                {
-                    return Base64UrlEncoder.Base64UrlEncode(temp.Slice(0, signLength), destination, out int bytesConsumed, out bytesWritten);
-                }
-                else
-                {
-                    throw new Exception("Key : " + key.Alg + " / " + key.KeySize + " / " + signLength);
-                }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(signature);
-                key.ReleaseSignatureProvider(signatureProvider);
-            }
-        }
+            var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
+            return status == OperationStatus.Done;
 #endif
-        private string CreateEncodedSignature(string input, JsonWebKey key, bool useSpan)
-        {
-            if (input == null)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            var signatureProvider = key.CreateSignatureProvider(key.Alg, true);
-            if (signatureProvider == null)
-            {
-                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, (key == null ? "Null" : key.ToString()), (key.Alg ?? "Null")));
-            }
-
-            try
-            {
-                return Base64UrlEncoder.Encode(signatureProvider.Sign(Encoding.UTF8.GetBytes(input)));
-            }
-            finally
-            {
-                key.ReleaseSignatureProvider(signatureProvider);
-            }
         }
     }
 }

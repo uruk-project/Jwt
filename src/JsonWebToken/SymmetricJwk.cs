@@ -11,7 +11,7 @@ namespace JsonWebToken
             : this()
         {
             RawK = bytes;
-            _k = Base64UrlEncoder.Encode(bytes);
+            _k = Base64Url.Encode(bytes);
         }
 
         public SymmetricJwk()
@@ -31,7 +31,7 @@ namespace JsonWebToken
                 _k = value;
                 if (value != null)
                 {
-                    RawK = Base64UrlEncoder.DecodeBytes(value);
+                    RawK = Base64Url.DecodeBytes(value);
                 }
             }
         }
@@ -40,25 +40,7 @@ namespace JsonWebToken
         public byte[] RawK { get; private set; }
 
         public override int KeySize => RawK?.Length != 0 ? RawK.Length << 3 : 0;
-
-        public override int SignatureSize
-        {
-            get
-            {
-                switch (Alg)
-                {
-                    case SecurityAlgorithms.HmacSha256:
-                        return 32;
-                    case SecurityAlgorithms.HmacSha384:
-                        return 48;
-                    case SecurityAlgorithms.HmacSha512:
-                        return 64;
-                }
-
-                throw new InvalidOperationException();
-            }
-        }
-
+        
         /// <summary>
         /// Returns a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>

@@ -11,8 +11,9 @@ namespace JsonWebToken
     /// <summary>
     /// Encodes and Decodes strings as Base64Url encoding.
     /// </summary>
-    /// <remarks>Issued from https://github.com/aspnet/</remarks>
-    public static class Base64UrlEncoder
+    /// <remarks>Issued from https://github.com/aspnet/
+    /// </remarks>
+    public static class Base64Url
     {
 #if !NETCOREAPP2_1
         private const int MaxStackallocBytes = 256;

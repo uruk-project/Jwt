@@ -168,8 +168,7 @@ namespace JsonWebToken
         /// Gets the original raw data of this instance when it was created.
         /// </summary>
         public ReadOnlySpan<char> RawAuthenticationTag { get => RawData.AsSpan().Slice(Separators[0] + Separators[1] + Separators[2] + Separators[3] + 1); }
-
-
+        
         /// <summary>
         /// Gets the original raw data of this instance when it was created.
         /// </summary>
@@ -186,7 +185,7 @@ namespace JsonWebToken
         {
             var signature = RawData.AsSpan().Slice(Separators[0] + Separators[1] + 1);
 
-            return Base64UrlEncoder.Base64UrlDecode(signature);
+            return Base64Url.Base64UrlDecode(signature);
         }
 
         /// <summary>

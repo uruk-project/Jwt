@@ -7,6 +7,7 @@ namespace JsonWebToken
     public class EcdsaSignatureProvider : AsymmetricSignatureProvider<EcdsaJwk>
     {
         private ECDsa _ecdsa;
+        private int _hashSize;
         private HashAlgorithmName _hashAlgorithm;
         private bool _disposed;
 
@@ -38,6 +39,8 @@ namespace JsonWebToken
             : base(key, algorithm, willCreateSignatures)
         {
         }
+
+        public override int HashSize => _hashSize;
 
         private HashAlgorithmName GetHashAlgorithmName(string algorithm)
         {
@@ -75,9 +78,29 @@ namespace JsonWebToken
 
             _hashAlgorithm = GetHashAlgorithmName(algorithm);
             _ecdsa = ResolveAlgorithm(key, algorithm, willCreateSignatures);
+            _hashSize = GetHashSize(key);
         }
 
-#if NETCOREAPP2_1
+        private int GetHashSize(EcdsaJwk key)
+        {
+            switch (key.Crv)
+            {
+                case JsonWebKeyECTypes.P256:
+                    return 256;
+                case JsonWebKeyECTypes.P384:
+                    return 384;
+                case JsonWebKeyECTypes.P521:
+                    return 521;
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        /// <summary>
+        /// Produces a signature over the 'input' using the <see cref="ASymmetricJwk"/> and algorithm passed to <see cref="AsymmetricSignatureProvider( JsonWebKey, string, bool )"/>.
+        /// </summary>
+        /// <param name="input">The bytes to be signed.</param>
+        /// <returns>A signature over the input.</returns>
         public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {
             if (input == null || input.Length == 0)
@@ -92,70 +115,24 @@ namespace JsonWebToken
 
             if (_ecdsa != null)
             {
+#if NETCOREAPP2_1
                 return _ecdsa.TrySignData(input, destination, _hashAlgorithm, out bytesWritten);
+#else
+                var result = _ecdsa.SignData(input.ToArray(), _hashAlgorithm);
+                bytesWritten = result.Length;
+                result.CopyTo(destination);
+#endif
             }
 
             throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, _hashAlgorithm));
         }
-#endif
-
-        /// <summary>
-        /// Produces a signature over the 'input' using the <see cref="ASymmetricJwk"/> and algorithm passed to <see cref="AsymmetricSignatureProvider( JsonWebKey, string, bool )"/>.
-        /// </summary>
-        /// <param name="input">The bytes to be signed.</param>
-        /// <returns>A signature over the input.</returns>
-        public override byte[] Sign(byte[] input)
-        {
-            if (input == null || input.Length == 0)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().ToString());
-            }
-
-            if (_ecdsa == null)
-            {
-                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, _hashAlgorithm));
-            }
-
-            return _ecdsa.SignData(input, _hashAlgorithm);
-        }
-
+        
         /// <summary>
         /// Verifies that a signature over the' input' matches the signature.
         /// </summary>
         /// <param name="input">The bytes to generate the signature over.</param>
         /// <param name="signature">The value to verify against.</param>
         /// <returns>true if signature matches, false otherwise.</returns>
-        public override bool Verify(byte[] input, byte[] signature)
-        {
-            if (input == null || input.Length == 0)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-
-            if (signature == null || signature.Length == 0)
-            {
-                throw new ArgumentNullException(nameof(signature));
-            }
-
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().ToString());
-            }
-
-            if (_ecdsa == null)
-            {
-                throw new InvalidOperationException(ErrorMessages.NotSupportedUnwrap);
-            }
-
-            return _ecdsa.VerifyData(input, signature, _hashAlgorithm);
-        }
-
-#if NETCOREAPP2_1
         public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
         {
             if (input == null || input.Length == 0)
@@ -178,9 +155,12 @@ namespace JsonWebToken
                 throw new InvalidOperationException(ErrorMessages.NotSupportedUnwrap);
             }
 
+#if NETCOREAPP2_1
             return _ecdsa.VerifyData(input, signature, _hashAlgorithm);
-        }
+#else
+            return _ecdsa.VerifyData(input.ToArray(), signature.ToArray(), _hashAlgorithm);
 #endif
+        }
         /// <summary>
         /// Calls <see cref="HashAlgorithm.Dispose()"/> to release this managed resources.
         /// </summary>
@@ -202,7 +182,7 @@ namespace JsonWebToken
         }
 
         private static ECDsaCng ResolveAlgorithm(EcdsaJwk key, string algorithm, bool usePrivateKey)
-        { 
+        {
             return key.CreateECDsa(algorithm, usePrivateKey);
         }
     }

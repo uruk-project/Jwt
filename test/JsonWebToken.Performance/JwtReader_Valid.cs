@@ -5,6 +5,7 @@ using Jose;
 using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;
+
 using System.IdentityModel.Tokens.Jwt;
 
 namespace JsonWebToken.Performance
@@ -13,7 +14,7 @@ namespace JsonWebToken.Performance
     public class JwtReader_Valid
     {
         private static readonly IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
-        private static readonly IJsonSerializer serializer = new JsonNetSerializer();
+        private static readonly IJsonSerializer serializer = new JsonNetSerializer();        
         private static readonly IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
         private static readonly IDateTimeProvider dateTimeProvider = new UtcDateTimeProvider();
         public static readonly IJwtEncoder JwtDotNetEncoder = new JwtEncoder(algorithm, serializer, urlEncoder);
@@ -24,7 +25,7 @@ namespace JsonWebToken.Performance
 
         private const string Token = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiaWF0IjoxNTA4MTg0ODQ1LCJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJleHAiOjE2MjgxODQ4NDV9.i2JGGP64mggd3WqUj7oX8_FyYh9e_m1MNWI9Q-f-W3g";
 
-        private static readonly SymmetricJwk CustomSharedKey = JsonWebKey.FromJson(SharedKey) as SymmetricJwk;
+        private static readonly SymmetricJwk CustomSharedKey = JsonWebKey.FromJson<SymmetricJwk>(SharedKey);
         private static readonly string SharedKey = "{" +
                                                    "\"kty\": \"oct\"," +
                                                    "\"use\": \"sig\"," +
@@ -33,6 +34,7 @@ namespace JsonWebToken.Performance
                                                    "\"alg\": \"HS256\"" +
                                                    "}";
         public static readonly JsonWebTokenReader Reader = new JsonWebTokenReader(CustomSharedKey);
+        private static readonly ValidationParameters validationParameters = ValidationBuilder.NoValidation;
 
         private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SharedKey);
 
@@ -45,13 +47,7 @@ namespace JsonWebToken.Performance
         [Benchmark]
         public void Custom()
         {
-            var result = Reader.TryReadToken(Token, new TokenValidationParameters
-            {
-                ValidateAudience = false,
-                ValidateIssuer = false,
-                RequireSignedTokens = false,
-                ValidateLifetime = false,
-            });
+            var result = Reader.TryReadToken(Token, validationParameters);
         }
 
         [Benchmark]

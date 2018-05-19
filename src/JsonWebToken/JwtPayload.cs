@@ -333,13 +333,26 @@ namespace JsonWebToken
         /// <returns>Base64UrlEncoded JSON.</returns>
         public string Base64UrlEncode()
         {
-            return Base64UrlEncoder.Encode(SerializeToJson());
+            return Base64Url.Encode(SerializeToJson());
         }
 
         public bool TryBase64UrlEncode(Span<byte> destination, out int bytesWritten)
         {
-            var status = Base64UrlEncoder.Base64UrlEncode(Encoding.UTF8.GetBytes(SerializeToJson()), destination,  out int bytesConsumed, out bytesWritten);
+            var json = SerializeToJson();
+#if NETCOREAPP2_1
+            unsafe
+            {
+                Span<byte> encodedBytes = stackalloc byte[json.Length];
+                Encoding.UTF8.GetBytes(json, encodedBytes);
+                var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
+                return status == OperationStatus.Done;
+            }
+#else
+            var encodedBytes = Encoding.UTF8.GetBytes(json);
+
+            var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
             return status == OperationStatus.Done;
+#endif
         }
 
         /// <summary>
@@ -349,11 +362,11 @@ namespace JsonWebToken
         /// <returns>An instance of <see cref="JwtPayload"/>.</returns>
         public static JwtPayload Base64UrlDeserialize(string base64UrlEncodedJsonString)
         {
-            return Deserialize(Base64UrlEncoder.Decode(base64UrlEncodedJsonString));
+            return Deserialize(Base64Url.Decode(base64UrlEncodedJsonString));
         }
         public static JwtPayload Base64UrlDeserialize(ReadOnlySpan<char> base64UrlEncodedJsonString)
         {
-            return Deserialize(Encoding.UTF8.GetString(Base64UrlEncoder.Base64UrlDecode(base64UrlEncodedJsonString)));
+            return Deserialize(Encoding.UTF8.GetString(Base64Url.Base64UrlDecode(base64UrlEncodedJsonString)));
         }
 
         private static JwtPayload Deserialize(string jsonString)

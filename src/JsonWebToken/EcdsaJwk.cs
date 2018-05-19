@@ -36,7 +36,7 @@ namespace JsonWebToken
                 _x = value;
                 if (value != null)
                 {
-                    RawX = Base64UrlEncoder.DecodeBytes(value);
+                    RawX = Base64Url.DecodeBytes(value);
                 }
                 else
                 {
@@ -60,7 +60,7 @@ namespace JsonWebToken
                 _y = value;
                 if (value != null)
                 {
-                    RawY = Base64UrlEncoder.DecodeBytes(value);
+                    RawY = Base64Url.DecodeBytes(value);
                 }
                 else
                 {
@@ -89,26 +89,6 @@ namespace JsonWebToken
                     default:
                         throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
                 }
-            }
-        }
-
-        public override int SignatureSize
-        {
-            get
-            {
-                switch (Crv)
-                {
-                    case JsonWebKeyECTypes.P256:
-                        return 64;
-                    case JsonWebKeyECTypes.P384:
-                        return 96;
-                    case JsonWebKeyECTypes.P521:
-                        return 132;
-                    default:
-                        throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
-                }
-
-                throw new InvalidOperationException();
             }
         }
 

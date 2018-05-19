@@ -74,26 +74,6 @@ namespace JsonWebToken
 
         public override int KeySize => RawN?.Length != 0 ? RawN.Length << 3 : 0;
 
-        public override int SignatureSize
-        {
-            get
-            {
-                switch (KeySize)
-                {
-                    case 512:
-                        return 64;
-                    case 1024:
-                        return 128;
-                    case 2048:
-                        return 256;
-                    case 4096:
-                        return 512;
-                }
-
-                throw new InvalidOperationException();
-            }
-        }
-
         /// <summary>
         /// Gets or sets the 'dp' (First Factor CRT Exponent).
         /// </summary>
@@ -106,7 +86,7 @@ namespace JsonWebToken
                 _dp = value;
                 if (value != null)
                 {
-                    RawDP = Base64UrlEncoder.DecodeBytes(value);
+                    RawDP = Base64Url.DecodeBytes(value);
                 }
                 else
                 {
@@ -130,7 +110,7 @@ namespace JsonWebToken
                 _dq = value;
                 if (value != null)
                 {
-                    RawDQ = Base64UrlEncoder.DecodeBytes(value);
+                    RawDQ = Base64Url.DecodeBytes(value);
                 }
                 else
                 {
@@ -154,7 +134,7 @@ namespace JsonWebToken
                 _e = value;
                 if (value != null)
                 {
-                    RawE = Base64UrlEncoder.DecodeBytes(value);
+                    RawE = Base64Url.DecodeBytes(value);
                 }
                 else
                 {
@@ -178,7 +158,7 @@ namespace JsonWebToken
                 _n = value;
                 if (value != null)
                 {
-                    RawN = Base64UrlEncoder.DecodeBytes(value);
+                    RawN = Base64Url.DecodeBytes(value);
                 }
                 else
                 {
@@ -208,7 +188,7 @@ namespace JsonWebToken
                 _p = value;
                 if (value != null)
                 {
-                    RawP = Base64UrlEncoder.DecodeBytes(value);
+                    RawP = Base64Url.DecodeBytes(value);
                 }
                 else
                 {
@@ -232,7 +212,7 @@ namespace JsonWebToken
                 _q = value;
                 if (value != null)
                 {
-                    RawQ = Base64UrlEncoder.DecodeBytes(value);
+                    RawQ = Base64Url.DecodeBytes(value);
                 }
                 else
                 {
@@ -256,7 +236,7 @@ namespace JsonWebToken
                 _qi = value;
                 if (value != null)
                 {
-                    RawQI = Base64UrlEncoder.DecodeBytes(value);
+                    RawQI = Base64Url.DecodeBytes(value);
                 }
                 else
                 {

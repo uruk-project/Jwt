@@ -54,18 +54,29 @@ namespace JsonWebToken
         private static readonly JwkJsonConverter jsonConverter = new JwkJsonConverter();
 
         /// <summary>
-        /// Returns a new instance of <see cref="JsonWebKey"/>.
+        /// Returns a new instance of <see cref="TKey"/>.
         /// </summary>
         /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
-        /// <returns><see cref="JsonWebKey"/></returns>
-        public static JsonWebKey FromJson(string json)
+        /// <returns><see cref="TKey"/></returns>
+        public static TKey FromJson<TKey>(string json) where TKey : JsonWebKey
         {
             if (string.IsNullOrEmpty(json))
             {
                 throw new ArgumentNullException(nameof(json));
             }
 
-            return (JsonWebKey)JsonConvert.DeserializeObject(json, typeof(JsonWebKey), jsonConverter);
+            return (TKey)JsonConvert.DeserializeObject(json, typeof(TKey), jsonConverter);
+        }
+
+
+        /// <summary>
+        /// Returns a new instance of <see cref="JsonWebKey"/>.
+        /// </summary>
+        /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
+        /// <returns><see cref="JsonWebKey"/></returns>
+        public static JsonWebKey FromJson(string json)
+        {
+            return FromJson<JsonWebKey>(json);
         }
 
         /// <summary>
@@ -133,9 +144,6 @@ namespace JsonWebToken
         /// </summary>
         [JsonIgnore]
         public abstract int KeySize { get; }
-
-        [JsonIgnore]
-        public abstract int SignatureSize { get; }
 
         /// <summary>
         /// Gets a bool that determines if the 'key_ops' (Key Operations) property should be serialized.

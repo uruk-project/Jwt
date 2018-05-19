@@ -31,8 +31,9 @@ namespace JsonWebToken.Performance
                                                    "\"alg\": \"HS256\"" +
                                                    "}";
 
-        private static readonly SymmetricJwk CustomSharedKey = JsonWebKey.FromJson(SharedKey) as SymmetricJwk;
+        private static readonly SymmetricJwk CustomSharedKey = JsonWebKey.FromJson<SymmetricJwk>(SharedKey);
         public static readonly JsonWebTokenReader Reader = new JsonWebTokenReader(CustomSharedKey);
+        private static readonly ValidationParameters validationParameters = new ValidationBuilder().AddSignatureValidation(CustomSharedKey).AddLifetimeValidation().Build();
 
         private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SharedKey);
 
@@ -50,11 +51,7 @@ namespace JsonWebToken.Performance
         [Benchmark]
         public void Custom()
         {
-            var result = Reader.TryReadToken(Token, new TokenValidationParameters
-            {
-                ValidateAudience = false,
-                ValidateIssuer = false
-            });
+            var result = Reader.TryReadToken(Token, validationParameters);
         }
 
         [Benchmark]

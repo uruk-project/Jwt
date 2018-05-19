@@ -75,11 +75,12 @@ namespace JsonWebToken.Tests
         public void ReadJwt_Valid(string jwt)
         {
             var reader = new JsonWebTokenReader(Keys.Jwks);
-            var validationParameters = new TokenValidationParameters
-            {
-                ValidAudience = "636C69656E745F6964",
-                ValidIssuer = "https://idp.example.com/"
-            };
+            var validationParameters = new ValidationBuilder()
+                    .AddSignatureValidation(Keys.Jwks)
+                    .AddLifetimeValidation()
+                    .AddAudienceValidation("636C69656E745F6964")
+                    .AddIssuerValidation("https://idp.example.com/")
+                    .Build();
 
             var result = reader.TryReadToken(jwt, validationParameters);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
@@ -90,25 +91,17 @@ namespace JsonWebToken.Tests
         public void ReadJwt_Invalid(string jwt, TokenValidationStatus expectedStatus)
         {
             var reader = new JsonWebTokenReader(Keys.Jwks);
-            var validationParameters = new TokenValidationParameters
-            {
-                ValidAudience = "636C69656E745F6964",
-                ValidIssuer = "https://idp.example.com/"
-            };
-
+            var validationParameters = new ValidationBuilder()
+                    .AddSignatureValidation(Keys.Jwks)
+                    .AddLifetimeValidation()
+                    .AddAudienceValidation("636C69656E745F6964")
+                    .AddIssuerValidation("https://idp.example.com/")
+                    .Build();
+         
             var result = reader.TryReadToken(jwt, validationParameters);
             Assert.Equal(expectedStatus, result.Status);
         }
-
-        [Theory]
-        [MemberData(nameof(GetInvalidValidationParameters))]
-        public void InvalidValidationParameters_ThrowsException(TokenValidationParameters parameters, Type exceptionType)
-        {
-            var reader = new JsonWebTokenReader(Keys.Jwks);
-
-            Assert.Throws(exceptionType, () => reader.TryReadToken(Tokens.Jwts.First(), parameters));
-        }
-
+       
         public static IEnumerable<object[]> GetValidTokens()
         {
             foreach (var item in Tokens.Jwts)
@@ -124,46 +117,5 @@ namespace JsonWebToken.Tests
                 yield return new object[] { item.Jwt, item.Status };
             }
         }
-
-        public static IEnumerable<object[]> GetInvalidValidationParameters()
-        {
-            yield return new object[] {
-                new TokenValidationParameters
-                {
-                    ValidateIssuer = false,
-                    ValidateAudience = true,
-                    ValidAudience = null
-                },
-                typeof(ArgumentException)
-            };
-            yield return new object[] {
-                new TokenValidationParameters
-                {
-                    ValidateIssuer = false,
-                    ValidateAudience = true,
-                    ValidAudience = string.Empty
-                },
-                typeof(ArgumentException)
-            };
-            yield return new object[] {
-                new TokenValidationParameters
-                {
-                    ValidateAudience = false,
-                    ValidateIssuer = true,
-                    ValidIssuer = null
-                },
-                typeof(ArgumentException)
-            };
-            yield return new object[] {
-                new TokenValidationParameters
-                {
-                    ValidateAudience = false,
-                    ValidateIssuer = true,
-                    ValidIssuer = string.Empty
-                },
-                typeof(ArgumentException)
-            };
-        }
-
     }
 }

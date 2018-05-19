@@ -114,8 +114,10 @@ namespace JsonWebToken
             Array.Copy(aes.IV, 0, macBytes, authenticatedData.Length, aes.IV.Length);
             Array.Copy(ciphertext, 0, macBytes, authenticatedData.Length + aes.IV.Length, ciphertext.Length);
             Array.Copy(al, 0, macBytes, authenticatedData.Length + aes.IV.Length + ciphertext.Length, al.Length);
-            byte[] macHash = _symmetricSignatureProvider.Sign(macBytes);
-            var authenticationTag = new byte[_authenticatedkeys.HmacKey.KeySize];
+            byte[] macHash = new byte[_symmetricSignatureProvider.HashSize];
+            _symmetricSignatureProvider.TrySign(macBytes, macHash, out int writtenBytes);
+            
+            var authenticationTag = new byte[writtenBytes];
             Array.Copy(macHash, authenticationTag, authenticationTag.Length);
 
             return new AuthenticatedEncryptionResult(Key, ciphertext, aes.IV, authenticationTag);

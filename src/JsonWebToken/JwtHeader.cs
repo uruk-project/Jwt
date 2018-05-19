@@ -56,20 +56,12 @@ namespace JsonWebToken
         /// <param name="encryptionAlgorithm">Algorithm used for encryption.</param>
         public JwtHeader(JsonWebKey encryptionKey, string encryptionAlgorithm)
         {
-            if (encryptionKey == null)
-            {
-                throw new ArgumentNullException(nameof(encryptionKey));
-            }
+            _inner = new JObject();
 
-            if (encryptionAlgorithm == null)
-            {
-                throw new ArgumentNullException(nameof(encryptionAlgorithm));
-            }
-
+            EncryptionKey = encryptionKey ?? throw new ArgumentNullException(nameof(encryptionKey));
+            Enc = encryptionAlgorithm ?? throw new ArgumentNullException(nameof(encryptionAlgorithm));
             Alg = encryptionKey.Alg;
-            Enc = encryptionAlgorithm;
             Kid = encryptionKey.Kid;
-            EncryptionKey = encryptionKey;
         }
 
         /// <summary>
@@ -211,11 +203,11 @@ namespace JsonWebToken
         /// <returns>An instance of <see cref="JwtHeader"/>.</returns>
         public static JwtHeader Base64UrlDeserialize(string base64UrlEncodedJsonString)
         {
-            return Deserialize(Base64UrlEncoder.Decode(base64UrlEncodedJsonString));
+            return Deserialize(Base64Url.Decode(base64UrlEncodedJsonString));
         }
         public static JwtHeader Base64UrlDeserialize(ReadOnlySpan<char> base64UrlEncodedJsonString)
         {
-            return Deserialize(Encoding.UTF8.GetString(Base64UrlEncoder.Base64UrlDecode(base64UrlEncodedJsonString)));
+            return Deserialize(Encoding.UTF8.GetString(Base64Url.Base64UrlDecode(base64UrlEncodedJsonString)));
         }
 
         /// <summary>
@@ -224,13 +216,26 @@ namespace JsonWebToken
         /// <returns>Base64UrlEncoded JSON.</returns>
         public string Base64UrlEncode()
         {
-            return Base64UrlEncoder.Encode(SerializeToJson());
+            return Base64Url.Encode(SerializeToJson());
         }
 
         public bool TryBase64UrlEncode(Span<byte> destination, out int bytesWritten)
         {
-            var status = Base64UrlEncoder.Base64UrlEncode(Encoding.UTF8.GetBytes(SerializeToJson()), destination, out int bytesConsumed, out bytesWritten);
+            var json = SerializeToJson();
+#if NETCOREAPP2_1
+            unsafe
+            {
+                Span<byte> encodedBytes = stackalloc byte[json.Length];
+                Encoding.UTF8.GetBytes(json, encodedBytes);
+                var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
+                return status == OperationStatus.Done;
+            }
+#else
+            var encodedBytes = Encoding.UTF8.GetBytes(json);
+
+            var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
             return status == OperationStatus.Done;
+#endif
         }
 
         /// <summary>
