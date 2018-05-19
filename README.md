@@ -55,8 +55,32 @@ TODO
 
 ## Supported algorithms
 ### JWS signing algorithms
+| "alg" Param Value | Digital Signature or MAC Algorithm| Implementation Requirements|Implemented
+|--------------|-------------------------------|--------------------                 |---
+| HS256        | HMAC using SHA-256            | Required                            | <ul><li> - [ ] </li></ul>
+| HS384        | HMAC using SHA-384            | Optional                            | <ul><li> - [ ] </li></ul>
+| HS512        | HMAC using SHA-512            | Optional                            | <ul><li> - [ ] </li></ul>
+| RS256        | RSASSA-PKCS1-v1_5 using SHA-256 | Recommended                       | <ul><li> - [ ] </li></ul>
+| RS384        | RSASSA-PKCS1-v1_5 using SHA-384 | Optional                          | <ul><li> - [ ] </li></ul>
+| RS512        | RSASSA-PKCS1-v1_5 using SHA-512 | Optional                          | <ul><li> - [ ] </li></ul>
+| ES256        | ECDSA using P-256 and SHA-256 | Recommended+                        | <ul><li> - [ ] </li></ul>
+| ES384        | ECDSA using P-384 and SHA-384 | Optional                            | <ul><li> - [ ] </li></ul>
+| ES512        | ECDSA using P-521 and SHA-512 | Optional                            | <ul><li> - [ ] </li></ul>
+| PS256        | RSASSA-PSS using SHA-256 and MGF1 with SHA-256 | Optional           | <ul><li> - [ ] </li></ul>
+| PS384        | RSASSA-PSS using SHA-384 and MGF1 with SHA-384 | Optional           | <ul><li> - [ ] </li></ul>
+| PS512        | RSASSA-PSS using SHA-512 and MGF1 with SHA-512 | Optional           | <ul><li> - [ ] </li></ul>
+| none         | No digital signature or MAC performed  | Optional                   | <ul><li> - [ ] </li></ul>
 
 ### JWE encryption algorithms
+| "enc" Param Value | Content Encryption Algorithm     | Implementation Requirements |Implemented
+|---------------|----------------------------------|----------------|---
+| A128CBC-HS256 | AES_128_CBC_HMAC_SHA_256 authenticated encryption algorithm | Required       | <ul><li> - [ ] </li></ul>
+| A192CBC-HS384 | AES_192_CBC_HMAC_SHA_384 authenticated encryption algorithm | Optional       | <ul><li> - [ ] </li></ul>
+| A256CBC-HS512 | AES_256_CBC_HMAC_SHA_512 authenticated encryption algorithm | Required       | <ul><li> - [ ] </li></ul>
+| A128GCM       | AES GCM using 128-bit key        | Recommended                               | <ul><li> - [ ] </li></ul>
+| A192GCM       | AES GCM using 192-bit key        | Optional                                  | <ul><li> - [ ] </li></ul>
+| A256GCM       | AES GCM using 256-bit key        | Recommended                               | <ul><li> - [ ] </li></ul>
+
 ### JWE content encryption key algorithm
 | "alg" Param Value  | Key Management Algorithm    | More Header Params   | Implementation Requirements | Implemented 
 |--------------------|--------------------|--------|----------------| ---
