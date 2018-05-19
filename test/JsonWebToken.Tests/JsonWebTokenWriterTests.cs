@@ -23,38 +23,11 @@ namespace JsonWebToken.Tests
             JsonWebTokenWriter writer = new JsonWebTokenWriter();
             var value = writer.WriteToken(descriptor);
             var reader = new JsonWebTokenReader(Keys.Jwks);
-            var jwt2 = reader.TryReadToken(value, ValidationBuilder.NoValidation);
+            var result = reader.TryReadToken(value, ValidationBuilder.NoValidation);
+            var jwt = result.Token;
 
-            var handler = new JwtSecurityTokenHandler();
-            //var jwt = handler.ReadJwtToken(value);
-
-            var claims = new List<Claim>
-            {
-                new Claim("jti", jwt2.Token.Id)
-            }            ;
-            var identity = new ClaimsIdentity(claims);
-            var wilsonDescriptor = new SecurityTokenDescriptor()
-            {
-                Expires = jwt2.Token.Expires,
-                IssuedAt = jwt2.Token.Payload.Iat,
-                Issuer = jwt2.Token.Issuer,
-                Audience = jwt2.Token.Audiences.First(),
-                Subject = identity,
-                EncryptingCredentials = new EncryptingCredentials(Microsoft.IdentityModel.Tokens.JsonWebKey.Create(descriptor.EncryptingKey.ToString()), descriptor.EncryptingKey.Alg, descriptor.EncryptionAlgorithm),
-                SigningCredentials = new SigningCredentials(Microsoft.IdentityModel.Tokens.JsonWebKey.Create(descriptor.SigningKey.ToString()), descriptor.SigningKey.Alg)
-            };
-            var wilsonJwt = handler.CreateEncodedJwt(wilsonDescriptor);
-            var test = handler.ValidateToken(wilsonJwt, new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
-            {
-                TokenDecryptionKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(descriptor.EncryptingKey.ToString()),
-                IssuerSigningKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(descriptor.SigningKey.ToString()),
-                ValidAudience = descriptor.Audience, 
-                ValidIssuer = descriptor.Issuer
-            }, out var validatedToken);
-
-            var jwt = validatedToken as JwtSecurityToken;
-            Assert.Equal(EpochTime.GetIntDate(descriptor.IssuedAt), jwt.Payload.Iat.Value);
-            Assert.Equal(descriptor.Expires, jwt.ValidTo);
+            Assert.Equal(descriptor.IssuedAt, jwt.Payload.Iat);
+            Assert.Equal(descriptor.Expires, jwt.Expires);
             Assert.Equal(descriptor.Issuer, jwt.Issuer);
             Assert.Equal(descriptor.Audience, jwt.Audiences.First());
             Assert.Equal(descriptor.Id, jwt.Id);
@@ -67,7 +40,7 @@ namespace JsonWebToken.Tests
                 foreach (var jwt in Tokens.Descriptors)
                 {
                     jwt.SigningKey = key;
-                    //  yield return new object[] { jwt };
+                    yield return new object[] { jwt };
                 }
             }
 
