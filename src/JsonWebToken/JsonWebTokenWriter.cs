@@ -57,7 +57,7 @@ namespace JsonWebToken
         /// <remarks>See: <see cref="DefaultTokenLifetimeInMinutes"/>, <see cref="TokenLifetimeInMinutes"/> for defaults and configuration.</remarks>
         public bool SetDefaultTimesOnTokenCreation { get; set; } = false;
 
-        public string WriteToken(JsonWebTokenDescriptor descriptor, bool useSpan = false)
+        public string WriteToken(JsonWebTokenDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -103,7 +103,7 @@ namespace JsonWebToken
                 int length = Base64Url.GetArraySizeRequiredToEncode(headerJson.Length)
                     + Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
                     + Base64Url.GetArraySizeRequiredToEncode(signatureProvider?.HashSize ?? 0)
-                    + 2;
+                    + JwtConstants.JwsSeparatorsCount;
                 Span<byte> buffer = stackalloc byte[length];
 
                 header.TryBase64UrlEncode(buffer, out int headerBytesWritten);
@@ -117,7 +117,7 @@ namespace JsonWebToken
                     try
                     {
                         signatureProvider.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signLength);
-                        Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + 2), out int bytesConsumed, out signatureBytesWritten);
+                        Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount), out int bytesConsumed, out signatureBytesWritten);
                     }
                     finally
                     {
@@ -126,20 +126,20 @@ namespace JsonWebToken
                 }
 
 #if NETCOREAPP2_1
-                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 2 + signatureBytesWritten));
+                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount + signatureBytesWritten));
 #else
-                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 2 + signatureBytesWritten).ToArray());
+                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount + signatureBytesWritten).ToArray());
 #endif
                 if (descriptor.EncryptingKey != null)
                 {
-                    rawData = EncryptToken(rawData, descriptor.EncryptingKey, descriptor.EncryptionAlgorithm, descriptor.ContentEncryptionAlgorithm, useSpan);
+                    rawData = EncryptToken(rawData, descriptor.EncryptingKey, descriptor.EncryptionAlgorithm, descriptor.ContentEncryptionAlgorithm);
                 }
 
                 return rawData;
             }
         }
 
-        private string EncryptToken(string payload, JsonWebKey key, string encryptionAlgorithm, string contentEncryptionAlgorithm, bool useSpan)
+        private string EncryptToken(string payload, JsonWebKey key, string encryptionAlgorithm, string contentEncryptionAlgorithm)
         {
             // if direct algorithm, look for support
             if (SecurityAlgorithms.Direct.Equals(contentEncryptionAlgorithm, StringComparison.Ordinal))
@@ -173,7 +173,7 @@ namespace JsonWebToken
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.IV.Length)
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.Ciphertext.Length)
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.AuthenticationTag.Length)
-                        + 4;
+                        + JwtConstants.JweSeparatorsCount;
 
                     Span<char> encryptedToken = stackalloc char[encryptionLength];
 
@@ -272,7 +272,7 @@ namespace JsonWebToken
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.IV.Length)
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.Ciphertext.Length)
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.AuthenticationTag.Length)
-                        + 4;
+                        + JwtConstants.JweSeparatorsCount;
 
                     Span<char> encryptedToken = stackalloc char[encryptionLength];
 

@@ -174,7 +174,6 @@ namespace JsonWebToken
             return new AuthenticatedEncryptionResult(Key, ciphertext, aes.IV, authenticationTag);
         }
 
-
         /// <summary>
         /// Decrypts ciphertext into plaintext
         /// </summary>
@@ -183,7 +182,7 @@ namespace JsonWebToken
         /// <param name="iv">the initialization vector used when creating the ciphertext.</param>
         /// <param name="authenticationTag">the authenticationTag that was created during the encyption.</param>
         /// <returns>decrypted ciphertext</returns>
-        public byte[] Decrypt(byte[] ciphertext, byte[] authenticatedData, byte[] iv, byte[] authenticationTag)
+        public byte[] Decrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> authenticatedData, ReadOnlySpan<byte> iv, ReadOnlySpan<byte> authenticationTag)
         {
             if (ciphertext == null || ciphertext.Length == 0)
             {
@@ -205,13 +204,16 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(authenticationTag));
             }
 
-            // Verify authentication Tag
-            byte[] al = ConvertToBigEndian(authenticatedData.Length * 8);
-            byte[] macBytes = new byte[authenticatedData.Length + iv.Length + ciphertext.Length + al.Length];
-            Array.Copy(authenticatedData, 0, macBytes, 0, authenticatedData.Length);
-            Array.Copy(iv, 0, macBytes, authenticatedData.Length, iv.Length);
-            Array.Copy(ciphertext, 0, macBytes, authenticatedData.Length + iv.Length, ciphertext.Length);
-            Array.Copy(al, 0, macBytes, authenticatedData.Length + iv.Length + ciphertext.Length, al.Length);
+            Span<byte> macBytes = stackalloc byte[authenticatedData.Length + iv.Length + ciphertext.Length + sizeof(long)];
+            authenticatedData.CopyTo(macBytes);
+            iv.CopyTo(macBytes.Slice(authenticatedData.Length));
+            ciphertext.CopyTo(macBytes.Slice(authenticatedData.Length + iv.Length));
+#if NETCOREAPP2_1
+            TryConvertToBigEndian(macBytes.Slice(authenticatedData.Length + iv.Length + ciphertext.Length), authenticatedData.Length * 8);
+#else
+            var al = ConvertToBigEndian(authenticatedData.Length * 8);
+            al.CopyTo(macBytes.Slice(authenticatedData.Length + iv.Length + ciphertext.Length));
+#endif
             if (!_symmetricSignatureProvider.Verify(macBytes, authenticationTag, _authenticatedkeys.HmacKey.KeySize / 8))
             {
                 return null;
@@ -221,10 +223,10 @@ namespace JsonWebToken
             aes.Mode = CipherMode.CBC;
             aes.Padding = PaddingMode.PKCS7;
             aes.Key = _authenticatedkeys.AesKey.RawK;
-            aes.IV = iv;
+            aes.IV = iv.ToArray();
             try
             {
-                return Transform(aes.CreateDecryptor(), ciphertext, 0, ciphertext.Length);
+                return Transform(aes.CreateDecryptor(), ciphertext.ToArray(), 0, ciphertext.Length);
             }
             catch
             {
@@ -369,7 +371,6 @@ namespace JsonWebToken
         }
 #endif
 
-#if NETCOREAPP2_1
         private static byte[] Transform(ICryptoTransform transform, ReadOnlySpan<byte> input, int inputOffset, int inputLength)
         {
             if (transform.CanTransformMultipleBlocks)
@@ -380,30 +381,16 @@ namespace JsonWebToken
             using (MemoryStream messageStream = new MemoryStream())
             using (CryptoStream cryptoStream = new CryptoStream(messageStream, transform, CryptoStreamMode.Write))
             {
+#if NETCOREAPP2_1
                 cryptoStream.Write(input.Slice(inputOffset, inputLength));
-                cryptoStream.FlushFinalBlock();
-
-                return messageStream.ToArray();
-            }
-        }
 #else
-        private static byte[] Transform(ICryptoTransform transform, byte[] input, int inputOffset, int inputLength)
-        {
-            if (transform.CanTransformMultipleBlocks)
-            {
-                return transform.TransformFinalBlock(input, inputOffset, inputLength);
-            }
-
-            using (MemoryStream messageStream = new MemoryStream())
-            using (CryptoStream cryptoStream = new CryptoStream(messageStream, transform, CryptoStreamMode.Write))
-            {
-                cryptoStream.Write(input, inputOffset, inputLength);
+                cryptoStream.Write(input.ToArray(), inputOffset, inputLength);
+#endif
                 cryptoStream.FlushFinalBlock();
 
                 return messageStream.ToArray();
             }
         }
-#endif
 
         public void Dispose()
         {

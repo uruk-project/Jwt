@@ -54,8 +54,8 @@ namespace JsonWebToken
                 return TokenValidationResult.MalformedToken();
             }
 
-            var separators = GetSegmentCount(token);
-            if (separators.Count + 1 == JwtConstants.JwsSegmentCount || separators.Count + 1 == JwtConstants.JweSegmentCount)
+            var separators = GetSeparators(token);
+            if (separators.Count == JwtConstants.JwsSeparatorsCount || separators.Count == JwtConstants.JweSeparatorsCount)
             {
                 if (!CanReadToken(token, validationParameters))
                 {
@@ -63,11 +63,11 @@ namespace JsonWebToken
                 }
 
                 JsonWebToken jwt;
-                if (separators.Count + 1 == JwtConstants.JwsSegmentCount)
+                if (separators.Count == JwtConstants.JwsSeparatorsCount)
                 {
                     jwt = new JsonWebToken(token, separators.ToArray());
                 }
-                else if (separators.Count + 1 == JwtConstants.JweSegmentCount)
+                else if (separators.Count == JwtConstants.JweSeparatorsCount)
                 {
                     jwt = new JsonWebToken(token, separators.ToArray());
 
@@ -93,7 +93,7 @@ namespace JsonWebToken
                         return TokenValidationResult.DecryptionFailed(jwt);
                     }
 
-                    var innerSeparators = GetSegmentCount(decryptedToken);
+                    var innerSeparators = GetSeparators(decryptedToken);
                     if (!CanReadToken(decryptedToken, validationParameters))
                     {
                         // The decrypted payload is not a JWT
@@ -118,22 +118,21 @@ namespace JsonWebToken
 
                 return validationParameters.TryValidate(jwt);
             }
-            
+
             return TokenValidationResult.MalformedToken();
         }
 
-        private static IList<int> GetSegmentCount(string input)
+        private static IList<int> GetSeparators(string input)
         {
             int next = 0;
             int current = 0;
             int i = 0;
-            int segmentCount = 1;
             List<int> separators = new List<int>();
 
-            while ((next = input.IndexOf('.', next+1)) != -1)
+            while ((next = input.IndexOf('.', next + 1)) != -1)
             {
                 separators.Add(next - current);
-                if (segmentCount++ > JwtConstants.MaxJwtSegmentCount)
+                if (separators.Count > JwtConstants.MaxJwtSeparatorsCount)
                 {
                     break;
                 }
@@ -167,7 +166,7 @@ namespace JsonWebToken
 
             return true;
         }
-        
+
         private TokenValidationResult ReadJwtToken(string token, IList<int> separators, ValidationParameters validationParameters)
         {
             if (string.IsNullOrEmpty(token))
@@ -181,7 +180,7 @@ namespace JsonWebToken
             }
 
             JsonWebToken jwt;
-            if (separators.Count + 1 == JwtConstants.JwsSegmentCount)
+            if (separators.Count + 1 == JwtConstants.JwsSeparatorsCount)
             {
                 jwt = new JsonWebToken(token, separators.ToArray());
             }
@@ -193,9 +192,9 @@ namespace JsonWebToken
             return TokenValidationResult.Success(jwt);
         }
 
-        private string DecryptToken(JsonWebToken jwtToken, JsonWebKey key)
+        private string DecryptToken(JsonWebToken jwt, JsonWebKey key)
         {
-            var decryptionProvider = key.CreateAuthenticatedEncryptionProvider(jwtToken.Header.Enc);
+            var decryptionProvider = key.CreateAuthenticatedEncryptionProvider(jwt.Header.Enc);
             if (decryptionProvider == null)
             {
                 return null;
@@ -203,16 +202,35 @@ namespace JsonWebToken
 
             try
             {
+#if NETCOREAPP2_1
+                Span<byte> ciphertext = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(jwt.RawCiphertext.Length)];
+                int ciphertextBytesWritten = Base64Url.Base64UrlDecode(jwt.RawCiphertext, ciphertext);
+
+                Span<byte> header = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(jwt.RawHeader.Length)];
+                int headerBytesWritten = Encoding.ASCII.GetBytes(jwt.RawHeader, header);
+
+                Span<byte> initializationVector = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(jwt.RawInitializationVector.Length)];
+                int ivBytesWritten = Base64Url.Base64UrlDecode(jwt.RawInitializationVector, initializationVector);
+
+                Span<byte> authenticationTag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(jwt.RawAuthenticationTag.Length)];
+                int authenticationTagBytesWritten = Base64Url.Base64UrlDecode(jwt.RawAuthenticationTag, authenticationTag);
+
                 var decryptedToken = decryptionProvider.Decrypt(
-                    Base64Url.DecodeBytes(jwtToken.RawCiphertext.ToString()),
-                    Encoding.ASCII.GetBytes(jwtToken.RawHeader.ToString()),
-                    Base64Url.DecodeBytes(jwtToken.RawInitializationVector.ToString()),
-                    Base64Url.DecodeBytes(jwtToken.RawAuthenticationTag.ToString()));
+                    ciphertext.Slice(0, ciphertextBytesWritten),
+                    header.Slice(0, headerBytesWritten),
+                    initializationVector.Slice(0, ivBytesWritten), 
+                    authenticationTag.Slice(0, authenticationTagBytesWritten));
                 if (decryptedToken == null)
                 {
                     return null;
                 }
-
+#else
+                var decryptedToken = decryptionProvider.Decrypt(
+                    Base64Url.DecodeBytes(jwt.RawCiphertext.ToString()),
+                    Encoding.ASCII.GetBytes(jwt.RawHeader.ToString()),
+                    Base64Url.DecodeBytes(jwt.RawInitializationVector.ToString()),
+                    Base64Url.DecodeBytes(jwt.RawAuthenticationTag.ToString()));
+#endif
                 return Encoding.UTF8.GetString(decryptedToken);
             }
             finally
@@ -238,7 +256,9 @@ namespace JsonWebToken
                 {
                     if (kwp != null)
                     {
-                        var unwrappedKey = kwp.UnwrapKey(Base64Url.DecodeBytes(jwtToken.RawEncryptedKey.ToString()));
+                        Span<byte> encryptedKey = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(jwtToken.RawEncryptedKey.Length)];
+                        int bytesWritten = Base64Url.Base64UrlDecode(jwtToken.RawEncryptedKey, encryptedKey);
+                        var unwrappedKey = kwp.UnwrapKey(encryptedKey.Slice(0, bytesWritten).ToArray());
                         unwrappedKeys.Add(SymmetricJwk.FromByteArray(unwrappedKey));
                     }
                 }
@@ -250,7 +270,7 @@ namespace JsonWebToken
 
             return unwrappedKeys;
         }
-        
+
         private IList<JsonWebKey> ResolveDecryptionKey(JsonWebToken jwtToken)
         {
             var keys = new List<JsonWebKey>();

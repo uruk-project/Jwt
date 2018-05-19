@@ -50,29 +50,16 @@ namespace JsonWebToken.Performance
         }
 
         [Benchmark]
-        public void Jwt_Direct_WithoutSpan()
+        public void Jwt_Direct()
         {
             var value = Writer.WriteToken(CustomDirectDescriptor);
         }
 
         [Benchmark]
-        public void Jwt_Direct_WithSpan()
-        {
-            var value = Writer.WriteToken(CustomDirectDescriptor, useSpan: true);
-        }
-
-        [Benchmark]
-        public void Jwt_KeyWrap_WithoutSpan()
+        public void Jwt_KeyWrap()
         {
             var value = Writer.WriteToken(CustomKWDescriptor);
         }
-
-        [Benchmark]
-        public void Jwt_KeyWrap_WithSpan()
-        {
-            var value = Writer.WriteToken(CustomKWDescriptor, useSpan: true);
-        }
-
 
         private static JsonWebTokenDescriptor CreateCustomSmallDescriptor(string cekAlgorithm)
         {

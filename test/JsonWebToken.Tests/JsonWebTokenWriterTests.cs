@@ -21,7 +21,7 @@ namespace JsonWebToken.Tests
         public void Write(JsonWebTokenDescriptor descriptor)
         {
             JsonWebTokenWriter writer = new JsonWebTokenWriter();
-            var value = writer.WriteToken(descriptor, true);
+            var value = writer.WriteToken(descriptor);
 
             var reader = new JsonWebTokenReader(Keys.Jwks);
             var result = reader.TryReadToken(value, ValidationBuilder.NoValidation);
