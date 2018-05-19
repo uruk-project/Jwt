@@ -4,14 +4,16 @@ JSON Web Token  for .Net
 Provides support for JWT. 
 This library aims to propose performant JWT primitives. 
 
+[![Build status](https://ci.appveyor.com/api/projects/status/7lt4w59vy0v60s1b/branch/dev?svg=true)](https://ci.appveyor.com/project/ycrumeyrolle/jwt/branch/dev)
+
 ## Versions
 Current version - 0.1.0
 
 ## Usage
 ### JWT validation
-``
+````
 	var key = SymmetricJwk.FromByteArray("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
-    var reader = new JsonWebTokenReader(key);
+        var reader = new JsonWebTokenReader(key);
 	var validationParameters = new TokenValidationParameters
 	{
 	  ValidateAudience = true,
@@ -27,11 +29,11 @@ Current version - 0.1.0
 	{
 		Console.WriteLine("Failed to read the token. Reason: " + result.Status);
 	}
-``
+````
 
 ### JWT creation
-``
-    var writer = new JsonWebTokenWriter();
+````
+        var writer = new JsonWebTokenWriter();
 
 	var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
 	var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
@@ -47,6 +49,6 @@ Current version - 0.1.0
 	};
 
 	var token = writer.WriteToken(descriptor);
-``
+````
 ##Benchmark
 TODO
