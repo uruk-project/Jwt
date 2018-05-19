@@ -165,6 +165,134 @@ namespace JsonWebToken
             }
         }
 
+        //public override void WrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination)
+        //{
+        //    if (keyBytes == null || keyBytes.Length == 0)
+        //    {
+        //        throw new ArgumentNullException(nameof(keyBytes));
+        //    }
+
+        //    if (keyBytes.Length % 8 != 0)
+        //    {
+        //        throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.KeySizeMustBeMultipleOf64, keyBytes.Length << 3), nameof(keyBytes));
+        //    }
+
+        //    if (_disposed)
+        //    {
+        //        throw new ObjectDisposedException(GetType().ToString());
+        //    }
+
+        //    try
+        //    {
+        //        return UnwrapKeyPrivate(keyBytes, 0, keyBytes.Length);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
+        //    }
+        //}
+
+        //private byte[] UnwrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, Span<byte> destination, int inputOffset, int inputCount)
+        //{
+        //    /*
+        //        1) Initialize variables.
+
+        //            Set A = C[0]
+        //            For i = 1 to n
+        //                R[i] = C[i]
+
+        //        2) Compute intermediate values.
+
+        //            For j = 5 to 0
+        //                For i = n to 1
+        //                    B = AES-1(K, (A ^ t) | R[i]) where t = n*j+i
+        //                    A = MSB(64, B)
+        //                    R[i] = LSB(64, B)
+
+        //        3) Output results.
+
+        //        If A is an appropriate initial value (see 2.2.3),
+        //        Then
+        //            For i = 1 to n
+        //                P[i] = R[i]
+        //        Else
+        //            Return an error
+        //    */
+        //    unsafe
+        //    {
+        //        // A = C[0]
+        //        Span<byte> a = stackalloc byte[_blockSizeInBytes];
+        //        inputBuffer.Slice(inputOffset, _blockSizeInBytes).CopyTo(a);
+
+        //        // The number of input blocks
+        //        var n = (inputCount - _blockSizeInBytes) >> 3;
+
+        //        // The set of input blocks
+        //        Span<byte> r = stackalloc byte[n << 3];
+
+        //        inputBuffer.Slice(inputOffset + _blockSizeInBytes, inputCount - _blockSizeInBytes).CopyTo(r);
+
+        //        if (_symmetricAlgorithmDecryptor == null)
+        //        {
+        //            lock (_decryptorLock)
+        //            {
+        //                if (_symmetricAlgorithmDecryptor == null)
+        //                {
+        //                    _symmetricAlgorithmDecryptor = _symmetricAlgorithm.CreateDecryptor();
+        //                }
+        //            }
+        //        }
+
+        //        Span<byte> block = stackalloc byte[16];
+
+        //        // Calculate intermediate values
+        //        for (var j = 5; j >= 0; j--)
+        //        {
+        //            for (var i = n; i > 0; i--)
+        //            {
+        //                // T = ( n * j ) + i
+        //                var t = (ulong)((n * j) + i);
+
+        //                // B = AES-1(K, (A ^ t) | R[i] )
+
+        //                // First, A = ( A ^ t )
+        //                Xor(a, GetBytes(t), 0, true);
+
+        //                // Second, block = ( A | R[i] )
+        //                a.Slice(0, _blockSizeInBytes).CopyTo(r);
+        //                r.Slice((i - 1) << 3, _blockSizeInBytes).CopyTo(block.Slice(_blockSizeInBytes));
+        //                //Array.Copy(r, (i - 1) << 3, block, _blockSizeInBytes, _blockSizeInBytes);
+
+        //                // Third, b = AES-1( block )
+        //                var b = _symmetricAlgorithmDecryptor.TransformFinalBlock(block, 0, 16);
+
+        //                // A = MSB(64, B)
+        //                Array.Copy(b, a, _blockSizeInBytes);
+
+        //                // R[i] = LSB(64, B)
+        //                Array.Copy(b, _blockSizeInBytes, r, (i - 1) << 3, _blockSizeInBytes);
+        //            }
+        //        }
+
+        //        if (AreEqual(a, _defaultIV))
+        //        {
+        //            var keyBytes = new byte[n << 3];
+
+        //            for (var i = 0; i < n; i++)
+        //            {
+        //                Array.Copy(r, i << 3, keyBytes, i << 3, 8);
+        //            }
+
+        //            return keyBytes;
+        //        }
+        //        else
+        //        {
+        //            throw new InvalidOperationException(ErrorMessages.NotAuthenticData);
+        //        }
+        //    }
+        //}
+
+
         private byte[] UnwrapKeyPrivate(byte[] inputBuffer, int inputOffset, int inputCount)
         {
             /*
@@ -383,7 +511,7 @@ namespace JsonWebToken
                 destination = WrapKeyPrivate(keyBytes.ToArray(), 0, keyBytes.Length);
                 bytesWriten = keyBytes.Length;
                 return true;
-                
+
             }
             catch (Exception ex)
             {
@@ -426,7 +554,7 @@ namespace JsonWebToken
             byte[] r = new byte[n << 3];
 
             Array.Copy(inputBuffer, inputOffset, r, 0, inputCount);
-            
+
             if (_symmetricAlgorithmEncryptor == null)
             {
                 lock (_encryptorLock)

@@ -54,13 +54,13 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="JwtHeader"/>.
         /// <param name="encryptionKey"><see cref="JsonWebKey"/> used when creating a JWS Compact JSON.</param>
         /// <param name="encryptionAlgorithm">Algorithm used for encryption.</param>
-        public JwtHeader(JsonWebKey encryptionKey, string encryptionAlgorithm)
+        public JwtHeader(JsonWebKey encryptionKey, string encryptionAlgorithm, string contentEncryptionAlgorithm)
         {
             _inner = new JObject();
 
             EncryptionKey = encryptionKey ?? throw new ArgumentNullException(nameof(encryptionKey));
             Enc = encryptionAlgorithm ?? throw new ArgumentNullException(nameof(encryptionAlgorithm));
-            Alg = encryptionKey.Alg;
+            Alg = contentEncryptionAlgorithm ?? throw new ArgumentNullException(nameof(contentEncryptionAlgorithm));
             Kid = encryptionKey.Kid;
         }
 

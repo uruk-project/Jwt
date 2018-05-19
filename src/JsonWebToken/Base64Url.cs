@@ -371,6 +371,19 @@ namespace JsonWebToken
             return Base64UrlEncodeCore(data, base64Url, out bytesConsumed, out bytesWritten, isFinalBlock);
         }
 
+        public static OperationStatus Base64UrlEncode(ReadOnlySpan<byte> data, Span<char> base64Url, out int bytesConsumed, out int bytesWritten, bool isFinalBlock = true)
+        {
+            // Special-case empty input
+            if (data.IsEmpty)
+            {
+                bytesConsumed = 0;
+                bytesWritten = 0;
+                return OperationStatus.Done;
+            }
+
+            return Base64UrlEncodeCore(data, base64Url, out bytesConsumed, out bytesWritten, isFinalBlock);
+        }
+
         /// <summary>
         /// Encodes <paramref name="input"/> using base64url-encoding.
         /// </summary>

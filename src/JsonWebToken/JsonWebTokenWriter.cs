@@ -57,7 +57,7 @@ namespace JsonWebToken
         /// <remarks>See: <see cref="DefaultTokenLifetimeInMinutes"/>, <see cref="TokenLifetimeInMinutes"/> for defaults and configuration.</remarks>
         public bool SetDefaultTimesOnTokenCreation { get; set; } = false;
 
-        public string WriteToken(JsonWebTokenDescriptor descriptor)
+        public string WriteToken(JsonWebTokenDescriptor descriptor, bool useSpan = false)
         {
             if (descriptor == null)
             {
@@ -100,7 +100,7 @@ namespace JsonWebToken
                     }
                 }
 
-                int length = Base64Url.GetArraySizeRequiredToEncode(headerJson.Length) 
+                int length = Base64Url.GetArraySizeRequiredToEncode(headerJson.Length)
                     + Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
                     + Base64Url.GetArraySizeRequiredToEncode(signatureProvider?.HashSize ?? 0)
                     + 2;
@@ -113,7 +113,6 @@ namespace JsonWebToken
                 int signatureBytesWritten = 0;
                 if (signatureProvider != null)
                 {
-                    //TryCreateEncodedSignature(buffer, buffer.Slice(payloadBytesWritten + headerBytesWritten + 2), descriptor.SigningKey, out signatureBytesWritten);
                     Span<byte> signature = stackalloc byte[signatureProvider.HashSize];
                     try
                     {
@@ -133,17 +132,17 @@ namespace JsonWebToken
 #endif
                 if (descriptor.EncryptingKey != null)
                 {
-                    rawData = EncryptToken(rawData, descriptor.EncryptingKey, descriptor.EncryptionAlgorithm);
+                    rawData = EncryptToken(rawData, descriptor.EncryptingKey, descriptor.EncryptionAlgorithm, descriptor.ContentEncryptionAlgorithm, useSpan);
                 }
 
                 return rawData;
             }
         }
 
-        private string EncryptToken(string payload, JsonWebKey key, string encryptionAlgorithm)
+        private string EncryptToken(string payload, JsonWebKey key, string encryptionAlgorithm, string contentEncryptionAlgorithm, bool useSpan)
         {
             // if direct algorithm, look for support
-            if (SecurityAlgorithms.Direct.Equals(key.Alg, StringComparison.Ordinal))
+            if (SecurityAlgorithms.Direct.Equals(contentEncryptionAlgorithm, StringComparison.Ordinal))
             {
                 var encryptionProvider = key.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);
                 if (encryptionProvider == null)
@@ -151,9 +150,44 @@ namespace JsonWebToken
                     throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
                 }
 
-                var header = new JwtHeader(key, encryptionAlgorithm);
+                var header = new JwtHeader(key, encryptionAlgorithm, contentEncryptionAlgorithm);
                 try
                 {
+#if NETCOREAPP2_1
+                    Span<byte> encodedPayload = stackalloc byte[payload.Length];
+                    Encoding.UTF8.GetBytes(payload, encodedPayload);
+
+                    var headerJson = header.SerializeToJson();
+                    Span<byte> utf8EncodedHeader = stackalloc byte[headerJson.Length];
+                    Encoding.UTF8.GetBytes(headerJson, utf8EncodedHeader);
+
+                    Span<char> base64EncodedHeader = stackalloc char[Base64Url.GetArraySizeRequiredToEncode(utf8EncodedHeader.Length)];
+                    int bytesWritten = Base64Url.Base64UrlEncode(utf8EncodedHeader, base64EncodedHeader);
+
+                    Span<byte> asciiEncodedHeader = stackalloc byte[bytesWritten];
+                    Encoding.ASCII.GetBytes(base64EncodedHeader.Slice(0, bytesWritten), asciiEncodedHeader);
+
+                    var encryptionResult = encryptionProvider.Encrypt(encodedPayload, asciiEncodedHeader);
+                    int encryptionLength =
+                        base64EncodedHeader.Length
+                        + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.IV.Length)
+                        + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.Ciphertext.Length)
+                        + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.AuthenticationTag.Length)
+                        + 4;
+
+                    Span<char> encryptedToken = stackalloc char[encryptionLength];
+
+                    base64EncodedHeader.CopyTo(encryptedToken);
+                    encryptedToken[bytesWritten++] = '.';
+                    encryptedToken[bytesWritten++] = '.';
+                    bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.IV, encryptedToken.Slice(bytesWritten));
+                    encryptedToken[bytesWritten++] = '.';
+                    bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.Ciphertext, encryptedToken.Slice(bytesWritten));
+                    encryptedToken[bytesWritten++] = '.';
+                    bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.AuthenticationTag, encryptedToken.Slice(bytesWritten));
+
+                    return encryptedToken.Slice(0, bytesWritten).ToString();
+#else
                     var encryptionResult = encryptionProvider.Encrypt(Encoding.UTF8.GetBytes(payload), Encoding.ASCII.GetBytes(header.Base64UrlEncode()));
                     return string.Join(
                         ".",
@@ -162,6 +196,7 @@ namespace JsonWebToken
                         Base64Url.Encode(encryptionResult.IV),
                         Base64Url.Encode(encryptionResult.Ciphertext),
                         Base64Url.Encode(encryptionResult.AuthenticationTag));
+#endif
                 }
                 catch (Exception ex)
                 {
@@ -190,7 +225,7 @@ namespace JsonWebToken
                     throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
                 }
 
-                var kwProvider = key.CreateKeyWrapProvider(key.Alg);
+                var kwProvider = key.CreateKeyWrapProvider(contentEncryptionAlgorithm);
                 if (kwProvider == null)
                 {
                     throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
@@ -214,7 +249,46 @@ namespace JsonWebToken
 
                 try
                 {
-                    var header = new JwtHeader(key, encryptionAlgorithm);
+                    var header = new JwtHeader(key, encryptionAlgorithm, contentEncryptionAlgorithm);
+
+#if NETCOREAPP2_1
+                    Span<byte> encodedPayload = stackalloc byte[payload.Length];
+                    Encoding.UTF8.GetBytes(payload, encodedPayload);
+
+                    var headerJson = header.SerializeToJson();
+                    Span<byte> utf8EncodedHeader = stackalloc byte[headerJson.Length];
+                    Encoding.UTF8.GetBytes(headerJson, utf8EncodedHeader);
+
+                    Span<char> base64EncodedHeader = stackalloc char[Base64Url.GetArraySizeRequiredToEncode(utf8EncodedHeader.Length)];
+                    int bytesWritten = Base64Url.Base64UrlEncode(utf8EncodedHeader, base64EncodedHeader);
+
+                    Span<byte> asciiEncodedHeader = stackalloc byte[bytesWritten];
+                    Encoding.ASCII.GetBytes(base64EncodedHeader.Slice(0, bytesWritten), asciiEncodedHeader);
+
+                    var encryptionResult = encryptionProvider.Encrypt(encodedPayload, asciiEncodedHeader);
+                    int encryptionLength =
+                        base64EncodedHeader.Length
+                        + Base64Url.GetArraySizeRequiredToEncode(wrappedKey.Length)
+                        + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.IV.Length)
+                        + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.Ciphertext.Length)
+                        + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.AuthenticationTag.Length)
+                        + 4;
+
+                    Span<char> encryptedToken = stackalloc char[encryptionLength];
+
+                    base64EncodedHeader.CopyTo(encryptedToken);
+                    encryptedToken[bytesWritten++] = '.';
+                    bytesWritten += Base64Url.Base64UrlEncode(wrappedKey, encryptedToken.Slice(bytesWritten));
+                    encryptedToken[bytesWritten++] = '.';
+                    bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.IV, encryptedToken.Slice(bytesWritten));
+                    encryptedToken[bytesWritten++] = '.';
+                    bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.Ciphertext, encryptedToken.Slice(bytesWritten));
+                    encryptedToken[bytesWritten++] = '.';
+                    bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.AuthenticationTag, encryptedToken.Slice(bytesWritten));
+
+                    return encryptedToken.Slice(0, bytesWritten).ToString();
+
+#else
                     var encryptionResult = encryptionProvider.Encrypt(Encoding.UTF8.GetBytes(payload), Encoding.ASCII.GetBytes(header.Base64UrlEncode()));
                     return string.Join(
                         ".",
@@ -223,6 +297,7 @@ namespace JsonWebToken
                         Base64Url.Encode(encryptionResult.IV),
                         Base64Url.Encode(encryptionResult.Ciphertext),
                         Base64Url.Encode(encryptionResult.AuthenticationTag));
+#endif
                 }
                 catch (Exception ex)
                 {
@@ -233,7 +308,6 @@ namespace JsonWebToken
 
         private static byte[] GenerateKeyBytes(int sizeInBits)
         {
-            byte[] key = null;
             if (sizeInBits != 256 && sizeInBits != 384 && sizeInBits != 512)
             {
                 throw new ArgumentException(ErrorMessages.InvalidSymmetricKeySize, nameof(sizeInBits));
@@ -242,16 +316,16 @@ namespace JsonWebToken
             using (var aes = Aes.Create())
             {
                 int halfSizeInBytes = sizeInBits >> 4;
-                key = new byte[halfSizeInBytes << 1];
+                byte[] key = new byte[halfSizeInBytes << 1];
                 aes.KeySize = sizeInBits >> 1;
 
                 aes.GenerateKey();
                 Array.Copy(aes.Key, key, halfSizeInBytes);
                 aes.GenerateKey();
                 Array.Copy(aes.Key, 0, key, halfSizeInBytes, halfSizeInBytes);
-            }
 
-            return key;
+                return key;
+            }
         }
 
         //private OperationStatus TryCreateEncodedSignature(ReadOnlySpan<byte> input, Span<byte> destination, JsonWebKey key, out int bytesWritten)

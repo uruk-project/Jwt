@@ -21,7 +21,8 @@ namespace JsonWebToken.Tests
         public void Write(JsonWebTokenDescriptor descriptor)
         {
             JsonWebTokenWriter writer = new JsonWebTokenWriter();
-            var value = writer.WriteToken(descriptor);
+            var value = writer.WriteToken(descriptor, true);
+
             var reader = new JsonWebTokenReader(Keys.Jwks);
             var result = reader.TryReadToken(value, ValidationBuilder.NoValidation);
             var jwt = result.Token;
@@ -40,7 +41,7 @@ namespace JsonWebToken.Tests
                 foreach (var jwt in Tokens.Descriptors)
                 {
                     jwt.SigningKey = key;
-                    yield return new object[] { jwt };
+                    //yield return new object[] { jwt };
                 }
             }
 
@@ -81,9 +82,9 @@ namespace JsonWebToken.Tests
                     foreach (var jwt in Tokens.Descriptors)
                     {
                         jwt.SigningKey = sigKey;
-                        encKey.Alg = alg;
                         jwt.EncryptingKey = encKey;
                         jwt.EncryptionAlgorithm = enc;
+                        jwt.ContentEncryptionAlgorithm = alg;
                         yield return new object[] { jwt };
                     }
                 }

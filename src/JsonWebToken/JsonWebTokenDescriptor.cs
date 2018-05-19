@@ -112,7 +112,15 @@ namespace JsonWebToken
         /// </summary>
         public JsonWebKey EncryptingKey { get; set; }
 
+        /// <summary>
+        /// Reprensents the 'enc' header for a JWE.
+        /// </summary>
         public string EncryptionAlgorithm { get; set; }
+        
+        /// <summary>
+        /// Reprensents the 'alg' header for a JWE.
+        /// </summary>
+        public string ContentEncryptionAlgorithm { get; set; }
 
         public void AddClaim(string name, string value)
         {

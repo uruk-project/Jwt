@@ -78,6 +78,57 @@ namespace JsonWebToken
             return Encrypt(plaintext, authenticatedData, null);
         }
 
+#if NETCOREAPP2_1
+        public AuthenticatedEncryptionResult Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> authenticatedData)
+        {
+            return Encrypt(plaintext, authenticatedData, null);
+        }
+
+        /// <summary>
+        /// Encrypts the 'plaintext'
+        /// </summary>
+        /// <param name="plaintext">the data to be encrypted.</param>
+        /// <param name="authenticatedData">will be combined with iv and ciphertext to create an authenticationtag.</param>
+        /// <param name="iv">initialization vector for encryption.</param>
+        public AuthenticatedEncryptionResult Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> authenticatedData, byte[] iv)
+        {
+            if (plaintext == null || plaintext.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(plaintext));
+            }
+
+            if (authenticatedData == null || authenticatedData.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(authenticatedData));
+            }
+
+            Aes aes = Aes.Create();
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+            aes.Key = _authenticatedkeys.AesKey.RawK;
+            if (iv != null)
+            {
+                aes.IV = iv;
+            }
+
+            byte[] ciphertext;
+            ciphertext = Transform(aes.CreateEncryptor(), plaintext, 0, plaintext.Length);
+
+            Span<byte> macBytes = stackalloc byte[authenticatedData.Length + aes.IV.Length + ciphertext.Length + sizeof(long)];
+            authenticatedData.CopyTo(macBytes);
+            aes.IV.CopyTo(macBytes.Slice(authenticatedData.Length));
+            ciphertext.CopyTo(macBytes.Slice(authenticatedData.Length + aes.IV.Length));
+            TryConvertToBigEndian(macBytes.Slice(authenticatedData.Length + aes.IV.Length + ciphertext.Length, sizeof(long)), authenticatedData.Length * 8);
+
+            Span<byte> macHash = stackalloc byte[_symmetricSignatureProvider.HashSize / 8];
+            _symmetricSignatureProvider.TrySign(macBytes, macHash, out int writtenBytes);
+
+            var authenticationTag = macHash.Slice(0, writtenBytes).ToArray();
+
+            return new AuthenticatedEncryptionResult(Key, ciphertext, aes.IV, authenticationTag);
+        }
+#endif
+
         /// <summary>
         /// Encrypts the 'plaintext'
         /// </summary>
@@ -114,14 +165,15 @@ namespace JsonWebToken
             Array.Copy(aes.IV, 0, macBytes, authenticatedData.Length, aes.IV.Length);
             Array.Copy(ciphertext, 0, macBytes, authenticatedData.Length + aes.IV.Length, ciphertext.Length);
             Array.Copy(al, 0, macBytes, authenticatedData.Length + aes.IV.Length + ciphertext.Length, al.Length);
-            byte[] macHash = new byte[_symmetricSignatureProvider.HashSize];
+            byte[] macHash = new byte[_symmetricSignatureProvider.HashSize / 8];
             _symmetricSignatureProvider.TrySign(macBytes, macHash, out int writtenBytes);
-            
+
             var authenticationTag = new byte[writtenBytes];
             Array.Copy(macHash, authenticationTag, authenticationTag.Length);
 
             return new AuthenticatedEncryptionResult(Key, ciphertext, aes.IV, authenticationTag);
         }
+
 
         /// <summary>
         /// Decrypts ciphertext into plaintext
@@ -300,6 +352,41 @@ namespace JsonWebToken
             return temp;
         }
 
+#if NETCOREAPP2_1
+        private static bool TryConvertToBigEndian(Span<byte> destination, long i)
+        {
+            if (BitConverter.TryWriteBytes(destination, i))
+            {
+                if (BitConverter.IsLittleEndian)
+                {
+                    destination.Slice(0, sizeof(long)).Reverse();
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+#endif
+
+#if NETCOREAPP2_1
+        private static byte[] Transform(ICryptoTransform transform, ReadOnlySpan<byte> input, int inputOffset, int inputLength)
+        {
+            if (transform.CanTransformMultipleBlocks)
+            {
+                return transform.TransformFinalBlock(input.ToArray(), inputOffset, inputLength);
+            }
+
+            using (MemoryStream messageStream = new MemoryStream())
+            using (CryptoStream cryptoStream = new CryptoStream(messageStream, transform, CryptoStreamMode.Write))
+            {
+                cryptoStream.Write(input.Slice(inputOffset, inputLength));
+                cryptoStream.FlushFinalBlock();
+
+                return messageStream.ToArray();
+            }
+        }
+#else
         private static byte[] Transform(ICryptoTransform transform, byte[] input, int inputOffset, int inputLength)
         {
             if (transform.CanTransformMultipleBlocks)
@@ -316,6 +403,7 @@ namespace JsonWebToken
                 return messageStream.ToArray();
             }
         }
+#endif
 
         public void Dispose()
         {
