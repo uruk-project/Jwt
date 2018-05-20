@@ -132,15 +132,16 @@ namespace JsonWebToken
 #endif
                 if (descriptor.EncryptingKey != null)
                 {
-                    rawData = EncryptToken(rawData, descriptor.EncryptingKey, descriptor.EncryptionAlgorithm, descriptor.ContentEncryptionAlgorithm);
+                    rawData = EncryptToken(rawData, descriptor.EncryptingKey, descriptor.EncryptionAlgorithm);
                 }
 
                 return rawData;
             }
         }
 
-        private string EncryptToken(string payload, JsonWebKey key, string encryptionAlgorithm, string contentEncryptionAlgorithm)
+        private string EncryptToken(string payload, JsonWebKey key, string encryptionAlgorithm)
         {
+            string contentEncryptionAlgorithm = key.Alg;
             // if direct algorithm, look for support
             if (SecurityAlgorithms.Direct.Equals(contentEncryptionAlgorithm, StringComparison.Ordinal))
             {
@@ -150,7 +151,7 @@ namespace JsonWebToken
                     throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
                 }
 
-                var header = new JwtHeader(key, encryptionAlgorithm, contentEncryptionAlgorithm);
+                var header = new JwtHeader(key, encryptionAlgorithm);
                 try
                 {
 #if NETCOREAPP2_1
@@ -249,7 +250,7 @@ namespace JsonWebToken
 
                 try
                 {
-                    var header = new JwtHeader(key, encryptionAlgorithm, contentEncryptionAlgorithm);
+                    var header = new JwtHeader(key, encryptionAlgorithm);
 
 #if NETCOREAPP2_1
                     Span<byte> encodedPayload = stackalloc byte[payload.Length];

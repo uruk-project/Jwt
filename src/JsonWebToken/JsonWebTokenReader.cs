@@ -31,6 +31,11 @@ namespace JsonWebToken
         {
         }
 
+        public JsonWebTokenReader()
+        {
+            _encryptionKeyProviders = new IKeyProvider[0];
+        }
+
         /// <summary>
         /// Reads and validates a 'JSON Web Token' (JWT) encoded as a JWS or JWE in Compact Serialized Format.
         /// </summary>
@@ -271,18 +276,19 @@ namespace JsonWebToken
             return unwrappedKeys;
         }
 
-        private IList<JsonWebKey> ResolveDecryptionKey(JsonWebToken jwtToken)
+        private IList<JsonWebKey> ResolveDecryptionKey(JsonWebToken jwt)
         {
             var keys = new List<JsonWebKey>();
             for (int i = 0; i < _encryptionKeyProviders.Count; i++)
             {
-                var keySet = _encryptionKeyProviders[i].GetKeys(jwtToken);
+                var keySet = _encryptionKeyProviders[i].GetKeys(jwt);
 
                 for (int j = 0; j < keySet.Keys.Count; j++)
                 {
                     var key = keySet.Keys[j];
                     if ((string.IsNullOrWhiteSpace(key.Use) || string.Equals(key.Use, JsonWebKeyUseNames.Enc, StringComparison.Ordinal)) &&
-                         (string.Equals(key.Kid, jwtToken.Header.Kid, StringComparison.Ordinal)))
+                        (string.IsNullOrWhiteSpace(key.Alg) || string.Equals(key.Alg, jwt.Header.Alg, StringComparison.Ordinal)) &&
+                        (string.Equals(key.Kid, jwt.Header.Kid, StringComparison.Ordinal)))
                     {
                         keys.Add(key);
                     }

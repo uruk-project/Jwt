@@ -109,7 +109,7 @@
       "kid": "rsa1_5",
       "n": "XGX8SrAH5DaOL-OW7DwVwhJJcDwc_3JpGVI03JQeK-nfamjy2aPbdceK4fFq46fZS2KMMH4VUXjIqX4YYYB1C5qenD5IashiUJ5hGCzKdp8Vq-wVNRm7fU994ZH3rBi1BkjdXvTol3xrkS2mhpQO-iN5gDZOaaZldH54eGv4JsjAskI8rS2lZ0mDzx03V1CQe-CnrFA1sFpaiOcAjGrCCaneRSB4NI4CyxfJDUGGs76-NftRWEJspXTzgP3fPhzTOQ5bm87Dxc_-si4ZF2VnC4w5bBG2c2iWAsegGwc-wWoF19_Tu_9SOYEeYJFHjixBQyCCbL4776PtwjI_uZTjow",
       "p": "qR6OHmR9szCqr--IOWV5VdAZkLmLenIR_Ch_E5mUrO3sta4VdizPIkGtVTpuUpoYDeW2NreYgv3VVnYphc0UXrvbna80U0Na0vprNo0nDuypKX4eJ3Q2HYEoYCjbcKhrIpjwTBiT7MzLLL0XC5BZUGFy3WJRsHCejTfK_rQE2mE",
-      "alg": "RS256",
+      "alg": "RSA1_5",
       "q": "i92aBLeNmPhqO5Kor3pLes3QrTNtsLE9J77DOS65eBc6FAf7vqS5RoEwCIY4Or9azQ0JgFgHk-jgV50JkTalFcEMzQ5Yxxhes_AJzwUY89TpCrISlLf3P5dAxzz0PH86Ax47BICq2aSmWpfdQsG9--3ftIvunbDaaB8PwooTpIM",
       "dp": "fIh-eIzhLwlAN0u4USOS5IjXuoWW2rSS387mPIWUQH73FpW5QgsfAAfC3oanZHYKDnm_4qzxRkwqQ3_BdcCdJmFJB-VTL5jikYdLWaE5SLkmm-I9zCm8C5_nHmAXru6l7ZUXJcHXc8EeP7SB-sbxrcoEblcO9lEHv8980G-5PyE",
       "dq": "HEKobi-QYso-3M6jWuGBAs03TufHUB5f1voKhDFWtFctGwMJ8NljvkU4KWDFV8l2VVw_ATnIPjCds9Y9KqQ58w1QwtYVRhU8fWsQ8E19Xzcz5z9X1cjeInEzW46LYvXqCNtA3YYJ_3PvUPrCcEypUJAd1WM40Y_8cXFlQ8-WbHU",
@@ -123,7 +123,7 @@
       "kid": "rsa-oaep",
       "n": "XGX8SrAH5DaOL-OW7DwVwhJJcDwc_3JpGVI03JQeK-nfamjy2aPbdceK4fFq46fZS2KMMH4VUXjIqX4YYYB1C5qenD5IashiUJ5hGCzKdp8Vq-wVNRm7fU994ZH3rBi1BkjdXvTol3xrkS2mhpQO-iN5gDZOaaZldH54eGv4JsjAskI8rS2lZ0mDzx03V1CQe-CnrFA1sFpaiOcAjGrCCaneRSB4NI4CyxfJDUGGs76-NftRWEJspXTzgP3fPhzTOQ5bm87Dxc_-si4ZF2VnC4w5bBG2c2iWAsegGwc-wWoF19_Tu_9SOYEeYJFHjixBQyCCbL4776PtwjI_uZTjow",
       "p": "qR6OHmR9szCqr--IOWV5VdAZkLmLenIR_Ch_E5mUrO3sta4VdizPIkGtVTpuUpoYDeW2NreYgv3VVnYphc0UXrvbna80U0Na0vprNo0nDuypKX4eJ3Q2HYEoYCjbcKhrIpjwTBiT7MzLLL0XC5BZUGFy3WJRsHCejTfK_rQE2mE",
-      "alg": "RS256",
+      "alg": "RSA-OAEP",
       "q": "i92aBLeNmPhqO5Kor3pLes3QrTNtsLE9J77DOS65eBc6FAf7vqS5RoEwCIY4Or9azQ0JgFgHk-jgV50JkTalFcEMzQ5Yxxhes_AJzwUY89TpCrISlLf3P5dAxzz0PH86Ax47BICq2aSmWpfdQsG9--3ftIvunbDaaB8PwooTpIM",
       "dp": "fIh-eIzhLwlAN0u4USOS5IjXuoWW2rSS387mPIWUQH73FpW5QgsfAAfC3oanZHYKDnm_4qzxRkwqQ3_BdcCdJmFJB-VTL5jikYdLWaE5SLkmm-I9zCm8C5_nHmAXru6l7ZUXJcHXc8EeP7SB-sbxrcoEblcO9lEHv8980G-5PyE",
       "dq": "HEKobi-QYso-3M6jWuGBAs03TufHUB5f1voKhDFWtFctGwMJ8NljvkU4KWDFV8l2VVw_ATnIPjCds9Y9KqQ58w1QwtYVRhU8fWsQ8E19Xzcz5z9X1cjeInEzW46LYvXqCNtA3YYJ_3PvUPrCcEypUJAd1WM40Y_8cXFlQ8-WbHU",
@@ -134,21 +134,21 @@
       "use": "enc",
       "kid": "symmetric-enc-256",
       "k": "LjKqFqHEM1J9dqB63VsG8Jh5a9lGTDj4IIXjUuWE9AwJCVzeAyHPXsgVHJNn93pLt7gOpQkbAXbiD8rn-q24jM5Pze3k4Vj2IPgfPdF612r9QhRbXFVLY-vLPyt1lGFuS1wCy5WOZwPoTppNSr-Q4233trWrbhpxGk-gfUBb2vkHBQixXZtRiyaBMFZty5Lbhvs8ZNPuO5BICYLd0SvvyhaAC_bp4-phbo1dxmGPEmz_wxa-APUSrZYSdhfyxBW_pCBELCn1_1uPLwMBCDrkU6W2_QC5nnaJbqo7VdVBRpSUGnSuoyaJJKMzteWTE2Rc1bBeaFaIVeTiJhFSEHzqsQ",
-      "alg": "HS256"
+      "alg": "dir" 
     },
     {
       "kty": "oct",
       "use": "enc",
       "kid": "a128kw-key",
       "k": "xn-EbmiC-sp6yXDR0XOZXw",
-      "alg": "HS256"
+      "alg": "A128KW"
     },
     {
       "kty": "oct",
       "use": "enc",
       "kid": "a256kw-key",
       "k": "0zOIRibF71YbXGq162rca2b9VOsByxPCaMPIWaCI1NI",
-      "alg": "HS256"
+      "alg": "A256KW"
     },
     //{
     //  "kid": "rsa256-1024",

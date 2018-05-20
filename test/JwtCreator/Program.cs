@@ -46,34 +46,6 @@ namespace JwtCreator
             var encryptionAlgorithms = new[] { SecurityAlgorithms.Aes128CbcHmacSha256, SecurityAlgorithms.Aes192CbcHmacSha384, SecurityAlgorithms.Aes256CbcHmacSha512 };
             foreach (var key in jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Enc))
             {
-                string alg;
-                if (key.Kty == JsonWebAlgorithmsKeyTypes.Octet)
-                {
-                    switch (key.KeySize)
-                    {
-                        case 128:
-                            alg = SecurityAlgorithms.Aes128KW;
-                            break;
-                        case 256:
-                            alg = SecurityAlgorithms.Aes256KW;
-                            break;
-                        case 2048:
-                            alg = SecurityAlgorithms.Direct;
-                            break;
-                        default:
-                            continue;
-                    }
-                }
-                else if (key.Kty == JsonWebAlgorithmsKeyTypes.RSA)
-                {
-                    alg = SecurityAlgorithms.RsaOAEP;
-                     // SecurityAlgorithms.RsaPKCS1
-                }
-                else
-                {
-                    continue;
-                }
-
                 foreach (var enc in encryptionAlgorithms)
                 {
                     var payload = new System.IdentityModel.Tokens.Jwt.JwtPayload();
@@ -83,7 +55,7 @@ namespace JwtCreator
                     header.Remove("typ");
                     var token = new Microsoft.IdentityModel.Tokens.SecurityTokenDescriptor();
                     token.SigningCredentials = signingCredentials;
-                    var encryptionCredentials = new Microsoft.IdentityModel.Tokens.EncryptingCredentials(new Microsoft.IdentityModel.Tokens.JsonWebKey(key.ToString()), alg, enc);
+                    var encryptionCredentials = new Microsoft.IdentityModel.Tokens.EncryptingCredentials(new Microsoft.IdentityModel.Tokens.JsonWebKey(key.ToString()), key.Alg, enc);
                     token.EncryptingCredentials = encryptionCredentials;
                     token.Subject = new ClaimsIdentity();
                     foreach (var claim in descriptor.Payload)

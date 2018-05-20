@@ -102,17 +102,18 @@ namespace JsonWebToken.Validations
             }
         }
 
-        private IEnumerable<JsonWebKey> ResolveSigningKey(JsonWebToken jwtToken)
+        private IEnumerable<JsonWebKey> ResolveSigningKey(JsonWebToken jwt)
         {
             var keys = new List<JsonWebKey>();
-            var keySet = _keyProvider.GetKeys(jwtToken);
+            var keySet = _keyProvider.GetKeys(jwt);
             if (keySet != null)
             {
                 for (int j = 0; j < keySet.Keys.Count; j++)
                 {
                     var key = keySet.Keys[j];
                     if ((string.IsNullOrWhiteSpace(key.Use) || string.Equals(key.Use, JsonWebKeyUseNames.Sig, StringComparison.Ordinal)) &&
-                         (string.Equals(key.Kid, jwtToken.Header.Kid, StringComparison.Ordinal)))
+                        (string.IsNullOrWhiteSpace(key.Alg) || string.Equals(key.Alg, jwt.Header.Alg, StringComparison.Ordinal)) &&
+                        (string.Equals(key.Kid, jwt.Header.Kid, StringComparison.Ordinal)))
                     {
                         keys.Add(key);
                     }

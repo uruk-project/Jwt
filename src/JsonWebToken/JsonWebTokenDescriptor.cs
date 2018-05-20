@@ -117,11 +117,6 @@ namespace JsonWebToken
         /// </summary>
         public string EncryptionAlgorithm { get; set; }
         
-        /// <summary>
-        /// Reprensents the 'alg' header for a JWE.
-        /// </summary>
-        public string ContentEncryptionAlgorithm { get; set; }
-
         public void AddClaim(string name, string value)
         {
             SetClaim(name, value);

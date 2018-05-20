@@ -48,34 +48,6 @@ namespace JsonWebToken.Tests
             var encryptionAlgorithms = new[] { SecurityAlgorithms.Aes128CbcHmacSha256, SecurityAlgorithms.Aes192CbcHmacSha384, SecurityAlgorithms.Aes256CbcHmacSha512 };
             foreach (var encKey in Keys.Jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Enc))
             {
-                string alg;
-                if (encKey.Kty == JsonWebAlgorithmsKeyTypes.Octet)
-                {
-                    switch (encKey.KeySize)
-                    {
-                        case 128:
-                            alg = SecurityAlgorithms.Aes128KW;
-                            break;
-                        case 256:
-                            alg = SecurityAlgorithms.Aes256KW;
-                            break;
-                        case 2048:
-                            alg = SecurityAlgorithms.Direct;
-                            break;
-                        default:
-                            continue;
-                    }
-                }
-                else if (encKey.Kty == JsonWebAlgorithmsKeyTypes.RSA)
-                {
-                    alg = SecurityAlgorithms.RsaOAEP;
-                    // SecurityAlgorithms.RsaPKCS1
-                }
-                else
-                {
-                    continue;
-                }
-
                 foreach (var enc in encryptionAlgorithms)
                 {
                     var sigKey = Keys.Jwks.Keys.First(k => k.Use == "sig");
@@ -84,7 +56,6 @@ namespace JsonWebToken.Tests
                         jwt.SigningKey = sigKey;
                         jwt.EncryptingKey = encKey;
                         jwt.EncryptionAlgorithm = enc;
-                        jwt.ContentEncryptionAlgorithm = alg;
                         yield return new object[] { jwt };
                     }
                 }
