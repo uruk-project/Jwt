@@ -34,7 +34,7 @@ namespace JsonWebToken.Performance
                                                    "\"alg\": \"HS256\"" +
                                                    "}";
         public static readonly JsonWebTokenReader Reader = new JsonWebTokenReader(CustomSharedKey);
-        private static readonly ValidationParameters validationParameters = ValidationBuilder.NoValidation;
+        private static readonly TokenValidationParameters validationParameters = TokenValidationParameters.NoValidation;
 
         private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SharedKey);
 

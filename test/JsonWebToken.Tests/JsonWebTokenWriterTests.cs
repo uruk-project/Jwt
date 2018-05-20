@@ -24,7 +24,7 @@ namespace JsonWebToken.Tests
             var value = writer.WriteToken(descriptor);
 
             var reader = new JsonWebTokenReader(Keys.Jwks);
-            var result = reader.TryReadToken(value, ValidationBuilder.NoValidation);
+            var result = reader.TryReadToken(value, TokenValidationParameters.NoValidation);
             var jwt = result.Token;
 
             Assert.Equal(descriptor.IssuedAt, jwt.Payload.Iat);

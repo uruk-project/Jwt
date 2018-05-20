@@ -22,15 +22,17 @@ namespace JsonWebToken
                 throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.InvalidRsaKey, Kid));
             }
 
-            RSAParameters parameters = new RSAParameters();
-            parameters.D = RawD;
-            parameters.DP = RawDP;
-            parameters.DQ = RawDQ;
-            parameters.InverseQ = RawQI;
-            parameters.P = RawP;
-            parameters.Q = RawQ;
-            parameters.Exponent = RawE;
-            parameters.Modulus = RawN;
+            RSAParameters parameters = new RSAParameters
+            {
+                D = RawD,
+                DP = RawDP,
+                DQ = RawDQ,
+                InverseQ = RawQI,
+                P = RawP,
+                Q = RawQ,
+                Exponent = RawE,
+                Modulus = RawN
+            };
 
             return parameters;
         }

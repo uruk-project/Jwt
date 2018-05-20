@@ -37,7 +37,7 @@ namespace JsonWebToken
         /// <param name="token">the JWT encoded as JWE or JWS</param>
         /// <param name="validationParameters">Contains validation parameters for the <see cref="JsonWebToken"/>.</param>
         /// <param name="validatedToken">The <see cref="JsonWebToken"/> that was validated.</param>
-        public TokenValidationResult TryReadToken(string token, ValidationParameters validationParameters)
+        public TokenValidationResult TryReadToken(string token, TokenValidationParameters validationParameters)
         {
             if (validationParameters == null)
             {
@@ -144,7 +144,7 @@ namespace JsonWebToken
             return separators;
         }
 
-        private bool CanReadToken(string token, ValidationParameters validationParameters)
+        private bool CanReadToken(string token, TokenValidationParameters validationParameters)
         {
             if (string.IsNullOrWhiteSpace(token))
             {
@@ -167,7 +167,7 @@ namespace JsonWebToken
             return true;
         }
 
-        private TokenValidationResult ReadJwtToken(string token, IList<int> separators, ValidationParameters validationParameters)
+        private TokenValidationResult ReadJwtToken(string token, IList<int> separators, TokenValidationParameters validationParameters)
         {
             if (string.IsNullOrEmpty(token))
             {

@@ -75,11 +75,11 @@ namespace JsonWebToken.Tests
         public void ReadJwt_Valid(string jwt)
         {
             var reader = new JsonWebTokenReader(Keys.Jwks);
-            var validationParameters = new ValidationBuilder()
-                    .AddSignatureValidation(Keys.Jwks)
+            var validationParameters = new TokenValidationBuilder()
+                    .RequireSignature(Keys.Jwks)
                     .AddLifetimeValidation()
-                    .AddAudienceValidation("636C69656E745F6964")
-                    .AddIssuerValidation("https://idp.example.com/")
+                    .RequireAudience("636C69656E745F6964")
+                    .RequireIssuer("https://idp.example.com/")
                     .Build();
 
             var result = reader.TryReadToken(jwt, validationParameters);
@@ -91,11 +91,11 @@ namespace JsonWebToken.Tests
         public void ReadJwt_Invalid(string jwt, TokenValidationStatus expectedStatus)
         {
             var reader = new JsonWebTokenReader(Keys.Jwks);
-            var validationParameters = new ValidationBuilder()
-                    .AddSignatureValidation(Keys.Jwks)
+            var validationParameters = new TokenValidationBuilder()
+                    .RequireSignature(Keys.Jwks)
                     .AddLifetimeValidation()
-                    .AddAudienceValidation("636C69656E745F6964")
-                    .AddIssuerValidation("https://idp.example.com/")
+                    .RequireAudience("636C69656E745F6964")
+                    .RequireIssuer("https://idp.example.com/")
                     .Build();
          
             var result = reader.TryReadToken(jwt, validationParameters);

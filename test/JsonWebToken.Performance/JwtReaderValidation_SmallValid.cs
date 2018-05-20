@@ -33,7 +33,7 @@ namespace JsonWebToken.Performance
 
         private static readonly SymmetricJwk CustomSharedKey = JsonWebKey.FromJson<SymmetricJwk>(SharedKey);
         public static readonly JsonWebTokenReader Reader = new JsonWebTokenReader(CustomSharedKey);
-        private static readonly ValidationParameters validationParameters = new ValidationBuilder().AddSignatureValidation(CustomSharedKey).AddLifetimeValidation().Build();
+        private static readonly TokenValidationParameters validationParameters = new TokenValidationBuilder().RequireSignature(CustomSharedKey).AddLifetimeValidation().Build();
 
         private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SharedKey);
 
