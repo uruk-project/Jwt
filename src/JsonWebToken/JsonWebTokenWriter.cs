@@ -211,15 +211,15 @@ namespace JsonWebToken
                 // only 128, 384 and 512 AesCbcHmac for CEK algorithm
                 if (SecurityAlgorithms.Aes128CbcHmacSha256.Equals(encryptionAlgorithm, StringComparison.Ordinal))
                 {
-                    symmetricKey = SymmetricJwk.FromByteArray(GenerateKeyBytes(256));
+                    symmetricKey = SymmetricJwk.GenerateKey(256);
                 }
                 else if (SecurityAlgorithms.Aes192CbcHmacSha384.Equals(encryptionAlgorithm, StringComparison.Ordinal))
                 {
-                    symmetricKey = SymmetricJwk.FromByteArray(GenerateKeyBytes(384));
+                    symmetricKey = SymmetricJwk.GenerateKey(384);
                 }
                 else if (SecurityAlgorithms.Aes256CbcHmacSha512.Equals(encryptionAlgorithm, StringComparison.Ordinal))
                 {
-                    symmetricKey = SymmetricJwk.FromByteArray(GenerateKeyBytes(512));
+                    symmetricKey = SymmetricJwk.GenerateKey(512);
                 }
                 else
                 {
@@ -306,34 +306,7 @@ namespace JsonWebToken
                 }
             }
         }
-
-        private static byte[] GenerateKeyBytes(int sizeInBits)
-        {
-            if (sizeInBits != 256 && sizeInBits != 384 && sizeInBits != 512)
-            {
-                throw new ArgumentException(ErrorMessages.InvalidSymmetricKeySize, nameof(sizeInBits));
-            }
-
-            using (var aes = Aes.Create())
-            {
-                int halfSizeInBytes = sizeInBits >> 4;
-                byte[] key = new byte[halfSizeInBytes << 1];
-                aes.KeySize = sizeInBits >> 1;
-
-                aes.GenerateKey();
-                Array.Copy(aes.Key, key, halfSizeInBytes);
-                aes.GenerateKey();
-                Array.Copy(aes.Key, 0, key, halfSizeInBytes, halfSizeInBytes);
-
-                return key;
-            }
-        }
-
-        //private OperationStatus TryCreateEncodedSignature(ReadOnlySpan<byte> input, Span<byte> destination, JsonWebKey key, out int bytesWritten)
-        //{
-
-        //}
-
+        
         public bool TryBase64UrlEncode(JObject jObject, Span<byte> destination, out int bytesWritten)
         {
             var json = jObject.ToString(Formatting.None);

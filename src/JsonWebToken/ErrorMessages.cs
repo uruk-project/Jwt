@@ -34,7 +34,7 @@ namespace JsonWebToken
         public const string SigningKeyTooSmall = "The key '{0}' for signing cannot be smaller than '{1}' bits. Key size: '{2}'.";
         public const string VerifyKeyTooSmall = "The key '{0}' for verifying cannot be smaller than '{1}' bits. Key size: '{2}'.";
         public const string EncryptionKeyTooSmall = "The key '{0}' for encryption with algorithm '{1}' cannot be smaller than '{2}' bits. Key size: '{3}'.";
-        public const string KeyWrapKeyTooSmall = "The key '{0}' for key wrap with algorithm '{1}' cannot be smaller than '{2}' bits. Key size: '{3}'.";
+        public const string KeyWrapKeySizeIncorrect = "Key wrap algorithm '{0}' requires a key of '{1}' bits. Key : '{2}', key size: '{3}'.";
         public const string NotSupportedSignatureAlgorithm = "Signature failed. No support for: Algorithm: '{0}', key: '{1}'.";
         public const string NotSupportedSignatureHashAlgorithm = "Signature failed. No support for: Algorithm: '{0}'.";
         public const string MissingPrivateKey = "The key '{0}' has no private key.";

@@ -139,7 +139,7 @@ namespace JsonWebToken
         {
             return new TokenValidationResult
             {
-                Status = TokenValidationStatus.MissingEncryptionAlgorithm,
+                Status = TokenValidationStatus.NotYetValid,
                 Token = jwtToken
             };
         }

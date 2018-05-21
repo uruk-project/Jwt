@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
@@ -25,7 +26,18 @@ namespace JsonWebToken
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.K, Required = Required.Default)]
         public string K
         {
-            get => _k;
+            get
+            {
+                if (_k == null)
+                {
+                    if (RawK != null && RawK.Length != 0)
+                    {
+                        _k = Base64Url.Encode(RawK);
+                    }
+                }
+
+                return _k;
+            }
             set
             {
                 _k = value;
@@ -40,7 +52,7 @@ namespace JsonWebToken
         public byte[] RawK { get; private set; }
 
         public override int KeySize => RawK?.Length != 0 ? RawK.Length << 3 : 0;
-        
+
         /// <summary>
         /// Returns a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
@@ -77,8 +89,11 @@ namespace JsonWebToken
             switch (algorithm)
             {
                 case SecurityAlgorithms.Aes128CbcHmacSha256:
+                    return KeySize >= 256;
                 case SecurityAlgorithms.Aes192CbcHmacSha384:
+                    return KeySize >= 384;
                 case SecurityAlgorithms.Aes256CbcHmacSha512:
+                    return KeySize >= 512;
                 case SecurityAlgorithms.Aes128KW:
                 case SecurityAlgorithms.Aes256KW:
                 case SecurityAlgorithms.HmacSha256:
@@ -135,6 +150,22 @@ namespace JsonWebToken
             }
 
             return null;
+        }
+
+        public static SymmetricJwk GenerateKey(int sizeInBits)
+        {
+            return FromByteArray(GenerateKeyBytes(sizeInBits));
+        }
+
+        private static byte[] GenerateKeyBytes(int sizeInBits)
+        {
+            using (var rnd = RandomNumberGenerator.Create())
+            {
+                byte[] key = new byte[sizeInBits >> 3];
+                rnd.GetBytes(key);
+
+                return key;
+            }
         }
     }
 }

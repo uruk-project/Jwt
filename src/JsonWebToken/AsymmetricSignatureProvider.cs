@@ -40,7 +40,7 @@ namespace JsonWebToken
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, (algorithm ?? "null"), key));
             }
 
-            ValidateASymmetricJwkSize(key, algorithm, willCreateSignatures);
+            ValidateAsymmetricJwkSize(key, algorithm, willCreateSignatures);
             ResolveAsymmetricAlgorithm(key, algorithm, willCreateSignatures);
         }
 
@@ -51,7 +51,7 @@ namespace JsonWebToken
             return key.HasPrivateKey ? PrivateKeyStatus.Exists : PrivateKeyStatus.DoesNotExist;
         }
 
-        private void ValidateASymmetricJwkSize(TKey key, string algorithm, bool willCreateSignatures)
+        private void ValidateAsymmetricJwkSize(TKey key, string algorithm, bool willCreateSignatures)
         {
             if (willCreateSignatures && MinimumKeySizeInBitsForSigning.ContainsKey(algorithm) && key.KeySize < MinimumKeySizeInBitsForSigning[algorithm])
             {

@@ -6,16 +6,32 @@ namespace JsonWebToken
     {
         private string _d;
 
+        protected AsymmetricJwk()
+        {
+        }
+
         /// <summary>
         /// Gets or sets the 'd' (ECC - Private Key OR RSA - Private Exponent).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.D, Required = Required.Default)]
         public string D
         {
-            get => _d;
+            get
+            {
+                if (_d == null)
+                {
+                    if (RawD != null && RawD.Length != 0)
+                    {
+                        _d = Base64Url.Encode(RawD);
+                    }
+                }
+
+                return _d;
+            }
+
             private set
             {
-                _d = value; 
+                _d = value;
                 if (value != null)
                 {
                     RawD = Base64Url.DecodeBytes(value);
@@ -24,7 +40,7 @@ namespace JsonWebToken
         }
 
         [JsonIgnore]
-        public byte[] RawD { get; private set; }
+        public byte[] RawD { get; protected set; }
 
         /// <summary>
         /// Gets a bool indicating if a private key exists.

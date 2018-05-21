@@ -12,7 +12,7 @@ namespace JsonWebToken
     [JsonObject]
     public abstract class JsonWebKey
     {
-        public class JwkJsonConverter : JsonConverter
+        internal class JwkJsonConverter : JsonConverter
         {
             public override bool CanWrite => false;
 

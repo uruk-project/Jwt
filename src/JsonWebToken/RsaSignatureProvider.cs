@@ -8,6 +8,7 @@ namespace JsonWebToken
     {
         private HashAlgorithmName _hashAlgorithm;
         private int _hashSize;
+        private RSASignaturePadding _signaturePadding;
         private RSA _rsa;
 
         private bool _disposed;
@@ -61,18 +62,21 @@ namespace JsonWebToken
         {
             if (string.IsNullOrWhiteSpace(algorithm))
             {
-                throw new ArgumentNullException("algorithm");
+                throw new ArgumentNullException(nameof(algorithm));
             }
 
             switch (algorithm)
             {
                 case SecurityAlgorithms.RsaSha256:
+                case SecurityAlgorithms.RsaSsaPssSha256:
                     return HashAlgorithmName.SHA256;
 
                 case SecurityAlgorithms.RsaSha384:
+                case SecurityAlgorithms.RsaSsaPssSha384:
                     return HashAlgorithmName.SHA384;
 
                 case SecurityAlgorithms.RsaSha512:
+                case SecurityAlgorithms.RsaSsaPssSha512:
                     return HashAlgorithmName.SHA512;
             }
 
@@ -93,6 +97,7 @@ namespace JsonWebToken
 
             _hashAlgorithm = GetHashAlgorithmName(algorithm);
             _hashSize = GetHashSize(key);
+            _signaturePadding = ResolveSignaturePadding(algorithm);
             var rsa = ResolveRsaAlgorithm(key, algorithm, willCreateSignatures);
             if (rsa != null)
             {
@@ -103,25 +108,31 @@ namespace JsonWebToken
             throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, algorithm, key));
         }
 
+        private RSASignaturePadding ResolveSignaturePadding(string algorithm)
+        {
+            switch (algorithm)
+            {
+                case SecurityAlgorithms.RsaSha256:
+                case SecurityAlgorithms.RsaSha384:
+                case SecurityAlgorithms.RsaSha512:
+                    return RSASignaturePadding.Pkcs1;
+
+                case SecurityAlgorithms.RsaSsaPssSha384:
+                case SecurityAlgorithms.RsaSsaPssSha256:
+                case SecurityAlgorithms.RsaSsaPssSha512:
+                    return RSASignaturePadding.Pss;
+            }
+
+            throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
+        }
+
         private int GetHashSize(RsaJwk key)
         {
-            switch (key.KeySize)
-            {
-                case 512:
-                    return 64;
-                case 1024:
-                    return 128;
-                case 2048:
-                    return 256;
-                case 4096:
-                    return 512;
-                default:
-                    throw new NotSupportedException();
-            }
+            return key.KeySize >> 3;
         }
 
         /// <summary>
-        /// Produces a signature over the 'input' using the <see cref="ASymmetricJwk"/> and algorithm passed to <see cref="AsymmetricSignatureProvider( JsonWebKey, string, bool )"/>.
+        /// Produces a signature over the 'input' using the <see cref="AsymmetricJwk"/> and algorithm passed to <see cref="AsymmetricSignatureProvider( JsonWebKey, string, bool )"/>.
         /// </summary>
         /// <param name="input">The bytes to be signed.</param>
         /// <returns>A signature over the input.</returns>
@@ -140,11 +151,11 @@ namespace JsonWebToken
             if (_rsa != null)
             {
 #if NETCOREAPP2_1
-                return _rsa.TrySignData(input, destination, _hashAlgorithm, RSASignaturePadding.Pkcs1, out bytesWritten);
+                return _rsa.TrySignData(input, destination, _hashAlgorithm, _signaturePadding, out bytesWritten);
 #else
                 try
                 {
-                    var result = _rsa.SignData(input.ToArray(), _hashAlgorithm, RSASignaturePadding.Pkcs1);
+                    var result = _rsa.SignData(input.ToArray(), _hashAlgorithm, _signaturePadding);
                     bytesWritten = result.Length;
                     result.CopyTo(destination);
                 }
@@ -185,9 +196,9 @@ namespace JsonWebToken
             if (_rsa != null)
             {
 #if NETCOREAPP2_1
-                return _rsa.VerifyData(input, signature, _hashAlgorithm, RSASignaturePadding.Pkcs1);
+                return _rsa.VerifyData(input, signature, _hashAlgorithm, _signaturePadding);
 #else
-                return _rsa.VerifyData(input.ToArray(), signature.ToArray(), _hashAlgorithm, RSASignaturePadding.Pkcs1);
+                return _rsa.VerifyData(input.ToArray(), signature.ToArray(), _hashAlgorithm, _signaturePadding);
 #endif
             }
 

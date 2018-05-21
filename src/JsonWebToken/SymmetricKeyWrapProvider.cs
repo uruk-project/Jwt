@@ -397,7 +397,7 @@ namespace JsonWebToken
             {
                 if (key.Length != 16)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeyTooSmall, Key.Kid, algorithm, 128, key.Length << 3));
+                    throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 128, Key.Kid, key.Length << 3));
                 }
 
                 return;
@@ -407,7 +407,7 @@ namespace JsonWebToken
             {
                 if (key.Length != 32)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeyTooSmall, Key.Kid, algorithm, 256, key.Length << 3));
+                    throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 256, Key.Kid, key.Length << 3));
                 }
 
                 return;

@@ -14,6 +14,23 @@ namespace JsonWebToken
         private string _p;
         private string _q;
         private string _qi;
+        public RsaJwk()
+        {
+            Kty = JsonWebAlgorithmsKeyTypes.RSA;
+        }
+
+        public RsaJwk(RSAParameters rsaParameters)
+            :this()
+        {
+            RawD = rsaParameters.D;
+            RawDP = rsaParameters.DP;
+            RawDQ = rsaParameters.DQ;
+            RawQI = rsaParameters.InverseQ;
+            RawP = rsaParameters.P;
+            RawQ = rsaParameters.Q;
+            RawE = rsaParameters.Exponent;
+            RawN = rsaParameters.Modulus;
+        }
 
         public RSAParameters CreateRsaParameters()
         {
@@ -72,7 +89,7 @@ namespace JsonWebToken
             return null;
         }
 
-        public override bool HasPrivateKey => D != null && DP != null && DQ != null && P != null && Q != null && QI != null;
+        public override bool HasPrivateKey => RawD != null && RawDP != null && RawDQ != null && RawP != null && RawQ != null && RawQI != null;
 
         public override int KeySize => RawN?.Length != 0 ? RawN.Length << 3 : 0;
 
@@ -82,7 +99,19 @@ namespace JsonWebToken
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.DP, Required = Required.Default)]
         public string DP
         {
-            get => _dp;
+            get
+            {
+                if (_dp == null)
+                {
+                    if (RawDP != null && RawDP.Length != 0)
+                    {
+                        _dp = Base64Url.Encode(RawDP);
+                    }
+                }
+
+                return _dp;
+            }
+
             set
             {
                 _dp = value;
@@ -106,7 +135,19 @@ namespace JsonWebToken
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.DQ, Required = Required.Default)]
         public string DQ
         {
-            get => _dq;
+            get
+            {
+                if (_dq == null)
+                {
+                    if (RawDQ != null && RawDQ.Length != 0)
+                    {
+                        _dq = Base64Url.Encode(RawDQ);
+                    }
+                }
+
+                return _dq;
+            }
+
             set
             {
                 _dq = value;
@@ -130,7 +171,19 @@ namespace JsonWebToken
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.E, Required = Required.Default)]
         public string E
         {
-            get => _e;
+            get
+            {
+                if (_e == null)
+                {
+                    if (RawE != null && RawE.Length != 0)
+                    {
+                        _e = Base64Url.Encode(RawE);
+                    }
+                }
+
+                return _e;
+            }
+
             set
             {
                 _e = value;
@@ -154,7 +207,19 @@ namespace JsonWebToken
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.N, Required = Required.Default)]
         public string N
         {
-            get => _n;
+            get
+            {
+                if (_n  == null)
+                {
+                    if (RawN != null && RawN.Length != 0)
+                    {
+                        _n = Base64Url.Encode(RawN);
+                    }
+                }
+
+                return _n;
+            }
+
             set
             {
                 _n = value;
@@ -184,7 +249,19 @@ namespace JsonWebToken
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.P, Required = Required.Default)]
         public string P
         {
-            get => _p;
+            get
+            {
+                if (_p  == null)
+                {
+                    if (RawP != null && RawP.Length != 0)
+                    {
+                        _p = Base64Url.Encode(RawP);
+                    }
+                }
+
+                return _p;
+            }
+
             set
             {
                 _p = value;
@@ -208,7 +285,19 @@ namespace JsonWebToken
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Q, Required = Required.Default)]
         public string Q
         {
-            get => _q;
+            get
+            {
+                if (_q == null)
+                {
+                    if (RawQ != null && RawQ.Length != 0)
+                    {
+                        _q = Base64Url.Encode(RawQ);
+                    }
+                }
+
+                return _q;
+            }
+
             set
             {
                 _q = value;
@@ -232,7 +321,19 @@ namespace JsonWebToken
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.QI, Required = Required.Default)]
         public string QI
         {
-            get => _qi;
+            get
+            {
+                if (_qi == null)
+                {
+                    if (RawQI != null && RawQI.Length != 0)
+                    {
+                        _qi = Base64Url.Encode(RawQI);
+                    }
+                }
+
+                return _qi;
+            }
+
             set
             {
                 _qi = value;
@@ -249,5 +350,22 @@ namespace JsonWebToken
 
         [JsonIgnore]
         public byte[] RawQI { get; private set; }
+
+
+        public RsaJwk FromRsaParameters(RSAParameters rsaParameters)
+        {
+            return new RsaJwk(rsaParameters);
+        }
+
+
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey)
+        {
+            //Generate a public/private key pair.  
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(sizeInBits);
+            //Save the public key information to an RSAParameters structure.  
+            RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
+
+            return new RsaJwk(rsaParameters);
+        }
     }
 }

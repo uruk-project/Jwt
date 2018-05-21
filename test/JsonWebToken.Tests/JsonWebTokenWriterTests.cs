@@ -36,7 +36,7 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetDescriptors()
         {
-            foreach (var key in Keys.Jwks.Keys.Where(k => k.Use == "sig"))
+            foreach (var key in Keys.Jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Sig))
             {
                 foreach (var jwt in Tokens.Descriptors)
                 {
@@ -46,11 +46,16 @@ namespace JsonWebToken.Tests
             }
 
             var encryptionAlgorithms = new[] { SecurityAlgorithms.Aes128CbcHmacSha256, SecurityAlgorithms.Aes192CbcHmacSha384, SecurityAlgorithms.Aes256CbcHmacSha512 };
-            foreach (var encKey in Keys.Jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Enc))
+            foreach (var encKey in Keys.Jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Enc && k.Kty == JsonWebAlgorithmsKeyTypes.Octet))
             {
                 foreach (var enc in encryptionAlgorithms)
                 {
-                    var sigKey = Keys.Jwks.Keys.First(k => k.Use == "sig");
+                    if (!encKey.IsSupportedAlgorithm(enc))
+                    {
+                        continue;
+                    }
+
+                    var sigKey = Keys.Jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
                     foreach (var jwt in Tokens.Descriptors)
                     {
                         jwt.SigningKey = sigKey;

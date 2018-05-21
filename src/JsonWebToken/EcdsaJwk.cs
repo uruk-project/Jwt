@@ -18,6 +18,35 @@ namespace JsonWebToken
         private string _x;
         private string _y;
 
+        public EcdsaJwk(ECParameters parameters)
+            :this()
+        {
+            parameters.Validate();
+
+            RawD = parameters.D;
+            RawX = parameters.Q.X;
+            RawY = parameters.Q.Y;
+            switch (parameters.Curve.Oid.FriendlyName)
+            {
+                case "nistP256":
+                    Crv = JsonWebKeyECTypes.P256;
+                    break;
+                case "nistP384":
+                    Crv = JsonWebKeyECTypes.P384;
+                    break;
+                case "nistP521":
+                    Crv = JsonWebKeyECTypes.P521;
+                    break;
+                default:
+                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, parameters.Curve.Oid.FriendlyName));
+            }
+        }
+
+        public EcdsaJwk()
+        {
+            Kty = JsonWebAlgorithmsKeyTypes.EllipticCurve;
+        }
+
         /// <summary>
         /// Gets or sets the 'crv' (Curve).
         /// </summary>
@@ -30,7 +59,18 @@ namespace JsonWebToken
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.X, Required = Required.Default)]
         public string X
         {
-            get => _x;
+            get
+            {
+                if (_x == null)
+                {
+                    if (RawX != null && RawX.Length != 0)
+                    {
+                        _x = Base64Url.Encode(RawX);
+                    }
+                }
+
+                return _x;
+            }
             set
             {
                 _x = value;
@@ -54,7 +94,18 @@ namespace JsonWebToken
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Y, Required = Required.Default)]
         public string Y
         {
-            get => _y;
+            get
+            {
+                if (_y == null)
+                {
+                    if (RawY != null && RawY.Length != 0)
+                    {
+                        _y = Base64Url.Encode(RawY);
+                    }
+                }
+
+                return _y;
+            }
             set
             {
                 _y = value;
@@ -72,7 +123,7 @@ namespace JsonWebToken
         [JsonIgnore]
         public byte[] RawY { get; private set; }
 
-        public override bool HasPrivateKey => D != null;
+        public override bool HasPrivateKey => RawD != null;
 
         public override int KeySize
         {
@@ -308,6 +359,37 @@ namespace JsonWebToken
             BCRYPT_ECDSA_PRIVATE_P256_MAGIC = 0x32534345,
             BCRYPT_ECDSA_PRIVATE_P384_MAGIC = 0x34534345,
             BCRYPT_ECDSA_PRIVATE_P521_MAGIC = 0x36534345,
+        }
+
+        public static EcdsaJwk GenerateKey(string curveId, bool withPrivateKey)
+        {
+            if (string.IsNullOrEmpty(curveId))
+            {
+                throw new ArgumentNullException(nameof(curveId));
+            }
+
+            ECCurve curve;
+            switch (curveId)
+            {
+                case JsonWebKeyECTypes.P256:
+                    curve = ECCurve.NamedCurves.nistP256;
+                    break;
+                case JsonWebKeyECTypes.P384:
+                    curve = ECCurve.NamedCurves.nistP384;
+                    break;
+                case JsonWebKeyECTypes.P521:
+                    curve = ECCurve.NamedCurves.nistP521;
+                    break;
+                default:
+                    throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, curveId));
+            }
+
+            using (var ecdsa = ECDsa.Create())
+            {
+                ecdsa.GenerateKey(curve);
+                var parameters = ecdsa.ExportParameters(withPrivateKey);
+                return new EcdsaJwk(parameters);
+            }
         }
     }
 }

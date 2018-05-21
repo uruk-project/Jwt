@@ -87,5 +87,30 @@ namespace JsonWebToken
                 return null;
             }
         }
+
+        public void Add(JsonWebKey key)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            Keys.Add(key);
+        }
+
+        public void Remove(JsonWebKey key)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            Keys.Remove(key);
+        }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this, Formatting.Indented);
+        }
     }
 }

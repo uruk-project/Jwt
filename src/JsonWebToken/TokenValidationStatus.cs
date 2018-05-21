@@ -17,6 +17,7 @@
         Expired,
         InvalidLifetime,
         MissingEncryptionAlgorithm,
-        DecryptionFailed
+        DecryptionFailed,
+        NotYetValid
     }
 }
