@@ -36,7 +36,7 @@ namespace JsonWebToken.Tests
                 foreach (var jwt in Tokens.Descriptors)
                 {
                     jwt.SigningKey = key;
-                    //yield return new object[] { jwt };
+                    yield return new object[] { jwt };
                 }
             }
 
