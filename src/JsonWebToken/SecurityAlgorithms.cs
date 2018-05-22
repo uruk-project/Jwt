@@ -8,8 +8,9 @@
         // See: https://tools.ietf.org/html/rfc7518#section-4.1
         public const string Aes128KW = "A128KW";
         public const string Aes256KW = "A256KW";
-        public const string RsaPKCS1 = "RSA1_5";
-        public const string RsaOAEP = "RSA-OAEP";
+        public const string RsaPkcs1 = "RSA1_5";
+        public const string RsaOaep = "RSA-OAEP";
+        public const string RsaOaep256 = "RSA-OAEP-256";
         public const string Direct = "dir";
 
         // See: https://tools.ietf.org/html/rfc7518#appendix-A

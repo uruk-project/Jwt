@@ -61,8 +61,9 @@ namespace JsonWebToken
                 case SecurityAlgorithms.RsaSha256:
                 case SecurityAlgorithms.RsaSha384:
                 case SecurityAlgorithms.RsaSha512:
-                case SecurityAlgorithms.RsaOAEP:
-                case SecurityAlgorithms.RsaPKCS1:
+                case SecurityAlgorithms.RsaOaep:
+                case SecurityAlgorithms.RsaPkcs1:
+                case SecurityAlgorithms.RsaOaep256:
                     return true;
             }
 

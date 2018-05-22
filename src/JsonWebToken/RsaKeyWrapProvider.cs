@@ -9,6 +9,7 @@ namespace JsonWebToken
     public class RsaKeyWrapProvider : KeyWrapProvider
     {
         private RSA _rsa;
+        private readonly RSAEncryptionPadding _padding;
         private bool _disposed = false;
 
         /// <summary>
@@ -36,6 +37,7 @@ namespace JsonWebToken
             Algorithm = algorithm;
             Key = key;
             _rsa = ResolveRsaAlgorithm(key, algorithm);
+            _padding = ResolvePadding(algorithm);
         }
 
         /// <summary>
@@ -75,10 +77,6 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(GetType().ToString());
             }
 
-            var padding = (Algorithm.Equals(SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal))
-                        ? RSAEncryptionPadding.OaepSHA1
-                        : RSAEncryptionPadding.Pkcs1;
-
             if (_rsa == null)
             {
                 throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
@@ -86,12 +84,27 @@ namespace JsonWebToken
 
             try
             {
-                return _rsa.Decrypt(keyBytes, padding);
+                return _rsa.Decrypt(keyBytes, _padding);
             }
             catch (Exception ex)
             {
                 throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
             }
+        }
+
+        private static RSAEncryptionPadding ResolvePadding(string algorithm)
+        {
+            switch (algorithm)
+            {
+                case SecurityAlgorithms.RsaOaep:
+                    return RSAEncryptionPadding.OaepSHA1;
+                case SecurityAlgorithms.RsaOaep256:
+                    return RSAEncryptionPadding.OaepSHA256;
+                case SecurityAlgorithms.RsaPkcs1:
+                    return RSAEncryptionPadding.Pkcs1;
+            }
+
+            throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
         }
 
         /// <summary>
@@ -111,10 +124,6 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(GetType().ToString());
             }
 
-            var padding = Algorithm.Equals(SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal)
-                        ? RSAEncryptionPadding.OaepSHA1
-                        : RSAEncryptionPadding.Pkcs1;
-
             if (_rsa == null)
             {
                 throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
@@ -122,7 +131,7 @@ namespace JsonWebToken
 
             try
             {
-                return _rsa.Encrypt(keyBytes, padding);
+                return _rsa.Encrypt(keyBytes, _padding);
             }
             catch (Exception ex)
             {
@@ -148,10 +157,6 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(GetType().ToString());
             }
 
-            var padding = (Algorithm.Equals(SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal))
-                        ? RSAEncryptionPadding.OaepSHA1
-                        : RSAEncryptionPadding.Pkcs1;
-
             if (_rsa == null)
             {
                 throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
@@ -159,7 +164,7 @@ namespace JsonWebToken
 
             try
             {
-                return _rsa.TryDecrypt(keyBytes, destination, padding, out bytesWriten);
+                return _rsa.TryDecrypt(keyBytes, destination, _padding, out bytesWriten);
             }
             catch (Exception ex)
             {
@@ -184,10 +189,6 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(GetType().ToString());
             }
 
-            var padding = Algorithm.Equals(SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal)
-                        ? RSAEncryptionPadding.OaepSHA1
-                        : RSAEncryptionPadding.Pkcs1;
-
             if (_rsa == null)
             {
                 throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
@@ -195,7 +196,7 @@ namespace JsonWebToken
 
             try
             {
-                return _rsa.TryEncrypt(keyBytes, destination, padding, out bytesWriten);
+                return _rsa.TryEncrypt(keyBytes, destination, _padding, out bytesWriten);
             }
             catch (Exception ex)
             {
