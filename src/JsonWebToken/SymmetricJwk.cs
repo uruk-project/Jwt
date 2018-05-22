@@ -95,7 +95,11 @@ namespace JsonWebToken
                 case SecurityAlgorithms.Aes256CbcHmacSha512:
                     return KeySize >= 512;
                 case SecurityAlgorithms.Aes128KW:
+                    return KeySize == 128;
+                case SecurityAlgorithms.Aes192KW:
+                    return KeySize == 192;
                 case SecurityAlgorithms.Aes256KW:
+                    return KeySize == 256;
                 case SecurityAlgorithms.HmacSha256:
                 case SecurityAlgorithms.HmacSha384:
                 case SecurityAlgorithms.HmacSha512:
@@ -132,13 +136,14 @@ namespace JsonWebToken
                 return false;
             }
 
-            if (!(algorithm.Equals(SecurityAlgorithms.Aes128CbcHmacSha256, StringComparison.Ordinal)
-               || algorithm.Equals(SecurityAlgorithms.Aes192CbcHmacSha384, StringComparison.Ordinal)
-               || algorithm.Equals(SecurityAlgorithms.Aes256CbcHmacSha512, StringComparison.Ordinal)))
+            switch (algorithm)
             {
-                return false;
+                case SecurityAlgorithms.Aes128CbcHmacSha256:
+                case SecurityAlgorithms.Aes192CbcHmacSha384:
+                case SecurityAlgorithms.Aes256CbcHmacSha512:
+                    return true;
             }
-
+            
             return true;
         }
 

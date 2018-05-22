@@ -125,9 +125,12 @@ namespace JsonWebToken
                 return false;
             }
 
-            if (algorithm.Equals(SecurityAlgorithms.Aes128KW, StringComparison.Ordinal) || algorithm.Equals(SecurityAlgorithms.Aes256KW, StringComparison.Ordinal))
+            switch (algorithm)
             {
-                return true;
+                case SecurityAlgorithms.Aes128KW:
+                case SecurityAlgorithms.Aes192KW:
+                case SecurityAlgorithms.Aes256KW:
+                    return true;
             }
 
             return false;
@@ -398,6 +401,16 @@ namespace JsonWebToken
                 if (key.Length != 16)
                 {
                     throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 128, Key.Kid, key.Length << 3));
+                }
+
+                return;
+            }
+
+            if (SecurityAlgorithms.Aes192KW.Equals(algorithm, StringComparison.Ordinal))
+            {
+                if (key.Length != 24)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 192, Key.Kid, key.Length << 3));
                 }
 
                 return;

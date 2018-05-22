@@ -301,7 +301,7 @@ namespace JwtCreator
         {
             var keys = new JsonWebKeySet();
             var hsKeySizes = new[] { 256, 384, 512 };
-            var kwKeySizes = new[] { 128, 256 };
+            var kwKeySizes = new[] { 128, 192, 256 };
             foreach (var keySize in hsKeySizes)
             {
                 var key = SymmetricJwk.GenerateKey(keySize);
@@ -362,6 +362,12 @@ namespace JwtCreator
                 key.Use = JsonWebKeyUseNames.Enc;
                 key.Alg = "RSA-OAEP";
                 key.Kid = "rsa-oaep-" + rsaKeySize;
+                keys.Add(key);
+
+                key = RsaJwk.GenerateKey(rsaKeySize, true);
+                key.Use = JsonWebKeyUseNames.Enc;
+                key.Alg = "RSA-OAEP-256";
+                key.Kid = "rsa-oaep-256-" + rsaKeySize;
                 keys.Add(key);
             }
 
