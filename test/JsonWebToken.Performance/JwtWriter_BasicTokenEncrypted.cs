@@ -32,13 +32,13 @@ namespace JsonWebToken.Performance
 "\"k\": \"HWF8LuG4F9TNWNsTKNvAlxpcj_e4Cp2BFmEMCAoWEOQ\"," +
 "\"alg\": \"" + SecurityAlgorithms.Aes256KW + "\"" +
 "}";
-        private static readonly SymmetricJwk CustomSigningKeyKey = JsonWebKey.FromJson<SymmetricJwk>(SigningKey);
+        private static readonly SymmetricJwk CustomSigningKey = JsonWebKey.FromJson<SymmetricJwk>(SigningKey);
 
         private static readonly SecurityTokenDescriptor WilsonDirectDescriptor = CreateWilsonSmallDescriptor(DirectEncryptionKey);
         private static readonly SecurityTokenDescriptor WilsonKWDescriptor = CreateWilsonSmallDescriptor(KeyWrapEncryptionKey);
 
-        private static readonly JsonWebTokenDescriptor CustomDirectDescriptor = CreateCustomSmallDescriptor(DirectEncryptionKey);
-        private static readonly JsonWebTokenDescriptor CustomKWDescriptor = CreateCustomSmallDescriptor(KeyWrapEncryptionKey);
+        private static readonly JweDescriptor CustomDirectDescriptor = CreateCustomSmallDescriptor(DirectEncryptionKey);
+        private static readonly JweDescriptor CustomKWDescriptor = CreateCustomSmallDescriptor(KeyWrapEncryptionKey);
 
         public static readonly JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler();
 
@@ -69,23 +69,26 @@ namespace JsonWebToken.Performance
             var value = Writer.WriteToken(CustomKWDescriptor);
         }
 
-        private static JsonWebTokenDescriptor CreateCustomSmallDescriptor(string encryptionKey)
+        private static JweDescriptor CreateCustomSmallDescriptor(string encryptionKey)
         {
             var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
             var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
             var issuer = "https://idp.example.com/";
             var audience = "636C69656E745F6964";
             //var jti = "756E69717565206964656E746966696572";
-            var descriptor = new JsonWebTokenDescriptor()
+            var jws = new JwsDescriptor
             {
                 IssuedAt = issuedAt,
-                Expires = expires,
+                ExpirationTime = expires,
                 Issuer = issuer,
                 Audience = audience,
-                SigningKey = CustomSigningKeyKey,
-                EncryptingKey = JsonWebKey.FromJson(encryptionKey),
-                EncryptionAlgorithm = SecurityAlgorithms.Aes128CbcHmacSha256
+                Key = CustomSigningKey
             };
+            var descriptor = new JweDescriptor(jws)               
+                {
+                    Key = JsonWebKey.FromJson(encryptionKey),
+                    EncryptionAlgorithm = SecurityAlgorithms.Aes128CbcHmacSha256
+                };
             return descriptor;
         }
 

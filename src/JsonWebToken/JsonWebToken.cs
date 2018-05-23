@@ -274,7 +274,7 @@ namespace JsonWebToken
         {
             if (Payload != null)
             {
-                return Header.SerializeToJson() + "." + Payload.SerializeToJson();
+                return Header.SerializeToJson() + "." + Payload.ToString();
             }
             else
             {

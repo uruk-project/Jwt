@@ -50,7 +50,7 @@ namespace JsonWebToken.Performance
         [Benchmark]
         public void Custom()
         {
-            var descriptor = new JsonWebTokenDescriptor();
+            var descriptor = new JwsDescriptor();
             var value = Writer.WriteToken(descriptor);
         }
     }

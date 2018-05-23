@@ -101,7 +101,7 @@ namespace JsonWebToken
                 return GetStandardClaim(JwtHeaderParameterNames.Alg);
             }
 
-            private set
+            set
             {
                 _inner[JwtHeaderParameterNames.Alg] = value;
             }
@@ -118,7 +118,7 @@ namespace JsonWebToken
                 return GetStandardClaim(JwtHeaderParameterNames.Cty);
             }
 
-            private set
+            set
             {
                 _inner[JwtHeaderParameterNames.Cty] = value;
             }
@@ -135,7 +135,7 @@ namespace JsonWebToken
                 return GetStandardClaim(JwtHeaderParameterNames.Enc);
             }
 
-            private set
+            set
             {
                 _inner[JwtHeaderParameterNames.Enc] = value;
             }
@@ -162,7 +162,7 @@ namespace JsonWebToken
                 return GetStandardClaim(JwtHeaderParameterNames.Kid);
             }
 
-            private set
+            set
             {
                 _inner[JwtHeaderParameterNames.Kid] = value;
             }
@@ -179,7 +179,7 @@ namespace JsonWebToken
                 return GetStandardClaim(JwtHeaderParameterNames.Typ);
             }
 
-            private set
+            set
             {
                 _inner[JwtHeaderParameterNames.Typ] = value;
             }
@@ -193,6 +193,11 @@ namespace JsonWebToken
             get
             {
                 return GetStandardClaim(JwtHeaderParameterNames.X5t);
+            }
+
+            set
+            {
+                _inner[JwtHeaderParameterNames.X5t] = value;
             }
         }
 

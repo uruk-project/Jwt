@@ -15,37 +15,36 @@ namespace Performance
                                                    "}");
         private static readonly JsonWebTokenReader _reader = new JsonWebTokenReader(SharedKey);
         private static readonly JsonWebTokenWriter _writer = new JsonWebTokenWriter();
+        private static readonly TokenValidationParameters parameters = new TokenValidationBuilder()
+                    .RequireSignature(SharedKey)
+                    .Build();
 
         static void Main(string[] args)
         {
             Console.WriteLine("Starting...");
 
+            for (int i = 0; i < 5000000; i++)
+            {
+                var result = _reader.TryReadToken(Token1, parameters);
+            }
+
+            //var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
+            //var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
+            //var issuer = "https://idp.example.com/";
+            //var audience = "636C69656E745F6964";
+            //var token = new JsonWebTokenDescriptor()
+            //{
+            //    IssuedAt = issuedAt,
+            //    Expires = expires,
+            //    Issuer = issuer,
+            //    Audience = audience,
+            //    SigningKey = SharedKey
+            //};
+
             //for (int i = 0; i < 1000000; i++)
             //{
-            //    var result = _reader.TryReadToken(Token1, new TokenValidationParameters
-            //    {
-            //        ValidateAudience = false,
-            //        ValidateIssuer = false
-            //    });
+            //    var result = _writer.WriteToken(token);
             //}
-
-            var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
-            var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
-            var issuer = "https://idp.example.com/";
-            var audience = "636C69656E745F6964";
-            var token = new JsonWebTokenDescriptor()
-            {
-                IssuedAt = issuedAt,
-                Expires = expires,
-                Issuer = issuer,
-                Audience = audience,
-                SigningKey = SharedKey
-            };
-
-            for (int i = 0; i < 1000000; i++)
-            {
-                var result = _writer.WriteToken(token);
-            }
         }
     }
 }

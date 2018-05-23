@@ -14,6 +14,11 @@ namespace JsonWebToken
     {
         private readonly JObject _inner;
 
+        public JwtPayload(string plaintext) : this()
+        {
+            Plaintext = plaintext;
+        }
+
         public JwtPayload(JObject inner)
         {
             _inner = inner;
@@ -227,6 +232,8 @@ namespace JsonWebToken
             }
         }
 
+        public string Plaintext { get; }
+
         /// <summary>
         /// Adds a JSON object representing the <see cref="JToken"/> to the <see cref="JwtPayload"/>
         /// </summary>
@@ -318,13 +325,9 @@ namespace JsonWebToken
             return EpochTime.ToDateTime(dateValue.Value<int>());
         }
 
-        /// <summary>
-        /// Serializes this instance to JSON.
-        /// </summary>
-        /// <returns>This instance as JSON.</returns>
-        public string SerializeToJson()
+        public override string ToString()
         {
-            return _inner.ToString(Formatting.None);
+            return _inner.Count != 0 ? _inner.ToString(Formatting.None) : Plaintext ?? string.Empty;
         }
 
         /// <summary>
@@ -333,22 +336,32 @@ namespace JsonWebToken
         /// <returns>Base64UrlEncoded JSON.</returns>
         public string Base64UrlEncode()
         {
-            return Base64Url.Encode(SerializeToJson());
+            return Base64Url.Encode(ToString());
         }
 
         public bool TryBase64UrlEncode(Span<byte> destination, out int bytesWritten)
         {
-            var json = SerializeToJson();
+            var text = ToString();
 #if NETCOREAPP2_1
             unsafe
             {
-                Span<byte> encodedBytes = stackalloc byte[json.Length];
-                Encoding.UTF8.GetBytes(json, encodedBytes);
-                var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
-                return status == OperationStatus.Done;
+                var length = Encoding.UTF8.GetByteCount(text);
+                var array = ArrayPool<byte>.Shared.Rent(length);
+                try
+                {
+                    Span<byte> encodedBytes = array;
+                    encodedBytes = encodedBytes.Slice(0, length);
+                    Encoding.UTF8.GetBytes(text, encodedBytes);
+                    var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
+                    return status == OperationStatus.Done;
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(array);
+                }
             }
 #else
-            var encodedBytes = Encoding.UTF8.GetBytes(json);
+            var encodedBytes = Encoding.UTF8.GetBytes(text);
 
             var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
             return status == OperationStatus.Done;

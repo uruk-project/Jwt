@@ -6,14 +6,14 @@ namespace JsonWebToken
     public static class JwtConstants
     {
         /// <summary>
-        /// Short header type.
+        /// JWT media type for 'typ' header parameter.
         /// </summary>
-        public const string HeaderType = "JWT";
-        
+        public const string JwtMediaType = "JWT";
+
         /// <summary>
-        /// Short token type.
+        /// JWT content type for 'cty' header parameter.
         /// </summary>
-        public const string TokenType = "JWT";
+        public const string JwtContentType = "JWT";
 
         /// <summary>
         /// Long token type.

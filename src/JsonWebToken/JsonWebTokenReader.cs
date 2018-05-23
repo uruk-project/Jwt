@@ -62,11 +62,6 @@ namespace JsonWebToken
             var separators = GetSeparators(token);
             if (separators.Count == JwtConstants.JwsSeparatorsCount || separators.Count == JwtConstants.JweSeparatorsCount)
             {
-                if (!CanReadToken(token, validationParameters))
-                {
-                    return TokenValidationResult.MalformedToken();
-                }
-
                 JsonWebToken jwt;
                 if (separators.Count == JwtConstants.JwsSeparatorsCount)
                 {
@@ -96,6 +91,13 @@ namespace JsonWebToken
                     if (decryptedToken == null)
                     {
                         return TokenValidationResult.DecryptionFailed(jwt);
+                    }
+
+                    if (!string.Equals(jwt.Header.Cty, JwtConstants.JwtContentType, StringComparison.Ordinal))
+                    {
+                        // The decrypted payload is not a nested JWT
+                        jwt.PlainText = decryptedToken;
+                        return TokenValidationResult.Success(jwt);
                     }
 
                     var innerSeparators = GetSeparators(decryptedToken);
@@ -161,14 +163,6 @@ namespace JsonWebToken
                 return false;
             }
 
-            for (int i = 0; i < token.Length; i++)
-            {
-                if (!JwsCharacters.Contains(token[i]))
-                {
-                    return false;
-                }
-            }
-
             return true;
         }
 
@@ -185,7 +179,7 @@ namespace JsonWebToken
             }
 
             JsonWebToken jwt;
-            if (separators.Count + 1 == JwtConstants.JwsSeparatorsCount)
+            if (separators.Count == JwtConstants.JwsSeparatorsCount)
             {
                 jwt = new JsonWebToken(token, separators.ToArray());
             }

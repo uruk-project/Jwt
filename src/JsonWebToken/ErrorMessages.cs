@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.Serialization;
 
 namespace JsonWebToken
 {
@@ -51,5 +52,6 @@ namespace JsonWebToken
         public const string InvalidRsaKey = "Invalid RSA key: '{0}'. Both modulus (N) and exponent (E) must be present.";
 
         public const string InvalidSize = "The value of '{0}' must be '{1}' bits, but was {2}.";
+        public const string PayloadIncompatibleWithPlaintext = "The 'Plaintext' property is not compatible when a value is already defined within the 'Payload'.";
     }
 }

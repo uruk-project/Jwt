@@ -9,11 +9,14 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace JsonWebToken.Performance
 {
     [MemoryDiagnoser]
-    public class JwtWriter_BasicToken
+    public class JwtWriter_BigToken
     {
         private static readonly string SharedKey = "{" +
 "\"kty\": \"oct\"," +
@@ -26,17 +29,19 @@ namespace JsonWebToken.Performance
         private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SharedKey);
         private static readonly SymmetricJwk CustomSharedKey = JsonWebKey.FromJson<SymmetricJwk>(SharedKey);
 
+        private static readonly string BigClaim = CreateBigClaim();
+      
         //private static readonly SecurityTokenDescriptor WilsonEmptyDescriptor;
-        private static readonly SecurityTokenDescriptor WilsonSmallDescriptor = CreateWilsonSmallDescriptor();
+        private static readonly SecurityTokenDescriptor WilsonBigDescriptor = CreateWilsonBigDescriptor();
         //private static readonly SecurityTokenDescriptor WilsonMediumDescriptor;
         //private static readonly SecurityTokenDescriptor WilsonBigDescriptor;
 
         //private static readonly JsonWebTokenDescriptor CustomEmptyDescriptor;
-        private static readonly JwsDescriptor CustomSmallDescriptor = CreateCustomSmallDescriptor();
+        private static readonly JwsDescriptor JwtBigDescriptor = CreateCustomBigDescriptor();
         //private static readonly JsonWebTokenDescriptor CustomMediumDescriptor;
         //private static readonly JsonWebTokenDescriptor CustomBigDescriptor;
 
-        private static readonly Dictionary<string, object> JoseDotNetSmallDescriptor = CreateJoseDotNetSmallPayload();
+        private static readonly Dictionary<string, object> JoseDotNetBigDescriptor = CreateJoseDotNetBigPayload();
         private static readonly byte[] JoseDotNetSharedKey = CustomSharedKey.RawK;
 
         private static readonly IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
@@ -51,31 +56,39 @@ namespace JsonWebToken.Performance
         public static readonly JsonWebTokenWriter Writer = new JsonWebTokenWriter();
 
 
-        [Benchmark(Baseline = true)]
+
+        private static string CreateBigClaim()
+        {
+            var data = new byte[1024 * 1024];
+            RandomNumberGenerator.Fill(data);
+            return Encoding.UTF8.GetString(data);
+        }
+
+        //[Benchmark(Baseline = true)]
         public void Wilson()
         {
-            var token = Handler.CreateEncodedJwt(WilsonSmallDescriptor);
+            var token = Handler.CreateEncodedJwt(WilsonBigDescriptor);
         }
 
         [Benchmark]
-        public void Custom()
+        public void jwt()
         {
-            var value = Writer.WriteToken(CustomSmallDescriptor);
+            var value = Writer.WriteToken(JwtBigDescriptor);
         }
 
         //[Benchmark]
-        //public void JoseDotNet()
-        //{
-        //    var value = Jose.JWT.Encode(JoseDotNetSmallDescriptor, JoseDotNetSharedKey, JwsAlgorithm.HS256);
-        //}
+        public void JoseDotNet()
+        {
+            var value = Jose.JWT.Encode(JoseDotNetBigDescriptor, JoseDotNetSharedKey, JwsAlgorithm.HS256);
+        }
 
         //[Benchmark]
-        //public void JwtDotNet()
-        //{
-        //    var value = JwtDotNetEncoder.Encode(JoseDotNetSmallDescriptor, CustomSharedKey.RawK);
-        //}
+        public void JwtDotNet()
+        {
+            var value = JwtDotNetEncoder.Encode(JoseDotNetBigDescriptor, CustomSharedKey.RawK);
+        }
 
-        private static JwsDescriptor CreateCustomSmallDescriptor()
+        private static JwsDescriptor CreateCustomBigDescriptor()
         {
             var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
             var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
@@ -90,10 +103,11 @@ namespace JsonWebToken.Performance
                 Audience = audience,
                 Key = CustomSharedKey
             };
+            descriptor.Payload["big_claim"] = BigClaim;
             return descriptor;
         }
 
-        private static SecurityTokenDescriptor CreateWilsonSmallDescriptor()
+        private static SecurityTokenDescriptor CreateWilsonBigDescriptor()
         {
             var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
             var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
@@ -106,12 +120,13 @@ namespace JsonWebToken.Performance
                 Expires = expires,
                 Issuer = issuer,
                 Audience = audience,
-                SigningCredentials = new Microsoft.IdentityModel.Tokens.SigningCredentials(WilsonSharedKey, CustomSharedKey.Alg)
+                SigningCredentials = new SigningCredentials(WilsonSharedKey, CustomSharedKey.Alg),
+                Subject = new ClaimsIdentity(new List<Claim> { new Claim("big_claim", BigClaim) })
             };
             return descriptor;
         }
 
-        private static Dictionary<string, object> CreateJoseDotNetSmallPayload()
+        private static Dictionary<string, object> CreateJoseDotNetBigPayload()
         {
             var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
             var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
@@ -123,7 +138,8 @@ namespace JsonWebToken.Performance
               { "iat", issuedAt },
               { "exp", expires },
               { "iss", issuer },
-              { "aud", audience }
+              { "aud", audience },
+              { "big_claim", BigClaim }
             };
             return payload;
         }

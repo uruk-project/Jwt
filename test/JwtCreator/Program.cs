@@ -2,12 +2,13 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
+//using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace JwtCreator
 {
@@ -17,7 +18,6 @@ namespace JwtCreator
         {
             var jwks = GenerateKeys();
 
-            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
             var location = typeof(Program).GetTypeInfo().Assembly.Location;
             var dirPath = Path.GetDirectoryName(location);
             var keysPath = Path.Combine(dirPath, "./jwks.json"); ;
@@ -26,65 +26,122 @@ namespace JwtCreator
 
             var descriptorsPath = Path.Combine(dirPath, "./descriptors.json");
             var descriptorsString = File.ReadAllText(descriptorsPath);
-            var descriptors = JArray.Parse(descriptorsString).Select(t => new JsonWebTokenDescriptor(t.ToString()));
+            var descriptors = JArray.Parse(descriptorsString);
 
-            var handler = new JwtSecurityTokenHandler();
+            var writer = new JsonWebTokenWriter();
             var result = new JArray();
-            var descriptor = descriptors.First();
+            var json = descriptors.First() as JObject;
+
+
             foreach (var key in jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Sig))
             {
-                if (key.Alg.StartsWith("PS"))
-                {
-                    continue;
-                }
-
-                var payload = new System.IdentityModel.Tokens.Jwt.JwtPayload();
-                var signingCredentials = new Microsoft.IdentityModel.Tokens.SigningCredentials(new Microsoft.IdentityModel.Tokens.JsonWebKey(key.ToString()), key.Alg);
-                var header = new System.IdentityModel.Tokens.Jwt.JwtHeader(signingCredentials);
-                header.Remove("typ");
-                foreach (var claim in descriptor.Payload)
-                {
-                    payload.Add(claim.Key, claim.Value);
-                }
-
-                var token = new JwtSecurityToken(header, payload);
-                var jwt = handler.WriteToken(token);
+                var jwsDescriptor = new JwsDescriptor(json);
+                jwsDescriptor.Key = key;
+                var jwt = writer.WriteToken(jwsDescriptor);
                 result.Add(jwt);
             }
 
+            var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
+            var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
+            var issuer = "https://idp.example.com/";
+            var audience = "636C69656E745F6964";
+            //var jti = "756E69717565206964656E746966696572";
+            var bigDescriptor = new JwsDescriptor()
+            {
+                IssuedAt = issuedAt,
+                ExpirationTime = expires,
+                Issuer = issuer,
+                Audience = audience,
+                Key = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig)
+            };
+            var data = new byte[1024 * 1024];
+            RandomNumberGenerator.Fill(data);
+            bigDescriptor.Payload["big_claim"] = Base64Url.Base64UrlEncode(data);
+            var bigJwt = writer.WriteToken(bigDescriptor);
+            result.Add(bigJwt);
+
+            var signingKey = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
             var encryptionAlgorithms = new[] { SecurityAlgorithms.Aes128CbcHmacSha256, SecurityAlgorithms.Aes192CbcHmacSha384, SecurityAlgorithms.Aes256CbcHmacSha512 };
             foreach (var key in jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Enc))
             {
                 foreach (var enc in encryptionAlgorithms)
                 {
-                    var payload = new System.IdentityModel.Tokens.Jwt.JwtPayload();
-                    var signingKey = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
-                    var signingCredentials = new Microsoft.IdentityModel.Tokens.SigningCredentials(new Microsoft.IdentityModel.Tokens.JsonWebKey(signingKey.ToString()), signingKey.Alg);
-                    var header = new System.IdentityModel.Tokens.Jwt.JwtHeader(signingCredentials);
-                    header.Remove("typ");
-                    var token = new Microsoft.IdentityModel.Tokens.SecurityTokenDescriptor();
-                    token.SigningCredentials = signingCredentials;
-                    var encryptionCredentials = new Microsoft.IdentityModel.Tokens.EncryptingCredentials(new Microsoft.IdentityModel.Tokens.JsonWebKey(key.ToString()), key.Alg, enc);
-                    token.EncryptingCredentials = encryptionCredentials;
-                    token.Subject = new ClaimsIdentity();
-                    foreach (var claim in descriptor.Payload)
+                    if (!key.IsSupportedAlgorithm(enc))
                     {
-                        token.Subject.AddClaim(new Claim(claim.Key, claim.Value.ToString()));
+                        continue;
                     }
 
-                    token.Expires = DateTime.UtcNow.AddYears(10);
-                    try
-                    {
-                        var jwt = handler.CreateEncodedJwt(token);
-                        result.Add(jwt);
-                    }
-                    catch (Exception e)
-                    {
-                    }
+                    var jweDescriptor = new JweDescriptor(json);
+                    jweDescriptor.Payload.Key = signingKey;
+                    jweDescriptor.Key = key;
+                    jweDescriptor.EncryptionAlgorithm = enc;
+                    var jwt = writer.WriteToken(jweDescriptor);
+                    result.Add(jwt);
                 }
             }
 
-            var invalidJwt = GenerateInvalidJwt(jwks, descriptor);
+
+
+
+            //return;
+            //foreach (var key in jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Sig))
+            //{
+            //    if (key.Alg.StartsWith("PS"))
+            //    {
+            //        continue;
+            //    }
+
+            //    var payload = new System.IdentityModel.Tokens.Jwt.JwtPayload();
+            //    var signingCredentials = new Microsoft.IdentityModel.Tokens.SigningCredentials(new Microsoft.IdentityModel.Tokens.JsonWebKey(key.ToString()), key.Alg);
+            //    var header = new System.IdentityModel.Tokens.Jwt.JwtHeader(signingCredentials);
+            //    header.Remove("typ");
+            //    foreach (var claim in descriptor.Payload)
+            //    {
+            //        payload.Add(claim.Key, claim.Value);
+            //    }
+
+            //    var token = new JwtSecurityToken(header, payload);
+            //    var jwt = handler.WriteToken(token);
+            //    result.Add(jwt);
+            //}
+
+            //var encryptionAlgorithms = new[] { SecurityAlgorithms.Aes128CbcHmacSha256, SecurityAlgorithms.Aes192CbcHmacSha384, SecurityAlgorithms.Aes256CbcHmacSha512 };
+            //foreach (var key in jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Enc))
+            //{
+            //    foreach (var enc in encryptionAlgorithms)
+            //    {
+            //        var signingKey = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
+            //        var signingCredentials = new Microsoft.IdentityModel.Tokens.SigningCredentials(new Microsoft.IdentityModel.Tokens.JsonWebKey(signingKey.ToString()), signingKey.Alg);
+            //        var tokenDescriptor = new Microsoft.IdentityModel.Tokens.SecurityTokenDescriptor();
+            //        tokenDescriptor.SigningCredentials = signingCredentials;
+            //        tokenDescriptor.Subject = new ClaimsIdentity();
+            //        var claims = new List<Claim>();
+            //        foreach (var claim in descriptor.Payload)
+            //        {
+            //            tokenDescriptor.Subject.AddClaim(new Claim(claim.Key, claim.Value.ToString()));
+            //        }
+
+            //        var encryptionCredentials = new Microsoft.IdentityModel.Tokens.EncryptingCredentials(new Microsoft.IdentityModel.Tokens.JsonWebKey(key.ToString()), key.Alg, enc);
+            //        tokenDescriptor.EncryptingCredentials = encryptionCredentials;
+            //        tokenDescriptor.Expires = DateTime.UtcNow.AddYears(10);
+
+            //        try
+            //        {
+            //            var securityToken = handler.CreateJwtSecurityToken(tokenDescriptor);
+
+            //            securityToken.Header["cty"] = "JWT";
+            //            securityToken.Header["custom"] = "value";
+            //            securityToken.Header.Remove("typ");
+            //            var jwt = handler.WriteToken(securityToken);
+            //            result.Add(jwt);
+            //        }
+            //        catch (Exception e)
+            //        {
+            //        }
+            //    }
+            //}
+
+            var invalidJwt = GenerateInvalidJwt(jwks, json);
 
             var jwtPath = Path.Combine(dirPath, "./jwts.json");
             var invalidJwtsPath = Path.Combine(dirPath, "./invalid_jwts.json");
@@ -93,69 +150,90 @@ namespace JwtCreator
             File.WriteAllText(keysPath, jwks.ToString());
         }
 
-        private static JArray GenerateInvalidJwt(JsonWebKeySet jwks, JsonWebTokenDescriptor descriptor)
+        private static JArray GenerateInvalidJwt(JsonWebKeySet jwks, JObject json)
         {
             var jwts = new JArray();
 
-            var payload = CreatePayload(descriptor, TokenValidationStatus.Expired);
+            var payload = CreateJws(json, TokenValidationStatus.Expired);
             var token = CreateToken(jwks, TokenValidationStatus.Expired, payload);
             jwts.Add(token);
 
-            payload = CreatePayload(descriptor, TokenValidationStatus.InvalidAudience);
+            payload = CreateJws(json, TokenValidationStatus.InvalidAudience);
             token = CreateToken(jwks, TokenValidationStatus.InvalidAudience, payload);
             jwts.Add(token);
 
-            payload = CreatePayload(descriptor, TokenValidationStatus.InvalidIssuer);
+            payload = CreateJws(json, TokenValidationStatus.InvalidIssuer);
             token = CreateToken(jwks, TokenValidationStatus.InvalidIssuer, payload);
             jwts.Add(token);
 
-            payload = CreatePayload(descriptor, TokenValidationStatus.InvalidLifetime);
+            payload = CreateJws(json, TokenValidationStatus.InvalidLifetime);
             token = CreateToken(jwks, TokenValidationStatus.InvalidLifetime, payload);
             jwts.Add(token);
 
-            payload = CreatePayload(descriptor, TokenValidationStatus.MissingAudience);
+            payload = CreateJws(json, TokenValidationStatus.MissingAudience);
             token = CreateToken(jwks, TokenValidationStatus.MissingAudience, payload);
             jwts.Add(token);
 
-            payload = CreatePayload(descriptor, TokenValidationStatus.MissingIssuer);
+            payload = CreateJws(json, TokenValidationStatus.MissingIssuer);
             token = CreateToken(jwks, TokenValidationStatus.MissingIssuer, payload);
             jwts.Add(token);
 
-            payload = CreatePayload(descriptor, TokenValidationStatus.NoExpiration);
-            token = CreateToken(jwks, TokenValidationStatus.NoExpiration, payload);
+            payload = CreateJws(json, TokenValidationStatus.MissingExpirationTime);
+            token = CreateToken(jwks, TokenValidationStatus.MissingExpirationTime, payload);
             jwts.Add(token);
 
-            payload = CreatePayload(descriptor, TokenValidationStatus.NotYetValid);
+            payload = CreateJws(json, TokenValidationStatus.NotYetValid);
             token = CreateToken(jwks, TokenValidationStatus.NotYetValid, payload);
             jwts.Add(token);
 
-            payload = CreatePayload(descriptor, TokenValidationStatus.Success);
+            payload = CreateJws(json, TokenValidationStatus.Success);
             token = CreateToken(jwks, TokenValidationStatus.InvalidSignature, payload);
             jwts.Add(token);
 
-            payload = CreatePayload(descriptor, TokenValidationStatus.Success);
+            payload = CreateJws(json, TokenValidationStatus.Success);
             token = CreateToken(jwks, TokenValidationStatus.MalformedSignature, payload);
             jwts.Add(token);
 
-            payload = CreatePayload(descriptor, TokenValidationStatus.Success);
+            payload = CreateJws(json, TokenValidationStatus.Success);
             token = CreateToken(jwks, TokenValidationStatus.MalformedToken, payload);
             jwts.Add(token);
 
-            payload = CreatePayload(descriptor, TokenValidationStatus.Success);
+            payload = CreateJws(json, TokenValidationStatus.Success);
             token = CreateToken(jwks, TokenValidationStatus.MissingSignature, payload);
             jwts.Add(token);
 
             return jwts;
         }
 
-        private static System.IdentityModel.Tokens.Jwt.JwtPayload CreatePayload(JsonWebTokenDescriptor descriptor, TokenValidationStatus status)
+        private static JweDescriptor CreateJwe(JObject descriptor, TokenValidationStatus status)
         {
-            var payload = new System.IdentityModel.Tokens.Jwt.JwtPayload();
-            foreach (var claim in descriptor.Payload)
+            var payload = new JObject();
+            foreach (var claim in descriptor)
             {
                 switch (status)
                 {
-                    case TokenValidationStatus.NoExpiration:
+                    case TokenValidationStatus.MissingEncryptionAlgorithm:
+                        break;
+                    case TokenValidationStatus.DecryptionFailed:
+                        break;
+                    default:
+                        break;
+                }
+
+                payload.Add(claim.Key, claim.Value);
+            }
+
+            return new JweDescriptor(payload);
+        }
+
+        private static JwsDescriptor CreateJws(JObject descriptor, TokenValidationStatus status)
+        {
+            var payload = new JObject();
+            foreach (var claim in descriptor)
+            {
+                switch (status)
+                {
+                    case TokenValidationStatus.MissingExpirationTime:
                         if (claim.Key == "exp")
                         {
                             continue;
@@ -165,7 +243,7 @@ namespace JwtCreator
                         break;
                     case TokenValidationStatus.InvalidSignature:
                         break;
-                    case TokenValidationStatus.KeyNotFound:
+                    case TokenValidationStatus.SignatureKeyNotFound:
                         break;
                     case TokenValidationStatus.MalformedSignature:
                         break;
@@ -246,29 +324,27 @@ namespace JwtCreator
                 payload.Add(claim.Key, claim.Value);
             }
 
-            return payload;
+            return new JwsDescriptor(payload);
         }
 
-        private static JObject CreateToken(JsonWebKeySet jwks, TokenValidationStatus status, System.IdentityModel.Tokens.Jwt.JwtPayload payload)
+        private static JObject CreateToken(TokenValidationStatus status, JwtDescriptor descriptor)
         {
-            var key = jwks.Keys.First(k => k.Use == "sig" && k.Alg == "HS256");
-            var signingCredentials = new Microsoft.IdentityModel.Tokens.SigningCredentials(new Microsoft.IdentityModel.Tokens.JsonWebKey(key.ToString()), key.Alg);
-            var header = new System.IdentityModel.Tokens.Jwt.JwtHeader(signingCredentials);
-            header.Remove("typ");
             switch (status)
             {
-                case TokenValidationStatus.KeyNotFound:
-                    header["kid"] += "x";
+                case TokenValidationStatus.SignatureKeyNotFound:
+                    descriptor.Header["kid"] += "x";
                     break;
                 case TokenValidationStatus.MissingEncryptionAlgorithm:
+                    descriptor.Header["enc"] = null;
                     break;
-                default:
+                case TokenValidationStatus.MissingContentType:
+                    descriptor.Header["cty"] = null;
                     break;
             }
 
-            var token = new JwtSecurityToken(header, payload);
-            var handler = new JwtSecurityTokenHandler();
-            var jwt = handler.WriteToken(token);
+            var token = descriptor;
+            var writer = new JsonWebTokenWriter();
+            var jwt = writer.WriteToken(token);
 
             switch (status)
             {
@@ -295,6 +371,25 @@ namespace JwtCreator
             o["jwt"] = jwt;
             o["status"] = status.ToString();
             return o;
+        }
+        private static JObject CreateToken(JsonWebKeySet jwks, TokenValidationStatus status, JwsDescriptor descriptor)
+        {
+            var key = jwks.Keys.First(k => k.Use == "sig" && k.Alg == "HS256");
+            var encKey = jwks.Keys.First(k => k.Use == "enc" && k.Alg == "dir");
+            descriptor.Key = key;
+
+            return CreateToken(status, descriptor);
+        }
+
+        private static JObject CreateToken(JsonWebKeySet jwks, TokenValidationStatus status, JweDescriptor descriptor)
+        {
+            var key = jwks.Keys.First(k => k.Use == "sig" && k.Alg == "HS256");
+            var encKey = jwks.Keys.First(k => k.Use == "enc" && k.Alg == "dir");
+            descriptor.Payload.Key = key;
+            descriptor.Key = encKey;
+            descriptor.EncryptionAlgorithm = SecurityAlgorithms.Aes128CbcHmacSha256;
+
+            return CreateToken(status, descriptor);
         }
 
         private static JsonWebKeySet GenerateKeys()

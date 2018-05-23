@@ -29,7 +29,7 @@ namespace JsonWebToken
                 return _d;
             }
 
-            private set
+            set
             {
                 _d = value;
                 if (value != null)

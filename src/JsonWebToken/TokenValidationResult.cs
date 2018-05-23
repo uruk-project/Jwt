@@ -95,7 +95,7 @@ namespace JsonWebToken
         {
             return new TokenValidationResult
             {
-                Status = TokenValidationStatus.KeyNotFound,
+                Status = TokenValidationStatus.SignatureKeyNotFound,
                 Token = token
             };
         }
@@ -121,7 +121,7 @@ namespace JsonWebToken
         {
             return new TokenValidationResult
             {
-                Status = TokenValidationStatus.NoExpiration,
+                Status = TokenValidationStatus.MissingExpirationTime,
                 Token = token
             };
         }
@@ -131,6 +131,15 @@ namespace JsonWebToken
             return new TokenValidationResult
             {
                 Status = TokenValidationStatus.MissingEncryptionAlgorithm,
+                Token = jwtToken
+            };
+        }
+
+        public static TokenValidationResult MissingContentType(JsonWebToken jwtToken)
+        {
+            return new TokenValidationResult
+            {
+                Status = TokenValidationStatus.MissingContentType,
                 Token = jwtToken
             };
         }
