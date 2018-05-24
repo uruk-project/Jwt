@@ -51,7 +51,7 @@ Current version - 0.1.0
 	var token = writer.WriteToken(descriptor);
 ````
 ## Benchmark
-See [benchmarks.md]. 
+See (benchmarks.md)[benchmarks]. 
 This library is 300x faster than the Microsoft.IdentityModel.Tokens.Jwt in some cases.
 In real scenario, this library is 25% fastest for token writing, and 65% fastest for token reading and validation. 
 
@@ -70,9 +70,9 @@ The main reason of the speed of this library is the usage of the new API provide
 | ES256        | ECDSA using P-256 and SHA-256 | Recommended+                        | <ul><li> - [x] </li></ul>
 | ES384        | ECDSA using P-384 and SHA-384 | Optional                            | <ul><li> - [x] </li></ul>
 | ES512        | ECDSA using P-521 and SHA-512 | Optional                            | <ul><li> - [x] </li></ul>
-| PS256        | RSASSA-PSS using SHA-256 and MGF1 with SHA-256 | Optional           | <ul><li> - [ ] </li></ul>
-| PS384        | RSASSA-PSS using SHA-384 and MGF1 with SHA-384 | Optional           | <ul><li> - [ ] </li></ul>
-| PS512        | RSASSA-PSS using SHA-512 and MGF1 with SHA-512 | Optional           | <ul><li> - [ ] </li></ul>
+| PS256        | RSASSA-PSS using SHA-256 and MGF1 with SHA-256 | Optional           | <ul><li> - [x] </li></ul>
+| PS384        | RSASSA-PSS using SHA-384 and MGF1 with SHA-384 | Optional           | <ul><li> - [x] </li></ul>
+| PS512        | RSASSA-PSS using SHA-512 and MGF1 with SHA-512 | Optional           | <ul><li> - [x] </li></ul>
 | none         | No digital signature or MAC performed  | Optional                   | <ul><li> - [x] </li></ul>
 
 ### JWE encryption algorithms
@@ -90,9 +90,9 @@ The main reason of the speed of this library is the usage of the new API provide
 |--------------------|--------------------|--------|----------------| ---
 | RSA1_5             | RSAES-PKCS1-v1_5                                                              | (none)              | Recommended-   | <ul><li> - [x] </li></ul>
 | RSA-OAEP           | RSAES OAEP using default parameters                                           | (none)              | Recommended+   | <ul><li> - [x] </li></ul>
-| RSA-OAEP-256       | RSAES OAEP using SHA-256 and MGF1 with SHA-256                                | (none)              | Optional       | <ul><li> - [ ] </li></ul>
+| RSA-OAEP-256       | RSAES OAEP using SHA-256 and MGF1 with SHA-256                                | (none)              | Optional       | <ul><li> - [x] </li></ul>
 | A128KW             | AES Key Wrap with default initial value using 128-bit key                     | (none)              | Recommended    | <ul><li> - [x] </li></ul>
-| A192KW             | AES Key Wrap with default initial value using 192-bit key                     | (none)              | Optional       | <ul><li> - [ ] </li></ul>
+| A192KW             | AES Key Wrap with default initial value using 192-bit key                     | (none)              | Optional       | <ul><li> - [x] </li></ul>
 | A256KW             | AES Key Wrap with default initial value using 256-bit key                     | (none)              | Recommended    | <ul><li> - [x] </li></ul>
 | dir                | Direct use of a shared symmetric key as the CEK                               | (none)              | Recommended    | <ul><li> - [x] </li></ul>
 | ECDH-ES            | Elliptic Curve Diffie-Hellman Ephemeral Static key agreement using Concat KDF | "epk", "apu", "apv" | Recommended+   | <ul><li> - [ ] </li></ul>
