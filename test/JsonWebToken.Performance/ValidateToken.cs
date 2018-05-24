@@ -37,17 +37,6 @@ namespace JsonWebToken.Performance
 
         private static readonly Microsoft.IdentityModel.Tokens.TokenValidationParameters wilsonParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters() { IssuerSigningKey = WilsonSharedKey, ValidateAudience = false, ValidateIssuer = false, ValidateLifetime = false };
 
-        [Benchmark]
-        [ArgumentsSource(nameof(GetTokens))]
-        public void Wilson(string token)
-        {
-            var result = Handler.ValidateToken(Tokens.ValidTokens[token], wilsonParameters, out var securityToken);
-            if (result == null)
-            {
-                throw new Exception();
-            }
-        }
-
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetTokens))]
         public void Jwt(string token)
@@ -56,6 +45,17 @@ namespace JsonWebToken.Performance
             if (!result.Succedeed)
             {
                 throw new Exception(result.Status.ToString());
+            }
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(GetTokens))]
+        public void Wilson(string token)
+        {
+            var result = Handler.ValidateToken(Tokens.ValidTokens[token], wilsonParameters, out var securityToken);
+            if (result == null)
+            {
+                throw new Exception();
             }
         }
 

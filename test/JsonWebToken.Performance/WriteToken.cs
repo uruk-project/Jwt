@@ -41,18 +41,18 @@ namespace JsonWebToken.Performance
         private static readonly Dictionary<string, Dictionary<string, object>> DictionaryPayloads = CreateDictionaryDescriptors();
         private static readonly Dictionary<string, SecurityTokenDescriptor> WilsonPayloads = CreateWilsonDescriptors();
 
-        [Benchmark]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public void Wilson(string payload)
-        {
-            var token = Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-        }
-
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetPayloads))]
         public void Jwt(string payload)
         {
             var value = Writer.WriteToken(JwtPayloads[payload]);
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(GetPayloads))]
+        public void Wilson(string payload)
+        {
+            var token = Handler.CreateEncodedJwt(WilsonPayloads[payload]);
         }
 
         [Benchmark]

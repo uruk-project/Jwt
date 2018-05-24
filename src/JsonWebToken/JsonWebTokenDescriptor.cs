@@ -222,7 +222,7 @@ namespace JsonWebToken
             {
                 //Span<byte> buffer = stackalloc byte[length];
                 var array = ArrayPool<byte>.Shared.Rent(length);
-                Span<byte> buffer = array; 
+                Span<byte> buffer = array;
                 try
                 {
                     header.TryBase64UrlEncode(buffer, out int headerBytesWritten);
@@ -245,7 +245,7 @@ namespace JsonWebToken
                     }
 
 #if NETCOREAPP2_1
-                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount + signatureBytesWritten));
+                    string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount + signatureBytesWritten));
 #else
                     string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount + signatureBytesWritten).ToArray());
 #endif

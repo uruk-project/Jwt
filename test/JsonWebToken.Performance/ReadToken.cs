@@ -32,23 +32,23 @@ namespace JsonWebToken.Performance
         private static readonly TokenValidationParameters validationParameters = TokenValidationParameters.NoValidation;
         public static readonly JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler() { MaximumTokenSizeInBytes = 4 * 1024 * 1024 };
 
-        [Benchmark]
-        [ArgumentsSource(nameof(GetTokens))]
-        public void Wilson(string token)
-        {
-            var result = Handler.ReadJwtToken(Tokens.ValidTokens[token]);
-            if (result == null)
-            {
-                throw new Exception();
-            }
-        }
-
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetTokens))]
         public void Jwt(string token)
         {
             var result = Reader.TryReadToken(Tokens.ValidTokens[token], validationParameters);
             if (!result.Succedeed)
+            {
+                throw new Exception();
+            }
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(GetTokens))]
+        public void Wilson(string token)
+        {
+            var result = Handler.ReadJwtToken(Tokens.ValidTokens[token]);
+            if (result == null)
             {
                 throw new Exception();
             }
