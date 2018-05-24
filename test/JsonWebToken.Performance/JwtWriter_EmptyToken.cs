@@ -12,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 namespace JsonWebToken.Performance
 {
     [MemoryDiagnoser]
+    [Config(typeof(DefaultCoreConfig))]
     public class JwtWriter_EmptyToken
     {
         private static readonly IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
@@ -32,7 +33,6 @@ namespace JsonWebToken.Performance
             var value = Handler.CreateEncodedJwt(descriptor);
         }
 
-
         [Benchmark]
         public void JoseDotNet()
         {
@@ -48,7 +48,7 @@ namespace JsonWebToken.Performance
         }
 
         [Benchmark]
-        public void Custom()
+        public void Jwt()
         {
             var descriptor = new JwsDescriptor();
             var value = Writer.WriteToken(descriptor);

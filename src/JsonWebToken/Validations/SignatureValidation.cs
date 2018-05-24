@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
 
@@ -47,32 +48,43 @@ namespace JsonWebToken.Validations
             unsafe
             {
 #if NETCOREAPP2_1
-                Span<byte> encodedBytes = stackalloc byte[length];
-                Encoding.UTF8.GetBytes(jwt.RawData.AsSpan().Slice(0, length), encodedBytes);
-#else
-                var encodedBytes = Encoding.UTF8.GetBytes(jwt.RawData.Substring(0, length));
-#endif
-                JwtHeader header;
+                var array = ArrayPool<byte>.Shared.Rent(length);
+                Span<byte> encodedBytes = array.AsSpan().Slice(0, length);
                 try
                 {
-                    header = jwt.Header;
-                }
-                catch (FormatException)
-                {
-                    return TokenValidationResult.MalformedToken();
-                }
-
-                var keys = ResolveSigningKey(jwt);
-                foreach (var key in keys)
-                {
-                    if (TryValidateSignature(encodedBytes, signatureBytes, key, key.Alg))
+                    Encoding.UTF8.GetBytes(jwt.RawData.AsSpan().Slice(0, length), encodedBytes);
+#else
+                    var encodedBytes = Encoding.UTF8.GetBytes(jwt.RawData.Substring(0, length));
+#endif
+                    JwtHeader header;
+                    try
                     {
-                        jwt.Header.SigningKey = key;
-                        return TokenValidationResult.Success(jwt);
+                        header = jwt.Header;
+                    }
+                    catch (FormatException)
+                    {
+                        return TokenValidationResult.MalformedToken();
                     }
 
-                    keysTried = true;
+                    var keys = ResolveSigningKey(jwt);
+                    foreach (var key in keys)
+                    {
+                        if (TryValidateSignature(encodedBytes, signatureBytes, key, key.Alg))
+                        {
+                            jwt.Header.SigningKey = key;
+                            return TokenValidationResult.Success(jwt);
+                        }
+
+                        keysTried = true;
+
+                    }
+#if NETCOREAPP2_1
                 }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(array);
+                }
+#endif
             }
 
             if (keysTried)

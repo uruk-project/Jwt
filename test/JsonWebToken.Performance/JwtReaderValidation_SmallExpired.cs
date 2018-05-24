@@ -11,6 +11,7 @@ using System.IdentityModel.Tokens.Jwt;
 namespace JsonWebToken.Performance
 {
     [MemoryDiagnoser]
+    [Config(typeof(DefaultCoreConfig))]
     public class JwtReaderValidation_SmallExpired
     {
         private static readonly IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
@@ -24,22 +25,21 @@ namespace JsonWebToken.Performance
 
         private const string Token = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiaWF0IjoxNDA4MTg0ODQ1LCJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJleHAiOjE2MjgxODQ4NDV9.eQCYbBSuHsDLzuYep9-PkFgCi-HhaX9LyZAh1r3xSQY";
 
-        private static readonly string SharedKey = "{" +
-                                                   "\"kty\": \"oct\"," +
-                                                   "\"use\": \"sig\"," +
-                                                   "\"kid\": \"kid-hs256\"," +
-                                                   "\"k\": \"GdaXeVyiJwKmz5LFhcbcng\"," +
-                                                   "\"alg\": \"HS256\"" +
-                                                   "}";
-        private static readonly SymmetricJwk CustomSharedKey = JsonWebKey.FromJson<SymmetricJwk>(SharedKey);
-        public static readonly JsonWebTokenReader Reader = new JsonWebTokenReader(CustomSharedKey);
+        private static readonly SymmetricJwk SymmetricKey = new SymmetricJwk
+        {
+            Use = "sig",
+            Kid = "kid-hs256",
+            K = "GdaXeVyiJwKmz5LFhcbcng",
+            Alg = "HS256"
+        };
+        public static readonly JsonWebTokenReader Reader = new JsonWebTokenReader(SymmetricKey);
         private static readonly TokenValidationParameters parameters = new TokenValidationBuilder()
-                                                                    .RequireSignature(CustomSharedKey)
+                                                                    .RequireSignature(SymmetricKey)
                                                                     .AddLifetimeValidation()
                                                                     .Build();
 
 
-        private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SharedKey);
+        private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SymmetricKey.ToString());
 
         [Benchmark(Baseline = true)]
         public void Wilson()
@@ -67,24 +67,13 @@ namespace JsonWebToken.Performance
         [Benchmark]
         public void JoseDotNet()
         {
-
-            try
-            {
-                var value = Jose.JWT.Decode(Token, CustomSharedKey.RawK, JwsAlgorithm.HS256);
-            }
-            catch
-            {
-            }
+                var value = Jose.JWT.Decode(Token, SymmetricKey.RawK, JwsAlgorithm.HS256);
         }
 
         [Benchmark]
         public void JwtDotNet()
         {
-            try
-            {
-                var value = JwtDotNetDecoder.Decode(Token, CustomSharedKey.RawK, true);
-            }
-            catch { }
+                var value = JwtDotNetDecoder.Decode(Token, SymmetricKey.RawK, true);
         }
     }
 }

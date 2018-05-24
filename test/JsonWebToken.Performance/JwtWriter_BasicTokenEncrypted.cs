@@ -9,36 +9,36 @@ using System.IdentityModel.Tokens.Jwt;
 namespace JsonWebToken.Performance
 {
     [MemoryDiagnoser]
+    [Config(typeof(DefaultCoreConfig))]
     public class JwtWriter_BasicTokenEncrypted
     {
-        private static readonly string SigningKey = "{" +
-"\"kty\": \"oct\"," +
-"\"use\": \"sig\"," +
-"\"kid\": \"signing-key\"," +
-"\"k\": \"HWF8LuG4F9TNWNsTKNvAlxpcj_e4Cp2BFmEMCAoWEOQ\"," +
-"\"alg\": \"" + SecurityAlgorithms.HmacSha256 + "\"" +
-"}";
-        private static readonly string DirectEncryptionKey = "{" +
-"\"kty\": \"oct\"," +
-"\"use\": \"enc\"," +
-"\"kid\": \"encryption-key\"," +
-"\"k\": \"HWF8LuG4F9TNWNsTKNvAlxpcj_e4Cp2BFmEMCAoWEOQ\"," +
-"\"alg\": \"" + SecurityAlgorithms.Direct + "\"" +
-"}";
-        private static readonly string KeyWrapEncryptionKey = "{" +
-"\"kty\": \"oct\"," +
-"\"use\": \"enc\"," +
-"\"kid\": \"encryption-key\"," +
-"\"k\": \"HWF8LuG4F9TNWNsTKNvAlxpcj_e4Cp2BFmEMCAoWEOQ\"," +
-"\"alg\": \"" + SecurityAlgorithms.Aes256KW + "\"" +
-"}";
-        private static readonly SymmetricJwk CustomSigningKey = JsonWebKey.FromJson<SymmetricJwk>(SigningKey);
+        private static readonly SymmetricJwk SigningKey = new SymmetricJwk
+        {
+            Use = "sig",
+            Kid = "signing-key",
+            K = "HWF8LuG4F9TNWNsTKNvAlxpcj_e4Cp2BFmEMCAoWEOQ",
+            Alg = SecurityAlgorithms.HmacSha256
+        };
+        private static readonly SymmetricJwk DirectEncryptionKey = new SymmetricJwk
+        {
+            Use = "enc",
+            Kid = "encryption-key",
+            K = "HWF8LuG4F9TNWNsTKNvAlxpcj_e4Cp2BFmEMCAoWEOQ",
+            Alg = SecurityAlgorithms.Direct
+        };
+        private static readonly SymmetricJwk KeyWrapEncryptionKey = new SymmetricJwk
+        {
+            Use = "enc",
+            Kid = "encryption-key",
+            K = "HWF8LuG4F9TNWNsTKNvAlxpcj_e4Cp2BFmEMCAoWEOQ",
+            Alg = SecurityAlgorithms.Aes256KW
+        };
 
-        private static readonly SecurityTokenDescriptor WilsonDirectDescriptor = CreateWilsonSmallDescriptor(DirectEncryptionKey);
-        private static readonly SecurityTokenDescriptor WilsonKWDescriptor = CreateWilsonSmallDescriptor(KeyWrapEncryptionKey);
+        private static readonly SecurityTokenDescriptor WilsonDirectDescriptor = CreateWilsonDescriptor(DirectEncryptionKey.ToString());
+        private static readonly SecurityTokenDescriptor WilsonKWDescriptor = CreateWilsonDescriptor(KeyWrapEncryptionKey.ToString());
 
-        private static readonly JweDescriptor CustomDirectDescriptor = CreateCustomSmallDescriptor(DirectEncryptionKey);
-        private static readonly JweDescriptor CustomKWDescriptor = CreateCustomSmallDescriptor(KeyWrapEncryptionKey);
+        private static readonly JweDescriptor CustomDirectDescriptor = CreateCustomDescriptor(DirectEncryptionKey);
+        private static readonly JweDescriptor CustomKWDescriptor = CreateCustomDescriptor(KeyWrapEncryptionKey);
 
         public static readonly JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler();
 
@@ -69,7 +69,7 @@ namespace JsonWebToken.Performance
             var value = Writer.WriteToken(CustomKWDescriptor);
         }
 
-        private static JweDescriptor CreateCustomSmallDescriptor(string encryptionKey)
+        private static JweDescriptor CreateCustomDescriptor(JsonWebKey encryptionKey)
         {
             var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
             var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
@@ -82,17 +82,17 @@ namespace JsonWebToken.Performance
                 ExpirationTime = expires,
                 Issuer = issuer,
                 Audience = audience,
-                Key = CustomSigningKey
+                Key = SigningKey
             };
             var descriptor = new JweDescriptor(jws)               
                 {
-                    Key = JsonWebKey.FromJson(encryptionKey),
+                    Key = encryptionKey,
                     EncryptionAlgorithm = SecurityAlgorithms.Aes128CbcHmacSha256
                 };
             return descriptor;
         }
 
-        private static SecurityTokenDescriptor CreateWilsonSmallDescriptor(string encryptionKeyJson)
+        private static SecurityTokenDescriptor CreateWilsonDescriptor(string encryptionKeyJson)
         {
             var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
             var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
@@ -100,7 +100,7 @@ namespace JsonWebToken.Performance
             var audience = "636C69656E745F6964";
             //var jti = "756E69717565206964656E746966696572";
             var encryptionKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(encryptionKeyJson);
-            var signingKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SigningKey);
+            var signingKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SigningKey.ToString());
             var descriptor = new SecurityTokenDescriptor()
             {
                 IssuedAt = issuedAt,

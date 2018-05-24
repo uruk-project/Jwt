@@ -268,7 +268,6 @@ namespace JsonWebToken
         /// Serializes this instance to JSON.
         /// </summary>
         /// <returns>This instance as JSON.</returns>
-        /// <remarks>Use <see cref="JsonExtensions.Serializer"/> to customize JSON serialization.</remarks>
         public string SerializeToJson()
         {
             return _inner.ToString(Formatting.None);

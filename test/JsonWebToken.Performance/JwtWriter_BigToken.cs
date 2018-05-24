@@ -16,33 +16,26 @@ using System.Text;
 namespace JsonWebToken.Performance
 {
     [MemoryDiagnoser]
+    [Config(typeof(DefaultCoreConfig))]
     public class JwtWriter_BigToken
     {
-        private static readonly string SharedKey = "{" +
-"\"kty\": \"oct\"," +
-"\"use\": \"sig\"," +
-"\"kid\": \"kid-hs256\"," +
-"\"k\": \"GdaXeVyiJwKmz5LFhcbcng\"," +
-"\"alg\": \"HS256\"" +
-"}";
+        private static readonly SymmetricJwk SymmetricKey = new SymmetricJwk
+        {
+            Use = "sig",
+            Kid = "kid-hs256",
+            K = "GdaXeVyiJwKmz5LFhcbcng",
+            Alg = "HS256"
+        };
 
-        private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SharedKey);
-        private static readonly SymmetricJwk CustomSharedKey = JsonWebKey.FromJson<SymmetricJwk>(SharedKey);
-
-        private static readonly string BigClaim = CreateBigClaim();
+        private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SymmetricKey.ToString());
+        
+        private static readonly string BigClaim = CreateClaim();
       
-        //private static readonly SecurityTokenDescriptor WilsonEmptyDescriptor;
-        private static readonly SecurityTokenDescriptor WilsonBigDescriptor = CreateWilsonBigDescriptor();
-        //private static readonly SecurityTokenDescriptor WilsonMediumDescriptor;
-        //private static readonly SecurityTokenDescriptor WilsonBigDescriptor;
+        private static readonly SecurityTokenDescriptor WilsonDescriptor = CreateWilsonDescriptor();
+        private static readonly JwsDescriptor JwtDescriptor = CreateJwtDescriptor();
 
-        //private static readonly JsonWebTokenDescriptor CustomEmptyDescriptor;
-        private static readonly JwsDescriptor JwtBigDescriptor = CreateCustomBigDescriptor();
-        //private static readonly JsonWebTokenDescriptor CustomMediumDescriptor;
-        //private static readonly JsonWebTokenDescriptor CustomBigDescriptor;
-
-        private static readonly Dictionary<string, object> JoseDotNetBigDescriptor = CreateJoseDotNetBigPayload();
-        private static readonly byte[] JoseDotNetSharedKey = CustomSharedKey.RawK;
+        private static readonly Dictionary<string, object> JoseDotNetDescriptor = CreateJoseDotNetPayload();
+        private static readonly byte[] JoseDotNetSharedKey = SymmetricKey.RawK;
 
         private static readonly IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
         private static readonly IJsonSerializer serializer = new JsonNetSerializer();
@@ -55,40 +48,42 @@ namespace JsonWebToken.Performance
 
         public static readonly JsonWebTokenWriter Writer = new JsonWebTokenWriter();
 
-
-
-        private static string CreateBigClaim()
+        private static string CreateClaim()
         {
             var data = new byte[1024 * 1024];
-            RandomNumberGenerator.Fill(data);
-            return Encoding.UTF8.GetString(data);
+            using (var rnd = RandomNumberGenerator.Create())
+            {
+                rnd.GetBytes(data);
+            }
+
+            return Base64Url.Base64UrlEncode(data);
         }
 
-        //[Benchmark(Baseline = true)]
+        [Benchmark(Baseline = true)]
         public void Wilson()
         {
-            var token = Handler.CreateEncodedJwt(WilsonBigDescriptor);
+            var token = Handler.CreateEncodedJwt(WilsonDescriptor);
         }
 
         [Benchmark]
-        public void jwt()
+        public void Jwt()
         {
-            var value = Writer.WriteToken(JwtBigDescriptor);
+            var value = Writer.WriteToken(JwtDescriptor);
         }
 
-        //[Benchmark]
+        [Benchmark]
         public void JoseDotNet()
         {
-            var value = Jose.JWT.Encode(JoseDotNetBigDescriptor, JoseDotNetSharedKey, JwsAlgorithm.HS256);
+            var value = Jose.JWT.Encode(JoseDotNetDescriptor, JoseDotNetSharedKey, JwsAlgorithm.HS256);
         }
 
-        //[Benchmark]
+        [Benchmark]
         public void JwtDotNet()
         {
-            var value = JwtDotNetEncoder.Encode(JoseDotNetBigDescriptor, CustomSharedKey.RawK);
+            var value = JwtDotNetEncoder.Encode(JoseDotNetDescriptor, SymmetricKey.RawK);
         }
 
-        private static JwsDescriptor CreateCustomBigDescriptor()
+        private static JwsDescriptor CreateJwtDescriptor()
         {
             var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
             var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
@@ -101,13 +96,13 @@ namespace JsonWebToken.Performance
                 ExpirationTime = expires,
                 Issuer = issuer,
                 Audience = audience,
-                Key = CustomSharedKey
+                Key = SymmetricKey
             };
             descriptor.Payload["big_claim"] = BigClaim;
             return descriptor;
         }
 
-        private static SecurityTokenDescriptor CreateWilsonBigDescriptor()
+        private static SecurityTokenDescriptor CreateWilsonDescriptor()
         {
             var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
             var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
@@ -120,13 +115,13 @@ namespace JsonWebToken.Performance
                 Expires = expires,
                 Issuer = issuer,
                 Audience = audience,
-                SigningCredentials = new SigningCredentials(WilsonSharedKey, CustomSharedKey.Alg),
+                SigningCredentials = new SigningCredentials(WilsonSharedKey, SymmetricKey.Alg),
                 Subject = new ClaimsIdentity(new List<Claim> { new Claim("big_claim", BigClaim) })
             };
             return descriptor;
         }
 
-        private static Dictionary<string, object> CreateJoseDotNetBigPayload()
+        private static Dictionary<string, object> CreateJoseDotNetPayload()
         {
             var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
             var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
