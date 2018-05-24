@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 
 namespace JsonWebToken
 {
@@ -22,7 +23,7 @@ namespace JsonWebToken
             }
 
             public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-            {              
+            {
                 var jsonObject = JObject.Load(reader);
 
                 JsonWebKey jwk;
@@ -52,6 +53,7 @@ namespace JsonWebToken
         }
 
         private static readonly JwkJsonConverter jsonConverter = new JwkJsonConverter();
+        private List<JsonWebKey> _certificateChain;
 
         /// <summary>
         /// Returns a new instance of <see cref="TKey"/>.
@@ -145,6 +147,32 @@ namespace JsonWebToken
         [JsonIgnore]
         public abstract int KeySize { get; }
 
+        [JsonIgnore]
+        public IList<JsonWebKey> X509CertificateChain
+        {
+            get
+            {
+                if (X5c == null)
+                {
+                    return null;
+                }
+
+                if (_certificateChain == null)
+                {
+                    _certificateChain = new List<JsonWebKey>();
+                    foreach (var certString in X5c)
+                    {
+                        var certificate = new X509Certificate2(Convert.FromBase64String(certString));
+                        var key = FromX509Certificate(certificate, false);
+                        key.Kid = Kid;
+                        _certificateChain.Add(key);
+                    }
+                }
+
+                return _certificateChain;
+            }
+        }
+
         /// <summary>
         /// Gets a bool that determines if the 'key_ops' (Key Operations) property should be serialized.
         /// This is used by Json.NET in order to conditionally serialize properties.
@@ -200,6 +228,61 @@ namespace JsonWebToken
             {
                 provider.Dispose();
             }
+        }
+
+        public static AsymmetricJwk FromX509Certificate(X509Certificate2 certificate, bool withPrivateKey)
+        {
+            if (certificate == null)
+            {
+                throw new ArgumentNullException(nameof(certificate));
+            }
+
+            AsymmetricJwk key = null;
+            if (withPrivateKey)
+            {
+                var rsa = certificate.GetRSAPrivateKey();
+                if (rsa != null)
+                {
+                    var rsaParameters = rsa.ExportParameters(false);
+                    key = new RsaJwk(rsaParameters);
+                }
+                else
+                {
+                    var ecdsa = certificate.GetECDsaPrivateKey();
+                    if (ecdsa != null)
+                    {
+                        var ecParameters = ecdsa.ExportParameters(false);
+                        key = new EcdsaJwk(ecParameters);
+                    }
+                }
+            }
+            else
+            {
+                var rsa = certificate.GetRSAPublicKey();
+                if (rsa != null)
+                {
+                    var rsaParameters = rsa.ExportParameters(false);
+                    key = new RsaJwk(rsaParameters);
+                }
+                else
+                {
+                    var ecdsa = certificate.GetECDsaPublicKey();
+                    if (ecdsa != null)
+                    {
+                        var ecParameters = ecdsa.ExportParameters(false);
+                        key = new EcdsaJwk(ecParameters);
+                    }
+                }
+            }
+
+            if (key == null)
+            {
+                throw new NotSupportedException(ErrorMessages.NotSupportedCertificate);
+            }
+
+            key.Kid = certificate.Thumbprint;
+            key.X5t = Base64Url.Encode(certificate.GetCertHash());
+            return key;
         }
     }
 }

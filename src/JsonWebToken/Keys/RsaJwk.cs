@@ -14,13 +14,14 @@ namespace JsonWebToken
         private string _p;
         private string _q;
         private string _qi;
+
         public RsaJwk()
         {
             Kty = JsonWebAlgorithmsKeyTypes.RSA;
         }
 
         public RsaJwk(RSAParameters rsaParameters)
-            :this()
+            : this()
         {
             RawD = rsaParameters.D;
             RawDP = rsaParameters.DP;
@@ -213,7 +214,7 @@ namespace JsonWebToken
         {
             get
             {
-                if (_n  == null)
+                if (_n == null)
                 {
                     if (RawN != null && RawN.Length != 0)
                     {
@@ -255,7 +256,7 @@ namespace JsonWebToken
         {
             get
             {
-                if (_p  == null)
+                if (_p == null)
                 {
                     if (RawP != null && RawP.Length != 0)
                     {
@@ -356,11 +357,10 @@ namespace JsonWebToken
         public byte[] RawQI { get; private set; }
 
 
-        public RsaJwk FromRsaParameters(RSAParameters rsaParameters)
+        public static RsaJwk FromRsaParameters(RSAParameters rsaParameters)
         {
             return new RsaJwk(rsaParameters);
         }
-
 
         public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey)
         {

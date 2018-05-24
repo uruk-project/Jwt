@@ -8,14 +8,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8905D2E3-4499-4A86-BF3E-F098F228DD59}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "certs", "certs", "{1751FD49-8430-4046-9C16-1642A4A49CBA}"
-	ProjectSection(SolutionItems) = preProject
-		test\Certs\SelfSigned1024_SHA1.pfx = test\Certs\SelfSigned1024_SHA1.pfx
-		test\Certs\SelfSigned1024_SHA256.pfx = test\Certs\SelfSigned1024_SHA256.pfx
-		test\Certs\SelfSigned2048_SHA256.pfx = test\Certs\SelfSigned2048_SHA256.pfx
-		test\Certs\SelfSigned2048_SHA256_Public.cer = test\Certs\SelfSigned2048_SHA256_Public.cer
-		test\Certs\SelfSigned2048_SHA384.pfx = test\Certs\SelfSigned2048_SHA384.pfx
-		test\Certs\SelfSigned2048_SHA512.pfx = test\Certs\SelfSigned2048_SHA512.pfx
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken", "src\JsonWebToken\JsonWebToken.csproj", "{1ABCE19E-5F8A-4068-945F-79FBCE9655B4}"
 EndProject
@@ -33,9 +25,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Global
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -74,6 +63,9 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2F681326-7ED4-45F6-BD1D-1119EA388F42}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

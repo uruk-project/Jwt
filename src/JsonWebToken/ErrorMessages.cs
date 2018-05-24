@@ -53,5 +53,6 @@ namespace JsonWebToken
 
         public const string InvalidSize = "The value of '{0}' must be '{1}' bits, but was {2}.";
         public const string PayloadIncompatibleWithPlaintext = "The 'Plaintext' property is not compatible when a value is already defined within the 'Payload'.";
+        public const string NotSupportedCertificate = "The certificate does not contains RSA key material or ECDsa key material.";
     }
 }
