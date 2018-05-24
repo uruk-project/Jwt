@@ -51,7 +51,7 @@ Current version - 0.1.0
 	var token = writer.WriteToken(descriptor);
 ````
 ## Benchmark
-TODO
+See [benchmarks.md]
 
 ## Supported algorithms
 ### JWS signing algorithms
