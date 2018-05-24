@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Net.Http;
 
 namespace JsonWebToken
 {
@@ -8,6 +9,11 @@ namespace JsonWebToken
 
         public JwksKeyProvider(string jwksAddress, HttpDocumentRetriever documentRetriever)
             : base(documentRetriever)
+        {
+            _jwksAddress = jwksAddress;
+        }
+        public JwksKeyProvider(string jwksAddress, HttpClientHandler handler)
+            : base(new HttpDocumentRetriever(handler))
         {
             _jwksAddress = jwksAddress;
         }

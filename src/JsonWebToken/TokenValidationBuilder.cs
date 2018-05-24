@@ -1,13 +1,14 @@
 ﻿using JsonWebToken.Validations;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 
 namespace JsonWebToken
 {
     public class TokenValidationBuilder
     {
         private const string LifetimeValidationName = "";
-        public const int DefaultMaximumTokenSizeInBytes = 1024 * 1024 * 2; // 2meg.
+        public const int DefaultMaximumTokenSizeInBytes = 1024 * 1024 * 2; // 2MB
         private readonly List<IValidation> _validations = new List<IValidation>();
         private int _maximumTokenSizeInBytes = DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
@@ -76,9 +77,20 @@ namespace JsonWebToken
             return this;
         }
 
+        public TokenValidationBuilder RequireSignature(string jsonWebKeyUrl, HttpClientHandler handler = null)
+        {
+            RequireSignature(new JwksKeyProvider(jsonWebKeyUrl, handler));
+            return this;
+        }
+
         public TokenValidationBuilder RequireSignature(JsonWebKey key)
         {
             return RequireSignature(new JsonWebKeySet(key));
+        }
+
+        public TokenValidationBuilder RequireSignature(IEnumerable<JsonWebKey> keys)
+        {
+            return RequireSignature(new JsonWebKeySet(keys));
         }
 
         public TokenValidationBuilder RequireSignature(JsonWebKeySet keySet)
