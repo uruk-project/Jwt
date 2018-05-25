@@ -1,4 +1,5 @@
 ﻿using JsonWebToken.Validations;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -194,7 +195,7 @@ namespace JsonWebToken
         {
             private static readonly JsonWebKeySet EmptyJwks = new JsonWebKeySet();
 
-            public JsonWebKeySet GetKeys(JsonWebToken jwtToken)
+            public JsonWebKeySet GetKeys(JObject header)
             {
                 return EmptyJwks;
             }

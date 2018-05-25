@@ -11,7 +11,7 @@ namespace JsonWebToken.Validations
             _issuer = issuer;
         }
 
-        public TokenValidationResult TryValidate(JsonWebToken jwt)
+        public TokenValidationResult TryValidate(ReadOnlySpan<char> token, JsonWebToken jwt)
         {
             var issuer = jwt.Issuer;
             if (string.IsNullOrWhiteSpace(issuer))

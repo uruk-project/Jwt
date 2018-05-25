@@ -11,30 +11,38 @@ namespace JsonWebToken
     {
         private static string[] EmptyStrings = new string[0];
         private static JProperty[] EmptyClaims = new JProperty[0];
+        private readonly JwtPayload _payload;
 
-        private JwtHeader _header;
-        private JwtPayload _payload;
-
-        public JsonWebToken(string token)
+        public JsonWebToken(JObject header, JsonWebToken nestedToken, IList<int> separators)
         {
-            RawData = token ?? throw new ArgumentNullException(nameof(token));
-        }
-
-        public JsonWebToken(string token, int[] separators)
-        {
-            RawData = token;
+            Header = new JwtHeader(header);
+            NestedToken = nestedToken;
             Separators = separators;
         }
 
-        /// <summary>
-        /// Gets the original raw data of this instance when it was created.
-        /// </summary>
-        public ReadOnlySpan<char> RawHeader => RawData.AsSpan().Slice(0, Separators[0]);
+        public JsonWebToken(JObject header, string plaintext, IList<int> separators)
+        {
+            Header = new JwtHeader(header);
+            PlainText = plaintext;
+            Separators = separators;
+        }
 
-        /// <summary>
-        /// Gets the original raw data of this instance when it was created.
-        /// </summary>
-        public ReadOnlySpan<char> RawPayload => RawData.AsSpan().Slice(Separators[0] + 1, Separators[1] - 1);
+        public JsonWebToken(JObject header, JObject payload, IList<int> separators)
+        {
+            Header = new JwtHeader(header);
+            _payload = new JwtPayload(payload);
+            Separators = separators;
+        }
+
+        ///// <summary>
+        ///// Gets the original raw data of this instance when it was created.
+        ///// </summary>
+        //public ReadOnlyMemory<char> RawHeader => RawData.AsSpan().Slice(0, Separators[0]);
+
+        ///// <summary>
+        ///// Gets the original raw data of this instance when it was created.
+        ///// </summary>
+        //public ReadOnlySpan<char> RawPayload => RawData.AsSpan().Slice(Separators[0] + 1, Separators[1] - 1);
 
         /// <summary>
         /// Gets the list of 'audience' claim { aud, 'value' }.
@@ -74,18 +82,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the <see cref="JwtHeader"/> associated with this instance if the token is signed.
         /// </summary>
-        public JwtHeader Header
-        {
-            get
-            {
-                if (_header == null)
-                {
-                    _header = JwtHeader.Base64UrlDeserialize(RawHeader);
-                }
-
-                return _header;
-            }
-        }
+        public JwtHeader Header { get; private set; }
 
         /// <summary>
         /// Gets the 'value' of the 'JWT ID' claim { jti, ''value' }.
@@ -122,7 +119,7 @@ namespace JsonWebToken
 
         /// <summary>
         /// Gets the <see cref="JwtPayload"/> associated with this instance.
-        /// Note that if this JWT is nested ( <see cref="InnerToken"/> != null, this property represents the payload of the most inner token.
+        /// Note that if this JWT is nested ( <see cref="NestedToken"/> != null, this property represents the payload of the most inner token.
         /// This property can be null if the content type of the most inner token is unrecognized, in that case
         ///  the content of the token is the string returned by PlainText property.
         /// </summary>
@@ -130,15 +127,15 @@ namespace JsonWebToken
         {
             get
             {
-                if (InnerToken != null)
+                if (NestedToken != null)
                 {
-                    return InnerToken.Payload;
+                    return NestedToken.Payload;
                 }
 
-                if (_payload == null)
-                {
-                    _payload = JwtPayload.Base64UrlDeserialize(RawPayload);
-                }
+                //if (_payload == null)
+                //{
+                //    _payload = JwtPayload.Base64UrlDeserialize(RawPayload);
+                //}
 
                 return _payload;
             }
@@ -147,46 +144,44 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the <see cref="JsonWebToken"/> associated with this instance.
         /// </summary>
-        public JsonWebToken InnerToken { get; set; }
+        public JsonWebToken NestedToken { get; set; }
 
-        /// <summary>
-        /// Gets the original raw data of this instance when it was created.
-        /// </summary>
-        public ReadOnlySpan<char> RawEncryptedKey { get => RawData.AsSpan().Slice(Separators[0] + 1, Separators[1] - 1); }
+        ///// <summary>
+        ///// Gets the original raw data of this instance when it was created.
+        ///// </summary>
+        //public ReadOnlySpan<char> RawEncryptedKey { get => RawData.AsSpan().Slice(Separators[0] + 1, Separators[1] - 1); }
 
-        /// <summary>
-        /// Gets the original raw data of this instance when it was created.
-        /// </summary>
-        public ReadOnlySpan<char> RawInitializationVector { get => RawData.AsSpan().Slice(Separators[0] + Separators[1] + 1, Separators[2] - 1); }
+        ///// <summary>
+        ///// Gets the original raw data of this instance when it was created.
+        ///// </summary>
+        //public ReadOnlySpan<char> RawInitializationVector { get => RawData.AsSpan().Slice(Separators[0] + Separators[1] + 1, Separators[2] - 1); }
 
-        /// <summary>
-        /// Gets the original raw data of this instance when it was created.
-        /// </summary>
-        public ReadOnlySpan<char> RawCiphertext { get => RawData.AsSpan().Slice(Separators[0] + Separators[1] + Separators[2] + 1, Separators[3] - 1); }
+        ///// <summary>
+        ///// Gets the original raw data of this instance when it was created.
+        ///// </summary>
+        //public ReadOnlySpan<char> RawCiphertext { get => RawData.Slice(Separators[0] + Separators[1] + Separators[2] + 1, Separators[3] - 1); }
 
-        /// <summary>
-        /// Gets the original raw data of this instance when it was created.
-        /// </summary>
-        public ReadOnlySpan<char> RawAuthenticationTag { get => RawData.AsSpan().Slice(Separators[0] + Separators[1] + Separators[2] + Separators[3] + 1); }
-        
-        /// <summary>
-        /// Gets the original raw data of this instance when it was created.
-        /// </summary>
-        public string RawData { get; private set; }
+        ///// <summary>
+        ///// Gets the original raw data of this instance when it was created.
+        ///// </summary>
+        //public ReadOnlySpan<char> RawAuthenticationTag { get => RawData.AsSpan().Slice(Separators[0] + Separators[1] + Separators[2] + Separators[3] + 1); }
 
-        /// <summary>
-        /// Gets the original raw data of this instance when it was created.
-        /// </summary>
-        public ReadOnlySpan<char> RawSignature { get => RawData.AsSpan().Slice(Separators[0] + Separators[1] + 1); }
+        ///// <summary>
+        ///// Gets the original raw data of this instance when it was created.
+        ///// </summary>
+        //public ReadOnlyMemory<char> RawData { get; private set; }
 
-        public bool HasSignature => RawData.Length > Separators[0] + Separators[1] + 1;
+        ///// <summary>
+        ///// Gets the original raw data of this instance when it was created.
+        ///// </summary>
+        //public ReadOnlySpan<char> RawSignature { get => RawData.AsSpan().Slice(Separators[0] + Separators[1] + 1); }
 
-        public ReadOnlySpan<byte> GetSignatureBytes()
-        {
-            var signature = RawData.AsSpan().Slice(Separators[0] + Separators[1] + 1);
+        //public bool HasSignature => _signature.Length != 0;// RawData.Length > Separators[0] + Separators[1] + 1;
 
-            return Base64Url.Base64UrlDecode(signature);
-        }
+        //public ReadOnlySpan<byte> GetSignatureBytes()
+        //{
+        //    return _signature;
+        //}
 
         /// <summary>
         /// Gets the signature algorithm associated with this instance.
@@ -268,7 +263,7 @@ namespace JsonWebToken
         /// </summary>
         public string PlainText { get; set; }
 
-        public int[] Separators { get; }
+        public IList<int> Separators { get; }
 
         public override string ToString()
         {

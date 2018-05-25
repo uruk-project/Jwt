@@ -36,7 +36,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokens))]
         public void Jwt(string token)
         {
-            var result = Reader.TryReadToken(Tokens.ValidTokens[token], validationParameters);
+            var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), validationParameters);
             if (!result.Succedeed)
             {
                 throw new Exception();
@@ -54,7 +54,7 @@ namespace JsonWebToken.Performance
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public void JoseDotNet(string token)
         {
@@ -66,7 +66,7 @@ namespace JsonWebToken.Performance
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public void JwtDotNet(string token)
         {
@@ -79,9 +79,9 @@ namespace JsonWebToken.Performance
 
         public IEnumerable<object[]> GetTokens()
         {
-            yield return new[] { "empty" };
+            //yield return new[] { "empty" };
             yield return new[] { "small" };
-            yield return new[] { "medium" };
+            //yield return new[] { "medium" };
             yield return new[] { "big" };
         }
     }

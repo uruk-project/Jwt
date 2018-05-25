@@ -17,6 +17,7 @@ namespace JsonWebToken
 
         public JwtHeader(JObject inner)
         {
+
             _inner = inner;
         }
 
@@ -228,12 +229,30 @@ namespace JsonWebToken
         {
             var json = SerializeToJson();
 #if NETCOREAPP2_1
-            unsafe
+            if (json.Length > 1024 * 1024)
             {
-                Span<byte> encodedBytes = stackalloc byte[json.Length];
-                Encoding.UTF8.GetBytes(json, encodedBytes);
-                var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
-                return status == OperationStatus.Done;
+                var data = ArrayPool<byte>.Shared.Rent(json.Length);
+                try
+                {
+                    Span<byte> encodedBytes = data;
+                    Encoding.UTF8.GetBytes(json, encodedBytes);
+                    var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
+                    return status == OperationStatus.Done;
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(data);
+                }
+            }
+            else
+            {
+                unsafe
+                {
+                    Span<byte> encodedBytes = stackalloc byte[json.Length];
+                    Encoding.UTF8.GetBytes(json, encodedBytes);
+                    var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
+                    return status == OperationStatus.Done;
+                }
             }
 #else
             var encodedBytes = Encoding.UTF8.GetBytes(json);
@@ -271,6 +290,11 @@ namespace JsonWebToken
         public string SerializeToJson()
         {
             return _inner.ToString(Formatting.None);
+        }
+
+        public static implicit operator JObject(JwtHeader header)
+        {
+            return header._inner;
         }
     }
 }

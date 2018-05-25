@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Threading;
 
@@ -44,11 +45,11 @@ namespace JsonWebToken
         {
         }
 
-        public abstract JsonWebKeySet GetKeys(JsonWebToken jwtToken);
+        public abstract JsonWebKeySet GetKeys(JObject header);
 
         protected abstract JsonWebKeySet DeserializeKeySet(string value);
 
-        protected JsonWebKeySet GetKeys(JsonWebToken jwtToken, string metadataAddress)
+        protected JsonWebKeySet GetKeys(JObject header, string metadataAddress)
         {
             DateTimeOffset now = DateTimeOffset.UtcNow;
             if (_currentKeys != null && _syncAfter > now)

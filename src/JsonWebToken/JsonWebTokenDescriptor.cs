@@ -171,12 +171,12 @@ namespace JsonWebToken
         private DateTime? GetDateTime(string key)
         {
             JToken dateValue;
-            if (!Payload.TryGetValue(key, out dateValue))
+            if (!Payload.TryGetValue(key, out dateValue) || !dateValue.HasValues)
             {
                 return null;
             }
 
-            return EpochTime.ToDateTime(dateValue.Value<int>());
+            return EpochTime.ToDateTime(dateValue.Value<long>());
         }
 
 
@@ -220,7 +220,6 @@ namespace JsonWebToken
                 + JwtConstants.JwsSeparatorsCount;
             unsafe
             {
-                //Span<byte> buffer = stackalloc byte[length];
                 var array = ArrayPool<byte>.Shared.Rent(length);
                 Span<byte> buffer = array;
                 try

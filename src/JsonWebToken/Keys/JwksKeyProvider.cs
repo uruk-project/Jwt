@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Net.Http;
 
 namespace JsonWebToken
@@ -23,9 +24,9 @@ namespace JsonWebToken
         {
         }
 
-        public override JsonWebKeySet GetKeys(JsonWebToken jwtToken)
+        public override JsonWebKeySet GetKeys(JObject header)
         {
-            return GetKeys(jwtToken, _jwksAddress);
+            return GetKeys(header, _jwksAddress);
         }
 
         protected override JsonWebKeySet DeserializeKeySet(string value)

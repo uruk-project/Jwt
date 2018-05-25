@@ -13,7 +13,7 @@ namespace JsonWebToken.Validations
             _clockSkew = clockSkew;
         }
 
-        public TokenValidationResult TryValidate(JsonWebToken jwt)
+        public TokenValidationResult TryValidate(ReadOnlySpan<char> token, JsonWebToken jwt)
         {
             var expires = jwt.Payload.Exp;
 

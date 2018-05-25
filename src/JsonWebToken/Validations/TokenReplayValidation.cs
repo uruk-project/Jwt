@@ -13,7 +13,7 @@ namespace JsonWebToken.Validations
 
         public string Name => nameof(TokenReplayValidation);
 
-        public TokenValidationResult TryValidate(JsonWebToken jwt)
+        public TokenValidationResult TryValidate(ReadOnlySpan<char> token, JsonWebToken jwt)
         {
             if (jwt == null)
             {

@@ -451,7 +451,13 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count);
             }
 
-            return count == 0 ? 0 : GetBufferSizeRequiredToUrlDecode(count, out int dataLength);
+            if (count == 0)
+            {
+                return 0;
+            }
+
+            GetBufferSizeRequiredToUrlDecode(count, out int dataLength);
+            return dataLength;
         }
 
         /// <summary>

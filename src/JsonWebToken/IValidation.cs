@@ -1,7 +1,9 @@
-﻿namespace JsonWebToken
+﻿using System;
+
+namespace JsonWebToken
 {
     public interface IValidation
     {
-        TokenValidationResult TryValidate(JsonWebToken jwt);
+        TokenValidationResult TryValidate(ReadOnlySpan<char> token, JsonWebToken jwt);
     }
 }

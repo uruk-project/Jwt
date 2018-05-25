@@ -41,7 +41,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokens))]
         public void Jwt(string token)
         {
-            var result = Reader.TryReadToken(Tokens.ValidTokens[token], validationParameters);
+            var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), validationParameters);
             if (!result.Succedeed)
             {
                 throw new Exception(result.Status.ToString());
