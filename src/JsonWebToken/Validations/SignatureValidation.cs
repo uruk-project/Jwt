@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace JsonWebToken.Validations
@@ -53,7 +54,8 @@ namespace JsonWebToken.Validations
             Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
             try
             {
-                Base64Url.Base64UrlDecode(token.Slice(jwt.Separators[0] + jwt.Separators[1] + 1), signatureBytes);
+                Base64Url.Base64UrlDecode(token.Slice(jwt.Separators[0] + jwt.Separators[1] + 1), signatureBytes, out int byteConsumed, out int bytesWritten);
+                Debug.Assert(bytesWritten == signatureBytes.Length);
             }
             catch (FormatException)
             {

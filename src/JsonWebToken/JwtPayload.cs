@@ -317,12 +317,12 @@ namespace JsonWebToken
         private DateTime? GetDateTime(string key)
         {
             JToken dateValue;
-            if (!_inner.TryGetValue(key, out dateValue))
+            if (!_inner.TryGetValue(key, out dateValue) || !dateValue.HasValues)
             {
                 return default(DateTime?);
             }
 
-            return EpochTime.ToDateTime(dateValue.Value<int>());
+            return EpochTime.ToDateTime(dateValue.Value<long>());
         }
 
         public override string ToString()

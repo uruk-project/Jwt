@@ -2,6 +2,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -216,7 +217,7 @@ namespace JsonWebToken
             var payloadJson = payload.ToString();
             int length = Base64Url.GetArraySizeRequiredToEncode(headerJson.Length)
                 + Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
-                + Base64Url.GetArraySizeRequiredToEncode(signatureProvider?.HashSize ?? 0)
+                + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBits / 8))
                 + JwtConstants.JwsSeparatorsCount;
             unsafe
             {
@@ -228,14 +229,17 @@ namespace JsonWebToken
                     buffer[headerBytesWritten] = dot;
                     payload.TryBase64UrlEncode(buffer.Slice(headerBytesWritten + 1), out int payloadBytesWritten);
                     buffer[payloadBytesWritten + headerBytesWritten + 1] = dot;
-                    int signatureBytesWritten = 0;
+                    int bytesWritten = 0;
                     if (signatureProvider != null)
                     {
-                        Span<byte> signature = stackalloc byte[signatureProvider.HashSize];
+                        Span<byte> signature = stackalloc byte[signatureProvider.HashSizeInBits / 8];
                         try
                         {
-                            signatureProvider.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signLength);
-                            Base64Url.Base64UrlEncode(signature.Slice(0, signLength), buffer.Slice(payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount), out int bytesConsumed, out signatureBytesWritten);
+                            bool success = signatureProvider.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signatureBytesWritten);
+                            Debug.Assert(success);
+                            Debug.Assert(signature.Length == signatureBytesWritten);
+
+                            Base64Url.Base64UrlEncode(signature.Slice(0, signatureBytesWritten), buffer.Slice(payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount), out int bytesConsumed, out bytesWritten);
                         }
                         finally
                         {
@@ -244,9 +248,9 @@ namespace JsonWebToken
                     }
 
 #if NETCOREAPP2_1
-                    string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount + signatureBytesWritten));
+                    string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount + bytesWritten));
 #else
-                    string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount + signatureBytesWritten).ToArray());
+                    string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount + bytesWritten).ToArray());
 #endif
                     return rawData;
                 }
@@ -367,6 +371,8 @@ namespace JsonWebToken
 
     public abstract class JweDescriptor<TPayload> : JwtDescriptor<TPayload>
     {
+        private readonly int MaxStackalloc = 1024 * 1024;
+
         public string EncryptionAlgorithm
         {
             get => GetHeaderParameter(JwtHeaderParameterNames.Enc);
@@ -417,18 +423,32 @@ namespace JsonWebToken
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.AuthenticationTag.Length)
                         + JwtConstants.JweSeparatorsCount;
 
-                    Span<char> encryptedToken = stackalloc char[encryptionLength];
+                    char[] arrayToReturnToPool = null;
+                    try
+                    {
+                        Span<char> encryptedToken = encryptionLength > MaxStackalloc
+                        ? (arrayToReturnToPool = ArrayPool<char>.Shared.Rent(encryptionLength))
+                        : stackalloc char[encryptionLength];
 
-                    base64EncodedHeader.CopyTo(encryptedToken);
-                    encryptedToken[bytesWritten++] = '.';
-                    encryptedToken[bytesWritten++] = '.';
-                    bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.IV, encryptedToken.Slice(bytesWritten));
-                    encryptedToken[bytesWritten++] = '.';
-                    bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.Ciphertext, encryptedToken.Slice(bytesWritten));
-                    encryptedToken[bytesWritten++] = '.';
-                    bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.AuthenticationTag, encryptedToken.Slice(bytesWritten));
+                        base64EncodedHeader.CopyTo(encryptedToken);
+                        encryptedToken[bytesWritten++] = '.';
+                        encryptedToken[bytesWritten++] = '.';
+                        bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.IV, encryptedToken.Slice(bytesWritten));
+                        encryptedToken[bytesWritten++] = '.';
+                        bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.Ciphertext, encryptedToken.Slice(bytesWritten));
+                        encryptedToken[bytesWritten++] = '.';
+                        bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.AuthenticationTag, encryptedToken.Slice(bytesWritten));
+                        Debug.Assert(encryptedToken.Length == bytesWritten);
 
-                    return encryptedToken.Slice(0, bytesWritten).ToString();
+                        return encryptedToken.ToString();
+                    }
+                    finally
+                    {
+                        if (arrayToReturnToPool != null)
+                        {
+                            ArrayPool<char>.Shared.Return(arrayToReturnToPool);
+                        }
+                    }
 #else
                     var encryptionResult = encryptionProvider.Encrypt(Encoding.UTF8.GetBytes(payload), Encoding.ASCII.GetBytes(header.Base64UrlEncode()));
                     return string.Join(
@@ -516,20 +536,33 @@ namespace JsonWebToken
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.AuthenticationTag.Length)
                         + JwtConstants.JweSeparatorsCount;
 
-                    Span<char> encryptedToken = stackalloc char[encryptionLength];
+                    char[] arrayToReturnToPool = null;
+                    try
+                    {
+                        Span<char> encryptedToken = encryptionLength > MaxStackalloc
+                        ? (arrayToReturnToPool = ArrayPool<char>.Shared.Rent(encryptionLength))
+                        : stackalloc char[encryptionLength];
 
-                    base64EncodedHeader.CopyTo(encryptedToken);
-                    encryptedToken[bytesWritten++] = '.';
-                    bytesWritten += Base64Url.Base64UrlEncode(wrappedKey, encryptedToken.Slice(bytesWritten));
-                    encryptedToken[bytesWritten++] = '.';
-                    bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.IV, encryptedToken.Slice(bytesWritten));
-                    encryptedToken[bytesWritten++] = '.';
-                    bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.Ciphertext, encryptedToken.Slice(bytesWritten));
-                    encryptedToken[bytesWritten++] = '.';
-                    bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.AuthenticationTag, encryptedToken.Slice(bytesWritten));
+                        base64EncodedHeader.CopyTo(encryptedToken);
+                        encryptedToken[bytesWritten++] = '.';
+                        bytesWritten += Base64Url.Base64UrlEncode(wrappedKey, encryptedToken.Slice(bytesWritten));
+                        encryptedToken[bytesWritten++] = '.';
+                        bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.IV, encryptedToken.Slice(bytesWritten));
+                        encryptedToken[bytesWritten++] = '.';
+                        bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.Ciphertext, encryptedToken.Slice(bytesWritten));
+                        encryptedToken[bytesWritten++] = '.';
+                        bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.AuthenticationTag, encryptedToken.Slice(bytesWritten));
+                        Debug.Assert(bytesWritten == encryptedToken.Length);
 
-                    return encryptedToken.Slice(0, bytesWritten).ToString();
-
+                        return encryptedToken.ToString();
+                    }
+                    finally
+                    {
+                        if (arrayToReturnToPool != null)
+                        {
+                            ArrayPool<char>.Shared.Return(arrayToReturnToPool);
+                        }
+                    }
 #else
                     var encryptionResult = encryptionProvider.Encrypt(Encoding.UTF8.GetBytes(payload), Encoding.ASCII.GetBytes(header.Base64UrlEncode()));
                     return string.Join(
@@ -572,7 +605,6 @@ namespace JsonWebToken
             Payload = payload;
         }
 
-
         public JweDescriptor(JObject payload)
         {
             Payload = new JwsDescriptor((JObject)payload.DeepClone());
@@ -586,238 +618,4 @@ namespace JsonWebToken
             return rawData;
         }
     }
-
-    /// <summary>
-    /// Contains some information which used to create a token.
-    /// </summary>
-    //public class JsonWebTokenDescriptor
-    //{
-    //    private string _plaintext;
-
-    //    public JsonWebTokenDescriptor()
-    //        : this((JObject)null, null)
-    //    {
-    //    }
-
-    //    public JsonWebTokenDescriptor(string payloadJson, string headerJson)
-    //        : this(JObject.Parse(payloadJson), JObject.Parse(headerJson))
-    //    {
-    //    }
-
-    //    public JsonWebTokenDescriptor(string jsonPayload)
-    //        : this(JObject.Parse(jsonPayload))
-    //    {
-    //    }
-
-    //    public JsonWebTokenDescriptor(JObject payload)
-    //        : this(payload, null)
-    //    {
-    //    }
-
-    //    public JsonWebTokenDescriptor(JObject payload, JObject header)
-    //    {
-    //        Payload = payload ?? new JObject();
-    //        Header = header ?? new JObject();
-    //    }
-
-    //    public JObject Payload { get; }
-
-    //    public JObject Header { get; }
-
-    //    public string Plaintext
-    //    {
-    //        get => _plaintext;
-    //        set
-    //        {
-    //            if (Payload.Count != 0 && value != null)
-    //            {
-    //                throw new ArgumentException(ErrorMessages.PayloadIncompatibleWithPlaintext, nameof(value));
-    //            }
-
-    //            _plaintext = value;
-    //        }
-    //    }
-
-    //    /// <summary>
-    //    /// Gets or sets the value of the 'jti' claim.
-    //    /// </summary>
-    //    public string Id
-    //    {
-    //        get { return GetStringClaim(JwtRegisteredClaimNames.Jti); }
-    //        set { AddClaim(JwtRegisteredClaimNames.Jti, value); }
-    //    }
-
-    //    /// <summary>
-    //    /// Gets or sets the value of the 'aud' claim.
-    //    /// </summary>
-    //    public string Audience
-    //    {
-    //        get { return GetStringClaim(JwtRegisteredClaimNames.Aud); }
-    //        set { AddClaim(JwtRegisteredClaimNames.Aud, value); }
-    //    }
-
-    //    /// <summary>
-    //    /// Gets or sets the value of the 'aud' claim.
-    //    /// </summary>
-    //    public ICollection<string> Audiences
-    //    {
-    //        get { return GetListClaims(JwtRegisteredClaimNames.Aud); }
-    //        set { SetClaim(JwtRegisteredClaimNames.Aud, value); }
-    //    }
-
-    //    /// <summary>
-    //    /// Gets or sets the value of the 'exp' claim.
-    //    /// </summary>
-    //    public DateTime? Expires
-    //    {
-    //        get { return GetDateTime(JwtRegisteredClaimNames.Exp); }
-    //        set { SetClaim(JwtRegisteredClaimNames.Exp, value); }
-    //    }
-
-    //    /// <summary>
-    //    /// Gets or sets the issuer of this <see cref="JsonWebTokenDescriptor"/>.
-    //    /// </summary>
-    //    public string Issuer
-    //    {
-    //        get { return GetStringClaim(JwtRegisteredClaimNames.Iss); }
-    //        set { AddClaim(JwtRegisteredClaimNames.Iss, value); }
-    //    }
-
-    //    /// <summary>
-    //    /// Gets or sets the time the security token was issued.
-    //    /// </summary>
-    //    public DateTime? IssuedAt
-    //    {
-    //        get { return GetDateTime(JwtRegisteredClaimNames.Iat); }
-    //        set { SetClaim(JwtRegisteredClaimNames.Iat, value); }
-    //    }
-
-    //    /// <summary>
-    //    /// Gets or sets the notbefore time for the security token.
-    //    /// </summary>
-    //    public DateTime? NotBefore
-    //    {
-    //        get { return GetDateTime(JwtRegisteredClaimNames.Nbf); }
-    //        set { SetClaim(JwtRegisteredClaimNames.Nbf, value); }
-    //    }
-
-    //    /// <summary>
-    //    /// Gets or sets the <see cref="SigningKey"/> used to create a security token.
-    //    /// </summary>
-    //    public JsonWebKey SigningKey { get; set; }
-
-    //    /// <summary>
-    //    /// Gets or sets the <see cref="EncryptingKey"/> used to create a encrypted security token.
-    //    /// </summary>
-    //    public JsonWebKey EncryptingKey { get; set; }
-
-    //    /// <summary>
-    //    /// Reprensents the 'enc' header for a JWE.
-    //    /// </summary>
-    //    public string EncryptionAlgorithm { get; set; }
-
-    //    public JsonWebTokenDescriptor NestedToken { get; set; }
-
-    //    public void AddClaim(string name, string value)
-    //    {
-    //        AddClaim(name, value);
-    //    }
-
-    //    public void AddClaim(string name, DateTime? value)
-    //    {
-    //        SetClaim(name, value);
-    //    }
-
-    //    public void AddClaim(string name, int value)
-    //    {
-    //        Payload[name] = value;
-    //    }
-
-    //    public void AddClaim(string name, bool value)
-    //    {
-    //        Payload[name] = value;
-    //    }
-
-    //    public void AddClaim(string name, JObject value)
-    //    {
-    //        Payload[name] = value;
-    //    }
-
-    //    public void AddClaim(string name, JValue value)
-    //    {
-    //        Payload[name] = value;
-    //    }
-
-    //    public void AddClaim(string name, JArray value)
-    //    {
-    //        Payload[name] = value;
-    //    }
-
-    //    private string GetStringClaim(string claimType)
-    //    {
-    //        JToken value = null;
-    //        if (Payload.TryGetValue(claimType, out value))
-    //        {
-    //            return value.Value<string>();
-    //        }
-
-    //        return null;
-    //    }
-
-    //    private int? GetIntClaim(string claimType)
-    //    {
-    //        JToken value;
-    //        if (Payload.TryGetValue(claimType, out value))
-    //        {
-    //            return value.Value<int?>();
-    //        }
-
-    //        return null;
-    //    }
-
-    //    private IList<string> GetListClaims(string claimType)
-    //    {
-    //        JToken value = null;
-    //        if (Payload.TryGetValue(claimType, out value))
-    //        {
-    //            if (value.Type == JTokenType.Array)
-    //            {
-    //                return new List<string>(value.Values<string>());
-    //            }
-
-    //            return new List<string>(new[] { value.Value<string>() });
-    //        }
-
-    //        return null;
-    //    }
-
-    //    private void SetClaim(string claimType, ICollection<string> value)
-    //    {
-    //        Payload[claimType] = JArray.FromObject(value);
-    //    }
-
-    //    private DateTime? GetDateTime(string key)
-    //    {
-    //        JToken dateValue;
-    //        if (!Payload.TryGetValue(key, out dateValue))
-    //        {
-    //            return null;
-    //        }
-
-    //        return EpochTime.ToDateTime(dateValue.Value<int>());
-    //    }
-
-
-    //    private void SetClaim(string claimType, DateTime? value)
-    //    {
-    //        if (value.HasValue)
-    //        {
-    //            Payload[claimType] = EpochTime.GetIntDate(value.Value);
-    //        }
-    //        else
-    //        {
-    //            Payload[claimType] = null;
-    //        }
-    //    }
-    //}
 }

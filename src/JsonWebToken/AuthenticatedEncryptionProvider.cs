@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 
@@ -120,8 +121,9 @@ namespace JsonWebToken
             ciphertext.CopyTo(macBytes.Slice(authenticatedData.Length + aes.IV.Length));
             TryConvertToBigEndian(macBytes.Slice(authenticatedData.Length + aes.IV.Length + ciphertext.Length, sizeof(long)), authenticatedData.Length * 8);
 
-            Span<byte> macHash = stackalloc byte[_symmetricSignatureProvider.HashSize / 8];
+            Span<byte> macHash = stackalloc byte[_symmetricSignatureProvider.HashSizeInBits / 8];
             _symmetricSignatureProvider.TrySign(macBytes, macHash, out int writtenBytes);
+            Debug.Assert(writtenBytes == macHash.Length);
 
             var authenticationTag = macHash.Slice(0, writtenBytes).ToArray();
 
@@ -165,7 +167,7 @@ namespace JsonWebToken
             Array.Copy(aes.IV, 0, macBytes, authenticatedData.Length, aes.IV.Length);
             Array.Copy(ciphertext, 0, macBytes, authenticatedData.Length + aes.IV.Length, ciphertext.Length);
             Array.Copy(al, 0, macBytes, authenticatedData.Length + aes.IV.Length + ciphertext.Length, al.Length);
-            byte[] macHash = new byte[_symmetricSignatureProvider.HashSize / 8];
+            byte[] macHash = new byte[_symmetricSignatureProvider.HashSizeInBits / 8];
             _symmetricSignatureProvider.TrySign(macBytes, macHash, out int writtenBytes);
 
             var authenticationTag = new byte[writtenBytes];

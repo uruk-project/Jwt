@@ -198,6 +198,8 @@ namespace JsonWebToken
                     Encoding.UTF8.GetBytes(data, utf8Buffer);
                     Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(length)];
                     Base64Url.Base64UrlDecode(utf8Buffer, buffer, out int byteConsumed, out int bytesWritten);
+                    Debug.Assert(utf8Buffer.Length == byteConsumed);
+                    Debug.Assert(buffer.Length == bytesWritten);
                     var json = Encoding.UTF8.GetString(buffer);
                     return JObject.Parse(json);
                 }

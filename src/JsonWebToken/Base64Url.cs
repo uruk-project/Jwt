@@ -94,6 +94,13 @@ namespace JsonWebToken
             return Base64UrlDecode(input.AsSpan(offset, count));
         }
 
+        public static void Base64UrlDecode(ReadOnlySpan<char> base64Url, Span<byte> destination, out int bytesConsumed, out int bytesWritten)
+        {
+            var status = Base64UrlDecodeCore(base64Url, destination, out bytesConsumed, out bytesWritten);
+            Debug.Assert(base64Url.Length == bytesConsumed);
+            Debug.Assert(destination.Length == bytesWritten);
+        }
+
         /// <summary>
         /// Decodes a base64url-encoded span of chars.
         /// </summary>
@@ -474,7 +481,13 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetArraySizeRequiredToEncode(int count)
         {
-            return count == 0 ? 0 : GetBufferSizeRequiredToBase64Encode(count);
+            if (count == 0)
+            {
+                return 0;
+            }
+
+            var length = GetBufferSizeRequiredToBase64Encode(count, out int numPaddingChars);
+            return length - numPaddingChars;
         }
 
         private static OperationStatus Base64UrlDecodeCore<T>(ReadOnlySpan<T> base64Url, Span<byte> data, out int consumed, out int written, bool isFinalBlock = true)

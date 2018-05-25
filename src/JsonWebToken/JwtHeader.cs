@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Text;
 
 namespace JsonWebToken
@@ -251,6 +252,7 @@ namespace JsonWebToken
                     Span<byte> encodedBytes = stackalloc byte[json.Length];
                     Encoding.UTF8.GetBytes(json, encodedBytes);
                     var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
+                    Debug.Assert(encodedBytes.Length == bytesConsumed);
                     return status == OperationStatus.Done;
                 }
             }
