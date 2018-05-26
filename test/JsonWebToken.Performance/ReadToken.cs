@@ -1,7 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Running;
-using Jose;
 using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;

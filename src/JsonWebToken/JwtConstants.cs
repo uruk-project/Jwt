@@ -36,5 +36,7 @@ namespace JsonWebToken
         /// The maximum number of separators in a JWT.
         /// </summary>
         internal const int MaxJwtSeparatorsCount = 4;
+
+        public const int MaxStackallocBytes = 1024 * 1024;
     }
 }

@@ -55,14 +55,14 @@ namespace JsonWebToken.Performance
             var token = Handler.CreateEncodedJwt(WilsonPayloads[payload]);
         }
 
-        [Benchmark]
+        //[Benchmark]
         [ArgumentsSource(nameof(GetPayloads))]
         public void JoseDotNet(string payload)
         {
             var value = Jose.JWT.Encode(DictionaryPayloads[payload], SymmetricKey.RawK, JwsAlgorithm.HS256);
         }
 
-        [Benchmark]
+        //[Benchmark]
         [ArgumentsSource(nameof(GetPayloads))]
         public void JwtDotNet(string payload)
         {
@@ -71,9 +71,9 @@ namespace JsonWebToken.Performance
 
         public IEnumerable<object[]> GetPayloads()
         {
-            yield return new[] { "empty" };
+            //yield return new[] { "empty" };
             yield return new[] { "small" };
-            yield return new[] { "medium" };
+            //yield return new[] { "medium" };
             yield return new[] { "big" };
         }
 

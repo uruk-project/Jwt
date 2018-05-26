@@ -59,7 +59,7 @@ namespace JsonWebToken.Performance
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public void JoseDotNet(string token)
         {
@@ -70,7 +70,7 @@ namespace JsonWebToken.Performance
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public void JwtDotNet(string token)
         {
@@ -84,9 +84,9 @@ namespace JsonWebToken.Performance
 
         public IEnumerable<object[]> GetTokens()
         {
-            yield return new[] { "empty" };
+            //yield return new[] { "empty" };
             yield return new[] { "small" };
-            yield return new[] { "medium" };
+            //yield return new[] { "medium" };
             yield return new[] { "big" };
         }
     }

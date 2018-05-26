@@ -12,7 +12,6 @@ namespace JsonWebToken
     public class JsonWebTokenReader
     {
         private readonly IList<IKeyProvider> _encryptionKeyProviders;
-        private const int MaxStackallocBytes = 1024 * 1024;
 
         public JsonWebTokenReader(IEnumerable<IKeyProvider> encryptionKeyProviders)
         {
@@ -44,7 +43,6 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="token">the JWT encoded as JWE or JWS</param>
         /// <param name="validationParameters">Contains validation parameters for the <see cref="JsonWebToken"/>.</param>
-        /// <param name="validatedToken">The <see cref="JsonWebToken"/> that was validated.</param>
         public TokenValidationResult TryReadToken(ReadOnlySpan<char> token, TokenValidationParameters validationParameters)
         {
             if (validationParameters == null)
@@ -163,7 +161,7 @@ namespace JsonWebToken
         {
             int length = data.Length;
             byte[] utf8ArrayToReturnToPool = null;
-            var utf8Buffer = length <= MaxStackallocBytes
+            var utf8Buffer = length <= JwtConstants.MaxStackallocBytes
                   ? stackalloc byte[length]
                   : utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length);
             try
@@ -171,7 +169,7 @@ namespace JsonWebToken
                 Encoding.UTF8.GetBytes(data, utf8Buffer);
                 int base64UrlLength = Base64Url.GetArraySizeRequiredToDecode(length);
                 byte[] base64UrlArrayToReturnToPool = null;
-                var buffer = base64UrlLength <= MaxStackallocBytes
+                var buffer = base64UrlLength <= JwtConstants.MaxStackallocBytes
                   ? stackalloc byte[base64UrlLength]
                   : base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64UrlLength);
                 try
@@ -236,24 +234,6 @@ namespace JsonWebToken
             }
 
             return separators;
-            //int next = 0;
-            //int current = 0;
-            //int i = 0;
-            //List<int> separators = new List<int>();
-
-            //while ((next = new string(token.ToArray()).IndexOf('.', next + 1)) != -1)
-            //{
-            //    separators.Add(next - current);
-            //    if (separators.Count > JwtConstants.MaxJwtSeparatorsCount)
-            //    {
-            //        break;
-            //    }
-
-            //    i++;
-            //    current = next;
-            //}
-
-            //return separators;
         }
 
         private string DecryptToken(
@@ -273,29 +253,20 @@ namespace JsonWebToken
             try
             {
 #if NETCOREAPP2_1
-                byte[] ciphertextArrayToReturn = null;
                 int ciphertextLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length);
-                Span<byte> ciphertext = ciphertextLength < MaxStackallocBytes
-                    ? stackalloc byte[ciphertextLength]
-                    : ciphertextArrayToReturn = ArrayPool<byte>.Shared.Rent(ciphertextLength);
-
-                byte[] headerArrayToReturn = null;
                 int headerLength = rawHeader.Length;
-                Span<byte> header = headerLength < MaxStackallocBytes
-                    ? stackalloc byte[headerLength]
-                    : headerArrayToReturn = ArrayPool<byte>.Shared.Rent(headerLength);
-
-                byte[] initializationVectorArrayToReturn = null;
                 int initializationVectorLength = Base64Url.GetArraySizeRequiredToDecode(rawInitializationVector.Length);
-                Span<byte> initializationVector = initializationVectorLength < MaxStackallocBytes
-                    ? stackalloc byte[initializationVectorLength]
-                    : initializationVectorArrayToReturn = ArrayPool<byte>.Shared.Rent(initializationVectorLength);
-
-                byte[] authenticationTagArrayToReturn = null;
                 int authenticationTagLength = Base64Url.GetArraySizeRequiredToDecode(rawAuthenticationTag.Length);
-                Span<byte> authenticationTag = authenticationTagLength < MaxStackallocBytes
-                    ? stackalloc byte[authenticationTagLength]
-                    : authenticationTagArrayToReturn = ArrayPool<byte>.Shared.Rent(authenticationTagLength);
+                int bufferLength = ciphertextLength + headerLength + initializationVectorLength + authenticationTagLength;
+                byte[] arrayToReturn = null;
+                Span<byte> buffer = bufferLength < JwtConstants.MaxStackallocBytes
+                    ? stackalloc byte[bufferLength]
+                    : arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength);
+
+                Span<byte> ciphertext = buffer.Slice(0, ciphertextLength);
+                Span<byte> header = buffer.Slice(ciphertextLength, headerLength);
+                Span<byte> initializationVector = buffer.Slice(ciphertextLength + headerLength, initializationVectorLength);
+                Span<byte> authenticationTag = buffer.Slice(ciphertextLength + headerLength + initializationVectorLength, authenticationTagLength);
 
                 byte[] decryptedToken;
                 try
@@ -313,28 +284,16 @@ namespace JsonWebToken
                     Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
 
                     decryptedToken = decryptionProvider.Decrypt(
-                        ciphertext.Slice(0, ciphertextBytesWritten),
-                        header.Slice(0, headerBytesWritten),
-                        initializationVector.Slice(0, ivBytesWritten),
-                        authenticationTag.Slice(0, authenticationTagBytesWritten));
+                        ciphertext,
+                        header,
+                        initializationVector,
+                        authenticationTag);
                 }
                 finally
                 {
-                    if (ciphertextArrayToReturn != null)
+                    if (arrayToReturn != null)
                     {
-                        ArrayPool<byte>.Shared.Return(ciphertextArrayToReturn);
-                    }
-                    if (headerArrayToReturn != null)
-                    {
-                        ArrayPool<byte>.Shared.Return(headerArrayToReturn);
-                    }
-                    if (initializationVectorArrayToReturn != null)
-                    {
-                        ArrayPool<byte>.Shared.Return(initializationVectorArrayToReturn);
-                    }
-                    if (authenticationTagArrayToReturn!= null)
-                    {
-                        ArrayPool<byte>.Shared.Return(authenticationTagArrayToReturn);
+                        ArrayPool<byte>.Shared.Return(arrayToReturn);
                     }
                 }
 
