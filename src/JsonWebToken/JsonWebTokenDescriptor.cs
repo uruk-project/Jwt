@@ -11,6 +11,7 @@ namespace JsonWebToken
     public class JwsDescriptor : JwtDescriptor<JObject>, IJwtPayloadDescriptor
     {
         private static readonly byte dot = Convert.ToByte('.');
+        private const int MaxStackallocBytes = 1024 * 1024;
 
         public JwsDescriptor(JObject payload)
         {
@@ -123,8 +124,7 @@ namespace JsonWebToken
 
         private string GetStringClaim(string claimType)
         {
-            JToken value = null;
-            if (Payload.TryGetValue(claimType, out value))
+            if (Payload.TryGetValue(claimType, out JToken value))
             {
                 return value.Value<string>();
             }
@@ -134,8 +134,7 @@ namespace JsonWebToken
 
         private int? GetIntClaim(string claimType)
         {
-            JToken value;
-            if (Payload.TryGetValue(claimType, out value))
+            if (Payload.TryGetValue(claimType, out JToken value))
             {
                 return value.Value<int?>();
             }
@@ -145,8 +144,7 @@ namespace JsonWebToken
 
         private IList<string> GetListClaims(string claimType)
         {
-            JToken value = null;
-            if (Payload.TryGetValue(claimType, out value))
+            if (Payload.TryGetValue(claimType, out JToken value))
             {
                 if (value.Type == JTokenType.Array)
                 {
@@ -171,8 +169,7 @@ namespace JsonWebToken
 
         private DateTime? GetDateTime(string key)
         {
-            JToken dateValue;
-            if (!Payload.TryGetValue(key, out dateValue) || !dateValue.HasValues)
+            if (!Payload.TryGetValue(key, out JToken dateValue) || !dateValue.HasValues)
             {
                 return null;
             }
@@ -201,7 +198,7 @@ namespace JsonWebToken
                 header[item.Key] = item.Value;
             }
 
-            var headerJson = header.SerializeToJson();
+            var headerJson = header.ToString();
             SignatureProvider signatureProvider = null;
             if (Key != null)
             {
@@ -221,13 +218,15 @@ namespace JsonWebToken
                 + JwtConstants.JwsSeparatorsCount;
             unsafe
             {
-                var array = ArrayPool<byte>.Shared.Rent(length);
-                Span<byte> buffer = array;
+                byte[] arrayToReturnToPool = null;
+                var buffer = length <= MaxStackallocBytes
+                      ? stackalloc byte[length]
+                      : arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length);
                 try
                 {
-                    header.TryBase64UrlEncode(buffer, out int headerBytesWritten);
+                    TryEncodeUtf8ToBase64Url(headerJson, buffer, out int headerBytesWritten);
                     buffer[headerBytesWritten] = dot;
-                    payload.TryBase64UrlEncode(buffer.Slice(headerBytesWritten + 1), out int payloadBytesWritten);
+                    TryEncodeUtf8ToBase64Url(payloadJson, buffer.Slice(headerBytesWritten + 1), out int payloadBytesWritten);
                     buffer[payloadBytesWritten + headerBytesWritten + 1] = dot;
                     int bytesWritten = 0;
                     if (signatureProvider != null)
@@ -256,9 +255,40 @@ namespace JsonWebToken
                 }
                 finally
                 {
-                    ArrayPool<byte>.Shared.Return(array);
+                    if (arrayToReturnToPool != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
+                    }
                 }
             }
+        }
+
+        public bool TryEncodeUtf8ToBase64Url(string input, Span<byte> destination, out int bytesWritten)
+        {
+#if NETCOREAPP2_1
+            byte[] arrayToReturnToPool = null;
+            var encodedBytes = input.Length <= MaxStackallocBytes
+                  ? stackalloc byte[input.Length]
+                  : arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(input.Length);
+            try
+            {
+                Encoding.UTF8.GetBytes(input, encodedBytes);
+                var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
+                return status == OperationStatus.Done;
+            }
+            finally
+            {
+                if (arrayToReturnToPool != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
+                }
+            }
+#else
+            var encodedBytes = Encoding.UTF8.GetBytes(input);
+
+            var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
+            return status == OperationStatus.Done;
+#endif
         }
     }
 
@@ -337,8 +367,7 @@ namespace JsonWebToken
 
         protected string GetHeaderParameter(string headerName)
         {
-            JToken value = null;
-            if (Header.TryGetValue(headerName, out value))
+            if (Header.TryGetValue(headerName, out JToken value))
             {
                 return value.Value<string>();
             }
@@ -348,8 +377,7 @@ namespace JsonWebToken
 
         protected IList<string> GetHeaderParameters(string claimType)
         {
-            JToken value = null;
-            if (Header.TryGetValue(claimType, out value))
+            if (Header.TryGetValue(claimType, out JToken value))
             {
                 if (value.Type == JTokenType.Array)
                 {
@@ -371,7 +399,7 @@ namespace JsonWebToken
 
     public abstract class JweDescriptor<TPayload> : JwtDescriptor<TPayload>
     {
-        private readonly int MaxStackalloc = 1024 * 1024;
+        private const int MaxStackalloc = 1024 * 1024;
 
         public string EncryptionAlgorithm
         {
@@ -405,7 +433,7 @@ namespace JsonWebToken
                     Span<byte> encodedPayload = stackalloc byte[payload.Length];
                     Encoding.UTF8.GetBytes(payload, encodedPayload);
 
-                    var headerJson = header.SerializeToJson();
+                    var headerJson = header.ToString();
                     Span<byte> utf8EncodedHeader = stackalloc byte[headerJson.Length];
                     Encoding.UTF8.GetBytes(headerJson, utf8EncodedHeader);
 
@@ -517,7 +545,7 @@ namespace JsonWebToken
                     Span<byte> encodedPayload = stackalloc byte[payload.Length];
                     Encoding.UTF8.GetBytes(payload, encodedPayload);
 
-                    var headerJson = header.SerializeToJson();
+                    var headerJson = header.ToString();
                     Span<byte> utf8EncodedHeader = stackalloc byte[headerJson.Length];
                     Encoding.UTF8.GetBytes(headerJson, utf8EncodedHeader);
 

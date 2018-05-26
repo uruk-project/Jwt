@@ -81,24 +81,5 @@ namespace JsonWebToken
 
             return descriptor.Encode();
         }
-         
-        public bool TryBase64UrlEncode(JObject jObject, Span<byte> destination, out int bytesWritten)
-        {
-            var json = jObject.ToString(Formatting.None);
-#if NETCOREAPP2_1
-            unsafe
-            {
-                Span<byte> encodedBytes = stackalloc byte[json.Length];
-                Encoding.UTF8.GetBytes(json, encodedBytes);
-                var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
-                return status == OperationStatus.Done;
-            }
-#else
-            var encodedBytes = Encoding.UTF8.GetBytes(json);
-
-            var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
-            return status == OperationStatus.Done;
-#endif
-        }
     }
 }

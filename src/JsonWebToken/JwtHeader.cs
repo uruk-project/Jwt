@@ -204,74 +204,12 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Deserializes Base64UrlEncoded JSON into a <see cref="JwtHeader"/> instance.
-        /// </summary>
-        /// <param name="base64UrlEncodedJsonString">Base64url encoded JSON to deserialize.</param>
-        /// <returns>An instance of <see cref="JwtHeader"/>.</returns>
-        public static JwtHeader Base64UrlDeserialize(string base64UrlEncodedJsonString)
-        {
-            return Deserialize(Base64Url.Decode(base64UrlEncodedJsonString));
-        }
-        public static JwtHeader Base64UrlDeserialize(ReadOnlySpan<char> base64UrlEncodedJsonString)
-        {
-            return Deserialize(Encoding.UTF8.GetString(Base64Url.Base64UrlDecode(base64UrlEncodedJsonString)));
-        }
-
-        /// <summary>
         /// Encodes this instance as Base64UrlEncoded JSON.
         /// </summary>
         /// <returns>Base64UrlEncoded JSON.</returns>
         public string Base64UrlEncode()
         {
-            return Base64Url.Encode(SerializeToJson());
-        }
-
-        public bool TryBase64UrlEncode(Span<byte> destination, out int bytesWritten)
-        {
-            var json = SerializeToJson();
-#if NETCOREAPP2_1
-            if (json.Length > 1024 * 1024)
-            {
-                var data = ArrayPool<byte>.Shared.Rent(json.Length);
-                try
-                {
-                    Span<byte> encodedBytes = data;
-                    Encoding.UTF8.GetBytes(json, encodedBytes);
-                    var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
-                    return status == OperationStatus.Done;
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(data);
-                }
-            }
-            else
-            {
-                unsafe
-                {
-                    Span<byte> encodedBytes = stackalloc byte[json.Length];
-                    Encoding.UTF8.GetBytes(json, encodedBytes);
-                    var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
-                    Debug.Assert(encodedBytes.Length == bytesConsumed);
-                    return status == OperationStatus.Done;
-                }
-            }
-#else
-            var encodedBytes = Encoding.UTF8.GetBytes(json);
-
-            var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
-            return status == OperationStatus.Done;
-#endif
-        }
-
-        /// <summary>
-        /// Deserialzes JSON into a <see cref="JwtHeader"/> instance.
-        /// </summary>
-        /// <param name="jsonString"> The JSON to deserialize.</param>
-        /// <returns>An instance of <see cref="JwtHeader"/>.</returns>
-        public static JwtHeader Deserialize(string jsonString)
-        {
-            return new JwtHeader(JObject.Parse(jsonString));
+            return Base64Url.Encode(ToString());
         }
 
         private string GetStandardClaim(string claimType)
@@ -285,11 +223,7 @@ namespace JsonWebToken
             return null;
         }
 
-        /// <summary>
-        /// Serializes this instance to JSON.
-        /// </summary>
-        /// <returns>This instance as JSON.</returns>
-        public string SerializeToJson()
+        public override string ToString()
         {
             return _inner.ToString(Formatting.None);
         }

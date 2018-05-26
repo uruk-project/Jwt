@@ -486,6 +486,12 @@ namespace JsonWebToken
                 return 0;
             }
 
+            // TODO : optimize well known key sizes...
+            if (count == 32)
+            {
+
+            }
+
             var length = GetBufferSizeRequiredToBase64Encode(count, out int numPaddingChars);
             return length - numPaddingChars;
         }

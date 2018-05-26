@@ -12,6 +12,7 @@ namespace JsonWebToken
     public class JsonWebTokenReader
     {
         private readonly IList<IKeyProvider> _encryptionKeyProviders;
+        private const int MaxStackallocBytes = 1024 * 1024;
 
         public JsonWebTokenReader(IEnumerable<IKeyProvider> encryptionKeyProviders)
         {
@@ -161,50 +162,39 @@ namespace JsonWebToken
         private static JObject GetJsonObject(ReadOnlySpan<char> data)
         {
             int length = data.Length;
-
-            if (length > 1024 * 1024)
+            byte[] utf8ArrayToReturnToPool = null;
+            var utf8Buffer = length <= MaxStackallocBytes
+                  ? stackalloc byte[length]
+                  : utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length);
+            try
             {
-                unsafe
+                Encoding.UTF8.GetBytes(data, utf8Buffer);
+                int base64UrlLength = Base64Url.GetArraySizeRequiredToDecode(length);
+                byte[] base64UrlArrayToReturnToPool = null;
+                var buffer = base64UrlLength <= MaxStackallocBytes
+                  ? stackalloc byte[base64UrlLength]
+                  : base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64UrlLength);
+                try
                 {
-                    var utf8Buffer = ArrayPool<byte>.Shared.Rent(length);
-                    try
-                    {
-                        Encoding.UTF8.GetBytes(data, utf8Buffer);
-                        var buffer = ArrayPool<byte>.Shared.Rent(Base64Url.GetArraySizeRequiredToDecode(length));
-                        try
-                        {
-                            Base64Url.Base64UrlDecode(utf8Buffer, buffer, out int byteConsumed, out int bytesWritten);
-                            var json = Encoding.UTF8.GetString(buffer);
-
-
-                            return JObject.Parse(json);
-                        }
-                        finally
-                        {
-                            ArrayPool<byte>.Shared.Return(buffer);
-                        }
-                    }
-                    finally
-                    {
-                        ArrayPool<byte>.Shared.Return(utf8Buffer);
-                    }
-                }
-            }
-            else
-            {
-                unsafe
-                {
-                    Span<byte> utf8Buffer = stackalloc byte[length];
-                    Encoding.UTF8.GetBytes(data, utf8Buffer);
-                    Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(length)];
                     Base64Url.Base64UrlDecode(utf8Buffer, buffer, out int byteConsumed, out int bytesWritten);
-                    Debug.Assert(utf8Buffer.Length == byteConsumed);
-                    Debug.Assert(buffer.Length == bytesWritten);
                     var json = Encoding.UTF8.GetString(buffer);
                     return JObject.Parse(json);
                 }
+                finally
+                {
+                    if (base64UrlArrayToReturnToPool != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(base64UrlArrayToReturnToPool);
+                    }
+                }
             }
-
+            finally
+            {
+                if (utf8ArrayToReturnToPool != null)
+                {
+                    ArrayPool<byte>.Shared.Return(utf8ArrayToReturnToPool);
+                }
+            }
         }
 #else
         private static JObject GetJsonObject(ReadOnlySpan<char> token)
@@ -225,7 +215,7 @@ namespace JsonWebToken
             }
         }
 #endif
-        private static IList<int> GetSeparators(ReadOnlySpan<char> token)
+        private static IReadOnlyList<int> GetSeparators(ReadOnlySpan<char> token)
         {
             int next = 0;
             int current = 0;
@@ -283,27 +273,71 @@ namespace JsonWebToken
             try
             {
 #if NETCOREAPP2_1
-                Span<byte> ciphertext = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length)];
-                int ciphertextBytesWritten = Base64Url.Base64UrlDecode(rawCiphertext, ciphertext);
-                Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
+                byte[] ciphertextArrayToReturn = null;
+                int ciphertextLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length);
+                Span<byte> ciphertext = ciphertextLength < MaxStackallocBytes
+                    ? stackalloc byte[ciphertextLength]
+                    : ciphertextArrayToReturn = ArrayPool<byte>.Shared.Rent(ciphertextLength);
 
-                Span<byte> header = stackalloc byte[rawHeader.Length];
-                int headerBytesWritten = Encoding.ASCII.GetBytes(rawHeader, header);
-                Debug.Assert(header.Length == headerBytesWritten);
+                byte[] headerArrayToReturn = null;
+                int headerLength = rawHeader.Length;
+                Span<byte> header = headerLength < MaxStackallocBytes
+                    ? stackalloc byte[headerLength]
+                    : headerArrayToReturn = ArrayPool<byte>.Shared.Rent(headerLength);
 
-                Span<byte> initializationVector = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawInitializationVector.Length)];
-                int ivBytesWritten = Base64Url.Base64UrlDecode(rawInitializationVector, initializationVector);
-                Debug.Assert(initializationVector.Length == ivBytesWritten);
+                byte[] initializationVectorArrayToReturn = null;
+                int initializationVectorLength = Base64Url.GetArraySizeRequiredToDecode(rawInitializationVector.Length);
+                Span<byte> initializationVector = initializationVectorLength < MaxStackallocBytes
+                    ? stackalloc byte[initializationVectorLength]
+                    : initializationVectorArrayToReturn = ArrayPool<byte>.Shared.Rent(initializationVectorLength);
 
-                Span<byte> authenticationTag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawAuthenticationTag.Length)];
-                int authenticationTagBytesWritten = Base64Url.Base64UrlDecode(rawAuthenticationTag, authenticationTag);
-                Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
+                byte[] authenticationTagArrayToReturn = null;
+                int authenticationTagLength = Base64Url.GetArraySizeRequiredToDecode(rawAuthenticationTag.Length);
+                Span<byte> authenticationTag = authenticationTagLength < MaxStackallocBytes
+                    ? stackalloc byte[authenticationTagLength]
+                    : authenticationTagArrayToReturn = ArrayPool<byte>.Shared.Rent(authenticationTagLength);
 
-                var decryptedToken = decryptionProvider.Decrypt(
-                    ciphertext.Slice(0, ciphertextBytesWritten),
-                    header.Slice(0, headerBytesWritten),
-                    initializationVector.Slice(0, ivBytesWritten),
-                    authenticationTag.Slice(0, authenticationTagBytesWritten));
+                byte[] decryptedToken;
+                try
+                {
+                    int ciphertextBytesWritten = Base64Url.Base64UrlDecode(rawCiphertext, ciphertext);
+                    Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
+
+                    int headerBytesWritten = Encoding.ASCII.GetBytes(rawHeader, header);
+                    Debug.Assert(header.Length == headerBytesWritten);
+
+                    int ivBytesWritten = Base64Url.Base64UrlDecode(rawInitializationVector, initializationVector);
+                    Debug.Assert(initializationVector.Length == ivBytesWritten);
+
+                    int authenticationTagBytesWritten = Base64Url.Base64UrlDecode(rawAuthenticationTag, authenticationTag);
+                    Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
+
+                    decryptedToken = decryptionProvider.Decrypt(
+                        ciphertext.Slice(0, ciphertextBytesWritten),
+                        header.Slice(0, headerBytesWritten),
+                        initializationVector.Slice(0, ivBytesWritten),
+                        authenticationTag.Slice(0, authenticationTagBytesWritten));
+                }
+                finally
+                {
+                    if (ciphertextArrayToReturn != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(ciphertextArrayToReturn);
+                    }
+                    if (headerArrayToReturn != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(headerArrayToReturn);
+                    }
+                    if (initializationVectorArrayToReturn != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(initializationVectorArrayToReturn);
+                    }
+                    if (authenticationTagArrayToReturn!= null)
+                    {
+                        ArrayPool<byte>.Shared.Return(authenticationTagArrayToReturn);
+                    }
+                }
+
                 if (decryptedToken == null)
                 {
                     return null;
