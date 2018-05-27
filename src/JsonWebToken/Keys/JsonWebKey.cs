@@ -1,9 +1,15 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -15,7 +21,7 @@ namespace JsonWebToken
     {
         internal class JwkJsonConverter : JsonConverter
         {
-            public override bool CanWrite => false;
+            public override bool CanWrite => true;
 
             public override bool CanConvert(Type objectType)
             {
@@ -48,11 +54,24 @@ namespace JsonWebToken
 
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException();
             }
         }
 
+        private class JwkContractResolver : DefaultContractResolver
+        {
+            protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+            {
+                IList<JsonProperty> properties = base.CreateProperties(type, memberSerialization);
+                properties = properties.OrderBy(p => p.PropertyName).ToList();
+                return properties;
+            }
+        }
+
+
         private static readonly JwkJsonConverter jsonConverter = new JwkJsonConverter();
+        private static readonly JwkContractResolver contractResolver = new JwkContractResolver();
+        private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings { ContractResolver = contractResolver };
         private List<JsonWebKey> _certificateChain;
 
         /// <summary>
@@ -69,7 +88,6 @@ namespace JsonWebToken
 
             return (TKey)JsonConvert.DeserializeObject(json, typeof(TKey), jsonConverter);
         }
-
 
         /// <summary>
         /// Returns a new instance of <see cref="JsonWebKey"/>.
@@ -197,7 +215,12 @@ namespace JsonWebToken
 
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this);
+            return ToString(Formatting.None);
+        }
+
+        public string ToString(Formatting formatting)
+        {
+            return JsonConvert.SerializeObject(this, formatting, serializerSettings);
         }
 
         public abstract SignatureProvider CreateSignatureProvider(string algorithm, bool willCreateSignatures);
@@ -229,6 +252,60 @@ namespace JsonWebToken
                 provider.Dispose();
             }
         }
+
+        public abstract JsonWebKey CloneMinimal();
+
+#if NETCOREAPP2_1
+        /// <summary>
+        /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
+        /// </summary>
+        /// <returns></returns>
+        public string ComputeThumbprint()
+        {
+            var json = CloneMinimal().ToString();
+            int jsonLength = json.Length;
+            byte[] arrayToReturnToPool = null;
+            Span<byte> buffer = jsonLength <= JwtConstants.MaxStackallocBytes
+                                ? stackalloc byte[jsonLength]
+                                : arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(jsonLength);
+            buffer = buffer.Slice(0, jsonLength);
+            try
+            {
+                Encoding.UTF8.GetBytes(json, buffer);
+                using (var hashAlgorithm = SHA256.Create())
+                {
+                    Span<byte> hash = stackalloc byte[hashAlgorithm.HashSize / 8];
+                    hashAlgorithm.TryComputeHash(buffer, hash, out int bytesWritten);
+                    Debug.Assert(bytesWritten == hashAlgorithm.HashSize / 8);
+
+                    return Base64Url.Base64UrlEncode(hash);
+                }
+            }
+            finally
+            {
+                if (arrayToReturnToPool != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
+                }
+            }
+        }
+
+#else
+        /// <summary>
+        /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
+        /// </summary>
+        /// <returns></returns>
+        public string ComputeThumbprint()
+        {
+            var json = CloneMinimal().ToString();
+            var buffer = Encoding.UTF8.GetBytes(json);
+            using (var hashAlgorithm = SHA256.Create())
+            {
+                var hash = hashAlgorithm.ComputeHash(buffer);
+                return Base64Url.Base64UrlEncode(hash);
+            }
+        }
+#endif
 
         public static AsymmetricJwk FromX509Certificate(X509Certificate2 certificate, bool withPrivateKey)
         {
@@ -280,9 +357,17 @@ namespace JsonWebToken
                 throw new NotSupportedException(ErrorMessages.NotSupportedCertificate);
             }
 
-            key.Kid = certificate.Thumbprint;
+            key.X5t = Base64Url.Encode(certificate.GetCertHash());
+            key.Kid = key.ComputeThumbprint();
             key.X5t = Base64Url.Encode(certificate.GetCertHash());
             return key;
+        }
+
+        protected static byte[] CloneArray(byte[] array)
+        {
+            var clone = new byte[array.Length];
+            array.CopyTo(clone, 0);
+            return clone;
         }
     }
 }

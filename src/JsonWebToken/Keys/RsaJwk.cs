@@ -33,6 +33,13 @@ namespace JsonWebToken
             RawN = rsaParameters.Modulus;
         }
 
+        private RsaJwk(byte[] e, byte[] n)
+            : this()
+        {
+            RawE = CloneArray(e);
+            RawN = CloneArray(n);
+        }
+
         public RSAParameters CreateRsaParameters()
         {
             if (N == null || E == null)
@@ -369,7 +376,23 @@ namespace JsonWebToken
             //Save the public key information to an RSAParameters structure.  
             RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
 
-            return new RsaJwk(rsaParameters);
+            return FromParameters(rsaParameters);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="parameters">A <see cref="byte"/> that contains the key parameters.</param>
+        public static RsaJwk FromParameters(RSAParameters parameters)
+        {
+            var key = new RsaJwk(parameters);
+            key.Kid = key.ComputeThumbprint();
+            return key;
+        }
+
+        public override JsonWebKey CloneMinimal()
+        {
+            return new RsaJwk(RawE, RawN);
         }
     }
 }

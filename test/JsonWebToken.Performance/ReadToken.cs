@@ -52,23 +52,23 @@ namespace JsonWebToken.Performance
             }
         }
 
-        //[Benchmark]
+        [Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public void JoseDotNet(string token)
         {
-            // unable to read the token without signature validation
-            var value = Jose.JWT.Decode(Tokens.ValidTokens[token], SymmetricKey.RawK);
+            //unable to read the token without signature validation
+            var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], SymmetricKey.RawK);
             if (value == null)
             {
                 throw new Exception();
             }
         }
 
-        //[Benchmark]
+        [Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public void JwtDotNet(string token)
         {
-            var value = JwtDotNetDecoder.Decode(Tokens.ValidTokens[token]);
+            var value = JwtDotNetDecoder.DecodeToObject(Tokens.ValidTokens[token]);
             if (value == null)
             {
                 throw new Exception();
@@ -77,9 +77,9 @@ namespace JsonWebToken.Performance
 
         public IEnumerable<object[]> GetTokens()
         {
-            //yield return new[] { "empty" };
+            yield return new[] { "empty" };
             yield return new[] { "small" };
-            //yield return new[] { "medium" };
+            yield return new[] { "medium" };
             yield return new[] { "big" };
         }
     }

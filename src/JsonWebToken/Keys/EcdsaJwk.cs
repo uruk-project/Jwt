@@ -19,7 +19,7 @@ namespace JsonWebToken
         private string _y;
 
         public EcdsaJwk(ECParameters parameters)
-            :this()
+            : this()
         {
             parameters.Validate();
 
@@ -40,6 +40,14 @@ namespace JsonWebToken
                 default:
                     throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, parameters.Curve.Oid.FriendlyName));
             }
+        }
+
+        private EcdsaJwk(string crv, byte[] d, byte[] x, byte[] y)
+        {
+            Crv = crv;
+            RawD = CloneArray(d);
+            RawX = CloneArray(x);
+            RawY = CloneArray(y);
         }
 
         public EcdsaJwk()
@@ -388,8 +396,24 @@ namespace JsonWebToken
             {
                 ecdsa.GenerateKey(curve);
                 var parameters = ecdsa.ExportParameters(withPrivateKey);
-                return new EcdsaJwk(parameters);
+                return FromParameters(parameters);
             }
+        }
+
+        public override JsonWebKey CloneMinimal()
+        {
+            return new EcdsaJwk(Crv, RawD, RawX, RawY);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="EcdsaJwk"/>.
+        /// </summary>
+        /// <param name="parameters">A <see cref="byte"/> that contains the key parameters.</param>
+        public static EcdsaJwk FromParameters(ECParameters parameters)
+        {
+            var key = new EcdsaJwk(parameters);
+            key.Kid = key.ComputeThumbprint();
+            return key;
         }
     }
 }

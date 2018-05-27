@@ -32,10 +32,15 @@ namespace JsonWebToken
             set => Header[JwtHeaderParameterNames.Jku] = value;
         }
 
-        public string JsonWebKey
+        public JsonWebKey JsonWebKey
         {
-            get => GetHeaderParameter(JwtHeaderParameterNames.Jwk);
-            set => Header[JwtHeaderParameterNames.Jwk] = value;
+            get
+            {
+                var jwk = GetHeaderParameter(JwtHeaderParameterNames.Jwk);
+                return string.IsNullOrEmpty(jwk) ? null : JsonWebKey.FromJson(jwk);
+            }
+
+            set => Header[JwtHeaderParameterNames.Jwk] = value?.ToString();
         }
 
         public string X509Url

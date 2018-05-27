@@ -1,9 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
-using System.Text;
 
 namespace JsonWebToken
 {
@@ -328,6 +326,11 @@ namespace JsonWebToken
         public override string ToString()
         {
             return _inner.Count != 0 ? _inner.ToString(Formatting.None) : Plaintext ?? string.Empty;
+        }
+
+        public static implicit operator JObject(JwtPayload payload)
+        {
+            return payload._inner;
         }
     }
 }
