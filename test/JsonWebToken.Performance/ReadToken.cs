@@ -1,7 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Running;
-using Jose;
 using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;
@@ -32,6 +30,17 @@ namespace JsonWebToken.Performance
         private static readonly TokenValidationParameters validationParameters = TokenValidationParameters.NoValidation;
         public static readonly JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler() { MaximumTokenSizeInBytes = 4 * 1024 * 1024 };
 
+        [Benchmark(Baseline = true)]
+        [ArgumentsSource(nameof(GetTokens))]
+        public void Jwt(string token)
+        {
+            var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), validationParameters);
+            if (!result.Succedeed)
+            {
+                throw new Exception();
+            }
+        }
+
         [Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public void Wilson(string token)
@@ -43,23 +52,12 @@ namespace JsonWebToken.Performance
             }
         }
 
-        [Benchmark(Baseline = true)]
-        [ArgumentsSource(nameof(GetTokens))]
-        public void Jwt(string token)
-        {
-            var result = Reader.TryReadToken(Tokens.ValidTokens[token], validationParameters);
-            if (!result.Succedeed)
-            {
-                throw new Exception();
-            }
-        }
-
         [Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public void JoseDotNet(string token)
         {
-            // unable to read the token without signature validation
-            var value = Jose.JWT.Decode(Tokens.ValidTokens[token], SymmetricKey.RawK);
+            //unable to read the token without signature validation
+            var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], SymmetricKey.RawK);
             if (value == null)
             {
                 throw new Exception();
@@ -70,7 +68,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokens))]
         public void JwtDotNet(string token)
         {
-            var value = JwtDotNetDecoder.Decode(Tokens.ValidTokens[token]);
+            var value = JwtDotNetDecoder.DecodeToObject(Tokens.ValidTokens[token]);
             if (value == null)
             {
                 throw new Exception();

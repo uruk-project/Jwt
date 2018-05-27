@@ -40,4 +40,10 @@
     <ProjectReference Include="..\..\src\JsonWebToken\JsonWebToken.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="resources\SelfSigned2048_SHA256_Public.cer">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

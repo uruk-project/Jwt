@@ -82,12 +82,11 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult MalformedSignature(JsonWebToken token)
+        public static TokenValidationResult MalformedSignature(JsonWebToken token = null)
         {
             return new TokenValidationResult
             {
-                Status = TokenValidationStatus.MalformedSignature,
-                Token = token
+                Status = TokenValidationStatus.MalformedSignature
             };
         }
 
@@ -126,12 +125,11 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult MissingEncryptionAlgorithm(JsonWebToken jwtToken)
+        public static TokenValidationResult MissingEncryptionAlgorithm()
         {
             return new TokenValidationResult
             {
-                Status = TokenValidationStatus.MissingEncryptionAlgorithm,
-                Token = jwtToken
+                Status = TokenValidationStatus.MissingEncryptionAlgorithm
             };
         }
 
@@ -162,12 +160,11 @@ namespace JsonWebToken
             };
         }
 
-        internal static TokenValidationResult DecryptionFailed(JsonWebToken jwtToken)
+        internal static TokenValidationResult DecryptionFailed()
         {
             return new TokenValidationResult
             {
-                Status = TokenValidationStatus.DecryptionFailed,
-                Token = jwtToken
+                Status = TokenValidationStatus.DecryptionFailed
             };
         }
     }

@@ -1,88 +1,10 @@
-using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
+using System.Net;
+using System.Net.Http;
 using Xunit;
 
 namespace JsonWebToken.Tests
 {
-    public static class Keys
-    {
-        static Keys()
-        {
-            var location = new Uri(typeof(Keys).GetTypeInfo().Assembly.CodeBase).AbsolutePath;
-            var dirPath = Path.GetDirectoryName(location);
-            var keysPath = Path.Combine(dirPath, "./resources/jwks.json"); ;
-            var jwks = File.ReadAllText(keysPath);
-            Jwks = new JsonWebKeySet(jwks);
-        }
-
-        public static JsonWebKeySet Jwks { get; }
-    }
-
-    public static class Tokens
-    {
-        static Tokens()
-        {
-            var location = new Uri(typeof(Tokens).GetTypeInfo().Assembly.CodeBase).AbsolutePath;
-            var dirPath = Path.GetDirectoryName(location);
-            var jsonPath = Path.Combine(dirPath, "./resources/descriptors.json");
-            var json = File.ReadAllText(jsonPath);
-            Descriptors = JArray.Parse(json).Select(t => new JwtPayloadDescriptor(t));
-
-            jsonPath = Path.Combine(dirPath, "./resources/jwts.json");
-            json = File.ReadAllText(jsonPath);
-            Jwts = JArray.Parse(json).Select(t => t.ToString());
-
-            jsonPath = Path.Combine(dirPath, "./resources/invalid_jwts.json");
-            json = File.ReadAllText(jsonPath);
-            InvalidJwts = JArray.Parse(json).Select(t => new TokenState(t["jwt"].ToString(), (TokenValidationStatus)Enum.Parse(typeof(TokenValidationStatus), t["status"].ToString())));
-        }
-
-        private class JwtPayloadDescriptor : IJwtPayloadDescriptor
-        {
-            public JwtPayloadDescriptor(JToken token)
-            {
-                Audiences = new[] { token.Value<string>("aud") };
-                var exp = token.Value<long?>("exp");
-                ExpirationTime = exp.HasValue ? EpochTime.ToDateTime(exp.Value) : default(DateTime?);
-                var iat = token.Value<long?>("iat");
-                IssuedAt = iat.HasValue ? EpochTime.ToDateTime(iat.Value) : default(DateTime?);
-                var nbf = token.Value<long?>("nbf");
-                NotBefore = nbf.HasValue ? EpochTime.ToDateTime(nbf.Value) : default(DateTime?);
-                Issuer = token.Value<string>("iss");
-                JwtId = token.Value<string>("jti");
-            }
-
-            public ICollection<string> Audiences { get; set; }
-            public DateTime? ExpirationTime { get; set; }
-            public DateTime? IssuedAt { get; set; }
-            public string Issuer { get; set; }
-            public string JwtId { get; set; }
-            public DateTime? NotBefore { get; set; }
-        }
-
-        public static IEnumerable<IJwtPayloadDescriptor> Descriptors { get; }
-
-        public static IEnumerable<string> Jwts { get; }
-
-        public static IEnumerable<TokenState> InvalidJwts { get; }
-
-        public class TokenState
-        {
-            public TokenState(string jwt, TokenValidationStatus status)
-            {
-                Jwt = jwt;
-                Status = status;
-            }
-
-            public string Jwt { get; }
-            public TokenValidationStatus Status { get; }
-        }
-    }
-
     public class JsonWebTokenReaderTests
     {
         public static IEnumerable<object[]> GetJwts()
@@ -123,6 +45,23 @@ namespace JsonWebToken.Tests
 
             var result = reader.TryReadToken(jwt, validationParameters);
             Assert.Equal(expectedStatus, result.Status);
+        }
+
+        [Fact(Skip = "Proxy")]
+        public void ReadJwt_HttpKeyProvider_Valid()
+        {
+            var proxy = new WebProxy("http://localhost:8888")
+            {
+                Credentials = CredentialCache.DefaultNetworkCredentials
+            };
+            var reader = new JsonWebTokenReader(Keys.Jwks);
+            var validationParameters = new TokenValidationBuilder()
+                    .RequireSignature("https://demo.identityserver.io/.well-known/openid-configuration/jwks", new HttpClientHandler() { Proxy = proxy })
+                    .Build();
+
+            var jwt = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjQ5OGJmN2Y5MjU2MjJiYjUwZGM0NzNkNWMzYmI3NmI0IiwidHlwIjoiSldUIn0.eyJuYmYiOjE1MjcxOTE0NDQsImV4cCI6MTUyNzE5NTA0NCwiaXNzIjoiaHR0cHM6Ly9kZW1vLmlkZW50aXR5c2VydmVyLmlvIiwiYXVkIjpbImh0dHBzOi8vZGVtby5pZGVudGl0eXNlcnZlci5pby9yZXNvdXJjZXMiLCJhcGkiXSwiY2xpZW50X2lkIjoiY2xpZW50Iiwic2NvcGUiOlsiYXBpIl19.kYYiVoSMj81P0qzgMerfwcxGOSEZde5hjCiRL6flXdrZ3iFoiQ-z98nC5hAyaYwL2PJ9aLJ5B4Q2jW9PU6NS7hHHPbgU-WbbHqgAvLL7zGywUnnpkk39_OqUk9Y7cgT-ObNCbIvmRF0xvFWrEu7Wllfia0RRPoqbr1BQW3LV8LKS0ocz-BtwLbIdAddgR5ZQ28nBHgycWd7t8rmiZQVGw1hRtJAc1Mgs9qXU1bqDuP5__B4zJSpfpS711wmkkHOIYOfgpdih28gzE3Ot1Im2zuyOZ6Q9wM2zWttKxpNC2lBulP6kRr9lT6PTQ-RnLVaWgoBa4XmaoMJ0se9SqE1Stw";
+            var result = reader.TryReadToken(jwt, validationParameters);
+            Assert.Equal(TokenValidationStatus.Success, result.Status);
         }
 
         public static IEnumerable<object[]> GetValidTokens()

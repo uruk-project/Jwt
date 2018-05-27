@@ -28,7 +28,7 @@ namespace JsonWebToken
         /// </summary>
         public string Algorithm { get; }
 
-        public abstract int HashSize { get; }
+        public abstract int HashSizeInBits { get; }
 
         /// <summary>
         /// This must be overridden to produce a signature over the 'input'.

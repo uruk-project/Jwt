@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
@@ -41,7 +42,7 @@ namespace JsonWebToken
             _keyedHash = GetKeyedHashAlgorithm(key.RawK, algorithm);
         }
 
-        public override int HashSize => _keyedHash.HashSize;
+        public override int HashSizeInBits => _keyedHash.HashSize;
 
         /// <summary>
         /// Gets or sets the minimum <see cref="SymmetricJwk"/>.KeySize"/>.
@@ -153,7 +154,9 @@ namespace JsonWebToken
             unsafe
             {
                 Span<byte> hash = stackalloc byte[_keyedHash.HashSize / 8];
-                return _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash);
+                bool result = _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash);
+                Debug.Assert(hash.Length == bytesWritten);
+                return result;
             }
 #else
             return AreEqual(signature, _keyedHash.ComputeHash(input.ToArray()));
@@ -193,7 +196,9 @@ namespace JsonWebToken
             unsafe
             {
                 Span<byte> hash = stackalloc byte[_keyedHash.HashSize / 8];
-                return _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash, length);
+                bool result =  _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash, length);
+                Debug.Assert(hash.Length == bytesWritten);
+                return result;
             }
 #else
             return AreEqual(signature, _keyedHash.ComputeHash(input.ToArray()), length);

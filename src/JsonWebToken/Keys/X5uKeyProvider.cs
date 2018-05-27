@@ -11,9 +11,9 @@ namespace JsonWebToken
         {
         }
 
-        public override JsonWebKeySet GetKeys(JsonWebToken jwtToken)
+        public override JsonWebKeySet GetKeys(JObject header)
         {
-            return GetKeys(jwtToken, jwtToken.Header[JwtHeaderParameterNames.X5u]?.Value<string>());
+            return GetKeys(header, header[JwtHeaderParameterNames.X5u]?.Value<string>());
         }
 
         protected override JsonWebKeySet DeserializeKeySet(string value)

@@ -15,18 +15,17 @@ namespace JsonWebToken
         /// Initializes a new instance of the <see cref="HttpDocumentRetriever"/> class.
         /// </summary>
         public HttpDocumentRetriever()
-            :this(new HttpClient())
+            : this(null)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpDocumentRetriever"/> class with a specified httpClient.
         /// </summary>
-        /// <param name="httpClient"><see cref="HttpClient"/></param>
-        /// <exception cref="ArgumentNullException">'httpClient' is null.</exception>
-        public HttpDocumentRetriever(HttpClient httpClient)
+        /// <param name="handler"><see cref="HttpClient"/></param>
+        public HttpDocumentRetriever(HttpClientHandler handler)
         {
-            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _httpClient = new HttpClient(handler ?? new HttpClientHandler());
         }
 
         /// <summary>
@@ -74,7 +73,7 @@ namespace JsonWebToken
                 return false;
             }
         }
-    
+
         private static bool IsHttps(Uri uri)
         {
             return uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);

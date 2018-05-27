@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Buffers;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 
@@ -114,18 +116,34 @@ namespace JsonWebToken
             byte[] ciphertext;
             ciphertext = Transform(aes.CreateEncryptor(), plaintext, 0, plaintext.Length);
 
-            Span<byte> macBytes = stackalloc byte[authenticatedData.Length + aes.IV.Length + ciphertext.Length + sizeof(long)];
-            authenticatedData.CopyTo(macBytes);
-            aes.IV.CopyTo(macBytes.Slice(authenticatedData.Length));
-            ciphertext.CopyTo(macBytes.Slice(authenticatedData.Length + aes.IV.Length));
-            TryConvertToBigEndian(macBytes.Slice(authenticatedData.Length + aes.IV.Length + ciphertext.Length, sizeof(long)), authenticatedData.Length * 8);
+            byte[] arrayToReturnToPool = null;
+            int macLength = authenticatedData.Length + aes.IV.Length + ciphertext.Length + sizeof(long);
+            Span<byte> macBytes = macLength <= JwtConstants.MaxStackallocBytes
+                ? stackalloc byte[macLength]
+                : arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength);
+            try
+            {
+                authenticatedData.CopyTo(macBytes);
+                aes.IV.CopyTo(macBytes.Slice(authenticatedData.Length));
+                ciphertext.CopyTo(macBytes.Slice(authenticatedData.Length + aes.IV.Length));
+                TryConvertToBigEndian(macBytes.Slice(authenticatedData.Length + aes.IV.Length + ciphertext.Length, sizeof(long)), authenticatedData.Length * 8);
 
-            Span<byte> macHash = stackalloc byte[_symmetricSignatureProvider.HashSize / 8];
-            _symmetricSignatureProvider.TrySign(macBytes, macHash, out int writtenBytes);
+                Span<byte> macHash = stackalloc byte[_symmetricSignatureProvider.HashSizeInBits / 8];
+                _symmetricSignatureProvider.TrySign(macBytes, macHash, out int writtenBytes);
+                Debug.Assert(writtenBytes == macHash.Length);
 
-            var authenticationTag = macHash.Slice(0, writtenBytes).ToArray();
 
-            return new AuthenticatedEncryptionResult(Key, ciphertext, aes.IV, authenticationTag);
+                var authenticationTag = macHash.Slice(0, writtenBytes).ToArray();
+
+                return new AuthenticatedEncryptionResult(Key, ciphertext, aes.IV, authenticationTag);
+            }
+            finally
+            {
+                if (arrayToReturnToPool != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
+                }
+            }
         }
 #endif
 
@@ -165,7 +183,7 @@ namespace JsonWebToken
             Array.Copy(aes.IV, 0, macBytes, authenticatedData.Length, aes.IV.Length);
             Array.Copy(ciphertext, 0, macBytes, authenticatedData.Length + aes.IV.Length, ciphertext.Length);
             Array.Copy(al, 0, macBytes, authenticatedData.Length + aes.IV.Length + ciphertext.Length, al.Length);
-            byte[] macHash = new byte[_symmetricSignatureProvider.HashSize / 8];
+            byte[] macHash = new byte[_symmetricSignatureProvider.HashSizeInBits / 8];
             _symmetricSignatureProvider.TrySign(macBytes, macHash, out int writtenBytes);
 
             var authenticationTag = new byte[writtenBytes];

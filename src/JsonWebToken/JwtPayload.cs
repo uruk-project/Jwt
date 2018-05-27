@@ -1,9 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
-using System.Text;
 
 namespace JsonWebToken
 {
@@ -317,12 +315,12 @@ namespace JsonWebToken
         private DateTime? GetDateTime(string key)
         {
             JToken dateValue;
-            if (!_inner.TryGetValue(key, out dateValue))
+            if (!_inner.TryGetValue(key, out dateValue) || !dateValue.HasValues)
             {
                 return default(DateTime?);
             }
 
-            return EpochTime.ToDateTime(dateValue.Value<int>());
+            return EpochTime.ToDateTime(dateValue.Value<long>());
         }
 
         public override string ToString()
@@ -330,61 +328,9 @@ namespace JsonWebToken
             return _inner.Count != 0 ? _inner.ToString(Formatting.None) : Plaintext ?? string.Empty;
         }
 
-        /// <summary>
-        /// Encodes this instance as Base64UrlEncoded JSON.
-        /// </summary>
-        /// <returns>Base64UrlEncoded JSON.</returns>
-        public string Base64UrlEncode()
+        public static implicit operator JObject(JwtPayload payload)
         {
-            return Base64Url.Encode(ToString());
-        }
-
-        public bool TryBase64UrlEncode(Span<byte> destination, out int bytesWritten)
-        {
-            var text = ToString();
-#if NETCOREAPP2_1
-            unsafe
-            {
-                var length = Encoding.UTF8.GetByteCount(text);
-                var array = ArrayPool<byte>.Shared.Rent(length);
-                try
-                {
-                    Span<byte> encodedBytes = array;
-                    encodedBytes = encodedBytes.Slice(0, length);
-                    Encoding.UTF8.GetBytes(text, encodedBytes);
-                    var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
-                    return status == OperationStatus.Done;
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(array);
-                }
-            }
-#else
-            var encodedBytes = Encoding.UTF8.GetBytes(text);
-
-            var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
-            return status == OperationStatus.Done;
-#endif
-        }
-
-        /// <summary>
-        /// Deserializes Base64UrlEncoded JSON into a <see cref="JwtPayload"/> instance.
-        /// </summary>
-        /// <param name="base64UrlEncodedJsonString">base64url encoded JSON to deserialize.</param>
-        /// <returns>An instance of <see cref="JwtPayload"/>.</returns>
-        public static JwtPayload Base64UrlDeserialize(string base64UrlEncodedJsonString)
-        {
-            return Deserialize(Base64Url.Decode(base64UrlEncodedJsonString));
-        }
-        public static JwtPayload Base64UrlDeserialize(ReadOnlySpan<char> base64UrlEncodedJsonString)
-        {
-            return Deserialize(Encoding.UTF8.GetString(Base64Url.Base64UrlDecode(base64UrlEncodedJsonString)));
-        }
-
-        private static JwtPayload Deserialize(string jsonString)
-        {
-            return new JwtPayload(JObject.Parse(jsonString));
+            return payload._inner;
         }
     }
 }

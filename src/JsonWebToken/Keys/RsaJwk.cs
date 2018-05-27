@@ -14,13 +14,14 @@ namespace JsonWebToken
         private string _p;
         private string _q;
         private string _qi;
+
         public RsaJwk()
         {
             Kty = JsonWebAlgorithmsKeyTypes.RSA;
         }
 
         public RsaJwk(RSAParameters rsaParameters)
-            :this()
+            : this()
         {
             RawD = rsaParameters.D;
             RawDP = rsaParameters.DP;
@@ -30,6 +31,13 @@ namespace JsonWebToken
             RawQ = rsaParameters.Q;
             RawE = rsaParameters.Exponent;
             RawN = rsaParameters.Modulus;
+        }
+
+        private RsaJwk(byte[] e, byte[] n)
+            : this()
+        {
+            RawE = CloneArray(e);
+            RawN = CloneArray(n);
         }
 
         public RSAParameters CreateRsaParameters()
@@ -213,7 +221,7 @@ namespace JsonWebToken
         {
             get
             {
-                if (_n  == null)
+                if (_n == null)
                 {
                     if (RawN != null && RawN.Length != 0)
                     {
@@ -255,7 +263,7 @@ namespace JsonWebToken
         {
             get
             {
-                if (_p  == null)
+                if (_p == null)
                 {
                     if (RawP != null && RawP.Length != 0)
                     {
@@ -356,11 +364,10 @@ namespace JsonWebToken
         public byte[] RawQI { get; private set; }
 
 
-        public RsaJwk FromRsaParameters(RSAParameters rsaParameters)
+        public static RsaJwk FromRsaParameters(RSAParameters rsaParameters)
         {
             return new RsaJwk(rsaParameters);
         }
-
 
         public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey)
         {
@@ -369,7 +376,23 @@ namespace JsonWebToken
             //Save the public key information to an RSAParameters structure.  
             RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
 
-            return new RsaJwk(rsaParameters);
+            return FromParameters(rsaParameters);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="parameters">A <see cref="byte"/> that contains the key parameters.</param>
+        public static RsaJwk FromParameters(RSAParameters parameters)
+        {
+            var key = new RsaJwk(parameters);
+            key.Kid = key.ComputeThumbprint();
+            return key;
+        }
+
+        public override JsonWebKey CloneMinimal()
+        {
+            return new RsaJwk(RawE, RawN);
         }
     }
 }

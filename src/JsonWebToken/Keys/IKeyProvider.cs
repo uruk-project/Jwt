@@ -1,7 +1,9 @@
-﻿namespace JsonWebToken
+﻿using Newtonsoft.Json.Linq;
+
+namespace JsonWebToken
 {
     public interface IKeyProvider
     {
-        JsonWebKeySet GetKeys(JsonWebToken jwtToken);
+        JsonWebKeySet GetKeys(JObject header);
     }
 }

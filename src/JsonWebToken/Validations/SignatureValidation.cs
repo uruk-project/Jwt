@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace JsonWebToken.Validations
@@ -16,14 +17,20 @@ namespace JsonWebToken.Validations
             _supportUnsecure = supportUnsecure;
         }
 
-        public TokenValidationResult TryValidate(JsonWebToken jwt)
+        public TokenValidationResult TryValidate(ReadOnlySpan<char> token, JsonWebToken jwt)
         {
             if (jwt == null)
             {
                 throw new ArgumentNullException(nameof(jwt));
             }
 
-            if (!jwt.HasSignature)
+            if (jwt.Separators.Count != JwtConstants.JwsSeparatorsCount)
+            {
+                // This is not a JWS
+                return TokenValidationResult.Success(jwt);
+            }
+
+            if (token.Length <= jwt.Separators[0] + jwt.Separators[1] + 1)
             {
                 if (_supportUnsecure && string.Equals(SecurityAlgorithms.None, jwt.SignatureAlgorithm, StringComparison.Ordinal))
                 {
@@ -33,17 +40,29 @@ namespace JsonWebToken.Validations
                 return TokenValidationResult.MissingSignature(jwt);
             }
 
-            bool keysTried = false;
-            ReadOnlySpan<byte> signatureBytes;
+            int signatureLength = token.Length - (jwt.Separators[0] + jwt.Separators[1] + 1);
+            int signatureBytesLength;
             try
             {
-                signatureBytes = jwt.GetSignatureBytes();
+                signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(signatureLength);
             }
             catch (FormatException)
             {
-                return TokenValidationResult.MalformedSignature(jwt);
+                return TokenValidationResult.MalformedSignature();
             }
 
+            Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
+            try
+            {
+                Base64Url.Base64UrlDecode(token.Slice(jwt.Separators[0] + jwt.Separators[1] + 1), signatureBytes, out int byteConsumed, out int bytesWritten);
+                Debug.Assert(bytesWritten == signatureBytes.Length);
+            }
+            catch (FormatException)
+            {
+                return TokenValidationResult.MalformedSignature();
+            }
+
+            bool keysTried = false;
             int length = jwt.Separators[0] + jwt.Separators[1];
             unsafe
             {
@@ -52,9 +71,9 @@ namespace JsonWebToken.Validations
                 Span<byte> encodedBytes = array.AsSpan().Slice(0, length);
                 try
                 {
-                    Encoding.UTF8.GetBytes(jwt.RawData.AsSpan().Slice(0, length), encodedBytes);
+                    Encoding.UTF8.GetBytes(token.Slice(0, length), encodedBytes);
 #else
-                    var encodedBytes = Encoding.UTF8.GetBytes(jwt.RawData.Substring(0, length));
+                    var encodedBytes = Encoding.UTF8.GetBytes(token.Slice(0, length).ToString());
 #endif
                     JwtHeader header;
                     try
@@ -67,8 +86,9 @@ namespace JsonWebToken.Validations
                     }
 
                     var keys = ResolveSigningKey(jwt);
-                    foreach (var key in keys)
+                    for (int i = 0; i < keys.Count; i++)
                     {
+                        JsonWebKey key = keys[i];
                         if (TryValidateSignature(encodedBytes, signatureBytes, key, key.Alg))
                         {
                             jwt.Header.SigningKey = key;
@@ -117,10 +137,10 @@ namespace JsonWebToken.Validations
             }
         }
 
-        private IEnumerable<JsonWebKey> ResolveSigningKey(JsonWebToken jwt)
+        private IList<JsonWebKey> ResolveSigningKey(JsonWebToken jwt)
         {
             var keys = new List<JsonWebKey>();
-            var keySet = _keyProvider.GetKeys(jwt);
+            var keySet = _keyProvider.GetKeys(jwt.Header);
             if (keySet != null)
             {
                 for (int j = 0; j < keySet.Keys.Count; j++)

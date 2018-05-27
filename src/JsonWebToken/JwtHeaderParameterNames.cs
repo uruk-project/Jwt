@@ -3,7 +3,7 @@ namespace JsonWebToken
     /// <summary>
     /// List of header parameter names see: http://tools.ietf.org/html/rfc7519#section-5.
     /// </summary>
-    public struct JwtHeaderParameterNames
+    public static class JwtHeaderParameterNames
     {
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7515#section-4.1.1

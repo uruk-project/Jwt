@@ -37,6 +37,17 @@ namespace JsonWebToken.Performance
 
         private static readonly Microsoft.IdentityModel.Tokens.TokenValidationParameters wilsonParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters() { IssuerSigningKey = WilsonSharedKey, ValidateAudience = false, ValidateIssuer = false, ValidateLifetime = false };
 
+        [Benchmark(Baseline = true)]
+        [ArgumentsSource(nameof(GetTokens))]
+        public void Jwt(string token)
+        {
+            var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), validationParameters);
+            if (!result.Succedeed)
+            {
+                throw new Exception(result.Status.ToString());
+            }
+        }
+
         [Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public void Wilson(string token)
@@ -48,22 +59,11 @@ namespace JsonWebToken.Performance
             }
         }
 
-        [Benchmark(Baseline = true)]
-        [ArgumentsSource(nameof(GetTokens))]
-        public void Jwt(string token)
-        {
-            var result = Reader.TryReadToken(Tokens.ValidTokens[token], validationParameters);
-            if (!result.Succedeed)
-            {
-                throw new Exception(result.Status.ToString());
-            }
-        }
-
         [Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public void JoseDotNet(string token)
         {
-            var value = Jose.JWT.Decode(Tokens.ValidTokens[token], key: SymmetricKey.RawK, alg: JwsAlgorithm.HS256);
+            var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: SymmetricKey.RawK, alg: JwsAlgorithm.HS256);
             if (value == null)
             {
                 throw new Exception();
@@ -74,7 +74,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokens))]
         public void JwtDotNet(string token)
         {
-            var value = JwtDotNetDecoder.Decode(Tokens.ValidTokens[token], SymmetricKey.RawK, verify: true);
+            var value = JwtDotNetDecoder.DecodeToObject(Tokens.ValidTokens[token], SymmetricKey.RawK, verify: true);
             if (value == null)
             {
                 throw new Exception();

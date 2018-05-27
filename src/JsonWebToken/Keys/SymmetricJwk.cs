@@ -11,8 +11,7 @@ namespace JsonWebToken
         public SymmetricJwk(byte[] bytes)
             : this()
         {
-            RawK = bytes;
-            _k = Base64Url.Encode(bytes);
+            RawK = CloneArray(bytes);
         }
 
         public SymmetricJwk()
@@ -64,24 +63,9 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(bytes));
             }
 
-            return new SymmetricJwk(bytes);
-        }
-
-        /// <summary>
-        /// Returns a new instance of <see cref="SymmetricJwk"/>.
-        /// </summary>
-        /// <param name="key">The Base64Url encoded string that contains the key.</param>
-        public static SymmetricJwk FromBase64Url(string key)
-        {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            return new SymmetricJwk()
-            {
-                K = key
-            };
+            var key = new SymmetricJwk(bytes);
+            key.Kid = key.ComputeThumbprint();
+            return key;
         }
 
         public override bool IsSupportedAlgorithm(string algorithm)
@@ -143,7 +127,7 @@ namespace JsonWebToken
                 case SecurityAlgorithms.Aes256CbcHmacSha512:
                     return true;
             }
-            
+
             return true;
         }
 
@@ -159,7 +143,8 @@ namespace JsonWebToken
 
         public static SymmetricJwk GenerateKey(int sizeInBits)
         {
-            return FromByteArray(GenerateKeyBytes(sizeInBits));
+            var key = FromByteArray(GenerateKeyBytes(sizeInBits));
+            return key;
         }
 
         private static byte[] GenerateKeyBytes(int sizeInBits)
@@ -171,6 +156,15 @@ namespace JsonWebToken
 
                 return key;
             }
+        }
+
+        /// <summary>
+        ///  Creates a minimal representation of the current key.
+        /// </summary>
+        /// <returns></returns>
+        public override JsonWebKey CloneMinimal()
+        {
+            return new SymmetricJwk(RawK);
         }
     }
 }
