@@ -13,7 +13,7 @@ namespace JsonWebToken
 
         public override JsonWebKeySet GetKeys(JObject header)
         {
-            return GetKeys(header, header[JwtHeaderParameterNames.X5u]?.Value<string>());
+            return GetKeys(header, header[HeaderParameterNames.X5u]?.Value<string>());
         }
 
         protected override JsonWebKeySet DeserializeKeySet(string value)

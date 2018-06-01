@@ -37,7 +37,7 @@ namespace JsonWebToken
             return this;
         }
 
-        protected TokenValidationBuilder AddValidation(IValidation validation)
+        public TokenValidationBuilder AddValidation(IValidation validation)
         {
             if (validation == null)
             {

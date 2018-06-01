@@ -10,6 +10,9 @@ namespace JsonWebToken
 
         public TokenValidationStatus Status { get; private set; }
 
+        public string ErrorClaim { get; private set; }
+        public string ErrorHeader { get; private set; }
+
         public static TokenValidationResult InvalidLifetime(JsonWebToken token)
         {
             return new TokenValidationResult
@@ -33,42 +36,6 @@ namespace JsonWebToken
             return new TokenValidationResult
             {
                 Status = TokenValidationStatus.TokenReplayed,
-                Token = token
-            };
-        }
-
-        public static TokenValidationResult MissingIssuer(JsonWebToken token)
-        {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.MissingIssuer,
-                Token = token
-            };
-        }
-
-        public static TokenValidationResult InvalidIssuer(JsonWebToken token)
-        {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.InvalidIssuer,
-                Token = token
-            };
-        }
-
-        public static TokenValidationResult MissingAudience(JsonWebToken token)
-        {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.MissingAudience,
-                Token = token
-            };
-        }
-
-        public static TokenValidationResult InvalidAudience(JsonWebToken token)
-        {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.InvalidAudience,
                 Token = token
             };
         }
@@ -133,15 +100,6 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult MissingContentType(JsonWebToken jwtToken)
-        {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.MissingContentType,
-                Token = jwtToken
-            };
-        }
-
         public static TokenValidationResult NotYetValid(JsonWebToken jwtToken)
         {
             return new TokenValidationResult
@@ -160,11 +118,47 @@ namespace JsonWebToken
             };
         }
 
-        internal static TokenValidationResult DecryptionFailed()
+        public static TokenValidationResult DecryptionFailed()
         {
             return new TokenValidationResult
             {
                 Status = TokenValidationStatus.DecryptionFailed
+            };
+        }
+
+        public static TokenValidationResult InvalidClaim(JsonWebToken jwt, string claim)
+        {
+            return new TokenValidationResult
+            {
+                Status = TokenValidationStatus.InvalidClaim,
+                ErrorClaim = claim
+            };
+        }
+
+        public static TokenValidationResult MissingClaim(JsonWebToken jwt, string claim)
+        {
+            return new TokenValidationResult
+            {
+                Status = TokenValidationStatus.MissingClaim,
+                ErrorClaim = claim
+            };
+        }
+
+        public static TokenValidationResult InvalidHeader(JsonWebToken jwt, string header)
+        {
+            return new TokenValidationResult
+            {
+                Status = TokenValidationStatus.InvalidHeader,
+                ErrorHeader = header
+            };
+        }
+
+        public static TokenValidationResult MissingHeader(JsonWebToken jwt, string header)
+        {
+            return new TokenValidationResult
+            {
+                Status = TokenValidationStatus.MissingHeader,
+                ErrorHeader = header
             };
         }
     }

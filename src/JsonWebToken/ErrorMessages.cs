@@ -19,6 +19,21 @@ namespace JsonWebToken
             return string.Format(CultureInfo.InvariantCulture, format, args);
         }
 
+        public static string FormatInvariant(string format, object arg0)
+        {
+            return string.Format(CultureInfo.InvariantCulture, format, arg0);
+        }
+
+        public static string FormatInvariant(string format, object arg0, object arg1)
+        {
+            return string.Format(CultureInfo.InvariantCulture, format, arg0, arg1);
+        }
+
+        public static string FormatInvariant(string format, object arg0, object arg1, object arg2)
+        {
+            return string.Format(CultureInfo.InvariantCulture, format, arg0, arg1, arg2);
+        }
+
         public const string MustBeGreaterThanZero = "{0} must be greater than zero. value: '{1}'.";
         public const string MustBeGreaterThanTimeSpanZero = "{0} must be greater than TimeSpan.Zero. value: '{1}'.";
 
@@ -28,7 +43,7 @@ namespace JsonWebToken
         public const string NotSuportedAlgorithmForKeyWrap = "Key wrap is not supported for algorithm '{0}'.";
 
         public const string InvalidSymmetricKeySize = "Invalid key size. Valid key sizes are: 256, 384, and 512.";
-        public const string InvalidEcdsaKeySize = "Invalid key size for '{0}. Valid key size must be '{1}' bits. Key size: '{2}'.";
+        public const string InvalidEcdsaKeySize = "Invalid key size for '{0}'. Valid key size must be '{1}' bits. Key size: '{2}'.";
 
         public const string AlgorithmRequireMinimumKeySize = "The algorithm '{0}' requires the a key size to be greater than '{1}' bits. Key size is '{2}'.";
         public const string MustBeAtLeast = "{0} must be at least '{1}'.";
@@ -52,7 +67,6 @@ namespace JsonWebToken
         public const string InvalidRsaKey = "Invalid RSA key: '{0}'. Both modulus (N) and exponent (E) must be present.";
 
         public const string InvalidSize = "The value of '{0}' must be '{1}' bits, but was {2}.";
-        public const string PayloadIncompatibleWithPlaintext = "The 'Plaintext' property is not compatible when a value is already defined within the 'Payload'.";
         public const string NotSupportedCertificate = "The certificate does not contains RSA key material or ECDsa key material.";
     }
 }

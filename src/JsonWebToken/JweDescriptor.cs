@@ -9,22 +9,14 @@ namespace JsonWebToken
             Payload = new JwsDescriptor();
         }
 
-        public JweDescriptor(JwsDescriptor payload)
+        public JweDescriptor(JObject payload) 
         {
-            Payload = payload;
+            Payload = new JwsDescriptor(payload);
         }
 
-        public JweDescriptor(JObject payload)
-        {
-            Payload = new JwsDescriptor((JObject)payload.DeepClone());
-        }
-
-        public override string Encode()
-        {
-            var payload = Payload.Encode();
-            var rawData = EncryptToken(payload);
-
-            return rawData;
+        public JweDescriptor(JwsDescriptor payload) : 
+            base(payload)
+        {          
         }
     }
 }

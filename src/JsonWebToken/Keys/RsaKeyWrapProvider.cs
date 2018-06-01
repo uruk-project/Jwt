@@ -96,11 +96,11 @@ namespace JsonWebToken
         {
             switch (algorithm)
             {
-                case SecurityAlgorithms.RsaOaep:
+                case KeyManagementAlgorithms.RsaOaep:
                     return RSAEncryptionPadding.OaepSHA1;
-                case SecurityAlgorithms.RsaOaep256:
+                case KeyManagementAlgorithms.RsaOaep256:
                     return RSAEncryptionPadding.OaepSHA256;
-                case SecurityAlgorithms.RsaPkcs1:
+                case KeyManagementAlgorithms.RsaPkcs1:
                     return RSAEncryptionPadding.Pkcs1;
             }
 

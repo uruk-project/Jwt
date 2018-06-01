@@ -267,8 +267,7 @@ namespace JsonWebToken
             byte[] arrayToReturnToPool = null;
             Span<byte> buffer = jsonLength <= JwtConstants.MaxStackallocBytes
                                 ? stackalloc byte[jsonLength]
-                                : arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(jsonLength);
-            buffer = buffer.Slice(0, jsonLength);
+                                : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(jsonLength)).AsSpan(0, jsonLength);
             try
             {
                 Encoding.UTF8.GetBytes(json, buffer);

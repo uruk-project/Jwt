@@ -9,20 +9,20 @@ namespace JsonWebToken
                                                             .IgnoreSignature()
                                                             .Build();
 
-        private readonly IList<IValidation> _rules;
+        private readonly IList<IValidation> _validations;
 
-        public TokenValidationParameters(IList<IValidation> rules)
+        public TokenValidationParameters(IList<IValidation> validations)
         {
-            _rules = rules;
+            _validations = validations ?? throw new ArgumentNullException(nameof(validations));
         }
 
-        public int MaximumTokenSizeInBytes { get; internal set; }
+        public int MaximumTokenSizeInBytes { get; set; }
 
         public TokenValidationResult TryValidate(ReadOnlySpan<char> token, JsonWebToken jwt)
         {
-            for (int i = 0; i < _rules.Count; i++)
+            for (int i = 0; i < _validations.Count; i++)
             {
-                var result = _rules[i].TryValidate(token, jwt);
+                var result = _validations[i].TryValidate(token, jwt);
                 if (!result.Succedeed)
                 {
                     return result;

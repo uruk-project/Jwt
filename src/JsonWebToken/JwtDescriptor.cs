@@ -1,10 +1,14 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace JsonWebToken
 {
     public abstract class JwtDescriptor
     {
+        private static readonly Dictionary<string, JTokenType[]> DefaultRequiredHeaderParameters = new Dictionary<string, JTokenType[]>();
+        private JsonWebKey _key;
+
         public JwtDescriptor()
         {
             Header = new JObject();
@@ -12,71 +16,82 @@ namespace JsonWebToken
 
         public JObject Header { get; set; }
 
-        public JsonWebKey Key { get; set; }
+        public JsonWebKey Key
+        {
+            get => _key;
+            set
+            {
+                _key = value;
+                Algorithm = value.Alg;
+                KeyId = value.Kid;
+            }
+        }
+
+        protected virtual IReadOnlyDictionary<string, JTokenType[]> RequiredHeaderParameters => DefaultRequiredHeaderParameters;
 
         public string Algorithm
         {
-            get => GetHeaderParameter(JwtHeaderParameterNames.Alg) ?? Key?.Alg;
-            set => Header[JwtHeaderParameterNames.Alg] = value;
+            get => GetHeaderParameter(HeaderParameterNames.Alg);
+            set => Header[HeaderParameterNames.Alg] = value;
         }
 
         public string KeyId
         {
-            get => GetHeaderParameter(JwtHeaderParameterNames.Kid) ?? Key?.Kid;
-            set => Header[JwtHeaderParameterNames.Kid] = value;
+            get => GetHeaderParameter(HeaderParameterNames.Kid);
+            set => Header[HeaderParameterNames.Kid] = value;
         }
 
         public string JwkSetUrl
         {
-            get => GetHeaderParameter(JwtHeaderParameterNames.Jku);
-            set => Header[JwtHeaderParameterNames.Jku] = value;
+            get => GetHeaderParameter(HeaderParameterNames.Jku);
+            set => Header[HeaderParameterNames.Jku] = value;
         }
 
         public JsonWebKey JsonWebKey
         {
             get
             {
-                var jwk = GetHeaderParameter(JwtHeaderParameterNames.Jwk);
+                var jwk = GetHeaderParameter(HeaderParameterNames.Jwk);
                 return string.IsNullOrEmpty(jwk) ? null : JsonWebKey.FromJson(jwk);
             }
 
-            set => Header[JwtHeaderParameterNames.Jwk] = value?.ToString();
+            set => Header[HeaderParameterNames.Jwk] = value?.ToString();
         }
 
         public string X509Url
         {
-            get => GetHeaderParameter(JwtHeaderParameterNames.X5u);
-            set => Header[JwtHeaderParameterNames.X5u] = value;
+            get => GetHeaderParameter(HeaderParameterNames.X5u);
+            set => Header[HeaderParameterNames.X5u] = value;
         }
 
         public IList<string> X509CertificateChain
         {
-            get => GetHeaderParameters(JwtHeaderParameterNames.X5c);
-            set => Header[JwtHeaderParameterNames.X5c] = JArray.FromObject(value);
+            get => GetHeaderParameters(HeaderParameterNames.X5c);
+            set => Header[HeaderParameterNames.X5c] = JArray.FromObject(value);
         }
 
         public string X509CertificateSha1Thumbprint
         {
-            get => GetHeaderParameter(JwtHeaderParameterNames.X5t);
-            set => Header[JwtHeaderParameterNames.X5t] = value;
+            get => GetHeaderParameter(HeaderParameterNames.X5t);
+            set => Header[HeaderParameterNames.X5t] = value;
         }
 
         public string Type
         {
-            get => GetHeaderParameter(JwtHeaderParameterNames.Typ);
-            set => Header[JwtHeaderParameterNames.Typ] = value;
+            get => GetHeaderParameter(HeaderParameterNames.Typ);
+            set => Header[HeaderParameterNames.Typ] = value;
         }
 
         public string ContentType
         {
-            get => GetHeaderParameter(JwtHeaderParameterNames.Cty);
-            set => Header[JwtHeaderParameterNames.Cty] = value;
+            get => GetHeaderParameter(HeaderParameterNames.Cty);
+            set => Header[HeaderParameterNames.Cty] = value;
         }
 
         public IList<string> Critical
         {
-            get => GetHeaderParameters(JwtHeaderParameterNames.Cty);
-            set => Header[JwtHeaderParameterNames.Cty] = JArray.FromObject(value);
+            get => GetHeaderParameters(HeaderParameterNames.Cty);
+            set => Header[HeaderParameterNames.Cty] = JArray.FromObject(value);
         }
 
         public abstract string Encode();
@@ -104,6 +119,37 @@ namespace JsonWebToken
             }
 
             return null;
+        }
+        protected bool HasMandatoryHeaderParameter(string header)
+        {
+            return Header.TryGetValue(header, out var value) && value.Type != JTokenType.Null;
+        }
+
+        public virtual void Validate()
+        {
+            foreach (var header in RequiredHeaderParameters)
+            {
+                JToken token;
+                if (!Header.TryGetValue(header.Key, out token) || token.Type == JTokenType.Null)
+                {
+                    throw new JwtDescriptorException(ErrorMessages.FormatInvariant("The header parameter '{0}' is required.", header.Key));
+                }
+
+                bool headerFound = false;
+                for (int i = 0; i < header.Value.Length; i++)
+                {
+                    if (token?.Type == header.Value[i])
+                    {
+                        headerFound = true;
+                        break;
+                    }
+                }
+
+                if (!headerFound)
+                {
+                    throw new JwtDescriptorException(ErrorMessages.FormatInvariant("The header parameter '{0}' must be of type [{1}].", header.Key, string.Join(", ", header.Value.Select(t => t.ToString()))));
+                }
+            }
         }
     }
 }

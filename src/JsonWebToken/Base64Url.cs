@@ -485,13 +485,7 @@ namespace JsonWebToken
             {
                 return 0;
             }
-
-            // TODO : optimize well known key sizes...
-            if (count == 32)
-            {
-
-            }
-
+            
             var length = GetBufferSizeRequiredToBase64Encode(count, out int numPaddingChars);
             return length - numPaddingChars;
         }
@@ -1209,7 +1203,7 @@ namespace JsonWebToken
         /// <summary>
         /// Malformed input: {0} is an invalid input length.
         /// </summary>
-        internal static string FormatWebEncoders_MalformedInput(object p0)
+        internal static string FormatWebEncoders_MalformedInput(int p0)
         {
             return string.Format(CultureInfo.CurrentCulture, WebEncoders_MalformedInput, p0);
         }

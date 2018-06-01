@@ -5,11 +5,13 @@
   },
   {
     "jwt": "eyJhbGciOiJIUzI1NiIsImtpZCI6InN5bW1ldHJpYy0yNTYifQ.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiaWF0IjoxNTA4MTg0ODQ1LCJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjRYWFgiLCJleHAiOjE2MjgxODQ4NDUsIm5iZiI6MTUwODE4NDg0NX0.dupInifG05GrB5xmvJXUuSFJvAGEykVsmJWSVMOADvc",
-    "status": "InvalidAudience"
+    "status": "InvalidClaim",
+    "claim": "aud"
   },
   {
     "jwt": "eyJhbGciOiJIUzI1NiIsImtpZCI6InN5bW1ldHJpYy0yNTYifQ.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vWFhYIiwiaWF0IjoxNTA4MTg0ODQ1LCJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJleHAiOjE2MjgxODQ4NDUsIm5iZiI6MTUwODE4NDg0NX0.l2RNJOTjZnJlrK5QWzMuHQQKQnrqsfCCte5-q6eR73o",
-    "status": "InvalidIssuer"
+    "status": "InvalidClaim",
+    "claim":  "iss"
   },
   {
     "jwt": "eyJhbGciOiJIUzI1NiIsImtpZCI6InN5bW1ldHJpYy0yNTYifQ.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiaWF0IjoxNTA4MTg0ODQ1LCJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJleHAiOjE3OTk5OTk5OTksIm5iZiI6MTgwMDAwMDAwMH0.nvyG5NCCRzFEifNLrTeeOMtlsROjrak67lciyyNfxmA",
@@ -17,11 +19,13 @@
   },
   {
     "jwt": "eyJhbGciOiJIUzI1NiIsImtpZCI6InN5bW1ldHJpYy0yNTYifQ.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiaWF0IjoxNTA4MTg0ODQ1LCJleHAiOjE2MjgxODQ4NDUsIm5iZiI6MTUwODE4NDg0NX0.IVYE7DdhFMUrnem8Pj96sHMtTYBa4gJvGvFitN19cJc",
-    "status": "MissingAudience"
+    "status": "MissingClaim",
+    "claim": "aud"
   },
   {
     "jwt": "eyJhbGciOiJIUzI1NiIsImtpZCI6InN5bW1ldHJpYy0yNTYifQ.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaWF0IjoxNTA4MTg0ODQ1LCJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJleHAiOjE2MjgxODQ4NDUsIm5iZiI6MTUwODE4NDg0NX0.YhaJLjOu047-w3bzlzNylZdrXpvwiBitXOOArxblcxA",
-    "status": "MissingIssuer"
+    "status": "MissingClaim",
+    "claim": "iss"
   },
   {
     "jwt": "eyJhbGciOiJIUzI1NiIsImtpZCI6InN5bW1ldHJpYy0yNTYifQ.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiaWF0IjoxNTA4MTg0ODQ1LCJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJuYmYiOjE1MDgxODQ4NDV9.Ug9S-GN0580hsHssIv8a0vIksMap4Z0otvfszNAye0w",

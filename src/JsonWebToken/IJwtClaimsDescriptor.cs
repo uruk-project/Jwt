@@ -5,7 +5,8 @@ namespace JsonWebToken
 {
     public interface IJwtPayloadDescriptor
     {
-        ICollection<string> Audiences { get; set; }
+        string Subject { get; set; }
+        IReadOnlyList<string> Audiences { get; set; }
         DateTime? ExpirationTime { get; set; }
         DateTime? IssuedAt { get; set; }
         string Issuer { get; set; }

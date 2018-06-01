@@ -12,7 +12,7 @@ namespace JsonWebToken
 
         public override JsonWebKeySet GetKeys(JObject header)
         {
-            return GetKeys(header, header.Value<string>(JwtHeaderParameterNames.Jku));
+            return GetKeys(header, header.Value<string>(HeaderParameterNames.Jku));
         }
 
         protected override JsonWebKeySet DeserializeKeySet(string value)

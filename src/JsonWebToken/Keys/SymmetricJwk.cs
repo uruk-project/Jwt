@@ -72,21 +72,21 @@ namespace JsonWebToken
         {
             switch (algorithm)
             {
-                case SecurityAlgorithms.Aes128CbcHmacSha256:
+                case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
                     return KeySize >= 256;
-                case SecurityAlgorithms.Aes192CbcHmacSha384:
+                case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
                     return KeySize >= 384;
-                case SecurityAlgorithms.Aes256CbcHmacSha512:
+                case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
                     return KeySize >= 512;
-                case SecurityAlgorithms.Aes128KW:
+                case KeyManagementAlgorithms.Aes128KW:
                     return KeySize == 128;
-                case SecurityAlgorithms.Aes192KW:
+                case KeyManagementAlgorithms.Aes192KW:
                     return KeySize == 192;
-                case SecurityAlgorithms.Aes256KW:
+                case KeyManagementAlgorithms.Aes256KW:
                     return KeySize == 256;
-                case SecurityAlgorithms.HmacSha256:
-                case SecurityAlgorithms.HmacSha384:
-                case SecurityAlgorithms.HmacSha512:
+                case SignatureAlgorithms.HmacSha256:
+                case SignatureAlgorithms.HmacSha384:
+                case SignatureAlgorithms.HmacSha512:
                     return true;
             }
 
@@ -122,9 +122,9 @@ namespace JsonWebToken
 
             switch (algorithm)
             {
-                case SecurityAlgorithms.Aes128CbcHmacSha256:
-                case SecurityAlgorithms.Aes192CbcHmacSha384:
-                case SecurityAlgorithms.Aes256CbcHmacSha512:
+                case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
+                case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
+                case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
                     return true;
             }
 
@@ -141,9 +141,10 @@ namespace JsonWebToken
             return null;
         }
 
-        public static SymmetricJwk GenerateKey(int sizeInBits)
+        public static SymmetricJwk GenerateKey(int sizeInBits, string algorithm = null)
         {
             var key = FromByteArray(GenerateKeyBytes(sizeInBits));
+            key.Alg = algorithm;
             return key;
         }
 

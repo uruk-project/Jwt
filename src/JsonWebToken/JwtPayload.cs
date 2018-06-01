@@ -10,16 +10,22 @@ namespace JsonWebToken
     /// </summary>
     public class JwtPayload
     {
+        private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore
+        };
+
         private readonly JObject _inner;
 
-        public JwtPayload(string plaintext) : this()
+        public JwtPayload(string plaintext) 
+            : this()
         {
-            Plaintext = plaintext;
+            Plaintext = plaintext ?? throw new ArgumentNullException(nameof(plaintext));
         }
 
         public JwtPayload(JObject inner)
         {
-            _inner = inner;
+            _inner = inner ?? throw new ArgumentNullException(nameof(inner));
         }
 
         /// <summary>
@@ -68,7 +74,7 @@ namespace JsonWebToken
         {
             get
             {
-                return GetStandardClaim(JwtRegisteredClaimNames.Acr);
+                return GetStandardClaim(ClaimNames.Acr);
             }
         }
 
@@ -80,7 +86,7 @@ namespace JsonWebToken
         {
             get
             {
-                return GetIListClaims(JwtRegisteredClaimNames.Amr);
+                return GetIListClaims(ClaimNames.Amr);
             }
         }
 
@@ -92,7 +98,7 @@ namespace JsonWebToken
         {
             get
             {
-                return GetIntClaim(JwtRegisteredClaimNames.AuthTime);
+                return GetIntClaim(ClaimNames.AuthTime);
             }
         }
 
@@ -104,7 +110,7 @@ namespace JsonWebToken
         {
             get
             {
-                return GetIListClaims(JwtRegisteredClaimNames.Aud);
+                return GetIListClaims(ClaimNames.Aud);
             }
         }
 
@@ -116,7 +122,7 @@ namespace JsonWebToken
         {
             get
             {
-                return GetStandardClaim(JwtRegisteredClaimNames.Azp);
+                return GetStandardClaim(ClaimNames.Azp);
             }
         }
 
@@ -128,7 +134,7 @@ namespace JsonWebToken
         {
             get
             {
-                return GetStandardClaim(JwtRegisteredClaimNames.CHash);
+                return GetStandardClaim(ClaimNames.CHash);
             }
         }
 
@@ -138,7 +144,7 @@ namespace JsonWebToken
         /// <remarks>If the 'expiration' claim is not found OR could not be converted to <see cref="Int32"/>, null is returned.</remarks>
         public int? Exp
         {
-            get { return GetIntClaim(JwtRegisteredClaimNames.Exp); }
+            get { return GetIntClaim(ClaimNames.Exp); }
         }
 
         /// <summary>
@@ -149,7 +155,7 @@ namespace JsonWebToken
         {
             get
             {
-                return GetStandardClaim(JwtRegisteredClaimNames.Jti);
+                return GetStandardClaim(ClaimNames.Jti);
             }
         }
 
@@ -158,7 +164,7 @@ namespace JsonWebToken
         /// </summary>
         public DateTime? Iat
         {
-            get { return GetDateTime(JwtRegisteredClaimNames.Iat); }
+            get { return GetDateTime(ClaimNames.Iat); }
         }
 
         /// <summary>
@@ -169,7 +175,7 @@ namespace JsonWebToken
         {
             get
             {
-                return GetStandardClaim(JwtRegisteredClaimNames.Iss);
+                return GetStandardClaim(ClaimNames.Iss);
             }
         }
 
@@ -179,7 +185,7 @@ namespace JsonWebToken
         /// <remarks>If the 'notbefore' claim is not found OR could not be converted to <see cref="Int32"/>, null is returned.</remarks>
         public int? Nbf
         {
-            get { return GetIntClaim(JwtRegisteredClaimNames.Nbf); }
+            get { return GetIntClaim(ClaimNames.Nbf); }
         }
 
         /// <summary>
@@ -190,7 +196,7 @@ namespace JsonWebToken
         {
             get
             {
-                return GetStandardClaim(JwtRegisteredClaimNames.Nonce);
+                return GetStandardClaim(ClaimNames.Nonce);
             }
         }
 
@@ -202,7 +208,7 @@ namespace JsonWebToken
         {
             get
             {
-                return GetStandardClaim(JwtRegisteredClaimNames.Sub);
+                return GetStandardClaim(ClaimNames.Sub);
             }
         }
 
@@ -214,7 +220,7 @@ namespace JsonWebToken
         {
             get
             {
-                return GetDateTime(JwtRegisteredClaimNames.Nbf);
+                return GetDateTime(ClaimNames.Nbf);
             }
         }
 
@@ -226,7 +232,7 @@ namespace JsonWebToken
         {
             get
             {
-                return GetDateTime(JwtRegisteredClaimNames.Exp);
+                return GetDateTime(ClaimNames.Exp);
             }
         }
 
@@ -325,7 +331,7 @@ namespace JsonWebToken
 
         public override string ToString()
         {
-            return _inner.Count != 0 ? _inner.ToString(Formatting.None) : Plaintext ?? string.Empty;
+            return _inner.Count != 0 ? JsonConvert.SerializeObject(_inner, serializerSettings) : Plaintext ?? string.Empty;
         }
 
         public static implicit operator JObject(JwtPayload payload)

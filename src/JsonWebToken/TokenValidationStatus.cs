@@ -35,26 +35,6 @@
         MissingSignature,
 
         /// <summary>
-        /// The 'iss' claim is not valid.
-        /// </summary>
-        InvalidAudience,
-
-        /// <summary>
-        /// The 'aud' claim is missing.
-        /// </summary>
-        MissingAudience,
-
-        /// <summary>
-        /// The 'iss' claim is invalid.
-        /// </summary>
-        InvalidIssuer,
-
-        /// <summary>
-        /// The 'iss' claims is missing.
-        /// </summary>
-        MissingIssuer,
-
-        /// <summary>
         /// The token was already validated previously.
         /// </summary>
         TokenReplayed,
@@ -83,6 +63,17 @@
         /// The token is not yeet valid, according to the 'nbf' claim.
         /// </summary>
         NotYetValid,
-        MissingContentType
+
+        /// <summary>
+        /// hee token has an invalid claim.
+        /// </summary>
+        InvalidClaim,
+
+        /// <summary>
+        /// The token has an missing claim.
+        /// </summary>
+        MissingClaim,
+        InvalidHeader,
+        MissingHeader
     }
 }

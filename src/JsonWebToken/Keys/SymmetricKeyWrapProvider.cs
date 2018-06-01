@@ -47,7 +47,7 @@ namespace JsonWebToken
 
             if (key.K == null)
             {
-                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.MalformedKey, key), nameof(key.K));
+                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.MalformedKey, key.Kid), nameof(key.K));
             }
 
             Algorithm = algorithm;
@@ -112,7 +112,7 @@ namespace JsonWebToken
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.CreateSymmetricAlgorithmFailed, key, algorithm), ex);
+                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.CreateSymmetricAlgorithmFailed, key.Kid, algorithm), ex);
             }
         }
 
@@ -130,9 +130,9 @@ namespace JsonWebToken
 
             switch (algorithm)
             {
-                case SecurityAlgorithms.Aes128KW:
-                case SecurityAlgorithms.Aes192KW:
-                case SecurityAlgorithms.Aes256KW:
+                case KeyManagementAlgorithms.Aes128KW:
+                case KeyManagementAlgorithms.Aes192KW:
+                case KeyManagementAlgorithms.Aes256KW:
                     return true;
             }
 
@@ -399,7 +399,7 @@ namespace JsonWebToken
 
         private void ValidateKeySize(byte[] key, string algorithm)
         {
-            if (SecurityAlgorithms.Aes128KW.Equals(algorithm, StringComparison.Ordinal))
+            if (string.Equals(KeyManagementAlgorithms.Aes128KW, algorithm, StringComparison.Ordinal))
             {
                 if (key.Length != 16)
                 {
@@ -409,7 +409,7 @@ namespace JsonWebToken
                 return;
             }
 
-            if (SecurityAlgorithms.Aes192KW.Equals(algorithm, StringComparison.Ordinal))
+            if (string.Equals(KeyManagementAlgorithms.Aes192KW, algorithm, StringComparison.Ordinal))
             {
                 if (key.Length != 24)
                 {
@@ -419,7 +419,7 @@ namespace JsonWebToken
                 return;
             }
 
-            if (SecurityAlgorithms.Aes256KW.Equals(algorithm, StringComparison.Ordinal))
+            if (string.Equals(KeyManagementAlgorithms.Aes256KW, algorithm, StringComparison.Ordinal))
             {
                 if (key.Length != 32)
                 {

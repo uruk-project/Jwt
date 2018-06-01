@@ -15,23 +15,43 @@ namespace JsonWebToken
 
         public JsonWebToken(JObject header, JsonWebToken nestedToken, IReadOnlyList<int> separators)
         {
+            if (header == null)
+            {
+                throw new ArgumentNullException(nameof(header));
+            }
+
             Header = new JwtHeader(header);
-            NestedToken = nestedToken;
-            Separators = separators;
+            NestedToken = nestedToken ?? throw new ArgumentNullException(nameof(nestedToken));
+            Separators = separators ?? throw new ArgumentNullException(nameof(separators));
         }
 
         public JsonWebToken(JObject header, string plaintext, IReadOnlyList<int> separators)
         {
+            if (header == null)
+            {
+                throw new ArgumentNullException(nameof(header));
+            }
+
             Header = new JwtHeader(header);
-            PlainText = plaintext;
-            Separators = separators;
+            PlainText = plaintext ?? throw new ArgumentNullException(nameof(plaintext));
+            Separators = separators ?? throw new ArgumentNullException(nameof(separators));
         }
 
         public JsonWebToken(JObject header, JObject payload, IReadOnlyList<int> separators)
         {
+            if (header == null)
+            {
+                throw new ArgumentNullException(nameof(header));
+            }
+
+            if (payload == null)
+            {
+                throw new ArgumentNullException(nameof(payload));
+            }
+
             Header = new JwtHeader(header);
             _payload = new JwtPayload(payload);
-            Separators = separators;
+            Separators = separators ?? throw new ArgumentNullException(nameof(separators));
         }
 
         /// <summary>

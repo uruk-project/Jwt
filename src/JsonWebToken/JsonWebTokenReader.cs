@@ -15,11 +15,16 @@ namespace JsonWebToken
 
         public JsonWebTokenReader(IEnumerable<IKeyProvider> encryptionKeyProviders)
         {
+            if (encryptionKeyProviders == null)
+            {
+                throw new ArgumentNullException(nameof(encryptionKeyProviders));
+            }
+
             _encryptionKeyProviders = encryptionKeyProviders.ToArray();
         }
 
         public JsonWebTokenReader(IKeyProvider encryptionKeyProvider)
-            : this(new[] { encryptionKeyProvider })
+            : this(new[] { encryptionKeyProvider ?? throw new ArgumentNullException(nameof(encryptionKeyProvider)) })
         {
         }
 
@@ -101,7 +106,7 @@ namespace JsonWebToken
                 }
                 else if (separators.Count == JwtConstants.JweSeparatorsCount)
                 {
-                    var enc = header.Value<string>(JwtHeaderParameterNames.Enc);
+                    var enc = header.Value<string>(HeaderParameterNames.Enc);
                     if (string.IsNullOrEmpty(enc))
                     {
                         return TokenValidationResult.MissingEncryptionAlgorithm();
@@ -128,7 +133,7 @@ namespace JsonWebToken
                         return TokenValidationResult.DecryptionFailed();
                     }
 
-                    if (!string.Equals(header.Value<string>(JwtHeaderParameterNames.Cty), JwtConstants.JwtContentType, StringComparison.Ordinal))
+                    if (!string.Equals(header.Value<string>(HeaderParameterNames.Cty), JwtConstants.JwtContentType, StringComparison.Ordinal))
                     {
                         // The decrypted payload is not a nested JWT
                         jwt = new JsonWebToken(header, decryptedToken, separators);
@@ -163,7 +168,7 @@ namespace JsonWebToken
             byte[] utf8ArrayToReturnToPool = null;
             var utf8Buffer = length <= JwtConstants.MaxStackallocBytes
                   ? stackalloc byte[length]
-                  : utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length);
+                  : (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
             try
             {
                 Encoding.UTF8.GetBytes(data, utf8Buffer);
@@ -171,7 +176,7 @@ namespace JsonWebToken
                 byte[] base64UrlArrayToReturnToPool = null;
                 var buffer = base64UrlLength <= JwtConstants.MaxStackallocBytes
                   ? stackalloc byte[base64UrlLength]
-                  : base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64UrlLength);
+                  : (base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64UrlLength)).AsSpan(0, base64UrlLength);
                 try
                 {
                     Base64Url.Base64UrlDecode(utf8Buffer, buffer, out int byteConsumed, out int bytesWritten);
@@ -261,7 +266,7 @@ namespace JsonWebToken
                 byte[] arrayToReturn = null;
                 Span<byte> buffer = bufferLength < JwtConstants.MaxStackallocBytes
                     ? stackalloc byte[bufferLength]
-                    : arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength);
+                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength)).AsSpan(0, bufferLength);
 
                 Span<byte> ciphertext = buffer.Slice(0, ciphertextLength);
                 Span<byte> header = buffer.Slice(ciphertextLength, headerLength);
@@ -318,9 +323,9 @@ namespace JsonWebToken
 
         private IList<JsonWebKey> GetContentEncryptionKeys(JObject header, ReadOnlySpan<char> rawEncryptedKey)
         {
-            var alg = header.Value<string>("alg");
+            var alg = header.Value<string>(HeaderParameterNames.Alg);
             var keys = ResolveDecryptionKey(header);
-            if (string.Equals(alg, SecurityAlgorithms.Direct, StringComparison.Ordinal))
+            if (string.Equals(alg, KeyManagementAlgorithms.Direct, StringComparison.Ordinal))
             {
                 return keys;
             }
@@ -351,8 +356,8 @@ namespace JsonWebToken
 
         private IList<JsonWebKey> ResolveDecryptionKey(JObject header)
         {
-            var kid = header.Value<string>("kid");
-            var alg = header.Value<string>("alg");
+            var kid = header.Value<string>(HeaderParameterNames.Kid);
+            var alg = header.Value<string>(HeaderParameterNames.Alg);
 
             var keys = new List<JsonWebKey>();
             for (int i = 0; i < _encryptionKeyProviders.Count; i++)
