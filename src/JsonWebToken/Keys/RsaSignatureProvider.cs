@@ -18,9 +18,9 @@ namespace JsonWebToken
         /// </summary>
         private static readonly IReadOnlyDictionary<string, int> DefaultMinimumKeySizeInBitsForSigning = new Dictionary<string, int>()
         {
-            { SecurityAlgorithms.RsaSha256, 2048 },
-            { SecurityAlgorithms.RsaSha384, 2048 },
-            { SecurityAlgorithms.RsaSha512, 2048 },
+            { SignatureAlgorithms.RsaSha256, 2048 },
+            { SignatureAlgorithms.RsaSha384, 2048 },
+            { SignatureAlgorithms.RsaSha512, 2048 },
         };
 
         /// <summary>
@@ -28,9 +28,9 @@ namespace JsonWebToken
         /// </summary>
         private static readonly IReadOnlyDictionary<string, int> DefaultMinimumKeySizeInBitsForVerifying = new Dictionary<string, int>()
         {
-            { SecurityAlgorithms.RsaSha256, 1024 },
-            { SecurityAlgorithms.RsaSha384, 1024 },
-            { SecurityAlgorithms.RsaSha512, 1024 },
+            { SignatureAlgorithms.RsaSha256, 1024 },
+            { SignatureAlgorithms.RsaSha384, 1024 },
+            { SignatureAlgorithms.RsaSha512, 1024 },
         };
 
         public override IReadOnlyDictionary<string, int> MinimumKeySizeInBitsForSigning => DefaultMinimumKeySizeInBitsForSigning;
@@ -67,16 +67,16 @@ namespace JsonWebToken
 
             switch (algorithm)
             {
-                case SecurityAlgorithms.RsaSha256:
-                case SecurityAlgorithms.RsaSsaPssSha256:
+                case SignatureAlgorithms.RsaSha256:
+                case SignatureAlgorithms.RsaSsaPssSha256:
                     return HashAlgorithmName.SHA256;
 
-                case SecurityAlgorithms.RsaSha384:
-                case SecurityAlgorithms.RsaSsaPssSha384:
+                case SignatureAlgorithms.RsaSha384:
+                case SignatureAlgorithms.RsaSsaPssSha384:
                     return HashAlgorithmName.SHA384;
 
-                case SecurityAlgorithms.RsaSha512:
-                case SecurityAlgorithms.RsaSsaPssSha512:
+                case SignatureAlgorithms.RsaSha512:
+                case SignatureAlgorithms.RsaSsaPssSha512:
                     return HashAlgorithmName.SHA512;
             }
 
@@ -105,21 +105,21 @@ namespace JsonWebToken
                 return;
             }
 
-            throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, algorithm, key));
+            throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, algorithm, key.Kid));
         }
 
         private RSASignaturePadding ResolveSignaturePadding(string algorithm)
         {
             switch (algorithm)
             {
-                case SecurityAlgorithms.RsaSha256:
-                case SecurityAlgorithms.RsaSha384:
-                case SecurityAlgorithms.RsaSha512:
+                case SignatureAlgorithms.RsaSha256:
+                case SignatureAlgorithms.RsaSha384:
+                case SignatureAlgorithms.RsaSha512:
                     return RSASignaturePadding.Pkcs1;
 
-                case SecurityAlgorithms.RsaSsaPssSha384:
-                case SecurityAlgorithms.RsaSsaPssSha256:
-                case SecurityAlgorithms.RsaSsaPssSha512:
+                case SignatureAlgorithms.RsaSsaPssSha384:
+                case SignatureAlgorithms.RsaSsaPssSha256:
+                case SignatureAlgorithms.RsaSsaPssSha512:
                     return RSASignaturePadding.Pss;
             }
 

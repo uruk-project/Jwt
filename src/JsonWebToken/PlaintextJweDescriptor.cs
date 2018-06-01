@@ -1,6 +1,6 @@
 ﻿namespace JsonWebToken
 {
-    public class PlaintextJweDescriptor : JweDescriptor<string>
+    public class PlaintextJweDescriptor : EncodedJwtDescriptor<string>
     {
         public override string Encode()
         {

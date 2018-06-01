@@ -40,8 +40,8 @@ namespace JsonWebToken.Tests
                 Issuer = token.Value<string>("iss");
                 JwtId = token.Value<string>("jti");
             }
-
-            public ICollection<string> Audiences { get; set; }
+            public string Subject { get; set; }
+            public IReadOnlyList<string> Audiences { get; set; }
             public DateTime? ExpirationTime { get; set; }
             public DateTime? IssuedAt { get; set; }
             public string Issuer { get; set; }

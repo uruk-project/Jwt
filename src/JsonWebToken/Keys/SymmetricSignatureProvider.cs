@@ -73,13 +73,13 @@ namespace JsonWebToken
         {
             switch (algorithm)
             {
-                case SecurityAlgorithms.HmacSha256:
+                case SignatureAlgorithms.HmacSha256:
                     return new HMACSHA256(keyBytes);
 
-                case SecurityAlgorithms.HmacSha384:
+                case SignatureAlgorithms.HmacSha384:
                     return new HMACSHA384(keyBytes);
 
-                case SecurityAlgorithms.HmacSha512:
+                case SignatureAlgorithms.HmacSha512:
                     return new HMACSHA512(keyBytes);
 
                 default:
@@ -151,13 +151,10 @@ namespace JsonWebToken
             }
 
 #if NETCOREAPP2_1
-            unsafe
-            {
-                Span<byte> hash = stackalloc byte[_keyedHash.HashSize / 8];
-                bool result = _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash);
-                Debug.Assert(hash.Length == bytesWritten);
-                return result;
-            }
+            Span<byte> hash = stackalloc byte[_keyedHash.HashSize / 8];
+            bool result = _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash);
+            Debug.Assert(hash.Length == bytesWritten);
+            return result;
 #else
             return AreEqual(signature, _keyedHash.ComputeHash(input.ToArray()));
 #endif
@@ -193,13 +190,10 @@ namespace JsonWebToken
             }
 
 #if NETCOREAPP2_1
-            unsafe
-            {
-                Span<byte> hash = stackalloc byte[_keyedHash.HashSize / 8];
-                bool result =  _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash, length);
-                Debug.Assert(hash.Length == bytesWritten);
-                return result;
-            }
+            Span<byte> hash = stackalloc byte[_keyedHash.HashSize / 8];
+            bool result = _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash, length);
+            Debug.Assert(hash.Length == bytesWritten);
+            return result;
 #else
             return AreEqual(signature, _keyedHash.ComputeHash(input.ToArray()), length);
 #endif

@@ -83,7 +83,7 @@ namespace JsonWebToken.Tests
                 }
             }
 
-            var encryptionAlgorithms = new[] { SecurityAlgorithms.Aes128CbcHmacSha256, SecurityAlgorithms.Aes192CbcHmacSha384, SecurityAlgorithms.Aes256CbcHmacSha512 };
+            var encryptionAlgorithms = new[] { ContentEncryptionAlgorithms.Aes128CbcHmacSha256, ContentEncryptionAlgorithms.Aes192CbcHmacSha384, ContentEncryptionAlgorithms.Aes256CbcHmacSha512 };
             foreach (var encKey in Keys.Jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Enc && k.Kty == JsonWebAlgorithmsKeyTypes.Octet))
             {
                 foreach (var enc in encryptionAlgorithms)

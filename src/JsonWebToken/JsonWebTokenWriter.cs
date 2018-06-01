@@ -51,7 +51,7 @@ namespace JsonWebToken
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
-
+            
             var claimsDescriptor = descriptor as IJwtPayloadDescriptor;
             if (claimsDescriptor != null)
             {
@@ -67,14 +67,15 @@ namespace JsonWebToken
                     {
                         claimsDescriptor.IssuedAt = now;
                     }
-
-                    if (!claimsDescriptor.NotBefore.HasValue)
-                    {
-                        claimsDescriptor.NotBefore = now;
-                    }
                 }
             }
 
+            if (descriptor.Algorithm == null)
+            {
+                descriptor.Algorithm = SignatureAlgorithms.None;
+            }
+
+            descriptor.Validate();
             return descriptor.Encode();
         }
     }

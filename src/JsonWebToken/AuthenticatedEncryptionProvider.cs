@@ -104,44 +104,43 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(authenticatedData));
             }
 
-            Aes aes = Aes.Create();
-            aes.Mode = CipherMode.CBC;
-            aes.Padding = PaddingMode.PKCS7;
-            aes.Key = _authenticatedkeys.AesKey.RawK;
-            if (iv != null)
+            using (Aes aes = Aes.Create())
             {
-                aes.IV = iv;
-            }
-
-            byte[] ciphertext;
-            ciphertext = Transform(aes.CreateEncryptor(), plaintext, 0, plaintext.Length);
-
-            byte[] arrayToReturnToPool = null;
-            int macLength = authenticatedData.Length + aes.IV.Length + ciphertext.Length + sizeof(long);
-            Span<byte> macBytes = macLength <= JwtConstants.MaxStackallocBytes
-                ? stackalloc byte[macLength]
-                : arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength);
-            try
-            {
-                authenticatedData.CopyTo(macBytes);
-                aes.IV.CopyTo(macBytes.Slice(authenticatedData.Length));
-                ciphertext.CopyTo(macBytes.Slice(authenticatedData.Length + aes.IV.Length));
-                TryConvertToBigEndian(macBytes.Slice(authenticatedData.Length + aes.IV.Length + ciphertext.Length, sizeof(long)), authenticatedData.Length * 8);
-
-                Span<byte> macHash = stackalloc byte[_symmetricSignatureProvider.HashSizeInBits / 8];
-                _symmetricSignatureProvider.TrySign(macBytes, macHash, out int writtenBytes);
-                Debug.Assert(writtenBytes == macHash.Length);
-
-
-                var authenticationTag = macHash.Slice(0, writtenBytes).ToArray();
-
-                return new AuthenticatedEncryptionResult(Key, ciphertext, aes.IV, authenticationTag);
-            }
-            finally
-            {
-                if (arrayToReturnToPool != null)
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+                aes.Key = _authenticatedkeys.AesKey.RawK;
+                if (iv != null)
                 {
-                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
+                    aes.IV = iv;
+                }
+
+                byte[] ciphertext;
+                ciphertext = Transform(aes.CreateEncryptor(), plaintext, 0, plaintext.Length);
+                
+                byte[] arrayToReturnToPool = null;
+                int macLength = authenticatedData.Length + aes.IV.Length + ciphertext.Length + sizeof(long);
+                Span<byte> macBytes = macLength <= JwtConstants.MaxStackallocBytes
+                    ? stackalloc byte[macLength]
+                    : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
+                try
+                {
+                    authenticatedData.CopyTo(macBytes);
+                    aes.IV.CopyTo(macBytes.Slice(authenticatedData.Length));
+                    ciphertext.CopyTo(macBytes.Slice(authenticatedData.Length + aes.IV.Length));
+                    TryConvertToBigEndian(macBytes.Slice(authenticatedData.Length + aes.IV.Length + ciphertext.Length, sizeof(long)), authenticatedData.Length * 8);
+
+                    byte[] authenticationTag = new byte[_symmetricSignatureProvider.HashSizeInBits / 8];
+                    _symmetricSignatureProvider.TrySign(macBytes, authenticationTag, out int writtenBytes);
+                    Debug.Assert(writtenBytes == authenticationTag.Length);
+
+                    return new AuthenticatedEncryptionResult(ciphertext, aes.IV, authenticationTag);
+                }
+                finally
+                {
+                    if (arrayToReturnToPool != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
+                    }
                 }
             }
         }
@@ -189,7 +188,7 @@ namespace JsonWebToken
             var authenticationTag = new byte[writtenBytes];
             Array.Copy(macHash, authenticationTag, authenticationTag.Length);
 
-            return new AuthenticatedEncryptionResult(Key, ciphertext, aes.IV, authenticationTag);
+            return new AuthenticatedEncryptionResult(ciphertext, aes.IV, authenticationTag);
         }
 
         /// <summary>
@@ -222,19 +221,33 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(authenticationTag));
             }
 
-            Span<byte> macBytes = stackalloc byte[authenticatedData.Length + iv.Length + ciphertext.Length + sizeof(long)];
-            authenticatedData.CopyTo(macBytes);
-            iv.CopyTo(macBytes.Slice(authenticatedData.Length));
-            ciphertext.CopyTo(macBytes.Slice(authenticatedData.Length + iv.Length));
+            byte[] byteArrayToReturnToPool = null;
+            int macLength = authenticatedData.Length + iv.Length + ciphertext.Length + sizeof(long);
+            Span<byte> macBytes = macLength <= JwtConstants.MaxStackallocBytes
+                                    ? stackalloc byte[macLength]
+                                    : (byteArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
+            try
+            {
+                authenticatedData.CopyTo(macBytes);
+                iv.CopyTo(macBytes.Slice(authenticatedData.Length));
+                ciphertext.CopyTo(macBytes.Slice(authenticatedData.Length + iv.Length));
 #if NETCOREAPP2_1
-            TryConvertToBigEndian(macBytes.Slice(authenticatedData.Length + iv.Length + ciphertext.Length), authenticatedData.Length * 8);
+                TryConvertToBigEndian(macBytes.Slice(authenticatedData.Length + iv.Length + ciphertext.Length), authenticatedData.Length * 8);
 #else
             var al = ConvertToBigEndian(authenticatedData.Length * 8);
             al.CopyTo(macBytes.Slice(authenticatedData.Length + iv.Length + ciphertext.Length));
 #endif
-            if (!_symmetricSignatureProvider.Verify(macBytes, authenticationTag, _authenticatedkeys.HmacKey.KeySize / 8))
+                if (!_symmetricSignatureProvider.Verify(macBytes, authenticationTag, _authenticatedkeys.HmacKey.KeySize / 8))
+                {
+                    return null;
+                }
+            }
+            finally
             {
-                return null;
+                if (byteArrayToReturnToPool != null)
+                {
+                    ArrayPool<byte>.Shared.Return(byteArrayToReturnToPool);
+                }
             }
 
             Aes aes = Aes.Create();
@@ -264,9 +277,9 @@ namespace JsonWebToken
                 return false;
             }
 
-            if (!(algorithm.Equals(SecurityAlgorithms.Aes128CbcHmacSha256, StringComparison.Ordinal)
-               || algorithm.Equals(SecurityAlgorithms.Aes192CbcHmacSha384, StringComparison.Ordinal)
-               || algorithm.Equals(SecurityAlgorithms.Aes256CbcHmacSha512, StringComparison.Ordinal)))
+            if (!(string.Equals(algorithm, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, StringComparison.Ordinal)
+               || string.Equals(algorithm, ContentEncryptionAlgorithms.Aes192CbcHmacSha384, StringComparison.Ordinal)
+               || string.Equals(algorithm, ContentEncryptionAlgorithms.Aes256CbcHmacSha512, StringComparison.Ordinal)))
             {
                 return false;
             }
@@ -277,15 +290,15 @@ namespace JsonWebToken
         private AuthenticatedKeys GetAlgorithmParameters(SymmetricJwk key, string algorithm)
         {
             int keyLength;
-            if (algorithm.Equals(SecurityAlgorithms.Aes256CbcHmacSha512, StringComparison.Ordinal))
+            if (string.Equals(algorithm, ContentEncryptionAlgorithms.Aes256CbcHmacSha512, StringComparison.Ordinal))
             {
                 keyLength = 32;
             }
-            else if (algorithm.Equals(SecurityAlgorithms.Aes192CbcHmacSha384, StringComparison.Ordinal))
+            else if (string.Equals(algorithm, ContentEncryptionAlgorithms.Aes192CbcHmacSha384, StringComparison.Ordinal))
             {
                 keyLength = 24;
             }
-            else if (algorithm.Equals(SecurityAlgorithms.Aes128CbcHmacSha256, StringComparison.Ordinal))
+            else if (string.Equals(algorithm, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, StringComparison.Ordinal))
             {
                 keyLength = 16;
             }
@@ -308,19 +321,19 @@ namespace JsonWebToken
 
         private string GetHashAlgorithm(string algorithm)
         {
-            if (SecurityAlgorithms.Aes128CbcHmacSha256.Equals(algorithm, StringComparison.Ordinal))
+            if (string.Equals(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, algorithm, StringComparison.Ordinal))
             {
-                return SecurityAlgorithms.HmacSha256;
+                return SignatureAlgorithms.HmacSha256;
             }
 
-            if (SecurityAlgorithms.Aes192CbcHmacSha384.Equals(algorithm, StringComparison.Ordinal))
+            if (string.Equals(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, algorithm, StringComparison.Ordinal))
             {
-                return SecurityAlgorithms.HmacSha384;
+                return SignatureAlgorithms.HmacSha384;
             }
 
-            if (SecurityAlgorithms.Aes256CbcHmacSha512.Equals(algorithm, StringComparison.Ordinal))
+            if (string.Equals(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, algorithm, StringComparison.Ordinal))
             {
-                return SecurityAlgorithms.HmacSha512;
+                return SignatureAlgorithms.HmacSha512;
             }
 
             throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm), nameof(algorithm));
@@ -328,7 +341,7 @@ namespace JsonWebToken
 
         private void ValidateKeySize(JsonWebKey key, string algorithm)
         {
-            if (SecurityAlgorithms.Aes128CbcHmacSha256.Equals(algorithm, StringComparison.Ordinal))
+            if (string.Equals(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, algorithm, StringComparison.Ordinal))
             {
                 if (key.KeySize < 256)
                 {
@@ -338,7 +351,7 @@ namespace JsonWebToken
                 return;
             }
 
-            if (SecurityAlgorithms.Aes192CbcHmacSha384.Equals(algorithm, StringComparison.Ordinal))
+            if (string.Equals(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, algorithm, StringComparison.Ordinal))
             {
                 if (key.KeySize < 384)
                 {
@@ -348,7 +361,7 @@ namespace JsonWebToken
                 return;
             }
 
-            if (SecurityAlgorithms.Aes256CbcHmacSha512.Equals(algorithm, StringComparison.Ordinal))
+            if (string.Equals(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, algorithm, StringComparison.Ordinal))
             {
                 if (key.KeySize < 512)
                 {

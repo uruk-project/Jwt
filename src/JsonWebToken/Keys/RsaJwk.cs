@@ -66,15 +66,15 @@ namespace JsonWebToken
         {
             switch (algorithm)
             {
-                case SecurityAlgorithms.RsaSha256:
-                case SecurityAlgorithms.RsaSha384:
-                case SecurityAlgorithms.RsaSha512:
-                case SecurityAlgorithms.RsaOaep:
-                case SecurityAlgorithms.RsaPkcs1:
-                case SecurityAlgorithms.RsaOaep256:
-                case SecurityAlgorithms.RsaSsaPssSha256:
-                case SecurityAlgorithms.RsaSsaPssSha384:
-                case SecurityAlgorithms.RsaSsaPssSha512:
+                case SignatureAlgorithms.RsaSha256:
+                case SignatureAlgorithms.RsaSha384:
+                case SignatureAlgorithms.RsaSha512:
+                case KeyManagementAlgorithms.RsaOaep:
+                case KeyManagementAlgorithms.RsaPkcs1:
+                case KeyManagementAlgorithms.RsaOaep256:
+                case SignatureAlgorithms.RsaSsaPssSha256:
+                case SignatureAlgorithms.RsaSsaPssSha384:
+                case SignatureAlgorithms.RsaSsaPssSha512:
                     return true;
             }
 

@@ -10,9 +10,9 @@ namespace JsonWebToken
     {
         public static readonly Dictionary<string, int> DefaultECDsaKeySizeInBits = new Dictionary<string, int>()
         {
-            { SecurityAlgorithms.EcdsaSha256, 256 },
-            { SecurityAlgorithms.EcdsaSha384, 384 },
-            { SecurityAlgorithms.EcdsaSha512, 521 }
+            { SignatureAlgorithms.EcdsaSha256, 256 },
+            { SignatureAlgorithms.EcdsaSha384, 384 },
+            { SignatureAlgorithms.EcdsaSha512, 521 }
         };
 
         private string _x;
@@ -335,9 +335,9 @@ namespace JsonWebToken
         {
             switch (algorithm)
             {
-                case SecurityAlgorithms.EcdsaSha256:
-                case SecurityAlgorithms.EcdsaSha384:
-                case SecurityAlgorithms.EcdsaSha512:
+                case SignatureAlgorithms.EcdsaSha256:
+                case SignatureAlgorithms.EcdsaSha384:
+                case SignatureAlgorithms.EcdsaSha512:
                     return true;
             }
 

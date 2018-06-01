@@ -13,16 +13,16 @@ namespace JsonWebToken
 
         private static readonly IReadOnlyDictionary<string, int> DefaultMinimumKeySizeInBitsForSigning = new Dictionary<string, int>()
         {
-            { SecurityAlgorithms.EcdsaSha256, 256 },
-            { SecurityAlgorithms.EcdsaSha384, 256 },
-            { SecurityAlgorithms.EcdsaSha512, 256 },
+            { SignatureAlgorithms.EcdsaSha256, 256 },
+            { SignatureAlgorithms.EcdsaSha384, 256 },
+            { SignatureAlgorithms.EcdsaSha512, 256 },
         };
 
         private static readonly IReadOnlyDictionary<string, int> DefaultMinimumKeySizeInBitsForVerifying = new Dictionary<string, int>()
         {
-            { SecurityAlgorithms.EcdsaSha256, 256 },
-            { SecurityAlgorithms.EcdsaSha384, 256 },
-            { SecurityAlgorithms.EcdsaSha512, 256 },
+            { SignatureAlgorithms.EcdsaSha256, 256 },
+            { SignatureAlgorithms.EcdsaSha384, 256 },
+            { SignatureAlgorithms.EcdsaSha512, 256 },
         };
 
         public override IReadOnlyDictionary<string, int> MinimumKeySizeInBitsForSigning => DefaultMinimumKeySizeInBitsForSigning;
@@ -51,13 +51,13 @@ namespace JsonWebToken
 
             switch (algorithm)
             {
-                case SecurityAlgorithms.EcdsaSha256:
+                case SignatureAlgorithms.EcdsaSha256:
                     return HashAlgorithmName.SHA256;
 
-                case SecurityAlgorithms.EcdsaSha384:
+                case SignatureAlgorithms.EcdsaSha384:
                     return HashAlgorithmName.SHA384;
 
-                case SecurityAlgorithms.EcdsaSha512:
+                case SignatureAlgorithms.EcdsaSha512:
                     return HashAlgorithmName.SHA512;
             }
 

@@ -32,7 +32,7 @@ namespace JsonWebToken.Validations
 
             if (token.Length <= jwt.Separators[0] + jwt.Separators[1] + 1)
             {
-                if (_supportUnsecure && string.Equals(SecurityAlgorithms.None, jwt.SignatureAlgorithm, StringComparison.Ordinal))
+                if (_supportUnsecure && string.Equals(SignatureAlgorithms.None, jwt.SignatureAlgorithm, StringComparison.Ordinal))
                 {
                     return TokenValidationResult.Success(jwt);
                 }
@@ -64,48 +64,51 @@ namespace JsonWebToken.Validations
 
             bool keysTried = false;
             int length = jwt.Separators[0] + jwt.Separators[1];
-            unsafe
-            {
 #if NETCOREAPP2_1
-                var array = ArrayPool<byte>.Shared.Rent(length);
-                Span<byte> encodedBytes = array.AsSpan().Slice(0, length);
+            byte[] arrayToReturnToPool = null;
+            Span<byte> encodedBytes = length <= JwtConstants.MaxStackallocBytes
+                                      ? stackalloc byte[length]
+                                      : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
+            try
+            {
+                Encoding.UTF8.GetBytes(token.Slice(0, length), encodedBytes);
+#else
+                var encodedBytes = Encoding.UTF8.GetBytes(token.Slice(0, length).ToString());
+#endif
+                JwtHeader header;
                 try
                 {
-                    Encoding.UTF8.GetBytes(token.Slice(0, length), encodedBytes);
-#else
-                    var encodedBytes = Encoding.UTF8.GetBytes(token.Slice(0, length).ToString());
-#endif
-                    JwtHeader header;
-                    try
-                    {
-                        header = jwt.Header;
-                    }
-                    catch (FormatException)
-                    {
-                        return TokenValidationResult.MalformedToken();
-                    }
-
-                    var keys = ResolveSigningKey(jwt);
-                    for (int i = 0; i < keys.Count; i++)
-                    {
-                        JsonWebKey key = keys[i];
-                        if (TryValidateSignature(encodedBytes, signatureBytes, key, key.Alg))
-                        {
-                            jwt.Header.SigningKey = key;
-                            return TokenValidationResult.Success(jwt);
-                        }
-
-                        keysTried = true;
-
-                    }
-#if NETCOREAPP2_1
+                    header = jwt.Header;
                 }
-                finally
+                catch (FormatException)
                 {
-                    ArrayPool<byte>.Shared.Return(array);
+                    return TokenValidationResult.MalformedToken();
                 }
-#endif
+
+                var keys = ResolveSigningKey(jwt);
+                for (int i = 0; i < keys.Count; i++)
+                {
+                    JsonWebKey key = keys[i];
+                    if (TryValidateSignature(encodedBytes, signatureBytes, key, key.Alg))
+                    {
+                        jwt.Header.SigningKey = key;
+                        return TokenValidationResult.Success(jwt);
+                    }
+
+                    keysTried = true;
+
+                }
+#if NETCOREAPP2_1
             }
+            finally
+            {
+                if (arrayToReturnToPool != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
+                }
+            }
+#endif
+
 
             if (keysTried)
             {

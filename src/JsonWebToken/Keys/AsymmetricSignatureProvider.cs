@@ -32,7 +32,7 @@ namespace JsonWebToken
 
             if (willCreateSignatures && FoundPrivateKey(key) == PrivateKeyStatus.DoesNotExist)
             {
-                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.MissingPrivateKey, key));
+                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.MissingPrivateKey, key.Kid));
             }
 
             if (!key.IsSupportedAlgorithm(algorithm))
@@ -55,12 +55,12 @@ namespace JsonWebToken
         {
             if (willCreateSignatures && MinimumKeySizeInBitsForSigning.ContainsKey(algorithm) && key.KeySize < MinimumKeySizeInBitsForSigning[algorithm])
             {
-                throw new ArgumentOutOfRangeException(nameof(key.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.SigningKeyTooSmall, key, MinimumKeySizeInBitsForSigning[algorithm], key.KeySize));
+                throw new ArgumentOutOfRangeException(nameof(key.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.SigningKeyTooSmall, key.Kid, MinimumKeySizeInBitsForSigning[algorithm], key.KeySize));
             }
 
             if (MinimumKeySizeInBitsForVerifying.ContainsKey(algorithm) && key.KeySize < MinimumKeySizeInBitsForVerifying[algorithm])
             {
-                throw new ArgumentOutOfRangeException(nameof(key.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.VerifyKeyTooSmall, key, MinimumKeySizeInBitsForVerifying[algorithm], key.KeySize));
+                throw new ArgumentOutOfRangeException(nameof(key.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.VerifyKeyTooSmall, key.Kid, MinimumKeySizeInBitsForVerifying[algorithm], key.KeySize));
             }
         }
     }

@@ -1,30 +1,27 @@
-﻿using System;
-
-namespace JsonWebToken.Validations
+﻿namespace JsonWebToken.Validations
 {
-    public class IssuerValidation : IValidation
+    public class IssuerValidation : RequiredClaimValidation<string>
     {
-        private readonly string _issuer;
-
         public IssuerValidation(string issuer)
+            :base(ClaimNames.Iss, issuer)
         {
-            _issuer = issuer;
         }
 
-        public TokenValidationResult TryValidate(ReadOnlySpan<char> token, JsonWebToken jwt)
-        {
-            var issuer = jwt.Issuer;
-            if (string.IsNullOrWhiteSpace(issuer))
-            {
-                return TokenValidationResult.MissingIssuer(jwt);
-            }
+        //public TokenValidationResult TryValidate(ReadOnlySpan<char> token, JsonWebToken jwt)
+        //{
+        //    var issuer = jwt.Issuer;
+        //    if (string.IsNullOrWhiteSpace(issuer))
+        //    {
 
-            if (string.Equals(_issuer, issuer, StringComparison.Ordinal))
-            {
-                return TokenValidationResult.Success(jwt);
-            }
+        //        return TokenValidationResult.MissingClaim(jwt, ClaimNames.Iss);
+        //    }
 
-            return TokenValidationResult.InvalidIssuer(jwt);
-        }
+        //    if (string.Equals(_issuer, issuer, StringComparison.Ordinal))
+        //    {
+        //        return TokenValidationResult.Success(jwt);
+        //    }
+
+        //    return TokenValidationResult.InvalidClaim(jwt, ClaimNames.Iss);
+        //}
     }
 }

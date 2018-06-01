@@ -34,7 +34,7 @@ namespace JsonWebToken
         }
 
         public JsonWebKeySet(JsonWebKey key)
-            : this(new[] { key })
+            : this(new[] { key ?? throw new ArgumentNullException(nameof(key)) })
         {
         }
 
