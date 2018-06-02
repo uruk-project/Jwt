@@ -20,7 +20,6 @@ namespace JsonWebToken
 
         public JwtHeader(JObject inner)
         {
-
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));
         }
 
@@ -76,18 +75,10 @@ namespace JsonWebToken
         /// <remarks>This value may be null.</remarks>
         public JsonWebKey SigningKey { get; set; }
 
-
         public JToken this[string key]
         {
-            get
-            {
-                return _inner[key];
-            }
-
-            set
-            {
-                _inner[key] = value;
-            }
+            get { return _inner[key]; }
+            set { _inner[key] = value; }
         }
 
         /// <summary>
@@ -96,15 +87,8 @@ namespace JsonWebToken
         /// <remarks>If the signature algorithm is not found, null is returned.</remarks>
         public string Alg
         {
-            get
-            {
-                return GetStandardClaim(HeaderParameterNames.Alg);
-            }
-
-            set
-            {
-                _inner[HeaderParameterNames.Alg] = value;
-            }
+            get { return GetStandardClaim(HeaderParameterNames.Alg); }
+            set { _inner[HeaderParameterNames.Alg] = value; }
         }
 
         /// <summary>
@@ -113,15 +97,8 @@ namespace JsonWebToken
         /// <remarks>If the content mime type is not found, null is returned.</remarks>
         public string Cty
         {
-            get
-            {
-                return GetStandardClaim(HeaderParameterNames.Cty);
-            }
-
-            set
-            {
-                _inner[HeaderParameterNames.Cty] = value;
-            }
+            get { return GetStandardClaim(HeaderParameterNames.Cty); }
+            set { _inner[HeaderParameterNames.Cty] = value; }
         }
 
         /// <summary>
@@ -130,15 +107,8 @@ namespace JsonWebToken
         /// <remarks>If the content mime type is not found, null is returned.</remarks>
         public string Enc
         {
-            get
-            {
-                return GetStandardClaim(HeaderParameterNames.Enc);
-            }
-
-            set
-            {
-                _inner[HeaderParameterNames.Enc] = value;
-            }
+            get { return GetStandardClaim(HeaderParameterNames.Enc); }
+            set { _inner[HeaderParameterNames.Enc] = value; }
         }
 
         /// <summary>
@@ -146,10 +116,7 @@ namespace JsonWebToken
         /// </summary>
         public string IV
         {
-            get
-            {
-                return GetStandardClaim(HeaderParameterNames.IV);
-            }
+            get { return GetStandardClaim(HeaderParameterNames.IV); }
         }
 
         /// <summary>
@@ -157,15 +124,8 @@ namespace JsonWebToken
         /// </summary>
         public string Kid
         {
-            get
-            {
-                return GetStandardClaim(HeaderParameterNames.Kid);
-            }
-
-            set
-            {
-                _inner[HeaderParameterNames.Kid] = value;
-            }
+            get { return GetStandardClaim(HeaderParameterNames.Kid); }
+            set { _inner[HeaderParameterNames.Kid] = value; }
         }
 
         /// <summary>
@@ -174,15 +134,8 @@ namespace JsonWebToken
         /// <remarks>If the mime type is not found, null is returned.</remarks>
         public string Typ
         {
-            get
-            {
-                return GetStandardClaim(HeaderParameterNames.Typ);
-            }
-
-            set
-            {
-                _inner[HeaderParameterNames.Typ] = value;
-            }
+            get { return GetStandardClaim(HeaderParameterNames.Typ); }
+            set { _inner[HeaderParameterNames.Typ] = value; }
         }
 
         /// <summary>
@@ -190,15 +143,8 @@ namespace JsonWebToken
         /// </summary>
         public string X5t
         {
-            get
-            {
-                return GetStandardClaim(HeaderParameterNames.X5t);
-            }
-
-            set
-            {
-                _inner[HeaderParameterNames.X5t] = value;
-            }
+            get { return GetStandardClaim(HeaderParameterNames.X5t); }
+            set { _inner[HeaderParameterNames.X5t] = value; }
         }
 
         /// <summary>
@@ -219,6 +165,11 @@ namespace JsonWebToken
             }
 
             return null;
+        }
+
+        public bool HasHeader(string header)
+        {
+            return _inner.ContainsKey(header);
         }
 
         public override string ToString()

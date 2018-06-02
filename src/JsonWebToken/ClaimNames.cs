@@ -55,7 +55,7 @@ namespace JsonWebToken
         /// http://openid.net/specs/openid-connect-core-1_0.html#IDToken
         /// </summary>
         public const string Amr = "amr";
-        
+
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#IDToken
         /// </summary>
@@ -85,7 +85,7 @@ namespace JsonWebToken
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string Email = "email";
-        
+
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
@@ -100,12 +100,12 @@ namespace JsonWebToken
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string GivenName = "given_name";
-      
+
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string Nonce = "nonce";
-      
+
         /// <summary>
         /// http://openid.net/specs/openid-connect-frontchannel-1_0.html#OPLogout
         /// </summary>
@@ -135,6 +135,11 @@ namespace JsonWebToken
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         /// </summary>
         public const string Picture = "picture";
+
+        /// <summary>
+        /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+        /// </summary>
+        public const string Website = "website";
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
@@ -171,7 +176,7 @@ namespace JsonWebToken
         /// </summary>
         public const string UpdatedAt = "updated_at";
 
-        
+
         /// <summary>
         /// https://tools.ietf.org/html/draft-ietf-secevent-token-13#section-2.2
         /// </summary>
@@ -180,7 +185,7 @@ namespace JsonWebToken
         /// <summary>
         /// https://tools.ietf.org/html/draft-ietf-secevent-token-13#section-2.2
         /// </summary>
-        public const string Tnx = "tnx";
+        public const string Txn = "txn";
 
         /// <summary>
         /// https://tools.ietf.org/html/draft-ietf-secevent-token-13#section-2.2

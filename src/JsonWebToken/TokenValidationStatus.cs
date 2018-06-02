@@ -10,11 +10,6 @@
         MalformedToken,
 
         /// <summary>
-        ///  The 'exp' claim is missing
-        /// </summary>
-        MissingExpirationTime,
-
-        /// <summary>
         /// The signature is invalid.
         /// </summary>
         InvalidSignature,

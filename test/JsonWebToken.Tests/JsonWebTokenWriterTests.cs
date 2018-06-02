@@ -23,7 +23,7 @@ namespace JsonWebToken.Tests
             var jwt = result.Token;
 
             Assert.Equal(descriptor.IssuedAt, jwt.Payload.Iat);
-            Assert.Equal(descriptor.ExpirationTime, jwt.Expires);
+            Assert.Equal(descriptor.ExpirationTime, jwt.ExpirationTime);
             Assert.Equal(descriptor.Issuer, jwt.Issuer);
             Assert.Equal(descriptor.Audience, jwt.Audiences.First());
             Assert.Equal(descriptor.JwtId, jwt.Id);

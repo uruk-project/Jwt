@@ -82,16 +82,7 @@ namespace JsonWebToken
                 Status = TokenValidationStatus.MalformedToken,
             };
         }
-
-        public static TokenValidationResult NoExpiration(JsonWebToken token)
-        {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.MissingExpirationTime,
-                Token = token
-            };
-        }
-
+        
         public static TokenValidationResult MissingEncryptionAlgorithm()
         {
             return new TokenValidationResult

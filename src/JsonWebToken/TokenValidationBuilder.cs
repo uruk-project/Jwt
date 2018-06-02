@@ -64,7 +64,7 @@ namespace JsonWebToken
             _hasSignatureValidation = true;
             return RemoveValidation<SignatureValidation>();
         }
-        public TokenValidationBuilder AcceptUnsecureJwts()
+        public TokenValidationBuilder AcceptUnsecureToken()
         {
             _hasSignatureValidation = true;
             _validations.Add(new SignatureValidation(new EmptyKeyProvider(), true));
@@ -78,7 +78,7 @@ namespace JsonWebToken
             return this;
         }
 
-        public TokenValidationBuilder RequireSignature(string jsonWebKeyUrl, HttpClientHandler handler = null)
+        public TokenValidationBuilder RequireSignature(string jsonWebKeyUrl, HttpMessageHandler handler = null)
         {
             RequireSignature(new JwksKeyProvider(jsonWebKeyUrl, handler));
             return this;
@@ -111,7 +111,7 @@ namespace JsonWebToken
 
         public TokenValidationBuilder RequireClaim(string requiredClaim)
         {
-            return AddValidation(null);
+            return AddValidation(new RequiredClaimValidation<JObject>(requiredClaim));
         }
 
         public TokenValidationBuilder RequireHeader(string requiredHeader)
@@ -178,7 +178,7 @@ namespace JsonWebToken
         {
             if (!_hasSignatureValidation)
             {
-                throw new InvalidOperationException(ErrorMessages.FormatInvariant("Signature validation must be either defined by calling the method '{0}' or explicitly ignored by calling the '{1}' method.", nameof(RequireSignature), nameof(AcceptUnsecureJwts)));
+                throw new InvalidOperationException(ErrorMessages.FormatInvariant("Signature validation must be either defined by calling the method '{0}' or explicitly ignored by calling the '{1}' method.", nameof(RequireSignature), nameof(AcceptUnsecureToken)));
             }
         }
 

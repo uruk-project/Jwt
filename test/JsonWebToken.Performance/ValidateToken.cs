@@ -88,6 +88,10 @@ namespace JsonWebToken.Performance
             yield return new[] { "small" };
             yield return new[] { "medium" };
             yield return new[] { "big" };
+            yield return new[] { "enc-empty" };
+            yield return new[] { "enc-small" };
+            yield return new[] { "enc-medium" };
+            yield return new[] { "enc-big" };
         }
     }
 }

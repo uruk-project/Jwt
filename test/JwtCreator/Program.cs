@@ -117,8 +117,8 @@ namespace JwtCreator
             token = CreateToken(jwks, TokenValidationStatus.MissingClaim, payload, "iss");
             jwts.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.MissingExpirationTime);
-            token = CreateToken(jwks, TokenValidationStatus.MissingExpirationTime, payload);
+            payload = CreateJws(json, TokenValidationStatus.MissingClaim, "exp");
+            token = CreateToken(jwks, TokenValidationStatus.MissingClaim, payload, "exp");
             jwts.Add(token);
 
             payload = CreateJws(json, TokenValidationStatus.NotYetValid);
@@ -172,12 +172,6 @@ namespace JwtCreator
             {
                 switch (status)
                 {
-                    case TokenValidationStatus.MissingExpirationTime:
-                        if (kvp.Key == "exp")
-                        {
-                            continue;
-                        }
-                        break;
                     case TokenValidationStatus.MalformedToken:
                         break;
                     case TokenValidationStatus.InvalidSignature:
@@ -201,6 +195,10 @@ namespace JwtCreator
                         }
                         break;
                     case TokenValidationStatus.MissingClaim:
+                        if (kvp.Key == "exp" & claim == "exp")
+                        {
+                            continue;
+                        }
                         if (kvp.Key == "aud" & claim == "aud")
                         {
                             continue;

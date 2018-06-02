@@ -156,7 +156,8 @@ namespace JsonWebToken
                 Payload[name] = value;
             }
         }
-        public void AddClaim(string name, JProperty value)
+
+        public void AddClaim(string name, JProperty property)
         {
             JObject jObject;
             if (Payload.TryGetValue(name, out JToken jToken) && jToken.Type == JTokenType.Object)
@@ -168,7 +169,7 @@ namespace JsonWebToken
                 jObject = new JObject();
             }
 
-            jObject.Add(value.Name, value.Value);
+            jObject.Add(property.Name, property.Value);
             Payload[name] = jObject;
         }
 
@@ -201,6 +202,15 @@ namespace JsonWebToken
 
             return null;
         }
+        protected TClaim? GetClaim<TClaim>(string claimType) where TClaim : struct
+        {
+            if (Payload.TryGetValue(claimType, out JToken value))
+            {
+                return value.Value<TClaim?>();
+            }
+
+            return null;
+        }
 
         protected bool? GetBoolClaim(string claimType)
         {
@@ -227,6 +237,16 @@ namespace JsonWebToken
             return null;
         }
 
+        protected JObject GetClaim(string claimType)
+        {
+            if (Payload.TryGetValue(claimType, out JToken value) && value.Type == JTokenType.Object)
+            {
+                return (JObject)value;
+            }
+
+            return null;
+        }
+
         protected void SetClaim(string claimType, string value)
         {
             Payload[claimType] = value;
@@ -239,7 +259,7 @@ namespace JsonWebToken
 
         protected DateTime? GetDateTime(string key)
         {
-            if (!Payload.TryGetValue(key, out JToken dateValue) || !dateValue.HasValues)
+            if (!Payload.TryGetValue(key, out JToken dateValue) || dateValue.Type == JTokenType.Null)
             {
                 return null;
             }
@@ -315,7 +335,7 @@ namespace JsonWebToken
                 }
 
 #if NETCOREAPP2_1
-                    string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount + bytesWritten));
+                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount + bytesWritten));
 #else
                 string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount + bytesWritten).ToArray());
 #endif

@@ -86,10 +86,10 @@ namespace JsonWebToken.Performance
 
         public IEnumerable<object[]> GetPayloads()
         {
-            //yield return new[] { "empty" };
-            //yield return new[] { "small" };
-            //yield return new[] { "medium" };
-            //yield return new[] { "big" };
+            yield return new[] { "empty" };
+            yield return new[] { "small" };
+            yield return new[] { "medium" };
+            yield return new[] { "big" };
             yield return new[] { "enc-empty" };
             yield return new[] { "enc-small" };
             yield return new[] { "enc-medium" };

@@ -1,6 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -47,19 +51,19 @@ namespace JsonWebToken.Tests
             Assert.Equal(expectedStatus, result.Status);
         }
 
-        [Fact(Skip = "Proxy")]
+        [Fact]
         public void ReadJwt_HttpKeyProvider_Valid()
         {
-            var proxy = new WebProxy("http://localhost:8888")
+            var httpHandler = new TestHttpMessageHandler
             {
-                Credentials = CredentialCache.DefaultNetworkCredentials
+                Sender = BackchannelRequestToken
             };
             var reader = new JsonWebTokenReader(Keys.Jwks);
             var validationParameters = new TokenValidationBuilder()
-                    .RequireSignature("https://demo.identityserver.io/.well-known/openid-configuration/jwks", new HttpClientHandler() { Proxy = proxy })
+                    .RequireSignature("https://demo.identityserver.io/.well-known/openid-configuration/jwks", httpHandler)
                     .Build();
 
-            var jwt = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjQ5OGJmN2Y5MjU2MjJiYjUwZGM0NzNkNWMzYmI3NmI0IiwidHlwIjoiSldUIn0.eyJuYmYiOjE1MjcxOTE0NDQsImV4cCI6MTUyNzE5NTA0NCwiaXNzIjoiaHR0cHM6Ly9kZW1vLmlkZW50aXR5c2VydmVyLmlvIiwiYXVkIjpbImh0dHBzOi8vZGVtby5pZGVudGl0eXNlcnZlci5pby9yZXNvdXJjZXMiLCJhcGkiXSwiY2xpZW50X2lkIjoiY2xpZW50Iiwic2NvcGUiOlsiYXBpIl19.kYYiVoSMj81P0qzgMerfwcxGOSEZde5hjCiRL6flXdrZ3iFoiQ-z98nC5hAyaYwL2PJ9aLJ5B4Q2jW9PU6NS7hHHPbgU-WbbHqgAvLL7zGywUnnpkk39_OqUk9Y7cgT-ObNCbIvmRF0xvFWrEu7Wllfia0RRPoqbr1BQW3LV8LKS0ocz-BtwLbIdAddgR5ZQ28nBHgycWd7t8rmiZQVGw1hRtJAc1Mgs9qXU1bqDuP5__B4zJSpfpS711wmkkHOIYOfgpdih28gzE3Ot1Im2zuyOZ6Q9wM2zWttKxpNC2lBulP6kRr9lT6PTQ-RnLVaWgoBa4XmaoMJ0se9SqE1Stw";
+            var jwt = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjZiYmRjYTc4MGFmM2E2NzE2M2NhNzUzMTU0NWRhN2E5IiwidHlwIjoiSldUIn0.eyJuYmYiOjE1Mjc5NzMyNDIsImV4cCI6MTUyNzk3Njg0MiwiaXNzIjoiaHR0cHM6Ly9kZW1vLmlkZW50aXR5c2VydmVyLmlvIiwiYXVkIjpbImh0dHBzOi8vZGVtby5pZGVudGl0eXNlcnZlci5pby9yZXNvdXJjZXMiLCJhcGkiXSwiY2xpZW50X2lkIjoiY2xpZW50Iiwic2NvcGUiOlsiYXBpIl19.PFI6Fl8J6nlk3MyDwUemy6e4GjtyNoDabuQcUdOoQRGUjVAhv0UKqSOujg4Y_g23nPCGGMNOVNDiyK9StV4NdUrPemdShR6gykKd-FE1n7uHEwN6vsTDV_EeoF5ZdQsqEVo8zxfWoCIVP2Llj7TTwaoNpnhl9fkHvCc75XqYyF7SkiQAXGGGTExNh12kEI_Hb_rZvjJN2HCw1BsMx9-KFM69oFhT8ClAXeG3j3YsQ9ffjoZXV31S2Llzk-5Mf6BrR5CpCUHWWbfnEU21ko2NH7Y_aBJOwVAxyadj-89RR3-Ixpz3mUDxsZ4nmhLJDbrM9e1SRUq-oPmljIp53j-NXg";
             var result = reader.TryReadToken(jwt, validationParameters);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
         }
@@ -78,6 +82,35 @@ namespace JsonWebToken.Tests
             {
                 yield return new object[] { item.Jwt, item.Status };
             }
+        }
+
+        private HttpResponseMessage BackchannelRequestToken(HttpRequestMessage req)
+        {
+            if (req.RequestUri.AbsoluteUri == "https://demo.identityserver.io/.well-known/openid-configuration/jwks")
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("{\"keys\":[{\"kty\":\"RSA\",\"use\":\"sig\",\"kid\":\"6bbdca780af3a67163ca7531545da7a9\",\"e\":\"AQAB\",\"n\":\"n6fNIStd3luK2mvco0ZnkDGE4JxB2FLmYtVJNyTmMfOj7CR5oM7vHSuOQYe17c8CUXBSCed5i6CmUyI59Vj4D2D2zdzqMiIyA5Y0djw5Js04QSvbXZId25YgMoHU0dichI1MmUYMPk5iQ_SwmSXsJKxwk1ytd1DciMxpCWkkAwJCAMoYR0_wcrtLX0M3i1sJthpCKle0-bj5YnhVE85vGeVrkvs9b8CKUCwqGruNptHtebpMKR1rBx1QXBTHHhXJjk5XQLu_S9_URuD0M6j__liGcjYzFEiz6b9NAjHHrraPfDfuKIgnHwpLFA-J8zjZeoXBstr9Mut_Gsgqmxg_cQ\",\"alg\":\"RS256\"}]}",
+                            Encoding.UTF8,
+                            "application/json")
+                };
+            }
+            throw new NotImplementedException(req.RequestUri.AbsoluteUri);
+        }
+    }
+
+    public class TestHttpMessageHandler : HttpMessageHandler
+    {
+        public Func<HttpRequestMessage, HttpResponseMessage> Sender { get; set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (Sender != null)
+            {
+                return Task.FromResult(Sender(request));
+            }
+
+            return Task.FromResult<HttpResponseMessage>(null);
         }
     }
 }

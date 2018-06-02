@@ -4,15 +4,15 @@ using System.Collections.Generic;
 
 namespace JsonWebToken.Validations
 {
-    public class RequiredClaimValidation<TClaim> : IValidation
+    public class RequiredClaimListValidation<TClaim> : IValidation
     {
         private readonly string _claim;
-        private readonly TClaim _value;
+        private readonly IList<TClaim> _values;
 
-        public RequiredClaimValidation(string claim, TClaim value = default(TClaim))
+        public RequiredClaimListValidation(string claim, IList<TClaim> values)
         {
             _claim = claim ?? throw new ArgumentNullException(nameof(claim));
-            _value = value;
+            _values = values ?? throw new ArgumentNullException(nameof(values));
         }
 
         public TokenValidationResult TryValidate(ReadOnlySpan<char> token, JsonWebToken jwt)
@@ -23,12 +23,15 @@ namespace JsonWebToken.Validations
                 return TokenValidationResult.MissingClaim(jwt, _claim);
             }
 
-            if (_value != null && !_value.Equals(claim.Value<TClaim>()))
-            {
-                return TokenValidationResult.InvalidClaim(jwt, _claim);
+            for (int i = 0; i < _values.Count; i++)
+            {                
+                if (_values[i].Equals(claim.Value<TClaim>()))
+                {
+                    return TokenValidationResult.Success(jwt);
+                }
             }
 
-            return TokenValidationResult.Success(jwt);
+            return TokenValidationResult.InvalidClaim(jwt, _claim);
         }
     }
 }

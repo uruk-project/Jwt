@@ -54,7 +54,7 @@ namespace JsonWebToken
 
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
-                throw new NotSupportedException();
+                serializer.Serialize(writer, value);
             }
         }
 
@@ -86,7 +86,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(json));
             }
 
-            return (TKey)JsonConvert.DeserializeObject(json, typeof(TKey), jsonConverter);
+            return JsonConvert.DeserializeObject<TKey>(json, jsonConverter);
         }
 
         /// <summary>

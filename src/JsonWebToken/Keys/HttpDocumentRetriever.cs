@@ -22,8 +22,8 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpDocumentRetriever"/> class with a specified httpClient.
         /// </summary>
-        /// <param name="handler"><see cref="HttpClient"/></param>
-        public HttpDocumentRetriever(HttpClientHandler handler)
+        /// <param name="handler"><see cref="HttpMessageHandler"/></param>
+        public HttpDocumentRetriever(HttpMessageHandler handler)
         {
             _httpClient = new HttpClient(handler ?? new HttpClientHandler());
         }

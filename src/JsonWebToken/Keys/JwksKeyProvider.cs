@@ -13,7 +13,7 @@ namespace JsonWebToken
         {
             _jwksAddress = jwksAddress;
         }
-        public JwksKeyProvider(string jwksAddress, HttpClientHandler handler)
+        public JwksKeyProvider(string jwksAddress, HttpMessageHandler handler)
             : base(new HttpDocumentRetriever(handler))
         {
             _jwksAddress = jwksAddress;

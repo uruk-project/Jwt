@@ -17,7 +17,7 @@ namespace JsonWebToken
 
         private readonly JObject _inner;
 
-        public JwtPayload(string plaintext) 
+        public JwtPayload(string plaintext)
             : this()
         {
             Plaintext = plaintext ?? throw new ArgumentNullException(nameof(plaintext));
@@ -53,15 +53,8 @@ namespace JsonWebToken
 
         public JToken this[string key]
         {
-            get
-            {
-                return _inner[key];
-            }
-
-            set
-            {
-                _inner[key] = value;
-            }
+            get { return _inner[key]; }
+            set { _inner[key] = value; }
         }
 
         public IEnumerable<JProperty> Properties => _inner.Properties();
@@ -72,10 +65,7 @@ namespace JsonWebToken
         /// <remarks>If the 'acr' claim is not found, null is returned.</remarks>
         public string Acr
         {
-            get
-            {
-                return GetStandardClaim(ClaimNames.Acr);
-            }
+            get { return GetStandardClaim(ClaimNames.Acr); }
         }
 
         /// <summary>
@@ -84,10 +74,7 @@ namespace JsonWebToken
         /// <remarks>If the 'amr' claim is not found, an empty enumerable is returned.</remarks>
         public IList<string> Amr
         {
-            get
-            {
-                return GetIListClaims(ClaimNames.Amr);
-            }
+            get { return GetIListClaims(ClaimNames.Amr); }
         }
 
         /// <summary>
@@ -96,10 +83,7 @@ namespace JsonWebToken
         /// <remarks>If the 'auth_time' claim is not found OR could not be converted to <see cref="Int32"/>, null is returned.</remarks>
         public int? AuthTime
         {
-            get
-            {
-                return GetIntClaim(ClaimNames.AuthTime);
-            }
+            get { return GetIntClaim(ClaimNames.AuthTime); }
         }
 
         /// <summary>
@@ -108,10 +92,7 @@ namespace JsonWebToken
         /// <remarks>If the 'audience' claim is not found, an empty enumerable is returned.</remarks>
         public IList<string> Aud
         {
-            get
-            {
-                return GetIListClaims(ClaimNames.Aud);
-            }
+            get { return GetIListClaims(ClaimNames.Aud); }
         }
 
         /// <summary>
@@ -120,10 +101,7 @@ namespace JsonWebToken
         /// <remarks>If the 'azp' claim is not found, null is returned.</remarks>
         public string Azp
         {
-            get
-            {
-                return GetStandardClaim(ClaimNames.Azp);
-            }
+            get { return GetStandardClaim(ClaimNames.Azp); }
         }
 
         /// <summary>
@@ -132,10 +110,7 @@ namespace JsonWebToken
         /// <remarks>If the 'c_hash' claim is not found, null is returned.</remarks>
         public string CHash
         {
-            get
-            {
-                return GetStandardClaim(ClaimNames.CHash);
-            }
+            get { return GetStandardClaim(ClaimNames.CHash); }
         }
 
         /// <summary>
@@ -153,10 +128,7 @@ namespace JsonWebToken
         /// <remarks>If the 'JWT ID' claim is not found, null is returned.</remarks>
         public string Jti
         {
-            get
-            {
-                return GetStandardClaim(ClaimNames.Jti);
-            }
+            get { return GetStandardClaim(ClaimNames.Jti); }
         }
 
         /// <summary>
@@ -173,10 +145,7 @@ namespace JsonWebToken
         /// <remarks>If the 'issuer' claim is not found, null is returned.</remarks>
         public string Iss
         {
-            get
-            {
-                return GetStandardClaim(ClaimNames.Iss);
-            }
+            get { return GetStandardClaim(ClaimNames.Iss); }
         }
 
         /// <summary>
@@ -194,10 +163,7 @@ namespace JsonWebToken
         /// <remarks>If the 'nonce' claim is not found, null is returned.</remarks>
         public string Nonce
         {
-            get
-            {
-                return GetStandardClaim(ClaimNames.Nonce);
-            }
+            get { return GetStandardClaim(ClaimNames.Nonce); }
         }
 
         /// <summary>
@@ -206,10 +172,7 @@ namespace JsonWebToken
         /// <remarks>If the 'subject' claim is not found, null is returned.</remarks>
         public string Sub
         {
-            get
-            {
-                return GetStandardClaim(ClaimNames.Sub);
-            }
+            get { return GetStandardClaim(ClaimNames.Sub); }
         }
 
         /// <summary>
@@ -218,22 +181,16 @@ namespace JsonWebToken
         /// <remarks>If the 'notbefore' claim is not found, then <see cref="DateTime.MinValue"/> is returned. Time is returned as UTC.</remarks>
         public DateTime? NotBefore
         {
-            get
-            {
-                return GetDateTime(ClaimNames.Nbf);
-            }
+            get { return GetDateTime(ClaimNames.Nbf); }
         }
 
         /// <summary>
-        /// Gets the 'value' of the 'expiration' claim { exp, 'value' } converted to a <see cref="DateTime"/> assuming 'value' is seconds since UnixEpoch (UTC 1970-01-01T0:0:0Z).
+        /// Gets the 'value' of the 'expiration time' claim { exp, 'value' } converted to a <see cref="DateTime"/> assuming 'value' is seconds since UnixEpoch (UTC 1970-01-01T0:0:0Z).
         /// </summary>
         /// <remarks>If the 'expiration' claim is not found, then <see cref="DateTime.MinValue"/> is returned.</remarks>
-        public DateTime? Expires
+        public DateTime? ExpirationTime
         {
-            get
-            {
-                return GetDateTime(ClaimNames.Exp);
-            }
+            get { return GetDateTime(ClaimNames.Exp); }
         }
 
         public string Plaintext { get; }
@@ -321,12 +278,17 @@ namespace JsonWebToken
         private DateTime? GetDateTime(string key)
         {
             JToken dateValue;
-            if (!_inner.TryGetValue(key, out dateValue) || !dateValue.HasValues)
+            if (!_inner.TryGetValue(key, out dateValue) || dateValue.Type == JTokenType.Null)
             {
-                return default(DateTime?);
+                return default;
             }
 
             return EpochTime.ToDateTime(dateValue.Value<long>());
+        }
+
+        public bool HasClaim(string claim)
+        {
+            return _inner.ContainsKey(claim);
         }
 
         public override string ToString()

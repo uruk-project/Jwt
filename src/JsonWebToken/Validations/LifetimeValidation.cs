@@ -19,7 +19,7 @@ namespace JsonWebToken.Validations
 
             if (!expires.HasValue && _requireExpirationTime)
             {
-                return TokenValidationResult.NoExpiration(jwt);
+                return TokenValidationResult.MissingClaim(jwt, ClaimNames.Exp);
             }
 
             var notBefore = jwt.Payload.Nbf;

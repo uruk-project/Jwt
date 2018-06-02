@@ -21,10 +21,10 @@ namespace JsonWebToken.Validations
             }
 
             // check if token if replay cache is set, then there must be an expiration time.
-            var expires = jwt.Expires;
+            var expires = jwt.ExpirationTime;
             if (!expires.HasValue)
             {
-                return TokenValidationResult.NoExpiration(jwt);
+                return TokenValidationResult.MissingClaim(jwt, ClaimNames.Exp);
             }
 
             if (!_tokenReplayCache.TryAdd(jwt, expires.Value))
