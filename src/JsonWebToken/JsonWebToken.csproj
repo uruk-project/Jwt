@@ -11,6 +11,8 @@
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/ycrumeyrolle/Jwt</RepositoryUrl>
     <PackageTags>jwt security</PackageTags>
+    <Description>High-performance JWT library.
+Provides Json Web Token primitives.</Description>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>full</DebugType>

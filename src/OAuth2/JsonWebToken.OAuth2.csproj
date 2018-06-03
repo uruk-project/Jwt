@@ -6,6 +6,9 @@
     <Version>0.1.0-beta01</Version>
     <Company>Yann Crumeyrolle</Company>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageTags>jwt OAuth2</PackageTags>
+    <Description>High-performance JWT library. 
+Provides Client Assertion primitives.</Description>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>full</DebugType>
