@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonWebToken
+namespace JsonWebTokens
 {
     public static class SetJsonWebTokenExtensions
     {

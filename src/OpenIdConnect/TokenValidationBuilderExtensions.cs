@@ -1,8 +1,8 @@
-﻿using JsonWebToken;
-using JsonWebToken.Validations;
+﻿using JsonWebTokens;
+using JsonWebTokens.Validations;
 using System;
 
-namespace JsonWebToken
+namespace JsonWebTokens
 {
     public static class TokenValidationBuilderExtensions
     {

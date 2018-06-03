@@ -28,7 +28,7 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.2.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\JsonWebToken\JsonWebToken.csproj" />
+    <ProjectReference Include="..\..\src\JsonWebToken\JsonWebTokens.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="resources\payloads.json">

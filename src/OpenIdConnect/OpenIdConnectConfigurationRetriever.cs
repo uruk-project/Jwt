@@ -3,7 +3,7 @@ using System;
 using System.Net.Http;
 using System.Threading;
 
-namespace JsonWebToken
+namespace JsonWebTokens
 {
     /// <summary>
     ///  Retrieves a populated <see cref="OpenIdConnectConfiguration"/> given an address.

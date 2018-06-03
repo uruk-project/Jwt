@@ -1,8 +1,8 @@
-﻿using JsonWebToken;
+﻿using JsonWebTokens;
 using Newtonsoft.Json.Linq;
 using System;
 
-namespace JsonWebToken
+namespace JsonWebTokens
 {
     public class AuthenticationContextClassReferenceValidation : IValidation
     {

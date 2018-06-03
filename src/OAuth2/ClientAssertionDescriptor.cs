@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace JsonWebToken
+namespace JsonWebTokens
 {
     public class ClientAssertionDescriptor : JwsDescriptor
     {

@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace JsonWebToken
+namespace JsonWebTokens
 {
     public static class OidcTokenValidationBuilderExtensions
     {

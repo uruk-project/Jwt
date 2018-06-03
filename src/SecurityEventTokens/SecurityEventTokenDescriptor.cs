@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace JsonWebToken
+namespace JsonWebTokens
 {
     public class SecurityEventTokenDescriptor : JwsDescriptor
     {

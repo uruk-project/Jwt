@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 
-namespace JsonWebToken.Performance
+namespace JsonWebTokens.Performance
 {
     [Config(typeof(DefaultCoreConfig))]
     public class ReadToken

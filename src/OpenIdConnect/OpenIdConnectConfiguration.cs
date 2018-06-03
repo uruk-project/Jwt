@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 
-namespace JsonWebToken
+namespace JsonWebTokens
 {
     public class OpenIdConnectConfiguration
     {
