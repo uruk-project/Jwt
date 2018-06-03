@@ -11,6 +11,8 @@
     <PackageTags>jwt secevent security</PackageTags>
     <Description>High-performance JWT library for Security Event Tokens.
 Provides Security Event Token primitives.</Description>
+    <sumary>High-performance JWT library for SECEVENT.</sumary>
+    <Authors>Yann Crumeyrolle</Authors>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>full</DebugType>
