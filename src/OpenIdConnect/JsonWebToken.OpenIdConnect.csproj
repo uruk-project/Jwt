@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netcoreapp2.1</TargetFrameworks>
     <LangVersion>7.2</LangVersion>
+    <Company>Yann Crumeyrolle</Company>
+    <Version>0.1.0-beta01</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>full</DebugType>
