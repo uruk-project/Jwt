@@ -16,6 +16,11 @@
     <Reference Include="System.Reflection" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="BenchmarkDotNet.Artifacts\results\**" />
+    <EmbeddedResource Remove="BenchmarkDotNet.Artifacts\results\**" />
+    <None Remove="BenchmarkDotNet.Artifacts\results\**" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.10.14" />
     <PackageReference Include="BenchmarkDotNet.Core" Version="0.10.14" />
     <PackageReference Include="jose-jwt" Version="2.4.0" />

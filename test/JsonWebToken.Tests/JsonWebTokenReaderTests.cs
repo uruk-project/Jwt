@@ -11,14 +11,6 @@ namespace JsonWebToken.Tests
 {
     public class JsonWebTokenReaderTests
     {
-        public static IEnumerable<object[]> GetJwts()
-        {
-            foreach (var jwt in Tokens.Descriptors)
-            {
-                yield return new[] { jwt };
-            }
-        }
-
         [Theory]
         [MemberData(nameof(GetValidTokens))]
         public void ReadJwt_Valid(string jwt)

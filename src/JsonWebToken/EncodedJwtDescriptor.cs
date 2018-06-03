@@ -19,7 +19,7 @@ namespace JsonWebToken
             set => Header[HeaderParameterNames.Zip] = value;
         }
 
-        protected string EncryptToken(string payload)
+        unsafe protected string EncryptToken(string payload)
         {
             if (payload == null)
             {
@@ -28,15 +28,25 @@ namespace JsonWebToken
 
             string encryptionAlgorithm = EncryptionAlgorithm;
             string contentEncryptionAlgorithm = Algorithm;
-
+            bool IsDirectEncryption = string.Equals(KeyManagementAlgorithms.Direct, contentEncryptionAlgorithm, StringComparison.Ordinal);
             JsonWebKey key = Key;
-            AuthenticatedEncryptionProvider encryptionProvider;
-            byte[] wrappedKey = null;
-            if (string.Equals(KeyManagementAlgorithms.Direct, contentEncryptionAlgorithm, StringComparison.Ordinal))
+            AuthenticatedEncryptionProvider encryptionProvider = null;
+            KeyWrapProvider kwProvider = null;
+            if (IsDirectEncryption)
             {
                 encryptionProvider = key.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);
             }
             else
+            {
+                kwProvider = key.CreateKeyWrapProvider(contentEncryptionAlgorithm);
+                if (kwProvider == null)
+                {
+                    throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
+                }
+            }
+
+            Span<byte> wrappedKey = IsDirectEncryption ? null : stackalloc byte[kwProvider.GetKeyWrapSize(encryptionAlgorithm)];
+            if (!IsDirectEncryption)
             {
                 SymmetricJwk symmetricKey;
                 if (string.Equals(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, encryptionAlgorithm, StringComparison.Ordinal))
@@ -56,15 +66,9 @@ namespace JsonWebToken
                     throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
                 }
 
-                var kwProvider = key.CreateKeyWrapProvider(contentEncryptionAlgorithm);
-                if (kwProvider == null)
-                {
-                    throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
-                }
-
                 try
                 {
-                    wrappedKey = kwProvider.WrapKey(symmetricKey.RawK);
+                    kwProvider.WrapKey(symmetricKey.RawK, wrappedKey, out var keyWrappedBytesWritten);
                 }
                 finally
                 {
@@ -80,6 +84,14 @@ namespace JsonWebToken
             }
 
             var header = new JwtHeader(key, encryptionAlgorithm);
+            foreach (var item in Header)
+            {
+                if (!header.HasHeader(item.Key))
+                {
+                    header[item.Key] = item.Value;
+                }
+            }
+
             try
             {
 #if NETCOREAPP2_1
@@ -178,7 +190,7 @@ namespace JsonWebToken
                     return string.Join(
                         ".",
                         header.Base64UrlEncode(),
-                        Base64Url.Encode(wrappedKey),
+                        Base64Url.Encode(wrappedKey.ToArray()),
                         Base64Url.Encode(encryptionResult.IV),
                         Base64Url.Encode(encryptionResult.Ciphertext),
                         Base64Url.Encode(encryptionResult.AuthenticationTag));

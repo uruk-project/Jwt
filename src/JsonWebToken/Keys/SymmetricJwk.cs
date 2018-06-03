@@ -14,6 +14,12 @@ namespace JsonWebToken
             RawK = CloneArray(bytes);
         }
 
+        public SymmetricJwk(Span<byte> bytes)
+            : this()
+        {
+            RawK = bytes.ToArray();
+        }
+
         public SymmetricJwk()
         {
             Kty = JsonWebAlgorithmsKeyTypes.Octet;
@@ -57,6 +63,18 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="bytes">An array of <see cref="byte"/> that contains the key in binary.</param>
         public static SymmetricJwk FromByteArray(byte[] bytes)
+        {
+            if (bytes == null)
+            {
+                throw new ArgumentNullException(nameof(bytes));
+            }
+
+            var key = new SymmetricJwk(bytes);
+            key.Kid = key.ComputeThumbprint();
+            return key;
+        }
+
+        public static SymmetricJwk FromSpan(Span<byte> bytes)
         {
             if (bytes == null)
             {
@@ -166,6 +184,6 @@ namespace JsonWebToken
         public override JsonWebKey CloneMinimal()
         {
             return new SymmetricJwk(RawK);
-        }
+        }    
     }
 }

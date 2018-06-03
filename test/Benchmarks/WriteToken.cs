@@ -1,5 +1,4 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Running;
 using Jose;
 using JWT;
@@ -39,7 +38,7 @@ namespace JsonWebToken.Performance
 
         static WriteToken()
         {
-            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;           
+            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
         }
 
         [Benchmark(Baseline = true)]
@@ -73,14 +72,9 @@ namespace JsonWebToken.Performance
         }
 
         [Benchmark]
-        [ArgumentsSource(nameof(GetPayloads))]
+        [ArgumentsSource(nameof(GetNotEncryptedPayloads))]
         public void JwtDotNet(string payload)
         {
-            if (payload.StartsWith("enc-"))
-            {
-                throw new NotSupportedException();
-            }
-
             var value = JwtDotNetEncoder.Encode(DictionaryPayloads[payload], SigningKey.RawK);
         }
 
@@ -94,6 +88,15 @@ namespace JsonWebToken.Performance
             yield return new[] { "enc-small" };
             yield return new[] { "enc-medium" };
             yield return new[] { "enc-big" };
+        }
+
+
+        public IEnumerable<object[]> GetNotEncryptedPayloads()
+        {
+            yield return new[] { "empty" };
+            yield return new[] { "small" };
+            yield return new[] { "medium" };
+            yield return new[] { "big" };
         }
 
         private static Dictionary<string, JwtDescriptor> CreateJwtDescriptors()

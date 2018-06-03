@@ -341,8 +341,11 @@ namespace JsonWebToken
                     {
                         Span<byte> encryptedKey = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length)];
                         int bytesWritten = Base64Url.Base64UrlDecode(rawEncryptedKey, encryptedKey);
-                        var unwrappedKey = kwp.UnwrapKey(encryptedKey.Slice(0, bytesWritten).ToArray());
-                        unwrappedKeys.Add(SymmetricJwk.FromByteArray(unwrappedKey));
+                        Debug.Assert(bytesWritten == encryptedKey.Length);
+                        Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length)];
+                        kwp.UnwrapKey(encryptedKey, unwrappedKey, out int keyWrappedBytesWritten);
+                        Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
+                         unwrappedKeys.Add(SymmetricJwk.FromSpan(unwrappedKey));
                     }
                 }
                 finally

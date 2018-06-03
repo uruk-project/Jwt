@@ -6,14 +6,9 @@ namespace JsonWebToken.Tests
 {
     public class JsonWebTokenWriterTests
     {
-        public JsonWebTokenWriterTests()
-        {
-            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
-        }
-
         [Theory]
         [MemberData(nameof(GetDescriptors))]
-        public void Write(JwsDescriptor descriptor)
+        public void Write(JwtDescriptor descriptor)
         {
             JsonWebTokenWriter writer = new JsonWebTokenWriter();
             var value = writer.WriteToken(descriptor);
@@ -22,11 +17,12 @@ namespace JsonWebToken.Tests
             var result = reader.TryReadToken(value, TokenValidationParameters.NoValidation);
             var jwt = result.Token;
 
-            Assert.Equal(descriptor.IssuedAt, jwt.Payload.Iat);
-            Assert.Equal(descriptor.ExpirationTime, jwt.ExpirationTime);
-            Assert.Equal(descriptor.Issuer, jwt.Issuer);
-            Assert.Equal(descriptor.Audience, jwt.Audiences.First());
-            Assert.Equal(descriptor.JwtId, jwt.Id);
+            var payload = descriptor as IJwtPayloadDescriptor;
+            Assert.Equal(payload.IssuedAt, jwt.Payload.Iat);
+            Assert.Equal(payload.ExpirationTime, jwt.ExpirationTime);
+            Assert.Equal(payload.Issuer, jwt.Issuer);
+            Assert.Equal(payload.Audiences.First(), jwt.Audiences.First());
+            Assert.Equal(payload.JwtId, jwt.Id);
         }
 
         [Fact]
@@ -96,19 +92,22 @@ namespace JsonWebToken.Tests
                     var sigKey = Keys.Jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
                     foreach (var jwt in Tokens.Descriptors)
                     {
-                        new JweDescriptor()
-                        {
-                            Key = encKey,
-                            EncryptionAlgorithm = enc,
-                            Payload = new JwsDescriptor
+                        yield return new object[] {
+                            new JweDescriptor()
                             {
-                                Key = sigKey,
-                                JwtId = jwt.JwtId,
-                                Audiences = jwt.Audiences,
-                                ExpirationTime = jwt.ExpirationTime,
-                                IssuedAt = jwt.IssuedAt,
-                                Issuer = jwt.Issuer,
-                                NotBefore = jwt.NotBefore
+                                Key = encKey,
+                                EncryptionAlgorithm = enc,
+                                ContentType = "JWT",
+                                Payload = new JwsDescriptor
+                                {
+                                    Key = sigKey,
+                                    JwtId = jwt.JwtId,
+                                    Audiences = jwt.Audiences,
+                                    ExpirationTime = jwt.ExpirationTime,
+                                    IssuedAt = jwt.IssuedAt,
+                                    Issuer = jwt.Issuer,
+                                    NotBefore = jwt.NotBefore
+                                }
                             }
                         };
                     }

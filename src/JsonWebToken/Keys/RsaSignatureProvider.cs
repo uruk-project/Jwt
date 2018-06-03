@@ -98,7 +98,7 @@ namespace JsonWebToken
             _hashAlgorithm = GetHashAlgorithmName(algorithm);
             _hashSize = GetHashSize(key);
             _signaturePadding = ResolveSignaturePadding(algorithm);
-            var rsa = ResolveRsaAlgorithm(key, algorithm, willCreateSignatures);
+            var rsa = ResolveRsaAlgorithm(key);
             if (rsa != null)
             {
                 _rsa = rsa;
@@ -225,7 +225,7 @@ namespace JsonWebToken
             }
         }
 
-        private static RSA ResolveRsaAlgorithm(RsaJwk key, string algorithm, bool requirePrivateKey)
+        private static RSA ResolveRsaAlgorithm(RsaJwk key)
         {
             if (key == null)
             {

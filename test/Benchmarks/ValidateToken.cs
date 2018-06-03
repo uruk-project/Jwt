@@ -71,7 +71,7 @@ namespace JsonWebToken.Performance
         }
 
         [Benchmark]
-        [ArgumentsSource(nameof(GetTokens))]
+        [ArgumentsSource(nameof(GetNotEncryptedTokens))]
         public void JwtDotNet(string token)
         {
             var value = JwtDotNetDecoder.DecodeToObject(Tokens.ValidTokens[token], SymmetricKey.RawK, verify: true);
@@ -80,7 +80,6 @@ namespace JsonWebToken.Performance
                 throw new Exception();
             }
         }
-
 
         public IEnumerable<object[]> GetTokens()
         {
@@ -92,6 +91,14 @@ namespace JsonWebToken.Performance
             yield return new[] { "enc-small" };
             yield return new[] { "enc-medium" };
             yield return new[] { "enc-big" };
+        }
+
+        public IEnumerable<object[]> GetNotEncryptedTokens()
+        {
+            yield return new[] { "empty" };
+            yield return new[] { "small" };
+            yield return new[] { "medium" };
+            yield return new[] { "big" };
         }
     }
 }
