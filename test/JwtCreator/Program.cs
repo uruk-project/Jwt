@@ -1,4 +1,4 @@
-﻿using JsonWebTokens;
+﻿using JsonWebToken;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;

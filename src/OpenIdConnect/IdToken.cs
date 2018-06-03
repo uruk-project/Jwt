@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace JsonWebTokens
+namespace JsonWebToken
 {
     public class IdToken : JsonWebToken
     {

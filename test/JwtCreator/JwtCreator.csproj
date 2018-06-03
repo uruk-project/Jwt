@@ -12,7 +12,7 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.2.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\JsonWebToken\JsonWebTokens.csproj" />
+    <ProjectReference Include="..\..\src\JsonWebToken\JsonWebToken.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="descriptors.json">

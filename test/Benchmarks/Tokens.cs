@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-namespace JsonWebTokens.Performance
+namespace JsonWebToken.Performance
 {
     public static class Tokens
     {

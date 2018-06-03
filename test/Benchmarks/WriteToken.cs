@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace JsonWebTokens.Performance
+namespace JsonWebToken.Performance
 {
     [Config(typeof(DefaultCoreConfig))]
     public class WriteToken

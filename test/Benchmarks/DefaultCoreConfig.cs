@@ -11,7 +11,7 @@ using BenchmarkDotNet.Toolchains.CsProj;
 using BenchmarkDotNet.Toolchains.DotNetCli;
 using BenchmarkDotNet.Validators;
 
-namespace JsonWebTokens.Performance
+namespace JsonWebToken.Performance
 {
     internal class DefaultCoreConfig : ManualConfig
     {

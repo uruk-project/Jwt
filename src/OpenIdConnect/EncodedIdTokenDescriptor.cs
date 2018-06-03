@@ -1,6 +1,6 @@
-﻿using JsonWebTokens;
+﻿using JsonWebToken;
 
-namespace JsonWebTokens
+namespace JsonWebToken
 {
     public class EncodedIdTokenDescriptor : JweDescriptor<IdTokenDescriptor>
     {        

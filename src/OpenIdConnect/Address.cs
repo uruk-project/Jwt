@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace JsonWebTokens
+namespace JsonWebToken
 {
     public class Address
     {

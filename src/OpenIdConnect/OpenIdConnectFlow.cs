@@ -1,4 +1,4 @@
-﻿namespace JsonWebTokens
+﻿namespace JsonWebToken
 {
     public enum OpenIdConnectFlow
     {

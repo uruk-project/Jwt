@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 
-namespace JsonWebTokens.Performance
+namespace JsonWebToken.Performance
 {
     [Config(typeof(DefaultCoreConfig))]
     public class ValidateToken

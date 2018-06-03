@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace JsonWebTokens
+namespace JsonWebToken
 {
     public class IdTokenDescriptor : JwsDescriptor
     {

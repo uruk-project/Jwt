@@ -1,7 +1,7 @@
 ﻿using BenchmarkDotNet.Running;
 using System.Reflection;
 
-namespace JsonWebTokens.Performance
+namespace JsonWebToken.Performance
 {
     class Program
     {
