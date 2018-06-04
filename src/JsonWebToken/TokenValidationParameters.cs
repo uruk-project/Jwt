@@ -18,18 +18,18 @@ namespace JsonWebToken
 
         public int MaximumTokenSizeInBytes { get; set; }
 
-        public TokenValidationResult TryValidate(ReadOnlySpan<char> token, JsonWebToken jwt)
+        public TokenValidationResult TryValidate(TokenValidationContext context)
         {
             for (int i = 0; i < _validations.Count; i++)
             {
-                var result = _validations[i].TryValidate(token, jwt);
+                var result = _validations[i].TryValidate(context);
                 if (!result.Succedeed)
                 {
                     return result;
                 }
             }
 
-            return TokenValidationResult.Success(jwt);
+            return TokenValidationResult.Success(context.Jwt);
         }
     }
 }

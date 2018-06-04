@@ -14,10 +14,6 @@
     "claim":  "iss"
   },
   {
-    "jwt": "eyJhbGciOiJIUzI1NiIsImtpZCI6InN5bW1ldHJpYy0yNTYifQ.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiaWF0IjoxNTA4MTg0ODQ1LCJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJleHAiOjE3OTk5OTk5OTksIm5iZiI6MTgwMDAwMDAwMH0.nvyG5NCCRzFEifNLrTeeOMtlsROjrak67lciyyNfxmA",
-    "status": "InvalidLifetime"
-  },
-  {
     "jwt": "eyJhbGciOiJIUzI1NiIsImtpZCI6InN5bW1ldHJpYy0yNTYifQ.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiaWF0IjoxNTA4MTg0ODQ1LCJleHAiOjE2MjgxODQ4NDUsIm5iZiI6MTUwODE4NDg0NX0.IVYE7DdhFMUrnem8Pj96sHMtTYBa4gJvGvFitN19cJc",
     "status": "MissingClaim",
     "claim": "aud"

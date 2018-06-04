@@ -13,8 +13,9 @@ namespace JsonWebToken
             _requiredAcr = requiredAcr;
         }
 
-        public TokenValidationResult TryValidate(ReadOnlySpan<char> token, JsonWebToken jwt)
+        public TokenValidationResult TryValidate(TokenValidationContext context)
         {
+            var jwt = context.Jwt;
             var act = jwt.Payload[ClaimNames.Acr];
             if (act == null || act.Type == JTokenType.Null)
             {

@@ -40,11 +40,6 @@
         Expired,
 
         /// <summary>
-        /// The token lifetime is incorrect, according to 'exp' and 'nbf' claims.
-        /// </summary>
-        InvalidLifetime,
-
-        /// <summary>
         /// The 'enc' header parameter is missing.
         /// </summary>
         MissingEncryptionAlgorithm,

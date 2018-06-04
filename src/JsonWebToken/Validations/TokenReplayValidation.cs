@@ -13,12 +13,9 @@ namespace JsonWebToken.Validations
 
         public string Name => nameof(TokenReplayValidation);
 
-        public TokenValidationResult TryValidate(ReadOnlySpan<char> token, JsonWebToken jwt)
+        public TokenValidationResult TryValidate(TokenValidationContext context)
         {
-            if (jwt == null)
-            {
-                throw new ArgumentNullException(nameof(jwt));
-            }
+            var jwt = context.Jwt;
 
             // check if token if replay cache is set, then there must be an expiration time.
             var expires = jwt.ExpirationTime;

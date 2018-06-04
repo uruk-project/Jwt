@@ -105,10 +105,6 @@ namespace JwtCreator
             token = CreateToken(jwks, TokenValidationStatus.InvalidClaim, payload, "iss");
             jwts.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.InvalidLifetime);
-            token = CreateToken(jwks, TokenValidationStatus.InvalidLifetime, payload);
-            jwts.Add(token);
-
             payload = CreateJws(json, TokenValidationStatus.MissingClaim, "aud");
             token = CreateToken(jwks, TokenValidationStatus.MissingClaim, payload, "aud");
             jwts.Add(token);
@@ -219,18 +215,6 @@ namespace JwtCreator
                         if (kvp.Key == "nbf")
                         {
                             payload.Add(kvp.Key, 1400000000);
-                            continue;
-                        }
-                        break;
-                    case TokenValidationStatus.InvalidLifetime:
-                        if (kvp.Key == "exp")
-                        {
-                            payload.Add(kvp.Key, 1799999999);
-                            continue;
-                        }
-                        if (kvp.Key == "nbf")
-                        {
-                            payload.Add(kvp.Key, 1800000000);
                             continue;
                         }
                         break;

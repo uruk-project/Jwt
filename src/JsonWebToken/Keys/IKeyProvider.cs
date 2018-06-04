@@ -1,9 +1,10 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace JsonWebToken
 {
     public interface IKeyProvider
     {
-        JsonWebKeySet GetKeys(JObject header);
+        IReadOnlyList<JsonWebKey> GetKeys(JObject header);
     }
 }

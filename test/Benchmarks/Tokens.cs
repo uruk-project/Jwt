@@ -22,6 +22,7 @@ namespace JsonWebToken.Performance
             foreach (var property in validTokens.Properties())
             {
                 ValidTokens.Add(property.Name, property.Value.Value<string>());
+                ValidTokens.Add("enc-" + property.Name, property.Value.Value<string>());
             }
 
             var payloadPath = Path.Combine(dirPath, "./resources/payloads.json");

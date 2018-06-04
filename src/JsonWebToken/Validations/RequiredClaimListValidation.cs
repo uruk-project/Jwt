@@ -15,8 +15,9 @@ namespace JsonWebToken.Validations
             _values = values ?? throw new ArgumentNullException(nameof(values));
         }
 
-        public TokenValidationResult TryValidate(ReadOnlySpan<char> token, JsonWebToken jwt)
+        public TokenValidationResult TryValidate(TokenValidationContext context)
         {
+            var jwt = context.Jwt;
             var claim = jwt.Payload[_claim];
             if (claim == null || claim.Type == JTokenType.Null)
             {

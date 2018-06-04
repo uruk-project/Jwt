@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace JsonWebToken
 {
@@ -12,9 +14,10 @@ namespace JsonWebToken
             _jwks = jwks ?? throw new ArgumentNullException(nameof(jwks));
         }
 
-        public JsonWebKeySet GetKeys(JObject header)
+        public IReadOnlyList<JsonWebKey> GetKeys(JObject header)
         {
-            return _jwks;
+            var kid = header[HeaderParameterNames.Kid].Value<string>();
+            return _jwks.GetKeys(kid);
         }
     }
 }

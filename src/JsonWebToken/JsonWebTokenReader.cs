@@ -155,7 +155,7 @@ namespace JsonWebToken
                     return TokenValidationResult.MalformedToken();
                 }
 
-                return validationParameters.TryValidate(token, jwt);
+                return validationParameters.TryValidate(new TokenValidationContext(token, jwt));
             }
 
             return TokenValidationResult.MalformedToken();
@@ -330,6 +330,9 @@ namespace JsonWebToken
                 return keys;
             }
 
+            Span<byte> encryptedKey = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length)];
+            int bytesWritten = Base64Url.Base64UrlDecode(rawEncryptedKey, encryptedKey);
+            Debug.Assert(bytesWritten == encryptedKey.Length);
             var unwrappedKeys = new List<JsonWebKey>();
             for (int i = 0; i < keys.Count; i++)
             {
@@ -339,13 +342,10 @@ namespace JsonWebToken
                 {
                     if (kwp != null)
                     {
-                        Span<byte> encryptedKey = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length)];
-                        int bytesWritten = Base64Url.Base64UrlDecode(rawEncryptedKey, encryptedKey);
-                        Debug.Assert(bytesWritten == encryptedKey.Length);
                         Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length)];
                         kwp.UnwrapKey(encryptedKey, unwrappedKey, out int keyWrappedBytesWritten);
                         Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
-                         unwrappedKeys.Add(SymmetricJwk.FromSpan(unwrappedKey));
+                        unwrappedKeys.Add(SymmetricJwk.FromSpan(unwrappedKey));
                     }
                 }
                 finally
@@ -367,12 +367,11 @@ namespace JsonWebToken
             {
                 var keySet = _encryptionKeyProviders[i].GetKeys(header);
 
-                for (int j = 0; j < keySet.Keys.Count; j++)
+                for (int j = 0; j < keySet.Count; j++)
                 {
-                    var key = keySet.Keys[j];
+                    var key = keySet[j];
                     if ((string.IsNullOrWhiteSpace(key.Use) || string.Equals(key.Use, JsonWebKeyUseNames.Enc, StringComparison.Ordinal)) &&
-                        (string.IsNullOrWhiteSpace(key.Alg) || string.Equals(key.Alg, alg, StringComparison.Ordinal)) &&
-                        (string.Equals(key.Kid, kid, StringComparison.Ordinal)))
+                        (string.IsNullOrWhiteSpace(key.Alg) || string.Equals(key.Alg, alg, StringComparison.Ordinal)))
                     {
                         keys.Add(key);
                     }

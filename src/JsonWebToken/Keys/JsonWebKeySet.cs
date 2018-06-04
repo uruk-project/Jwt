@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace JsonWebToken
 {
@@ -11,6 +12,10 @@ namespace JsonWebToken
     [JsonObject]
     public class JsonWebKeySet
     {
+        public static readonly JsonWebKeySet Empty = new JsonWebKeySet();
+        private JsonWebKey[] _unidentifiedKeys;
+        private Dictionary<string, List<JsonWebKey>> _identifiedKeys;
+
         /// <summary>
         /// Returns a new instance of <see cref="JsonWebKeySet"/>.
         /// </summary>
@@ -111,6 +116,52 @@ namespace JsonWebToken
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this, Formatting.Indented);
+        }
+
+        public IReadOnlyList<JsonWebKey> UnidentifiedKeys
+        {
+            get
+            {
+                if (_unidentifiedKeys == null)
+                {
+                    _unidentifiedKeys = Keys
+                                        .Where(jwk => jwk.Kid == null)
+                                        .ToArray();
+                }
+
+                return _unidentifiedKeys;
+            }
+        }
+
+        public IDictionary<string, List<JsonWebKey>> IdentifiedKeys
+        {
+            get
+            {
+                if (_identifiedKeys == null)
+                {
+                    _identifiedKeys = Keys
+                                        .Where(jwk => jwk.Kid != null)
+                                        .GroupBy(k => k.Kid)
+                                        .ToDictionary(k => k.Key, k => k.Concat(UnidentifiedKeys).ToList());
+                }
+
+                return _identifiedKeys;
+            }
+        }
+
+        public IReadOnlyList<JsonWebKey> GetKeys(string kid)
+        {
+            if (kid == null)
+            {
+                return Keys.ToArray();
+            }
+
+            if (IdentifiedKeys.TryGetValue(kid, out var jwks))
+            {
+                return jwks;
+            }
+
+            return UnidentifiedKeys;
         }
     }
 }

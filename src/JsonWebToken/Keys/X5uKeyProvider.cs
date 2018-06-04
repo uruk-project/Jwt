@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 
 namespace JsonWebToken
@@ -11,7 +12,7 @@ namespace JsonWebToken
         {
         }
 
-        public override JsonWebKeySet GetKeys(JObject header)
+        public override IReadOnlyList<JsonWebKey> GetKeys(JObject header)
         {
             return GetKeys(header, header[HeaderParameterNames.X5u]?.Value<string>());
         }

@@ -193,11 +193,11 @@ namespace JsonWebToken
 
         private class EmptyKeyProvider : IKeyProvider
         {
-            private static readonly JsonWebKeySet EmptyJwks = new JsonWebKeySet();
+            private static readonly IReadOnlyList<JsonWebKey> Empty = new JsonWebKey[0];
 
-            public JsonWebKeySet GetKeys(JObject header)
+            public IReadOnlyList<JsonWebKey> GetKeys(JObject header)
             {
-                return EmptyJwks;
+                return Empty;
             }
         }
     }

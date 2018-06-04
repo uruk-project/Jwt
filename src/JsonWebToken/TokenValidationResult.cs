@@ -13,15 +13,6 @@ namespace JsonWebToken
         public string ErrorClaim { get; private set; }
         public string ErrorHeader { get; private set; }
 
-        public static TokenValidationResult InvalidLifetime(JsonWebToken token)
-        {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.InvalidLifetime,
-                Token = token
-            };
-        }
-
         public static TokenValidationResult Expired(JsonWebToken token)
         {
             return new TokenValidationResult

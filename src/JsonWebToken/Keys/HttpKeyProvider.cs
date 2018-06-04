@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace JsonWebToken
@@ -12,6 +14,8 @@ namespace JsonWebToken
         private TimeSpan _refreshInterval = DefaultRefreshInterval;
         private DateTimeOffset _syncAfter;
         private JsonWebKeySet _currentKeys;
+
+        private static readonly JsonWebKey[] Empty = new JsonWebKey[0];
 
         /// <summary>
         /// 1 day is the default time interval that afterwards, <see cref="GetConfigurationAsync()"/> will obtain new configuration.
@@ -45,16 +49,17 @@ namespace JsonWebToken
         {
         }
 
-        public abstract JsonWebKeySet GetKeys(JObject header);
+        public abstract IReadOnlyList<JsonWebKey> GetKeys(JObject header);
 
         protected abstract JsonWebKeySet DeserializeKeySet(string value);
 
-        protected JsonWebKeySet GetKeys(JObject header, string metadataAddress)
+        protected IReadOnlyList<JsonWebKey> GetKeys(JObject header, string metadataAddress)
         {
+            var kid = header[HeaderParameterNames.Kid].Value<string>();
             DateTimeOffset now = DateTimeOffset.UtcNow;
             if (_currentKeys != null && _syncAfter > now)
             {
-                return _currentKeys;
+                return _currentKeys.GetKeys(kid);
             }
 
             _refreshLock.Wait();
@@ -67,7 +72,6 @@ namespace JsonWebToken
                         var value = _documentRetriever.GetDocument(metadataAddress, CancellationToken.None);
 
                         _currentKeys = JsonConvert.DeserializeObject<JsonWebKeySet>(value);
-
                         _syncAfter = DateTimeUtil.Add(now.UtcDateTime, _automaticRefreshInterval);
                     }
                     catch
@@ -82,8 +86,7 @@ namespace JsonWebToken
                     throw new InvalidOperationException(ErrorMessages.FormatInvariant("Unable to obtain keys from: '{0}'", (metadataAddress ?? "null")));
                 }
 
-                // Stale metadata is better than no metadata
-                return _currentKeys;
+                return _currentKeys.GetKeys(kid);
             }
             finally
             {
