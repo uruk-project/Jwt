@@ -26,6 +26,34 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(payload));
             }
 
+#if NETCOREAPP2_1
+            int payloadLength = payload.Length;
+            byte[] payloadToReturnToPool = null;
+            Span<byte> encodedPayload = payloadLength > JwtConstants.MaxStackallocBytes
+                             ? (payloadToReturnToPool = ArrayPool<byte>.Shared.Rent(payloadLength)).AsSpan(0, payloadLength)
+                             : stackalloc byte[payloadLength];
+
+            try
+            {
+                Encoding.UTF8.GetBytes(payload, encodedPayload);
+#else
+                var encodedPayload = Encoding.UTF8.GetBytes(payload);
+#endif
+                return EncryptToken(encodedPayload);
+#if NETCOREAPP2_1
+            }
+            finally
+            {
+                if (payloadToReturnToPool != null)
+                {
+                    ArrayPool<byte>.Shared.Return(payloadToReturnToPool);
+                }
+            }
+#endif
+        }
+
+        unsafe protected string EncryptToken(Span<byte> payload)
+        {
             string encryptionAlgorithm = EncryptionAlgorithm;
             string contentEncryptionAlgorithm = Algorithm;
             bool IsDirectEncryption = string.Equals(KeyManagementAlgorithms.Direct, contentEncryptionAlgorithm, StringComparison.Ordinal);
@@ -96,20 +124,20 @@ namespace JsonWebToken
             {
 #if NETCOREAPP2_1
                 var headerJson = header.ToString();
-                int payloadLength = payload.Length;
                 int headerJsonLength = headerJson.Length;
                 int base64EncodedHeaderLength = Base64Url.GetArraySizeRequiredToEncode(headerJsonLength);
-                int bufferLength = payloadLength + base64EncodedHeaderLength;
+
                 byte[] arrayByteToReturnToPool = null;
                 char[] arrayCharToReturnToPool = null;
                 char[] buffer64HeaderToReturnToPool = null;
-                Span<byte> buffer = bufferLength > JwtConstants.MaxStackallocBytes
-                                    ? (arrayByteToReturnToPool = ArrayPool<byte>.Shared.Rent(bufferLength)).AsSpan(0, bufferLength)
-                                    : stackalloc byte[bufferLength];
+                Span<byte> asciiEncodedHeader = base64EncodedHeaderLength > JwtConstants.MaxStackallocBytes
+                                    ? (arrayByteToReturnToPool = ArrayPool<byte>.Shared.Rent(base64EncodedHeaderLength)).AsSpan(0, base64EncodedHeaderLength)
+                                    : stackalloc byte[base64EncodedHeaderLength];
 
                 try
                 {
-                    Span<byte> utf8EncodedHeader = buffer.Slice(0, headerJsonLength);
+
+                    Span<byte> utf8EncodedHeader = asciiEncodedHeader.Slice(0, headerJsonLength);
                     Encoding.UTF8.GetBytes(headerJson, utf8EncodedHeader);
 
                     Span<char> base64EncodedHeader = base64EncodedHeaderLength > JwtConstants.MaxStackallocBytes
@@ -117,13 +145,9 @@ namespace JsonWebToken
                                                     : stackalloc char[base64EncodedHeaderLength];
                     int bytesWritten = Base64Url.Base64UrlEncode(utf8EncodedHeader, base64EncodedHeader);
 
-                    Span<byte> asciiEncodedHeader = buffer.Slice(0, base64EncodedHeaderLength);
                     Encoding.ASCII.GetBytes(base64EncodedHeader, asciiEncodedHeader);
 
-                    Span<byte> encodedPayload = buffer.Slice(base64EncodedHeaderLength, payloadLength);
-                    Encoding.UTF8.GetBytes(payload, encodedPayload);
-
-                    var encryptionResult = encryptionProvider.Encrypt(encodedPayload, asciiEncodedHeader);
+                    var encryptionResult = encryptionProvider.Encrypt(payload, asciiEncodedHeader);
                     int encryptionLength =
                         base64EncodedHeader.Length
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.IV.Length)
@@ -174,7 +198,7 @@ namespace JsonWebToken
                     }
                 }
 #else
-                var encryptionResult = encryptionProvider.Encrypt(Encoding.UTF8.GetBytes(payload), Encoding.ASCII.GetBytes(header.Base64UrlEncode()));
+                var encryptionResult = encryptionProvider.Encrypt(payload.ToArray(), Encoding.ASCII.GetBytes(header.Base64UrlEncode()));
                 if (wrappedKey == null)
                 {
                     return string.Join(
