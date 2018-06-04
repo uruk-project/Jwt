@@ -59,6 +59,13 @@ This library is about **70%** faster than the Microsoft.IdentityModel.Tokens.Jwt
 
 The main reason of the speed of this library is the usage of the new API provided in .NET Core 2.0 and .NET Core 2.1.
 
+## Supported JWT
+* [JWS](https://tools.ietf.org/html/rfc7515) 
+* [Unsecure JWT](https://tools.ietf.org/html/rfc7515#appendix-A.5) (JWS without signature)
+* [Plaintext JWE](https://tools.ietf.org/html/rfc7519#appendix-A.1) (JWE with plaintext as payload)
+* Binary JWE (JWE with binary as payload)
+* [Nested JWT](https://tools.ietf.org/html/rfc7519#appendix-A.2), including JWE + JWS (Encrypted JWS)
+
 ## Supported algorithms
 ### JWS signing algorithms
 | "alg" Param Value | Digital Signature or MAC Algorithm        |Implemented
