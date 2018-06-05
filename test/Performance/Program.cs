@@ -1,4 +1,5 @@
 ﻿using JsonWebToken;
+using JsonWebToken.Performance;
 using System;
 
 namespace Performance
@@ -28,6 +29,11 @@ namespace Performance
                 var result = _reader.TryReadToken(Token1, parameters);
             }
 
+            foreach (var token in new [] { "enc-small" })
+            {
+                var result = _reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), new TokenValidationBuilder().RequireSignature(Tokens.SigningKey).Build());
+
+            }
             //var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
             //var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
             //var issuer = "https://idp.example.com/";

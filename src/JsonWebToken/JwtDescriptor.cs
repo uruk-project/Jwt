@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -150,6 +151,53 @@ namespace JsonWebToken
                     throw new JwtDescriptorException(ErrorMessages.FormatInvariant("The header parameter '{0}' must be of type [{1}].", header.Key, string.Join(", ", header.Value.Select(t => t.ToString()))));
                 }
             }
+        }
+
+        public static JwtDescriptor FromJsonWebToken(JsonWebToken token)
+        {
+            JwtDescriptor descriptor;
+            if (token.Header.HasHeader(HeaderParameterNames.Enc))
+            {
+                if (token.NestedToken != null)
+                {
+                    var d = new JweDescriptor();
+                    d.Payload = FromJsonWebToken(token.NestedToken) as JwsDescriptor;
+                    descriptor = d;
+                }
+                else if (token.PlainText != null)
+                {
+                    var d = new PlaintextJweDescriptor();
+                    d.Payload = token.PlainText;
+                    descriptor = d;
+                }
+                else if (token.Binary != null)
+                {
+                    var d = new BinaryJweDescriptor();
+                    d.Payload = token.Binary;
+                    descriptor = d;
+                }
+                else
+                {
+                    throw new ArgumentException("The token type is not supported.", nameof(token));
+                }
+            }
+            else
+            {
+                var d = new JwsDescriptor();
+                foreach (var claim in token.Claims)
+                {
+                    d.Payload[claim.Name] = claim.Value;
+                }
+
+                descriptor = d;
+            }
+
+            foreach (var header in token.HeaderParameters)
+            {
+                descriptor.Header[header.Name] = header.Value;
+            }
+
+            return descriptor;
         }
     }
 }

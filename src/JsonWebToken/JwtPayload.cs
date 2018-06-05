@@ -57,7 +57,7 @@ namespace JsonWebToken
             set { _inner[key] = value; }
         }
 
-        public IEnumerable<JProperty> Properties => _inner.Properties();
+        public IEnumerable<JProperty> Claims => _inner.Properties();
 
         /// <summary>
         /// Gets the 'value' of the 'acr' claim { acr, 'value' }.
@@ -293,7 +293,7 @@ namespace JsonWebToken
 
         public override string ToString()
         {
-            return _inner.Count != 0 ? JsonConvert.SerializeObject(_inner, serializerSettings) : Plaintext ?? string.Empty;
+            return JsonConvert.SerializeObject(_inner, serializerSettings);
         }
 
         public static implicit operator JObject(JwtPayload payload)

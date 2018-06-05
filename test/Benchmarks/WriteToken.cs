@@ -15,9 +15,9 @@ namespace JsonWebToken.Performance
     [Config(typeof(DefaultCoreConfig))]
     public class WriteToken
     {
-        private static readonly SymmetricJwk SigningKey = SymmetricJwk.GenerateKey(128, SignatureAlgorithms.HmacSha256);
+        private static readonly SymmetricJwk SigningKey = Tokens.SigningKey;
 
-        private static readonly SymmetricJwk EncryptionKey = SymmetricJwk.GenerateKey(128, KeyManagementAlgorithms.Aes128KW);
+        private static readonly SymmetricJwk EncryptionKey = Tokens.EncryptionKey;
 
         private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SigningKey.ToString());
 

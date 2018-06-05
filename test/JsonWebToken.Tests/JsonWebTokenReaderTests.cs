@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -62,15 +63,15 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetValidTokens()
         {
-            foreach (var item in Tokens.Jwts)
+            foreach (var item in Tokens.ValidTokens.Where(t => !t.Key.EndsWith("empty")))
             {
-                yield return new object[] { item };
+                yield return new object[] { item.Value };
             }
         }
 
         public static IEnumerable<object[]> GetInvalidTokens()
         {
-            foreach (var item in Tokens.InvalidJwts)
+            foreach (var item in Tokens.InvalidTokens)
             {
                 yield return new object[] { item.Jwt, item.Status };
             }

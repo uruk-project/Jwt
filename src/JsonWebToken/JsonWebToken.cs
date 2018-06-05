@@ -10,7 +10,7 @@ namespace JsonWebToken
     public class JsonWebToken
     {
         private static string[] EmptyStrings = new string[0];
-        private static JProperty[] EmptyClaims = new JProperty[0];
+        private static JProperty[] EmptyProperties = new JProperty[0];
         private readonly JwtPayload _payload;
 
         protected JsonWebToken()
@@ -69,23 +69,25 @@ namespace JsonWebToken
         /// If this is a JWE token, this property only returns the encrypted claims;
         ///  the unencrypted claims should be read from the header separately.
         /// </summary>
-        public IEnumerable<JProperty> Claims => Payload?.Properties ?? EmptyClaims;
+        public IEnumerable<JProperty> Claims => Payload?.Claims ?? EmptyProperties;
 
         /// <summary>
         /// Gets the <see cref="JwtHeader"/> associated with this instance if the token is signed.
         /// </summary>
         public virtual JwtHeader Header { get; private set; }
 
+        public IEnumerable<JProperty> HeaderParameters => Header?.Parameters ?? EmptyProperties;
+
         /// <summary>
         /// Gets the 'value' of the 'JWT ID' claim { jti, ''value' }.
         /// </summary>
         /// <remarks>If the 'jti' claim is not found, null is returned.</remarks>
-        public string Id => Payload?.Jti ?? string.Empty;
+        public string Id => Payload?.Jti;
 
         /// <summary>
         /// Gets the 'value' of the 'issuer' claim { iss, 'value' }.
         /// </summary>
-        public string Issuer => Payload?.Iss ?? string.Empty;
+        public string Issuer => Payload?.Iss;
 
         /// <summary>
         /// Gets the <see cref="JwtPayload"/> associated with this instance.
@@ -145,6 +147,8 @@ namespace JsonWebToken
         public string PlainText { get; set; }
 
         public IReadOnlyList<int> Separators { get; }
+
+        public byte[] Binary { get; set; }
 
         public override string ToString()
         {

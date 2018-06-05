@@ -45,6 +45,8 @@ namespace JsonWebToken
         /// <remarks>See: <see cref="DefaultTokenLifetimeInMinutes"/>, <see cref="TokenLifetimeInMinutes"/> for defaults and configuration.</remarks>
         public bool SetDefaultTimesOnTokenCreation { get; set; } = false;
 
+        public bool IgnoreTokenValidation { get; set; } = false;
+
         public string WriteToken(JwtDescriptor descriptor)
         {
             if (descriptor == null)
@@ -75,7 +77,11 @@ namespace JsonWebToken
                 descriptor.Algorithm = SignatureAlgorithms.None;
             }
 
-            descriptor.Validate();
+            if (!IgnoreTokenValidation)
+            {
+                descriptor.Validate();
+            }
+
             return descriptor.Encode();
         }
     }

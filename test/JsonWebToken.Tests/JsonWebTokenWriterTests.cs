@@ -16,13 +16,15 @@ namespace JsonWebToken.Tests
 
             var reader = new JsonWebTokenReader(Keys.Jwks);
             var result = reader.TryReadToken(value, TokenValidationParameters.NoValidation);
+            Assert.Equal(TokenValidationStatus.Success, result.Status);
+
             var jwt = result.Token;
 
             var payload = descriptor as IJwtPayloadDescriptor;
             Assert.Equal(payload.IssuedAt, jwt.Payload.Iat);
             Assert.Equal(payload.ExpirationTime, jwt.ExpirationTime);
             Assert.Equal(payload.Issuer, jwt.Issuer);
-            Assert.Equal(payload.Audiences.First(), jwt.Audiences.First());
+            Assert.Equal(payload.Audiences?.FirstOrDefault(), jwt.Audiences?.FirstOrDefault());
             Assert.Equal(payload.JwtId, jwt.Id);
         }
 
@@ -93,60 +95,62 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetDescriptors()
         {
-            foreach (var key in Keys.Jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Sig))
+            foreach (var item in Tokens.Descriptors)
             {
-                foreach (var jwt in Tokens.Descriptors)
-                {
-                    yield return new object[]
-                    {
-                        new JwsDescriptor
-                        {
-                            Key = key,
-                            JwtId = jwt.JwtId,
-                            Audiences = jwt.Audiences,
-                            ExpirationTime = jwt.ExpirationTime,
-                            IssuedAt = jwt.IssuedAt,
-                            Issuer = jwt.Issuer,
-                            NotBefore = jwt.NotBefore
-                        }
-                    };
-                }
+                yield return new object[] { item.Value };
             }
+            //    foreach (var key in Keys.Jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Sig))
+            //    {
+            //        foreach (var jwt in Tokens.Descriptors)
+            //        {
+            //            yield return new object[]
+            //            {
+            //                new JwsDescriptor
+            //                {
+            //                    Key = key,
+            //                    JwtId = jwt.JwtId,
+            //                    Audiences = jwt.Audiences,
+            //                    ExpirationTime = jwt.ExpirationTime,
+            //                    IssuedAt = jwt.IssuedAt,
+            //                    Issuer = jwt.Issuer,
+            //                    NotBefore = jwt.NotBefore
+            //                }
+            //            };
+            //        }
+            //    }
 
-            var encryptionAlgorithms = new[] { ContentEncryptionAlgorithms.Aes128CbcHmacSha256, ContentEncryptionAlgorithms.Aes192CbcHmacSha384, ContentEncryptionAlgorithms.Aes256CbcHmacSha512 };
-            foreach (var encKey in Keys.Jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Enc && k.Kty == JsonWebAlgorithmsKeyTypes.Octet))
-            {
-                foreach (var enc in encryptionAlgorithms)
-                {
-                    if (!encKey.IsSupportedAlgorithm(enc))
-                    {
-                        continue;
-                    }
+            //    var encryptionAlgorithms = new[] { ContentEncryptionAlgorithms.Aes128CbcHmacSha256, ContentEncryptionAlgorithms.Aes192CbcHmacSha384, ContentEncryptionAlgorithms.Aes256CbcHmacSha512 };
+            //    foreach (var encKey in Keys.Jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Enc && k.Kty == JsonWebAlgorithmsKeyTypes.Octet))
+            //    {
+            //        foreach (var enc in encryptionAlgorithms)
+            //        {
+            //            if (!encKey.IsSupportedAlgorithm(enc))
+            //            {
+            //                continue;
+            //            }
 
-                    var sigKey = Keys.Jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
-                    foreach (var jwt in Tokens.Descriptors)
-                    {
-                        yield return new object[] {
-                            new JweDescriptor()
-                            {
-                                Key = encKey,
-                                EncryptionAlgorithm = enc,
-                                ContentType = "JWT",
-                                Payload = new JwsDescriptor
-                                {
-                                    Key = sigKey,
-                                    JwtId = jwt.JwtId,
-                                    Audiences = jwt.Audiences,
-                                    ExpirationTime = jwt.ExpirationTime,
-                                    IssuedAt = jwt.IssuedAt,
-                                    Issuer = jwt.Issuer,
-                                    NotBefore = jwt.NotBefore
-                                }
-                            }
-                        };
-                    }
-                }
-            }
+            //            var sigKey = Keys.Jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
+            //            foreach (var jwt in Tokens.Descriptors)
+            //            {
+            //                yield return new object[] {
+            //                    new JweDescriptor()
+            //                    {
+            //                        Key = encKey,
+            //                        EncryptionAlgorithm = enc,
+            //                        ContentType = "JWT",
+            //                        Payload = new JwsDescriptor
+            //                        {
+            //                            Key = sigKey,
+            //                            JwtId = jwt.JwtId,
+            //                            Audiences = jwt.Audiences,
+            //                            ExpirationTime = jwt.ExpirationTime,
+            //                            IssuedAt = jwt.IssuedAt,
+            //                            Issuer = jwt.Issuer,
+            //                            NotBefore = jwt.NotBefore
+            //                        }
+            //                    }
+            //                };
+            //            }
         }
     }
 }

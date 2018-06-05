@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 
 namespace JsonWebToken
 {
@@ -31,6 +32,8 @@ namespace JsonWebToken
         {
             _inner = new JObject();
         }
+
+        public IEnumerable<JProperty> Parameters => _inner.Properties();
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwtHeader"/>.
