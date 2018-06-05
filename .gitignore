@@ -262,3 +262,4 @@ __pycache__/
 /build
 /test/Certs
 /test/JsonWebToken.Performance/BenchmarkDotNet.Artifacts/results
+/test/Benchmarks/BenchmarkDotNet.Artifacts/results

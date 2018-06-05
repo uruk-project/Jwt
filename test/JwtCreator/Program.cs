@@ -79,14 +79,18 @@ namespace JwtCreator
                     result.Add(jwt);
                 }
             }
-            
+
             var invalidJwt = GenerateInvalidJwt(jwks, json);
+            var payloads = CreateJwtDescriptors();
 
             var jwtPath = Path.Combine(dirPath, "./jwts.json");
+            var payloadsPath = Path.Combine(dirPath, "./payloads.json");
             var invalidJwtsPath = Path.Combine(dirPath, "./invalid_jwts.json");
             File.WriteAllText(jwtPath, result.ToString());
             File.WriteAllText(invalidJwtsPath, invalidJwt.ToString());
             File.WriteAllText(keysPath, jwks.ToString());
+
+            File.WriteAllText(payloadsPath, JObject.FromObject(payloads).ToString());
         }
 
         private static JArray GenerateInvalidJwt(JsonWebKeySet jwks, JObject json)
@@ -105,10 +109,6 @@ namespace JwtCreator
             token = CreateToken(jwks, TokenValidationStatus.InvalidClaim, payload, "iss");
             jwts.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.InvalidLifetime);
-            token = CreateToken(jwks, TokenValidationStatus.InvalidLifetime, payload);
-            jwts.Add(token);
-
             payload = CreateJws(json, TokenValidationStatus.MissingClaim, "aud");
             token = CreateToken(jwks, TokenValidationStatus.MissingClaim, payload, "aud");
             jwts.Add(token);
@@ -117,8 +117,8 @@ namespace JwtCreator
             token = CreateToken(jwks, TokenValidationStatus.MissingClaim, payload, "iss");
             jwts.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.MissingExpirationTime);
-            token = CreateToken(jwks, TokenValidationStatus.MissingExpirationTime, payload);
+            payload = CreateJws(json, TokenValidationStatus.MissingClaim, "exp");
+            token = CreateToken(jwks, TokenValidationStatus.MissingClaim, payload, "exp");
             jwts.Add(token);
 
             payload = CreateJws(json, TokenValidationStatus.NotYetValid);
@@ -144,27 +144,6 @@ namespace JwtCreator
             return jwts;
         }
 
-        private static JweDescriptor CreateJwe(JObject descriptor, TokenValidationStatus status)
-        {
-            var payload = new JObject();
-            foreach (var claim in descriptor)
-            {
-                switch (status)
-                {
-                    case TokenValidationStatus.MissingEncryptionAlgorithm:
-                        break;
-                    case TokenValidationStatus.DecryptionFailed:
-                        break;
-                    default:
-                        break;
-                }
-
-                payload.Add(claim.Key, claim.Value);
-            }
-
-            return new JweDescriptor(payload);
-        }
-
         private static JwsDescriptor CreateJws(JObject descriptor, TokenValidationStatus status, string claim = null)
         {
             var payload = new JObject();
@@ -172,24 +151,8 @@ namespace JwtCreator
             {
                 switch (status)
                 {
-                    case TokenValidationStatus.MissingExpirationTime:
-                        if (kvp.Key == "exp")
-                        {
-                            continue;
-                        }
-                        break;
-                    case TokenValidationStatus.MalformedToken:
-                        break;
-                    case TokenValidationStatus.InvalidSignature:
-                        break;
-                    case TokenValidationStatus.SignatureKeyNotFound:
-                        break;
-                    case TokenValidationStatus.MalformedSignature:
-                        break;
-                    case TokenValidationStatus.MissingSignature:
-                        break;
                     case TokenValidationStatus.InvalidClaim:
-                        if (kvp.Key == "aud" && claim =="aud")
+                        if (kvp.Key == "aud" && claim == "aud")
                         {
                             payload.Add(kvp.Key, kvp.Value + "XXX");
                             continue;
@@ -201,6 +164,10 @@ namespace JwtCreator
                         }
                         break;
                     case TokenValidationStatus.MissingClaim:
+                        if (kvp.Key == "exp" & claim == "exp")
+                        {
+                            continue;
+                        }
                         if (kvp.Key == "aud" & claim == "aud")
                         {
                             continue;
@@ -209,8 +176,6 @@ namespace JwtCreator
                         {
                             continue;
                         }
-                        break;
-                    case TokenValidationStatus.TokenReplayed:
                         break;
                     case TokenValidationStatus.Expired:
                         if (kvp.Key == "exp")
@@ -221,18 +186,6 @@ namespace JwtCreator
                         if (kvp.Key == "nbf")
                         {
                             payload.Add(kvp.Key, 1400000000);
-                            continue;
-                        }
-                        break;
-                    case TokenValidationStatus.InvalidLifetime:
-                        if (kvp.Key == "exp")
-                        {
-                            payload.Add(kvp.Key, 1799999999);
-                            continue;
-                        }
-                        if (kvp.Key == "nbf")
-                        {
-                            payload.Add(kvp.Key, 1800000000);
                             continue;
                         }
                         break;
@@ -247,12 +200,6 @@ namespace JwtCreator
                             payload.Add(kvp.Key, 2000000000);
                             continue;
                         }
-                        break;
-                    case TokenValidationStatus.MissingEncryptionAlgorithm:
-                        break;
-                    case TokenValidationStatus.DecryptionFailed:
-                        break;
-                    default:
                         break;
                 }
 
@@ -434,6 +381,123 @@ namespace JwtCreator
 
             public string Jwt { get; }
             public TokenValidationStatus Status { get; }
+        }
+
+        private static Dictionary<string, JwtDescriptor> CreateJwtDescriptors()
+        {
+            byte[] bigData = new byte[1024 * 1024];
+            RandomNumberGenerator.Fill(bigData);
+            var payloads = new Dictionary<string, JObject>
+            {
+                {  "empty", new JObject() },
+                {
+                    "small", new JObject
+                    {
+                        { "jti", "756E69717565206964656E746966696572"},
+                        { "iss", "https://idp.example.com/"},
+                        { "iat", 1508184845},
+                        { "aud", "636C69656E745F6964"},
+                        { "exp", 1628184845}
+                    }
+                },
+                {
+                    "medium", new JObject
+                    {
+                        { "jti", "756E69717565206964656E746966696572"},
+                        { "iss", "https://idp.example.com/"},
+                        { "iat", 1508184845},
+                        { "aud", "636C69656E745F6964"},
+                        { "exp", 1628184845},
+                        { "claim1", "value1ABCDEFGH" },
+                        { "claim2", "value1ABCDEFGH" },
+                        { "claim3", "value1ABCDEFGH" },
+                        { "claim4", "value1ABCDEFGH" },
+                        { "claim5", "value1ABCDEFGH" },
+                        { "claim6", "value1ABCDEFGH" },
+                        { "claim7", "value1ABCDEFGH" },
+                        { "claim8", "value1ABCDEFGH" },
+                        { "claim9", "value1ABCDEFGH" },
+                        { "claim10", "value1ABCDEFGH" },
+                        { "claim11", "value1ABCDEFGH" },
+                        { "claim12", "value1ABCDEFGH" },
+                        { "claim13", "value1ABCDEFGH" },
+                        { "claim14", "value1ABCDEFGH" },
+                        { "claim15", "value1ABCDEFGH" },
+                        { "claim16", "value1ABCDEFGH" }
+                    }
+                },
+                {
+                    "big", new JObject
+                    {
+                        { "jti", "756E69717565206964656E746966696572" },
+                        { "iss", "https://idp.example.com/" },
+                        { "iat", 1508184845 },
+                        { "aud", "636C69656E745F6964" },
+                        { "exp", 1628184845 },
+                        { "big_claim", Convert.ToBase64String(bigData) }
+                    }
+                },
+            };
+
+            var signingKey = SymmetricJwk.GenerateKey(128, SignatureAlgorithms.HmacSha256);
+            var descriptors = new Dictionary<string, JwtDescriptor>();
+            foreach (var payload in payloads)
+            {
+                var descriptor = new JwsDescriptor()
+                {
+                    Key = signingKey
+                };
+
+                foreach (var property in payload.Value.Properties())
+                {
+                    switch (property.Name)
+                    {
+                        case "iat":
+                        case "exp":
+                            descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
+                            break;
+                        default:
+                            descriptor.AddClaim(property.Name, (string)property.Value);
+                            break;
+                    }
+                }
+
+                descriptors.Add(payload.Key, descriptor);
+            }
+
+            var encryptionKey = SymmetricJwk.GenerateKey(128, KeyManagementAlgorithms.Aes128KW);
+            foreach (var payload in payloads)
+            {
+                var descriptor = new JwsDescriptor()
+                {
+                    Key = signingKey
+                };
+
+                foreach (var property in payload.Value.Properties())
+                {
+                    switch (property.Name)
+                    {
+                        case "iat":
+                        case "exp":
+                            descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
+                            break;
+                        default:
+                            descriptor.AddClaim(property.Name, (string)property.Value);
+                            break;
+                    }
+                }
+
+                var jwe = new JweDescriptor
+                {
+                    Payload = descriptor,
+                    Key = encryptionKey,
+                    EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256
+                };
+
+                descriptors.Add("enc-" + payload.Key, jwe);
+            }
+
+            return descriptors;
         }
     }
 }

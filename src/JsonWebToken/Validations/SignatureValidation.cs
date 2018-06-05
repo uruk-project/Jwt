@@ -17,19 +17,16 @@ namespace JsonWebToken.Validations
             _supportUnsecure = supportUnsecure;
         }
 
-        public TokenValidationResult TryValidate(ReadOnlySpan<char> token, JsonWebToken jwt)
+        public TokenValidationResult TryValidate(TokenValidationContext context)
         {
-            if (jwt == null)
-            {
-                throw new ArgumentNullException(nameof(jwt));
-            }
-
+            var jwt = context.Jwt;
             if (jwt.Separators.Count != JwtConstants.JwsSeparatorsCount)
             {
                 // This is not a JWS
                 return TokenValidationResult.Success(jwt);
             }
 
+            var token = context.Token;
             if (token.Length <= jwt.Separators[0] + jwt.Separators[1] + 1)
             {
                 if (_supportUnsecure && string.Equals(SignatureAlgorithms.None, jwt.SignatureAlgorithm, StringComparison.Ordinal))
@@ -109,7 +106,6 @@ namespace JsonWebToken.Validations
             }
 #endif
 
-
             if (keysTried)
             {
                 return TokenValidationResult.InvalidSignature(jwt);
@@ -128,11 +124,7 @@ namespace JsonWebToken.Validations
 
             try
             {
-#if NETCOREAPP2_1
                 return signatureProvider.Verify(encodedBytes, signature);
-#else
-                return signatureProvider.Verify(encodedBytes, signature);
-#endif
             }
             finally
             {
@@ -146,12 +138,11 @@ namespace JsonWebToken.Validations
             var keySet = _keyProvider.GetKeys(jwt.Header);
             if (keySet != null)
             {
-                for (int j = 0; j < keySet.Keys.Count; j++)
+                for (int j = 0; j < keySet.Count; j++)
                 {
-                    var key = keySet.Keys[j];
+                    var key = keySet[j];
                     if ((string.IsNullOrWhiteSpace(key.Use) || string.Equals(key.Use, JsonWebKeyUseNames.Sig, StringComparison.Ordinal)) &&
-                        (string.IsNullOrWhiteSpace(key.Alg) || string.Equals(key.Alg, jwt.Header.Alg, StringComparison.Ordinal)) &&
-                        (string.Equals(key.Kid, jwt.Header.Kid, StringComparison.Ordinal)))
+                        (string.IsNullOrWhiteSpace(key.Alg) || string.Equals(key.Alg, jwt.Header.Alg, StringComparison.Ordinal)))
                     {
                         keys.Add(key);
                     }

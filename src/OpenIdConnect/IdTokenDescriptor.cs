@@ -41,7 +41,7 @@ namespace JsonWebToken
         }
 
         public IdTokenDescriptor(JObject payload)
-            :base (payload)
+            : base(payload)
         {
         }
 
@@ -52,8 +52,8 @@ namespace JsonWebToken
         /// </summary>
         public DateTime? AuthenticationTime
         {
-            get { return GetDateTime(ClaimNames.AuthTime); }
-            set { AddClaim(ClaimNames.AuthTime, value); }
+            get => GetDateTime(ClaimNames.AuthTime);
+            set => AddClaim(ClaimNames.AuthTime, value);
         }
 
         /// <summary>
@@ -61,8 +61,8 @@ namespace JsonWebToken
         /// </summary>
         public string Nonce
         {
-            get { return GetStringClaim(ClaimNames.Nonce); }
-            set { AddClaim(ClaimNames.Nonce, value); }
+            get => GetStringClaim(ClaimNames.Nonce);
+            set => AddClaim(ClaimNames.Nonce, value);
         }
 
         /// <summary>
@@ -70,18 +70,14 @@ namespace JsonWebToken
         /// </summary>
         public string AuthenticationContextClassReference
         {
-            get { return GetStringClaim(ClaimNames.Acr); }
-            set { AddClaim(ClaimNames.Acr, value); }
+            get => GetStringClaim(ClaimNames.Acr);
+            set => AddClaim(ClaimNames.Acr, value);
         }
 
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the Authentication Methods References used in the authentication.
         /// </summary>
-        public IReadOnlyList<string> AuthenticationMethodsReferences
-        {
-            get { return GetListClaims(ClaimNames.AuthTime); }
-            set { SetClaim(ClaimNames.AuthTime, value); }
-        }
+        public IReadOnlyList<string> AuthenticationMethodsReferences => GetListClaims(ClaimNames.Amr);
 
         public void AddAuthenticationMethodsReferences(string acr)
         {
@@ -89,32 +85,30 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the Authorized party - the party to which the ID Token was issued.
         /// </summary>
         public string AuthorizedParty
         {
-            get { return GetStringClaim(ClaimNames.AuthTime); }
-            set { AddClaim(ClaimNames.AuthTime, value); }
+            get => GetStringClaim(ClaimNames.Azp);
+            set => AddClaim(ClaimNames.Azp, value);
         }
-
 
         /// <summary>
         /// Gets or sets the time when the End-User authentication occurred.
         /// </summary>
         public string AccessTokenHash
         {
-            get { return GetStringClaim(ClaimNames.AtHash); }
-            set { AddClaim(ClaimNames.AtHash, value); }
+            get => GetStringClaim(ClaimNames.AtHash);
+            set => AddClaim(ClaimNames.AtHash, value);
         }
-
 
         /// <summary>
         /// Gets or sets the time when the End-User authentication occurred.
         /// </summary>
         public string CodeHash
         {
-            get { return GetStringClaim(ClaimNames.CHash); }
-            set { AddClaim(ClaimNames.AuthTime, value); }
+            get => GetStringClaim(ClaimNames.CHash);
+            set => AddClaim(ClaimNames.CHash, value);
         }
 
         protected override IReadOnlyDictionary<string, JTokenType[]> RequiredClaims
@@ -135,114 +129,112 @@ namespace JsonWebToken
             }
         }
 
-
-
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the Given name(s) or first name(s) of the End-User.
         /// </summary>
         public string GivenName
         {
-            get { return GetStringClaim(ClaimNames.GivenName); }
-            set { AddClaim(ClaimNames.GivenName, value); }
+            get => GetStringClaim(ClaimNames.GivenName);
+            set => AddClaim(ClaimNames.GivenName, value);
         }
 
-
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the Surname(s) or last name(s) of the End-User.
         /// </summary>
         public string FamilyName
         {
-            get { return GetStringClaim(ClaimNames.FamilyName); }
-            set { AddClaim(ClaimNames.FamilyName, value); }
+            get => GetStringClaim(ClaimNames.FamilyName);
+            set => AddClaim(ClaimNames.FamilyName, value);
         }
-
 
         /// <summary>
         /// Gets or sets the time when the End-User authentication occurred.
         /// </summary>
         public string MiddleName
         {
-            get { return GetStringClaim(ClaimNames.MiddleName); }
-            set { AddClaim(ClaimNames.MiddleName, value); }
+            get => GetStringClaim(ClaimNames.MiddleName);
+            set => AddClaim(ClaimNames.MiddleName, value);
         }
 
-
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the Casual name of the End-User.
         /// </summary>
         public string Nickname
         {
-            get { return GetStringClaim(ClaimNames.Nickname); }
-            set { AddClaim(ClaimNames.Nickname, value); }
+            get => GetStringClaim(ClaimNames.Nickname);
+            set => AddClaim(ClaimNames.Nickname, value);
         }
 
-
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the Shorthand name by which the End-User wishes to be referred to.
         /// </summary>
         public string PreferredUsername
         {
-            get { return GetStringClaim(ClaimNames.PreferredUsername); }
-            set { AddClaim(ClaimNames.PreferredUsername, value); }
+            get => GetStringClaim(ClaimNames.PreferredUsername);
+            set => AddClaim(ClaimNames.PreferredUsername, value);
         }
 
-
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the URL of the End-User's profile page.
         /// </summary>
         public string Profile
         {
-            get { return GetStringClaim(ClaimNames.Profile); }
-            set { AddClaim(ClaimNames.Profile, value); }
+            get => GetStringClaim(ClaimNames.Profile);
+            set => AddClaim(ClaimNames.Profile, value);
         }
 
-
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the URL of the End-User's profile picture.
         /// </summary>
         public string Picture
         {
-            get { return GetStringClaim(ClaimNames.Picture); }
-            set { AddClaim(ClaimNames.Picture, value); }
+            get => GetStringClaim(ClaimNames.Picture);
+            set => AddClaim(ClaimNames.Picture, value);
         }
 
+        /// <summary>
+        /// Gets or sets the URL of the End-User's Web page or blog.
+        /// </summary>
+        public string Website
+        {
+            get => GetStringClaim(ClaimNames.Website);
+            set => AddClaim(ClaimNames.Website, value);
+        }
 
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the End-User's preferred e-mail address.
         /// </summary>
         public string Email
         {
-            get { return GetStringClaim(ClaimNames.Email); }
-            set { AddClaim(ClaimNames.Email, value); }
+            get => GetStringClaim(ClaimNames.Email);
+            set => AddClaim(ClaimNames.Email, value);
         }
 
-
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// True if the End-User's e-mail address has been verified; otherwise false.
         /// </summary>
         public bool? EmailVerified
         {
-            get { return GetBoolClaim(ClaimNames.EmailVerified); }
-            set { AddClaim(ClaimNames.EmailVerified, value); }
+            get => GetBoolClaim(ClaimNames.EmailVerified);
+            set => AddClaim(ClaimNames.EmailVerified, value);
         }
 
-
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the End-User's gender. Values defined by this specification are female and male. 
         /// </summary>
         public string Gender
         {
-            get { return GetStringClaim(ClaimNames.Gender); }
-            set { AddClaim(ClaimNames.Gender, value); }
+            get => GetStringClaim(ClaimNames.Gender);
+            set => AddClaim(ClaimNames.Gender, value);
         }
 
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the End-User's birthday, represented as an ISO 8601:2004 [ISO8601‑2004] YYYY-MM-DD format. The year MAY be 0000, indicating that it is omitted. To represent only the year, YYYY format is allowed.
         /// </summary>
         public string Birthdate
         {
-            get { return GetStringClaim(ClaimNames.Birthdate); }
-            set { AddClaim(ClaimNames.Birthdate, value); }
+            get => GetStringClaim(ClaimNames.Birthdate);
+            set => AddClaim(ClaimNames.Birthdate, value);
         }
 
         /// <summary>
@@ -250,40 +242,39 @@ namespace JsonWebToken
         /// </summary>
         public string Zoneinfo
         {
-            get { return GetStringClaim(ClaimNames.Zoneinfo); }
-            set { AddClaim(ClaimNames.Zoneinfo, value); }
+            get => GetStringClaim(ClaimNames.Zoneinfo);
+            set => AddClaim(ClaimNames.Zoneinfo, value);
         }
 
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the End-User's locale, represented as a BCP47 [RFC5646] language tag.
         /// </summary>
         public string Locale
         {
-            get { return GetStringClaim(ClaimNames.Locale); }
-            set { AddClaim(ClaimNames.Locale, value); }
+            get => GetStringClaim(ClaimNames.Locale);
+            set => AddClaim(ClaimNames.Locale, value);
         }
 
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the End-User's preferred telephone number.
         /// </summary>
         public string PhoneNumber
         {
-            get { return GetStringClaim(ClaimNames.PhoneNumber); }
-            set { AddClaim(ClaimNames.PhoneNumber, value); }
+            get => GetStringClaim(ClaimNames.PhoneNumber);
+            set => AddClaim(ClaimNames.PhoneNumber, value);
         }
 
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// True if the End-User's phone number has been verified; otherwise false.
         /// </summary>
         public bool? PhoneNumberVerified
         {
-            get { return GetBoolClaim(ClaimNames.PhoneNumberVerified); }
-            set { AddClaim(ClaimNames.PhoneNumberVerified, value); }
+            get => GetBoolClaim(ClaimNames.PhoneNumberVerified);
+            set => AddClaim(ClaimNames.PhoneNumberVerified, value);
         }
 
-
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the End-User's preferred postal address.
         /// </summary>
         public Address Address
         {
@@ -295,13 +286,14 @@ namespace JsonWebToken
 
             set => Payload[HeaderParameterNames.Address] = value?.ToString();
         }
+
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the time the End-User's information was last updated.
         /// </summary>
-        public string UpdatedAt
+        public DateTime? UpdatedAt
         {
-            get { return GetStringClaim(ClaimNames.UpdatedAt); }
-            set { AddClaim(ClaimNames.UpdatedAt, value); }
+            get => GetDateTime(ClaimNames.UpdatedAt);
+            set => AddClaim(ClaimNames.UpdatedAt, value);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Running;
 using Jose;
 using JWT;
@@ -23,19 +22,14 @@ namespace JsonWebToken.Performance
 
         public static readonly JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler() { MaximumTokenSizeInBytes = 4 * 1024 * 1024 };
 
-        private static readonly SymmetricJwk SymmetricKey = new SymmetricJwk
-        {
-            Use = "sig",
-            Kid = "symmetric-256",
-            K = "GdaXeVyiJwKmz5LFhcbcng",
-            Alg = "HS256"
-        };
-        public static readonly JsonWebTokenReader Reader = new JsonWebTokenReader(SymmetricKey);
+        private static readonly SymmetricJwk SymmetricKey = Tokens.SigningKey;
+
+        public static readonly JsonWebTokenReader Reader = new JsonWebTokenReader(Tokens.EncryptionKey);
         private static readonly TokenValidationParameters validationParameters = new TokenValidationBuilder().RequireSignature(SymmetricKey).Build();
 
         private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SymmetricKey.ToString());
 
-        private static readonly Microsoft.IdentityModel.Tokens.TokenValidationParameters wilsonParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters() { IssuerSigningKey = WilsonSharedKey, ValidateAudience = false, ValidateIssuer = false, ValidateLifetime = false };
+        private static readonly Microsoft.IdentityModel.Tokens.TokenValidationParameters wilsonParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters() { IssuerSigningKey = WilsonSharedKey, ValidateAudience = false, ValidateIssuer = false, ValidateLifetime = false, TokenDecryptionKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(Tokens.EncryptionKey.ToString()) };
 
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetTokens))]
@@ -71,7 +65,7 @@ namespace JsonWebToken.Performance
         }
 
         [Benchmark]
-        [ArgumentsSource(nameof(GetTokens))]
+        [ArgumentsSource(nameof(GetNotEncryptedTokens))]
         public void JwtDotNet(string token)
         {
             var value = JwtDotNetDecoder.DecodeToObject(Tokens.ValidTokens[token], SymmetricKey.RawK, verify: true);
@@ -81,8 +75,19 @@ namespace JsonWebToken.Performance
             }
         }
 
-
         public IEnumerable<object[]> GetTokens()
+        {
+            yield return new[] { "empty" };
+            yield return new[] { "small" };
+            yield return new[] { "medium" };
+            yield return new[] { "big" };
+            yield return new[] { "enc-empty" };
+            yield return new[] { "enc-small" };
+            yield return new[] { "enc-medium" };
+            yield return new[] { "enc-big" };
+        }
+
+        public IEnumerable<object[]> GetNotEncryptedTokens()
         {
             yield return new[] { "empty" };
             yield return new[] { "small" };

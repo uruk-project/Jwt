@@ -60,38 +60,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Unwrap a key using RSA decryption.
-        /// </summary>
-        /// <param name="keyBytes">the bytes to unwrap.</param>
-        /// <returns>Unwrapped key</returns>
-        public override byte[] UnwrapKey(byte[] keyBytes)
-        {
-            if (keyBytes == null || keyBytes.Length == 0)
-            {
-                throw new ArgumentNullException(nameof(keyBytes));
-            }
-
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().ToString());
-            }
-
-            if (_rsa == null)
-            {
-                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
-            }
-
-            try
-            {
-                return _rsa.Decrypt(keyBytes, _padding);
-            }
-            catch (Exception ex)
-            {
-                throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
-            }
-        }
-
         private static RSAEncryptionPadding ResolvePadding(string algorithm)
         {
             switch (algorithm)
@@ -108,44 +76,11 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Wrap a key using RSA encryption.
-        /// </summary>
-        /// <param name="keyBytes">the key to be wrapped</param>
-        /// <returns>A wrapped key</returns>
-        public override byte[] WrapKey(byte[] keyBytes)
-        {
-            if (keyBytes == null || keyBytes.Length == 0)
-            {
-                throw new ArgumentNullException(nameof(keyBytes));
-            }
-
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().ToString());
-            }
-
-            if (_rsa == null)
-            {
-                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
-            }
-
-            try
-            {
-                return _rsa.Encrypt(keyBytes, _padding);
-            }
-            catch (Exception ex)
-            {
-                throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
-            }
-        }
-
-#if NETCOREAPP2_1
-        /// <summary>
         /// Unwrap a key using RSA decryption.
         /// </summary>
         /// <param name="keyBytes">the bytes to unwrap.</param>
         /// <returns>Unwrapped key</returns>
-        public override bool UnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWriten)
+        public override bool UnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWritten)
         {
             if (keyBytes == null || keyBytes.Length == 0)
             {
@@ -164,7 +99,14 @@ namespace JsonWebToken
 
             try
             {
-                return _rsa.TryDecrypt(keyBytes, destination, _padding, out bytesWriten);
+#if NETCOREAPP2_1
+                 return _rsa.TryDecrypt(keyBytes, destination, _padding, out bytesWritten);
+#else
+                var result = _rsa.Decrypt(keyBytes.ToArray(), _padding);
+                bytesWritten = result.Length;
+                result.CopyTo(destination);
+                return true;
+#endif
             }
             catch (Exception ex)
             {
@@ -177,7 +119,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keyBytes">the key to be wrapped</param>
         /// <returns>A wrapped key</returns>
-        public override bool WrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWriten)
+        public override bool WrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWritten)
         {
             if (keyBytes == null || keyBytes.Length == 0)
             {
@@ -196,14 +138,20 @@ namespace JsonWebToken
 
             try
             {
-                return _rsa.TryEncrypt(keyBytes, destination, _padding, out bytesWriten);
+#if NETCOREAPP2_1
+                 return _rsa.TryEncrypt(keyBytes, destination, _padding, out bytesWritten);
+#else
+                var result = _rsa.Encrypt(keyBytes.ToArray(), _padding);
+                bytesWritten = result.Length;
+                result.CopyTo(destination);
+                return true;
+#endif
             }
             catch (Exception ex)
             {
                 throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
             }
         }
-#endif
 
         private static RSA ResolveRsaAlgorithm(RsaJwk key, string algorithm)
         {
@@ -215,6 +163,16 @@ namespace JsonWebToken
             }
 
             return rsa;
+        }
+
+        public override int GetKeyUnwrapSize(int inputSize)
+        {
+            return inputSize >> 3;
+        }
+
+        public override int GetKeyWrapSize(string encryptionAlgorithm)
+        {
+            return Key.KeySize >> 3;
         }
     }
 }

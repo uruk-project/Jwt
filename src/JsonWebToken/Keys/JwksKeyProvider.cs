@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Net.Http;
 
 namespace JsonWebToken
@@ -13,7 +14,7 @@ namespace JsonWebToken
         {
             _jwksAddress = jwksAddress;
         }
-        public JwksKeyProvider(string jwksAddress, HttpClientHandler handler)
+        public JwksKeyProvider(string jwksAddress, HttpMessageHandler handler)
             : base(new HttpDocumentRetriever(handler))
         {
             _jwksAddress = jwksAddress;
@@ -24,7 +25,7 @@ namespace JsonWebToken
         {
         }
 
-        public override JsonWebKeySet GetKeys(JObject header)
+        public override IReadOnlyList<JsonWebKey> GetKeys(JObject header)
         {
             return GetKeys(header, _jwksAddress);
         }

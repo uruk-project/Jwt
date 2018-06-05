@@ -11,16 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken", "src\JsonWeb
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.Tests", "test\JsonWebToken.Tests\JsonWebToken.Tests.csproj", "{18A12F8C-3C59-4E9F-ACF2-36C675D7BEE3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.Performance", "test\JsonWebToken.Performance\JsonWebToken.Performance.csproj", "{EC78DAA1-2A7B-4315-8709-DD67D6F3530E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks", "test\Benchmarks\Benchmarks.csproj", "{EC78DAA1-2A7B-4315-8709-DD67D6F3530E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Performance", "test\Performance\Performance.csproj", "{68BEEF50-EF92-4512-9367-DA5E0BE8BA18}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwtCreator", "test\JwtCreator\JwtCreator.csproj", "{2017FE6C-AC34-4A2A-8446-1A171A9E849B}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E4C67921-DEC9-494B-874F-85427C1D3DA8}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.OpenIdConnect", "src\OpenIdConnect\JsonWebToken.OpenIdConnect.csproj", "{07F87B0C-7A37-466F-A3DC-24E1AA4DC9A2}"
 EndProject
@@ -29,6 +24,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.OAuth2", "src\OAuth2\JsonWebToken.OAuth2.csproj", "{D5994756-CD32-410D-9430-EA0EB7C2DEFA}"
 EndProject
 Global
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -82,6 +80,9 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2F681326-7ED4-45F6-BD1D-1119EA388F42}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

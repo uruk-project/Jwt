@@ -13,31 +13,27 @@ namespace JsonWebToken.Validations
             _clockSkew = clockSkew;
         }
 
-        public TokenValidationResult TryValidate(ReadOnlySpan<char> token, JsonWebToken jwt)
+        public TokenValidationResult TryValidate(TokenValidationContext context)
         {
+            var jwt = context.Jwt;
             var expires = jwt.Payload.Exp;
-
             if (!expires.HasValue && _requireExpirationTime)
             {
-                return TokenValidationResult.NoExpiration(jwt);
-            }
-
-            var notBefore = jwt.Payload.Nbf;
-            if (notBefore.HasValue && expires.HasValue && (notBefore.Value > expires.Value))
-            {
-                return TokenValidationResult.InvalidLifetime(jwt);
+                return TokenValidationResult.MissingClaim(jwt, ClaimNames.Exp);
             }
 
             var utcNow = EpochTime.GetIntDate(DateTime.UtcNow);
+            if (expires.HasValue && (expires.Value < DateTimeUtil.Add(utcNow, -_clockSkew)))
+            {
+                return TokenValidationResult.Expired(jwt);
+            }
+
+            var notBefore = jwt.Payload.Nbf;
             if (notBefore.HasValue && (notBefore.Value > DateTimeUtil.Add(utcNow, _clockSkew)))
             {
                 return TokenValidationResult.NotYetValid(jwt);
             }
 
-            if (expires.HasValue && (expires.Value < DateTimeUtil.Add(utcNow, -_clockSkew)))
-            {
-                return TokenValidationResult.Expired(jwt);
-            }
 
             return TokenValidationResult.Success(jwt);
         }

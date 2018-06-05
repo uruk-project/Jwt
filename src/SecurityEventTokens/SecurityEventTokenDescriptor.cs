@@ -1,13 +1,12 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace JsonWebToken
 {
     public class SecurityEventTokenDescriptor : JwsDescriptor
     {
-        private const string SecurityEventTokenType = "secevent+jwt";
+        public const string SecurityEventTokenType = "secevent+jwt";
 
         private static readonly Dictionary<string, JTokenType[]> SetRequiredClaims = new Dictionary<string, JTokenType[]>
         {
@@ -27,35 +26,37 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the set of event statements that each provide 
+        /// information describing a single logical event that has occurred about a security subject.
         /// </summary>
-        public IReadOnlyList<Event> Events
+        public JObject Events => GetClaim(ClaimNames.Events);
+
+        public void AddEvent(string eventName, JObject @event)
         {
-            get { return GetListClaims(ClaimNames.Events)?.Select(e => Event.FromJson(e)).ToList(); }
-            set { AddClaim(ClaimNames.Events, JObject.FromObject(value)); }
+            AddClaim(ClaimNames.Events, new JProperty(eventName, @event));
         }
 
-        public void AddEvent(string eventName, Event @event)
+        public void AddEvent(string eventName, IEvent @event)
         {
             AddClaim(ClaimNames.Events, new JProperty(eventName, JObject.FromObject(@event)));
         }
 
         /// <summary>
-        /// Gets or sets the time when the End-User authentication occurred.
+        /// Gets or sets the unique transaction identifier.
         /// </summary>
         public string TransactionNumber
         {
-            get { return GetStringClaim(ClaimNames.Tnx); }
-            set { AddClaim(ClaimNames.Tnx, value); }
+            get => GetStringClaim(ClaimNames.Txn);
+            set => AddClaim(ClaimNames.Txn, value);
         }
 
         /// <summary>
-        /// Authentication Context Class that the authentication performed satisfied.
+        /// Gets or sets the date and time at which the event occurred.
         /// </summary>
         public DateTime? TimeOfEvent
         {
-            get { return GetDateTime(ClaimNames.Toe); }
-            set { AddClaim(ClaimNames.Toe, value); }
+            get => GetDateTime(ClaimNames.Toe);
+            set => AddClaim(ClaimNames.Toe, value);
         }
 
         protected override IReadOnlyDictionary<string, JTokenType[]> RequiredClaims => SetRequiredClaims;

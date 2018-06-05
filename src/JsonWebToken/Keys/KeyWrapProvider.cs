@@ -37,30 +37,17 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keyBytes">key to unwrap.</param>
         /// <returns>Unwrapped key.</returns>
-        public abstract byte[] UnwrapKey(byte[] keyBytes);
+        public abstract bool UnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWritten);
 
         /// <summary>
         /// Wrap a key.
         /// </summary>
         /// <param name="keyBytes">the key to be wrapped</param>
         /// <returns>wrapped key.</returns>
-        public abstract byte[] WrapKey(byte[] keyBytes);
+        public abstract bool WrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWritten);
 
-#if NETCOREAPP2_1
-        /// <summary>
-        /// Unwrap a key.
-        /// </summary>
-        /// <param name="keyBytes">key to unwrap.</param>
-        /// <returns>Unwrapped key.</returns>
-        public abstract bool UnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWriten);
+        public abstract int GetKeyUnwrapSize(int inputSize);
 
-        /// <summary>
-        /// Wrap a key.
-        /// </summary>
-        /// <param name="keyBytes">the key to be wrapped</param>
-        /// <returns>wrapped key.</returns>
-        public abstract bool WrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWriten);
-#endif
-
+        public abstract int GetKeyWrapSize(string encryptionAlgorithm);
     }
 }

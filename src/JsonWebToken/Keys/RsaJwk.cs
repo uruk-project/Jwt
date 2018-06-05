@@ -369,14 +369,16 @@ namespace JsonWebToken
             return new RsaJwk(rsaParameters);
         }
 
-        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey)
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, string algorithm = null)
         {
             //Generate a public/private key pair.  
             RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(sizeInBits);
             //Save the public key information to an RSAParameters structure.  
             RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
 
-            return FromParameters(rsaParameters);
+            var key = FromParameters(rsaParameters);
+            key.Alg = algorithm;
+            return key;
         }
 
         /// <summary>

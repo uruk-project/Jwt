@@ -1,5 +1,4 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Running;
 using Jose;
 using JWT;
@@ -16,9 +15,9 @@ namespace JsonWebToken.Performance
     [Config(typeof(DefaultCoreConfig))]
     public class WriteToken
     {
-        private static readonly SymmetricJwk SigningKey = SymmetricJwk.GenerateKey(128, SignatureAlgorithms.HmacSha256);
+        private static readonly SymmetricJwk SigningKey = Tokens.SigningKey;
 
-        private static readonly SymmetricJwk EncryptionKey = SymmetricJwk.GenerateKey(128, KeyManagementAlgorithms.Aes128KW);
+        private static readonly SymmetricJwk EncryptionKey = Tokens.EncryptionKey;
 
         private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SigningKey.ToString());
 
@@ -39,7 +38,7 @@ namespace JsonWebToken.Performance
 
         static WriteToken()
         {
-            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;           
+            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
         }
 
         [Benchmark(Baseline = true)]
@@ -73,27 +72,31 @@ namespace JsonWebToken.Performance
         }
 
         [Benchmark]
-        [ArgumentsSource(nameof(GetPayloads))]
+        [ArgumentsSource(nameof(GetNotEncryptedPayloads))]
         public void JwtDotNet(string payload)
         {
-            if (payload.StartsWith("enc-"))
-            {
-                throw new NotSupportedException();
-            }
-
             var value = JwtDotNetEncoder.Encode(DictionaryPayloads[payload], SigningKey.RawK);
         }
 
         public IEnumerable<object[]> GetPayloads()
         {
-            //yield return new[] { "empty" };
-            //yield return new[] { "small" };
-            //yield return new[] { "medium" };
-            //yield return new[] { "big" };
+            yield return new[] { "empty" };
+            yield return new[] { "small" };
+            yield return new[] { "medium" };
+            yield return new[] { "big" };
             yield return new[] { "enc-empty" };
             yield return new[] { "enc-small" };
             yield return new[] { "enc-medium" };
             yield return new[] { "enc-big" };
+        }
+
+
+        public IEnumerable<object[]> GetNotEncryptedPayloads()
+        {
+            yield return new[] { "empty" };
+            yield return new[] { "small" };
+            yield return new[] { "medium" };
+            yield return new[] { "big" };
         }
 
         private static Dictionary<string, JwtDescriptor> CreateJwtDescriptors()

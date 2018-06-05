@@ -13,15 +13,6 @@ namespace JsonWebToken
         public string ErrorClaim { get; private set; }
         public string ErrorHeader { get; private set; }
 
-        public static TokenValidationResult InvalidLifetime(JsonWebToken token)
-        {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.InvalidLifetime,
-                Token = token
-            };
-        }
-
         public static TokenValidationResult Expired(JsonWebToken token)
         {
             return new TokenValidationResult
@@ -82,16 +73,7 @@ namespace JsonWebToken
                 Status = TokenValidationStatus.MalformedToken,
             };
         }
-
-        public static TokenValidationResult NoExpiration(JsonWebToken token)
-        {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.MissingExpirationTime,
-                Token = token
-            };
-        }
-
+        
         public static TokenValidationResult MissingEncryptionAlgorithm()
         {
             return new TokenValidationResult

@@ -10,11 +10,6 @@
         MalformedToken,
 
         /// <summary>
-        ///  The 'exp' claim is missing
-        /// </summary>
-        MissingExpirationTime,
-
-        /// <summary>
         /// The signature is invalid.
         /// </summary>
         InvalidSignature,
@@ -43,11 +38,6 @@
         /// The token has expired, according to the 'nbf' claim.
         /// </summary>
         Expired,
-
-        /// <summary>
-        /// The token lifetime is incorrect, according to 'exp' and 'nbf' claims.
-        /// </summary>
-        InvalidLifetime,
 
         /// <summary>
         /// The 'enc' header parameter is missing.

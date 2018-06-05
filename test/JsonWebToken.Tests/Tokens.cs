@@ -1,70 +1,441 @@
-﻿using Newtonsoft.Json.Linq;
+﻿//using Newtonsoft.Json.Linq;
+//using System;
+//using System.Collections.Generic;
+//using System.IO;
+//using System.Linq;
+//using System.Reflection;
+
+//namespace JsonWebToken.Tests
+//{
+//    public static class Tokens
+//    {
+//        static Tokens()
+//        {
+//            var location = new Uri(typeof(Tokens).GetTypeInfo().Assembly.CodeBase).AbsolutePath;
+//            var dirPath = Path.GetDirectoryName(location);
+//            var jsonPath = Path.Combine(dirPath, "./resources/descriptors.json");
+//            var json = File.ReadAllText(jsonPath);
+//            Descriptors = JArray.Parse(json).Select(t => new JwtPayloadDescriptor(t));
+
+//            jsonPath = Path.Combine(dirPath, "./resources/jwts.json");
+//            json = File.ReadAllText(jsonPath);
+//            Jwts = JArray.Parse(json).Select(t => t.ToString());
+
+//            jsonPath = Path.Combine(dirPath, "./resources/invalid_jwts.json");
+//            json = File.ReadAllText(jsonPath);
+//            InvalidJwts = JArray.Parse(json).Select(t => new TokenState(t["jwt"].ToString(), (TokenValidationStatus)Enum.Parse(typeof(TokenValidationStatus), t["status"].ToString())));
+//        }
+
+//        private class JwtPayloadDescriptor : IJwtPayloadDescriptor
+//        {
+//            public JwtPayloadDescriptor(JToken token)
+//            {
+//                Audiences = new[] { token.Value<string>("aud") };
+//                var exp = token.Value<long?>("exp");
+//                ExpirationTime = exp.HasValue ? EpochTime.ToDateTime(exp.Value) : default(DateTime?);
+//                var iat = token.Value<long?>("iat");
+//                IssuedAt = iat.HasValue ? EpochTime.ToDateTime(iat.Value) : default(DateTime?);
+//                var nbf = token.Value<long?>("nbf");
+//                NotBefore = nbf.HasValue ? EpochTime.ToDateTime(nbf.Value) : default(DateTime?);
+//                Issuer = token.Value<string>("iss");
+//                JwtId = token.Value<string>("jti");
+//            }
+//            public string Subject { get; set; }
+//            public IReadOnlyList<string> Audiences { get; set; }
+//            public DateTime? ExpirationTime { get; set; }
+//            public DateTime? IssuedAt { get; set; }
+//            public string Issuer { get; set; }
+//            public string JwtId { get; set; }
+//            public DateTime? NotBefore { get; set; }
+//        }
+
+//        public static IEnumerable<IJwtPayloadDescriptor> Descriptors { get; }
+
+//        public static IEnumerable<string> Jwts { get; }
+
+//        public static IEnumerable<TokenState> InvalidJwts { get; }
+
+//        public class TokenState
+//        {
+//            public TokenState(string jwt, TokenValidationStatus status)
+//            {
+//                Jwt = jwt;
+//                Status = status;
+//            }
+
+//            public string Jwt { get; }
+//            public TokenValidationStatus Status { get; }
+//        }
+//    }
+//}
+
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Security.Cryptography;
 
 namespace JsonWebToken.Tests
 {
     public static class Tokens
     {
+        public static IDictionary<string, string> ValidTokens { get; }
+
+        public static IEnumerable<TokenState> InvalidTokens { get; }
+
+        public static SymmetricJwk SigningKey { get; }
+
+        public static SymmetricJwk EncryptionKey { get; }
+
+        public static IDictionary<string, JObject> Payloads { get; }
+
+        public static IDictionary<string, JwtDescriptor> Descriptors{ get; }
+
         static Tokens()
         {
-            var location = new Uri(typeof(Tokens).GetTypeInfo().Assembly.CodeBase).AbsolutePath;
-            var dirPath = Path.GetDirectoryName(location);
-            var jsonPath = Path.Combine(dirPath, "./resources/descriptors.json");
-            var json = File.ReadAllText(jsonPath);
-            Descriptors = JArray.Parse(json).Select(t => new JwtPayloadDescriptor(t));
+            var signingKey = CreateSigningKey();
+            var encryptionKey = CreateEncryptionKey();
+            var payloads = CreatePayloads();
+            var descriptors = CreateDescriptors(payloads, signingKey, encryptionKey);
+            Descriptors = descriptors;
+            ValidTokens = CreateTokens(descriptors);
+            InvalidTokens = CreateInvalidToken(signingKey, payloads["small"]);
+            Payloads = payloads;
+            SigningKey = signingKey;
+            EncryptionKey = encryptionKey;
 
-            jsonPath = Path.Combine(dirPath, "./resources/jwts.json");
-            json = File.ReadAllText(jsonPath);
-            Jwts = JArray.Parse(json).Select(t => t.ToString());
-
-            jsonPath = Path.Combine(dirPath, "./resources/invalid_jwts.json");
-            json = File.ReadAllText(jsonPath);
-            InvalidJwts = JArray.Parse(json).Select(t => new TokenState(t["jwt"].ToString(), (TokenValidationStatus)Enum.Parse(typeof(TokenValidationStatus), t["status"].ToString())));
+            Keys.Jwks.Keys.Add(signingKey);
+            Keys.Jwks.Keys.Add(encryptionKey);
         }
 
-        private class JwtPayloadDescriptor : IJwtPayloadDescriptor
+        private static SymmetricJwk CreateSigningKey()
         {
-            public JwtPayloadDescriptor(JToken token)
-            {
-                Audiences = new[] { token.Value<string>("aud") };
-                var exp = token.Value<long?>("exp");
-                ExpirationTime = exp.HasValue ? EpochTime.ToDateTime(exp.Value) : default(DateTime?);
-                var iat = token.Value<long?>("iat");
-                IssuedAt = iat.HasValue ? EpochTime.ToDateTime(iat.Value) : default(DateTime?);
-                var nbf = token.Value<long?>("nbf");
-                NotBefore = nbf.HasValue ? EpochTime.ToDateTime(nbf.Value) : default(DateTime?);
-                Issuer = token.Value<string>("iss");
-                JwtId = token.Value<string>("jti");
-            }
-            public string Subject { get; set; }
-            public IReadOnlyList<string> Audiences { get; set; }
-            public DateTime? ExpirationTime { get; set; }
-            public DateTime? IssuedAt { get; set; }
-            public string Issuer { get; set; }
-            public string JwtId { get; set; }
-            public DateTime? NotBefore { get; set; }
+            return SymmetricJwk.GenerateKey(128, SignatureAlgorithms.HmacSha256);
         }
 
-        public static IEnumerable<IJwtPayloadDescriptor> Descriptors { get; }
-
-        public static IEnumerable<string> Jwts { get; }
-
-        public static IEnumerable<TokenState> InvalidJwts { get; }
-
-        public class TokenState
+        private static SymmetricJwk CreateEncryptionKey()
         {
-            public TokenState(string jwt, TokenValidationStatus status)
+            return SymmetricJwk.GenerateKey(128, KeyManagementAlgorithms.Aes128KW);
+        }
+
+        private static IDictionary<string, JObject> CreatePayloads()
+        {
+            byte[] bigData = new byte[1024 * 128];
+            using (var rnd = RandomNumberGenerator.Create())
             {
-                Jwt = jwt;
-                Status = status;
+                rnd.GetNonZeroBytes(bigData);
             }
 
-            public string Jwt { get; }
-            public TokenValidationStatus Status { get; }
+            var payloads = new Dictionary<string, JObject>
+            {
+                {
+                    "empty", new JObject()
+                },
+                {
+                    "small", new JObject
+                    {
+                        { "jti", "756E69717565206964656E746966696572"},
+                        { "iss", "https://idp.example.com/"},
+                        { "iat", 1508184845},
+                        { "aud", "636C69656E745F6964"},
+                        { "exp", 1628184845},
+                        { "nbf",  1508184845}
+                    }
+                },
+                {
+                    "medium", new JObject
+                    {
+                        { "jti", "756E69717565206964656E746966696572"},
+                        { "iss", "https://idp.example.com/"},
+                        { "iat", 1508184845},
+                        { "aud", "636C69656E745F6964"},
+                        { "exp", 1628184845},
+                        { "nbf",  1508184845},
+                        { "claim1", "value1ABCDEFGH" },
+                        { "claim2", "value1ABCDEFGH" },
+                        { "claim3", "value1ABCDEFGH" },
+                        { "claim4", "value1ABCDEFGH" },
+                        { "claim5", "value1ABCDEFGH" },
+                        { "claim6", "value1ABCDEFGH" },
+                        { "claim7", "value1ABCDEFGH" },
+                        { "claim8", "value1ABCDEFGH" },
+                        { "claim9", "value1ABCDEFGH" },
+                        { "claim10", "value1ABCDEFGH" },
+                        { "claim11", "value1ABCDEFGH" },
+                        { "claim12", "value1ABCDEFGH" },
+                        { "claim13", "value1ABCDEFGH" },
+                        { "claim14", "value1ABCDEFGH" },
+                        { "claim15", "value1ABCDEFGH" },
+                        { "claim16", "value1ABCDEFGH" }
+                    }
+                },
+                {
+                    "big", new JObject
+                    {
+                        { "jti", "756E69717565206964656E746966696572" },
+                        { "iss", "https://idp.example.com/" },
+                        { "iat", 1508184845 },
+                        { "aud", "636C69656E745F6964" },
+                        { "exp", 1628184845 },
+                        { "nbf",  1508184845},
+                        { "big_claim", Convert.ToBase64String(bigData) }
+                    }
+                },
+            };
+
+            return payloads;
         }
+
+        private static IDictionary<string, JwtDescriptor> CreateDescriptors(IDictionary<string, JObject> payloads, SymmetricJwk signingKey, SymmetricJwk encryptionKey)
+        {
+            var descriptors = new Dictionary<string, JwtDescriptor>();
+            foreach (var payload in payloads)
+            {
+                var descriptor = new JwsDescriptor()
+                {
+                    Key = signingKey
+                };
+
+                foreach (var property in payload.Value.Properties())
+                {
+                    switch (property.Name)
+                    {
+                        case "iat":
+                        case "exp":
+                            descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
+                            break;
+                        default:
+                            descriptor.AddClaim(property.Name, (string)property.Value);
+                            break;
+                    }
+                }
+
+                descriptors.Add(payload.Key, descriptor);
+            }
+
+            foreach (var payload in payloads)
+            {
+                var descriptor = new JwsDescriptor()
+                {
+                    Key = signingKey
+                };
+
+                foreach (var property in payload.Value.Properties())
+                {
+                    switch (property.Name)
+                    {
+                        case "iat":
+                        case "exp":
+                            descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
+                            break;
+                        default:
+                            descriptor.AddClaim(property.Name, (string)property.Value);
+                            break;
+                    }
+                }
+
+                var jwe = new JweDescriptor
+                {
+                    Payload = descriptor,
+                    Key = encryptionKey,
+                    EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256,
+                    ContentType = "JWT"
+                };
+
+                descriptors.Add("enc-" + payload.Key, jwe);
+            }
+
+            return descriptors;
+        }
+
+        private static IDictionary<string, string> CreateTokens(IDictionary<string, JwtDescriptor> descriptors)
+        {
+            var writer = new JsonWebTokenWriter();
+            return descriptors.ToDictionary(k => k.Key, k => writer.WriteToken(k.Value));
+        }
+
+        private static IList<TokenState> CreateInvalidToken(JsonWebKey key, JObject json)
+        {
+            var jwts = new List<TokenState>();
+
+            var payload = CreateJws(json, TokenValidationStatus.Expired);
+            var token = CreateInvalidToken(key, TokenValidationStatus.Expired, payload);
+            jwts.Add(token);
+
+            payload = CreateJws(json, TokenValidationStatus.InvalidClaim, "aud");
+            token = CreateInvalidToken(key, TokenValidationStatus.InvalidClaim, payload, "aud");
+            jwts.Add(token);
+
+            payload = CreateJws(json, TokenValidationStatus.InvalidClaim, "iss");
+            token = CreateInvalidToken(key, TokenValidationStatus.InvalidClaim, payload, "iss");
+            jwts.Add(token);
+
+            payload = CreateJws(json, TokenValidationStatus.MissingClaim, "aud");
+            token = CreateInvalidToken(key, TokenValidationStatus.MissingClaim, payload, "aud");
+            jwts.Add(token);
+
+            payload = CreateJws(json, TokenValidationStatus.MissingClaim, "iss");
+            token = CreateInvalidToken(key, TokenValidationStatus.MissingClaim, payload, "iss");
+            jwts.Add(token);
+
+            payload = CreateJws(json, TokenValidationStatus.MissingClaim, "exp");
+            token = CreateInvalidToken(key, TokenValidationStatus.MissingClaim, payload, "exp");
+            jwts.Add(token);
+
+            payload = CreateJws(json, TokenValidationStatus.NotYetValid);
+            token = CreateInvalidToken(key, TokenValidationStatus.NotYetValid, payload);
+            jwts.Add(token);
+
+            payload = CreateJws(json, TokenValidationStatus.Success);
+            token = CreateInvalidToken(key, TokenValidationStatus.InvalidSignature, payload);
+            jwts.Add(token);
+
+            payload = CreateJws(json, TokenValidationStatus.Success);
+            token = CreateInvalidToken(key, TokenValidationStatus.MalformedSignature, payload);
+            jwts.Add(token);
+
+            payload = CreateJws(json, TokenValidationStatus.Success);
+            token = CreateInvalidToken(key, TokenValidationStatus.MalformedToken, payload);
+            jwts.Add(token);
+
+            payload = CreateJws(json, TokenValidationStatus.Success);
+            token = CreateInvalidToken(key, TokenValidationStatus.MissingSignature, payload);
+            jwts.Add(token);
+
+            return jwts;
+        }
+
+        private static JwsDescriptor CreateJws(JObject descriptor, TokenValidationStatus status, string claim = null)
+        {
+            var payload = new JObject();
+            foreach (var kvp in descriptor)
+            {
+                switch (status)
+                {
+                    case TokenValidationStatus.InvalidClaim:
+                        if (kvp.Key == "aud" && claim == "aud")
+                        {
+                            payload.Add(kvp.Key, kvp.Value + "XXX");
+                            continue;
+                        }
+                        if (kvp.Key == "iss" && claim == "iss")
+                        {
+                            payload.Add(kvp.Key, kvp.Value + "XXX");
+                            continue;
+                        }
+                        break;
+                    case TokenValidationStatus.MissingClaim:
+                        if (kvp.Key == "exp" & claim == "exp")
+                        {
+                            continue;
+                        }
+                        if (kvp.Key == "aud" & claim == "aud")
+                        {
+                            continue;
+                        }
+                        if (kvp.Key == "iss" && claim == "iss")
+                        {
+                            continue;
+                        }
+                        break;
+                    case TokenValidationStatus.Expired:
+                        if (kvp.Key == "exp")
+                        {
+                            payload.Add(kvp.Key, 1500000000);
+                            continue;
+                        }
+                        if (kvp.Key == "nbf")
+                        {
+                            payload.Add(kvp.Key, 1400000000);
+                            continue;
+                        }
+                        break;
+                    case TokenValidationStatus.NotYetValid:
+                        if (kvp.Key == "exp")
+                        {
+                            payload.Add(kvp.Key, 2100000000);
+                            continue;
+                        }
+                        if (kvp.Key == "nbf")
+                        {
+                            payload.Add(kvp.Key, 2000000000);
+                            continue;
+                        }
+                        break;
+                }
+
+                payload.Add(kvp.Key, kvp.Value);
+            }
+
+            return new JwsDescriptor(payload);
+        }
+
+        private static TokenState CreateInvalidToken(TokenValidationStatus status, JwtDescriptor descriptor, string claim = null)
+        {
+            switch (status)
+            {
+                case TokenValidationStatus.SignatureKeyNotFound:
+                    descriptor.Header["kid"] += "x";
+                    break;
+                case TokenValidationStatus.MissingEncryptionAlgorithm:
+                    descriptor.Header["enc"] = null;
+                    break;
+            }
+
+            var token = descriptor;
+            var writer = new JsonWebTokenWriter();
+            writer.IgnoreTokenValidation = true;
+            var jwt = writer.WriteToken(token);
+
+            switch (status)
+            {
+                case TokenValidationStatus.MalformedToken:
+                    jwt = "/" + jwt.Substring(0, jwt.Length - 1);
+                    break;
+                case TokenValidationStatus.InvalidSignature:
+                    var parts = jwt.Split('.');
+                    parts[2] = new string(parts[2].Reverse().ToArray());
+                    jwt = parts[0] + "." + parts[1] + "." + parts[2];
+                    break;
+                case TokenValidationStatus.MalformedSignature:
+                    jwt = jwt.Substring(0, jwt.Length - 2);
+                    break;
+                case TokenValidationStatus.MissingSignature:
+                    parts = jwt.Split('.');
+                    jwt = parts[0] + "." + parts[1] + ".";
+                    break;
+                default:
+                    break;
+            }
+
+            return new TokenState(jwt, status);
+        }
+
+        private static TokenState CreateInvalidToken(JsonWebKey signingKey, TokenValidationStatus status, JwsDescriptor descriptor, string claim = null)
+        {
+            descriptor.Key = signingKey;
+
+            return CreateInvalidToken(status, descriptor);
+        }
+
+        private static TokenState CreateInvalidToken(JsonWebKey signingKey, JsonWebKey encryptionKey, TokenValidationStatus status, JweDescriptor descriptor, string claim = null)
+        {
+            descriptor.Payload.Key = SigningKey;
+            descriptor.Key = encryptionKey;
+            descriptor.EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256;
+
+            return CreateInvalidToken(status, descriptor);
+        }
+    }
+    public class TokenState
+    {
+        public TokenState(string jwt, TokenValidationStatus status)
+        {
+            Jwt = jwt;
+            Status = status;
+        }
+
+        public string Jwt { get; }
+        public TokenValidationStatus Status { get; }
     }
 }

@@ -5,16 +5,22 @@
     <LangVersion>7.2</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.0</Version>
-    <Authors>JsonWebToken</Authors>
+    <Version>0.1.0-beta01</Version>
+    <Authors>Yann Crumeyrolle</Authors>
     <Company>Yann Crumeyrolle</Company>
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/ycrumeyrolle/Jwt</RepositoryUrl>
     <PackageTags>jwt security</PackageTags>
+    <Description>High-performance JWT library.
+Provides Json Web Token primitives.</Description>
+    <sumary>High-performance JWT library.</sumary>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <DefineConstants>RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0</DefineConstants>
   </PropertyGroup>
 
 

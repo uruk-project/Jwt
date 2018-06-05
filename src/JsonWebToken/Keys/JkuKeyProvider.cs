@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace JsonWebToken
 {
@@ -10,7 +11,7 @@ namespace JsonWebToken
         {
         }
 
-        public override JsonWebKeySet GetKeys(JObject header)
+        public override IReadOnlyList<JsonWebKey> GetKeys(JObject header)
         {
             return GetKeys(header, header.Value<string>(HeaderParameterNames.Jku));
         }
