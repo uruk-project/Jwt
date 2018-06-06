@@ -1,6 +1,7 @@
 ﻿using JsonWebToken;
 using JsonWebToken.Performance;
 using System;
+using System.Threading.Tasks;
 
 namespace Performance
 {
@@ -24,33 +25,36 @@ namespace Performance
         {
             Console.WriteLine("Starting...");
 
-            for (int i = 0; i < 5000000; i++)
-            {
-                var result = _reader.TryReadToken(Token1, parameters);
-            }
-
-            foreach (var token in new [] { "enc-small" })
-            {
-                var result = _reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), new TokenValidationBuilder().RequireSignature(Tokens.SigningKey).Build());
-
-            }
-            //var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
-            //var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
-            //var issuer = "https://idp.example.com/";
-            //var audience = "636C69656E745F6964";
-            //var token = new JsonWebTokenDescriptor()
+            //for (int i = 0; i < 5000000; i++)
             //{
-            //    IssuedAt = issuedAt,
-            //    Expires = expires,
-            //    Issuer = issuer,
-            //    Audience = audience,
-            //    SigningKey = SharedKey
-            //};
-
-            //for (int i = 0; i < 1000000; i++)
-            //{
-            //    var result = _writer.WriteToken(token);
+            //    var result = _reader.TryReadToken(Token1, parameters);
             //}
+
+            //foreach (var token in new [] { "enc-small" })
+            //{
+            //    var result = _reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), new TokenValidationBuilder().RequireSignature(Tokens.SigningKey).Build());
+
+            //}
+            var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
+            var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
+            var issuer = "https://idp.example.com/";
+            var audience = "636C69656E745F6964";
+            var token = new JwsDescriptor()
+            {
+                IssuedAt = issuedAt,
+                ExpirationTime = expires,
+                Issuer = issuer,
+                Audience = audience,
+                Key = SharedKey
+            };
+
+            Parallel.For(0, 10, _ =>
+            {
+                for (int i = 0; i < 100000; i++)
+                {
+                    var result = _writer.WriteToken(token);
+                }
+            });
         }
     }
 }

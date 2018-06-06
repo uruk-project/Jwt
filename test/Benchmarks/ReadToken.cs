@@ -34,60 +34,60 @@ namespace JsonWebToken.Performance
             }
         }
 
-        //[Benchmark]
-        //[ArgumentsSource(nameof(GetTokens))]
-        //public void Wilson(string token)
-        //{
-        //    var result = Handler.ReadJwtToken(Tokens.ValidTokens[token]);
-        //    if (result == null)
-        //    {
-        //        throw new Exception();
-        //    }
-        //}
+        [Benchmark]
+        [ArgumentsSource(nameof(GetTokens))]
+        public void Wilson(string token)
+        {
+            var result = Handler.ReadJwtToken(Tokens.ValidTokens[token]);
+            if (result == null)
+            {
+                throw new Exception();
+            }
+        }
 
-        //[Benchmark]
-        //[ArgumentsSource(nameof(GetTokens))]
-        //public void JoseDotNet(string token)
-        //{
-        //    if (token.StartsWith("enc-"))
-        //    {
-        //        var jwt = Jose.JWT.Decode(Tokens.ValidTokens[token], key: Tokens.EncryptionKey.RawK, enc: JweEncryption.A128CBC_HS256, alg: JweAlgorithm.A128KW);
-        //        var value = Jose.JWT.Decode<Dictionary<string, object>>(jwt, key: Tokens.SigningKey.RawK, alg: JwsAlgorithm.HS256);
-        //        if (value == null)
-        //        {
-        //            throw new Exception();
-        //        }
-        //    }
-        //    else
-        //    {
-        //        var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: Tokens.SigningKey.RawK, alg: JwsAlgorithm.HS256);
-        //        if (value == null)
-        //        {
-        //            throw new Exception();
-        //        }
-        //    }
-        //}
+        [Benchmark]
+        [ArgumentsSource(nameof(GetTokens))]
+        public void JoseDotNet(string token)
+        {
+            if (token.StartsWith("enc-"))
+            {
+                var jwt = Jose.JWT.Decode(Tokens.ValidTokens[token], key: Tokens.EncryptionKey.RawK, enc: JweEncryption.A128CBC_HS256, alg: JweAlgorithm.A128KW);
+                var value = Jose.JWT.Decode<Dictionary<string, object>>(jwt, key: Tokens.SigningKey.RawK, alg: JwsAlgorithm.HS256);
+                if (value == null)
+                {
+                    throw new Exception();
+                }
+            }
+            else
+            {
+                var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: Tokens.SigningKey.RawK, alg: JwsAlgorithm.HS256);
+                if (value == null)
+                {
+                    throw new Exception();
+                }
+            }
+        }
 
-        //[Benchmark]
-        //[ArgumentsSource(nameof(GetNotEncryptedTokens))]
-        //public void JwtDotNet(string token)
-        //{
-        //    var value = JwtDotNetDecoder.DecodeToObject(Tokens.ValidTokens[token]);
-        //    if (value == null)
-        //    {
-        //        throw new Exception();
-        //    }
-        //}
+        [Benchmark]
+        [ArgumentsSource(nameof(GetNotEncryptedTokens))]
+        public void JwtDotNet(string token)
+        {
+            var value = JwtDotNetDecoder.DecodeToObject(Tokens.ValidTokens[token]);
+            if (value == null)
+            {
+                throw new Exception();
+            }
+        }
         public IEnumerable<object[]> GetTokens()
         {
-            //yield return new[] { "empty" };
-            //yield return new[] { "small" };
+            yield return new[] { "empty" };
+            yield return new[] { "small" };
             yield return new[] { "medium" };
-            //yield return new[] { "big" };
-            //yield return new[] { "enc-empty" };
-            //yield return new[] { "enc-small" };
-            //yield return new[] { "enc-medium" };
-            //yield return new[] { "enc-big" };
+            yield return new[] { "big" };
+            yield return new[] { "enc-empty" };
+            yield return new[] { "enc-small" };
+            yield return new[] { "enc-medium" };
+            yield return new[] { "enc-big" };
         }
 
         public IEnumerable<object[]> GetNotEncryptedTokens()
