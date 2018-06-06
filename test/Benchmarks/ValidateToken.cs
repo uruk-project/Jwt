@@ -57,10 +57,21 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokens))]
         public void JoseDotNet(string token)
         {
-            var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: SymmetricKey.RawK, alg: JwsAlgorithm.HS256);
-            if (value == null)
+            if (token.StartsWith("enc-"))
             {
-                throw new Exception();
+                var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: Tokens.EncryptionKey.RawK, enc: JweEncryption.A128CBC_HS256, alg: JweAlgorithm.A128KW);
+                if (value == null)
+                {
+                    throw new Exception();
+                }
+            }
+            else
+            {
+                var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: Tokens.SigningKey.RawK, alg: JwsAlgorithm.HS256);
+                if (value == null)
+                {
+                    throw new Exception();
+                }
             }
         }
 

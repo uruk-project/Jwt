@@ -89,8 +89,7 @@ namespace JsonWebToken.Performance
             yield return new[] { "enc-medium" };
             yield return new[] { "enc-big" };
         }
-
-
+        
         public IEnumerable<object[]> GetNotEncryptedPayloads()
         {
             yield return new[] { "empty" };
@@ -179,7 +178,6 @@ namespace JsonWebToken.Performance
                     {
                         case "iat":
                         case "exp":
-                            //  descriptor.Subject.AddClaim(new Claim(property.Name, (string)property.Value));
                             break;
                         default:
                             descriptor.Subject.AddClaim(new Claim(property.Name, (string)property.Value));
@@ -207,7 +205,6 @@ namespace JsonWebToken.Performance
                     {
                         case "iat":
                         case "exp":
-                            //  descriptor.Subject.AddClaim(new Claim(property.Name, (string)property.Value));
                             break;
                         default:
                             descriptor.Subject.AddClaim(new Claim(property.Name, (string)property.Value));
