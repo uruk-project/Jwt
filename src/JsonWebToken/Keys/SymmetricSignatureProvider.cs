@@ -121,12 +121,7 @@ namespace JsonWebToken
             }
 #endif
         }
-
-        public byte[] TrySign(byte[] input)
-        {
-            return _keyedHash.ComputeHash(input);
-        }
-
+        
         /// <summary>
         /// Verifies that a signature created over the 'input' matches the signature. Using <see cref="SymmetricJwk"/> and 'algorithm' passed to <see cref="SymmetricSignatureProvider( JsonWebKey, string )"/>.
         /// </summary>

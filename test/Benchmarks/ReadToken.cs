@@ -38,10 +38,34 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokens))]
         public void Wilson(string token)
         {
-            var result = Handler.ReadJwtToken(Tokens.ValidTokens[token]);
-            if (result == null)
+            if (token.StartsWith("enc-"))
             {
-                throw new Exception();
+                // ReadJwtToken does not read the encrpted token
+                var parameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidateActor = false,
+                    ValidateIssuer = false,
+                    ValidateIssuerSigningKey = false,
+                    ValidateLifetime=false,
+                    ValidateTokenReplay=false,
+                    ValidateAudience = false,
+                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.JsonWebKey(Tokens.SigningKey.ToString()),
+                    TokenDecryptionKey = new Microsoft.IdentityModel.Tokens.JsonWebKey(Tokens.EncryptionKey.ToString())
+                };
+
+                var result = Handler.ValidateToken(Tokens.ValidTokens[token], parameters, out var securityToken);
+                if (result == null)
+                {
+                    throw new Exception();
+                }
+            }
+            else
+            {
+                var result = Handler.ReadJwtToken(Tokens.ValidTokens[token]);
+                if (result == null)
+                {
+                    throw new Exception();
+                }
             }
         }
 
