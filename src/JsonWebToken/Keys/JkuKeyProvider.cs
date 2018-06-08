@@ -11,9 +11,9 @@ namespace JsonWebToken
         {
         }
 
-        public override IReadOnlyList<JsonWebKey> GetKeys(JObject header)
+        public override IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header)
         {
-            return GetKeys(header, header.Value<string>(HeaderParameterNames.Jku));
+            return GetKeys(header, header.Jku);
         }
 
         protected override JsonWebKeySet DeserializeKeySet(string value)

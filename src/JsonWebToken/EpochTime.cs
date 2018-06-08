@@ -61,5 +61,20 @@ namespace JsonWebToken
 
             return DateTimeUtil.Add(UnixEpoch, TimeSpan.FromSeconds(secondsSinceUnixEpoch)).ToUniversalTime();
         }
+
+        /// <summary>
+        /// Creates a DateTime from epoch time.
+        /// </summary>
+        /// <param name="secondsSinceUnixEpoch">Number of seconds.</param>
+        /// <returns>The DateTime in UTC.</returns>
+        public static DateTime? ToDateTime(long? secondsSinceUnixEpoch)
+        {
+            if (!secondsSinceUnixEpoch.HasValue)
+            {
+                return null;
+            }
+
+            return ToDateTime(secondsSinceUnixEpoch.Value);
+        }
     }
 }

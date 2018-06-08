@@ -111,19 +111,14 @@ namespace JsonWebToken
                 throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
             }
 
-            var header = new JwtHeader(key, encryptionAlgorithm);
-            foreach (var item in Header)
-            {
-                if (!header.HasHeader(item.Key))
-                {
-                    header[item.Key] = item.Value;
-                }
-            }
+            Header[HeaderParameterNames.Enc] = encryptionAlgorithm;
+            Header[HeaderParameterNames.Alg] = key.Alg;
+            Header[HeaderParameterNames.Kid] = key.Kid;
 
             try
             {
 #if NETCOREAPP2_1
-                var headerJson = header.ToString();
+                var headerJson = Serialize(Header);
                 int headerJsonLength = headerJson.Length;
                 int base64EncodedHeaderLength = Base64Url.GetArraySizeRequiredToEncode(headerJsonLength);
 
@@ -198,12 +193,13 @@ namespace JsonWebToken
                     }
                 }
 #else
-                var encryptionResult = encryptionProvider.Encrypt(payload.ToArray(), Encoding.ASCII.GetBytes(header.Base64UrlEncode()));
+                var base64Header = Base64Url.Encode(Serialize(Header));
+                var encryptionResult = encryptionProvider.Encrypt(payload.ToArray(), Encoding.ASCII.GetBytes(base64Header));
                 if (wrappedKey == null)
                 {
                     return string.Join(
                         ".",
-                        header.Base64UrlEncode(),
+                        base64Header,
                         string.Empty,
                         Base64Url.Encode(encryptionResult.IV),
                         Base64Url.Encode(encryptionResult.Ciphertext),
@@ -213,7 +209,7 @@ namespace JsonWebToken
                 {
                     return string.Join(
                         ".",
-                        header.Base64UrlEncode(),
+                        base64Header,
                         Base64Url.Encode(wrappedKey.ToArray()),
                         Base64Url.Encode(encryptionResult.IV),
                         Base64Url.Encode(encryptionResult.Ciphertext),

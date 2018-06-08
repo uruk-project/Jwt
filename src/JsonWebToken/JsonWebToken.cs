@@ -1,63 +1,56 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
 namespace JsonWebToken
 {
+    public class JsonWebToken<TToken>
+    {
+    }
+    public class NestedJsonWebToken : JsonWebToken<JsonWebToken>
+    {
+    }
+    public class PlainTextJsonWebToken : JsonWebToken<string>
+    {
+    }
+    public class BinaryJsonWebToken : JsonWebToken<byte[]>
+    {
+    }
+
+
     /// <summary>
     /// A JSON Web Token (JWT).
     /// </summary>
     public class JsonWebToken
     {
         private static string[] EmptyStrings = new string[0];
-        private static JProperty[] EmptyProperties = new JProperty[0];
         private readonly JwtPayload _payload;
 
         protected JsonWebToken()
         {
         }
 
-        public JsonWebToken(JObject header, JsonWebToken nestedToken, IReadOnlyList<int> separators)
+        public JsonWebToken(JwtHeader header, JsonWebToken nestedToken, IReadOnlyList<int> separators)
         {
-            if (header == null)
-            {
-                throw new ArgumentNullException(nameof(header));
-            }
-
-            Header = new JwtHeader(header);
+            Header = header ?? throw new ArgumentNullException(nameof(header));
             NestedToken = nestedToken ?? throw new ArgumentNullException(nameof(nestedToken));
             Separators = separators ?? throw new ArgumentNullException(nameof(separators));
         }
 
-        public JsonWebToken(JObject header, string plaintext, IReadOnlyList<int> separators)
+        public JsonWebToken(JwtHeader header, string plaintext, IReadOnlyList<int> separators)
         {
-            if (header == null)
-            {
-                throw new ArgumentNullException(nameof(header));
-            }
-
-            Header = new JwtHeader(header);
+            Header = header ?? throw new ArgumentNullException(nameof(header));
             PlainText = plaintext ?? throw new ArgumentNullException(nameof(plaintext));
             Separators = separators ?? throw new ArgumentNullException(nameof(separators));
         }
 
-        public JsonWebToken(JObject header, JObject payload, IReadOnlyList<int> separators)
+        public JsonWebToken(JwtHeader header, JwtPayload payload, IReadOnlyList<int> separators)
         {
-            if (header == null)
-            {
-                throw new ArgumentNullException(nameof(header));
-            }
-
-            if (payload == null)
-            {
-                throw new ArgumentNullException(nameof(payload));
-            }
-
-            Header = new JwtHeader(header);
-            _payload = new JwtPayload(payload);
+            Header = header ?? throw new ArgumentNullException(nameof(header));
+            _payload = payload ?? throw new ArgumentNullException(nameof(payload));
             Separators = separators ?? throw new ArgumentNullException(nameof(separators));
         }
-
+        
         /// <summary>
         /// Gets the list of 'audience' claim { aud, 'value' }.
         /// </summary>
@@ -65,18 +58,9 @@ namespace JsonWebToken
         public IEnumerable<string> Audiences => Payload?.Aud ?? EmptyStrings;
 
         /// <summary>
-        /// Gets the <see cref="Claim"/>(s) for this token.
-        /// If this is a JWE token, this property only returns the encrypted claims;
-        ///  the unencrypted claims should be read from the header separately.
-        /// </summary>
-        public IEnumerable<JProperty> Claims => Payload?.Claims ?? EmptyProperties;
-
-        /// <summary>
         /// Gets the <see cref="JwtHeader"/> associated with this instance if the token is signed.
         /// </summary>
         public virtual JwtHeader Header { get; private set; }
-
-        public IEnumerable<JProperty> HeaderParameters => Header?.Parameters ?? EmptyProperties;
 
         /// <summary>
         /// Gets the 'value' of the 'JWT ID' claim { jti, ''value' }.
@@ -111,12 +95,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the <see cref="SigningKey"/> to use when writing this token.
         /// </summary>
-        public JsonWebKey SigningKey => Header.SigningKey;
+        public JsonWebKey SigningKey { get; set; }
 
         /// <summary>
         /// Gets the <see cref="JsonWebKey"/> to use when writing this token.
         /// </summary>
-        public JsonWebKey EncryptionKey => Header.EncryptionKey;
+        public JsonWebKey EncryptionKey { get; set; }
 
         /// <summary>
         /// Gets the "value" of the 'subject' claim { sub, 'value' }.
@@ -127,13 +111,13 @@ namespace JsonWebToken
         /// Gets the 'value' of the 'notbefore' claim { nbf, 'value' } converted to a <see cref="DateTime"/> assuming 'value' is seconds since UnixEpoch (UTC 1970-01-01T0:0:0Z).
         /// </summary>
         /// <remarks>If the 'notbefore' claim is not found, then <see cref="DateTime.MinValue"/> is returned.</remarks>
-        public DateTime? NotBefore => Payload?.NotBefore;
+        public DateTime? NotBefore => Payload?.Nbf;
 
         /// <summary>
         /// Gets the 'value' of the 'expiration' claim { exp, 'value' } converted to a <see cref="DateTime"/> assuming 'value' is seconds since UnixEpoch (UTC 1970-01-01T0:0:0Z).
         /// </summary>
         /// <remarks>If the 'expiration' claim is not found, then <see cref="DateTime.MinValue"/> is returned.</remarks>
-        public DateTime? ExpirationTime => Payload?.ExpirationTime;
+        public DateTime? ExpirationTime => Payload?.Exp;
 
         /// <summary>
         /// Gets the 'value' of the 'isuued at' claim { iat, 'value' } converted to a <see cref="DateTime"/> assuming 'value' is seconds since UnixEpoch (UTC 1970-01-01T0:0:0Z).
@@ -154,11 +138,11 @@ namespace JsonWebToken
         {
             if (Payload != null)
             {
-                return Header.ToString() + "." + Payload.ToString();
+                return JsonConvert.SerializeObject(Header) + "." + JsonConvert.SerializeObject(Payload);
             }
             else
             {
-                return Header.ToString() + ".";
+                return JsonConvert.SerializeObject(Header) + ".";
             }
         }
     }

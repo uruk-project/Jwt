@@ -5,6 +5,6 @@ namespace JsonWebToken
 {
     public interface IKeyProvider
     {
-        IReadOnlyList<JsonWebKey> GetKeys(JObject header);
+        IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header);
     }
 }

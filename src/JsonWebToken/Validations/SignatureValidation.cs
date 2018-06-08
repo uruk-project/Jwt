@@ -72,23 +72,13 @@ namespace JsonWebToken.Validations
 #else
                 var encodedBytes = Encoding.UTF8.GetBytes(token.Slice(0, length).ToString());
 #endif
-                JwtHeader header;
-                try
-                {
-                    header = jwt.Header;
-                }
-                catch (FormatException)
-                {
-                    return TokenValidationResult.MalformedToken();
-                }
-
                 var keys = ResolveSigningKey(jwt);
                 for (int i = 0; i < keys.Count; i++)
                 {
                     JsonWebKey key = keys[i];
                     if (TryValidateSignature(encodedBytes, signatureBytes, key, key.Alg))
                     {
-                        jwt.Header.SigningKey = key;
+                        jwt.SigningKey = key;
                         return TokenValidationResult.Success(jwt);
                     }
 

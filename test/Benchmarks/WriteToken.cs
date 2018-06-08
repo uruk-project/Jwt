@@ -113,6 +113,7 @@ namespace JsonWebToken.Performance
                     switch (property.Name)
                     {
                         case "iat":
+                        case "nbf":
                         case "exp":
                             descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
                             break;
@@ -137,6 +138,7 @@ namespace JsonWebToken.Performance
                     switch (property.Name)
                     {
                         case "iat":
+                        case "nbf":
                         case "exp":
                             descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
                             break;
@@ -177,6 +179,7 @@ namespace JsonWebToken.Performance
                     switch (property.Name)
                     {
                         case "iat":
+                        case "nbf":
                         case "exp":
                             break;
                         default:
@@ -204,6 +207,7 @@ namespace JsonWebToken.Performance
                     switch (property.Name)
                     {
                         case "iat":
+                        case "nbf":
                         case "exp":
                             break;
                         default:
@@ -230,6 +234,7 @@ namespace JsonWebToken.Performance
                     switch (property.Name)
                     {
                         case "iat":
+                        case "nbf":
                         case "exp":
                             descriptor.Add(property.Name, (long)property.Value);
                             break;

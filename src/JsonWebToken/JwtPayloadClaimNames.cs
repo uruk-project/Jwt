@@ -5,7 +5,7 @@ namespace JsonWebToken
     /// http://tools.ietf.org/html/rfc7519#section-4
     /// http://openid.net/specs/openid-connect-core-1_0.html#IDToken
     /// </summary>
-    public struct JwtRegisteredClaimNames
+    public struct JwtPayloadClaimNames
     {
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#IDToken

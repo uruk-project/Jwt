@@ -9,8 +9,9 @@ namespace JsonWebToken.Tests
     {
         [Theory]
         [MemberData(nameof(GetDescriptors))]
-        public void Write(JwtDescriptor descriptor)
+        public void Write_Valid(string token)
         {
+            var descriptor = Tokens.Descriptors[token];
             JsonWebTokenWriter writer = new JsonWebTokenWriter();
             var value = writer.WriteToken(descriptor);
 
@@ -21,7 +22,7 @@ namespace JsonWebToken.Tests
             var jwt = result.Token;
 
             var payload = descriptor as IJwtPayloadDescriptor;
-            Assert.Equal(payload.IssuedAt, jwt.Payload.Iat);
+            Assert.Equal(payload.IssuedAt, jwt.IssuedAt);
             Assert.Equal(payload.ExpirationTime, jwt.ExpirationTime);
             Assert.Equal(payload.Issuer, jwt.Issuer);
             Assert.Equal(payload.Audiences?.FirstOrDefault(), jwt.Audiences?.FirstOrDefault());
@@ -97,7 +98,7 @@ namespace JsonWebToken.Tests
         {
             foreach (var item in Tokens.Descriptors)
             {
-                yield return new object[] { item.Value };
+                yield return new object[] { item.Key };
             }
             //    foreach (var key in Keys.Jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Sig))
             //    {

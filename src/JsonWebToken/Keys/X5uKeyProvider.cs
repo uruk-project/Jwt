@@ -12,9 +12,9 @@ namespace JsonWebToken
         {
         }
 
-        public override IReadOnlyList<JsonWebKey> GetKeys(JObject header)
+        public override IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header)
         {
-            return GetKeys(header, header[HeaderParameterNames.X5u]?.Value<string>());
+            return GetKeys(header, header.X5u);
         }
 
         protected override JsonWebKeySet DeserializeKeySet(string value)

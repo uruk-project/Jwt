@@ -14,8 +14,9 @@ namespace JsonWebToken.Tests
     {
         [Theory]
         [MemberData(nameof(GetValidTokens))]
-        public void ReadJwt_Valid(string jwt)
+        public void ReadJwt_Valid(string token)
         {
+            var jwt = Tokens.ValidTokens[token];
             var reader = new JsonWebTokenReader(Keys.Jwks);
             var validationParameters = new TokenValidationBuilder()
                     .RequireSignature(Keys.Jwks)
@@ -65,7 +66,7 @@ namespace JsonWebToken.Tests
         {
             foreach (var item in Tokens.ValidTokens.Where(t => !t.Key.EndsWith("empty")))
             {
-                yield return new object[] { item.Value };
+                yield return new object[] { item.Key };
             }
         }
 

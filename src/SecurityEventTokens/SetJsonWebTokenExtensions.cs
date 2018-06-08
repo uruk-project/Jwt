@@ -6,7 +6,7 @@ namespace JsonWebToken
     {
         public static SecurityEventToken AsSecurityEventToken(this JsonWebToken token)
         {
-            if (!token.Payload.HasClaim(ClaimNames.Events))
+            if (!token.Payload.AdditionalData.ContainsKey(ClaimNames.Events))
             {
                 throw new InvalidOperationException();
             }

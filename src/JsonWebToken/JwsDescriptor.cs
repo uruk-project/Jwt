@@ -282,13 +282,13 @@ namespace JsonWebToken
 
         public override string Encode()
         {
-            JwtHeader header = Key == null ? new JwtHeader() : new JwtHeader(Key);
-            foreach (var item in Header)
+            if (Key != null)
             {
-                header[item.Key] = item.Value;
+                Header[HeaderParameterNames.Alg] = Key.Alg;
+                Header[HeaderParameterNames.Kid] = Key.Kid;
             }
 
-            var headerJson = header.ToString();
+            var headerJson = Serialize(Header);
             SignatureProvider signatureProvider = null;
             if (Key != null)
             {
@@ -300,8 +300,7 @@ namespace JsonWebToken
                 }
             }
 
-            var payload = new JwtPayload(Payload);
-            var payloadJson = payload.ToString();
+            var payloadJson = Serialize(Payload);
             int length = Base64Url.GetArraySizeRequiredToEncode(headerJson.Length)
                 + Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
                 + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBits / 8))
