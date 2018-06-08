@@ -453,6 +453,7 @@ namespace JwtCreator
                     switch (property.Name)
                     {
                         case "iat":
+                        case "nbf":
                         case "exp":
                             descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
                             break;
@@ -478,6 +479,7 @@ namespace JwtCreator
                     switch (property.Name)
                     {
                         case "iat":
+                        case "nbf":
                         case "exp":
                             descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
                             break;

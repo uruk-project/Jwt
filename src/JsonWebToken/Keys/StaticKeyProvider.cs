@@ -14,9 +14,9 @@ namespace JsonWebToken
             _jwks = jwks ?? throw new ArgumentNullException(nameof(jwks));
         }
 
-        public IReadOnlyList<JsonWebKey> GetKeys(JObject header)
+        public IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header)
         {
-            var kid = header[HeaderParameterNames.Kid].Value<string>();
+            var kid = header.Kid;
             return _jwks.GetKeys(kid);
         }
     }

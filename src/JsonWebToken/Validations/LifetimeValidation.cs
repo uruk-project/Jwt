@@ -5,12 +5,14 @@ namespace JsonWebToken.Validations
     public class LifetimeValidation : IValidation
     {
         private readonly bool _requireExpirationTime;
-        private readonly int _clockSkew;
+        private readonly TimeSpan _clockSkew;
+        private readonly TimeSpan _negativeClockSkew;
 
         public LifetimeValidation(bool requireExpirationTime, int clockSkew)
         {
             _requireExpirationTime = requireExpirationTime;
-            _clockSkew = clockSkew;
+            _clockSkew = TimeSpan.FromSeconds(clockSkew);
+            _negativeClockSkew = TimeSpan.FromSeconds(-clockSkew);
         }
 
         public TokenValidationResult TryValidate(TokenValidationContext context)
@@ -22,8 +24,8 @@ namespace JsonWebToken.Validations
                 return TokenValidationResult.MissingClaim(jwt, ClaimNames.Exp);
             }
 
-            var utcNow = EpochTime.GetIntDate(DateTime.UtcNow);
-            if (expires.HasValue && (expires.Value < DateTimeUtil.Add(utcNow, -_clockSkew)))
+            var utcNow = DateTime.UtcNow;
+            if (expires.HasValue && (expires.Value < DateTimeUtil.Add(utcNow, _negativeClockSkew)))
             {
                 return TokenValidationResult.Expired(jwt);
             }

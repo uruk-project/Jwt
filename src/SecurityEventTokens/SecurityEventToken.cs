@@ -29,7 +29,11 @@ namespace JsonWebToken
                         return new Dictionary<string, JObject>();
                     }
 
-                    var events = Payload[ClaimNames.Events] as JObject;
+                    if(!Payload.TryGetValue(ClaimNames.Events, out var events))
+                    {
+                        return new Dictionary<string, JObject>();
+                    }
+
                     _events = events.ToObject<Dictionary<string, JObject>>();
                     return _events;
                 }
@@ -38,18 +42,35 @@ namespace JsonWebToken
             }
         }
 
-        public DateTime? TimeOfEvent => ToDateTime(Payload[ClaimNames.Toe]);
-
-        public string TransactionNumber => Payload[ClaimNames.Txn]?.Value<string>();
-
-        private static DateTime? ToDateTime(JToken token)
+        public DateTime? TimeOfEvent
         {
-            if (token == null || token.Type == JTokenType.Null)
+            get
             {
-                return default;
-            }
+                if (Payload.TryGetValue(ClaimNames.Toe, out var toe))
+                {
+                    if (toe == null || toe.Type == JTokenType.Null)
+                    {
+                        return default;
+                    }
 
-            return EpochTime.ToDateTime(token.Value<long>());
+                    return EpochTime.ToDateTime(toe.Value<long>());
+                }
+
+                return null;
+            }
+        }
+
+        public string TransactionNumber
+        {
+            get
+            {
+                if (Payload.TryGetValue(ClaimNames.Txn, out var txn))
+                {
+                    return txn.Value<string>();
+                }
+
+                return null;
+            }
         }
     }
 }

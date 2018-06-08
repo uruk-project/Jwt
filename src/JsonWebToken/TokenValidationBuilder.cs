@@ -195,7 +195,7 @@ namespace JsonWebToken
         {
             private static readonly IReadOnlyList<JsonWebKey> Empty = new JsonWebKey[0];
 
-            public IReadOnlyList<JsonWebKey> GetKeys(JObject header)
+            public IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header)
             {
                 return Empty;
             }

@@ -49,13 +49,13 @@ namespace JsonWebToken
         {
         }
 
-        public abstract IReadOnlyList<JsonWebKey> GetKeys(JObject header);
+        public abstract IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header);
 
         protected abstract JsonWebKeySet DeserializeKeySet(string value);
 
-        protected IReadOnlyList<JsonWebKey> GetKeys(JObject header, string metadataAddress)
+        protected IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header, string metadataAddress)
         {
-            var kid = header[HeaderParameterNames.Kid].Value<string>();
+            var kid = header.Kid;
             DateTimeOffset now = DateTimeOffset.UtcNow;
             if (_currentKeys != null && _syncAfter > now)
             {
