@@ -10,6 +10,7 @@ namespace JsonWebToken
 {
     public class JsonWebTokenReader
     {
+        private const byte dot = 0x2E;
         private readonly IList<IKeyProvider> _encryptionKeyProviders;
 
         public JsonWebTokenReader(IEnumerable<IKeyProvider> encryptionKeyProviders)
@@ -64,11 +65,37 @@ namespace JsonWebToken
                 return TokenValidationResult.MalformedToken();
             }
 
-            var separators = GetSeparators(token);
+#if NETCOREAPP2_1
+            int length = token.Length;
+            byte[] utf8ArrayToReturnToPool = null;
+            var utf8Buffer = length <= JwtConstants.MaxStackallocBytes
+                  ? stackalloc byte[length]
+                  : (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
+            try
+            {
+                Encoding.UTF8.GetBytes(token, utf8Buffer);
+                return TryReadToken(utf8Buffer, validationParameters);
+            }
+            finally
+            {
+                if (utf8ArrayToReturnToPool != null)
+                {
+                    ArrayPool<byte>.Shared.Return(utf8ArrayToReturnToPool);
+                }
+            }
+#else
+            var utf8Buffer = Encoding.UTF8.GetBytes(token.ToArray()).AsSpan();
+            return TryReadToken(utf8Buffer, validationParameters);
+#endif
+        }
+
+        private TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Buffer, TokenValidationParameters validationParameters)
+        {
+            var separators = GetSeparators(utf8Buffer);
             if (separators.Count == JwtConstants.JwsSeparatorsCount || separators.Count == JwtConstants.JweSeparatorsCount)
             {
                 JwtHeader header;
-                var rawHeader = token.Slice(0, separators[0]);
+                var rawHeader = utf8Buffer.Slice(0, separators[0]);
                 try
                 {
                     header = GetJsonObject<JwtHeader>(rawHeader);
@@ -83,10 +110,9 @@ namespace JsonWebToken
                 }
 
                 JsonWebToken jwt;
-
                 if (separators.Count == JwtConstants.JwsSeparatorsCount)
                 {
-                    var rawPayload = token.Slice(separators[0] + 1, separators[1] - 1);
+                    var rawPayload = utf8Buffer.Slice(separators[0] + 1, separators[1] - 1);
                     JwtPayload payload;
                     try
                     {
@@ -111,24 +137,24 @@ namespace JsonWebToken
                         return TokenValidationResult.MissingEncryptionAlgorithm();
                     }
 
-                    var keys = GetContentEncryptionKeys(header, token.Slice(separators[0] + 1, separators[1] - 1));
+                    var keys = GetContentEncryptionKeys(header, utf8Buffer.Slice(separators[0] + 1, separators[1] - 1));
 
-                    var rawCiphertext = token.Slice(separators[0] + separators[1] + separators[2] + 1, separators[3] - 1);
-                    var rawInitializationVector = token.Slice(separators[0] + separators[1] + 1, separators[2] - 1);
-                    var rawAuthenticationTag = token.Slice(separators[0] + separators[1] + separators[2] + separators[3] + 1);
+                    var rawCiphertext = utf8Buffer.Slice(separators[0] + separators[1] + separators[2] + 1, separators[3] - 1);
+                    var rawInitializationVector = utf8Buffer.Slice(separators[0] + separators[1] + 1, separators[2] - 1);
+                    var rawAuthenticationTag = utf8Buffer.Slice(separators[0] + separators[1] + separators[2] + separators[3] + 1);
 
-                    string decryptedToken = null;
+                    byte[] decryptedBytes = null;
                     JsonWebKey decryptionKey = null;
                     for (int i = 0; i < keys.Count; i++)
                     {
                         decryptionKey = keys[i];
-                        if (TryDecryptToken(rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, enc, decryptionKey, out decryptedToken))
+                        if (TryDecryptToken(rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, enc, decryptionKey, out decryptedBytes))
                         {
                             break;
                         }
                     }
 
-                    if (decryptedToken == null)
+                    if (decryptedBytes == null)
                     {
                         return TokenValidationResult.DecryptionFailed();
                     }
@@ -136,12 +162,12 @@ namespace JsonWebToken
                     if (!string.Equals(header.Cty, JwtConstants.JwtContentType, StringComparison.Ordinal))
                     {
                         // The decrypted payload is not a nested JWT
-                        jwt = new JsonWebToken(header, decryptedToken, separators);
+                        jwt = new JsonWebToken(header, decryptedBytes, separators);
                         jwt.EncryptionKey = decryptionKey;
                         return TokenValidationResult.Success(jwt);
                     }
 
-                    var decryptionResult = TryReadToken(decryptedToken.AsSpan(), validationParameters);
+                    var decryptionResult = TryReadToken(decryptedBytes, validationParameters);
                     if (!decryptionResult.Succedeed)
                     {
                         return decryptionResult;
@@ -157,82 +183,46 @@ namespace JsonWebToken
                     return TokenValidationResult.MalformedToken();
                 }
 
-                return validationParameters.TryValidate(new TokenValidationContext(token, jwt));
+                return validationParameters.TryValidate(new TokenValidationContext(utf8Buffer, jwt));
             }
 
             return TokenValidationResult.MalformedToken();
         }
 
+        private static T GetJsonObject<T>(ReadOnlySpan<byte> data)
+        {
+            int base64UrlLength = Base64Url.GetArraySizeRequiredToDecode(data.Length);
+            byte[] base64UrlArrayToReturnToPool = null;
+            var buffer = base64UrlLength <= JwtConstants.MaxStackallocBytes
+              ? stackalloc byte[base64UrlLength]
+              : (base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64UrlLength)).AsSpan(0, base64UrlLength);
+            try
+            {
+                Base64Url.Base64UrlDecode(data, buffer, out int byteConsumed, out int bytesWritten);
 #if NETCOREAPP2_1
-        private static T GetJsonObject<T>(ReadOnlySpan<char> data)
-        {
-            int length = data.Length;
-            byte[] utf8ArrayToReturnToPool = null;
-            var utf8Buffer = length <= JwtConstants.MaxStackallocBytes
-                  ? stackalloc byte[length]
-                  : (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
-            try
-            {
-                Encoding.UTF8.GetBytes(data, utf8Buffer);
-                int base64UrlLength = Base64Url.GetArraySizeRequiredToDecode(length);
-                byte[] base64UrlArrayToReturnToPool = null;
-                var buffer = base64UrlLength <= JwtConstants.MaxStackallocBytes
-                  ? stackalloc byte[base64UrlLength]
-                  : (base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64UrlLength)).AsSpan(0, base64UrlLength);
-                try
-                {
-                    Base64Url.Base64UrlDecode(utf8Buffer, buffer, out int byteConsumed, out int bytesWritten);
-                    var json = Encoding.UTF8.GetString(buffer);
-                    return JsonConvert.DeserializeObject<T>(json);
-                }
-                finally
-                {
-                    if (base64UrlArrayToReturnToPool != null)
-                    {
-                        ArrayPool<byte>.Shared.Return(base64UrlArrayToReturnToPool);
-                    }
-                }
-            }
-            finally
-            {
-                if (utf8ArrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(utf8ArrayToReturnToPool);
-                }
-            }
-        }
+                var json = Encoding.UTF8.GetString(buffer);
 #else
-        private static T GetJsonObject<T>(ReadOnlySpan<char> token)
-        {
-            int length = token.Length;
-            var utf8Buffer = Encoding.UTF8.GetBytes(token.ToString());
-            byte[] arrayToReturn = null;
-            Span<byte> buffer = length < JwtConstants.MaxStackallocBytes
-                ? stackalloc byte[length]
-                : (arrayToReturn = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
-            try
-            {
-                Base64Url.Base64UrlDecode(utf8Buffer.AsSpan().Slice(0, length), buffer, out int headerByteConsumed, out int headerBytesWritten);
                 var json = Encoding.UTF8.GetString(buffer.ToArray());
+#endif
                 return JsonConvert.DeserializeObject<T>(json);
             }
             finally
             {
-                if (arrayToReturn != null)
+                if (base64UrlArrayToReturnToPool != null)
                 {
-                    ArrayPool<byte>.Shared.Return(arrayToReturn);
+                    ArrayPool<byte>.Shared.Return(base64UrlArrayToReturnToPool);
                 }
             }
         }
-#endif
-        private static IReadOnlyList<int> GetSeparators(ReadOnlySpan<char> token)
+
+        private static IReadOnlyList<int> GetSeparators(ReadOnlySpan<byte> token)
         {
             int next = 0;
             int current = 0;
             int i = 0;
             List<int> separators = new List<int>();
 
-            while ((next = token.IndexOf('.')) != -1)
+            while ((next = token.IndexOf(dot)) != -1)
             {
                 separators.Add(next + (i == 0 ? 0 : 1));
                 if (separators.Count > JwtConstants.MaxJwtSeparatorsCount)
@@ -249,18 +239,18 @@ namespace JsonWebToken
         }
 
         private bool TryDecryptToken(
-            ReadOnlySpan<char> rawHeader,
-            ReadOnlySpan<char> rawCiphertext,
-            ReadOnlySpan<char> rawInitializationVector,
-            ReadOnlySpan<char> rawAuthenticationTag,
+            ReadOnlySpan<byte> rawHeader,
+            ReadOnlySpan<byte> rawCiphertext,
+            ReadOnlySpan<byte> rawInitializationVector,
+            ReadOnlySpan<byte> rawAuthenticationTag,
             string encryptionAlgorithm,
             JsonWebKey key,
-            out string decryptedToken)
+            out byte[] decryptedBytes)
         {
             var decryptionProvider = key.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);
             if (decryptionProvider == null)
             {
-                decryptedToken = null;
+                decryptedBytes = null;
                 return false;
             }
 
@@ -273,28 +263,32 @@ namespace JsonWebToken
                 int authenticationTagLength = Base64Url.GetArraySizeRequiredToDecode(rawAuthenticationTag.Length);
                 int bufferLength = ciphertextLength + headerLength + initializationVectorLength + authenticationTagLength;
                 byte[] arrayToReturn = null;
+                char[] headerArrayToReturn = null;
                 Span<byte> buffer = bufferLength < JwtConstants.MaxStackallocBytes
                     ? stackalloc byte[bufferLength]
                     : (arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength)).AsSpan(0, bufferLength);
+
+                Span<char> utf8Header = headerLength < JwtConstants.MaxStackallocBytes
+                    ? stackalloc char[headerLength]
+                    : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(headerLength)).AsSpan(0, headerLength);
 
                 Span<byte> ciphertext = buffer.Slice(0, ciphertextLength);
                 Span<byte> header = buffer.Slice(ciphertextLength, headerLength);
                 Span<byte> initializationVector = buffer.Slice(ciphertextLength + headerLength, initializationVectorLength);
                 Span<byte> authenticationTag = buffer.Slice(ciphertextLength + headerLength + initializationVectorLength, authenticationTagLength);
 
-                byte[] decryptedBytes;
                 try
                 {
-                    int ciphertextBytesWritten = Base64Url.Base64UrlDecode(rawCiphertext, ciphertext);
+                    Base64Url.Base64UrlDecode(rawCiphertext, ciphertext, out int ciphertextBytesConsumed, out int ciphertextBytesWritten);
                     Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
 
-                    int headerBytesWritten = Encoding.ASCII.GetBytes(rawHeader, header);
-                    Debug.Assert(header.Length == headerBytesWritten);
+                    Encoding.UTF8.GetChars(rawHeader, utf8Header);
+                    Encoding.ASCII.GetBytes(utf8Header, header);
 
-                    int ivBytesWritten = Base64Url.Base64UrlDecode(rawInitializationVector, initializationVector);
+                    Base64Url.Base64UrlDecode(rawInitializationVector, initializationVector, out int ivBytesConsumed, out int ivBytesWritten);
                     Debug.Assert(initializationVector.Length == ivBytesWritten);
 
-                    int authenticationTagBytesWritten = Base64Url.Base64UrlDecode(rawAuthenticationTag, authenticationTag);
+                    Base64Url.Base64UrlDecode(rawAuthenticationTag, authenticationTag, out int authenticationTagBytesConsumed, out int authenticationTagBytesWritten);
                     Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
 
                     decryptedBytes = decryptionProvider.Decrypt(
@@ -309,22 +303,19 @@ namespace JsonWebToken
                     {
                         ArrayPool<byte>.Shared.Return(arrayToReturn);
                     }
-                }
-
-                if (decryptedBytes == null)
-                { 
-                    decryptedToken = null;
-                    return false;
+                    if (headerArrayToReturn != null)
+                    {
+                        ArrayPool<char>.Shared.Return(headerArrayToReturn);
+                    }
                 }
 #else
-                var decryptedBytes = decryptionProvider.Decrypt(
+                decryptedBytes = decryptionProvider.Decrypt(
                     Base64Url.DecodeBytes(rawCiphertext.ToString()),
                     Encoding.ASCII.GetBytes(rawHeader.ToString()),
                     Base64Url.DecodeBytes(rawInitializationVector.ToString()),
                     Base64Url.DecodeBytes(rawAuthenticationTag.ToString()));
 #endif
-                decryptedToken = Encoding.UTF8.GetString(decryptedBytes);
-                return false;
+                return decryptedBytes != null;
             }
             finally
             {
@@ -332,7 +323,7 @@ namespace JsonWebToken
             }
         }
 
-        private IList<JsonWebKey> GetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<char> rawEncryptedKey)
+        private IList<JsonWebKey> GetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<byte> rawEncryptedKey)
         {
             var alg = header.Alg;
             var keys = ResolveDecryptionKey(header);
@@ -342,8 +333,9 @@ namespace JsonWebToken
             }
 
             Span<byte> encryptedKey = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length)];
-            int bytesWritten = Base64Url.Base64UrlDecode(rawEncryptedKey, encryptedKey);
-            Debug.Assert(bytesWritten == encryptedKey.Length);
+            var operationResult = Base64Url.Base64UrlDecode(rawEncryptedKey, encryptedKey, out int bytesConsumed, out int bytesWritten);
+            Debug.Assert(operationResult == OperationStatus.Done);
+
             var unwrappedKeys = new List<JsonWebKey>();
             for (int i = 0; i < keys.Count; i++)
             {
