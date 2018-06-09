@@ -58,7 +58,7 @@ namespace JsonWebToken.Tests
             var result = reader.TryReadToken(value, TokenValidationParameters.NoValidation);
             var jwt = result.Token;
 
-            Assert.Equal(plaintext, jwt.PlainText);
+            Assert.Equal(plaintext, jwt.Plaintext);
         }
 
         [Fact]
@@ -91,7 +91,7 @@ namespace JsonWebToken.Tests
             var result = reader.TryReadToken(value, TokenValidationParameters.NoValidation);
             var jwt = result.Token;
 
-            //Assert.Equal(plaintext, jwt.PlainText);
+            Assert.Equal(data, jwt.Binary);
         }
 
         public static IEnumerable<object[]> GetDescriptors()
@@ -100,58 +100,6 @@ namespace JsonWebToken.Tests
             {
                 yield return new object[] { item.Key };
             }
-            //    foreach (var key in Keys.Jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Sig))
-            //    {
-            //        foreach (var jwt in Tokens.Descriptors)
-            //        {
-            //            yield return new object[]
-            //            {
-            //                new JwsDescriptor
-            //                {
-            //                    Key = key,
-            //                    JwtId = jwt.JwtId,
-            //                    Audiences = jwt.Audiences,
-            //                    ExpirationTime = jwt.ExpirationTime,
-            //                    IssuedAt = jwt.IssuedAt,
-            //                    Issuer = jwt.Issuer,
-            //                    NotBefore = jwt.NotBefore
-            //                }
-            //            };
-            //        }
-            //    }
-
-            //    var encryptionAlgorithms = new[] { ContentEncryptionAlgorithms.Aes128CbcHmacSha256, ContentEncryptionAlgorithms.Aes192CbcHmacSha384, ContentEncryptionAlgorithms.Aes256CbcHmacSha512 };
-            //    foreach (var encKey in Keys.Jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Enc && k.Kty == JsonWebAlgorithmsKeyTypes.Octet))
-            //    {
-            //        foreach (var enc in encryptionAlgorithms)
-            //        {
-            //            if (!encKey.IsSupportedAlgorithm(enc))
-            //            {
-            //                continue;
-            //            }
-
-            //            var sigKey = Keys.Jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
-            //            foreach (var jwt in Tokens.Descriptors)
-            //            {
-            //                yield return new object[] {
-            //                    new JweDescriptor()
-            //                    {
-            //                        Key = encKey,
-            //                        EncryptionAlgorithm = enc,
-            //                        ContentType = "JWT",
-            //                        Payload = new JwsDescriptor
-            //                        {
-            //                            Key = sigKey,
-            //                            JwtId = jwt.JwtId,
-            //                            Audiences = jwt.Audiences,
-            //                            ExpirationTime = jwt.ExpirationTime,
-            //                            IssuedAt = jwt.IssuedAt,
-            //                            Issuer = jwt.Issuer,
-            //                            NotBefore = jwt.NotBefore
-            //                        }
-            //                    }
-            //                };
-            //            }
         }
     }
 }

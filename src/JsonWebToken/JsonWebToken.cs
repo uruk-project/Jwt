@@ -1,23 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace JsonWebToken
 {
-    public class JsonWebToken<TToken>
-    {
-    }
-    public class NestedJsonWebToken : JsonWebToken<JsonWebToken>
-    {
-    }
-    public class PlainTextJsonWebToken : JsonWebToken<string>
-    {
-    }
-    public class BinaryJsonWebToken : JsonWebToken<byte[]>
-    {
-    }
-
-
     /// <summary>
     /// A JSON Web Token (JWT).
     /// </summary>
@@ -37,10 +24,10 @@ namespace JsonWebToken
             Separators = separators ?? throw new ArgumentNullException(nameof(separators));
         }
 
-        public JsonWebToken(JwtHeader header, string plaintext, IReadOnlyList<int> separators)
+        public JsonWebToken(JwtHeader header, byte[] binary, IReadOnlyList<int> separators)
         {
             Header = header ?? throw new ArgumentNullException(nameof(header));
-            PlainText = plaintext ?? throw new ArgumentNullException(nameof(plaintext));
+            Binary = binary ?? throw new ArgumentNullException(nameof(binary));
             Separators = separators ?? throw new ArgumentNullException(nameof(separators));
         }
 
@@ -126,9 +113,9 @@ namespace JsonWebToken
         public DateTime? IssuedAt => Payload?.Iat;
 
         /// <summary>
-        /// Gets the plain text of the JWE.
+        /// Gets the plaintext of the JWE.
         /// </summary>
-        public string PlainText { get; set; }
+        public string Plaintext => Encoding.UTF8.GetString(Binary);
 
         public IReadOnlyList<int> Separators { get; }
 
