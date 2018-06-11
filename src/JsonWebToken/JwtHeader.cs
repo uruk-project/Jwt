@@ -89,6 +89,9 @@ namespace JsonWebToken
         [JsonProperty(PropertyName = HeaderParameterNames.X5u)]
         public string X5u { get; set; }
 
+        [JsonProperty(PropertyName = HeaderParameterNames.Zip)]
+        public string Zip { get; set; }
+
         [JsonExtensionData]
         public IDictionary<string, JToken> AdditionalData { get; set; }
     }
