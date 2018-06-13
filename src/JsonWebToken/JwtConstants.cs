@@ -38,5 +38,7 @@ namespace JsonWebToken
         internal const int MaxJwtSeparatorsCount = 4;
 
         public const int MaxStackallocBytes = 1024 * 1024;
+
+        internal static readonly int DecompressionBufferLength = 1024;
     }
 }

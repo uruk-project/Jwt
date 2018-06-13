@@ -405,19 +405,19 @@ namespace JsonWebToken
 
                     // First, block = A | R[i]
                     Array.Copy(a, block, a.Length);
-                    Array.Copy(r, i << 3, block, 64 >> 3, 64 >> 3);
+                    Array.Copy(r, i << 3, block, 8, 8);
 
                     // Second, AES( K, block )
                     var b = _symmetricAlgorithmEncryptor.TransformFinalBlock(block, 0, 16);
 
                     // A = MSB( 64, B )
-                    Array.Copy(b, a, 64 >> 3);
+                    Array.Copy(b, a, 8);
 
                     // A = A ^ t
                     Xor(a, GetBytes(t), 0, true);
 
                     // R[i] = LSB( 64, B )
-                    Array.Copy(b, 64 >> 3, r, i << 3, 64 >> 3);
+                    Array.Copy(b, 8, r, i << 3, 8);
                 }
             }
 
@@ -515,14 +515,14 @@ namespace JsonWebToken
             switch (encryptionAlgorithm)
             {
                 case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
-                    return ((256 >> 3 >> 3) + 1) << 3;
+                    return 40; // ((256 >> 3 >> 3) + 1) << 3
                 case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
-                    return ((384 >> 3 >> 3) + 1) << 3;
+                    return 56; //((384 >> 3 >> 3) + 1) << 3;
                 case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
-                    return ((512 >> 3 >> 3) + 1) << 3;
+                    return 72; // ((512 >> 3 >> 3) + 1) << 3;
             }
 
-            throw new NotSupportedException();
+            throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedKeyedHashAlgorithm, encryptionAlgorithm));
         }
     }
 }

@@ -64,6 +64,7 @@
         /// </summary>
         MissingClaim,
         InvalidHeader,
-        MissingHeader
+        MissingHeader,
+        DecompressionFailed
     }
 }

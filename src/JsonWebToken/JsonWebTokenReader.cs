@@ -3,6 +3,8 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 
@@ -98,6 +100,7 @@ namespace JsonWebToken
                 var rawHeader = utf8Buffer.Slice(0, separators[0]);
                 try
                 {
+                    var hash = ComputeHash(rawHeader);
                     header = GetJsonObject<JwtHeader>(rawHeader);
                 }
                 catch (FormatException)
@@ -143,12 +146,14 @@ namespace JsonWebToken
                     var rawInitializationVector = utf8Buffer.Slice(separators[0] + separators[1] + 1, separators[2] - 1);
                     var rawAuthenticationTag = utf8Buffer.Slice(separators[0] + separators[1] + separators[2] + separators[3] + 1);
 
+                    var compressionAlgorithm = header.Zip;
+
                     byte[] decryptedBytes = null;
                     JsonWebKey decryptionKey = null;
                     for (int i = 0; i < keys.Count; i++)
                     {
                         decryptionKey = keys[i];
-                        if (TryDecryptToken(rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, enc, decryptionKey, out decryptedBytes))
+                        if (TryDecryptToken(rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, enc, compressionAlgorithm, decryptionKey, out decryptedBytes))
                         {
                             break;
                         }
@@ -244,6 +249,7 @@ namespace JsonWebToken
             ReadOnlySpan<byte> rawInitializationVector,
             ReadOnlySpan<byte> rawAuthenticationTag,
             string encryptionAlgorithm,
+            string compressionAlgorithm,
             JsonWebKey key,
             out byte[] decryptedBytes)
         {
@@ -252,6 +258,17 @@ namespace JsonWebToken
             {
                 decryptedBytes = null;
                 return false;
+            }
+
+            CompressionProvider compressionProvider = null;
+            if (!string.IsNullOrEmpty(compressionAlgorithm))
+            {
+                compressionProvider = CompressionProvider.CreateCompressionProvider(compressionAlgorithm);
+                if (compressionProvider == null)
+                {
+                    decryptedBytes = null;
+                    return false;
+                }
             }
 
             try
@@ -264,6 +281,7 @@ namespace JsonWebToken
                 int bufferLength = ciphertextLength + headerLength + initializationVectorLength + authenticationTagLength;
                 byte[] arrayToReturn = null;
                 char[] headerArrayToReturn = null;
+                byte[] uncompressedBytesToReturn = null;
                 Span<byte> buffer = bufferLength < JwtConstants.MaxStackallocBytes
                     ? stackalloc byte[bufferLength]
                     : (arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength)).AsSpan(0, bufferLength);
@@ -276,12 +294,11 @@ namespace JsonWebToken
                 Span<byte> header = buffer.Slice(ciphertextLength, headerLength);
                 Span<byte> initializationVector = buffer.Slice(ciphertextLength + headerLength, initializationVectorLength);
                 Span<byte> authenticationTag = buffer.Slice(ciphertextLength + headerLength + initializationVectorLength, authenticationTagLength);
-
                 try
                 {
                     Base64Url.Base64UrlDecode(rawCiphertext, ciphertext, out int ciphertextBytesConsumed, out int ciphertextBytesWritten);
                     Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
-
+                    
                     Encoding.UTF8.GetChars(rawHeader, utf8Header);
                     Encoding.ASCII.GetBytes(utf8Header, header);
 
@@ -296,6 +313,11 @@ namespace JsonWebToken
                         header,
                         initializationVector,
                         authenticationTag);
+
+                    if (compressionAlgorithm != null)
+                    {
+                        decryptedBytes = compressionProvider.Decompress(decryptedBytes).ToArray();
+                    }
                 }
                 finally
                 {
@@ -306,6 +328,10 @@ namespace JsonWebToken
                     if (headerArrayToReturn != null)
                     {
                         ArrayPool<char>.Shared.Return(headerArrayToReturn);
+                    }
+                    if (uncompressedBytesToReturn != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(uncompressedBytesToReturn);
                     }
                 }
 #else
@@ -382,6 +408,21 @@ namespace JsonWebToken
             }
 
             return keys;
+        }
+
+        private static uint ComputeHash(ReadOnlySpan<byte> data)
+        {
+            uint num = 0;
+            if (data != null)
+            {
+                num = 2166136261U;
+                for (int index = 0; index < data.Length; ++index)
+                {
+                    num = (uint)((data[index] ^ (int)num) * 16777619);
+                }
+            }
+
+            return num;
         }
     }
 }

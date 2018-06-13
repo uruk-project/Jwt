@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
 using System.Text;
 
 namespace JsonWebToken
@@ -37,9 +39,9 @@ namespace JsonWebToken
             {
                 Encoding.UTF8.GetBytes(payload, encodedPayload);
 #else
-                var encodedPayload = Encoding.UTF8.GetBytes(payload);
+            var encodedPayload = Encoding.UTF8.GetBytes(payload);
 #endif
-                return EncryptToken(encodedPayload);
+            return EncryptToken(encodedPayload);
 #if NETCOREAPP2_1
             }
             finally
@@ -128,10 +130,10 @@ namespace JsonWebToken
                 Span<byte> asciiEncodedHeader = base64EncodedHeaderLength > JwtConstants.MaxStackallocBytes
                                     ? (arrayByteToReturnToPool = ArrayPool<byte>.Shared.Rent(base64EncodedHeaderLength)).AsSpan(0, base64EncodedHeaderLength)
                                     : stackalloc byte[base64EncodedHeaderLength];
+                byte[] payloadToReturn = null;
 
                 try
                 {
-
                     Span<byte> utf8EncodedHeader = asciiEncodedHeader.Slice(0, headerJsonLength);
                     Encoding.UTF8.GetBytes(headerJson, utf8EncodedHeader);
 
@@ -142,7 +144,23 @@ namespace JsonWebToken
 
                     Encoding.ASCII.GetBytes(base64EncodedHeader, asciiEncodedHeader);
 
+                    CompressionProvider compressionProvider = null;
+                    if (CompressionAlgorithm != null)
+                    {
+                        compressionProvider = CompressionProvider.CreateCompressionProvider(CompressionAlgorithm);
+                        if (compressionProvider == null)
+                        {
+                            throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedCompressionAlgorithm, CompressionAlgorithm));
+                        }
+                    }
+
+                    if (compressionProvider != null)
+                    {
+                        payload = compressionProvider.Compress(payload);
+                    }
+
                     var encryptionResult = encryptionProvider.Encrypt(payload, asciiEncodedHeader);
+
                     int encryptionLength =
                         base64EncodedHeader.Length
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.IV.Length)
@@ -191,10 +209,30 @@ namespace JsonWebToken
                     {
                         ArrayPool<char>.Shared.Return(buffer64HeaderToReturnToPool);
                     }
+
+                    if (payloadToReturn != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(payloadToReturn);
+                    }
                 }
 #else
                 var base64Header = Base64Url.Encode(Serialize(Header));
+                CompressionProvider compressionProvider = null;
+                if (CompressionAlgorithm != null)
+                {
+                    compressionProvider = CompressionProvider.CreateCompressionProvider(CompressionAlgorithm);
+                    if (compressionProvider == null)
+                    {
+                        throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedCompressionAlgorithm, CompressionAlgorithm));
+                    }
+                }
+
+                if (compressionProvider != null)
+                {
+                    payload = compressionProvider.Compress(payload);
+                }
                 var encryptionResult = encryptionProvider.Encrypt(payload.ToArray(), Encoding.ASCII.GetBytes(base64Header));
+
                 if (wrappedKey == null)
                 {
                     return string.Join(
