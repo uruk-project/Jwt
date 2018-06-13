@@ -41,22 +41,22 @@ namespace JsonWebToken
         {
             switch (key)
             {
-                case ClaimNames.Aud:
+                case Claims.Aud:
                     value = Aud == null ? null : new JValue(Aud);
                     return true;
-                case ClaimNames.Exp:
+                case Claims.Exp:
                     value = Exp.HasValue ? new JValue(Exp.Value) : null;
                     return true;
-                case ClaimNames.Iat:
+                case Claims.Iat:
                     value = Iat.HasValue ? new JValue(Iat.Value) : null;
                     return true;
-                case ClaimNames.Iss:
+                case Claims.Iss:
                     value = Iss == null ? null : new JValue(Iss);
                     return true;
-                case ClaimNames.Nbf:
+                case Claims.Nbf:
                     value = Nbf.HasValue ? new JValue(Nbf.HasValue) : null;
                     return true;
-                case ClaimNames.Sub:
+                case Claims.Sub:
                     value = Sub == null ? null : new JValue(Sub);
                     return true;
                 default:

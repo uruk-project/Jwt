@@ -10,10 +10,10 @@ namespace JsonWebToken
     {
         private static IReadOnlyDictionary<string, JTokenType[]> ClientAssertionRequiredClaims = new Dictionary<string, JTokenType[]>
         {
-            { ClaimNames.Iss, new [] { JTokenType.String } },
-            { ClaimNames.Sub, new [] { JTokenType.String } },
-            { ClaimNames.Aud, new [] { JTokenType.String, JTokenType.Array } },
-            { ClaimNames.Exp, new [] { JTokenType.Integer } }
+            { Claims.Iss, new [] { JTokenType.String } },
+            { Claims.Sub, new [] { JTokenType.String } },
+            { Claims.Aud, new [] { JTokenType.String, JTokenType.Array } },
+            { Claims.Exp, new [] { JTokenType.Integer } }
         };
 
         public ClientAssertionDescriptor(JObject payload)
@@ -41,7 +41,7 @@ namespace JsonWebToken
     {
         private static IReadOnlyDictionary<string, JTokenType[]> SoftwareStatementRequiredClaims = new Dictionary<string, JTokenType[]>
         {
-            { ClaimNames.Iss, new [] { JTokenType.String } }
+            { Claims.Iss, new [] { JTokenType.String } }
         };
 
         public SoftwareStatementDescriptor(JObject payload)
@@ -54,8 +54,8 @@ namespace JsonWebToken
         /// </summary>
         public string SoftwareId
         {
-            get { return GetStringClaim(ClaimNames.SoftwareId); }
-            set { AddClaim(ClaimNames.SoftwareId, value); }
+            get { return GetStringClaim(Claims.SoftwareId); }
+            set { AddClaim(Claims.SoftwareId, value); }
         }
     }
 }

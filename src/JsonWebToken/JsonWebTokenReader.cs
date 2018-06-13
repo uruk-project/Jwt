@@ -70,7 +70,7 @@ namespace JsonWebToken
 #if NETCOREAPP2_1
             int length = token.Length;
             byte[] utf8ArrayToReturnToPool = null;
-            var utf8Buffer = length <= JwtConstants.MaxStackallocBytes
+            var utf8Buffer = length <= Constants.MaxStackallocBytes
                   ? stackalloc byte[length]
                   : (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
             try
@@ -94,7 +94,7 @@ namespace JsonWebToken
         private TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Buffer, TokenValidationParameters validationParameters)
         {
             var separators = GetSeparators(utf8Buffer);
-            if (separators.Count == JwtConstants.JwsSeparatorsCount || separators.Count == JwtConstants.JweSeparatorsCount)
+            if (separators.Count == Constants.JwsSeparatorsCount || separators.Count == Constants.JweSeparatorsCount)
             {
                 JwtHeader header;
                 var rawHeader = utf8Buffer.Slice(0, separators[0]);
@@ -113,7 +113,7 @@ namespace JsonWebToken
                 }
 
                 JsonWebToken jwt;
-                if (separators.Count == JwtConstants.JwsSeparatorsCount)
+                if (separators.Count == Constants.JwsSeparatorsCount)
                 {
                     var rawPayload = utf8Buffer.Slice(separators[0] + 1, separators[1] - 1);
                     JwtPayload payload;
@@ -132,7 +132,7 @@ namespace JsonWebToken
 
                     jwt = new JsonWebToken(header, payload, separators);
                 }
-                else if (separators.Count == JwtConstants.JweSeparatorsCount)
+                else if (separators.Count == Constants.JweSeparatorsCount)
                 {
                     var enc = header.Enc;
                     if (string.IsNullOrEmpty(enc))
@@ -164,7 +164,7 @@ namespace JsonWebToken
                         return TokenValidationResult.DecryptionFailed();
                     }
 
-                    if (!string.Equals(header.Cty, JwtConstants.JwtContentType, StringComparison.Ordinal))
+                    if (!string.Equals(header.Cty, HeaderParameters.CtyValues.Jwt, StringComparison.Ordinal))
                     {
                         // The decrypted payload is not a nested JWT
                         jwt = new JsonWebToken(header, decryptedBytes, separators);
@@ -198,7 +198,7 @@ namespace JsonWebToken
         {
             int base64UrlLength = Base64Url.GetArraySizeRequiredToDecode(data.Length);
             byte[] base64UrlArrayToReturnToPool = null;
-            var buffer = base64UrlLength <= JwtConstants.MaxStackallocBytes
+            var buffer = base64UrlLength <= Constants.MaxStackallocBytes
               ? stackalloc byte[base64UrlLength]
               : (base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64UrlLength)).AsSpan(0, base64UrlLength);
             try
@@ -230,7 +230,7 @@ namespace JsonWebToken
             while ((next = token.IndexOf(dot)) != -1)
             {
                 separators.Add(next + (i == 0 ? 0 : 1));
-                if (separators.Count > JwtConstants.MaxJwtSeparatorsCount)
+                if (separators.Count > Constants.MaxJwtSeparatorsCount)
                 {
                     break;
                 }
@@ -282,11 +282,11 @@ namespace JsonWebToken
                 byte[] arrayToReturn = null;
                 char[] headerArrayToReturn = null;
                 byte[] uncompressedBytesToReturn = null;
-                Span<byte> buffer = bufferLength < JwtConstants.MaxStackallocBytes
+                Span<byte> buffer = bufferLength < Constants.MaxStackallocBytes
                     ? stackalloc byte[bufferLength]
                     : (arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength)).AsSpan(0, bufferLength);
 
-                Span<char> utf8Header = headerLength < JwtConstants.MaxStackallocBytes
+                Span<char> utf8Header = headerLength < Constants.MaxStackallocBytes
                     ? stackalloc char[headerLength]
                     : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(headerLength)).AsSpan(0, headerLength);
 

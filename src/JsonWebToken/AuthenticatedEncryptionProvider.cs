@@ -119,7 +119,7 @@ namespace JsonWebToken
                 
                 byte[] arrayToReturnToPool = null;
                 int macLength = authenticatedData.Length + aes.IV.Length + ciphertext.Length + sizeof(long);
-                Span<byte> macBytes = macLength <= JwtConstants.MaxStackallocBytes
+                Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
                     ? stackalloc byte[macLength]
                     : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
                 try
@@ -223,7 +223,7 @@ namespace JsonWebToken
 
             byte[] byteArrayToReturnToPool = null;
             int macLength = authenticatedData.Length + iv.Length + ciphertext.Length + sizeof(long);
-            Span<byte> macBytes = macLength <= JwtConstants.MaxStackallocBytes
+            Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
                                     ? stackalloc byte[macLength]
                                     : (byteArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
             try

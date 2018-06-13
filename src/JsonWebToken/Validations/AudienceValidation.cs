@@ -35,10 +35,10 @@ namespace JsonWebToken.Validations
 
             if (missingAudience)
             {
-                return TokenValidationResult.MissingClaim(jwt, ClaimNames.Aud);
+                return TokenValidationResult.MissingClaim(jwt, Claims.Aud);
             }
 
-            return TokenValidationResult.InvalidClaim(jwt, ClaimNames.Aud);
+            return TokenValidationResult.InvalidClaim(jwt, Claims.Aud);
         }
     }
 }

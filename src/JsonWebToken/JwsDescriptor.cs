@@ -15,7 +15,7 @@ namespace JsonWebToken
         private static readonly string[] DefaultProhibitedClaims = new string[0];
         private static readonly Dictionary<string, JTokenType[]> JwsRequiredHeaderParameters = new Dictionary<string, JTokenType[]>
         {
-            { HeaderParameterNames.Alg, new [] { JTokenType.String } }
+            { HeaderParameters.Alg, new [] { JTokenType.String } }
         };
 
         public JwsDescriptor(JObject payload)
@@ -44,8 +44,8 @@ namespace JsonWebToken
         /// </summary>
         public string Subject
         {
-            get { return GetStringClaim(ClaimNames.Sub); }
-            set { AddClaim(ClaimNames.Sub, value); }
+            get { return GetStringClaim(Claims.Sub); }
+            set { AddClaim(Claims.Sub, value); }
         }
 
         /// <summary>
@@ -53,8 +53,8 @@ namespace JsonWebToken
         /// </summary>
         public string JwtId
         {
-            get { return GetStringClaim(ClaimNames.Jti); }
-            set { AddClaim(ClaimNames.Jti, value); }
+            get { return GetStringClaim(Claims.Jti); }
+            set { AddClaim(Claims.Jti, value); }
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace JsonWebToken
         public string Audience
         {
             get { return Audiences?.FirstOrDefault(); }
-            set { SetClaim(ClaimNames.Aud, value); }
+            set { SetClaim(Claims.Aud, value); }
         }
 
         /// <summary>
@@ -71,8 +71,8 @@ namespace JsonWebToken
         /// </summary>
         public IReadOnlyList<string> Audiences
         {
-            get { return GetListClaims(ClaimNames.Aud); }
-            set { SetClaim(ClaimNames.Aud, value); }
+            get { return GetListClaims(Claims.Aud); }
+            set { SetClaim(Claims.Aud, value); }
         }
 
         /// <summary>
@@ -80,8 +80,8 @@ namespace JsonWebToken
         /// </summary>
         public DateTime? ExpirationTime
         {
-            get { return GetDateTime(ClaimNames.Exp); }
-            set { SetClaim(ClaimNames.Exp, value); }
+            get { return GetDateTime(Claims.Exp); }
+            set { SetClaim(Claims.Exp, value); }
         }
 
         /// <summary>
@@ -89,8 +89,8 @@ namespace JsonWebToken
         /// </summary>
         public string Issuer
         {
-            get { return GetStringClaim(ClaimNames.Iss); }
-            set { AddClaim(ClaimNames.Iss, value); }
+            get { return GetStringClaim(Claims.Iss); }
+            set { AddClaim(Claims.Iss, value); }
         }
 
         /// <summary>
@@ -98,8 +98,8 @@ namespace JsonWebToken
         /// </summary>
         public DateTime? IssuedAt
         {
-            get { return GetDateTime(ClaimNames.Iat); }
-            set { SetClaim(ClaimNames.Iat, value); }
+            get { return GetDateTime(Claims.Iat); }
+            set { SetClaim(Claims.Iat, value); }
         }
 
         /// <summary>
@@ -107,8 +107,8 @@ namespace JsonWebToken
         /// </summary>
         public DateTime? NotBefore
         {
-            get { return GetDateTime(ClaimNames.Nbf); }
-            set { SetClaim(ClaimNames.Nbf, value); }
+            get { return GetDateTime(Claims.Nbf); }
+            set { SetClaim(Claims.Nbf, value); }
         }
 
         public void AddClaim(string name, string value)
@@ -284,8 +284,8 @@ namespace JsonWebToken
         {
             if (Key != null)
             {
-                Header[HeaderParameterNames.Alg] = Key.Alg;
-                Header[HeaderParameterNames.Kid] = Key.Kid;
+                Header[HeaderParameters.Alg] = Key.Alg;
+                Header[HeaderParameters.Kid] = Key.Kid;
             }
 
             var headerJson = Serialize(Header);
@@ -304,9 +304,9 @@ namespace JsonWebToken
             int length = Base64Url.GetArraySizeRequiredToEncode(headerJson.Length)
                 + Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
                 + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBits / 8))
-                + JwtConstants.JwsSeparatorsCount;
+                + Constants.JwsSeparatorsCount;
             byte[] arrayToReturnToPool = null;
-            var buffer = length <= JwtConstants.MaxStackallocBytes
+            var buffer = length <= Constants.MaxStackallocBytes
                   ? stackalloc byte[length]
                   : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
             try
@@ -325,7 +325,7 @@ namespace JsonWebToken
                         Debug.Assert(success);
                         Debug.Assert(signature.Length == signatureBytesWritten);
 
-                        Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount), out int bytesConsumed, out bytesWritten);
+                        Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + Constants.JwsSeparatorsCount), out int bytesConsumed, out bytesWritten);
                     }
                     finally
                     {
@@ -334,9 +334,9 @@ namespace JsonWebToken
                 }
 
 #if NETCOREAPP2_1
-                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount + bytesWritten));
+                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + Constants.JwsSeparatorsCount + bytesWritten));
 #else
-                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + JwtConstants.JwsSeparatorsCount + bytesWritten).ToArray());
+                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + Constants.JwsSeparatorsCount + bytesWritten).ToArray());
 #endif
                 return rawData;
             }
@@ -353,7 +353,7 @@ namespace JsonWebToken
         {
 #if NETCOREAPP2_1
             byte[] arrayToReturnToPool = null;
-            var encodedBytes = input.Length <= JwtConstants.MaxStackallocBytes
+            var encodedBytes = input.Length <= Constants.MaxStackallocBytes
                   ? stackalloc byte[input.Length]
                   : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(input.Length)).AsSpan(0, input.Length);
             try

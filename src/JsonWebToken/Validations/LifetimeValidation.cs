@@ -21,7 +21,7 @@ namespace JsonWebToken.Validations
             var expires = jwt.Payload.Exp;
             if (!expires.HasValue && _requireExpirationTime)
             {
-                return TokenValidationResult.MissingClaim(jwt, ClaimNames.Exp);
+                return TokenValidationResult.MissingClaim(jwt, Claims.Exp);
             }
 
             var utcNow = DateTime.UtcNow;

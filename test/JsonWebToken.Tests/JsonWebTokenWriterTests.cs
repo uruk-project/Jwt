@@ -116,7 +116,7 @@ namespace JsonWebToken.Tests
             descriptor.Payload = plaintext;
             descriptor.Key = key;
             descriptor.EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256;
-            descriptor.CompressionAlgorithm = CompressionAlgorithms.GZip;
+            descriptor.CompressionAlgorithm = CompressionAlgorithms.Deflate;
 
             JsonWebTokenWriter writer = new JsonWebTokenWriter();
             var value = writer.WriteToken(descriptor);

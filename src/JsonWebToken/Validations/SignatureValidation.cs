@@ -20,7 +20,7 @@ namespace JsonWebToken.Validations
         public TokenValidationResult TryValidate(TokenValidationContext context)
         {
             var jwt = context.Jwt;
-            if (jwt.Separators.Count != JwtConstants.JwsSeparatorsCount)
+            if (jwt.Separators.Count != Constants.JwsSeparatorsCount)
             {
                 // This is not a JWS
                 return TokenValidationResult.Success(jwt);

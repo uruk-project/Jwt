@@ -3,24 +3,12 @@ namespace JsonWebToken
     /// <summary>
     /// Constants for Json Web tokens.
     /// </summary>
-    public static class JwtConstants
+    internal static class Constants
     {
         /// <summary>
-        /// JWT media type for 'typ' header parameter.
+        /// Base64Url symbol table;
         /// </summary>
-        public const string JwtMediaType = "JWT";
-
-        /// <summary>
-        /// JWT content type for 'cty' header parameter.
-        /// </summary>
-        public const string JwtContentType = "JWT";
-
-        /// <summary>
-        /// Long token type.
-        /// </summary>
-        public const string TokenTypeAlt = "urn:ietf:params:oauth:token-type:jwt";
-     
-        public const string JwsCompactSerializationCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-";
+        internal const string JwsCompactSerializationCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-";
 
         /// <summary>
         /// The number of separators in a JWE token.
@@ -37,7 +25,7 @@ namespace JsonWebToken
         /// </summary>
         internal const int MaxJwtSeparatorsCount = 4;
 
-        public const int MaxStackallocBytes = 1024 * 1024;
+        internal const int MaxStackallocBytes = 1024 * 1024;
 
         internal static readonly int DecompressionBufferLength = 1024;
     }

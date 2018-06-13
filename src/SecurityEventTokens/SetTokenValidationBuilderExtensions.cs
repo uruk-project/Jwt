@@ -9,7 +9,7 @@
                 throw new System.ArgumentNullException(nameof(builder));
             }
 
-            builder.RequireClaim(ClaimNames.Events);
+            builder.RequireClaim(Claims.Events);
 
             return builder;
         }
