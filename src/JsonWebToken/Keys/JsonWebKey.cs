@@ -265,7 +265,7 @@ namespace JsonWebToken
             var json = CloneMinimal().ToString();
             int jsonLength = json.Length;
             byte[] arrayToReturnToPool = null;
-            Span<byte> buffer = jsonLength <= JwtConstants.MaxStackallocBytes
+            Span<byte> buffer = jsonLength <= Constants.MaxStackallocBytes
                                 ? stackalloc byte[jsonLength]
                                 : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(jsonLength)).AsSpan(0, jsonLength);
             try

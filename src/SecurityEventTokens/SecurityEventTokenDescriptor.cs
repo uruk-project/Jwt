@@ -10,10 +10,10 @@ namespace JsonWebToken
 
         private static readonly Dictionary<string, JTokenType[]> SetRequiredClaims = new Dictionary<string, JTokenType[]>
         {
-            { ClaimNames.Iss, new[] { JTokenType.String } },
-            { ClaimNames.Iat, new[] { JTokenType.Integer} },
-            { ClaimNames.Jti, new[] { JTokenType.String } },
-            { ClaimNames.Events, new[] { JTokenType.Object } }
+            { Claims.Iss, new[] { JTokenType.String } },
+            { Claims.Iat, new[] { JTokenType.Integer} },
+            { Claims.Jti, new[] { JTokenType.String } },
+            { Claims.Events, new[] { JTokenType.Object } }
         };
 
         public SecurityEventTokenDescriptor()
@@ -29,16 +29,16 @@ namespace JsonWebToken
         /// Gets or sets the set of event statements that each provide 
         /// information describing a single logical event that has occurred about a security subject.
         /// </summary>
-        public JObject Events => GetClaim(ClaimNames.Events);
+        public JObject Events => GetClaim(Claims.Events);
 
         public void AddEvent(string eventName, JObject @event)
         {
-            AddClaim(ClaimNames.Events, new JProperty(eventName, @event));
+            AddClaim(Claims.Events, new JProperty(eventName, @event));
         }
 
         public void AddEvent(string eventName, IEvent @event)
         {
-            AddClaim(ClaimNames.Events, new JProperty(eventName, JObject.FromObject(@event)));
+            AddClaim(Claims.Events, new JProperty(eventName, JObject.FromObject(@event)));
         }
 
         /// <summary>
@@ -46,8 +46,8 @@ namespace JsonWebToken
         /// </summary>
         public string TransactionNumber
         {
-            get => GetStringClaim(ClaimNames.Txn);
-            set => AddClaim(ClaimNames.Txn, value);
+            get => GetStringClaim(Claims.Txn);
+            set => AddClaim(Claims.Txn, value);
         }
 
         /// <summary>
@@ -55,8 +55,8 @@ namespace JsonWebToken
         /// </summary>
         public DateTime? TimeOfEvent
         {
-            get => GetDateTime(ClaimNames.Toe);
-            set => AddClaim(ClaimNames.Toe, value);
+            get => GetDateTime(Claims.Toe);
+            set => AddClaim(Claims.Toe, value);
         }
 
         protected override IReadOnlyDictionary<string, JTokenType[]> RequiredClaims => SetRequiredClaims;

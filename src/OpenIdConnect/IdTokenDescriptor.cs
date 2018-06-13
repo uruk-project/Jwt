@@ -8,32 +8,32 @@ namespace JsonWebToken
     {
         private static readonly IReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredClaims = new Dictionary<string, JTokenType[]>
         {
-            { ClaimNames.Iss, new [] { JTokenType.String} },
-            { ClaimNames.Sub, new [] { JTokenType.String} },
-            { ClaimNames.Aud, new [] { JTokenType.String, JTokenType.Array} },
-            { ClaimNames.Exp, new [] { JTokenType.Integer } },
-            { ClaimNames.Iat, new [] { JTokenType.Integer } }
+            { Claims.Iss, new [] { JTokenType.String} },
+            { Claims.Sub, new [] { JTokenType.String} },
+            { Claims.Aud, new [] { JTokenType.String, JTokenType.Array} },
+            { Claims.Exp, new [] { JTokenType.Integer } },
+            { Claims.Iat, new [] { JTokenType.Integer } }
         };
         private static readonly IReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredClaimsImplicit = new Dictionary<string, JTokenType[]>
         {
-            { ClaimNames.Iss, new [] { JTokenType.String} },
-            { ClaimNames.Sub, new [] { JTokenType.String} },
-            { ClaimNames.Aud, new [] { JTokenType.String, JTokenType.Array} },
-            { ClaimNames.Exp, new [] { JTokenType.Integer } },
-            { ClaimNames.Iat, new [] { JTokenType.Integer } },
-            { ClaimNames.Nonce, new [] { JTokenType.String} },
-            { ClaimNames.AtHash, new [] { JTokenType.String } }
+            { Claims.Iss, new [] { JTokenType.String} },
+            { Claims.Sub, new [] { JTokenType.String} },
+            { Claims.Aud, new [] { JTokenType.String, JTokenType.Array} },
+            { Claims.Exp, new [] { JTokenType.Integer } },
+            { Claims.Iat, new [] { JTokenType.Integer } },
+            { Claims.Nonce, new [] { JTokenType.String} },
+            { Claims.AtHash, new [] { JTokenType.String } }
         };
         private static readonly IReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredClaimsHybrid = new Dictionary<string, JTokenType[]>
         {
-            { ClaimNames.Iss, new [] { JTokenType.String } },
-            { ClaimNames.Sub, new [] { JTokenType.String } },
-            { ClaimNames.Aud, new [] { JTokenType.String, JTokenType.Array} },
-            { ClaimNames.Exp, new [] { JTokenType.Integer } },
-            { ClaimNames.Iat, new [] { JTokenType.Integer } },
-            { ClaimNames.Nonce, new [] { JTokenType.String } },
-            { ClaimNames.AtHash, new [] { JTokenType.String } },
-            { ClaimNames.CHash, new [] { JTokenType.String } }
+            { Claims.Iss, new [] { JTokenType.String } },
+            { Claims.Sub, new [] { JTokenType.String } },
+            { Claims.Aud, new [] { JTokenType.String, JTokenType.Array} },
+            { Claims.Exp, new [] { JTokenType.Integer } },
+            { Claims.Iat, new [] { JTokenType.Integer } },
+            { Claims.Nonce, new [] { JTokenType.String } },
+            { Claims.AtHash, new [] { JTokenType.String } },
+            { Claims.CHash, new [] { JTokenType.String } }
         };
 
         public IdTokenDescriptor()
@@ -52,8 +52,8 @@ namespace JsonWebToken
         /// </summary>
         public DateTime? AuthenticationTime
         {
-            get => GetDateTime(ClaimNames.AuthTime);
-            set => AddClaim(ClaimNames.AuthTime, value);
+            get => GetDateTime(Claims.AuthTime);
+            set => AddClaim(Claims.AuthTime, value);
         }
 
         /// <summary>
@@ -61,8 +61,8 @@ namespace JsonWebToken
         /// </summary>
         public string Nonce
         {
-            get => GetStringClaim(ClaimNames.Nonce);
-            set => AddClaim(ClaimNames.Nonce, value);
+            get => GetStringClaim(Claims.Nonce);
+            set => AddClaim(Claims.Nonce, value);
         }
 
         /// <summary>
@@ -70,18 +70,18 @@ namespace JsonWebToken
         /// </summary>
         public string AuthenticationContextClassReference
         {
-            get => GetStringClaim(ClaimNames.Acr);
-            set => AddClaim(ClaimNames.Acr, value);
+            get => GetStringClaim(Claims.Acr);
+            set => AddClaim(Claims.Acr, value);
         }
 
         /// <summary>
         /// Gets or sets the Authentication Methods References used in the authentication.
         /// </summary>
-        public IReadOnlyList<string> AuthenticationMethodsReferences => GetListClaims(ClaimNames.Amr);
+        public IReadOnlyList<string> AuthenticationMethodsReferences => GetListClaims(Claims.Amr);
 
         public void AddAuthenticationMethodsReferences(string acr)
         {
-            AddClaim(ClaimNames.Acr, acr);
+            AddClaim(Claims.Acr, acr);
         }
 
         /// <summary>
@@ -89,8 +89,8 @@ namespace JsonWebToken
         /// </summary>
         public string AuthorizedParty
         {
-            get => GetStringClaim(ClaimNames.Azp);
-            set => AddClaim(ClaimNames.Azp, value);
+            get => GetStringClaim(Claims.Azp);
+            set => AddClaim(Claims.Azp, value);
         }
 
         /// <summary>
@@ -98,8 +98,8 @@ namespace JsonWebToken
         /// </summary>
         public string AccessTokenHash
         {
-            get => GetStringClaim(ClaimNames.AtHash);
-            set => AddClaim(ClaimNames.AtHash, value);
+            get => GetStringClaim(Claims.AtHash);
+            set => AddClaim(Claims.AtHash, value);
         }
 
         /// <summary>
@@ -107,8 +107,8 @@ namespace JsonWebToken
         /// </summary>
         public string CodeHash
         {
-            get => GetStringClaim(ClaimNames.CHash);
-            set => AddClaim(ClaimNames.CHash, value);
+            get => GetStringClaim(Claims.CHash);
+            set => AddClaim(Claims.CHash, value);
         }
 
         protected override IReadOnlyDictionary<string, JTokenType[]> RequiredClaims
@@ -134,8 +134,8 @@ namespace JsonWebToken
         /// </summary>
         public string GivenName
         {
-            get => GetStringClaim(ClaimNames.GivenName);
-            set => AddClaim(ClaimNames.GivenName, value);
+            get => GetStringClaim(Claims.GivenName);
+            set => AddClaim(Claims.GivenName, value);
         }
 
         /// <summary>
@@ -143,8 +143,8 @@ namespace JsonWebToken
         /// </summary>
         public string FamilyName
         {
-            get => GetStringClaim(ClaimNames.FamilyName);
-            set => AddClaim(ClaimNames.FamilyName, value);
+            get => GetStringClaim(Claims.FamilyName);
+            set => AddClaim(Claims.FamilyName, value);
         }
 
         /// <summary>
@@ -152,8 +152,8 @@ namespace JsonWebToken
         /// </summary>
         public string MiddleName
         {
-            get => GetStringClaim(ClaimNames.MiddleName);
-            set => AddClaim(ClaimNames.MiddleName, value);
+            get => GetStringClaim(Claims.MiddleName);
+            set => AddClaim(Claims.MiddleName, value);
         }
 
         /// <summary>
@@ -161,8 +161,8 @@ namespace JsonWebToken
         /// </summary>
         public string Nickname
         {
-            get => GetStringClaim(ClaimNames.Nickname);
-            set => AddClaim(ClaimNames.Nickname, value);
+            get => GetStringClaim(Claims.Nickname);
+            set => AddClaim(Claims.Nickname, value);
         }
 
         /// <summary>
@@ -170,8 +170,8 @@ namespace JsonWebToken
         /// </summary>
         public string PreferredUsername
         {
-            get => GetStringClaim(ClaimNames.PreferredUsername);
-            set => AddClaim(ClaimNames.PreferredUsername, value);
+            get => GetStringClaim(Claims.PreferredUsername);
+            set => AddClaim(Claims.PreferredUsername, value);
         }
 
         /// <summary>
@@ -179,8 +179,8 @@ namespace JsonWebToken
         /// </summary>
         public string Profile
         {
-            get => GetStringClaim(ClaimNames.Profile);
-            set => AddClaim(ClaimNames.Profile, value);
+            get => GetStringClaim(Claims.Profile);
+            set => AddClaim(Claims.Profile, value);
         }
 
         /// <summary>
@@ -188,8 +188,8 @@ namespace JsonWebToken
         /// </summary>
         public string Picture
         {
-            get => GetStringClaim(ClaimNames.Picture);
-            set => AddClaim(ClaimNames.Picture, value);
+            get => GetStringClaim(Claims.Picture);
+            set => AddClaim(Claims.Picture, value);
         }
 
         /// <summary>
@@ -197,8 +197,8 @@ namespace JsonWebToken
         /// </summary>
         public string Website
         {
-            get => GetStringClaim(ClaimNames.Website);
-            set => AddClaim(ClaimNames.Website, value);
+            get => GetStringClaim(Claims.Website);
+            set => AddClaim(Claims.Website, value);
         }
 
         /// <summary>
@@ -206,8 +206,8 @@ namespace JsonWebToken
         /// </summary>
         public string Email
         {
-            get => GetStringClaim(ClaimNames.Email);
-            set => AddClaim(ClaimNames.Email, value);
+            get => GetStringClaim(Claims.Email);
+            set => AddClaim(Claims.Email, value);
         }
 
         /// <summary>
@@ -215,8 +215,8 @@ namespace JsonWebToken
         /// </summary>
         public bool? EmailVerified
         {
-            get => GetBoolClaim(ClaimNames.EmailVerified);
-            set => AddClaim(ClaimNames.EmailVerified, value);
+            get => GetBoolClaim(Claims.EmailVerified);
+            set => AddClaim(Claims.EmailVerified, value);
         }
 
         /// <summary>
@@ -224,8 +224,8 @@ namespace JsonWebToken
         /// </summary>
         public string Gender
         {
-            get => GetStringClaim(ClaimNames.Gender);
-            set => AddClaim(ClaimNames.Gender, value);
+            get => GetStringClaim(Claims.Gender);
+            set => AddClaim(Claims.Gender, value);
         }
 
         /// <summary>
@@ -233,8 +233,8 @@ namespace JsonWebToken
         /// </summary>
         public string Birthdate
         {
-            get => GetStringClaim(ClaimNames.Birthdate);
-            set => AddClaim(ClaimNames.Birthdate, value);
+            get => GetStringClaim(Claims.Birthdate);
+            set => AddClaim(Claims.Birthdate, value);
         }
 
         /// <summary>
@@ -242,8 +242,8 @@ namespace JsonWebToken
         /// </summary>
         public string Zoneinfo
         {
-            get => GetStringClaim(ClaimNames.Zoneinfo);
-            set => AddClaim(ClaimNames.Zoneinfo, value);
+            get => GetStringClaim(Claims.Zoneinfo);
+            set => AddClaim(Claims.Zoneinfo, value);
         }
 
         /// <summary>
@@ -251,8 +251,8 @@ namespace JsonWebToken
         /// </summary>
         public string Locale
         {
-            get => GetStringClaim(ClaimNames.Locale);
-            set => AddClaim(ClaimNames.Locale, value);
+            get => GetStringClaim(Claims.Locale);
+            set => AddClaim(Claims.Locale, value);
         }
 
         /// <summary>
@@ -260,8 +260,8 @@ namespace JsonWebToken
         /// </summary>
         public string PhoneNumber
         {
-            get => GetStringClaim(ClaimNames.PhoneNumber);
-            set => AddClaim(ClaimNames.PhoneNumber, value);
+            get => GetStringClaim(Claims.PhoneNumber);
+            set => AddClaim(Claims.PhoneNumber, value);
         }
 
         /// <summary>
@@ -269,8 +269,8 @@ namespace JsonWebToken
         /// </summary>
         public bool? PhoneNumberVerified
         {
-            get => GetBoolClaim(ClaimNames.PhoneNumberVerified);
-            set => AddClaim(ClaimNames.PhoneNumberVerified, value);
+            get => GetBoolClaim(Claims.PhoneNumberVerified);
+            set => AddClaim(Claims.PhoneNumberVerified, value);
         }
 
         /// <summary>
@@ -280,11 +280,11 @@ namespace JsonWebToken
         {
             get
             {
-                var address = GetStringClaim(HeaderParameterNames.Address);
+                var address = GetStringClaim(HeaderParameters.Address);
                 return string.IsNullOrEmpty(address) ? null : Address.FromJson(address);
             }
 
-            set => Payload[HeaderParameterNames.Address] = value?.ToString();
+            set => Payload[HeaderParameters.Address] = value?.ToString();
         }
 
         /// <summary>
@@ -292,8 +292,8 @@ namespace JsonWebToken
         /// </summary>
         public DateTime? UpdatedAt
         {
-            get => GetDateTime(ClaimNames.UpdatedAt);
-            set => AddClaim(ClaimNames.UpdatedAt, value);
+            get => GetDateTime(Claims.UpdatedAt);
+            set => AddClaim(Claims.UpdatedAt, value);
         }
     }
 }

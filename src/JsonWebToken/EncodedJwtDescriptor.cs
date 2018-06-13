@@ -11,14 +11,14 @@ namespace JsonWebToken
     {
         public string EncryptionAlgorithm
         {
-            get => GetHeaderParameter(HeaderParameterNames.Enc);
-            set => Header[HeaderParameterNames.Enc] = value;
+            get => GetHeaderParameter(HeaderParameters.Enc);
+            set => Header[HeaderParameters.Enc] = value;
         }
 
         public string CompressionAlgorithm
         {
-            get => GetHeaderParameter(HeaderParameterNames.Zip);
-            set => Header[HeaderParameterNames.Zip] = value;
+            get => GetHeaderParameter(HeaderParameters.Zip);
+            set => Header[HeaderParameters.Zip] = value;
         }
 
         unsafe protected string EncryptToken(string payload)
@@ -31,7 +31,7 @@ namespace JsonWebToken
 #if NETCOREAPP2_1
             int payloadLength = payload.Length;
             byte[] payloadToReturnToPool = null;
-            Span<byte> encodedPayload = payloadLength > JwtConstants.MaxStackallocBytes
+            Span<byte> encodedPayload = payloadLength > Constants.MaxStackallocBytes
                              ? (payloadToReturnToPool = ArrayPool<byte>.Shared.Rent(payloadLength)).AsSpan(0, payloadLength)
                              : stackalloc byte[payloadLength];
 
@@ -113,9 +113,9 @@ namespace JsonWebToken
                 throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
             }
 
-            Header[HeaderParameterNames.Enc] = encryptionAlgorithm;
-            Header[HeaderParameterNames.Alg] = key.Alg;
-            Header[HeaderParameterNames.Kid] = key.Kid;
+            Header[HeaderParameters.Enc] = encryptionAlgorithm;
+            Header[HeaderParameters.Alg] = key.Alg;
+            Header[HeaderParameters.Kid] = key.Kid;
 
             try
             {
@@ -127,7 +127,7 @@ namespace JsonWebToken
                 byte[] arrayByteToReturnToPool = null;
                 char[] arrayCharToReturnToPool = null;
                 char[] buffer64HeaderToReturnToPool = null;
-                Span<byte> asciiEncodedHeader = base64EncodedHeaderLength > JwtConstants.MaxStackallocBytes
+                Span<byte> asciiEncodedHeader = base64EncodedHeaderLength > Constants.MaxStackallocBytes
                                     ? (arrayByteToReturnToPool = ArrayPool<byte>.Shared.Rent(base64EncodedHeaderLength)).AsSpan(0, base64EncodedHeaderLength)
                                     : stackalloc byte[base64EncodedHeaderLength];
                 byte[] payloadToReturn = null;
@@ -137,7 +137,7 @@ namespace JsonWebToken
                     Span<byte> utf8EncodedHeader = asciiEncodedHeader.Slice(0, headerJsonLength);
                     Encoding.UTF8.GetBytes(headerJson, utf8EncodedHeader);
 
-                    Span<char> base64EncodedHeader = base64EncodedHeaderLength > JwtConstants.MaxStackallocBytes
+                    Span<char> base64EncodedHeader = base64EncodedHeaderLength > Constants.MaxStackallocBytes
                                                     ? (buffer64HeaderToReturnToPool = ArrayPool<char>.Shared.Rent(base64EncodedHeaderLength)).AsSpan(0, base64EncodedHeaderLength)
                                                     : stackalloc char[base64EncodedHeaderLength];
                     int bytesWritten = Base64Url.Base64UrlEncode(utf8EncodedHeader, base64EncodedHeader);
@@ -166,13 +166,13 @@ namespace JsonWebToken
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.IV.Length)
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.Ciphertext.Length)
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.AuthenticationTag.Length)
-                        + JwtConstants.JweSeparatorsCount;
+                        + Constants.JweSeparatorsCount;
                     if (wrappedKey != null)
                     {
                         encryptionLength += Base64Url.GetArraySizeRequiredToEncode(wrappedKey.Length);
                     }
 
-                    Span<char> encryptedToken = encryptionLength > JwtConstants.MaxStackallocBytes
+                    Span<char> encryptedToken = encryptionLength > Constants.MaxStackallocBytes
                                                 ? (arrayCharToReturnToPool = ArrayPool<char>.Shared.Rent(encryptionLength)).AsSpan(0, encryptionLength)
                                                 : stackalloc char[encryptionLength];
 

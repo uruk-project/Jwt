@@ -3,7 +3,7 @@ namespace JsonWebToken
     /// <summary>
     /// List of header parameter names see: http://tools.ietf.org/html/rfc7519#section-5.
     /// </summary>
-    public static class HeaderParameterNames
+    public static class HeaderParameters
     {
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7515#section-4.1.1
@@ -68,5 +68,13 @@ namespace JsonWebToken
         public const string Zip = "zip";
 
         public const string Address = "address";
+
+        public static class CtyValues
+        {
+            /// <summary>
+            /// JWT content type for 'cty' header parameter.
+            /// </summary>
+            public const string Jwt = "JWT";
+        }
     }
 }

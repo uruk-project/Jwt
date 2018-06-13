@@ -31,13 +31,13 @@ namespace JsonWebToken
             {
                 using (var compressionStream = CreateDecompressionStream(inputStream))
                 {
-                    var buffer = new byte[JwtConstants.DecompressionBufferLength];
+                    var buffer = new byte[Constants.DecompressionBufferLength];
                     int uncompressedLength = 0;
                     int readData = 0;
-                    while ((readData = compressionStream.Read(buffer, uncompressedLength, JwtConstants.DecompressionBufferLength)) != 0)
+                    while ((readData = compressionStream.Read(buffer, uncompressedLength, Constants.DecompressionBufferLength)) != 0)
                     {
                         uncompressedLength += readData;
-                        if (readData < JwtConstants.DecompressionBufferLength)
+                        if (readData < Constants.DecompressionBufferLength)
                         {
                             break;
                         }

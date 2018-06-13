@@ -38,67 +38,67 @@ namespace JsonWebToken
 
         public string Algorithm
         {
-            get => GetHeaderParameter(HeaderParameterNames.Alg);
-            set => Header[HeaderParameterNames.Alg] = value;
+            get => GetHeaderParameter(HeaderParameters.Alg);
+            set => Header[HeaderParameters.Alg] = value;
         }
 
         public string KeyId
         {
-            get => GetHeaderParameter(HeaderParameterNames.Kid);
-            set => Header[HeaderParameterNames.Kid] = value;
+            get => GetHeaderParameter(HeaderParameters.Kid);
+            set => Header[HeaderParameters.Kid] = value;
         }
 
         public string JwkSetUrl
         {
-            get => GetHeaderParameter(HeaderParameterNames.Jku);
-            set => Header[HeaderParameterNames.Jku] = value;
+            get => GetHeaderParameter(HeaderParameters.Jku);
+            set => Header[HeaderParameters.Jku] = value;
         }
 
         public JsonWebKey JsonWebKey
         {
             get
             {
-                var jwk = GetHeaderParameter(HeaderParameterNames.Jwk);
+                var jwk = GetHeaderParameter(HeaderParameters.Jwk);
                 return string.IsNullOrEmpty(jwk) ? null : JsonWebKey.FromJson(jwk);
             }
 
-            set => Header[HeaderParameterNames.Jwk] = value?.ToString();
+            set => Header[HeaderParameters.Jwk] = value?.ToString();
         }
 
         public string X509Url
         {
-            get => GetHeaderParameter(HeaderParameterNames.X5u);
-            set => Header[HeaderParameterNames.X5u] = value;
+            get => GetHeaderParameter(HeaderParameters.X5u);
+            set => Header[HeaderParameters.X5u] = value;
         }
 
         public IList<string> X509CertificateChain
         {
-            get => GetHeaderParameters(HeaderParameterNames.X5c);
-            set => Header[HeaderParameterNames.X5c] = JArray.FromObject(value);
+            get => GetHeaderParameters(HeaderParameters.X5c);
+            set => Header[HeaderParameters.X5c] = JArray.FromObject(value);
         }
 
         public string X509CertificateSha1Thumbprint
         {
-            get => GetHeaderParameter(HeaderParameterNames.X5t);
-            set => Header[HeaderParameterNames.X5t] = value;
+            get => GetHeaderParameter(HeaderParameters.X5t);
+            set => Header[HeaderParameters.X5t] = value;
         }
 
         public string Type
         {
-            get => GetHeaderParameter(HeaderParameterNames.Typ);
-            set => Header[HeaderParameterNames.Typ] = value;
+            get => GetHeaderParameter(HeaderParameters.Typ);
+            set => Header[HeaderParameters.Typ] = value;
         }
 
         public string ContentType
         {
-            get => GetHeaderParameter(HeaderParameterNames.Cty);
-            set => Header[HeaderParameterNames.Cty] = value;
+            get => GetHeaderParameter(HeaderParameters.Cty);
+            set => Header[HeaderParameters.Cty] = value;
         }
 
         public IList<string> Critical
         {
-            get => GetHeaderParameters(HeaderParameterNames.Cty);
-            set => Header[HeaderParameterNames.Cty] = JArray.FromObject(value);
+            get => GetHeaderParameters(HeaderParameters.Cty);
+            set => Header[HeaderParameters.Cty] = JArray.FromObject(value);
         }
 
         public abstract string Encode();
