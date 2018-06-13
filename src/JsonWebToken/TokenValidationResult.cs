@@ -12,6 +12,7 @@ namespace JsonWebToken
 
         public string ErrorClaim { get; private set; }
         public string ErrorHeader { get; private set; }
+        public Exception Exception { get; private set; }
 
         public static TokenValidationResult Expired(JsonWebToken token)
         {
@@ -141,6 +142,15 @@ namespace JsonWebToken
             {
                 Status = TokenValidationStatus.MissingHeader,
                 ErrorHeader = header
+            };
+        }
+
+        public static TokenValidationResult DecompressionFailed(Exception exception = null)
+        {
+            return new TokenValidationResult
+            {
+                Status = TokenValidationStatus.DecompressionFailed,
+                Exception = exception
             };
         }
     }

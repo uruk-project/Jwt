@@ -9,8 +9,6 @@ namespace JsonWebToken
     {
         private int _defaultTokenLifetimeInMinutes = DefaultTokenLifetimeInMinutes;
 
-        private static readonly byte dot = Convert.ToByte('.');
-
         /// <summary>
         /// Default lifetime of tokens created. When creating tokens, if 'expires' and 'notbefore' are both null, then a default will be set to: expires = DateTime.UtcNow, notbefore = DateTime.UtcNow + TimeSpan.FromMinutes(TokenLifetimeInMinutes).
         /// </summary>

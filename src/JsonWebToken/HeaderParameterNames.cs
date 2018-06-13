@@ -66,6 +66,7 @@ namespace JsonWebToken
         /// see:https://tools.ietf.org/html/rfc7516#section-4.1.3
         /// </summary>
         public const string Zip = "zip";
-        public static readonly string Address;
+
+        public const string Address = "address";
     }
 }

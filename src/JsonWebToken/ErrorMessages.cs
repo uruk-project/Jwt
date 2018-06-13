@@ -41,6 +41,7 @@ namespace JsonWebToken
         public const string NotSupportedEncryptionAlgorithm = "Encryption failed. No support for: Algorithm: '{0}'.";
         public const string EncryptionFailed = "Encryption failed failed for: Algorithm: '{0}', key: '{1}'. See inner exception.";
         public const string NotSuportedAlgorithmForKeyWrap = "Key wrap is not supported for algorithm '{0}'.";
+        public const string NotSuportedCompressionAlgorithm = "Compression algorithm '{0}' is not supported.";
 
         public const string InvalidSymmetricKeySize = "Invalid key size. Valid key sizes are: 256, 384, and 512.";
         public const string InvalidEcdsaKeySize = "Invalid key size for '{0}'. Valid key size must be '{1}' bits. Key size: '{2}'.";
