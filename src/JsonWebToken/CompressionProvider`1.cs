@@ -1,0 +1,56 @@
+﻿using System;
+using System.IO;
+
+namespace JsonWebToken
+{
+    public abstract class CompressionProvider<TStream> : CompressionProvider where TStream : Stream
+    {
+        public abstract TStream CreateDecompressionStream(Stream outputStream);
+
+        public abstract TStream CreateCompressionStream(Stream outputStream);
+
+        public override Span<byte> Compress(ReadOnlySpan<byte> ciphertext)
+        {
+            using (var outputStream = new MemoryStream())
+            using (var compressionStream = CreateCompressionStream(outputStream))
+            {
+#if NETCOREAPP2_1
+                compressionStream.Write(ciphertext);
+#else
+                compressionStream.Write(ciphertext.ToArray(), 0, ciphertext.Length);
+#endif
+                compressionStream.Flush();
+                compressionStream.Close();
+                return outputStream.ToArray();
+            }
+        }
+
+        public override Span<byte> Decompress(ReadOnlySpan<byte> compressedCiphertext)
+        {
+            using (var inputStream = new MemoryStream(compressedCiphertext.ToArray()))
+            {
+                using (var compressionStream = CreateDecompressionStream(inputStream))
+                {
+                    var buffer = new byte[JwtConstants.DecompressionBufferLength];
+                    int uncompressedLength = 0;
+                    int readData = 0;
+                    while ((readData = compressionStream.Read(buffer, uncompressedLength, JwtConstants.DecompressionBufferLength)) != 0)
+                    {
+                        uncompressedLength += readData;
+                        if (readData < JwtConstants.DecompressionBufferLength)
+                        {
+                            break;
+                        }
+
+                        if (uncompressedLength == buffer.Length)
+                        {
+                            Array.Resize(ref buffer, buffer.Length * 2);
+                        }
+                    }
+
+                    return buffer.AsSpan().Slice(0, uncompressedLength);
+                }
+            }
+        }
+    }
+}
