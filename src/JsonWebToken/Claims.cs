@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
 namespace JsonWebToken
 {
     /// <summary>
@@ -194,5 +198,35 @@ namespace JsonWebToken
         /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
         public const string SoftwareId = "software_id";
+
+        /// <summary>
+        /// https://tools.ietf.org/html/draft-richer-vectors-of-trust-11
+        /// </summary>
+        public const string Vot = "vot";
+
+        /// <summary>
+        /// https://tools.ietf.org/html/draft-richer-vectors-of-trust-11
+        /// </summary>
+        public const string Vtm = "vtm";
+
+        /// <summary>
+        /// https://tools.ietf.org/html/draft-ietf-oauth-token-exchange-14
+        /// </summary>
+        public const string Act = "act";
+
+        /// <summary>   
+        /// https://tools.ietf.org/html/draft-ietf-oauth-token-exchange-14
+        /// </summary>
+        public const string Scope = "scope";
+
+        /// <summary>
+        /// https://tools.ietf.org/html/draft-ietf-oauth-token-exchange-14
+        /// </summary>
+        public const string ClientId = "client_id";
+
+        /// <summary>
+        /// https://tools.ietf.org/html/draft-ietf-oauth-token-exchange-14
+        /// </summary>
+        public const string MayAct = "may_act";
     }
 }
