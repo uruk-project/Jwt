@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,15 +14,15 @@ namespace JsonWebToken
             NullValueHandling = NullValueHandling.Ignore
         };
 
-        private static readonly Dictionary<string, JTokenType[]> DefaultRequiredHeaderParameters = new Dictionary<string, JTokenType[]>();
+        private static readonly Dictionary<string, Type[]> DefaultRequiredHeaderParameters = new Dictionary<string, Type[]>();
         private JsonWebKey _key;
 
-        public JwtDescriptor()
+        public JwtDescriptor(IDictionary<string, object> header)
         {
-            Header = new JObject();
+            Header = header;
         }
 
-        public JObject Header { get; set; }
+        public IDictionary<string, object> Header { get; }
 
         public JsonWebKey Key
         {
@@ -34,7 +35,7 @@ namespace JsonWebToken
             }
         }
 
-        protected virtual IReadOnlyDictionary<string, JTokenType[]> RequiredHeaderParameters => DefaultRequiredHeaderParameters;
+        protected virtual IReadOnlyDictionary<string, Type[]> RequiredHeaderParameters => DefaultRequiredHeaderParameters;
 
         public string Algorithm
         {
@@ -97,17 +98,17 @@ namespace JsonWebToken
 
         public IList<string> Critical
         {
-            get => GetHeaderParameters(HeaderParameters.Cty);
-            set => Header[HeaderParameters.Cty] = JArray.FromObject(value);
+            get => GetHeaderParameters(HeaderParameters.Crit);
+            set => Header[HeaderParameters.Crit] = JArray.FromObject(value);
         }
 
         public abstract string Encode();
 
         protected string GetHeaderParameter(string headerName)
         {
-            if (Header.TryGetValue(headerName, out JToken value))
+            if (Header.TryGetValue(headerName, out object value))
             {
-                return value.Value<string>();
+                return (string)value;
             }
 
             return null;
@@ -115,29 +116,37 @@ namespace JsonWebToken
 
         protected IList<string> GetHeaderParameters(string claimType)
         {
-            if (Header.TryGetValue(claimType, out JToken value))
+            if (Header.TryGetValue(claimType, out object value))
             {
-                if (value.Type == JTokenType.Array)
+                var list = value as IList<string>;
+                if (list != null)
                 {
-                    return new List<string>(value.Values<string>());
+                    return list;
+                }
+                else
+                {
+                    var strValue = value as string;
+                    if (strValue != null)
+                    {
+                        return new List<string>(new[] { strValue });
+                    }
                 }
 
-                return new List<string>(new[] { value.Value<string>() });
             }
 
             return null;
         }
         protected bool HasMandatoryHeaderParameter(string header)
         {
-            return Header.TryGetValue(header, out var value) && value.Type != JTokenType.Null;
+            return Header.TryGetValue(header, out var value) && value != null;
         }
 
         public virtual void Validate()
         {
             foreach (var header in RequiredHeaderParameters)
             {
-                JToken token;
-                if (!Header.TryGetValue(header.Key, out token) || token.Type == JTokenType.Null)
+                object token;
+                if (!Header.TryGetValue(header.Key, out token) || token == null)
                 {
                     throw new JwtDescriptorException(ErrorMessages.FormatInvariant("The header parameter '{0}' is required.", header.Key));
                 }
@@ -145,7 +154,7 @@ namespace JsonWebToken
                 bool headerFound = false;
                 for (int i = 0; i < header.Value.Length; i++)
                 {
-                    if (token?.Type == header.Value[i])
+                    if (token?.GetType() == header.Value[i])
                     {
                         headerFound = true;
                         break;

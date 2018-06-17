@@ -63,6 +63,11 @@ namespace JsonWebToken
         public const string X5u = "x5u";
 
         /// <summary>
+        /// see:https://tools.ietf.org/html/rfc7515#section-4.1.5
+        /// </summary>
+        public const string Crit = "crit";
+
+        /// <summary>
         /// see:https://tools.ietf.org/html/rfc7516#section-4.1.3
         /// </summary>
         public const string Zip = "zip";

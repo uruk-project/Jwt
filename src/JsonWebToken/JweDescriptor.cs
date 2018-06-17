@@ -1,22 +1,38 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace JsonWebToken
 {
     public class JweDescriptor : JweDescriptor<JwsDescriptor>
     {
         public JweDescriptor()
+            : base()
         {
-            Payload = new JwsDescriptor();
         }
 
-        public JweDescriptor(JObject payload) 
+        public JweDescriptor(IDictionary<string, object> header)
+            : base(header)
         {
-            Payload = new JwsDescriptor(payload);
         }
 
-        public JweDescriptor(JwsDescriptor payload) : 
-            base(payload)
-        {          
+        public JweDescriptor(JwsDescriptor payload)
+            : base(payload)
+        {
+        }
+
+        public JweDescriptor(IDictionary<string, object> header, JwsDescriptor payload)
+            : base(header, payload)
+        {
+        }
+
+        public JweDescriptor(JObject payload)
+            : base(new JwsDescriptor(payload))
+        {
+        }
+
+        public JweDescriptor(IDictionary<string, object> header, JObject payload)
+            : base(header, new JwsDescriptor(payload))
+        {
         }
     }
 }

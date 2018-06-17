@@ -1,14 +1,19 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.IO.Compression;
 using System.Text;
 
 namespace JsonWebToken
 {
-    public abstract class EncodedJwtDescriptor<TPayload> : JwtDescriptor<TPayload>
+    public abstract class EncodedJwtDescriptor<TPayload> : JwtDescriptor<TPayload> where TPayload : class
     {
+        public EncodedJwtDescriptor(IDictionary<string, object> header, TPayload payload)
+            : base(header, payload)
+        {
+        }
+
         public string EncryptionAlgorithm
         {
             get => GetHeaderParameter(HeaderParameters.Enc);
@@ -41,7 +46,7 @@ namespace JsonWebToken
 #else
             var encodedPayload = Encoding.UTF8.GetBytes(payload);
 #endif
-            return EncryptToken(encodedPayload);
+                return EncryptToken(encodedPayload);
 #if NETCOREAPP2_1
             }
             finally
