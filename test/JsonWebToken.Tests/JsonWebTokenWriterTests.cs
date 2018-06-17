@@ -46,8 +46,7 @@ namespace JsonWebToken.Tests
                 Alg = "RSA1_5"
             };
 
-            var descriptor = new PlaintextJweDescriptor();
-            descriptor.Payload = plaintext;
+            var descriptor = new PlaintextJweDescriptor(plaintext);
             descriptor.Key = key;
             descriptor.EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256;
 
@@ -79,8 +78,7 @@ namespace JsonWebToken.Tests
                 Alg = "RSA1_5"
             };
 
-            var descriptor = new BinaryJweDescriptor();
-            descriptor.Payload = data;
+            var descriptor = new BinaryJweDescriptor(data);
             descriptor.Key = key;
             descriptor.EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256;
 
@@ -112,8 +110,7 @@ namespace JsonWebToken.Tests
                 Alg = "RSA1_5"
             };
 
-            var descriptor = new PlaintextJweDescriptor();
-            descriptor.Payload = plaintext;
+            var descriptor = new PlaintextJweDescriptor(plaintext);
             descriptor.Key = key;
             descriptor.EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256;
             descriptor.CompressionAlgorithm = CompressionAlgorithms.Deflate;

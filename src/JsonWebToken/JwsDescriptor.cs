@@ -13,31 +13,36 @@ namespace JsonWebToken
         private static readonly byte dot = Convert.ToByte('.');
         private static readonly Dictionary<string, JTokenType[]> DefaultRequiredClaims = new Dictionary<string, JTokenType[]>();
         private static readonly string[] DefaultProhibitedClaims = new string[0];
-        private static readonly Dictionary<string, JTokenType[]> JwsRequiredHeaderParameters = new Dictionary<string, JTokenType[]>
+        private static readonly Dictionary<string, Type[]> JwsRequiredHeaderParameters = new Dictionary<string, Type[]>
         {
-            { HeaderParameters.Alg, new [] { JTokenType.String } }
+            { HeaderParameters.Alg, new [] { typeof(string)} }
         };
 
-        public JwsDescriptor(JObject payload)
+        public JwsDescriptor()
+            : base(new Dictionary<string, object>(), new JObject())
         {
-            if (payload == null)
-            {
-                throw new ArgumentNullException(nameof(payload));
-            }
-
-            Payload = (JObject)payload.DeepClone();
         }
 
-        public JwsDescriptor()
+        public JwsDescriptor(IDictionary<string, object> header)
+            : base(header, new JObject())
         {
-            Payload = new JObject();
+        }
+
+        public JwsDescriptor(IDictionary<string, object> header, JObject payload)
+            : base(header, payload)
+        {
+        }
+
+        public JwsDescriptor(JObject payload)
+            : base(new Dictionary<string, object>(), payload)
+        {
         }
 
         protected virtual IReadOnlyDictionary<string, JTokenType[]> RequiredClaims => DefaultRequiredClaims;
 
         protected virtual IReadOnlyList<string> ProhibitedClaims => DefaultProhibitedClaims;
 
-        protected override IReadOnlyDictionary<string, JTokenType[]> RequiredHeaderParameters => JwsRequiredHeaderParameters;
+        protected override IReadOnlyDictionary<string, Type[]> RequiredHeaderParameters => JwsRequiredHeaderParameters;
 
         /// <summary>
         /// Gets or sets the value of the 'sub' claim.

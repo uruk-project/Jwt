@@ -16,8 +16,23 @@ namespace JsonWebToken
             { Claims.Exp, new [] { JTokenType.Integer } }
         };
 
+        public ClientAssertionDescriptor()
+            :base()
+        {
+        }
+
+        public ClientAssertionDescriptor(IDictionary<string, object> header)
+            : base(header)
+        {
+        }
+
         public ClientAssertionDescriptor(JObject payload)
-            : base(payload)
+            : base(new Dictionary<string, object>(), payload)
+        {
+        }
+
+        public ClientAssertionDescriptor(IDictionary<string, object> header, JObject payload)
+            : base(header, payload)
         {
         }
 

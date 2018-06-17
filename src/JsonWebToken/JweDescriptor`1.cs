@@ -8,13 +8,24 @@ namespace JsonWebToken
     {
         private static readonly string[] DefaultRequiredClaims = new string[0];
 
-        protected JweDescriptor()
+        public JweDescriptor()
+            : base(new Dictionary<string, object>(), new TDescriptor())
+        {
+        }
+
+        public JweDescriptor(IDictionary<string, object> header)
+            : base(header, new TDescriptor())
         {
         }
 
         public JweDescriptor(TDescriptor payload)
+            : base(new Dictionary<string, object>(), payload)
         {
-            Payload = payload ?? throw new ArgumentNullException(nameof(payload));
+        }
+
+        public JweDescriptor(IDictionary<string, object> header, TDescriptor payload)
+            : base(header, payload)
+        {
         }
 
         public string Subject { get => Payload.Subject; set => Payload.Subject = value; }
