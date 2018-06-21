@@ -84,7 +84,7 @@ namespace JsonWebToken
                 _x = value;
                 if (value != null)
                 {
-                    RawX = Base64Url.DecodeBytes(value);
+                    RawX = Base64Url.Base64UrlDecode(value);
                 }
                 else
                 {
@@ -119,7 +119,7 @@ namespace JsonWebToken
                 _y = value;
                 if (value != null)
                 {
-                    RawY = Base64Url.DecodeBytes(value);
+                    RawY = Base64Url.Base64UrlDecode(value);
                 }
                 else
                 {

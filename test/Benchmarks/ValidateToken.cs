@@ -57,7 +57,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokens))]
         public void JoseDotNet(string token)
         {
-            if (token.StartsWith("enc-"))
+            if (token.StartsWith("JWE-"))
             {
                 var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: Tokens.EncryptionKey.RawK, enc: JweEncryption.A128CBC_HS256, alg: JweAlgorithm.A128KW);
                 if (value == null)
@@ -88,22 +88,22 @@ namespace JsonWebToken.Performance
 
         public IEnumerable<object[]> GetTokens()
         {
-            yield return new[] { "empty" };
-            yield return new[] { "small" };
-            yield return new[] { "medium" };
-            yield return new[] { "big" };
-            yield return new[] { "enc-empty" };
-            yield return new[] { "enc-small" };
-            yield return new[] { "enc-medium" };
-            yield return new[] { "enc-big" };
+            yield return new[] { "JWS-empty" };
+            yield return new[] { "JWS-small" };
+            yield return new[] { "JWS-medium" };
+            yield return new[] { "JWS-big" };
+            yield return new[] { "JWE-empty" };
+            yield return new[] { "JWE-small" };
+            yield return new[] { "JWE-medium" };
+            yield return new[] { "JWE-big" };
         }
 
         public IEnumerable<object[]> GetNotEncryptedTokens()
         {
-            yield return new[] { "empty" };
-            yield return new[] { "small" };
-            yield return new[] { "medium" };
-            yield return new[] { "big" };
+            yield return new[] { "JWS-empty" };
+            yield return new[] { "JWS-small" };
+            yield return new[] { "JWS-medium" };
+            yield return new[] { "JWS-big" };
         }
     }
 }

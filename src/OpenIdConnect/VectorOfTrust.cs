@@ -1,24 +1,22 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using VectorComponent = System.Collections.Generic.KeyValuePair<char, System.Collections.Generic.IList<char>>;
 
 namespace JsonWebToken
 {
     /// <summary>
     /// https://tools.ietf.org/html/draft-richer-vectors-of-trust-11
     /// </summary>
-    public class TrustVector
+    public class VectorOfTrust : IEnumerable<string>
     {
         private readonly IDictionary<char, IList<char>> _vector = new Dictionary<char, IList<char>>();
 
-        public TrustVector()
+        public VectorOfTrust()
         {
         }
 
-        public TrustVector(ReadOnlySpan<char> vector)
+        public VectorOfTrust(ReadOnlySpan<char> vector)
         {
             if (vector == null || vector.IsEmpty)
             {
@@ -106,16 +104,29 @@ namespace JsonWebToken
         public override string ToString()
         {
             var stringBuilder = new StringBuilder();
-            foreach (var values in _vector)
+            foreach (var value in this)
             {
-                for (int i = 0; i < values.Value.Count; i++)
-                {
-                    stringBuilder.Append(values.Key).Append(values.Value[i]).Append('.');
-                }
+                stringBuilder.Append(value).Append('.');
             }
 
             stringBuilder.Remove(stringBuilder.Length - 1, 1);
             return stringBuilder.ToString();
+        }
+
+        public IEnumerator<string> GetEnumerator()
+        {
+            foreach (var values in _vector)
+            {
+                for (int i = 0; i < values.Value.Count; i++)
+                {
+                    yield return string.Concat(values.Key, values.Value[i]);
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

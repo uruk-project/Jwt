@@ -336,10 +336,10 @@ namespace JsonWebToken
                 }
 #else
                 decryptedBytes = decryptionProvider.Decrypt(
-                    Base64Url.DecodeBytes(rawCiphertext.ToString()),
+                    Base64Url.Base64UrlDecode(rawCiphertext.ToString()),
                     Encoding.ASCII.GetBytes(rawHeader.ToString()),
-                    Base64Url.DecodeBytes(rawInitializationVector.ToString()),
-                    Base64Url.DecodeBytes(rawAuthenticationTag.ToString()));
+                    Base64Url.Base64UrlDecode(rawInitializationVector.ToString()),
+                    Base64Url.Base64UrlDecode(rawAuthenticationTag.ToString()));
 #endif
                 return decryptedBytes != null;
             }

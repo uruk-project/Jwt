@@ -34,7 +34,7 @@ namespace JsonWebToken
                 _d = value;
                 if (value != null)
                 {
-                    RawD = Base64Url.DecodeBytes(value);
+                    RawD = Base64Url.Base64UrlDecode(value);
                 }
             }
         }

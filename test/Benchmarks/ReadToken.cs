@@ -2,7 +2,6 @@
 using BenchmarkDotNet.Running;
 using Jose;
 using JWT;
-using JWT.Algorithms;
 using JWT.Serializers;
 using System;
 using System.Collections.Generic;
@@ -38,7 +37,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokens))]
         public void Wilson(string token)
         {
-            if (token.StartsWith("enc-"))
+            if (token.StartsWith("JWE-"))
             {
                 // ReadJwtToken does not read the encrpted token
                 var parameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
@@ -73,7 +72,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokens))]
         public void JoseDotNet(string token)
         {
-            if (token.StartsWith("enc-"))
+            if (token.StartsWith("JWE-"))
             {
                 var jwt = Jose.JWT.Decode(Tokens.ValidTokens[token], key: Tokens.EncryptionKey.RawK, enc: JweEncryption.A128CBC_HS256, alg: JweAlgorithm.A128KW);
                 var value = Jose.JWT.Decode<Dictionary<string, object>>(jwt, key: Tokens.SigningKey.RawK, alg: JwsAlgorithm.HS256);
@@ -104,22 +103,22 @@ namespace JsonWebToken.Performance
         }
         public IEnumerable<object[]> GetTokens()
         {
-            yield return new[] { "empty" };
-            yield return new[] { "small" };
-            yield return new[] { "medium" };
-            yield return new[] { "big" };
-            yield return new[] { "enc-empty" };
-            yield return new[] { "enc-small" };
-            yield return new[] { "enc-medium" };
-            yield return new[] { "enc-big" };
+            yield return new[] { "JWS-empty" };
+            yield return new[] { "JWS-small" };
+            yield return new[] { "JWS-medium" };
+            yield return new[] { "JWS-big" };
+            yield return new[] { "JWE-empty" };
+            yield return new[] { "JWE-small" };
+            yield return new[] { "JWE-medium" };
+            yield return new[] { "JWE-big" };
         }
 
         public IEnumerable<object[]> GetNotEncryptedTokens()
         {
-            yield return new[] { "empty" };
-            yield return new[] { "small" };
-            yield return new[] { "medium" };
-            yield return new[] { "big" };
+            yield return new[] { "JWS-empty" };
+            yield return new[] { "JWS-small" };
+            yield return new[] { "JWS-medium" };
+            yield return new[] { "JWS-big" };
         }
     }
 }
