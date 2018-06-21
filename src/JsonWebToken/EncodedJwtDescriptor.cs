@@ -221,7 +221,8 @@ namespace JsonWebToken
                     }
                 }
 #else
-                var base64Header = Base64Url.Encode(Serialize(Header));
+                var utf8Header = Encoding.UTF8.GetBytes(Serialize(Header));
+                var base64Header = Base64Url.Encode(utf8Header);
                 CompressionProvider compressionProvider = null;
                 if (CompressionAlgorithm != null)
                 {

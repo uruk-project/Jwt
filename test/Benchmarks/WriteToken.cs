@@ -59,7 +59,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetPayloads))]
         public void JoseDotNet(string payload)
         {
-            if (payload.StartsWith("enc-"))
+            if (payload.StartsWith("JWE-"))
             {
                 payload = payload.Substring(4, payload.Length - 4);
                 var value = Jose.JWT.Encode(DictionaryPayloads[payload], SigningKey.RawK, JwsAlgorithm.HS256);
@@ -80,22 +80,22 @@ namespace JsonWebToken.Performance
 
         public IEnumerable<object[]> GetPayloads()
         {
-            yield return new[] { "empty" };
-            yield return new[] { "small" };
-            yield return new[] { "medium" };
-            yield return new[] { "big" };
-            yield return new[] { "enc-empty" };
-            yield return new[] { "enc-small" };
-            yield return new[] { "enc-medium" };
-            yield return new[] { "enc-big" };
+            yield return new[] { "JWS-empty" };
+            yield return new[] { "JWS-small" };
+            yield return new[] { "JWS-medium" };
+            yield return new[] { "JWS-big" };
+            yield return new[] { "JWE-empty" };
+            yield return new[] { "JWE-small" };
+            yield return new[] { "JWE-medium" };
+            yield return new[] { "JWE-big" };
         }
         
         public IEnumerable<object[]> GetNotEncryptedPayloads()
         {
-            yield return new[] { "empty" };
-            yield return new[] { "small" };
-            yield return new[] { "medium" };
-            yield return new[] { "big" };
+            yield return new[] { "JWS-empty" };
+            yield return new[] { "JWS-small" };
+            yield return new[] { "JWS-medium" };
+            yield return new[] { "JWS-big" };
         }
 
         private static Dictionary<string, JwtDescriptor> CreateJwtDescriptors()
@@ -155,7 +155,7 @@ namespace JsonWebToken.Performance
                     EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256
                 };
 
-                descriptors.Add("enc-" + payload.Key, jwe);
+                descriptors.Add("JWE-" + payload.Key, jwe);
             }
 
             return descriptors;
@@ -216,7 +216,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("enc-" + payload.Key, descriptor);
+                descriptors.Add("JWE-" + payload.Key, descriptor);
             }
 
             return descriptors;

@@ -15,33 +15,12 @@ namespace JsonWebToken
     /// </remarks>
     public static class Base64Url
     {
-#if !NETCOREAPP2_1
+#if !NETCOREAPP2_2 && !NETCOREAPP2_1
         private const int MaxStackallocBytes = 256;
 #endif
         private const int MaxEncodedLength = (int.MaxValue / 4) * 3;  // encode inflates the data by 4/3
         private static readonly byte[] EmptyBytes = new byte[0];
-
-        public static string Decode(string arg)
-        {
-            return Encoding.UTF8.GetString(Base64UrlDecode(arg));
-        }
-        public static byte[] DecodeBytes(string arg)
-        {
-            return Base64UrlDecode(arg);
-        }
-
-
-        public static string Encode(string input)
-        {
-            if (input == null)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-
-            var data = Encoding.UTF8.GetBytes(input);
-            return Base64UrlEncode(data, offset: 0, count: data.Length);
-        }
-
+              
         public static string Encode(byte[] input)
         {
             if (input == null)
@@ -92,13 +71,6 @@ namespace JsonWebToken
             }
 
             return Base64UrlDecode(input.AsSpan(offset, count));
-        }
-
-        public static void Base64UrlDecode(ReadOnlySpan<char> base64Url, Span<byte> destination, out int bytesConsumed, out int bytesWritten)
-        {
-            var status = Base64UrlDecodeCore(base64Url, destination, out bytesConsumed, out bytesWritten);
-            Debug.Assert(base64Url.Length == bytesConsumed);
-            Debug.Assert(destination.Length == bytesWritten);
         }
 
         /// <summary>
@@ -280,7 +252,8 @@ namespace JsonWebToken
 
             var base64Len = GetBufferSizeRequiredToBase64Encode(data.Length, out int numPaddingChars);
             var base64UrlLen = base64Len - numPaddingChars;
-#if NETCOREAPP2_1
+
+#if NETCOREAPP2_2 || NETCOREAPP2_1
             fixed (byte* ptr = &MemoryMarshal.GetReference(data))
             {
                 return string.Create(base64UrlLen, (Ptr: (IntPtr)ptr, data.Length), (base64Url, state) =>
@@ -366,19 +339,6 @@ namespace JsonWebToken
         /// - NeedMoreData - only if isFinalBlock is false, otherwise the output is padded if the input is not a multiple of 3
         /// It does not return InvalidData since that is not possible for base 64 encoding.</returns>
         public static OperationStatus Base64UrlEncode(ReadOnlySpan<byte> data, Span<byte> base64Url, out int bytesConsumed, out int bytesWritten, bool isFinalBlock = true)
-        {
-            // Special-case empty input
-            if (data.IsEmpty)
-            {
-                bytesConsumed = 0;
-                bytesWritten = 0;
-                return OperationStatus.Done;
-            }
-
-            return Base64UrlEncodeCore(data, base64Url, out bytesConsumed, out bytesWritten, isFinalBlock);
-        }
-
-        public static OperationStatus Base64UrlEncode(ReadOnlySpan<byte> data, Span<char> base64Url, out int bytesConsumed, out int bytesWritten, bool isFinalBlock = true)
         {
             // Special-case empty input
             if (data.IsEmpty)
@@ -485,7 +445,7 @@ namespace JsonWebToken
             {
                 return 0;
             }
-            
+
             var length = GetBufferSizeRequiredToBase64Encode(count, out int numPaddingChars);
             return length - numPaddingChars;
         }
@@ -1167,45 +1127,45 @@ namespace JsonWebToken
             outputOffset
         }
     }
+}
 
-    // TODO using a resx file. project.json, unfortunately, fails to embed resx files when there are also compile items
-    // in the contentFiles section. Revisit once we convert repos to MSBuild
-    internal static class EncoderResources
+// TODO using a resx file. project.json, unfortunately, fails to embed resx files when there are also compile items
+// in the contentFiles section. Revisit once we convert repos to MSBuild
+internal static class EncoderResources
+{
+    /// <summary>
+    /// Invalid {0}, {1} or {2} length.
+    /// </summary>
+    internal static readonly string WebEncoders_InvalidCountOffsetOrLength = "Invalid {0}, {1} or {2} length.";
+
+    /// <summary>
+    /// Malformed input: {0} is an invalid input length.
+    /// </summary>
+    internal static readonly string WebEncoders_MalformedInput = "Malformed input: {0} is an invalid input length.";
+
+    /// <summary>
+    /// Invalid input, that doesn't conform a base64 string.
+    /// </summary>
+    internal static readonly string WebEncoders_InvalidInput = "The input is not a valid Base-64 string as it contains a non-base 64 character, more than two padding characters, or an illegal character among the padding characters.";
+
+    /// <summary>
+    /// Destination buffer is too small.
+    /// </summary>
+    internal static readonly string WebEncoders_DestinationTooSmall = "The destination buffer is too small.";
+
+    /// <summary>
+    /// Invalid {0}, {1} or {2} length.
+    /// </summary>
+    internal static string FormatWebEncoders_InvalidCountOffsetOrLength(object p0, object p1, object p2)
     {
-        /// <summary>
-        /// Invalid {0}, {1} or {2} length.
-        /// </summary>
-        internal static readonly string WebEncoders_InvalidCountOffsetOrLength = "Invalid {0}, {1} or {2} length.";
+        return string.Format(CultureInfo.CurrentCulture, WebEncoders_InvalidCountOffsetOrLength, p0, p1, p2);
+    }
 
-        /// <summary>
-        /// Malformed input: {0} is an invalid input length.
-        /// </summary>
-        internal static readonly string WebEncoders_MalformedInput = "Malformed input: {0} is an invalid input length.";
-
-        /// <summary>
-        /// Invalid input, that doesn't conform a base64 string.
-        /// </summary>
-        internal static readonly string WebEncoders_InvalidInput = "The input is not a valid Base-64 string as it contains a non-base 64 character, more than two padding characters, or an illegal character among the padding characters.";
-
-        /// <summary>
-        /// Destination buffer is too small.
-        /// </summary>
-        internal static readonly string WebEncoders_DestinationTooSmall = "The destination buffer is too small.";
-
-        /// <summary>
-        /// Invalid {0}, {1} or {2} length.
-        /// </summary>
-        internal static string FormatWebEncoders_InvalidCountOffsetOrLength(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, WebEncoders_InvalidCountOffsetOrLength, p0, p1, p2);
-        }
-
-        /// <summary>
-        /// Malformed input: {0} is an invalid input length.
-        /// </summary>
-        internal static string FormatWebEncoders_MalformedInput(int p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, WebEncoders_MalformedInput, p0);
-        }
+    /// <summary>
+    /// Malformed input: {0} is an invalid input length.
+    /// </summary>
+    internal static string FormatWebEncoders_MalformedInput(int p0)
+    {
+        return string.Format(CultureInfo.CurrentCulture, WebEncoders_MalformedInput, p0);
     }
 }

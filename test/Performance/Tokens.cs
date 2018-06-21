@@ -162,7 +162,7 @@ namespace JsonWebToken.Performance
                     ContentType = "JWT"
                 };
 
-                descriptors.Add("enc-" + payload.Key, writer.WriteToken(jwe));
+                descriptors.Add("JWE-" + payload.Key, writer.WriteToken(jwe));
             }
 
             return descriptors;
