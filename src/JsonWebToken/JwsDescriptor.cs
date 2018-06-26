@@ -12,7 +12,7 @@ namespace JsonWebToken
     {
         private static readonly byte dot = Convert.ToByte('.');
         private static readonly Dictionary<string, JTokenType[]> DefaultRequiredClaims = new Dictionary<string, JTokenType[]>();
-        private static readonly string[] DefaultProhibitedClaims = new string[0];
+        private static readonly string[] DefaultProhibitedClaims = Array.Empty<string>();
         private static readonly Dictionary<string, Type[]> JwsRequiredHeaderParameters = new Dictionary<string, Type[]>
         {
             { HeaderParameters.Alg, new [] { typeof(string)} }
@@ -308,8 +308,8 @@ namespace JsonWebToken
             var payloadJson = Serialize(Payload);
             int length = Base64Url.GetArraySizeRequiredToEncode(headerJson.Length)
                 + Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
-                + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBits / 8))
-                + Constants.JwsSeparatorsCount;
+                + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBytes))
+                + Constants.JwsSegmentCount - 1;
             byte[] arrayToReturnToPool = null;
             var buffer = length <= Constants.MaxStackallocBytes
                   ? stackalloc byte[length]
@@ -323,14 +323,14 @@ namespace JsonWebToken
                 int bytesWritten = 0;
                 if (signatureProvider != null)
                 {
-                    Span<byte> signature = stackalloc byte[signatureProvider.HashSizeInBits / 8];
+                    Span<byte> signature = stackalloc byte[signatureProvider.HashSizeInBytes];
                     try
                     {
                         bool success = signatureProvider.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signatureBytesWritten);
                         Debug.Assert(success);
                         Debug.Assert(signature.Length == signatureBytesWritten);
 
-                        Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + Constants.JwsSeparatorsCount), out int bytesConsumed, out bytesWritten);
+                        Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + Constants.JwsSegmentCount - 1), out int bytesConsumed, out bytesWritten);
                     }
                     finally
                     {
@@ -339,9 +339,9 @@ namespace JsonWebToken
                 }
 
 #if NETCOREAPP2_1
-                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + Constants.JwsSeparatorsCount + bytesWritten));
+                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + Constants.JwsSegmentCount - 1 + bytesWritten));
 #else
-                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + Constants.JwsSeparatorsCount + bytesWritten).ToArray());
+                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + Constants.JwsSegmentCount - 1 + bytesWritten).ToArray());
 #endif
                 return rawData;
             }

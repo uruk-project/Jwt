@@ -171,7 +171,7 @@ namespace JsonWebToken
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.IV.Length)
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.Ciphertext.Length)
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.AuthenticationTag.Length)
-                        + Constants.JweSeparatorsCount;
+                        + Constants.JweSegmentCount - 1;
                     if (wrappedKey != null)
                     {
                         encryptionLength += Base64Url.GetArraySizeRequiredToEncode(wrappedKey.Length);
@@ -194,7 +194,7 @@ namespace JsonWebToken
                     bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.Ciphertext, encryptedToken.Slice(bytesWritten));
                     encryptedToken[bytesWritten++] = '.';
                     bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.AuthenticationTag, encryptedToken.Slice(bytesWritten));
-                    Debug.Assert(encryptedToken.Length == bytesWritten);
+                    //Debug.Assert(encryptedToken.Length == bytesWritten);
 
                     return encryptedToken.ToString();
                 }

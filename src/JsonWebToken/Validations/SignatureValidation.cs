@@ -20,14 +20,14 @@ namespace JsonWebToken.Validations
         public TokenValidationResult TryValidate(TokenValidationContext context)
         {
             var jwt = context.Jwt;
-            if (jwt.Separators.Count != Constants.JwsSeparatorsCount)
+            if (jwt.ContentSegment.Length == 0 && jwt.SignatureSegment.Length == 0)
             {
                 // This is not a JWS
                 return TokenValidationResult.Success(jwt);
             }
 
             var token = context.Token;
-            if (token.Length <= jwt.Separators[0] + jwt.Separators[1] + 1)
+            if (token.Length <= jwt.ContentSegment.Length + 1)
             {
                 if (_supportUnsecure && string.Equals(SignatureAlgorithms.None, jwt.SignatureAlgorithm, StringComparison.Ordinal))
                 {
@@ -37,11 +37,10 @@ namespace JsonWebToken.Validations
                 return TokenValidationResult.MissingSignature(jwt);
             }
 
-            int signatureLength = token.Length - (jwt.Separators[0] + jwt.Separators[1] + 1);
             int signatureBytesLength;
             try
             {
-                signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(signatureLength);
+                signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(jwt.SignatureSegment.Length);
             }
             catch (FormatException)
             {
@@ -51,7 +50,7 @@ namespace JsonWebToken.Validations
             Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
             try
             {
-                Base64Url.Base64UrlDecode(token.Slice(jwt.Separators[0] + jwt.Separators[1] + 1), signatureBytes, out int byteConsumed, out int bytesWritten);
+                Base64Url.Base64UrlDecode(token.Slice(jwt.SignatureSegment.Start), signatureBytes, out int byteConsumed, out int bytesWritten);
                 Debug.Assert(bytesWritten == signatureBytes.Length);
             }
             catch (FormatException)
@@ -60,8 +59,7 @@ namespace JsonWebToken.Validations
             }
 
             bool keysTried = false;
-            int length = jwt.Separators[0] + jwt.Separators[1];
-            var encodedBytes = token.Slice(0, length);
+            var encodedBytes = token.Slice(jwt.ContentSegment.Start, jwt.ContentSegment.Length);
             var keys = ResolveSigningKey(jwt);
             for (int i = 0; i < keys.Count; i++)
             {

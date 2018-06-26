@@ -152,9 +152,10 @@ namespace JsonWebToken
                 }
 
                 bool headerFound = false;
+                var tokenType = token?.GetType();
                 for (int i = 0; i < header.Value.Length; i++)
                 {
-                    if (token?.GetType() == header.Value[i])
+                    if (tokenType == header.Value[i])
                     {
                         headerFound = true;
                         break;

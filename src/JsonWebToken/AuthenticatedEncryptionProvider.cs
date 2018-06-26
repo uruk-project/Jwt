@@ -129,7 +129,7 @@ namespace JsonWebToken
                     ciphertext.CopyTo(macBytes.Slice(authenticatedData.Length + aes.IV.Length));
                     TryConvertToBigEndian(macBytes.Slice(authenticatedData.Length + aes.IV.Length + ciphertext.Length, sizeof(long)), authenticatedData.Length * 8);
 
-                    byte[] authenticationTag = new byte[_symmetricSignatureProvider.HashSizeInBits / 8];
+                    byte[] authenticationTag = new byte[_symmetricSignatureProvider.HashSizeInBytes];
                     _symmetricSignatureProvider.TrySign(macBytes, authenticationTag, out int writtenBytes);
                     Debug.Assert(writtenBytes == authenticationTag.Length);
 
@@ -182,7 +182,7 @@ namespace JsonWebToken
             Array.Copy(aes.IV, 0, macBytes, authenticatedData.Length, aes.IV.Length);
             Array.Copy(ciphertext, 0, macBytes, authenticatedData.Length + aes.IV.Length, ciphertext.Length);
             Array.Copy(al, 0, macBytes, authenticatedData.Length + aes.IV.Length + ciphertext.Length, al.Length);
-            byte[] authenticationTag = new byte[_symmetricSignatureProvider.HashSizeInBits / 8];
+            byte[] authenticationTag = new byte[_symmetricSignatureProvider.HashSizeInBytes];
             _symmetricSignatureProvider.TrySign(macBytes, authenticationTag, out int writtenBytes);
 
             //var authenticationTag = new byte[writtenBytes];
@@ -201,22 +201,22 @@ namespace JsonWebToken
         /// <returns>decrypted ciphertext</returns>
         public byte[] Decrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> authenticatedData, ReadOnlySpan<byte> iv, ReadOnlySpan<byte> authenticationTag)
         {
-            if (ciphertext == null || ciphertext.Length == 0)
+            if (ciphertext == null || ciphertext.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(ciphertext));
             }
 
-            if (authenticatedData == null || authenticatedData.Length == 0)
+            if (authenticatedData == null || authenticatedData.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(authenticatedData));
             }
 
-            if (iv == null || iv.Length == 0)
+            if (iv == null || iv.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(iv));
             }
 
-            if (authenticationTag == null || authenticationTag.Length == 0)
+            if (authenticationTag == null || authenticationTag.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(authenticationTag));
             }

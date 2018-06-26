@@ -42,7 +42,7 @@ namespace JsonWebToken
             _keyedHash = GetKeyedHashAlgorithm(key.RawK, algorithm);
         }
 
-        public override int HashSizeInBits => _keyedHash.HashSize;
+        public override int HashSizeInBytes => _keyedHash.HashSize >> 3;
 
         /// <summary>
         /// Gets or sets the minimum <see cref="SymmetricJwk"/>.KeySize"/>.
