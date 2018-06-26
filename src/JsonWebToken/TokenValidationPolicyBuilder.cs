@@ -6,7 +6,7 @@ using System.Net.Http;
 
 namespace JsonWebToken
 {
-    public class TokenValidationBuilder
+    public class TokenValidationPolicyBuilder
     {
         private const string LifetimeValidationName = "";
         public const int DefaultMaximumTokenSizeInBytes = 1024 * 1024 * 2; // 2MB
@@ -14,13 +14,13 @@ namespace JsonWebToken
         private int _maximumTokenSizeInBytes = DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
 
-        public TokenValidationBuilder Clear()
+        public TokenValidationPolicyBuilder Clear()
         {
             _validations.Clear();
             return this;
         }
 
-        protected TokenValidationBuilder RemoveValidation(IValidation validation)
+        protected TokenValidationPolicyBuilder RemoveValidation(IValidation validation)
         {
             if (validation == null)
             {
@@ -31,13 +31,13 @@ namespace JsonWebToken
             return this;
         }
 
-        protected TokenValidationBuilder RemoveValidation<TValidation>() where TValidation : IValidation
+        protected TokenValidationPolicyBuilder RemoveValidation<TValidation>() where TValidation : IValidation
         {
             _validations.RemoveAll(v => v.GetType() == typeof(TValidation));
             return this;
         }
 
-        public TokenValidationBuilder AddValidation(IValidation validation)
+        public TokenValidationPolicyBuilder AddValidation(IValidation validation)
         {
             if (validation == null)
             {
@@ -48,7 +48,7 @@ namespace JsonWebToken
             return this;
         }
 
-        public TokenValidationBuilder MaximumTokenSizeInBytes(int bytes)
+        public TokenValidationPolicyBuilder MaximumTokenSizeInBytes(int bytes)
         {
             if (bytes <= 0)
             {
@@ -59,47 +59,47 @@ namespace JsonWebToken
             return this;
         }
 
-        public TokenValidationBuilder IgnoreSignature()
+        public TokenValidationPolicyBuilder IgnoreSignature()
         {
             _hasSignatureValidation = true;
             return RemoveValidation<SignatureValidation>();
         }
-        public TokenValidationBuilder AcceptUnsecureToken()
+        public TokenValidationPolicyBuilder AcceptUnsecureToken()
         {
             _hasSignatureValidation = true;
             _validations.Add(new SignatureValidation(new EmptyKeyProvider(), true));
             return this;
         }
 
-        public TokenValidationBuilder RequireSignature(IKeyProvider keyProvider)
+        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider)
         {
             _hasSignatureValidation = true;
             _validations.Add(new SignatureValidation(keyProvider, false));
             return this;
         }
 
-        public TokenValidationBuilder RequireSignature(string jsonWebKeyUrl, HttpMessageHandler handler = null)
+        public TokenValidationPolicyBuilder RequireSignature(string jsonWebKeyUrl, HttpMessageHandler handler = null)
         {
             RequireSignature(new JwksKeyProvider(jsonWebKeyUrl, handler));
             return this;
         }
 
-        public TokenValidationBuilder RequireSignature(JsonWebKey key)
+        public TokenValidationPolicyBuilder RequireSignature(JsonWebKey key)
         {
             return RequireSignature(new JsonWebKeySet(key));
         }
 
-        public TokenValidationBuilder RequireSignature(IEnumerable<JsonWebKey> keys)
+        public TokenValidationPolicyBuilder RequireSignature(IEnumerable<JsonWebKey> keys)
         {
             return RequireSignature(new JsonWebKeySet(keys));
         }
 
-        public TokenValidationBuilder RequireSignature(JsonWebKeySet keySet)
+        public TokenValidationPolicyBuilder RequireSignature(JsonWebKeySet keySet)
         {
             return RequireSignature(new StaticKeyProvider(keySet));
         }
 
-        public TokenValidationBuilder RequireSignature(IEnumerable<IKeyProvider> keyProviders)
+        public TokenValidationPolicyBuilder RequireSignature(IEnumerable<IKeyProvider> keyProviders)
         {
             foreach (var keyProvider in keyProviders)
             {
@@ -109,17 +109,17 @@ namespace JsonWebToken
             return this;
         }
 
-        public TokenValidationBuilder RequireClaim(string requiredClaim)
+        public TokenValidationPolicyBuilder RequireClaim(string requiredClaim)
         {
             return AddValidation(new RequiredClaimValidation<JObject>(requiredClaim));
         }
 
-        public TokenValidationBuilder RequireHeader(string requiredHeader)
+        public TokenValidationPolicyBuilder RequireHeader(string requiredHeader)
         {
             return AddValidation(null);
         }
 
-        public TokenValidationBuilder AddLifetimeValidation(bool requireExpirationTime = true, int clockSkew = 300)
+        public TokenValidationPolicyBuilder AddLifetimeValidation(bool requireExpirationTime = true, int clockSkew = 300)
         {
             if (clockSkew <= 0)
             {
@@ -130,7 +130,7 @@ namespace JsonWebToken
             return this;
         }
 
-        public TokenValidationBuilder RequireAudience(string audience)
+        public TokenValidationPolicyBuilder RequireAudience(string audience)
         {
             if (string.IsNullOrEmpty(audience))
             {
@@ -141,7 +141,7 @@ namespace JsonWebToken
             return this;
         }
 
-        public TokenValidationBuilder RequireAudience(IEnumerable<string> audiences)
+        public TokenValidationPolicyBuilder RequireAudience(IEnumerable<string> audiences)
         {
             if (audiences == null)
             {
@@ -152,7 +152,7 @@ namespace JsonWebToken
             return this;
         }
 
-        public TokenValidationBuilder RequireIssuer(string issuer)
+        public TokenValidationPolicyBuilder RequireIssuer(string issuer)
         {
             if (string.IsNullOrEmpty(issuer))
             {
@@ -163,7 +163,7 @@ namespace JsonWebToken
             return this;
         }
 
-        public TokenValidationBuilder AddTokenReplayValidation(ITokenReplayCache tokenReplayCache)
+        public TokenValidationPolicyBuilder AddTokenReplayValidation(ITokenReplayCache tokenReplayCache)
         {
             if (tokenReplayCache == null)
             {
@@ -182,13 +182,13 @@ namespace JsonWebToken
             }
         }
 
-        public TokenValidationParameters Build()
+        public TokenValidationPolicy Build()
         {
             Validate();
 
-            var parameters = new TokenValidationParameters(_validations);
-            parameters.MaximumTokenSizeInBytes = _maximumTokenSizeInBytes;
-            return parameters;
+            var policy = new TokenValidationPolicy(_validations);
+            policy.MaximumTokenSizeInBytes = _maximumTokenSizeInBytes;
+            return policy;
         }
 
         private class EmptyKeyProvider : IKeyProvider

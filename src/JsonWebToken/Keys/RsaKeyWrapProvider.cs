@@ -172,7 +172,7 @@ namespace JsonWebToken
 
         public override int GetKeyWrapSize(string encryptionAlgorithm)
         {
-            return Key.KeySize >> 3;
+            return Key.KeySizeInBits >> 3;
         }
     }
 }

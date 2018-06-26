@@ -18,14 +18,14 @@ namespace JsonWebToken.Tests
         {
             var jwt = Tokens.ValidTokens[token];
             var reader = new JsonWebTokenReader(Keys.Jwks);
-            var validationParameters = new TokenValidationBuilder()
+            var policy = new TokenValidationPolicyBuilder()
                     .RequireSignature(Keys.Jwks)
                     .AddLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
                     .RequireIssuer("https://idp.example.com/")
                     .Build();
 
-            var result = reader.TryReadToken(jwt, validationParameters);
+            var result = reader.TryReadToken(jwt, policy);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
         }
 
@@ -34,14 +34,14 @@ namespace JsonWebToken.Tests
         public void ReadJwt_Invalid(string jwt, TokenValidationStatus expectedStatus)
         {
             var reader = new JsonWebTokenReader(Keys.Jwks);
-            var validationParameters = new TokenValidationBuilder()
+            var policy = new TokenValidationPolicyBuilder()
                     .RequireSignature(Keys.Jwks)
                     .AddLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
                     .RequireIssuer("https://idp.example.com/")
                     .Build();
 
-            var result = reader.TryReadToken(jwt, validationParameters);
+            var result = reader.TryReadToken(jwt, policy);
             Assert.Equal(expectedStatus, result.Status);
         }
 
@@ -53,12 +53,12 @@ namespace JsonWebToken.Tests
                 Sender = BackchannelRequestToken
             };
             var reader = new JsonWebTokenReader(Keys.Jwks);
-            var validationParameters = new TokenValidationBuilder()
+            var policy = new TokenValidationPolicyBuilder()
                     .RequireSignature("https://demo.identityserver.io/.well-known/openid-configuration/jwks", httpHandler)
                     .Build();
 
             var jwt = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjZiYmRjYTc4MGFmM2E2NzE2M2NhNzUzMTU0NWRhN2E5IiwidHlwIjoiSldUIn0.eyJuYmYiOjE1Mjc5NzMyNDIsImV4cCI6MTUyNzk3Njg0MiwiaXNzIjoiaHR0cHM6Ly9kZW1vLmlkZW50aXR5c2VydmVyLmlvIiwiYXVkIjpbImh0dHBzOi8vZGVtby5pZGVudGl0eXNlcnZlci5pby9yZXNvdXJjZXMiLCJhcGkiXSwiY2xpZW50X2lkIjoiY2xpZW50Iiwic2NvcGUiOlsiYXBpIl19.PFI6Fl8J6nlk3MyDwUemy6e4GjtyNoDabuQcUdOoQRGUjVAhv0UKqSOujg4Y_g23nPCGGMNOVNDiyK9StV4NdUrPemdShR6gykKd-FE1n7uHEwN6vsTDV_EeoF5ZdQsqEVo8zxfWoCIVP2Llj7TTwaoNpnhl9fkHvCc75XqYyF7SkiQAXGGGTExNh12kEI_Hb_rZvjJN2HCw1BsMx9-KFM69oFhT8ClAXeG3j3YsQ9ffjoZXV31S2Llzk-5Mf6BrR5CpCUHWWbfnEU21ko2NH7Y_aBJOwVAxyadj-89RR3-Ixpz3mUDxsZ4nmhLJDbrM9e1SRUq-oPmljIp53j-NXg";
-            var result = reader.TryReadToken(jwt, validationParameters);
+            var result = reader.TryReadToken(jwt, policy);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
         }
 

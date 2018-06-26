@@ -133,7 +133,7 @@ namespace JsonWebToken
 
         public override bool HasPrivateKey => RawD != null;
 
-        public override int KeySize
+        public override int KeySizeInBits
         {
             get
             {
@@ -168,9 +168,9 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(Y));
             }
 
-            if (!ValidateECDSAKeySize(KeySize, algorithm))
+            if (!ValidateECDSAKeySize(KeySizeInBits, algorithm))
             {
-                throw new ArgumentOutOfRangeException(nameof(KeySize), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], KeySize));
+                throw new ArgumentOutOfRangeException(nameof(KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], KeySizeInBits));
             }
 
             GCHandle keyBlobHandle = new GCHandle();

@@ -53,14 +53,14 @@ namespace JsonWebToken
 
         private void ValidateAsymmetricJwkSize(TKey key, string algorithm, bool willCreateSignatures)
         {
-            if (willCreateSignatures && MinimumKeySizeInBitsForSigning.ContainsKey(algorithm) && key.KeySize < MinimumKeySizeInBitsForSigning[algorithm])
+            if (willCreateSignatures && MinimumKeySizeInBitsForSigning.ContainsKey(algorithm) && key.KeySizeInBits < MinimumKeySizeInBitsForSigning[algorithm])
             {
-                throw new ArgumentOutOfRangeException(nameof(key.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.SigningKeyTooSmall, key.Kid, MinimumKeySizeInBitsForSigning[algorithm], key.KeySize));
+                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.SigningKeyTooSmall, key.Kid, MinimumKeySizeInBitsForSigning[algorithm], key.KeySizeInBits));
             }
 
-            if (MinimumKeySizeInBitsForVerifying.ContainsKey(algorithm) && key.KeySize < MinimumKeySizeInBitsForVerifying[algorithm])
+            if (MinimumKeySizeInBitsForVerifying.ContainsKey(algorithm) && key.KeySizeInBits < MinimumKeySizeInBitsForVerifying[algorithm])
             {
-                throw new ArgumentOutOfRangeException(nameof(key.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.VerifyKeyTooSmall, key.Kid, MinimumKeySizeInBitsForVerifying[algorithm], key.KeySize));
+                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.VerifyKeyTooSmall, key.Kid, MinimumKeySizeInBitsForVerifying[algorithm], key.KeySizeInBits));
             }
         }
     }

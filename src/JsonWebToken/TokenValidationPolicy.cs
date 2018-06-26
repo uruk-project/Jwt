@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace JsonWebToken
 {
-    public class TokenValidationParameters
+    public class TokenValidationPolicy
     {
-        public static TokenValidationParameters NoValidation = new TokenValidationBuilder()
+        public static TokenValidationPolicy NoValidation = new TokenValidationPolicyBuilder()
                                                             .IgnoreSignature()
                                                             .Build();
 
         private readonly IList<IValidation> _validations;
 
-        public TokenValidationParameters(IList<IValidation> validations)
+        public TokenValidationPolicy(IList<IValidation> validations)
         {
             _validations = validations ?? throw new ArgumentNullException(nameof(validations));
         }

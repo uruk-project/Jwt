@@ -103,7 +103,7 @@ namespace JsonWebToken
 
         public override bool HasPrivateKey => RawD != null && RawDP != null && RawDQ != null && RawP != null && RawQ != null && RawQI != null;
 
-        public override int KeySize => RawN?.Length != 0 ? RawN.Length << 3 : 0;
+        public override int KeySizeInBits => RawN?.Length != 0 ? RawN.Length << 3 : 0;
 
         /// <summary>
         /// Gets or sets the 'dp' (First Factor CRT Exponent).

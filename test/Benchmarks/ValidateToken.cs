@@ -25,7 +25,7 @@ namespace JsonWebToken.Performance
         private static readonly SymmetricJwk SymmetricKey = Tokens.SigningKey;
 
         public static readonly JsonWebTokenReader Reader = new JsonWebTokenReader(Tokens.EncryptionKey);
-        private static readonly TokenValidationParameters validationParameters = new TokenValidationBuilder().RequireSignature(SymmetricKey).Build();
+        private static readonly TokenValidationPolicy policy = new TokenValidationPolicyBuilder().RequireSignature(SymmetricKey).Build();
 
         private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SymmetricKey.ToString());
 
@@ -35,7 +35,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokens))]
         public void Jwt(string token)
         {
-            var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), validationParameters);
+            var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), policy);
             if (!result.Succedeed)
             {
                 throw new Exception(result.Status.ToString());
