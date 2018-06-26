@@ -16,7 +16,7 @@ namespace JsonWebToken.Tests
             var value = writer.WriteToken(descriptor);
 
             var reader = new JsonWebTokenReader(Keys.Jwks);
-            var result = reader.TryReadToken(value, TokenValidationParameters.NoValidation);
+            var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
 
             var jwt = result.Token;
@@ -54,7 +54,7 @@ namespace JsonWebToken.Tests
             var value = writer.WriteToken(descriptor);
 
             var reader = new JsonWebTokenReader(key);
-            var result = reader.TryReadToken(value, TokenValidationParameters.NoValidation);
+            var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
             var jwt = result.Token;
 
             Assert.Equal(plaintext, jwt.Plaintext);
@@ -86,7 +86,7 @@ namespace JsonWebToken.Tests
             var value = writer.WriteToken(descriptor);
 
             var reader = new JsonWebTokenReader(key);
-            var result = reader.TryReadToken(value, TokenValidationParameters.NoValidation);
+            var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
             var jwt = result.Token;
 
             Assert.Equal(data, jwt.Binary);
@@ -119,7 +119,7 @@ namespace JsonWebToken.Tests
             var value = writer.WriteToken(descriptor);
 
             var reader = new JsonWebTokenReader(key);
-            var result = reader.TryReadToken(value, TokenValidationParameters.NoValidation);
+            var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
             var jwt = result.Token;
 
             Assert.Equal(plaintext, jwt.Plaintext);

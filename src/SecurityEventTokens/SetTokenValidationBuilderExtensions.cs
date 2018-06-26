@@ -2,7 +2,7 @@
 {
     public static class SetTokenValidationBuilderExtensions
     {
-        public static TokenValidationBuilder RequireSecurityEventToken(this TokenValidationBuilder builder)
+        public static TokenValidationPolicyBuilder RequireSecurityEventToken(this TokenValidationPolicyBuilder builder)
         {
             if (builder == null)
             {

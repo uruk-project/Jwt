@@ -19,14 +19,14 @@ namespace JsonWebToken.Performance
 
         private static readonly SymmetricJwk SymmetricKey = Tokens.SigningKey;
         public static readonly JsonWebTokenReader Reader = new JsonWebTokenReader(Tokens.EncryptionKey);
-        private static readonly TokenValidationParameters validationParameters = TokenValidationParameters.NoValidation;
+        private static readonly TokenValidationPolicy policy = TokenValidationPolicy.NoValidation;
         public static readonly JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler() { MaximumTokenSizeInBytes = 4 * 1024 * 1024 };
 
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetTokens))]
         public void Jwt(string token)
         {
-            var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), validationParameters);
+            var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), policy);
             if (!result.Succedeed)
             {
                 throw new Exception(result.Status.ToString());

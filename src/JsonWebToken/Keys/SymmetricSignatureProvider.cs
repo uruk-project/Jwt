@@ -34,9 +34,9 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.KeySize < MinimumKeySizeInBits)
+            if (key.KeySizeInBits < MinimumKeySizeInBits)
             {
-                throw new ArgumentOutOfRangeException(nameof(key.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.AlgorithmRequireMinimumKeySize, (algorithm ?? "null"), MinimumKeySizeInBits, key.KeySize));
+                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.AlgorithmRequireMinimumKeySize, (algorithm ?? "null"), MinimumKeySizeInBits, key.KeySizeInBits));
             }
 
             _keyedHash = GetKeyedHashAlgorithm(key.RawK, algorithm);
@@ -110,7 +110,7 @@ namespace JsonWebToken
             try
             {
                 var result = _keyedHash.ComputeHash(input.ToArray());
-                bytesWritten = input.Length;
+                bytesWritten = result.Length;
                 result.CopyTo(destination);
                 return true;
             }

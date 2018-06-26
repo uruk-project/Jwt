@@ -27,7 +27,7 @@ namespace JsonWebToken.Tests
         public void CreateFromCertificate(X509Certificate2 certificate, bool hasPrivateKey, int keySize)
         {
             var jwk = JsonWebKey.FromX509Certificate(certificate, hasPrivateKey);
-            Assert.Equal(keySize, jwk.KeySize);
+            Assert.Equal(keySize, jwk.KeySizeInBits);
         }
 
         public static IEnumerable<object[]> GetJsonKeys()

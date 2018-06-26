@@ -56,7 +56,7 @@ namespace JsonWebToken
         [JsonIgnore]
         public byte[] RawK { get; private set; }
 
-        public override int KeySize => RawK?.Length != 0 ? RawK.Length << 3 : 0;
+        public override int KeySizeInBits => RawK?.Length != 0 ? RawK.Length << 3 : 0;
 
         /// <summary>
         /// Returns a new instance of <see cref="SymmetricJwk"/>.
@@ -91,17 +91,17 @@ namespace JsonWebToken
             switch (algorithm)
             {
                 case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
-                    return KeySize >= 256;
+                    return KeySizeInBits >= 256;
                 case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
-                    return KeySize >= 384;
+                    return KeySizeInBits >= 384;
                 case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
-                    return KeySize >= 512;
+                    return KeySizeInBits >= 512;
                 case KeyManagementAlgorithms.Aes128KW:
-                    return KeySize == 128;
+                    return KeySizeInBits == 128;
                 case KeyManagementAlgorithms.Aes192KW:
-                    return KeySize == 192;
+                    return KeySizeInBits == 192;
                 case KeyManagementAlgorithms.Aes256KW:
-                    return KeySize == 256;
+                    return KeySizeInBits == 256;
                 case SignatureAlgorithms.HmacSha256:
                 case SignatureAlgorithms.HmacSha384:
                 case SignatureAlgorithms.HmacSha512:

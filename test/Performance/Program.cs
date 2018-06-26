@@ -17,7 +17,7 @@ namespace Performance
         };
         private static readonly JsonWebTokenReader _reader = new JsonWebTokenReader(SharedKey);
         private static readonly JsonWebTokenWriter _writer = new JsonWebTokenWriter();
-        private static readonly TokenValidationParameters parameters = new TokenValidationBuilder()
+        private static readonly TokenValidationPolicy policy = new TokenValidationPolicyBuilder()
                     .RequireSignature(SharedKey)
                     .Build();
 
@@ -47,6 +47,8 @@ namespace Performance
                 Audience = audience,
                 Key = SharedKey
             };
+
+            //SymmetricJwk.EnableCaching = true;
 
             Parallel.For(0, 10, _ =>
             {

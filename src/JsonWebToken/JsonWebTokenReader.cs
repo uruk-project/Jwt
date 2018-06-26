@@ -3,8 +3,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Text;
 
@@ -49,12 +47,12 @@ namespace JsonWebToken
         /// Reads and validates a 'JSON Web Token' (JWT) encoded as a JWS or JWE in Compact Serialized Format.
         /// </summary>
         /// <param name="token">the JWT encoded as JWE or JWS</param>
-        /// <param name="validationParameters">Contains validation parameters for the <see cref="JsonWebToken"/>.</param>
-        public TokenValidationResult TryReadToken(ReadOnlySpan<char> token, TokenValidationParameters validationParameters)
+        /// <param name="policy">Contains validation policy for the <see cref="JsonWebToken"/>.</param>
+        public TokenValidationResult TryReadToken(ReadOnlySpan<char> token, TokenValidationPolicy policy)
         {
-            if (validationParameters == null)
+            if (policy == null)
             {
-                throw new ArgumentNullException(nameof(validationParameters));
+                throw new ArgumentNullException(nameof(policy));
             }
 
             if (token == null || token.IsEmpty)
@@ -62,7 +60,7 @@ namespace JsonWebToken
                 return TokenValidationResult.MalformedToken();
             }
 
-            if (token.Length > validationParameters.MaximumTokenSizeInBytes)
+            if (token.Length > policy.MaximumTokenSizeInBytes)
             {
                 return TokenValidationResult.MalformedToken();
             }
@@ -76,7 +74,7 @@ namespace JsonWebToken
             try
             {
                 Encoding.UTF8.GetBytes(token, utf8Buffer);
-                return TryReadToken(utf8Buffer, validationParameters);
+                return TryReadToken(utf8Buffer, policy);
             }
             finally
             {
@@ -87,11 +85,11 @@ namespace JsonWebToken
             }
 #else
             var utf8Buffer = Encoding.UTF8.GetBytes(token.ToArray()).AsSpan();
-            return TryReadToken(utf8Buffer, validationParameters);
+            return TryReadToken(utf8Buffer, policy);
 #endif
         }
 
-        private unsafe TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Buffer, TokenValidationParameters validationParameters)
+        private unsafe TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Buffer, TokenValidationPolicy policy)
         {
             var segments = stackalloc TokenSegment[Constants.JweSegmentCount];
             var segmentCount = Tokenizer.Tokenize(utf8Buffer, segments, Constants.JweSegmentCount);
@@ -178,7 +176,7 @@ namespace JsonWebToken
                     return TokenValidationResult.Success(jwt);
                 }
 
-                var decryptionResult = TryReadToken(decryptedBytes, validationParameters);
+                var decryptionResult = TryReadToken(decryptedBytes, policy);
                 if (!decryptionResult.Succedeed)
                 {
                     return decryptionResult;
@@ -194,7 +192,7 @@ namespace JsonWebToken
                 return TokenValidationResult.MalformedToken();
             }
 
-            return validationParameters.TryValidate(new TokenValidationContext(utf8Buffer, jwt));
+            return policy.TryValidate(new TokenValidationContext(utf8Buffer, jwt));
         }
 
         private static T GetJsonObject<T>(ReadOnlySpan<byte> data)

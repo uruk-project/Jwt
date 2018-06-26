@@ -353,19 +353,19 @@ namespace JwtCreator
             var esKey = EcdsaJwk.GenerateKey(JsonWebKeyECTypes.P256, true);
             esKey.Use = JsonWebKeyUseNames.Sig;
             esKey.Alg = "ES256";
-            esKey.Kid = "ecdsa-" + esKey.KeySize;
+            esKey.Kid = "ecdsa-" + esKey.KeySizeInBits;
             keys.Add(esKey);
 
             esKey = EcdsaJwk.GenerateKey(JsonWebKeyECTypes.P384, true);
             esKey.Use = JsonWebKeyUseNames.Sig;
             esKey.Alg = "ES384";
-            esKey.Kid = "ecdsa-" + esKey.KeySize;
+            esKey.Kid = "ecdsa-" + esKey.KeySizeInBits;
             keys.Add(esKey);
 
             esKey = EcdsaJwk.GenerateKey(JsonWebKeyECTypes.P521, true);
             esKey.Use = JsonWebKeyUseNames.Sig;
             esKey.Alg = "ES512";
-            esKey.Kid = "ecdsa-" + esKey.KeySize;
+            esKey.Kid = "ecdsa-" + esKey.KeySizeInBits;
             keys.Add(esKey);
 
             return keys;

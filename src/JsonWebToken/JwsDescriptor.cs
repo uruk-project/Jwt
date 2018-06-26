@@ -287,12 +287,6 @@ namespace JsonWebToken
 
         public override string Encode()
         {
-            if (Key != null)
-            {
-                Header[HeaderParameters.Alg] = Key.Alg;
-                Header[HeaderParameters.Kid] = Key.Kid;
-            }
-
             var headerJson = Serialize(Header);
             SignatureProvider signatureProvider = null;
             if (Key != null)

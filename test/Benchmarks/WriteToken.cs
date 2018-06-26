@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace JsonWebToken.Performance
 {
@@ -29,6 +30,9 @@ namespace JsonWebToken.Performance
         public static readonly JwtDecoder JwtDotNetDecoder = new JwtDecoder(serializer, new JwtValidator(serializer, dateTimeProvider), urlEncoder);
 
         public static readonly JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler();
+        public static readonly JsonWebTokenHandler Handler2 = new JsonWebTokenHandler();
+
+        public static readonly SigningCredentials signingCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.Alg);
 
         public static readonly JsonWebTokenWriter Writer = new JsonWebTokenWriter();
 
@@ -56,6 +60,13 @@ namespace JsonWebToken.Performance
         }
 
         [Benchmark]
+        [ArgumentsSource(nameof(GetNotEncryptedPayloads))]
+        public void Wilson2(string payload)
+        {
+            var token = Handler2.CreateToken(Tokens.Payloads[payload.Substring(4)], signingCredentials);
+        }
+
+        //[Benchmark]
         [ArgumentsSource(nameof(GetPayloads))]
         public void JoseDotNet(string payload)
         {
@@ -71,7 +82,7 @@ namespace JsonWebToken.Performance
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         [ArgumentsSource(nameof(GetNotEncryptedPayloads))]
         public void JwtDotNet(string payload)
         {
@@ -84,12 +95,12 @@ namespace JsonWebToken.Performance
             yield return new[] { "JWS-small" };
             yield return new[] { "JWS-medium" };
             yield return new[] { "JWS-big" };
-            yield return new[] { "JWE-empty" };
-            yield return new[] { "JWE-small" };
-            yield return new[] { "JWE-medium" };
-            yield return new[] { "JWE-big" };
+            //yield return new[] { "JWE-empty" };
+            //yield return new[] { "JWE-small" };
+            //yield return new[] { "JWE-medium" };
+            //yield return new[] { "JWE-big" };
         }
-        
+
         public IEnumerable<object[]> GetNotEncryptedPayloads()
         {
             yield return new[] { "JWS-empty" };
@@ -98,6 +109,13 @@ namespace JsonWebToken.Performance
             yield return new[] { "JWS-big" };
         }
 
+        //public IEnumerable<object[]> GetJsonPayloads()
+        //{
+        //    yield return new[] { "empty" };
+        //    yield return new[] { "small" };
+        //    yield return new[] { "medium" };
+        //    yield return new[] { "big" };
+        //}
         private static Dictionary<string, JwtDescriptor> CreateJwtDescriptors()
         {
             var descriptors = new Dictionary<string, JwtDescriptor>();
@@ -123,7 +141,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add(payload.Key, descriptor);
+                descriptors.Add("JWS-" + payload.Key, descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
@@ -188,7 +206,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add(payload.Key, descriptor);
+                descriptors.Add("JWS-" + payload.Key, descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)

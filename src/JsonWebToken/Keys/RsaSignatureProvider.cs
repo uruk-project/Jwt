@@ -128,7 +128,7 @@ namespace JsonWebToken
 
         private int GetHashSize(RsaJwk key)
         {
-            return key.KeySize >> 3;
+            return key.KeySizeInBits >> 3;
         }
 
         /// <summary>

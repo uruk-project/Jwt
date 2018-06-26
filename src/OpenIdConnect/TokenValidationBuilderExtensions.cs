@@ -6,7 +6,7 @@ namespace JsonWebToken
 {
     public static class TokenValidationBuilderExtensions
     {
-        public static TokenValidationBuilder RequireAuthenticationContextClassReference(this TokenValidationBuilder builder, string requiredAcr)
+        public static TokenValidationPolicyBuilder RequireAuthenticationContextClassReference(this TokenValidationPolicyBuilder builder, string requiredAcr)
         {
             if (builder == null)
             {
@@ -16,7 +16,7 @@ namespace JsonWebToken
             return builder.AddValidation(new AuthenticationContextClassReferenceValidation(requiredAcr));
         }
 
-        public static TokenValidationBuilder RequireAuthTime(this TokenValidationBuilder builder)
+        public static TokenValidationPolicyBuilder RequireAuthTime(this TokenValidationPolicyBuilder builder)
         {
             if (builder == null)
             {
@@ -26,7 +26,7 @@ namespace JsonWebToken
             return builder.AddValidation(new RequiredClaimValidation<int>(Claims.AuthTime));
         }
 
-        public static TokenValidationBuilder RequireNonce(this TokenValidationBuilder builder)
+        public static TokenValidationPolicyBuilder RequireNonce(this TokenValidationPolicyBuilder builder)
         {
             if (builder == null)
             {

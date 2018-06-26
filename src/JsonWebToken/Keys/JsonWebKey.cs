@@ -163,7 +163,7 @@ namespace JsonWebToken
         /// Gets the key size of <see cref="JsonWebKey"/>.
         /// </summary>
         [JsonIgnore]
-        public abstract int KeySize { get; }
+        public abstract int KeySizeInBits { get; }
 
         [JsonIgnore]
         public IList<JsonWebKey> X509CertificateChain
@@ -229,7 +229,7 @@ namespace JsonWebToken
         {
             if (signatureProvider != null)
             {
-                signatureProvider.Dispose();
+//signatureProvider.Dispose();
             }
         }
 

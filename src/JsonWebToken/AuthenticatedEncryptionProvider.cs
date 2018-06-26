@@ -237,7 +237,7 @@ namespace JsonWebToken
             var al = ConvertToBigEndian(authenticatedData.Length * 8);
             al.CopyTo(macBytes.Slice(authenticatedData.Length + iv.Length + ciphertext.Length));
 #endif
-                if (!_symmetricSignatureProvider.Verify(macBytes, authenticationTag, _authenticatedkeys.HmacKey.KeySize / 8))
+                if (!_symmetricSignatureProvider.Verify(macBytes, authenticationTag, _authenticatedkeys.HmacKey.KeySizeInBits / 8))
                 {
                     return null;
                 }
@@ -343,9 +343,9 @@ namespace JsonWebToken
         {
             if (string.Equals(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, algorithm, StringComparison.Ordinal))
             {
-                if (key.KeySize < 256)
+                if (key.KeySizeInBits < 256)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(key.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, algorithm, 256, key.KeySize));
+                    throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, algorithm, 256, key.KeySizeInBits));
                 }
 
                 return;
@@ -353,9 +353,9 @@ namespace JsonWebToken
 
             if (string.Equals(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, algorithm, StringComparison.Ordinal))
             {
-                if (key.KeySize < 384)
+                if (key.KeySizeInBits < 384)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(key.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, algorithm, 384, key.KeySize));
+                    throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, algorithm, 384, key.KeySizeInBits));
                 }
 
                 return;
@@ -363,9 +363,9 @@ namespace JsonWebToken
 
             if (string.Equals(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, algorithm, StringComparison.Ordinal))
             {
-                if (key.KeySize < 512)
+                if (key.KeySizeInBits < 512)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(key.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, algorithm, 512, key.KeySize));
+                    throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, algorithm, 512, key.KeySizeInBits));
                 }
 
                 return;
