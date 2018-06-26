@@ -52,7 +52,7 @@ namespace JsonWebToken
         {
         }
 
-        public override int HashSizeInBits => _hashSize;
+        public override int HashSizeInBytes => _hashSize;
 
         /// <summary>
         /// Returns the <see cref="HashAlgorithmName"/> instance.
@@ -128,7 +128,7 @@ namespace JsonWebToken
 
         private int GetHashSize(RsaJwk key)
         {
-            return key.KeySize;
+            return key.KeySize >> 3;
         }
 
         /// <summary>

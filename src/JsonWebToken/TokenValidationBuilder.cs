@@ -193,7 +193,7 @@ namespace JsonWebToken
 
         private class EmptyKeyProvider : IKeyProvider
         {
-            private static readonly IReadOnlyList<JsonWebKey> Empty = new JsonWebKey[0];
+            private static readonly IReadOnlyList<JsonWebKey> Empty = Array.Empty<JsonWebKey>();
 
             public IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header)
             {

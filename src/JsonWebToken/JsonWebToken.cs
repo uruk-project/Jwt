@@ -10,32 +10,31 @@ namespace JsonWebToken
     /// </summary>
     public class JsonWebToken
     {
-        private static string[] EmptyStrings = new string[0];
+        private static string[] EmptyStrings = Array.Empty<string>();
         private readonly JwtPayload _payload;
 
         protected JsonWebToken()
         {
         }
 
-        public JsonWebToken(JwtHeader header, JsonWebToken nestedToken, IReadOnlyList<int> separators)
+        public JsonWebToken(JwtHeader header, JsonWebToken nestedToken)
         {
             Header = header ?? throw new ArgumentNullException(nameof(header));
             NestedToken = nestedToken ?? throw new ArgumentNullException(nameof(nestedToken));
-            Separators = separators ?? throw new ArgumentNullException(nameof(separators));
         }
 
-        public JsonWebToken(JwtHeader header, byte[] binary, IReadOnlyList<int> separators)
+        public JsonWebToken(JwtHeader header, byte[] binary)
         {
             Header = header ?? throw new ArgumentNullException(nameof(header));
             Binary = binary ?? throw new ArgumentNullException(nameof(binary));
-            Separators = separators ?? throw new ArgumentNullException(nameof(separators));
         }
 
-        public JsonWebToken(JwtHeader header, JwtPayload payload, IReadOnlyList<int> separators)
+        public JsonWebToken(JwtHeader header, JwtPayload payload, TokenSegment contentSegment, TokenSegment signatureSegment)
         {
             Header = header ?? throw new ArgumentNullException(nameof(header));
             _payload = payload ?? throw new ArgumentNullException(nameof(payload));
-            Separators = separators ?? throw new ArgumentNullException(nameof(separators));
+            ContentSegment = contentSegment;
+            SignatureSegment = signatureSegment;
         }
         
         /// <summary>
@@ -120,6 +119,10 @@ namespace JsonWebToken
         public IReadOnlyList<int> Separators { get; }
 
         public byte[] Binary { get; set; }
+
+        public TokenSegment ContentSegment { get; }
+
+        public TokenSegment SignatureSegment { get; }
 
         public override string ToString()
         {

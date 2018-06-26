@@ -6,7 +6,7 @@ namespace JsonWebToken
 {
     public class JweDescriptor<TDescriptor> : EncodedJwtDescriptor<TDescriptor>, IJwtPayloadDescriptor where TDescriptor : JwsDescriptor, new()
     {
-        private static readonly string[] DefaultRequiredClaims = new string[0];
+        private static readonly string[] DefaultRequiredClaims = Array.Empty<string>();
 
         public JweDescriptor()
             : base(new Dictionary<string, object>(), new TDescriptor())

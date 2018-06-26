@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 
 namespace JsonWebToken
@@ -15,7 +13,7 @@ namespace JsonWebToken
         private DateTimeOffset _syncAfter;
         private JsonWebKeySet _currentKeys;
 
-        private static readonly JsonWebKey[] Empty = new JsonWebKey[0];
+        private static readonly JsonWebKey[] Empty = Array.Empty<JsonWebKey>();
 
         /// <summary>
         /// 1 day is the default time interval that afterwards, <see cref="GetConfigurationAsync()"/> will obtain new configuration.

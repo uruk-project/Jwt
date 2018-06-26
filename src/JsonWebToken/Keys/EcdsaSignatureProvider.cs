@@ -40,7 +40,7 @@ namespace JsonWebToken
         {
         }
 
-        public override int HashSizeInBits => _hashSize;
+        public override int HashSizeInBytes => _hashSize;
 
         private HashAlgorithmName GetHashAlgorithmName(string algorithm)
         {
@@ -86,11 +86,11 @@ namespace JsonWebToken
             switch (key.Crv)
             {
                 case JsonWebKeyECTypes.P256:
-                    return 512;
+                    return 64;
                 case JsonWebKeyECTypes.P384:
-                    return 768;
+                    return 96;
                 case JsonWebKeyECTypes.P521:
-                    return 1056;
+                    return 132;
                 default:
                     throw new NotSupportedException();
             }

@@ -11,19 +11,19 @@ namespace JsonWebToken
         internal const string JwsCompactSerializationCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-";
 
         /// <summary>
-        /// The number of separators in a JWE token.
+        /// The number of segment in a JWE token.
         /// </summary>
-        internal const int JweSeparatorsCount = 4;
+        internal const int JweSegmentCount = 5;
 
         /// <summary>
-        /// The number of separators in a JWS token.
+        /// The number of segment in a JWS token.
         /// </summary>
-        internal const int JwsSeparatorsCount = 2;
+        internal const int JwsSegmentCount = 3;
 
         /// <summary>
-        /// The maximum number of separators in a JWT.
+        /// The maximum number of segment in a JWT.
         /// </summary>
-        internal const int MaxJwtSeparatorsCount = 4;
+        internal const int MaxJwtSegmentCount = JweSegmentCount;
 
         internal const int MaxStackallocBytes = 1024 * 1024;
 

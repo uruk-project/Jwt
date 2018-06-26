@@ -35,8 +35,7 @@ namespace JsonWebToken.Validations
             {
                 return TokenValidationResult.NotYetValid(jwt);
             }
-
-
+            
             return TokenValidationResult.Success(jwt);
         }
     }

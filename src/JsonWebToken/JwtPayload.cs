@@ -10,12 +10,6 @@ namespace JsonWebToken
     /// </summary>
     public class JwtPayload
     {
-        public JwtPayload(string plaintext)
-            : this()
-        {
-            Plaintext = plaintext ?? throw new ArgumentNullException(nameof(plaintext));
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtPayload"/> class with no claims. . 
         /// Creates a empty <see cref="JwtPayload"/>
@@ -110,8 +104,6 @@ namespace JsonWebToken
         /// </summary>
         /// <remarks>If the 'subject' claim is not found, null is returned.</remarks>
         public string Sub { get; set; }
-
-        public string Plaintext { get; }
 
         [JsonExtensionData]
         public IDictionary<string, JToken> AdditionalData { get; set; } = new Dictionary<string, JToken>();
