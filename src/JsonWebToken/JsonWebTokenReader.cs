@@ -168,7 +168,7 @@ namespace JsonWebToken
                     return TokenValidationResult.DecryptionFailed();
                 }
 
-                if (!string.Equals(header.Cty, HeaderParameters.CtyValues.Jwt, StringComparison.Ordinal))
+                if (!string.Equals(header.Cty, ContentTypeValues.Jwt, StringComparison.Ordinal))
                 {
                     // The decrypted payload is not a nested JWT
                     jwt = new JsonWebToken(header, decryptedBytes);

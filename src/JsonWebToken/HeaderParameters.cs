@@ -73,13 +73,5 @@ namespace JsonWebToken
         public const string Zip = "zip";
 
         public const string Address = "address";
-
-        public static class CtyValues
-        {
-            /// <summary>
-            /// JWT content type for 'cty' header parameter.
-            /// </summary>
-            public const string Jwt = "JWT";
-        }
     }
 }
