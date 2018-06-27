@@ -229,7 +229,7 @@ namespace JsonWebToken
         {
             if (signatureProvider != null)
             {
-//signatureProvider.Dispose();
+                signatureProvider.Dispose();
             }
         }
 
