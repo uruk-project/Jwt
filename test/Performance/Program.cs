@@ -47,16 +47,20 @@ namespace Performance
                 Audience = audience,
                 Key = SharedKey
             };
+            var jwt = _writer.WriteToken(token);
 
-            //SymmetricJwk.EnableCaching = true;
-
-            Parallel.For(0, 10, _ =>
+            //Parallel.For(0, 10, _ =>
+            //{
+            for (int i = 0; i < 1000000; i++)
             {
-                for (int i = 0; i < 100000; i++)
-                {
-                    var result = _writer.WriteToken(token);
-                }
-            });
+                var result = _reader.TryReadToken(jwt.AsSpan(), policy);
+            }
+
+            //for (int i = 0; i < 10000000; i++)
+            //{
+            //    var jwt = _writer.WriteToken(token);
+            //}
+            //});
         }
     }
 }
