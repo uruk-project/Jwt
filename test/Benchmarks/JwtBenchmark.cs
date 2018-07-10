@@ -20,26 +20,40 @@ namespace JsonWebToken.Performance
 
         private static readonly Dictionary<string, JwtDescriptor> JwtPayloads = CreateJwtDescriptors();
 
-        [Benchmark]
+        [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetTokens))]
         public void WriteJwt(string token)
+        {
+            Writer.EnableHeaderCaching = false;
+            var value = Writer.WriteToken(JwtPayloads[token]);
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(GetTokens))]
+        public void WriteJwt_Cache(string token)
         {
             var value = Writer.WriteToken(JwtPayloads[token]);
         }
 
-        //[Benchmark]
-        //[ArgumentsSource(nameof(GetTokens))]
-        //public void WriteJwt_Cache(string token)
-        //{
-        //    SymmetricJwk.EnableCaching = true;
-        //    var value = Writer.WriteToken(JwtPayloads[token]);
-        //}
-
-        //[Benchmark]
+        ////[Benchmark]
         //[ArgumentsSource(nameof(GetTokens))]
         //public void ValidateJwt(string token)
         //{
-        //    var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), validationParameters);
+        //    Reader.EnableHeaderCaching = false;
+        //    var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), policy);
+        //    if (!result.Succedeed)
+        //    {
+        //        throw new Exception(result.Status.ToString());
+        //    }
+        //}
+
+
+        //[Benchmark(Baseline = true)]
+        //[ArgumentsSource(nameof(GetTokens))]
+        //public void ValidateJwt_Cache(string token)
+        //{
+        //    Reader.EnableHeaderCaching = true;
+        //    var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), policy);
         //    if (!result.Succedeed)
         //    {
         //        throw new Exception(result.Status.ToString());
@@ -48,9 +62,9 @@ namespace JsonWebToken.Performance
 
         public IEnumerable<object[]> GetTokens()
         {
-            //yield return new[] { "JWS-empty" };
+            yield return new[] { "JWS-empty" };
             //yield return new[] { "JWS-small" };
-            yield return new[] { "JWS-medium" };
+            //yield return new[] { "JWS-medium" };
             //yield return new[] { "JWS-big" };
             //yield return new[] { "JWE-empty" };
             //yield return new[] { "JWE-small" };

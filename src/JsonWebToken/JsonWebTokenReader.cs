@@ -12,6 +12,7 @@ namespace JsonWebToken
     {
         private const byte dot = 0x2E;
         private readonly IList<IKeyProvider> _encryptionKeyProviders;
+        private readonly JwtHeaderCache _headerCache = new JwtHeaderCache();
 
         public JsonWebTokenReader(IEnumerable<IKeyProvider> encryptionKeyProviders)
         {
@@ -42,6 +43,8 @@ namespace JsonWebToken
         {
             _encryptionKeyProviders = Array.Empty<IKeyProvider>();
         }
+
+        public bool EnableHeaderCaching { get; set; } = true;
 
         /// <summary>
         /// Reads and validates a 'JSON Web Token' (JWT) encoded as a JWS or JWE in Compact Serialized Format.
@@ -96,9 +99,21 @@ namespace JsonWebToken
             var headerSegment = segments[0];
             JwtHeader header;
             var rawHeader = utf8Buffer.Slice(headerSegment.Start, headerSegment.Length);
+
             try
             {
-                header = GetJsonObject<JwtHeader>(rawHeader);
+                if (EnableHeaderCaching)
+                {
+                    if (!_headerCache.TryGetHeader(rawHeader, out header))
+                    {
+                        header = GetJsonObject<JwtHeader>(rawHeader);
+                        _headerCache.AddHeader(rawHeader, header);
+                    }
+                }
+                else
+                {
+                    header = GetJsonObject<JwtHeader>(rawHeader);
+                }
             }
             catch (FormatException)
             {

@@ -14,7 +14,7 @@ namespace JsonWebToken
         {
         }
 
-        public override string Encode()
+        public override string Encode(EncodingContext context)
         {
             return EncryptToken(Payload);
         }

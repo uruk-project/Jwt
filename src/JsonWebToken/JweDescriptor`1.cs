@@ -36,9 +36,9 @@ namespace JsonWebToken
         public string JwtId { get => Payload.JwtId; set => Payload.JwtId = value; }
         public DateTime? NotBefore { get => Payload.NotBefore; set => Payload.NotBefore = value; }
 
-        public override string Encode()
+        public override string Encode(EncodingContext context)
         {
-            var payload = Payload.Encode();
+            var payload = Payload.Encode(context);
             var rawData = EncryptToken(payload);
 
             return rawData;
