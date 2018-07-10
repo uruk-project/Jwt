@@ -285,9 +285,8 @@ namespace JsonWebToken
             }
         }
 
-        public override string Encode()
+        public override string Encode(EncodingContext context)
         {
-            var headerJson = Serialize(Header);
             SignatureProvider signatureProvider = null;
             if (Key != null)
             {
@@ -300,17 +299,41 @@ namespace JsonWebToken
             }
 
             var payloadJson = Serialize(Payload);
-            int length = Base64Url.GetArraySizeRequiredToEncode(headerJson.Length)
-                + Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
-                + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBytes))
-                + Constants.JwsSegmentCount - 1;
+            int length = Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
+                       + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBytes))
+                       + Constants.JwsSegmentCount - 1;
+            string headerJson = null;
+
+            var headerCache = context.HeaderCache;
+            byte[] base64UrlHeader = null;
+            if (headerCache != null && headerCache.TryGetHeader(Header, out base64UrlHeader))
+            {
+                length += base64UrlHeader.Length;
+            }
+            else
+            {
+                headerJson = Serialize(Header);
+                length += Base64Url.GetArraySizeRequiredToEncode(headerJson.Length);
+            }
+
             byte[] arrayToReturnToPool = null;
             var buffer = length <= Constants.MaxStackallocBytes
                   ? stackalloc byte[length]
                   : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
             try
             {
-                TryEncodeUtf8ToBase64Url(headerJson, buffer, out int headerBytesWritten);
+                int headerBytesWritten;
+                if (base64UrlHeader != null)
+                {
+                    base64UrlHeader.CopyTo(buffer);
+                    headerBytesWritten = base64UrlHeader.Length;
+                }
+                else
+                {
+                    TryEncodeUtf8ToBase64Url(headerJson, buffer, out headerBytesWritten);
+                    headerCache?.AddHeader(Header, buffer.Slice(0, headerBytesWritten));
+                }
+
                 buffer[headerBytesWritten] = dot;
                 TryEncodeUtf8ToBase64Url(payloadJson, buffer.Slice(headerBytesWritten + 1), out int payloadBytesWritten);
                 buffer[payloadBytesWritten + headerBytesWritten + 1] = dot;

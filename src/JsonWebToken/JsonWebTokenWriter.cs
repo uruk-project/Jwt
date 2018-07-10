@@ -8,11 +8,13 @@ namespace JsonWebToken
     public class JsonWebTokenWriter
     {
         private int _defaultTokenLifetimeInMinutes = DefaultTokenLifetimeInMinutes;
+        private bool _enableHeaderCaching;
 
         /// <summary>
         /// Default lifetime of tokens created. When creating tokens, if 'expires' and 'notbefore' are both null, then a default will be set to: expires = DateTime.UtcNow, notbefore = DateTime.UtcNow + TimeSpan.FromMinutes(TokenLifetimeInMinutes).
         /// </summary>
         public static readonly int DefaultTokenLifetimeInMinutes = 60;
+        private JsonHeaderCache _headerCache = new JsonHeaderCache();
 
         /// <summary>
         /// Gets or sets the token lifetime in minutes.
@@ -45,13 +47,32 @@ namespace JsonWebToken
 
         public bool IgnoreTokenValidation { get; set; } = false;
 
+        public bool EnableHeaderCaching
+        {
+            get => _headerCache != null;
+            set
+            {
+                if (value )
+                {
+                    if ( _headerCache == null)
+                    {
+                        _headerCache = new JsonHeaderCache();
+                    }
+                }
+                else
+                {
+                    _headerCache = null;
+                }
+            }
+        }
+
         public string WriteToken(JwtDescriptor descriptor)
         {
             if (descriptor == null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
-            
+
             var claimsDescriptor = descriptor as IJwtPayloadDescriptor;
             if (claimsDescriptor != null)
             {
@@ -80,7 +101,11 @@ namespace JsonWebToken
                 descriptor.Validate();
             }
 
-            return descriptor.Encode();
+            var encodingContext = new EncodingContext
+            {
+                HeaderCache = _headerCache
+            };
+            return descriptor.Encode(encodingContext);
         }
     }
 }

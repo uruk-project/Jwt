@@ -168,8 +168,6 @@ namespace JsonWebToken.Performance
                     }
 
                     descriptorName += payload.Key;
-
-                    Console.WriteLine(descriptorName);
                     descriptors.Add(descriptorName, writer.WriteToken(jwe));
                 }
             }

@@ -102,7 +102,7 @@ namespace JsonWebToken
             set => Header[HeaderParameters.Crit] = JArray.FromObject(value);
         }
 
-        public abstract string Encode();
+        public abstract string Encode(EncodingContext context);
 
         protected string GetHeaderParameter(string headerName)
         {

@@ -14,35 +14,7 @@ namespace JsonWebToken
         public JwtHeader()
         {
         }
-
-        ///// <summary>
-        ///// Initializes a new instance of <see cref="JwtHeader"/>.
-        ///// </summary>
-        ///// <param name="signingKey"><see cref="JsonWebKey"/> used when creating a JWS Compact JSON.</param>
-        //public JwtHeader(JsonWebKey signingKey)
-        //{
-        //    if (signingKey == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(signingKey));
-        //    }
-
-        //    Alg = signingKey.Alg;
-        //    Kid = signingKey.Kid;
-        //    SigningKey = signingKey;
-        //}
-
-        ///// <summary>
-        ///// Initializes a new instance of <see cref="JwtHeader"/>.
-        ///// <param name="encryptionKey"><see cref="JsonWebKey"/> used when creating a JWS Compact JSON.</param>
-        ///// <param name="encryptionAlgorithm">Algorithm used for encryption.</param>
-        //public JwtHeader(JsonWebKey encryptionKey, string encryptionAlgorithm)
-        //{
-        //    EncryptionKey = encryptionKey ?? throw new ArgumentNullException(nameof(encryptionKey));
-        //    Enc = encryptionAlgorithm ?? throw new ArgumentNullException(nameof(encryptionAlgorithm));
-        //    Alg = encryptionKey.Alg;
-        //    Kid = encryptionKey.Kid;
-        //}
-
+        
         /// <summary>
         /// Gets the signature algorithm that was used to create the signature.
         /// </summary>
