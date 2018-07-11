@@ -174,7 +174,6 @@ namespace JsonWebToken
                     }
 
                     var encryptionResult = encryptionProvider.Encrypt(payload, asciiEncodedHeader);
-
                     int encryptionLength =
                         base64EncodedHeader.Length
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.IV.Length)
@@ -246,8 +245,8 @@ namespace JsonWebToken
                 {
                     payload = compressionProvider.Compress(payload);
                 }
-                var encryptionResult = encryptionProvider.Encrypt(payload.ToArray(), Encoding.ASCII.GetBytes(base64Header));
 
+                var encryptionResult = encryptionProvider.Encrypt(payload, Encoding.ASCII.GetBytes(base64Header));
                 if (wrappedKey == null)
                 {
                     return string.Join(
