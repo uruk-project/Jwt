@@ -1,16 +1,19 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace JsonWebToken
 {
-    public abstract class EncodedJwtDescriptor<TPayload> : JwtDescriptor<TPayload> where TPayload : class
+    public abstract class EncryptedJwtDescriptor<TPayload> : JwtDescriptor<TPayload> where TPayload : class
     {
-        public EncodedJwtDescriptor(IDictionary<string, object> header, TPayload payload)
+        public EncryptedJwtDescriptor(JObject header, TPayload payload)
             : base(header, payload)
+        {
+        }
+
+        public EncryptedJwtDescriptor(TPayload payload)
+            : base(payload)
         {
         }
 
@@ -26,6 +29,7 @@ namespace JsonWebToken
             set => Header[HeaderParameters.Zip] = value;
         }
 
+#if NETCOREAPP2_1
         unsafe protected string EncryptToken(string payload)
         {
             if (payload == null)
@@ -33,7 +37,6 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(payload));
             }
 
-#if NETCOREAPP2_1
             int payloadLength = payload.Length;
             byte[] payloadToReturnToPool = null;
             Span<byte> encodedPayload = payloadLength > Constants.MaxStackallocBytes
@@ -43,11 +46,7 @@ namespace JsonWebToken
             try
             {
                 Encoding.UTF8.GetBytes(payload, encodedPayload);
-#else
-            var encodedPayload = Encoding.UTF8.GetBytes(payload);
-#endif
-                return EncryptToken(encodedPayload);
-#if NETCOREAPP2_1
+            return EncryptToken(encodedPayload);
             }
             finally
             {
@@ -56,9 +55,19 @@ namespace JsonWebToken
                     ArrayPool<byte>.Shared.Return(payloadToReturnToPool);
                 }
             }
-#endif
         }
+#else
+        unsafe protected string EncryptToken(string payload)
+        {
+            if (payload == null)
+            {
+                throw new ArgumentNullException(nameof(payload));
+            }
 
+            var encodedPayload = Encoding.UTF8.GetBytes(payload);
+            return EncryptToken(encodedPayload);
+        }
+#endif
         unsafe protected string EncryptToken(Span<byte> payload)
         {
             string encryptionAlgorithm = EncryptionAlgorithm;

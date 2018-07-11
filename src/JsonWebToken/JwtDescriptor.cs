@@ -14,15 +14,20 @@ namespace JsonWebToken
             NullValueHandling = NullValueHandling.Ignore
         };
 
-        private static readonly Dictionary<string, Type[]> DefaultRequiredHeaderParameters = new Dictionary<string, Type[]>();
+        private static readonly Dictionary<string, JTokenType[]> DefaultRequiredHeaderParameters = new Dictionary<string, JTokenType[]>();
         private JsonWebKey _key;
 
-        public JwtDescriptor(IDictionary<string, object> header)
+        public JwtDescriptor()
+            :this(new JObject())
+        {
+        }
+
+        public JwtDescriptor(JObject header)
         {
             Header = header;
         }
 
-        public IDictionary<string, object> Header { get; }
+        public JObject Header { get; }
 
         public JsonWebKey Key
         {
@@ -35,7 +40,7 @@ namespace JsonWebToken
             }
         }
 
-        protected virtual IReadOnlyDictionary<string, Type[]> RequiredHeaderParameters => DefaultRequiredHeaderParameters;
+        protected virtual IReadOnlyDictionary<string, JTokenType[]> RequiredHeaderParameters => DefaultRequiredHeaderParameters;
 
         public string Algorithm
         {
@@ -106,9 +111,9 @@ namespace JsonWebToken
 
         protected string GetHeaderParameter(string headerName)
         {
-            if (Header.TryGetValue(headerName, out object value))
+            if (Header.TryGetValue(headerName, out JToken value))
             {
-                return (string)value;
+                return value.Value<string>();
             }
 
             return null;
@@ -116,16 +121,16 @@ namespace JsonWebToken
 
         protected IList<string> GetHeaderParameters(string claimType)
         {
-            if (Header.TryGetValue(claimType, out object value))
+            if (Header.TryGetValue(claimType, out JToken value))
             {
                 var list = value as IList<string>;
-                if (list != null)
+                if (value.Type == JTokenType.Array)
                 {
-                    return list;
+                    return new List<string>(value.Values<string>());
                 }
                 else
                 {
-                    var strValue = value as string;
+                    var strValue = value.Value<string>();
                     if (strValue != null)
                     {
                         return new List<string>(new[] { strValue });
@@ -145,17 +150,16 @@ namespace JsonWebToken
         {
             foreach (var header in RequiredHeaderParameters)
             {
-                object token;
-                if (!Header.TryGetValue(header.Key, out token) || token == null)
+                JToken token;
+                if (!Header.TryGetValue(header.Key, out token) || token.Type == JTokenType.Null)
                 {
                     throw new JwtDescriptorException(ErrorMessages.FormatInvariant("The header parameter '{0}' is required.", header.Key));
                 }
 
                 bool headerFound = false;
-                var tokenType = token?.GetType();
                 for (int i = 0; i < header.Value.Length; i++)
                 {
-                    if (tokenType == header.Value[i])
+                    if (token.Type == header.Value[i])
                     {
                         headerFound = true;
                         break;

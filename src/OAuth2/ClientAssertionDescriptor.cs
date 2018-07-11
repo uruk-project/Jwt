@@ -17,21 +17,16 @@ namespace JsonWebToken
         };
 
         public ClientAssertionDescriptor()
-            :base()
-        {
-        }
-
-        public ClientAssertionDescriptor(IDictionary<string, object> header)
-            : base(header)
+            : base()
         {
         }
 
         public ClientAssertionDescriptor(JObject payload)
-            : base(new Dictionary<string, object>(), payload)
+            : base(new JObject(), payload)
         {
         }
 
-        public ClientAssertionDescriptor(IDictionary<string, object> header, JObject payload)
+        public ClientAssertionDescriptor(JObject header, JObject payload)
             : base(header, payload)
         {
         }

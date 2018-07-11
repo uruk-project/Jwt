@@ -10,8 +10,8 @@ namespace JsonWebToken
         {
         }
 
-        public JweDescriptor(IDictionary<string, object> header)
-            : base(header)
+        public JweDescriptor(JObject header, JwsDescriptor payload)
+            : base(header, payload)
         {
         }
 
@@ -20,17 +20,12 @@ namespace JsonWebToken
         {
         }
 
-        public JweDescriptor(IDictionary<string, object> header, JwsDescriptor payload)
-            : base(header, payload)
-        {
-        }
-
         public JweDescriptor(JObject payload)
             : base(new JwsDescriptor(payload))
         {
         }
 
-        public JweDescriptor(IDictionary<string, object> header, JObject payload)
+        public JweDescriptor(JObject header, JObject payload)
             : base(header, new JwsDescriptor(payload))
         {
         }
