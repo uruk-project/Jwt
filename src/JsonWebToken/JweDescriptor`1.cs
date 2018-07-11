@@ -4,26 +4,21 @@ using System.Collections.Generic;
 
 namespace JsonWebToken
 {
-    public class JweDescriptor<TDescriptor> : EncodedJwtDescriptor<TDescriptor>, IJwtPayloadDescriptor where TDescriptor : JwsDescriptor, new()
+    public class JweDescriptor<TDescriptor> : EncryptedJwtDescriptor<TDescriptor>, IJwtPayloadDescriptor where TDescriptor : JwsDescriptor, new()
     {
         private static readonly string[] DefaultRequiredClaims = Array.Empty<string>();
 
         public JweDescriptor()
-            : base(new Dictionary<string, object>(), new TDescriptor())
+            : base(new JObject(), new TDescriptor())
         {
         }
-
-        public JweDescriptor(IDictionary<string, object> header)
-            : base(header, new TDescriptor())
-        {
-        }
-
+        
         public JweDescriptor(TDescriptor payload)
-            : base(new Dictionary<string, object>(), payload)
+            : base(new JObject(), payload)
         {
         }
 
-        public JweDescriptor(IDictionary<string, object> header, TDescriptor payload)
+        public JweDescriptor(JObject header, TDescriptor payload)
             : base(header, payload)
         {
         }

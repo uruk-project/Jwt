@@ -71,7 +71,7 @@ namespace JwtCreator
                         continue;
                     }
 
-                    var jweDescriptor = new JweDescriptor(json);
+                    var jweDescriptor = new JweDescriptor(new JObject(), json);
                     jweDescriptor.Payload.Key = signingKey;
                     jweDescriptor.Key = key;
                     jweDescriptor.EncryptionAlgorithm = enc;

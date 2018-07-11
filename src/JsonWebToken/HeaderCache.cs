@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -16,7 +17,7 @@ namespace JsonWebToken
 
             public string Kid;
         }
-        
+
         private readonly object _syncLock = new object();
         private SpinLock _spinLock = new SpinLock();
 
@@ -27,9 +28,9 @@ namespace JsonWebToken
         private Bucket _head = null;
         private Bucket _tail = null;
 
-        public bool TryGetHeader(IDictionary<string, object> header, out byte[] base64UrlHeader)
+        public bool TryGetHeader(JObject header, out byte[] base64UrlHeader)
         {
-            if (IsTooComplexHeader(header))
+            if (!IsSimmpleHeader(header))
             {
                 base64UrlHeader = null;
                 return false;
@@ -63,107 +64,117 @@ namespace JsonWebToken
             return false;
         }
 
-        private int ComputeHeaderKey(IDictionary<string, object> header)
+        private int ComputeHeaderKey(JObject header)
         {
-            object alg, enc, cty;
+            JToken alg, enc, cty;
             header.TryGetValue(HeaderParameters.Alg, out alg);
             header.TryGetValue(HeaderParameters.Enc, out enc);
             header.TryGetValue(HeaderParameters.Cty, out cty);
 
             int key = 0;
-            switch ((string)alg)
+            if (alg != null)
             {
-                case SignatureAlgorithms.HmacSha256:
-                    key = 1;
-                    break;
-                case SignatureAlgorithms.HmacSha384:
-                    key = 2;
-                    break;
-                case SignatureAlgorithms.HmacSha512:
-                    key = 3;
-                    break;
-                case SignatureAlgorithms.RsaSha256:
-                    key = 4;
-                    break;
-                case SignatureAlgorithms.RsaSha384:
-                    key = 5;
-                    break;
-                case SignatureAlgorithms.RsaSha512:
-                    key = 6;
-                    break;
-                case SignatureAlgorithms.RsaSsaPssSha256:
-                    key = 7;
-                    break;
-                case SignatureAlgorithms.RsaSsaPssSha384:
-                    key = 8;
-                    break;
-                case SignatureAlgorithms.RsaSsaPssSha512:
-                    key = 9;
-                    break;
-                case SignatureAlgorithms.EcdsaSha256:
-                    key = 10;
-                    break;
-                case SignatureAlgorithms.EcdsaSha384:
-                    key = 11;
-                    break;
-                case SignatureAlgorithms.EcdsaSha512:
-                    key = 12;
-                    break;
+                switch (alg.Value<string>())
+                {
+                    case SignatureAlgorithms.HmacSha256:
+                        key = 1;
+                        break;
+                    case SignatureAlgorithms.HmacSha384:
+                        key = 2;
+                        break;
+                    case SignatureAlgorithms.HmacSha512:
+                        key = 3;
+                        break;
+                    case SignatureAlgorithms.RsaSha256:
+                        key = 4;
+                        break;
+                    case SignatureAlgorithms.RsaSha384:
+                        key = 5;
+                        break;
+                    case SignatureAlgorithms.RsaSha512:
+                        key = 6;
+                        break;
+                    case SignatureAlgorithms.RsaSsaPssSha256:
+                        key = 7;
+                        break;
+                    case SignatureAlgorithms.RsaSsaPssSha384:
+                        key = 8;
+                        break;
+                    case SignatureAlgorithms.RsaSsaPssSha512:
+                        key = 9;
+                        break;
+                    case SignatureAlgorithms.EcdsaSha256:
+                        key = 10;
+                        break;
+                    case SignatureAlgorithms.EcdsaSha384:
+                        key = 11;
+                        break;
+                    case SignatureAlgorithms.EcdsaSha512:
+                        key = 12;
+                        break;
 
-                case KeyManagementAlgorithms.Aes128KW:
-                    key = 13;
-                    break;
-                case KeyManagementAlgorithms.Aes192KW:
-                    key = 14;
-                    break;
-                case KeyManagementAlgorithms.Aes256KW:
-                    key = 15;
-                    break;
-                case KeyManagementAlgorithms.Direct:
-                    key = 16;
-                    break;
-                case KeyManagementAlgorithms.RsaOaep:
-                    key = 17;
-                    break;
-                case KeyManagementAlgorithms.RsaOaep256:
-                    key = 18;
-                    break;
-                case KeyManagementAlgorithms.RsaPkcs1:
-                    key = 19;
-                    break;
+                    case KeyManagementAlgorithms.Aes128KW:
+                        key = 13;
+                        break;
+                    case KeyManagementAlgorithms.Aes192KW:
+                        key = 14;
+                        break;
+                    case KeyManagementAlgorithms.Aes256KW:
+                        key = 15;
+                        break;
+                    case KeyManagementAlgorithms.Direct:
+                        key = 16;
+                        break;
+                    case KeyManagementAlgorithms.RsaOaep:
+                        key = 17;
+                        break;
+                    case KeyManagementAlgorithms.RsaOaep256:
+                        key = 18;
+                        break;
+                    case KeyManagementAlgorithms.RsaPkcs1:
+                        key = 19;
+                        break;
 
-                default:
-                    key = 0;
-                    break;
+                    default:
+                        return -1;
+                }
             }
 
             key <<= 8;
-            switch ((string)enc)
+            if (enc != null)
             {
-                case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
-                    key |= 1;
-                    break;
-                case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
-                    key |= 2;
-                    break;
-                case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
-                    key |= 3;
-                    break;
+                switch (enc.Value<string>())
+                {
+                    case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
+                        key |= 1;
+                        break;
+                    case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
+                        key |= 2;
+                        break;
+                    case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
+                        key |= 3;
+                        break;
+                    default:
+                        return -1;
+                }
             }
 
-            key <<= 8;
+            if (cty != null && !string.Equals(cty.Value<string>(), ContentTypeValues.Jwt, StringComparison.Ordinal))
+            {
+                return -1;
+            }
 
             return key;
         }
 
-        public void AddHeader(IDictionary<string, object> header, ReadOnlySpan<byte> base6UrlHeader)
+        public void AddHeader(JObject header, ReadOnlySpan<byte> base6UrlHeader)
         {
             if (!header.TryGetValue(HeaderParameters.Kid, out var kid))
             {
                 return;
             }
 
-            if (IsTooComplexHeader(header))
+            if (!IsSimmpleHeader(header))
             {
                 return;
             }
@@ -201,7 +212,7 @@ namespace JsonWebToken
                         node.Entries[key] = base6UrlHeader.ToArray();
                     }
                 }
-                
+
                 if (_count >= MaxSize)
                 {
                     RemoveLeastRecentlyUsed();
@@ -231,27 +242,35 @@ namespace JsonWebToken
             }
         }
 
-        private bool IsTooComplexHeader(IDictionary<string, object> header)
+        private bool IsSimmpleHeader(JObject header)
         {
-            int simpleHeaders = 0;
-            if (header.ContainsKey(HeaderParameters.Kid))
+            if (!header.ContainsKey(HeaderParameters.Kid))
             {
-                simpleHeaders++;
+                return false;
             }
+
+            int simpleHeaders = 1;
             if (header.ContainsKey(HeaderParameters.Alg))
             {
                 simpleHeaders++;
             }
+
             if (header.ContainsKey(HeaderParameters.Enc))
             {
                 simpleHeaders++;
             }
-            if (header.ContainsKey(HeaderParameters.Cty))
+
+            if (header.TryGetValue(HeaderParameters.Cty, out var cty))
             {
+                if (cty.Type != JTokenType.Null && string.Equals(cty.Value<string>(), ContentTypeValues.Jwt, StringComparison.Ordinal))
+                {
+                    return false;
+                }
+
                 simpleHeaders++;
             }
 
-            return header.Count > simpleHeaders;
+            return header.Count == simpleHeaders;
         }
 
         private void MoveToHead(Bucket node)

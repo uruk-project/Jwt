@@ -8,7 +8,6 @@ namespace JsonWebToken
     public class JsonWebTokenWriter
     {
         private int _defaultTokenLifetimeInMinutes = DefaultTokenLifetimeInMinutes;
-        private bool _enableHeaderCaching;
 
         /// <summary>
         /// Default lifetime of tokens created. When creating tokens, if 'expires' and 'notbefore' are both null, then a default will be set to: expires = DateTime.UtcNow, notbefore = DateTime.UtcNow + TimeSpan.FromMinutes(TokenLifetimeInMinutes).

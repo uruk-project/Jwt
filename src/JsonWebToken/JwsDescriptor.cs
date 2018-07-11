@@ -13,28 +13,23 @@ namespace JsonWebToken
         private static readonly byte dot = Convert.ToByte('.');
         private static readonly Dictionary<string, JTokenType[]> DefaultRequiredClaims = new Dictionary<string, JTokenType[]>();
         private static readonly string[] DefaultProhibitedClaims = Array.Empty<string>();
-        private static readonly Dictionary<string, Type[]> JwsRequiredHeaderParameters = new Dictionary<string, Type[]>
+        private static readonly Dictionary<string, JTokenType[]> JwsRequiredHeaderParameters = new Dictionary<string, JTokenType[]>
         {
-            { HeaderParameters.Alg, new [] { typeof(string)} }
+            { HeaderParameters.Alg, new [] { JTokenType.String } }
         };
 
         public JwsDescriptor()
-            : base(new Dictionary<string, object>(), new JObject())
+            : base(new JObject(), new JObject())
         {
         }
 
-        public JwsDescriptor(IDictionary<string, object> header)
-            : base(header, new JObject())
-        {
-        }
-
-        public JwsDescriptor(IDictionary<string, object> header, JObject payload)
+        public JwsDescriptor(JObject header, JObject payload)
             : base(header, payload)
         {
         }
 
         public JwsDescriptor(JObject payload)
-            : base(new Dictionary<string, object>(), payload)
+            : base(new JObject(), payload)
         {
         }
 
@@ -42,7 +37,7 @@ namespace JsonWebToken
 
         protected virtual IReadOnlyList<string> ProhibitedClaims => DefaultProhibitedClaims;
 
-        protected override IReadOnlyDictionary<string, Type[]> RequiredHeaderParameters => JwsRequiredHeaderParameters;
+        protected override IReadOnlyDictionary<string, JTokenType[]> RequiredHeaderParameters => JwsRequiredHeaderParameters;
 
         /// <summary>
         /// Gets or sets the value of the 'sub' claim.

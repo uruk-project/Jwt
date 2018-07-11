@@ -1,15 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
 
 namespace JsonWebToken
 {
-    public class BinaryJweDescriptor : EncodedJwtDescriptor<byte[]>
+    public class BinaryJweDescriptor : EncryptedJwtDescriptor<byte[]>
     {
         public BinaryJweDescriptor(byte[] payload)
-            : base(new Dictionary<string, object>(), payload)
+            : base(payload)
         {
         }
 
-        public BinaryJweDescriptor(IDictionary<string, object> header, byte[] payload)
+        public BinaryJweDescriptor(JObject header, byte[] payload)
             : base(header, payload)
         {
         }

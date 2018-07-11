@@ -6,7 +6,7 @@ namespace JsonWebToken
 {
     public class JsonWebTokenBuilder
     {
-        private readonly Dictionary<string, object> _header = new Dictionary<string, object>();
+        private readonly JObject _header = new JObject();
         private readonly JObject _jsonPayload = new JObject();
         private byte[] _binaryPayload;
         private string _textPayload;
@@ -80,9 +80,9 @@ namespace JsonWebToken
             }
             else
             {
-                var jws = new JwsDescriptor(_header,  _jsonPayload);
+                var jws = new JwsDescriptor(_header, _jsonPayload);
                 if (_signingKey != null)
-                { 
+                {
                     jws.Key = _signingKey;
                 }
                 else if (!_noSignature)

@@ -1,17 +1,16 @@
 ﻿using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
 
 namespace JsonWebToken
 {
-    public class PlaintextJweDescriptor : EncodedJwtDescriptor<string>
+    public class PlaintextJweDescriptor : EncryptedJwtDescriptor<string>
     {
-        public PlaintextJweDescriptor(IDictionary<string, object> header, string payload)
+        public PlaintextJweDescriptor(JObject header, string payload)
             : base(header, payload)
         {
         }
 
         public PlaintextJweDescriptor(string payload)
-            :this(new Dictionary<string, object>(), payload)
+            :base(payload)
         {
         }
 
