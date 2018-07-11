@@ -80,12 +80,12 @@ namespace JsonWebToken
             return Encrypt(plaintext, authenticatedData, null);
         }
 
-#if NETCOREAPP2_1
         public AuthenticatedEncryptionResult Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> authenticatedData)
         {
             return Encrypt(plaintext, authenticatedData, null);
         }
-
+        
+#if NETCOREAPP2_1
         /// <summary>
         /// Encrypts the 'plaintext'
         /// </summary>
@@ -402,6 +402,7 @@ namespace JsonWebToken
         }
 #endif
 
+#if NETCOREAPP2_1
         private static byte[] Transform(ICryptoTransform transform, ReadOnlySpan<byte> input, int inputOffset, int inputLength)
         {
             if (transform.CanTransformMultipleBlocks)
@@ -412,16 +413,31 @@ namespace JsonWebToken
             using (MemoryStream messageStream = new MemoryStream())
             using (CryptoStream cryptoStream = new CryptoStream(messageStream, transform, CryptoStreamMode.Write))
             {
-#if NETCOREAPP2_1
                 cryptoStream.Write(input.Slice(inputOffset, inputLength));
-#else
-                cryptoStream.Write(input.ToArray(), inputOffset, inputLength);
-#endif
                 cryptoStream.FlushFinalBlock();
 
                 return messageStream.ToArray();
             }
         }
+
+#else
+        private static byte[] Transform(ICryptoTransform transform, byte[] input, int inputOffset, int inputLength)
+        {
+            if (transform.CanTransformMultipleBlocks)
+            {
+                return transform.TransformFinalBlock(input, inputOffset, inputLength);
+            }
+
+            using (MemoryStream messageStream = new MemoryStream())
+            using (CryptoStream cryptoStream = new CryptoStream(messageStream, transform, CryptoStreamMode.Write))
+            {
+                cryptoStream.Write(input, inputOffset, inputLength);
+                cryptoStream.FlushFinalBlock();
+
+                return messageStream.ToArray();
+            }
+        }
+#endif
 
         public void Dispose()
         {
