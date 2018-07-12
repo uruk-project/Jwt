@@ -85,7 +85,6 @@ namespace JsonWebToken
             return Encrypt(plaintext, authenticatedData, null);
         }
         
-#if NETCOREAPP2_1
         /// <summary>
         /// Encrypts the 'plaintext'
         /// </summary>
@@ -115,7 +114,7 @@ namespace JsonWebToken
                 }
 
                 byte[] ciphertext;
-                ciphertext = Transform(aes.CreateEncryptor(), plaintext, 0, plaintext.Length);
+                ciphertext = Transform(aes.CreateEncryptor(), plaintext.ToArray(), 0, plaintext.Length);
                 
                 byte[] arrayToReturnToPool = null;
                 int macLength = authenticatedData.Length + aes.IV.Length + ciphertext.Length + sizeof(long);
@@ -127,8 +126,12 @@ namespace JsonWebToken
                     authenticatedData.CopyTo(macBytes);
                     aes.IV.CopyTo(macBytes.Slice(authenticatedData.Length));
                     ciphertext.CopyTo(macBytes.Slice(authenticatedData.Length + aes.IV.Length));
+#if NETCOREAPP2_1
                     TryConvertToBigEndian(macBytes.Slice(authenticatedData.Length + aes.IV.Length + ciphertext.Length, sizeof(long)), authenticatedData.Length * 8);
-
+#else
+                    var al = ConvertToBigEndian(authenticatedData.Length * 8);
+                    al.CopyTo(macBytes.Slice(authenticatedData.Length + aes.IV.Length + ciphertext.Length, sizeof(long)));
+#endif
                     byte[] authenticationTag = new byte[_symmetricSignatureProvider.HashSizeInBytes];
                     _symmetricSignatureProvider.TrySign(macBytes, authenticationTag, out int writtenBytes);
                     Debug.Assert(writtenBytes == authenticationTag.Length);
@@ -143,52 +146,6 @@ namespace JsonWebToken
                     }
                 }
             }
-        }
-#endif
-
-        /// <summary>
-        /// Encrypts the 'plaintext'
-        /// </summary>
-        /// <param name="plaintext">the data to be encrypted.</param>
-        /// <param name="authenticatedData">will be combined with iv and ciphertext to create an authenticationtag.</param>
-        /// <param name="iv">initialization vector for encryption.</param>
-        public AuthenticatedEncryptionResult Encrypt(byte[] plaintext, byte[] authenticatedData, byte[] iv)
-        {
-            if (plaintext == null || plaintext.Length == 0)
-            {
-                throw new ArgumentNullException(nameof(plaintext));
-            }
-
-            if (authenticatedData == null || authenticatedData.Length == 0)
-            {
-                throw new ArgumentNullException(nameof(authenticatedData));
-            }
-
-            Aes aes = Aes.Create();
-            aes.Mode = CipherMode.CBC;
-            aes.Padding = PaddingMode.PKCS7;
-            aes.Key = _authenticatedkeys.AesKey.RawK;
-            if (iv != null)
-            {
-                aes.IV = iv;
-            }
-
-            byte[] ciphertext;
-            ciphertext = Transform(aes.CreateEncryptor(), plaintext, 0, plaintext.Length);
-
-            byte[] al = ConvertToBigEndian(authenticatedData.Length * 8);
-            byte[] macBytes = new byte[authenticatedData.Length + aes.IV.Length + ciphertext.Length + al.Length];
-            Array.Copy(authenticatedData, 0, macBytes, 0, authenticatedData.Length);
-            Array.Copy(aes.IV, 0, macBytes, authenticatedData.Length, aes.IV.Length);
-            Array.Copy(ciphertext, 0, macBytes, authenticatedData.Length + aes.IV.Length, ciphertext.Length);
-            Array.Copy(al, 0, macBytes, authenticatedData.Length + aes.IV.Length + ciphertext.Length, al.Length);
-            byte[] authenticationTag = new byte[_symmetricSignatureProvider.HashSizeInBytes];
-            _symmetricSignatureProvider.TrySign(macBytes, authenticationTag, out int writtenBytes);
-
-            //var authenticationTag = new byte[writtenBytes];
-            //Array.Copy(macHash, authenticationTag, authenticationTag.Length);
-
-            return new AuthenticatedEncryptionResult(ciphertext, aes.IV, authenticationTag);
         }
 
         /// <summary>
