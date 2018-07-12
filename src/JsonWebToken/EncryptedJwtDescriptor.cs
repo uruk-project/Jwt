@@ -46,7 +46,7 @@ namespace JsonWebToken
             try
             {
                 Encoding.UTF8.GetBytes(payload, encodedPayload);
-            return EncryptToken(encodedPayload);
+                return EncryptToken(encodedPayload);
             }
             finally
             {

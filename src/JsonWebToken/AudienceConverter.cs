@@ -41,8 +41,7 @@ namespace JsonWebToken
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            var list = value as IList<string>;
-            if (list != null && list.Count != 0)
+            if (value is IList<string> list && list.Count != 0)
             {
                 if (list.Count == 1)
                 {
