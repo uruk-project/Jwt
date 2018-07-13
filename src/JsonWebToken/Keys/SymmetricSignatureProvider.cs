@@ -1,7 +1,9 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace JsonWebToken
@@ -11,6 +13,9 @@ namespace JsonWebToken
     /// </summary>
     public class SymmetricSignatureProvider : SignatureProvider
     {
+        private static readonly byte[] s_bytesA = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
+        private static readonly byte[] s_bytesB = new byte[] { 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
+
         private bool _disposed;
         private KeyedHashAlgorithm _keyedHash;
 
@@ -121,7 +126,7 @@ namespace JsonWebToken
             }
 #endif
         }
-        
+
         /// <summary>
         /// Verifies that a signature created over the 'input' matches the signature. Using <see cref="SymmetricJwk"/> and 'algorithm' passed to <see cref="SymmetricSignatureProvider( JsonWebKey, string )"/>.
         /// </summary>
@@ -229,36 +234,25 @@ namespace JsonWebToken
         /// <returns>
         /// true if the bytes are equal, false otherwise.
         /// </returns>
-        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         private static bool AreEqual(ReadOnlySpan<byte> a, Span<byte> b, int length)
         {
-            byte[] s_bytesA = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
-            byte[] s_bytesB = new byte[] { 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
-
-            int result = 0;
             int lenToUse = 0;
-            ReadOnlySpan<byte> a1, a2;
+            ReadOnlySpan<byte> first, second;
 
-            if (((a == null) || (b == null))
-            || (a.Length < length || b.Length < length))
+            if (((a == null) || (b == null)) || (a.Length < length || b.Length < length))
             {
-                a1 = s_bytesA;
-                a2 = s_bytesB;
-                lenToUse = a1.Length;
+                first = s_bytesA;
+                second = s_bytesB;
+                lenToUse = first.Length;
             }
             else
             {
-                a1 = a;
-                a2 = b;
+                first = a;
+                second = b;
                 lenToUse = length;
             }
-
-            for (int i = 0; i < lenToUse; i++)
-            {
-                result |= a1[i] ^ a2[i];
-            }
-
-            return result == 0;
+            
+            return AreEqual(ref MemoryMarshal.GetReference(first), ref MemoryMarshal.GetReference(second), lenToUse);
         }
 
         /// <summary>
@@ -274,30 +268,63 @@ namespace JsonWebToken
         /// <returns>
         /// true if the bytes are equal, false otherwise.
         /// </returns>
-        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
-        private static bool AreEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
+        unsafe private static bool AreEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
         {
-            byte[] s_bytesA = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
-            byte[] s_bytesB = new byte[] { 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
+            ReadOnlySpan<byte> first, second;
 
-            int result = 0;
-            ReadOnlySpan<byte> a1, a2;
-
-            if (((a == null) || (b == null))
-            || (a.Length != b.Length))
+            if (((a == null) || (b == null)) || (a.Length != b.Length))
             {
-                a1 = s_bytesA;
-                a2 = s_bytesB;
+                first = s_bytesA;
+                second = s_bytesB;
             }
             else
             {
-                a1 = a;
-                a2 = b;
+                first = a;
+                second = b;
             }
 
-            for (int i = 0; i < a1.Length; i++)
+            return AreEqual(ref MemoryMarshal.GetReference(first), ref MemoryMarshal.GetReference(second), first.Length);
+        }
+
+        // Optimized byte-based AreEqual. Inspired from https://github.com/dotnet/corefx/blob/master/src/Common/src/CoreLib/System/SpanHelpers.Byte.cs
+        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
+        private static unsafe bool AreEqual(ref byte first, ref byte second, int length)
+        {
+            IntPtr i = (IntPtr)0; // Use IntPtr for arithmetic to avoid unnecessary 64->32->64 truncations
+            IntPtr n = (IntPtr)(void*)length;
+
+            if (Vector.IsHardwareAccelerated && (byte*)n >= (byte*)Vector<byte>.Count)
             {
-                result |= a1[i] ^ a2[i];
+                Vector<byte> equals = Vector<byte>.Zero;
+                n -= Vector<byte>.Count;
+                while ((byte*)n > (byte*)i)
+                {
+                    equals |= Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref first, i)) ^ Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref second, i));
+                    i += Vector<byte>.Count;
+                }
+
+                equals |= Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref first, n)) ^ Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref second, n));
+                return equals == Vector<byte>.Zero;
+            }
+
+            if ((byte*)n >= (byte*)sizeof(UIntPtr))
+            {
+                bool equals = true;
+                n -= sizeof(UIntPtr);
+                while ((byte*)n > (byte*)i)
+                {
+                    equals &= Unsafe.ReadUnaligned<UIntPtr>(ref Unsafe.AddByteOffset(ref first, i)) == Unsafe.ReadUnaligned<UIntPtr>(ref Unsafe.AddByteOffset(ref second, i));
+                    i += sizeof(UIntPtr);
+                }
+
+                return equals & Unsafe.ReadUnaligned<UIntPtr>(ref Unsafe.AddByteOffset(ref first, n)) == Unsafe.ReadUnaligned<UIntPtr>(ref Unsafe.AddByteOffset(ref second, n));
+            }
+
+            int result = 0;
+            while ((byte*)n > (byte*)i)
+            {
+                result |= Unsafe.AddByteOffset(ref first, i) ^ Unsafe.AddByteOffset(ref second, i);
+                i += 1;
             }
 
             return result == 0;
