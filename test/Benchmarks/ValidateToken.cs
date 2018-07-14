@@ -4,6 +4,7 @@ using Jose;
 using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;
+using Microsoft.IdentityModel.JsonWebTokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -21,6 +22,7 @@ namespace JsonWebToken.Performance
         public static readonly JwtDecoder JwtDotNetDecoder = new JwtDecoder(serializer, new JwtValidator(serializer, dateTimeProvider), urlEncoder);
 
         public static readonly JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler() { MaximumTokenSizeInBytes = 4 * 1024 * 1024 };
+        public static readonly JsonWebTokenHandler Handler2 = new JsonWebTokenHandler();
 
         private static readonly SymmetricJwk SymmetricKey = Tokens.SigningKey;
 
@@ -55,6 +57,17 @@ namespace JsonWebToken.Performance
 
         [Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
+        public void Wilson2(string token)
+        {
+            var result = Handler2.ValidateToken(Tokens.ValidTokens[token], wilsonParameters);
+            if (result.SecurityToken == null)
+            {
+                throw new Exception();
+            }
+        }
+
+        //[Benchmark]
+        [ArgumentsSource(nameof(GetTokens))]
         public void JoseDotNet(string token)
         {
             if (token.StartsWith("JWE-"))
@@ -75,7 +88,7 @@ namespace JsonWebToken.Performance
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         [ArgumentsSource(nameof(GetNotEncryptedTokens))]
         public void JwtDotNet(string token)
         {

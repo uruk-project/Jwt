@@ -41,7 +41,7 @@ namespace JsonWebToken
         /// <returns>Document as a string</returns>
         public string GetDocument(string address, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(address))
+            if (string.IsNullOrEmpty(address))
             {
                 throw new ArgumentNullException(nameof(address));
             }

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -8,6 +9,9 @@ namespace JsonWebToken
 {
     public class EcdsaJwk : AsymmetricJwk
     {
+        private readonly ConcurrentDictionary<string, EcdsaSignatureProvider> _signatureProviders = new ConcurrentDictionary<string, EcdsaSignatureProvider>();
+        private readonly ConcurrentDictionary<string, EcdsaSignatureProvider> _signatureValidationProviders = new ConcurrentDictionary<string, EcdsaSignatureProvider>();
+
         public static readonly Dictionary<string, int> DefaultECDsaKeySizeInBits = new Dictionary<string, int>()
         {
             { SignatureAlgorithms.EcdsaSha256, 256 },
@@ -151,7 +155,7 @@ namespace JsonWebToken
             }
         }
 
-        public ECDsaCng CreateECDsa(string algorithm, bool usePrivateKey)
+        public ECDsa CreateECDsa(string algorithm, bool usePrivateKey)
         {
             if (Crv == null)
             {
@@ -271,12 +275,7 @@ namespace JsonWebToken
 
         private static bool ValidateECDSAKeySize(int keySize, string algorithm)
         {
-            if (DefaultECDsaKeySizeInBits.ContainsKey(algorithm) && keySize == DefaultECDsaKeySizeInBits[algorithm])
-            {
-                return true;
-            }
-
-            return false;
+            return DefaultECDsaKeySizeInBits.TryGetValue(algorithm, out var value) && value == keySize;
         }
 
         private uint GetKeyByteCount()
@@ -346,9 +345,22 @@ namespace JsonWebToken
 
         public override SignatureProvider CreateSignatureProvider(string algorithm, bool willCreateSignatures)
         {
+            if (algorithm == null)
+            {
+                return null;
+            }
+
+            var signatureProviders = willCreateSignatures ? _signatureProviders : _signatureValidationProviders;
+            if (signatureProviders.TryGetValue(algorithm, out var cachedProvider))
+            {
+                return cachedProvider;
+            }
+
             if (IsSupportedAlgorithm(algorithm))
             {
-                return new EcdsaSignatureProvider(this, algorithm, willCreateSignatures);
+                var provider = new EcdsaSignatureProvider(this, algorithm, willCreateSignatures);
+                signatureProviders.TryAdd(algorithm, provider);
+                return provider;
             }
 
             return null;

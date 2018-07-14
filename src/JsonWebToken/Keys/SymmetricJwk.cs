@@ -1,11 +1,13 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
     public class SymmetricJwk : JsonWebKey
     {
+        private readonly ConcurrentDictionary<string, SymmetricSignatureProvider> _signatureProviders = new ConcurrentDictionary<string, SymmetricSignatureProvider>();
         private string _k;
 
         public SymmetricJwk(byte[] bytes)
@@ -113,9 +115,21 @@ namespace JsonWebToken
 
         public override SignatureProvider CreateSignatureProvider(string algorithm, bool willCreateSignatures)
         {
+            if (algorithm == null)
+            {
+                return null;
+            }
+
+            if (_signatureProviders.TryGetValue(algorithm, out var cachedProvider))
+            {
+                return cachedProvider;
+            }
+
             if (IsSupportedAlgorithm(algorithm))
             {
-                return new SymmetricSignatureProvider(this, algorithm);
+                var provider = new SymmetricSignatureProvider(this, algorithm);
+                _signatureProviders.TryAdd(algorithm, provider);
+                return provider;
             }
 
             return null;

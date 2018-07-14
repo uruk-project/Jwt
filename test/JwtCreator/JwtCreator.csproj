@@ -9,7 +9,7 @@
     <PackageReference Include="BenchmarkDotNet.Core" Version="0.10.14" />
     <PackageReference Include="jose-jwt" Version="2.4.0" />
     <PackageReference Include="JWT" Version="5.0.0-beta2" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.2.2" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.2.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\JsonWebToken\JsonWebToken.csproj" />

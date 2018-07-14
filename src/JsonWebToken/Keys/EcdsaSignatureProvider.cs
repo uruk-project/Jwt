@@ -1,100 +1,78 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using JsonWebToken.ObjectPooling;
+using System;
 using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
-    public class EcdsaSignatureProvider : AsymmetricSignatureProvider<EcdsaJwk>
+    public class EcdsaSignatureProvider : SignatureProvider
     {
         private ECDsa _ecdsa;
+        private readonly ObjectPool<ECDsa> _hashAlgorithmPool;
         private int _hashSize;
         private HashAlgorithmName _hashAlgorithm;
-        private bool _disposed;
-
-        private static readonly IReadOnlyDictionary<string, int> DefaultMinimumKeySizeInBitsForSigning = new Dictionary<string, int>()
-        {
-            { SignatureAlgorithms.EcdsaSha256, 256 },
-            { SignatureAlgorithms.EcdsaSha384, 256 },
-            { SignatureAlgorithms.EcdsaSha512, 256 },
-        };
-
-        private static readonly IReadOnlyDictionary<string, int> DefaultMinimumKeySizeInBitsForVerifying = new Dictionary<string, int>()
-        {
-            { SignatureAlgorithms.EcdsaSha256, 256 },
-            { SignatureAlgorithms.EcdsaSha384, 256 },
-            { SignatureAlgorithms.EcdsaSha512, 256 },
-        };
-
-        public override IReadOnlyDictionary<string, int> MinimumKeySizeInBitsForSigning => DefaultMinimumKeySizeInBitsForSigning;
-
-        public override IReadOnlyDictionary<string, int> MinimumKeySizeInBitsForVerifying => DefaultMinimumKeySizeInBitsForVerifying;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AsymmetricSignatureProvider"/> class used to create and verify signatures.
+        /// Initializes a new instance of the <see cref="EcdsaSignatureProvider"/> class used to create and verify signatures.
         /// </summary>
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for signature operations.</param>
         /// <param name="algorithm">The signature algorithm to apply.</param>
-        /// <param name="willCreateSignatures">Whether this <see cref="AsymmetricSignatureProvider"/> is required to create signatures then set this to true.</param>
+        /// <param name="willCreateSignatures">Whether is required to create signatures then set this to true.</param>
         public EcdsaSignatureProvider(EcdsaJwk key, string algorithm, bool willCreateSignatures)
-            : base(key, algorithm, willCreateSignatures)
-        {
-        }
-
-        public override int HashSizeInBytes => _hashSize;
-
-        private HashAlgorithmName GetHashAlgorithmName(string algorithm)
-        {
-            if (string.IsNullOrWhiteSpace(algorithm))
-            {
-                throw new ArgumentNullException(nameof(algorithm));
-            }
-
-            switch (algorithm)
-            {
-                case SignatureAlgorithms.EcdsaSha256:
-                    return HashAlgorithmName.SHA256;
-
-                case SignatureAlgorithms.EcdsaSha384:
-                    return HashAlgorithmName.SHA384;
-
-                case SignatureAlgorithms.EcdsaSha512:
-                    return HashAlgorithmName.SHA512;
-            }
-
-            throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
-        }
-
-        protected override void ResolveAsymmetricAlgorithm(EcdsaJwk key, string algorithm, bool willCreateSignatures)
+            : base(key, algorithm)
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (string.IsNullOrWhiteSpace(algorithm))
+            if (willCreateSignatures && !key.HasPrivateKey)
             {
-                throw new ArgumentNullException(nameof(algorithm));
+                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.MissingPrivateKey, key.Kid));
             }
 
-            _hashAlgorithm = GetHashAlgorithmName(algorithm);
-            _ecdsa = ResolveAlgorithm(key, algorithm, willCreateSignatures);
-            _hashSize = GetHashSize(key);
-        }
+            if (key.KeySizeInBits < 256)
+            {
+                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.SigningKeyTooSmall, key.Kid, 256, key.KeySizeInBits));
+            }
 
-        private int GetHashSize(EcdsaJwk key)
-        {
+            switch (algorithm)
+            {
+                case SignatureAlgorithms.EcdsaSha256:
+                    _hashAlgorithm = HashAlgorithmName.SHA256;
+                    break;
+
+                case SignatureAlgorithms.EcdsaSha384:
+                    _hashAlgorithm = HashAlgorithmName.SHA256;
+                    break;
+
+                case SignatureAlgorithms.EcdsaSha512:
+                    _hashAlgorithm = HashAlgorithmName.SHA384;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
+            }
+
             switch (key.Crv)
             {
                 case JsonWebKeyECTypes.P256:
-                    return 64;
+                    _hashSize = 64;
+                    break;
                 case JsonWebKeyECTypes.P384:
-                    return 96;
+                    _hashSize = 96;
+                    break;
                 case JsonWebKeyECTypes.P521:
-                    return 132;
+                    _hashSize = 132;
+                    break;
                 default:
-                    throw new NotSupportedException();
+                    throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, key.Crv));
             }
+
+            _ecdsa = ResolveAlgorithm(key, algorithm, willCreateSignatures);
+            _hashAlgorithmPool = new ObjectPool<ECDsa>(new ECDsaObjectPoolPolicy(key, algorithm, willCreateSignatures));
         }
+
+        public override int HashSizeInBytes => _hashSize;
 
         /// <summary>
         /// Produces a signature over the 'input' using the <see cref="ASymmetricJwk"/> and algorithm passed to <see cref="AsymmetricSignatureProvider( JsonWebKey, string, bool )"/>.
@@ -107,12 +85,7 @@ namespace JsonWebToken
             {
                 throw new ArgumentNullException(nameof(input));
             }
-
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().ToString());
-            }
-
+            
             if (_ecdsa != null)
             {
 #if NETCOREAPP2_1
@@ -145,11 +118,6 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(signature));
             }
 
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().ToString());
-            }
-
             if (_ecdsa == null)
             {
                 throw new InvalidOperationException(ErrorMessages.NotSupportedUnwrap);
@@ -161,29 +129,34 @@ namespace JsonWebToken
             return _ecdsa.VerifyData(input.ToArray(), signature.ToArray(), _hashAlgorithm);
 #endif
         }
-        /// <summary>
-        /// Calls <see cref="HashAlgorithm.Dispose()"/> to release this managed resources.
-        /// </summary>
-        /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                _disposed = true;
-
-                if (disposing)
-                {
-                    if (_ecdsa != null)
-                    {
-                        _ecdsa.Dispose();
-                    }
-                }
-            }
-        }
-
-        private static ECDsaCng ResolveAlgorithm(EcdsaJwk key, string algorithm, bool usePrivateKey)
+      
+        private static ECDsa ResolveAlgorithm(EcdsaJwk key, string algorithm, bool usePrivateKey)
         {
             return key.CreateECDsa(algorithm, usePrivateKey);
+        }
+
+        private class ECDsaObjectPoolPolicy : PooledObjectPolicy<ECDsa>
+        {
+            private readonly EcdsaJwk _key;
+            private readonly string _algorithm;
+            private readonly bool _usePrivateKey;
+
+            public ECDsaObjectPoolPolicy(EcdsaJwk key, string algorithm, bool usePrivateKey)
+            {
+                _key = key;
+                _algorithm = algorithm;
+                _usePrivateKey = usePrivateKey;
+            }
+
+            public override ECDsa Create()
+            {
+                return _key.CreateECDsa(_algorithm, _usePrivateKey);
+            }
+
+            public override bool Return(ECDsa obj)
+            {
+                return true;
+            }
         }
     }
 }
