@@ -33,7 +33,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (string.IsNullOrWhiteSpace(algorithm))
+            if (algorithm == null)
             {
                 throw new ArgumentNullException(nameof(algorithm));
             }

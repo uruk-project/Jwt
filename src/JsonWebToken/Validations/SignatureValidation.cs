@@ -108,8 +108,8 @@ namespace JsonWebToken.Validations
                 for (int j = 0; j < keySet.Count; j++)
                 {
                     var key = keySet[j];
-                    if ((string.IsNullOrWhiteSpace(key.Use) || string.Equals(key.Use, JsonWebKeyUseNames.Sig, StringComparison.Ordinal)) &&
-                        (string.IsNullOrWhiteSpace(key.Alg) || string.Equals(key.Alg, jwt.Header.Alg, StringComparison.Ordinal)))
+                    if ((string.IsNullOrEmpty(key.Use) || string.Equals(key.Use, JsonWebKeyUseNames.Sig, StringComparison.Ordinal)) &&
+                        (string.IsNullOrEmpty(key.Alg) || string.Equals(key.Alg, jwt.Header.Alg, StringComparison.Ordinal)))
                     {
                         keys.Add(key);
                     }

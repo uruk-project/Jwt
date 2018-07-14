@@ -1,3 +1,4 @@
+using JsonWebToken.ObjectPooling;
 using System;
 using System.Buffers;
 using System.Diagnostics;
@@ -16,14 +17,13 @@ namespace JsonWebToken
         private static readonly byte[] s_bytesA = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
         private static readonly byte[] s_bytesB = new byte[] { 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
-        private bool _disposed;
-        private KeyedHashAlgorithm _keyedHash;
+        private readonly ObjectPool<KeyedHashAlgorithm> _hashAlgorithmPool;
 
         /// <summary>
         /// This is the minimum <see cref="SymmetricJwk"/>.KeySize when creating and verifying signatures.
         /// </summary>
         public static readonly int DefaultMinimumSymmetricKeySizeInBits = 128;
-
+        private readonly int _hashSizeInBytes;
         private int _minimumKeySizeInBits = DefaultMinimumSymmetricKeySizeInBits;
 
         /// <summary>
@@ -44,10 +44,26 @@ namespace JsonWebToken
                 throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.AlgorithmRequireMinimumKeySize, (algorithm ?? "null"), MinimumKeySizeInBits, key.KeySizeInBits));
             }
 
-            _keyedHash = GetKeyedHashAlgorithm(key.RawK, algorithm);
+            switch (Algorithm)
+            {
+                case SignatureAlgorithms.HmacSha256:
+                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha256ObjectPoolPolicy(key.RawK));
+                    _hashSizeInBytes = 32;
+                    break;
+                case SignatureAlgorithms.HmacSha384:
+                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha256ObjectPoolPolicy(key.RawK));
+                    _hashSizeInBytes = 48;
+                    break;
+                case SignatureAlgorithms.HmacSha512:
+                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha256ObjectPoolPolicy(key.RawK));
+                    _hashSizeInBytes = 64;
+                    break;
+                default:
+                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedKeyedHashAlgorithm, algorithm));
+            }
         }
 
-        public override int HashSizeInBytes => _keyedHash.HashSize >> 3;
+        public override int HashSizeInBytes => _hashSizeInBytes;
 
         /// <summary>
         /// Gets or sets the minimum <see cref="SymmetricJwk"/>.KeySize"/>.
@@ -70,29 +86,6 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Returns the <see cref="KeyedHashAlgorithm"/>.
-        /// </summary>
-        /// <param name="algorithm">The hash algorithm to use to create the hash value.</param>
-        /// <param name="keyBytes">The byte array of the key.</param>
-        private KeyedHashAlgorithm GetKeyedHashAlgorithm(byte[] keyBytes, string algorithm)
-        {
-            switch (algorithm)
-            {
-                case SignatureAlgorithms.HmacSha256:
-                    return new HMACSHA256(keyBytes);
-
-                case SignatureAlgorithms.HmacSha384:
-                    return new HMACSHA384(keyBytes);
-
-                case SignatureAlgorithms.HmacSha512:
-                    return new HMACSHA512(keyBytes);
-
-                default:
-                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedKeyedHashAlgorithm, algorithm));
-            }
-        }
-
-        /// <summary>
         /// Produces a signature over the 'input' using the <see cref="SymmetricJwk"/> and 'algorithm' passed to <see cref="SymmetricSignatureProvider( JsonWebKey, string )"/>.
         /// </summary>
         /// <param name="input">The bytes to sign.</param>
@@ -104,27 +97,30 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(input));
             }
 
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().ToString());
-            }
-
-#if NETCOREAPP2_1
-            return _keyedHash.TryComputeHash(input, destination, out bytesWritten);
-#else
+            var keyedHash = _hashAlgorithmPool.Get();
             try
             {
-                var result = _keyedHash.ComputeHash(input.ToArray());
-                bytesWritten = result.Length;
-                result.CopyTo(destination);
-                return true;
-            }
-            catch
-            {
-                bytesWritten = 0;
-                return false;
-            }
+#if NETCOREAPP2_1
+            return keyedHash.TryComputeHash(input, destination, out bytesWritten);
+#else
+                try
+                {
+                    var result = keyedHash.ComputeHash(input.ToArray());
+                    bytesWritten = result.Length;
+                    result.CopyTo(destination);
+                    return true;
+                }
+                catch
+                {
+                    bytesWritten = 0;
+                    return false;
+                }
 #endif
+            }
+            finally
+            {
+                _hashAlgorithmPool.Return(keyedHash);
+            }
         }
 
         /// <summary>
@@ -145,19 +141,22 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(signature));
             }
 
-            if (_disposed)
+            var keyedHash = _hashAlgorithmPool.Get();
+            try
             {
-                throw new ObjectDisposedException(typeof(SymmetricSignatureProvider).ToString());
-            }
-
 #if NETCOREAPP2_1
-            Span<byte> hash = stackalloc byte[_keyedHash.HashSize / 8];
-            bool result = _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash);
-            Debug.Assert(hash.Length == bytesWritten);
-            return result;
+                Span<byte> hash = stackalloc byte[_hashSizeInBytes];
+                bool result = keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash);
+                Debug.Assert(hash.Length == bytesWritten);
+                return result;
 #else
-            return AreEqual(signature, _keyedHash.ComputeHash(input.ToArray()));
+                return AreEqual(signature, keyedHash.ComputeHash(input.ToArray()));
 #endif
+            }
+            finally
+            {
+                _hashAlgorithmPool.Return(keyedHash);
+            }
         }
 
         /// <summary>
@@ -184,39 +183,21 @@ namespace JsonWebToken
                 throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.MustBeGreaterThanZero, nameof(length), length));
             }
 
-            if (_disposed)
+            var keyedHash = _hashAlgorithmPool.Get();
+            try
             {
-                throw new ObjectDisposedException(typeof(SymmetricSignatureProvider).ToString());
-            }
-
 #if NETCOREAPP2_1
-            Span<byte> hash = stackalloc byte[_keyedHash.HashSize / 8];
-            bool result = _keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash, length);
-            Debug.Assert(hash.Length == bytesWritten);
-            return result;
+                Span<byte> hash = stackalloc byte[_hashSizeInBytes];
+                bool result = keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash, length);
+                Debug.Assert(hash.Length == bytesWritten);
+                return result;
 #else
-            return AreEqual(signature, _keyedHash.ComputeHash(input.ToArray()), length);
+                return AreEqual(signature, keyedHash.ComputeHash(input.ToArray()), length);
 #endif
-        }
-
-        /// <summary>
-        /// Disposes of internal components.
-        /// </summary>
-        /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (!_disposed)
+            }
+            finally
             {
-                _disposed = true;
-
-                if (disposing)
-                {
-                    if (_keyedHash != null)
-                    {
-                        _keyedHash.Dispose();
-                        _keyedHash = null;
-                    }
-                }
+                _hashAlgorithmPool.Return(keyedHash);
             }
         }
 
@@ -251,7 +232,7 @@ namespace JsonWebToken
                 second = b;
                 lenToUse = length;
             }
-            
+
             return AreEqual(ref MemoryMarshal.GetReference(first), ref MemoryMarshal.GetReference(second), lenToUse);
         }
 
@@ -328,6 +309,66 @@ namespace JsonWebToken
             }
 
             return result == 0;
+        }
+
+        private class HmacSha256ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
+        {
+            private readonly byte[] _keyBytes;
+
+            public HmacSha256ObjectPoolPolicy(byte[] keyBytes)
+            {
+                _keyBytes = keyBytes;
+            }
+
+            public override KeyedHashAlgorithm Create()
+            {
+                return new HMACSHA256(_keyBytes);
+            }
+
+            public override bool Return(KeyedHashAlgorithm obj)
+            {
+                return true;
+            }
+        }
+
+        private class HmacSha384ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
+        {
+            private readonly byte[] _keyBytes;
+
+            public HmacSha384ObjectPoolPolicy(byte[] keyBytes)
+            {
+                _keyBytes = keyBytes;
+            }
+
+            public override KeyedHashAlgorithm Create()
+            {
+                return new HMACSHA384(_keyBytes);
+            }
+
+            public override bool Return(KeyedHashAlgorithm obj)
+            {
+                return true;
+            }
+        }
+
+        private class HmacSha512ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
+        {
+            private readonly byte[] _keyBytes;
+
+            public HmacSha512ObjectPoolPolicy(byte[] keyBytes)
+            {
+                _keyBytes = keyBytes;
+            }
+
+            public override KeyedHashAlgorithm Create()
+            {
+                return new HMACSHA512(_keyBytes);
+            }
+
+            public override bool Return(KeyedHashAlgorithm obj)
+            {
+                return true;
+            }
         }
     }
 }

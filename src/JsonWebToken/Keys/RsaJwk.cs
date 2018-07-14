@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
@@ -7,6 +8,9 @@ namespace JsonWebToken
 {
     public class RsaJwk : AsymmetricJwk
     {
+        private readonly ConcurrentDictionary<string, RsaSignatureProvider> _signatureProviders = new ConcurrentDictionary<string, RsaSignatureProvider>();
+        private readonly ConcurrentDictionary<string, RsaSignatureProvider> _signatureValidationProviders = new ConcurrentDictionary<string, RsaSignatureProvider>();
+
         private string _dp;
         private string _dq;
         private string _e;
@@ -69,12 +73,12 @@ namespace JsonWebToken
                 case SignatureAlgorithms.RsaSha256:
                 case SignatureAlgorithms.RsaSha384:
                 case SignatureAlgorithms.RsaSha512:
-                case KeyManagementAlgorithms.RsaOaep:
-                case KeyManagementAlgorithms.RsaPkcs1:
-                case KeyManagementAlgorithms.RsaOaep256:
                 case SignatureAlgorithms.RsaSsaPssSha256:
                 case SignatureAlgorithms.RsaSsaPssSha384:
                 case SignatureAlgorithms.RsaSsaPssSha512:
+                case KeyManagementAlgorithms.RsaOaep:
+                case KeyManagementAlgorithms.RsaPkcs1:
+                case KeyManagementAlgorithms.RsaOaep256:
                     return true;
             }
 
@@ -83,9 +87,22 @@ namespace JsonWebToken
 
         public override SignatureProvider CreateSignatureProvider(string algorithm, bool willCreateSignatures)
         {
+            if (algorithm == null)
+            {
+                return null;
+            }
+
+            var providers = willCreateSignatures ? _signatureProviders : _signatureValidationProviders;
+            if (providers.TryGetValue(algorithm, out var cachedProvider))
+            {
+                return cachedProvider;
+            }
+
             if (IsSupportedAlgorithm(algorithm))
             {
-                return new RsaSignatureProvider(this, algorithm, willCreateSignatures);
+                var provider = new RsaSignatureProvider(this, algorithm, willCreateSignatures);
+                providers.TryAdd(algorithm, provider);
+                return provider;
             }
 
             return null;

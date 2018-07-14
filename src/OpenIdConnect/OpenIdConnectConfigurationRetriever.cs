@@ -39,7 +39,7 @@ namespace JsonWebToken
         /// <returns>A populated <see cref="OpenIdConnectConfiguration"/> instance.</returns>
         public static OpenIdConnectConfiguration Get(string address, HttpDocumentRetriever retriever, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(address))
+            if (string.IsNullOrEmpty(address))
             {
                 throw new ArgumentNullException(nameof(address));
             }

@@ -1,3 +1,4 @@
+using JsonWebToken.ObjectPooling;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -67,13 +68,12 @@ namespace JsonWebToken
                 return properties;
             }
         }
-
-
+        
         private static readonly JwkJsonConverter jsonConverter = new JwkJsonConverter();
         private static readonly JwkContractResolver contractResolver = new JwkContractResolver();
         private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings { ContractResolver = contractResolver };
         private List<JsonWebKey> _certificateChain;
-
+        
         /// <summary>
         /// Returns a new instance of <see cref="TKey"/>.
         /// </summary>

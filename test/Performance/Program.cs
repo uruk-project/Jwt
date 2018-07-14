@@ -47,7 +47,6 @@ namespace Performance
                 Audience = audience,
                 Key = SharedKey
             };
-            _reader.EnableHeaderCaching = true;
             var jwt = _writer.WriteToken(token);
 
             //Parallel.For(0, 10, _ =>

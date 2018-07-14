@@ -95,10 +95,10 @@ namespace JsonWebToken.Performance
             yield return new[] { "JWS-small" };
             yield return new[] { "JWS-medium" };
             yield return new[] { "JWS-big" };
-            //yield return new[] { "JWE-empty" };
-            //yield return new[] { "JWE-small" };
-            //yield return new[] { "JWE-medium" };
-            //yield return new[] { "JWE-big" };
+            yield return new[] { "JWE-empty" };
+            yield return new[] { "JWE-small" };
+            yield return new[] { "JWE-medium" };
+            yield return new[] { "JWE-big" };
         }
 
         public IEnumerable<object[]> GetNotEncryptedPayloads()

@@ -1,41 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using JsonWebToken.ObjectPooling;
+using System;
 using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
-    public class RsaSignatureProvider : AsymmetricSignatureProvider<RsaJwk>
+    public class RsaSignatureProvider : SignatureProvider
     {
+        private readonly ObjectPool<RSA> _hashAlgorithmPool;
+
         private HashAlgorithmName _hashAlgorithm;
-        private int _hashSize;
+        private int _hashSizeInBytes;
         private RSASignaturePadding _signaturePadding;
-        private RSA _rsa;
 
         private bool _disposed;
-
-        /// <summary>
-        /// Mapping from algorithm to minimum <see cref="ASymmetricJwk"/>.KeySize when creating signatures.
-        /// </summary>
-        private static readonly IReadOnlyDictionary<string, int> DefaultMinimumKeySizeInBitsForSigning = new Dictionary<string, int>()
-        {
-            { SignatureAlgorithms.RsaSha256, 2048 },
-            { SignatureAlgorithms.RsaSha384, 2048 },
-            { SignatureAlgorithms.RsaSha512, 2048 },
-        };
-
-        /// <summary>
-        /// Mapping from algorithm to minimum <see cref="ASymmetricJwk"/>.KeySize when verifying signatures.
-        /// </summary>
-        private static readonly IReadOnlyDictionary<string, int> DefaultMinimumKeySizeInBitsForVerifying = new Dictionary<string, int>()
-        {
-            { SignatureAlgorithms.RsaSha256, 1024 },
-            { SignatureAlgorithms.RsaSha384, 1024 },
-            { SignatureAlgorithms.RsaSha512, 1024 },
-        };
-
-        public override IReadOnlyDictionary<string, int> MinimumKeySizeInBitsForSigning => DefaultMinimumKeySizeInBitsForSigning;
-
-        public override IReadOnlyDictionary<string, int> MinimumKeySizeInBitsForVerifying => DefaultMinimumKeySizeInBitsForVerifying;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AsymmetricSignatureProvider"/> class used to create and verify signatures.
@@ -48,88 +25,70 @@ namespace JsonWebToken
         /// Verifying signatures (the default), does not require access to the private key.
         /// </para>
         public RsaSignatureProvider(RsaJwk key, string algorithm, bool willCreateSignatures)
-            : base(key, algorithm, willCreateSignatures)
-        {
-        }
-
-        public override int HashSizeInBytes => _hashSize;
-
-        /// <summary>
-        /// Returns the <see cref="HashAlgorithmName"/> instance.
-        /// </summary>
-        /// <param name="algorithm">The hash algorithm to use to create the hash value.</param>
-        private HashAlgorithmName GetHashAlgorithmName(string algorithm)
-        {
-            if (string.IsNullOrWhiteSpace(algorithm))
-            {
-                throw new ArgumentNullException(nameof(algorithm));
-            }
-
-            switch (algorithm)
-            {
-                case SignatureAlgorithms.RsaSha256:
-                case SignatureAlgorithms.RsaSsaPssSha256:
-                    return HashAlgorithmName.SHA256;
-
-                case SignatureAlgorithms.RsaSha384:
-                case SignatureAlgorithms.RsaSsaPssSha384:
-                    return HashAlgorithmName.SHA384;
-
-                case SignatureAlgorithms.RsaSha512:
-                case SignatureAlgorithms.RsaSsaPssSha512:
-                    return HashAlgorithmName.SHA512;
-            }
-
-            throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
-        }
-
-        protected override void ResolveAsymmetricAlgorithm(RsaJwk key, string algorithm, bool willCreateSignatures)
+            : base(key, algorithm)
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (string.IsNullOrWhiteSpace(algorithm))
+            if (willCreateSignatures && !key.HasPrivateKey)
             {
-                throw new ArgumentNullException(nameof(algorithm));
+                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.MissingPrivateKey, key.Kid));
             }
 
-            _hashAlgorithm = GetHashAlgorithmName(algorithm);
-            _hashSize = GetHashSize(key);
-            _signaturePadding = ResolveSignaturePadding(algorithm);
-            var rsa = ResolveRsaAlgorithm(key);
-            if (rsa != null)
+            if (!key.IsSupportedAlgorithm(algorithm))
             {
-                _rsa = rsa;
-                return;
+                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, (algorithm ?? "null"), key));
             }
 
-            throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, algorithm, key.Kid));
-        }
+            var minKeySize = willCreateSignatures ? 2048 : 1024;
+            if (key.KeySizeInBits < minKeySize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.SigningKeyTooSmall, key.Kid, minKeySize, key.KeySizeInBits));
+            }
 
-        private RSASignaturePadding ResolveSignaturePadding(string algorithm)
-        {
             switch (algorithm)
             {
                 case SignatureAlgorithms.RsaSha256:
+                    _hashAlgorithm = HashAlgorithmName.SHA256;
+                    _signaturePadding = RSASignaturePadding.Pkcs1;
+                    break;
+
+                case SignatureAlgorithms.RsaSsaPssSha256:
+                    _hashAlgorithm = HashAlgorithmName.SHA256;
+                    _signaturePadding = RSASignaturePadding.Pss;
+                    break;
+
                 case SignatureAlgorithms.RsaSha384:
-                case SignatureAlgorithms.RsaSha512:
-                    return RSASignaturePadding.Pkcs1;
+                    _hashAlgorithm = HashAlgorithmName.SHA384;
+                    _signaturePadding = RSASignaturePadding.Pkcs1;
+                    break;
 
                 case SignatureAlgorithms.RsaSsaPssSha384:
-                case SignatureAlgorithms.RsaSsaPssSha256:
+                    _hashAlgorithm = HashAlgorithmName.SHA384;
+                    _signaturePadding = RSASignaturePadding.Pss;
+                    break;
+
+                case SignatureAlgorithms.RsaSha512:
+                    _hashAlgorithm = HashAlgorithmName.SHA512;
+                    _signaturePadding = RSASignaturePadding.Pkcs1;
+                    break;
+
                 case SignatureAlgorithms.RsaSsaPssSha512:
-                    return RSASignaturePadding.Pss;
+                    _hashAlgorithm = HashAlgorithmName.SHA512;
+                    _signaturePadding = RSASignaturePadding.Pss;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
             }
 
-            throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
+            _hashSizeInBytes = key.KeySizeInBits >> 3;
+            _hashAlgorithmPool = new ObjectPool<RSA>(new RsaObjectPoolPolicy(key.CreateRsaParameters()));
         }
 
-        private int GetHashSize(RsaJwk key)
-        {
-            return key.KeySizeInBits >> 3;
-        }
+        public override int HashSizeInBytes => _hashSizeInBytes;
 
         /// <summary>
         /// Produces a signature over the 'input' using the <see cref="AsymmetricJwk"/> and algorithm passed to <see cref="AsymmetricSignatureProvider( JsonWebKey, string, bool )"/>.
@@ -148,7 +107,8 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(GetType().ToString());
             }
 
-            if (_rsa != null)
+            var _rsa = _hashAlgorithmPool.Get();
+            try
             {
 #if NETCOREAPP2_1
                 return _rsa.TrySignData(input, destination, _hashAlgorithm, _signaturePadding, out bytesWritten);
@@ -158,6 +118,7 @@ namespace JsonWebToken
                     var result = _rsa.SignData(input.ToArray(), _hashAlgorithm, _signaturePadding);
                     bytesWritten = result.Length;
                     result.CopyTo(destination);
+                    return true;
                 }
                 catch
                 {
@@ -166,8 +127,10 @@ namespace JsonWebToken
                 }
 #endif
             }
-
-            throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, _hashAlgorithm));
+            finally
+            {
+                _hashAlgorithmPool.Return(_rsa);
+            }
         }
 
         /// <summary>
@@ -193,7 +156,8 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(GetType().ToString());
             }
 
-            if (_rsa != null)
+            var _rsa = _hashAlgorithmPool.Get();
+            try
             {
 #if NETCOREAPP2_1
                 return _rsa.VerifyData(input, signature, _hashAlgorithm, _signaturePadding);
@@ -201,44 +165,32 @@ namespace JsonWebToken
                 return _rsa.VerifyData(input.ToArray(), signature.ToArray(), _hashAlgorithm, _signaturePadding);
 #endif
             }
-
-            throw new InvalidOperationException(ErrorMessages.NotSupportedUnwrap);
-        }
-
-        /// <summary>
-        /// Calls <see cref="HashAlgorithm.Dispose()"/> to release this managed resources.
-        /// </summary>
-        /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (!_disposed)
+            finally
             {
-                _disposed = true;
-
-                if (disposing)
-                {
-                    if (_rsa != null)
-                    {
-                        _rsa.Dispose();
-                    }
-                }
+                _hashAlgorithmPool.Return(_rsa);
             }
         }
 
-        private static RSA ResolveRsaAlgorithm(RsaJwk key)
+        private class RsaObjectPoolPolicy : PooledObjectPolicy<RSA>
         {
-            if (key == null)
+            private readonly RSAParameters _parameters;
+
+            public RsaObjectPoolPolicy(RSAParameters parameters)
             {
-                return null;
+                _parameters = parameters;
             }
 
-            RSAParameters parameters = key.CreateRsaParameters();
-            var rsa = RSA.Create();
-            if (rsa != null)
+            public override RSA Create()
             {
-                rsa.ImportParameters(parameters);
+                var rsa = RSA.Create();
+                rsa.ImportParameters(_parameters);
+                return rsa;
             }
-            return rsa;
+
+            public override bool Return(RSA obj)
+            {
+                return true;
+            }
         }
     }
 }

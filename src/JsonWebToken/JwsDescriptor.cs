@@ -289,7 +289,7 @@ namespace JsonWebToken
                 signatureProvider = key.CreateSignatureProvider(key.Alg, true);
                 if (signatureProvider == null)
                 {
-                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, (key == null ? "Null" : key.Kid), (key.Alg ?? "Null")));
+                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, (key == null ? "Null" : key.Alg), (key.Kid ?? "Null")));
                 }
             }
 
