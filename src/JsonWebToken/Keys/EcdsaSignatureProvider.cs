@@ -10,6 +10,7 @@ namespace JsonWebToken
         private readonly ObjectPool<ECDsa> _hashAlgorithmPool;
         private int _hashSize;
         private HashAlgorithmName _hashAlgorithm;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EcdsaSignatureProvider"/> class used to create and verify signatures.
@@ -133,6 +134,26 @@ namespace JsonWebToken
         private static ECDsa ResolveAlgorithm(EcdsaJwk key, string algorithm, bool usePrivateKey)
         {
             return key.CreateECDsa(algorithm, usePrivateKey);
+        }
+
+           /// <summary>
+        /// Calls <see cref="ECDsa.Dispose()"/> to release this managed resources.
+        /// </summary>
+        /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+
+                if (disposing)
+                {
+                    if (_ecdsa != null)
+                    {
+                        _ecdsa.Dispose();
+                    }
+                }
+            }
         }
 
         private class ECDsaObjectPoolPolicy : PooledObjectPolicy<ECDsa>

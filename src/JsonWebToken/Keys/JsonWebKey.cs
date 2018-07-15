@@ -227,30 +227,30 @@ namespace JsonWebToken
 
         public void ReleaseSignatureProvider(SignatureProvider signatureProvider)
         {
-            if (signatureProvider != null)
-            {
-                signatureProvider.Dispose();
-            }
+            //if (signatureProvider != null)
+            //{
+            //    signatureProvider.Dispose();
+            //}
         }
 
         public abstract KeyWrapProvider CreateKeyWrapProvider(string algorithm);
 
         public void ReleaseKeyWrapProvider(KeyWrapProvider provider)
         {
-            if (provider != null)
-            {
-                provider.Dispose();
-            }
+            //if (provider != null)
+            //{
+            //    provider.Dispose();
+            //}
         }
 
         public abstract AuthenticatedEncryptionProvider CreateAuthenticatedEncryptionProvider(string algorithm);
 
         public void ReleaseAuthenticatedEncryptionProvider(AuthenticatedEncryptionProvider provider)
         {
-            if (provider != null)
-            {
-                provider.Dispose();
-            }
+            //if (provider != null)
+            //{
+            //    provider.Dispose();
+            //}
         }
 
         public abstract JsonWebKey CloneMinimal();

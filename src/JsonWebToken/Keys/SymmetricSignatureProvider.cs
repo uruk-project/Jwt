@@ -18,6 +18,7 @@ namespace JsonWebToken
         private static readonly byte[] s_bytesB = new byte[] { 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
         private readonly ObjectPool<KeyedHashAlgorithm> _hashAlgorithmPool;
+        private bool _disposed;
 
         /// <summary>
         /// This is the minimum <see cref="SymmetricJwk"/>.KeySize when creating and verifying signatures.
@@ -309,6 +310,22 @@ namespace JsonWebToken
             }
 
             return result == 0;
+        }
+
+        /// <summary>
+        /// Disposes of internal components.
+        /// </summary>
+        /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+
+                if (disposing)
+                {
+                }
+            }
         }
 
         private class HmacSha256ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>

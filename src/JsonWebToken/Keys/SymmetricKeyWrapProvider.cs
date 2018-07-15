@@ -204,7 +204,7 @@ namespace JsonWebToken
                     // B = AES-1(K, (A ^ t) | R[i] )
 
                     // First, A = ( A ^ t )
-                    Xor(a, GetBytes(t), 0, true);
+                    Xor(a, GetBytes(t), 0);
 
                     // Second, block = ( A | R[i] )
                     Array.Copy(a, block, _blockSizeInBytes);
@@ -343,7 +343,6 @@ namespace JsonWebToken
                 throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
             }
         }
-        //#endif
 
         private byte[] WrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, int inputOffset, int inputCount)
         {
@@ -414,7 +413,7 @@ namespace JsonWebToken
                     Array.Copy(b, a, 8);
 
                     // A = A ^ t
-                    Xor(a, GetBytes(t), 0, true);
+                    Xor(a, GetBytes(t), 0);
 
                     // R[i] = LSB( 64, B )
                     Array.Copy(b, 8, r, i << 3, 8);
@@ -433,29 +432,14 @@ namespace JsonWebToken
             return keyBytes;
         }
 
-
-        private static byte[] Xor(byte[] a, byte[] b, int offset, bool inPlace)
+        private static byte[] Xor(byte[] a, byte[] b, int offset)
         {
-            if (inPlace)
+            for (var i = 0; i < a.Length; i++)
             {
-                for (var i = 0; i < a.Length; i++)
-                {
-                    a[i] = (byte)(a[i] ^ b[offset + i]);
-                }
-
-                return a;
+                a[i] = (byte)(a[i] ^ b[offset + i]);
             }
-            else
-            {
-                var result = new byte[a.Length];
 
-                for (var i = 0; i < a.Length; i++)
-                {
-                    result[i] = (byte)(a[i] ^ b[offset + i]);
-                }
-
-                return result;
-            }
+            return a;
         }
 
         private static void Zero(byte[] byteArray)
