@@ -58,8 +58,6 @@ namespace JsonWebToken
         /// Can be over written in descendants to dispose of internal components.
         /// </summary>
         /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer</param>     
-        protected virtual void Dispose(bool disposing)
-        {
-        }
+        protected abstract void Dispose(bool disposing);
     }
 }

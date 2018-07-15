@@ -8,6 +8,8 @@ namespace JsonWebToken
     public class SymmetricJwk : JsonWebKey
     {
         private readonly ConcurrentDictionary<string, SymmetricSignatureProvider> _signatureProviders = new ConcurrentDictionary<string, SymmetricSignatureProvider>();
+        private readonly ConcurrentDictionary<string, SymmetricKeyWrapProvider> _keyWrapProviders = new ConcurrentDictionary<string, SymmetricKeyWrapProvider>();
+        private readonly ConcurrentDictionary<string, AuthenticatedEncryptionProvider> _encryptionProviders = new ConcurrentDictionary<string, AuthenticatedEncryptionProvider>();
         private string _k;
 
         public SymmetricJwk(byte[] bytes)
@@ -137,9 +139,41 @@ namespace JsonWebToken
 
         public override KeyWrapProvider CreateKeyWrapProvider(string algorithm)
         {
+            if (algorithm == null)
+            {
+                return null;
+            }
+
+            if (_keyWrapProviders.TryGetValue(algorithm, out var cachedProvider))
+            {
+                return cachedProvider;
+            }
+
             if (IsSupportedAlgorithm(algorithm))
             {
-                return new SymmetricKeyWrapProvider(this, algorithm);
+                var provider = new SymmetricKeyWrapProvider(this, algorithm);
+                _keyWrapProviders.TryAdd(algorithm, provider);
+                return provider;
+            }
+
+            return null;
+        }
+
+        public override AuthenticatedEncryptionProvider CreateAuthenticatedEncryptionProvider(string algorithm)
+        {
+            if (algorithm == null)
+            {
+                return null;
+            }
+
+            if (_encryptionProviders.TryGetValue(algorithm, out var cachedProvider))
+            {
+                return cachedProvider;
+            }
+
+            if (IsSupportedAuthenticatedEncryptionAlgorithm(algorithm))
+            {
+                return new AuthenticatedEncryptionProvider(this, algorithm);
             }
 
             return null;
@@ -147,7 +181,7 @@ namespace JsonWebToken
 
         private bool IsSupportedAuthenticatedEncryptionAlgorithm(string algorithm)
         {
-            if (string.IsNullOrEmpty(algorithm))
+            if (algorithm == null)
             {
                 return false;
             }
@@ -161,16 +195,6 @@ namespace JsonWebToken
             }
 
             return true;
-        }
-
-        public override AuthenticatedEncryptionProvider CreateAuthenticatedEncryptionProvider(string algorithm)
-        {
-            if (IsSupportedAuthenticatedEncryptionAlgorithm(algorithm))
-            {
-                return new AuthenticatedEncryptionProvider(this, algorithm);
-            }
-
-            return null;
         }
 
         public static SymmetricJwk GenerateKey(int sizeInBits, string algorithm = null)

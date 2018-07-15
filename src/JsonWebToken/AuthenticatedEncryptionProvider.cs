@@ -38,7 +38,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(algorithm));
             }
 
-            if (!IsSupportedAlgorithm(key, algorithm))
+            if (!IsSupportedAlgorithm(algorithm))
             {
                 throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, algorithm));
             }
@@ -84,7 +84,7 @@ namespace JsonWebToken
         {
             return Encrypt(plaintext, authenticatedData, null);
         }
-        
+
         /// <summary>
         /// Encrypts the 'plaintext'
         /// </summary>
@@ -115,7 +115,7 @@ namespace JsonWebToken
 
                 byte[] ciphertext;
                 ciphertext = Transform(aes.CreateEncryptor(), plaintext.ToArray(), 0, plaintext.Length);
-                
+
                 byte[] arrayToReturnToPool = null;
                 int macLength = authenticatedData.Length + aes.IV.Length + ciphertext.Length + sizeof(long);
                 Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
@@ -191,8 +191,8 @@ namespace JsonWebToken
 #if NETCOREAPP2_1
                 TryConvertToBigEndian(macBytes.Slice(authenticatedData.Length + iv.Length + ciphertext.Length), authenticatedData.Length * 8);
 #else
-            var al = ConvertToBigEndian(authenticatedData.Length * 8);
-            al.CopyTo(macBytes.Slice(authenticatedData.Length + iv.Length + ciphertext.Length));
+                var al = ConvertToBigEndian(authenticatedData.Length * 8);
+                al.CopyTo(macBytes.Slice(authenticatedData.Length + iv.Length + ciphertext.Length));
 #endif
                 if (!_symmetricSignatureProvider.Verify(macBytes, authenticationTag, _authenticatedkeys.HmacKey.KeySizeInBits / 8))
                 {
@@ -222,18 +222,8 @@ namespace JsonWebToken
             }
         }
 
-        private bool IsSupportedAlgorithm(SymmetricJwk key, string algorithm)
+        private static bool IsSupportedAlgorithm(string algorithm)
         {
-            if (key == null)
-            {
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(algorithm))
-            {
-                return false;
-            }
-
             if (!(string.Equals(algorithm, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, StringComparison.Ordinal)
                || string.Equals(algorithm, ContentEncryptionAlgorithms.Aes192CbcHmacSha384, StringComparison.Ordinal)
                || string.Equals(algorithm, ContentEncryptionAlgorithms.Aes256CbcHmacSha512, StringComparison.Ordinal)))
@@ -247,21 +237,19 @@ namespace JsonWebToken
         private AuthenticatedKeys GetAlgorithmParameters(SymmetricJwk key, string algorithm)
         {
             int keyLength;
-            if (string.Equals(algorithm, ContentEncryptionAlgorithms.Aes256CbcHmacSha512, StringComparison.Ordinal))
+            switch (algorithm)
             {
-                keyLength = 32;
-            }
-            else if (string.Equals(algorithm, ContentEncryptionAlgorithms.Aes192CbcHmacSha384, StringComparison.Ordinal))
-            {
-                keyLength = 24;
-            }
-            else if (string.Equals(algorithm, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, StringComparison.Ordinal))
-            {
-                keyLength = 16;
-            }
-            else
-            {
-                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, algorithm));
+                case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
+                    keyLength = 16;
+                    break;
+                case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
+                    keyLength = 24;
+                    break;
+                case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
+                    keyLength = 32;
+                    break;
+                default:
+                    throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, algorithm));
             }
 
             var keyBytes = key.RawK;
@@ -278,68 +266,44 @@ namespace JsonWebToken
 
         private string GetHashAlgorithm(string algorithm)
         {
-            if (string.Equals(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, algorithm, StringComparison.Ordinal))
+            switch (algorithm)
             {
-                return SignatureAlgorithms.HmacSha256;
+                case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
+                    return SignatureAlgorithms.HmacSha256;
+                case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
+                    return SignatureAlgorithms.HmacSha384;
+                case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
+                    return SignatureAlgorithms.HmacSha512;
+                default:
+                    throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm), nameof(algorithm));
             }
-
-            if (string.Equals(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, algorithm, StringComparison.Ordinal))
-            {
-                return SignatureAlgorithms.HmacSha384;
-            }
-
-            if (string.Equals(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, algorithm, StringComparison.Ordinal))
-            {
-                return SignatureAlgorithms.HmacSha512;
-            }
-
-            throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm), nameof(algorithm));
         }
 
         private void ValidateKeySize(JsonWebKey key, string algorithm)
         {
-            if (string.Equals(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, algorithm, StringComparison.Ordinal))
+            switch (algorithm)
             {
-                if (key.KeySizeInBits < 256)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, algorithm, 256, key.KeySizeInBits));
-                }
-
-                return;
+                case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
+                    if (key.KeySizeInBits < 256)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, algorithm, 256, key.KeySizeInBits));
+                    }
+                    break;
+                case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
+                    if (key.KeySizeInBits < 384)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, algorithm, 384, key.KeySizeInBits));
+                    }
+                    break;
+                case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
+                    if (key.KeySizeInBits < 512)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, algorithm, 512, key.KeySizeInBits));
+                    }
+                    break;
+                default:
+                    throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
             }
-
-            if (string.Equals(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, algorithm, StringComparison.Ordinal))
-            {
-                if (key.KeySizeInBits < 384)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, algorithm, 384, key.KeySizeInBits));
-                }
-
-                return;
-            }
-
-            if (string.Equals(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, algorithm, StringComparison.Ordinal))
-            {
-                if (key.KeySizeInBits < 512)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, algorithm, 512, key.KeySizeInBits));
-                }
-
-                return;
-            }
-
-            throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
-        }
-
-        private static byte[] ConvertToBigEndian(long i)
-        {
-            byte[] temp = BitConverter.GetBytes(i);
-            if (BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(temp);
-            }
-
-            return temp;
         }
 
 #if NETCOREAPP2_1
@@ -356,6 +320,18 @@ namespace JsonWebToken
             }
 
             return false;
+        }
+
+#else
+        private static byte[] ConvertToBigEndian(long i)
+        {
+            byte[] temp = BitConverter.GetBytes(i);
+            if (BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(temp);
+            }
+
+            return temp;
         }
 #endif
 

@@ -1,7 +1,5 @@
 ﻿using JsonWebToken;
-using JsonWebToken.Performance;
 using System;
-using System.Threading.Tasks;
 
 namespace Performance
 {
@@ -15,6 +13,7 @@ namespace Performance
             K = "GdaXeVyiJwKmz5LFhcbcng",
             Alg = "HS256"
         };
+        private static readonly JsonWebKey EncryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithms.Aes128KW);
         private static readonly JsonWebTokenReader _reader = new JsonWebTokenReader(SharedKey);
         private static readonly JsonWebTokenWriter _writer = new JsonWebTokenWriter();
         private static readonly TokenValidationPolicy policy = new TokenValidationPolicyBuilder()
@@ -47,7 +46,13 @@ namespace Performance
                 Audience = audience,
                 Key = SharedKey
             };
-            var jwt = _writer.WriteToken(token);
+            var jwe = new JweDescriptor
+            {
+                Key = EncryptionKey,
+                EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256,
+                Payload = token
+            };
+            var jwt = _writer.WriteToken(jwe);
 
             //Parallel.For(0, 10, _ =>
             //{

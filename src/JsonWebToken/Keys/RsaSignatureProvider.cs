@@ -171,6 +171,22 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Calls <see cref="RSA.Dispose()"/> to release this managed resources.
+        /// </summary>
+        /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+
+                if (disposing)
+                {
+                }
+            }
+        }
+
         private class RsaObjectPoolPolicy : PooledObjectPolicy<RSA>
         {
             private readonly RSAParameters _parameters;
