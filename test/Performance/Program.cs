@@ -13,7 +13,7 @@ namespace Performance
             K = "GdaXeVyiJwKmz5LFhcbcng",
             Alg = "HS256"
         };
-        private static readonly JsonWebKey EncryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithms.Aes128KW);
+        private static readonly JsonWebKey EncryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithms.Aes256KW);
         private static readonly JsonWebTokenReader _reader = new JsonWebTokenReader(SharedKey);
         private static readonly JsonWebTokenWriter _writer = new JsonWebTokenWriter();
         private static readonly TokenValidationPolicy policy = new TokenValidationPolicyBuilder()
@@ -52,19 +52,19 @@ namespace Performance
                 EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256,
                 Payload = token
             };
-            var jwt = _writer.WriteToken(jwe);
+            //var jwt = _writer.WriteToken(jwe);
 
             //Parallel.For(0, 10, _ =>
             //{
-            for (int i = 0; i < 1000000; i++)
-            {
-                var result = _reader.TryReadToken(jwt.AsSpan(), policy);
-            }
-
-            //for (int i = 0; i < 10000000; i++)
+            //for (int i = 0; i < 1000000; i++)
             //{
-            //    var jwt = _writer.WriteToken(token);
+            //    var result = _reader.TryReadToken(jwt.AsSpan(), policy);
             //}
+
+            for (int i = 0; i < 10000000; i++)
+            {
+                var jwt = _writer.WriteToken(jwe);
+            }
             //});
         }
     }

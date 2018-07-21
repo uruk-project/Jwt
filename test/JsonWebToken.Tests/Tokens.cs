@@ -115,7 +115,7 @@ namespace JsonWebToken.Tests
 
         private static SymmetricJwk CreateEncryptionKey()
         {
-            return SymmetricJwk.GenerateKey(128, KeyManagementAlgorithms.Aes128KW);
+            return SymmetricJwk.GenerateKey(256, KeyManagementAlgorithms.Aes256KW);
         }
 
         private static IDictionary<string, JObject> CreatePayloads()
