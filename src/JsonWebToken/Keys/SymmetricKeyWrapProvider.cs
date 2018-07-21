@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace JsonWebToken
@@ -35,7 +37,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (string.IsNullOrEmpty(algorithm))
+            if (algorithm == null)
             {
                 throw new ArgumentNullException(nameof(algorithm));
             }
@@ -79,14 +81,14 @@ namespace JsonWebToken
 
         private static byte[] GetBytes(ulong i)
         {
-            byte[] temp = BitConverter.GetBytes(i);
+            byte[] bytes = BitConverter.GetBytes(i);
 
             if (BitConverter.IsLittleEndian)
             {
-                Array.Reverse(temp);
+                Array.Reverse(bytes);
             }
 
-            return temp;
+            return bytes;
         }
 
         private SymmetricAlgorithm GetSymmetricAlgorithm(SymmetricJwk key, string algorithm)
@@ -104,9 +106,10 @@ namespace JsonWebToken
                 symmetricAlgorithm.Key = keyBytes;
 
                 // Set the AES IV to Zeroes
-                var aesIv = new byte[symmetricAlgorithm.BlockSize >> 3];
-                Zero(aesIv);
-                symmetricAlgorithm.IV = aesIv;
+                //var aesIv = new byte[symmetricAlgorithm.BlockSize >> 3];
+                //Zero(aesIv);
+                //symmetricAlgorithm.IV = aesIv;
+                Zero(symmetricAlgorithm.IV);
 
                 return symmetricAlgorithm;
             }
@@ -123,7 +126,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            if (string.IsNullOrEmpty(algorithm))
+            if (algorithm == null)
             {
                 return false;
             }
@@ -204,7 +207,7 @@ namespace JsonWebToken
                     // B = AES-1(K, (A ^ t) | R[i] )
 
                     // First, A = ( A ^ t )
-                    Xor(a, GetBytes(t), 0);
+                    Xor(a, GetBytes(t));
 
                     // Second, block = ( A | R[i] )
                     Array.Copy(a, block, _blockSizeInBytes);
@@ -240,37 +243,29 @@ namespace JsonWebToken
 
         private void ValidateKeySize(byte[] key, string algorithm)
         {
-            if (string.Equals(KeyManagementAlgorithms.Aes128KW, algorithm, StringComparison.Ordinal))
+            switch (algorithm)
             {
-                if (key.Length != 16)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 128, Key.Kid, key.Length << 3));
-                }
-
-                return;
+                case KeyManagementAlgorithms.Aes128KW:
+                    if (key.Length != 16)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 128, Key.Kid, key.Length << 3));
+                    }
+                    break;
+                case KeyManagementAlgorithms.Aes192KW:
+                    if (key.Length != 24)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 192, Key.Kid, key.Length << 3));
+                    }
+                    break;
+                case KeyManagementAlgorithms.Aes256KW:
+                    if (key.Length != 32)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 256, Key.Kid, key.Length << 3));
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
             }
-
-            if (string.Equals(KeyManagementAlgorithms.Aes192KW, algorithm, StringComparison.Ordinal))
-            {
-                if (key.Length != 24)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 192, Key.Kid, key.Length << 3));
-                }
-
-                return;
-            }
-
-            if (string.Equals(KeyManagementAlgorithms.Aes256KW, algorithm, StringComparison.Ordinal))
-            {
-                if (key.Length != 32)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 256, Key.Kid, key.Length << 3));
-                }
-
-                return;
-            }
-
-            throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
         }
 
         /// <summary>
@@ -332,7 +327,7 @@ namespace JsonWebToken
 
             try
             {
-                var result = WrapKeyPrivate(keyBytes, 0, keyBytes.Length);
+                var result = WrapKeyPrivate(keyBytes, keyBytes.Length);
                 result.CopyTo(destination);
                 bytesWriten = result.Length;
                 return true;
@@ -344,7 +339,8 @@ namespace JsonWebToken
             }
         }
 
-        private byte[] WrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, int inputOffset, int inputCount)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private byte[] WrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, int inputCount)
         {
             /*
                1) Initialize variables.
@@ -377,7 +373,7 @@ namespace JsonWebToken
             // The set of input blocks
             byte[] r = new byte[n << 3];
 
-            Array.Copy(inputBuffer.ToArray(), inputOffset, r, 0, inputCount);
+            Array.Copy(inputBuffer.ToArray(), 0, r, 0, inputCount);
 
             if (_symmetricAlgorithmEncryptor == null)
             {
@@ -413,7 +409,7 @@ namespace JsonWebToken
                     Array.Copy(b, a, 8);
 
                     // A = A ^ t
-                    Xor(a, GetBytes(t), 0);
+                    Xor(a, GetBytes(t));
 
                     // R[i] = LSB( 64, B )
                     Array.Copy(b, 8, r, i << 3, 8);
@@ -432,24 +428,65 @@ namespace JsonWebToken
             return keyBytes;
         }
 
-        private static byte[] Xor(byte[] a, byte[] b, int offset)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private unsafe static void Xor(byte[] a, byte[] b)
         {
-            for (var i = 0; i < a.Length; i++)
-            {
-                a[i] = (byte)(a[i] ^ b[offset + i]);
-            }
+            //for (int i = 0; i < a.Length; i++)
+            //{
+            //    a[i] = (byte)(a[i] ^ b[i]);
+            //}
 
-            return a;
+            fixed (byte* first = &MemoryMarshal.GetReference(a.AsSpan()))
+            fixed (byte* second = &MemoryMarshal.GetReference(b.AsSpan()))
+            {
+                Xor(first, second, a.Length);
+            }
         }
 
-        private static void Zero(byte[] byteArray)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private unsafe static void Xor(byte* first, byte* second, int length)
         {
-            for (var i = 0; i < byteArray.Length; i++)
+            IntPtr i = (IntPtr)0;
+            IntPtr n = (IntPtr)(void*)(length * Unsafe.SizeOf<byte>());
+            if (Vector.IsHardwareAccelerated && (byte*)n >= (byte*)Vector<byte>.Count)
+            {
+                n -= Vector<byte>.Count;
+                while ((byte*)n >= (byte*)i)
+                {
+                    Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref *first, i), Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref *first, i)) ^ Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref *second, i)));
+                    i += Vector<byte>.Count;
+                }
+
+                n += Vector<byte>.Count;
+            }
+
+            if ((byte*)n >= (byte*)sizeof(ulong))
+            {
+                n -= sizeof(ulong);
+                while ((byte*)n >= (byte*)i)
+                {
+                    Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref *first, i), Unsafe.As<byte, ulong>(ref Unsafe.AddByteOffset(ref *first, i)) ^ Unsafe.As<byte, ulong>(ref Unsafe.AddByteOffset(ref *second, i)));
+                    i += sizeof(ulong);
+                }
+
+                n += sizeof(ulong);
+            }
+
+            while ((byte*)n > (byte*)i)
+            {
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref *first, i), Unsafe.AddByteOffset(ref *first, i) ^ Unsafe.AddByteOffset(ref *second, i));
+                i += sizeof(byte);
+            }
+        }
+
+        private unsafe static void Zero(byte[] byteArray)
+        {
+                for (var i = 0; i < byteArray.Length; i++)
             {
                 byteArray[i] = 0;
             }
+            //byteArray.AsSpan().Clear();
         }
-
 
         /// <summary>
         /// Compares two byte arrays for equality. Hash size is fixed normally it is 32 bytes.
@@ -464,26 +501,83 @@ namespace JsonWebToken
         /// <returns>
         /// true if the bytes are equal, false otherwise.
         /// </returns>
-        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public static bool AreEqual(byte[] a, byte[] b)
         {
-            int result = 0;
-            byte[] a1, a2;
+            //int result = 0;
+            //byte[] a1, a2;
 
-            if (a?.Length != b?.Length)
+            //if (a?.Length != b?.Length)
+            //{
+            //    a1 = s_bytesA;
+            //    a2 = s_bytesB;
+            //}
+            //else
+            //{
+            //    a1 = a;
+            //    a2 = b;
+            //}
+
+            //for (int i = 0; i < a1.Length; i++)
+            //{
+            //    result |= a1[i] ^ a2[i];
+            //}
+
+            //return result == 0;
+            ReadOnlySpan<byte> first, second;
+
+            if (((a == null) || (b == null)) || (a.Length != b.Length))
             {
-                a1 = s_bytesA;
-                a2 = s_bytesB;
+                first = s_bytesA;
+                second = s_bytesB;
             }
             else
             {
-                a1 = a;
-                a2 = b;
+                first = a;
+                second = b;
             }
 
-            for (int i = 0; i < a1.Length; i++)
+            return AreEqual(ref MemoryMarshal.GetReference(first), ref MemoryMarshal.GetReference(second), first.Length);
+        }
+
+        // Optimized byte-based AreEqual. Inspired from https://github.com/dotnet/corefx/blob/master/src/Common/src/CoreLib/System/SpanHelpers.Byte.cs
+        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
+        private static unsafe bool AreEqual(ref byte first, ref byte second, int length)
+        {
+            IntPtr i = (IntPtr)0; // Use IntPtr for arithmetic to avoid unnecessary 64->32->64 truncations
+            IntPtr n = (IntPtr)(void*)length;
+
+            if (Vector.IsHardwareAccelerated && (byte*)n >= (byte*)Vector<byte>.Count)
             {
-                result |= a1[i] ^ a2[i];
+                Vector<byte> equals = Vector<byte>.Zero;
+                n -= Vector<byte>.Count;
+                while ((byte*)n > (byte*)i)
+                {
+                    equals |= Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref first, i)) ^ Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref second, i));
+                    i += Vector<byte>.Count;
+                }
+
+                equals |= Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref first, n)) ^ Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref second, n));
+                return equals == Vector<byte>.Zero;
+            }
+
+            if ((byte*)n >= (byte*)sizeof(UIntPtr))
+            {
+                bool equals = true;
+                n -= sizeof(UIntPtr);
+                while ((byte*)n > (byte*)i)
+                {
+                    equals &= Unsafe.ReadUnaligned<UIntPtr>(ref Unsafe.AddByteOffset(ref first, i)) == Unsafe.ReadUnaligned<UIntPtr>(ref Unsafe.AddByteOffset(ref second, i));
+                    i += sizeof(UIntPtr);
+                }
+
+                return equals & Unsafe.ReadUnaligned<UIntPtr>(ref Unsafe.AddByteOffset(ref first, n)) == Unsafe.ReadUnaligned<UIntPtr>(ref Unsafe.AddByteOffset(ref second, n));
+            }
+
+            int result = 0;
+            while ((byte*)n > (byte*)i)
+            {
+                result |= Unsafe.AddByteOffset(ref first, i) ^ Unsafe.AddByteOffset(ref second, i);
+                i += 1;
             }
 
             return result == 0;

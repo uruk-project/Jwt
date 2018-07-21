@@ -224,14 +224,15 @@ namespace JsonWebToken
 
         private static bool IsSupportedAlgorithm(string algorithm)
         {
-            if (!(string.Equals(algorithm, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, StringComparison.Ordinal)
-               || string.Equals(algorithm, ContentEncryptionAlgorithms.Aes192CbcHmacSha384, StringComparison.Ordinal)
-               || string.Equals(algorithm, ContentEncryptionAlgorithms.Aes256CbcHmacSha512, StringComparison.Ordinal)))
+            switch (algorithm)
             {
-                return false;
+                case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
+                case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
+                case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
+                    return true;
+                default:
+                    return false;
             }
-
-            return true;
         }
 
         private AuthenticatedKeys GetAlgorithmParameters(SymmetricJwk key, string algorithm)

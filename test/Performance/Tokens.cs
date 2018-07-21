@@ -126,43 +126,50 @@ namespace JsonWebToken.Performance
                             break;
                     }
                 }
-                //Console.WriteLine(descriptor);
-                //Console.WriteLine(writer.WriteToken(descriptor));
 
-                descriptors.Add(payload.Key, writer.WriteToken(descriptor));
+                descriptors.Add("JWS-" + payload.Key, writer.WriteToken(descriptor));
             }
 
             foreach (var payload in payloads)
             {
-                var descriptor = new JwsDescriptor()
+                foreach (var compression in new[] { null, "DEF" })
                 {
-                    Key = signingKey
-                };
-
-                foreach (var property in payload.Value.Properties())
-                {
-                    switch (property.Name)
+                    var descriptor = new JwsDescriptor()
                     {
-                        case "iat":
-                        case "nbf":
-                        case "exp":
-                            descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
-                            break;
-                        default:
-                            descriptor.AddClaim(property.Name, (string)property.Value);
-                            break;
+                        Key = signingKey
+                    };
+
+                    foreach (var property in payload.Value.Properties())
+                    {
+                        switch (property.Name)
+                        {
+                            case "iat":
+                            case "nbf":
+                            case "exp":
+                                descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
+                                break;
+                            default:
+                                descriptor.AddClaim(property.Name, (string)property.Value);
+                                break;
+                        }
                     }
+
+                    var jwe = new JweDescriptor
+                    {
+                        Payload = descriptor,
+                        Key = encryptionKey,
+                        EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256,
+                        ContentType = "JWT"
+                    };
+                    var descriptorName = "JWE-";
+                    if (compression != null)
+                    {
+                        descriptorName += compression + "-";
+                    }
+
+                    descriptorName += payload.Key;
+                    descriptors.Add(descriptorName, writer.WriteToken(jwe));
                 }
-
-                var jwe = new JweDescriptor
-                {
-                    Payload = descriptor,
-                    Key = encryptionKey,
-                    EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256,
-                    ContentType = "JWT"
-                };
-
-                descriptors.Add("JWE-" + payload.Key, writer.WriteToken(jwe));
             }
 
             return descriptors;
