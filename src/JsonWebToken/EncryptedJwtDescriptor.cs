@@ -112,7 +112,10 @@ namespace JsonWebToken
 
                 try
                 {
-                    kwProvider.WrapKey(symmetricKey.RawK, wrappedKey, out var keyWrappedBytesWritten);
+                    if (!kwProvider.TryWrapKey(symmetricKey.RawK, wrappedKey, out var keyWrappedBytesWritten))
+                    {
+                        throw new JsonWebTokenEncryptionFailedException(ErrorMessages.KeyWrapFailed);
+                    }
                 }
                 finally
                 {

@@ -108,9 +108,8 @@ namespace JsonWebToken
                 return true;
 #endif
             }
-            catch //(Exception ex)
+            catch
             {
-                //throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
                 bytesWritten = 0;
                 return false;
             }
@@ -121,7 +120,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keyBytes">the key to be wrapped</param>
         /// <returns>A wrapped key</returns>
-        public override bool WrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWritten)
+        public override bool TryWrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWritten)
         {
             if (keyBytes == null || keyBytes.Length == 0)
             {
@@ -144,14 +143,15 @@ namespace JsonWebToken
                  return _rsa.TryEncrypt(keyBytes, destination, _padding, out bytesWritten);
 #else
                 var result = _rsa.Encrypt(keyBytes.ToArray(), _padding);
-                bytesWritten = result.Length;
                 result.CopyTo(destination);
+                bytesWritten = result.Length;
                 return true;
 #endif
             }
-            catch (Exception ex)
+            catch
             {
-                throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
+                bytesWritten = 0;
+                return false;
             }
         }
 

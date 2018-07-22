@@ -44,7 +44,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keyBytes">the key to be wrapped</param>
         /// <returns>wrapped key.</returns>
-        public abstract bool WrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWritten);
+        public abstract bool TryWrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWritten);
 
         public abstract int GetKeyUnwrapSize(int inputSize);
 

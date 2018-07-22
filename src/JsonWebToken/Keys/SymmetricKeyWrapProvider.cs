@@ -297,9 +297,8 @@ namespace JsonWebToken
                 bytesWritten = result.Length;
                 return true;
             }
-            catch //(Exception ex)
+            catch
             {
-                //throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
                 bytesWritten = 0;
                 return false;
             }
@@ -310,7 +309,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keyBytes">the key to be wrapped</param>
         /// <returns>A wrapped key</returns>
-        public override bool WrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWriten)
+        public override bool TryWrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWritten)
         {
             if (keyBytes == null || keyBytes.Length == 0)
             {
@@ -331,13 +330,13 @@ namespace JsonWebToken
             {
                 var result = WrapKeyPrivate(keyBytes, keyBytes.Length);
                 result.CopyTo(destination);
-                bytesWriten = result.Length;
+                bytesWritten = result.Length;
                 return true;
-
             }
-            catch (Exception ex)
+            catch
             {
-                throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
+                bytesWritten = 0;
+                return false;
             }
         }
 
