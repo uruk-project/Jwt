@@ -365,9 +365,11 @@ namespace JsonWebToken
                     if (kwp != null)
                     {
                         Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length)];
-                        kwp.UnwrapKey(encryptedKey, unwrappedKey, out int keyWrappedBytesWritten);
-                        Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
-                        unwrappedKeys.Add(SymmetricJwk.FromSpan(unwrappedKey));
+                        if (kwp.TryUnwrapKey(encryptedKey, unwrappedKey, out int keyWrappedBytesWritten))
+                        {
+                            Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
+                            unwrappedKeys.Add(SymmetricJwk.FromSpan(unwrappedKey));
+                        }
                     }
                 }
                 finally

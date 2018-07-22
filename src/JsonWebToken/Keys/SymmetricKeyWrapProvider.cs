@@ -142,7 +142,7 @@ namespace JsonWebToken
             return false;
         }
 
-        private byte[] UnwrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, int inputOffset, int inputCount)
+        private byte[] UnwrapKeyPrivate(ReadOnlySpan<byte> inputBuffer)
         {
             /*
                 1) Initialize variables.
@@ -173,15 +173,15 @@ namespace JsonWebToken
             byte[] a = new byte[_blockSizeInBytes];
 
             var inputArray = inputBuffer.ToArray();
-            Array.Copy(inputArray, inputOffset, a, 0, _blockSizeInBytes);
+            Array.Copy(inputArray, 0, a, 0, _blockSizeInBytes);
 
             // The number of input blocks
-            var n = (inputCount - _blockSizeInBytes) >> 3;
+            var n = (inputBuffer.Length - _blockSizeInBytes) >> 3;
 
             // The set of input blocks
             byte[] r = new byte[n << 3];
 
-            Array.Copy(inputArray, inputOffset + _blockSizeInBytes, r, 0, inputCount - _blockSizeInBytes);
+            Array.Copy(inputArray, _blockSizeInBytes, r, 0, inputBuffer.Length - _blockSizeInBytes);
 
             if (_symmetricAlgorithmDecryptor == null)
             {
@@ -273,7 +273,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keyBytes">the bytes to unwrap.</param>
         /// <returns>Unwrapped key</returns>
-        public override bool UnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWritten)
+        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWritten)
         {
             if (keyBytes == null || keyBytes.Length == 0)
             {
@@ -292,14 +292,16 @@ namespace JsonWebToken
 
             try
             {
-                var result = UnwrapKeyPrivate(keyBytes, 0, keyBytes.Length);
+                var result = UnwrapKeyPrivate(keyBytes);
                 result.CopyTo(destination);
                 bytesWritten = result.Length;
                 return true;
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
-                throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
+                //throw new JsonWebTokenKeyWrapException(ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapFailed), ex);
+                bytesWritten = 0;
+                return false;
             }
         }
 
@@ -481,7 +483,7 @@ namespace JsonWebToken
 
         private unsafe static void Zero(byte[] byteArray)
         {
-                for (var i = 0; i < byteArray.Length; i++)
+            for (var i = 0; i < byteArray.Length; i++)
             {
                 byteArray[i] = 0;
             }

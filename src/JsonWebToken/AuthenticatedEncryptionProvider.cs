@@ -52,7 +52,6 @@ namespace JsonWebToken
                 throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureHashAlgorithm, Algorithm));
             }
 
-            Key = key;
             Algorithm = algorithm;
         }
 
@@ -60,11 +59,6 @@ namespace JsonWebToken
         /// Gets the encryption algorithm that is being used.
         /// </summary>
         public string Algorithm { get; private set; }
-
-        /// <summary>
-        /// Gets the <see cref="JsonWebKey"/> that is being used.
-        /// </summary>
-        public JsonWebKey Key { get; private set; }
 
         /// <summary>
         /// Encrypts the 'plaintext'
@@ -77,12 +71,7 @@ namespace JsonWebToken
         /// <exception cref="JsonWebTokenEncryptionFailedException">AES crypto operation threw. See inner exception for details.</exception>
         public AuthenticatedEncryptionResult Encrypt(byte[] plaintext, byte[] authenticatedData)
         {
-            return Encrypt(plaintext, authenticatedData, null);
-        }
-
-        public AuthenticatedEncryptionResult Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> authenticatedData)
-        {
-            return Encrypt(plaintext, authenticatedData, null);
+            return Encrypt(plaintext.AsSpan(), authenticatedData.AsSpan());
         }
 
         /// <summary>
@@ -90,8 +79,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="plaintext">the data to be encrypted.</param>
         /// <param name="authenticatedData">will be combined with iv and ciphertext to create an authenticationtag.</param>
-        /// <param name="iv">initialization vector for encryption.</param>
-        public AuthenticatedEncryptionResult Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> authenticatedData, byte[] iv)
+        public AuthenticatedEncryptionResult Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> authenticatedData)
         {
             if (plaintext == null || plaintext.Length == 0)
             {
@@ -108,10 +96,6 @@ namespace JsonWebToken
                 aes.Mode = CipherMode.CBC;
                 aes.Padding = PaddingMode.PKCS7;
                 aes.Key = _authenticatedkeys.AesKey.RawK;
-                if (iv != null)
-                {
-                    aes.IV = iv;
-                }
 
                 byte[] ciphertext;
                 ciphertext = Transform(aes.CreateEncryptor(), plaintext.ToArray(), 0, plaintext.Length);
@@ -260,8 +244,8 @@ namespace JsonWebToken
             Array.Copy(keyBytes, hmacKey, keyLength);
             return new AuthenticatedKeys()
             {
-                AesKey = SymmetricJwk.FromByteArray(aesKey),
-                HmacKey = SymmetricJwk.FromByteArray(hmacKey)
+                AesKey = SymmetricJwk.FromByteArray(aesKey, false),
+                HmacKey = SymmetricJwk.FromByteArray(hmacKey, false)
             };
         }
 

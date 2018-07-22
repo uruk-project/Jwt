@@ -68,12 +68,12 @@ namespace JsonWebToken
                 return properties;
             }
         }
-        
+
         private static readonly JwkJsonConverter jsonConverter = new JwkJsonConverter();
         private static readonly JwkContractResolver contractResolver = new JwkContractResolver();
         private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings { ContractResolver = contractResolver };
         private List<JsonWebKey> _certificateChain;
-        
+
         /// <summary>
         /// Returns a new instance of <see cref="TKey"/>.
         /// </summary>
@@ -253,16 +253,16 @@ namespace JsonWebToken
             //}
         }
 
-        public abstract JsonWebKey CloneMinimal();
+        public abstract JsonWebKey ExcludeOptionalMembers();
 
 #if NETCOREAPP2_1
         /// <summary>
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
         /// <returns></returns>
-        public string ComputeThumbprint()
+        public string ComputeThumbprint(bool excludeOptionalMembers = true)
         {
-            var json = CloneMinimal().ToString();
+            var json = excludeOptionalMembers ? ExcludeOptionalMembers().ToString() : ToString();
             int jsonLength = json.Length;
             byte[] arrayToReturnToPool = null;
             Span<byte> buffer = jsonLength <= Constants.MaxStackallocBytes
@@ -294,9 +294,9 @@ namespace JsonWebToken
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
         /// <returns></returns>
-        public string ComputeThumbprint()
+        public string ComputeThumbprint(bool excludeOptionalMembers = true)
         {
-            var json = CloneMinimal().ToString();
+            var json = excludeOptionalMembers ? ExcludeOptionalMembers().ToString() : ToString();
             var buffer = Encoding.UTF8.GetBytes(json);
             using (var hashAlgorithm = SHA256.Create())
             {

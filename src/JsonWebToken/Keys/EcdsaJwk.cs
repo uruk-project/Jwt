@@ -412,7 +412,7 @@ namespace JsonWebToken
             }
         }
 
-        public override JsonWebKey CloneMinimal()
+        public override JsonWebKey ExcludeOptionalMembers()
         {
             return new EcdsaJwk(Crv, RawD, RawX, RawY);
         }
@@ -424,7 +424,7 @@ namespace JsonWebToken
         public static EcdsaJwk FromParameters(ECParameters parameters)
         {
             var key = new EcdsaJwk(parameters);
-            key.Kid = key.ComputeThumbprint();
+            key.Kid = key.ComputeThumbprint(false);
             return key;
         }
     }
