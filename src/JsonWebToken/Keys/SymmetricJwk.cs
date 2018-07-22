@@ -66,7 +66,7 @@ namespace JsonWebToken
         /// Returns a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         /// <param name="bytes">An array of <see cref="byte"/> that contains the key in binary.</param>
-        public static SymmetricJwk FromByteArray(byte[] bytes, bool computeThumbprint = false)
+        public static SymmetricJwk FromByteArray(byte[] bytes, bool computeThumbprint = true)
         {
             if (bytes == null)
             {
@@ -76,7 +76,7 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes);
             if (computeThumbprint)
             {
-                key.Kid = key.ComputeThumbprint();
+                key.Kid = key.ComputeThumbprint(false);
             }
 
             return key;
@@ -92,7 +92,7 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes);
             if (computeThumbprint)
             {
-                key.Kid = key.ComputeThumbprint();
+                key.Kid = key.ComputeThumbprint(false);
             }
 
             return key;
@@ -207,7 +207,7 @@ namespace JsonWebToken
 
         public static SymmetricJwk GenerateKey(int sizeInBits, string algorithm = null)
         {
-            var key = FromByteArray(GenerateKeyBytes(sizeInBits));
+            var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
             key.Alg = algorithm;
             return key;
         }
@@ -227,7 +227,7 @@ namespace JsonWebToken
         ///  Creates a minimal representation of the current key.
         /// </summary>
         /// <returns></returns>
-        public override JsonWebKey CloneMinimal()
+        public override JsonWebKey ExcludeOptionalMembers()
         {
             return new SymmetricJwk(RawK);
         }    

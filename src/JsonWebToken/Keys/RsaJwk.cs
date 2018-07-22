@@ -405,11 +405,11 @@ namespace JsonWebToken
         public static RsaJwk FromParameters(RSAParameters parameters)
         {
             var key = new RsaJwk(parameters);
-            key.Kid = key.ComputeThumbprint();
+            key.Kid = key.ComputeThumbprint(false);
             return key;
         }
 
-        public override JsonWebKey CloneMinimal()
+        public override JsonWebKey ExcludeOptionalMembers()
         {
             return new RsaJwk(RawE, RawN);
         }
