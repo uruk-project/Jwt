@@ -5,6 +5,10 @@ namespace Performance
 {
     class Program
     {
+
+        private static readonly SymmetricJwk _key = SymmetricJwk.FromBase64Url("U1oK6e4BAR4kKTdyA1OqEFYwX9pIrswuUMNt8qW4z-k");
+        private static readonly SymmetricJwk _keyToWrap = SymmetricJwk.FromBase64Url("gXoKEcss-xFuZceE6B3VkEMLw-f0h9tGfyaheF5jqP8");
+
         private const string Token1 = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiaWF0IjoxNTA4MTg0ODQ1LCJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJleHAiOjE2MjgxODQ4NDV9.i2JGGP64mggd3WqUj7oX8_FyYh9e_m1MNWI9Q-f-W3g";
         private static readonly JsonWebKey SharedKey = new SymmetricJwk
         {
@@ -61,11 +65,25 @@ namespace Performance
             //    var result = _reader.TryReadToken(jwt.AsSpan(), policy);
             //}
 
-            for (int i = 0; i < 10000000; i++)
+            //for (int i = 0; i < 10000000; i++)
+            //{
+            //    var jwt = _writer.WriteToken(jwe);
+            //}
+            ////});
+
+
+            var kwp = new SymmetricKeyWrapProvider(_key, KeyManagementAlgorithms.Aes256KW);
+            var kwp2 = new SymmetricKeyWrapProviderOld(_key, KeyManagementAlgorithms.Aes256KW);
+            byte[] wrappedKey = new byte[kwp.GetKeyWrapSize(ContentEncryptionAlgorithms.Aes128CbcHmacSha256)];
+            var unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
+            while (true)
             {
-                var jwt = _writer.WriteToken(jwe);
+                var wrapped = kwp.TryWrapKey(_keyToWrap.RawK, wrappedKey, out var bytesWritten);
+                var unwrapped = kwp.TryUnwrapKey(wrappedKey, unwrappedKey, out int keyWrappedBytesWritten);
+
+                //var wrapped2 = kwp2.TryWrapKey(_keyToWrap.RawK, wrappedKey, out var bytesWritten2);
+                //var unwrapped2 = kwp2.TryUnwrapKey(wrappedKey, unwrappedKey, out keyWrappedBytesWritten);
             }
-            //});
         }
     }
 }

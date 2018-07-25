@@ -393,7 +393,7 @@ namespace JsonWebToken
             //Save the public key information to an RSAParameters structure.  
             RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
 
-            var key = FromParameters(rsaParameters);
+            var key = FromParameters(rsaParameters, false);
             key.Alg = algorithm;
             return key;
         }
@@ -402,10 +402,14 @@ namespace JsonWebToken
         /// Returns a new instance of <see cref="RsaJwk"/>.
         /// </summary>
         /// <param name="parameters">A <see cref="byte"/> that contains the key parameters.</param>
-        public static RsaJwk FromParameters(RSAParameters parameters)
+        public static RsaJwk FromParameters(RSAParameters parameters, bool computeThumbprint = false)
         {
             var key = new RsaJwk(parameters);
-            key.Kid = key.ComputeThumbprint(false);
+            if (computeThumbprint)
+            {
+                key.Kid = key.ComputeThumbprint(false);
+            }
+
             return key;
         }
 
