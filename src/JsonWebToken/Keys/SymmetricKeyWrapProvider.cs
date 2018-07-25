@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -11,12 +10,10 @@ namespace JsonWebToken
     /// </summary>
     public class SymmetricKeyWrapProvider : KeyWrapProvider
     {
-        private static readonly byte[] s_bytesA = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
-        private static readonly byte[] s_bytesB = new byte[] { 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
-
-        private static readonly byte[] _defaultIV = new byte[] { 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6 };
+        private static readonly byte[] _defaultIVArray = new byte[] { 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6 };
+        private static readonly ulong _defaultIV = BitConverter.ToUInt64(_defaultIVArray, 0);
         private static readonly int _blockSizeInBits = 64;
-        private static readonly int _blockSizeInBytes = _blockSizeInBits >> 3;
+        private static readonly int BlockSizeInBytes = _blockSizeInBits >> 3;
         private static readonly object _encryptorLock = new object();
         private static readonly object _decryptorLock = new object();
 
@@ -79,18 +76,6 @@ namespace JsonWebToken
             }
         }
 
-        private static byte[] GetBytes(ulong i)
-        {
-            byte[] bytes = BitConverter.GetBytes(i);
-
-            if (BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(bytes);
-            }
-
-            return bytes;
-        }
-
         private SymmetricAlgorithm GetSymmetricAlgorithm(SymmetricJwk key, string algorithm)
         {
             byte[] keyBytes = key.RawK;
@@ -106,10 +91,7 @@ namespace JsonWebToken
                 symmetricAlgorithm.Key = keyBytes;
 
                 // Set the AES IV to Zeroes
-                //var aesIv = new byte[symmetricAlgorithm.BlockSize >> 3];
-                //Zero(aesIv);
-                //symmetricAlgorithm.IV = aesIv;
-                Zero(symmetricAlgorithm.IV);
+                Unsafe.WriteUnaligned(ref symmetricAlgorithm.IV[0], 0L);
 
                 return symmetricAlgorithm;
             }
@@ -142,7 +124,7 @@ namespace JsonWebToken
             return false;
         }
 
-        private byte[] UnwrapKeyPrivate(ReadOnlySpan<byte> inputBuffer)
+        private unsafe bool TryUnwrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, Span<byte> destination, out int bytesWritten)
         {
             /*
                 1) Initialize variables.
@@ -170,74 +152,75 @@ namespace JsonWebToken
             */
 
             // A = C[0]
-            byte[] a = new byte[_blockSizeInBytes];
-
-            var inputArray = inputBuffer.ToArray();
-            Array.Copy(inputArray, 0, a, 0, _blockSizeInBytes);
-
-            // The number of input blocks
-            var n = (inputBuffer.Length - _blockSizeInBytes) >> 3;
-
-            // The set of input blocks
-            byte[] r = new byte[n << 3];
-
-            Array.Copy(inputArray, _blockSizeInBytes, r, 0, inputBuffer.Length - _blockSizeInBytes);
-
-            if (_symmetricAlgorithmDecryptor == null)
+            fixed (byte* inputPtr = inputBuffer)
             {
-                lock (_decryptorLock)
-                {
-                    if (_symmetricAlgorithmDecryptor == null)
-                    {
-                        _symmetricAlgorithmDecryptor = _symmetricAlgorithm.CreateDecryptor();
-                    }
-                }
-            }
+                var a = Unsafe.ReadUnaligned<ulong>(ref *inputPtr);
 
-            byte[] block = new byte[16];
+                // The number of input blocks
+                var n = (inputBuffer.Length - BlockSizeInBytes) >> 3;
 
-            // Calculate intermediate values
-            for (var j = 5; j >= 0; j--)
-            {
-                for (var i = n; i > 0; i--)
-                {
-                    // T = ( n * j ) + i
-                    var t = (ulong)((n * j) + i);
-
-                    // B = AES-1(K, (A ^ t) | R[i] )
-
-                    // First, A = ( A ^ t )
-                    Xor(a, GetBytes(t));
-
-                    // Second, block = ( A | R[i] )
-                    Array.Copy(a, block, _blockSizeInBytes);
-                    Array.Copy(r, (i - 1) << 3, block, _blockSizeInBytes, _blockSizeInBytes);
-
-                    // Third, b = AES-1( block )
-                    var b = _symmetricAlgorithmDecryptor.TransformFinalBlock(block, 0, 16);
-
-                    // A = MSB(64, B)
-                    Array.Copy(b, a, _blockSizeInBytes);
-
-                    // R[i] = LSB(64, B)
-                    Array.Copy(b, _blockSizeInBytes, r, (i - 1) << 3, _blockSizeInBytes);
-                }
-            }
-
-            if (AreEqual(a, _defaultIV))
-            {
-                var keyBytes = new byte[n << 3];
-
+                // The set of input blocks
+                var r = stackalloc byte[n << 3];
                 for (var i = 0; i < n; i++)
                 {
-                    Array.Copy(r, i << 3, keyBytes, i << 3, 8);
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref *r, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *inputPtr, (i + 1) << 3)));
                 }
 
-                return keyBytes;
-            }
-            else
-            {
-                throw new InvalidOperationException(ErrorMessages.NotAuthenticData);
+                byte[] block = new byte[16];
+
+                fixed (byte* blockPtr = &block[0])
+                {
+                    var t = stackalloc byte[8];
+
+                    // Calculate intermediate values
+                    for (var j = 5; j >= 0; j--)
+                    {
+                        for (var i = n; i > 0; i--)
+                        {
+                            // T = ( n * j ) + i
+                            Unsafe.Add(ref *t, 7) = (byte)((n * j) + i);
+
+                            // B = AES-1(K, (A ^ t) | R[i] )
+
+                            // First, A = ( A ^ t )
+
+                            a ^= Unsafe.ReadUnaligned<ulong>(ref t[0]);
+
+                            // Second, block = ( A | R[i] )
+                            Unsafe.WriteUnaligned(blockPtr, a);
+                            var rValue = Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, (i - 1) << 3));
+                            Unsafe.WriteUnaligned(ref Unsafe.Add(ref *blockPtr, 8), rValue);
+
+                            // Third, b = AES-1( block )
+                            var b = _symmetricAlgorithmDecryptor.TransformFinalBlock(block, 0, 16);
+                            fixed (byte* bPtr = &b[0])
+                            {
+                                // A = MSB(64, B)
+                                a = Unsafe.ReadUnaligned<ulong>(bPtr);
+
+                                // R[i] = LSB(64, B)
+                                Unsafe.WriteUnaligned(ref Unsafe.Add(ref *r, (i - 1) << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *bPtr, 8)));
+                            }
+                        }
+                    }
+                }
+
+                if (a == _defaultIV)
+                {
+                    fixed (byte* keyBytes = destination)
+                    {
+                        for (var i = 0; i < n; i++)
+                        {
+                            Unsafe.WriteUnaligned(ref Unsafe.Add(ref *keyBytes, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, i << 3)));
+                        }
+                    }
+
+                    bytesWritten = n << 3;
+                    return true;
+                }
+
+                bytesWritten = 0;
+                return false;
             }
         }
 
@@ -290,12 +273,20 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(GetType().ToString());
             }
 
+            if (_symmetricAlgorithmDecryptor == null)
+            {
+                lock (_decryptorLock)
+                {
+                    if (_symmetricAlgorithmDecryptor == null)
+                    {
+                        _symmetricAlgorithmDecryptor = _symmetricAlgorithm.CreateDecryptor();
+                    }
+                }
+            }
+
             try
             {
-                var result = UnwrapKeyPrivate(keyBytes);
-                result.CopyTo(destination);
-                bytesWritten = result.Length;
-                return true;
+                return TryUnwrapKeyPrivate(keyBytes, destination, out bytesWritten);
             }
             catch
             {
@@ -326,12 +317,20 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(GetType().ToString());
             }
 
+            if (_symmetricAlgorithmEncryptor == null)
+            {
+                lock (_encryptorLock)
+                {
+                    if (_symmetricAlgorithmEncryptor == null)
+                    {
+                        _symmetricAlgorithmEncryptor = _symmetricAlgorithm.CreateEncryptor();
+                    }
+                }
+            }
+
             try
             {
-                var result = WrapKeyPrivate(keyBytes, keyBytes.Length);
-                result.CopyTo(destination);
-                bytesWritten = result.Length;
-                return true;
+                return TryWrapKeyPrivate(keyBytes, destination, out bytesWritten);
             }
             catch
             {
@@ -341,7 +340,7 @@ namespace JsonWebToken
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private byte[] WrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, int inputCount)
+        private unsafe bool TryWrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, Span<byte> destination, out int bytesWritten)
         {
             /*
                1) Initialize variables.
@@ -366,227 +365,72 @@ namespace JsonWebToken
             */
 
             // The default initialization vector from RFC3394
-            byte[] a = _defaultIV.Clone() as byte[];
+            ulong a = _defaultIV;
 
             // The number of input blocks
-            var n = inputCount >> 3;
+            var n = inputBuffer.Length >> 3;
 
             // The set of input blocks
-            byte[] r = new byte[n << 3];
-
-            Array.Copy(inputBuffer.ToArray(), 0, r, 0, inputCount);
-
-            if (_symmetricAlgorithmEncryptor == null)
+            var r = stackalloc byte[n << 3];
+            fixed (byte* input = inputBuffer)
             {
-                lock (_encryptorLock)
+                for (var i = 0; i < n; i++)
                 {
-                    if (_symmetricAlgorithmEncryptor == null)
-                    {
-                        _symmetricAlgorithmEncryptor = _symmetricAlgorithm.CreateEncryptor();
-                    }
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref *r, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *input, i << 3)));
                 }
             }
 
             byte[] block = new byte[16];
-
-            // Calculate intermediate values
-            for (var j = 0; j < 6; j++)
+            fixed (byte* blockPtr = &block[0])
             {
-                for (var i = 0; i < n; i++)
+                var t = stackalloc byte[8];
+                Unsafe.As<byte, ulong>(ref *t) = 0;
+
+                // Calculate intermediate values
+                for (var j = 0; j < 6; j++)
                 {
-                    // T = ( n * j ) + i
-                    var t = (ulong)((n * j) + i + 1);
+                    for (var i = 0; i < n; i++)
+                    {
+                        // B = AES( K, A | R[i] )
 
-                    // B = AES( K, A | R[i] )
+                        // First, block = A | R[i]
+                        Unsafe.WriteUnaligned(blockPtr, a);
+                        Unsafe.WriteUnaligned(ref Unsafe.Add(ref *blockPtr, 8), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, i << 3)));
 
-                    // First, block = A | R[i]
-                    Array.Copy(a, block, a.Length);
-                    Array.Copy(r, i << 3, block, 8, 8);
+                        // Second, AES( K, block )
+                        var b = _symmetricAlgorithmEncryptor.TransformFinalBlock(block, 0, 16);
+                        fixed (byte* bPtr = &b[0])
+                        {
+                            // A = MSB( 64, B )
+                            a = Unsafe.ReadUnaligned<ulong>(bPtr);
 
-                    // Second, AES( K, block )
-                    var b = _symmetricAlgorithmEncryptor.TransformFinalBlock(block, 0, 16);
+                            // T = ( n * j ) + i
+                            Unsafe.Add(ref *t, 7) = (byte)((n * j) + i + 1);
 
-                    // A = MSB( 64, B )
-                    Array.Copy(b, a, 8);
+                            // A = A ^ t
+                            a ^= Unsafe.ReadUnaligned<ulong>(ref t[0]);
 
-                    // A = A ^ t
-                    Xor(a, GetBytes(t));
-
-                    // R[i] = LSB( 64, B )
-                    Array.Copy(b, 8, r, i << 3, 8);
+                            // R[i] = LSB( 64, B )
+                            Unsafe.WriteUnaligned(ref Unsafe.Add(ref *r, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *bPtr, 8)));
+                        }
+                    }
                 }
             }
 
-            var keyBytes = new byte[(n + 1) << 3];
-
-            Array.Copy(a, keyBytes, a.Length);
+            Unsafe.WriteUnaligned(ref destination[0], a);
 
             for (var i = 0; i < n; i++)
             {
-                Array.Copy(r, i << 3, keyBytes, (i + 1) << 3, 8);
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destination[0], (i + 1) << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, i << 3)));
             }
 
-            return keyBytes;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe static void Xor(byte[] a, byte[] b)
-        {
-            //for (int i = 0; i < a.Length; i++)
-            //{
-            //    a[i] = (byte)(a[i] ^ b[i]);
-            //}
-
-            fixed (byte* first = &MemoryMarshal.GetReference(a.AsSpan()))
-            fixed (byte* second = &MemoryMarshal.GetReference(b.AsSpan()))
-            {
-                Xor(first, second, a.Length);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe static void Xor(byte* first, byte* second, int length)
-        {
-            IntPtr i = (IntPtr)0;
-            IntPtr n = (IntPtr)(void*)(length * Unsafe.SizeOf<byte>());
-            if (Vector.IsHardwareAccelerated && (byte*)n >= (byte*)Vector<byte>.Count)
-            {
-                n -= Vector<byte>.Count;
-                while ((byte*)n >= (byte*)i)
-                {
-                    Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref *first, i), Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref *first, i)) ^ Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref *second, i)));
-                    i += Vector<byte>.Count;
-                }
-
-                n += Vector<byte>.Count;
-            }
-
-            if ((byte*)n >= (byte*)sizeof(ulong))
-            {
-                n -= sizeof(ulong);
-                while ((byte*)n >= (byte*)i)
-                {
-                    Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref *first, i), Unsafe.As<byte, ulong>(ref Unsafe.AddByteOffset(ref *first, i)) ^ Unsafe.As<byte, ulong>(ref Unsafe.AddByteOffset(ref *second, i)));
-                    i += sizeof(ulong);
-                }
-
-                n += sizeof(ulong);
-            }
-
-            while ((byte*)n > (byte*)i)
-            {
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref *first, i), Unsafe.AddByteOffset(ref *first, i) ^ Unsafe.AddByteOffset(ref *second, i));
-                i += sizeof(byte);
-            }
-        }
-
-        private unsafe static void Zero(byte[] byteArray)
-        {
-            for (var i = 0; i < byteArray.Length; i++)
-            {
-                byteArray[i] = 0;
-            }
-            //byteArray.AsSpan().Clear();
-        }
-
-        /// <summary>
-        /// Compares two byte arrays for equality. Hash size is fixed normally it is 32 bytes.
-        /// The attempt here is to take the same time if an attacker shortens the signature OR changes some of the signed contents.
-        /// </summary>
-        /// <param name="a">
-        /// One set of bytes to compare.
-        /// </param>
-        /// <param name="b">
-        /// The other set of bytes to compare with.
-        /// </param>
-        /// <returns>
-        /// true if the bytes are equal, false otherwise.
-        /// </returns>
-        public static bool AreEqual(byte[] a, byte[] b)
-        {
-            //int result = 0;
-            //byte[] a1, a2;
-
-            //if (a?.Length != b?.Length)
-            //{
-            //    a1 = s_bytesA;
-            //    a2 = s_bytesB;
-            //}
-            //else
-            //{
-            //    a1 = a;
-            //    a2 = b;
-            //}
-
-            //for (int i = 0; i < a1.Length; i++)
-            //{
-            //    result |= a1[i] ^ a2[i];
-            //}
-
-            //return result == 0;
-            ReadOnlySpan<byte> first, second;
-
-            if (((a == null) || (b == null)) || (a.Length != b.Length))
-            {
-                first = s_bytesA;
-                second = s_bytesB;
-            }
-            else
-            {
-                first = a;
-                second = b;
-            }
-
-            return AreEqual(ref MemoryMarshal.GetReference(first), ref MemoryMarshal.GetReference(second), first.Length);
-        }
-
-        // Optimized byte-based AreEqual. Inspired from https://github.com/dotnet/corefx/blob/master/src/Common/src/CoreLib/System/SpanHelpers.Byte.cs
-        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
-        private static unsafe bool AreEqual(ref byte first, ref byte second, int length)
-        {
-            IntPtr i = (IntPtr)0; // Use IntPtr for arithmetic to avoid unnecessary 64->32->64 truncations
-            IntPtr n = (IntPtr)(void*)length;
-
-            if (Vector.IsHardwareAccelerated && (byte*)n >= (byte*)Vector<byte>.Count)
-            {
-                Vector<byte> equals = Vector<byte>.Zero;
-                n -= Vector<byte>.Count;
-                while ((byte*)n > (byte*)i)
-                {
-                    equals |= Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref first, i)) ^ Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref second, i));
-                    i += Vector<byte>.Count;
-                }
-
-                equals |= Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref first, n)) ^ Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref second, n));
-                return equals == Vector<byte>.Zero;
-            }
-
-            if ((byte*)n >= (byte*)sizeof(UIntPtr))
-            {
-                bool equals = true;
-                n -= sizeof(UIntPtr);
-                while ((byte*)n > (byte*)i)
-                {
-                    equals &= Unsafe.ReadUnaligned<UIntPtr>(ref Unsafe.AddByteOffset(ref first, i)) == Unsafe.ReadUnaligned<UIntPtr>(ref Unsafe.AddByteOffset(ref second, i));
-                    i += sizeof(UIntPtr);
-                }
-
-                return equals & Unsafe.ReadUnaligned<UIntPtr>(ref Unsafe.AddByteOffset(ref first, n)) == Unsafe.ReadUnaligned<UIntPtr>(ref Unsafe.AddByteOffset(ref second, n));
-            }
-
-            int result = 0;
-            while ((byte*)n > (byte*)i)
-            {
-                result |= Unsafe.AddByteOffset(ref first, i) ^ Unsafe.AddByteOffset(ref second, i);
-                i += 1;
-            }
-
-            return result == 0;
+            bytesWritten = (n + 1) << 3;
+            return true;
         }
 
         public override int GetKeyUnwrapSize(int inputSize)
         {
-            return inputSize - _blockSizeInBytes;
+            return inputSize - BlockSizeInBytes;
         }
 
         public override int GetKeyWrapSize(string encryptionAlgorithm)
@@ -605,3 +449,4 @@ namespace JsonWebToken
         }
     }
 }
+

@@ -205,6 +205,27 @@ namespace JsonWebToken
             return true;
         }
 
+        public static SymmetricJwk FromBase64Url(string k, bool computeThumbprint = true)
+        {
+            if (k == null)
+            {
+                throw new ArgumentNullException(nameof(k));
+            }
+
+            var key = new SymmetricJwk()
+            {
+                K = k
+            };
+
+            if (computeThumbprint)
+            {
+                key.Kid = key.ComputeThumbprint(false);
+            }
+
+            return key;
+        }
+
+
         public static SymmetricJwk GenerateKey(int sizeInBits, string algorithm = null)
         {
             var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);

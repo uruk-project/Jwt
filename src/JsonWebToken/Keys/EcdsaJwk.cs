@@ -421,10 +421,14 @@ namespace JsonWebToken
         /// Returns a new instance of <see cref="EcdsaJwk"/>.
         /// </summary>
         /// <param name="parameters">A <see cref="byte"/> that contains the key parameters.</param>
-        public static EcdsaJwk FromParameters(ECParameters parameters)
+        public static EcdsaJwk FromParameters(ECParameters parameters, bool computeThumbprint = false)
         {
             var key = new EcdsaJwk(parameters);
-            key.Kid = key.ComputeThumbprint(false);
+            if (computeThumbprint)
+            {
+                key.Kid = key.ComputeThumbprint(false);
+            }
+
             return key;
         }
     }

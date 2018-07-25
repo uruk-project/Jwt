@@ -404,20 +404,5 @@ namespace JsonWebToken
 
             return keys;
         }
-
-        private static uint ComputeHash(ReadOnlySpan<byte> data)
-        {
-            uint num = 0;
-            if (data != null)
-            {
-                num = 2166136261U;
-                for (int index = 0; index < data.Length; ++index)
-                {
-                    num = (uint)((data[index] ^ (int)num) * 16777619);
-                }
-            }
-
-            return num;
-        }
     }
 }
