@@ -136,11 +136,11 @@ namespace JsonWebToken
                         return new List<string>(new[] { strValue });
                     }
                 }
-
             }
 
             return null;
         }
+
         protected bool HasMandatoryHeaderParameter(string header)
         {
             return Header.TryGetValue(header, out var value) && value != null;

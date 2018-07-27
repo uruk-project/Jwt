@@ -33,7 +33,7 @@ namespace JsonWebToken.Performance
 
         private static readonly Microsoft.IdentityModel.Tokens.TokenValidationParameters wilsonParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters() { IssuerSigningKey = WilsonSharedKey, ValidateAudience = false, ValidateIssuer = false, ValidateLifetime = false, TokenDecryptionKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(Tokens.EncryptionKey.ToString()) };
 
-        [Benchmark(Baseline = true)]
+        [Benchmark(Baseline = false)]
         [ArgumentsSource(nameof(GetTokens))]
         public void Jwt(string token)
         {

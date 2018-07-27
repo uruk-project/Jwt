@@ -17,14 +17,6 @@ namespace JsonWebToken.Performance
             wrappedKey = new byte[kwp.GetKeyWrapSize(ContentEncryptionAlgorithms.Aes128CbcHmacSha256)];
         }
 
-        [Benchmark(Baseline = true)]
-        public void KwOld()
-        {
-            SymmetricKeyWrapProviderOld kwp = new SymmetricKeyWrapProviderOld(_key, KeyManagementAlgorithms.Aes256KW);
-
-            kwp.TryWrapKey(_keyToWrap.RawK, wrappedKey, out var bytesWritten);
-        }
-
         [Benchmark]
         public void Kw_Optimized()
         {
@@ -50,14 +42,7 @@ namespace JsonWebToken.Performance
             kwp.TryWrapKey(_keyToWrap.RawK, wrappedKey, out var bytesWritten);
             unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
         }
-
-        [Benchmark(Baseline = true)]
-        public void KwOld()
-        {
-            SymmetricKeyWrapProviderOld kwp = new SymmetricKeyWrapProviderOld(_key, KeyManagementAlgorithms.Aes256KW);
-            var unwrapped = kwp.TryUnwrapKey(wrappedKey, unwrappedKey, out int keyWrappedBytesWritten);
-        }
-
+        
         [Benchmark]
         public void Kw_Optimized()
         {

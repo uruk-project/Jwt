@@ -225,7 +225,6 @@ namespace JsonWebToken
             return key;
         }
 
-
         public static SymmetricJwk GenerateKey(int sizeInBits, string algorithm = null)
         {
             var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
