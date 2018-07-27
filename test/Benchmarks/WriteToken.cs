@@ -45,7 +45,7 @@ namespace JsonWebToken.Performance
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
         }
 
-        [Benchmark(Baseline = false)]
+        [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetPayloads))]
         public void Jwt(string payload)
         {
