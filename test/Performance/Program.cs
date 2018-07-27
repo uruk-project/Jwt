@@ -73,16 +73,12 @@ namespace Performance
 
 
             var kwp = new SymmetricKeyWrapProvider(_key, KeyManagementAlgorithms.Aes256KW);
-            var kwp2 = new SymmetricKeyWrapProviderOld(_key, KeyManagementAlgorithms.Aes256KW);
             byte[] wrappedKey = new byte[kwp.GetKeyWrapSize(ContentEncryptionAlgorithms.Aes128CbcHmacSha256)];
             var unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
             while (true)
             {
                 var wrapped = kwp.TryWrapKey(_keyToWrap.RawK, wrappedKey, out var bytesWritten);
                 var unwrapped = kwp.TryUnwrapKey(wrappedKey, unwrappedKey, out int keyWrappedBytesWritten);
-
-                //var wrapped2 = kwp2.TryWrapKey(_keyToWrap.RawK, wrappedKey, out var bytesWritten2);
-                //var unwrapped2 = kwp2.TryUnwrapKey(wrappedKey, unwrappedKey, out keyWrappedBytesWritten);
             }
         }
     }

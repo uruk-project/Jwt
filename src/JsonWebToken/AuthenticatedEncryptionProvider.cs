@@ -294,27 +294,29 @@ namespace JsonWebToken
 #if NETCOREAPP2_1
         private static bool TryConvertToBigEndian(Span<byte> destination, long i)
         {
-            if (BitConverter.TryWriteBytes(destination, i))
+            ulong value = (ulong)i;
+            if (BitConverter.IsLittleEndian)
             {
-                if (BitConverter.IsLittleEndian)
-                {
-                    destination.Slice(0, sizeof(long)).Reverse();
-                }
-
-                return true;
+                value = (value << 32) | (value >> 32);
+                value = (value & 0x0000FFFF0000FFFF) << 16 | (value & 0xFFFF0000FFFF0000) >> 16;
+                value = (value & 0x00FF00FF00FF00FF) << 8 | (value & 0xFF00FF00FF00FF00) >> 8;
             }
 
-            return false;
+            return BitConverter.TryWriteBytes(destination, value);
         }
 
 #else
         private static byte[] ConvertToBigEndian(long i)
         {
-            byte[] temp = BitConverter.GetBytes(i);
+            ulong value = (ulong)i;
             if (BitConverter.IsLittleEndian)
             {
-                Array.Reverse(temp);
+                value = (value << 32) | (value >> 32);
+                value = (value & 0x0000FFFF0000FFFF) << 16 | (value & 0xFFFF0000FFFF0000) >> 16;
+                value = (value & 0x00FF00FF00FF00FF) << 8 | (value & 0xFF00FF00FF00FF00) >> 8;
             }
+
+            byte[] temp = BitConverter.GetBytes(value);
 
             return temp;
         }

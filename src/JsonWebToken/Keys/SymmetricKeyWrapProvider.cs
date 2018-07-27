@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace JsonWebToken
@@ -10,10 +9,10 @@ namespace JsonWebToken
     /// </summary>
     public class SymmetricKeyWrapProvider : KeyWrapProvider
     {
+        private const int BlockSizeInBytes = 8;
+
         private static readonly byte[] _defaultIVArray = new byte[] { 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6 };
         private static readonly ulong _defaultIV = BitConverter.ToUInt64(_defaultIVArray, 0);
-        private static readonly int _blockSizeInBits = 64;
-        private static readonly int BlockSizeInBytes = _blockSizeInBits >> 3;
         private static readonly object _encryptorLock = new object();
         private static readonly object _decryptorLock = new object();
 
@@ -87,7 +86,7 @@ namespace JsonWebToken
                 SymmetricAlgorithm symmetricAlgorithm = Aes.Create();
                 symmetricAlgorithm.Mode = CipherMode.ECB;
                 symmetricAlgorithm.Padding = PaddingMode.None;
-                symmetricAlgorithm.KeySize = keyBytes.Length * 8;
+                symmetricAlgorithm.KeySize = keyBytes.Length << 3;
                 symmetricAlgorithm.Key = keyBytes;
 
                 // Set the AES IV to Zeroes
@@ -124,133 +123,6 @@ namespace JsonWebToken
             return false;
         }
 
-        private unsafe bool TryUnwrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, Span<byte> destination, out int bytesWritten)
-        {
-            /*
-                1) Initialize variables.
-
-                    Set A = C[0]
-                    For i = 1 to n
-                        R[i] = C[i]
-
-                2) Compute intermediate values.
-
-                    For j = 5 to 0
-                        For i = n to 1
-                            B = AES-1(K, (A ^ t) | R[i]) where t = n*j+i
-                            A = MSB(64, B)
-                            R[i] = LSB(64, B)
-
-                3) Output results.
-
-                If A is an appropriate initial value (see 2.2.3),
-                Then
-                    For i = 1 to n
-                        P[i] = R[i]
-                Else
-                    Return an error
-            */
-
-            // A = C[0]
-            fixed (byte* inputPtr = inputBuffer)
-            {
-                var a = Unsafe.ReadUnaligned<ulong>(ref *inputPtr);
-
-                // The number of input blocks
-                var n = (inputBuffer.Length - BlockSizeInBytes) >> 3;
-
-                // The set of input blocks
-                var r = stackalloc byte[n << 3];
-                for (var i = 0; i < n; i++)
-                {
-                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref *r, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *inputPtr, (i + 1) << 3)));
-                }
-
-                byte[] block = new byte[16];
-
-                fixed (byte* blockPtr = &block[0])
-                {
-                    var t = stackalloc byte[8];
-
-                    // Calculate intermediate values
-                    for (var j = 5; j >= 0; j--)
-                    {
-                        for (var i = n; i > 0; i--)
-                        {
-                            // T = ( n * j ) + i
-                            Unsafe.Add(ref *t, 7) = (byte)((n * j) + i);
-
-                            // B = AES-1(K, (A ^ t) | R[i] )
-
-                            // First, A = ( A ^ t )
-
-                            a ^= Unsafe.ReadUnaligned<ulong>(ref t[0]);
-
-                            // Second, block = ( A | R[i] )
-                            Unsafe.WriteUnaligned(blockPtr, a);
-                            var rValue = Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, (i - 1) << 3));
-                            Unsafe.WriteUnaligned(ref Unsafe.Add(ref *blockPtr, 8), rValue);
-
-                            // Third, b = AES-1( block )
-                            var b = _symmetricAlgorithmDecryptor.TransformFinalBlock(block, 0, 16);
-                            fixed (byte* bPtr = &b[0])
-                            {
-                                // A = MSB(64, B)
-                                a = Unsafe.ReadUnaligned<ulong>(bPtr);
-
-                                // R[i] = LSB(64, B)
-                                Unsafe.WriteUnaligned(ref Unsafe.Add(ref *r, (i - 1) << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *bPtr, 8)));
-                            }
-                        }
-                    }
-                }
-
-                if (a == _defaultIV)
-                {
-                    fixed (byte* keyBytes = destination)
-                    {
-                        for (var i = 0; i < n; i++)
-                        {
-                            Unsafe.WriteUnaligned(ref Unsafe.Add(ref *keyBytes, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, i << 3)));
-                        }
-                    }
-
-                    bytesWritten = n << 3;
-                    return true;
-                }
-
-                bytesWritten = 0;
-                return false;
-            }
-        }
-
-        private void ValidateKeySize(byte[] key, string algorithm)
-        {
-            switch (algorithm)
-            {
-                case KeyManagementAlgorithms.Aes128KW:
-                    if (key.Length != 16)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 128, Key.Kid, key.Length << 3));
-                    }
-                    break;
-                case KeyManagementAlgorithms.Aes192KW:
-                    if (key.Length != 24)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 192, Key.Kid, key.Length << 3));
-                    }
-                    break;
-                case KeyManagementAlgorithms.Aes256KW:
-                    if (key.Length != 32)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 256, Key.Kid, key.Length << 3));
-                    }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
-            }
-        }
-
         /// <summary>
         /// Unwrap a key using RSA decryption.
         /// </summary>
@@ -284,14 +156,139 @@ namespace JsonWebToken
                 }
             }
 
+            return TryUnwrapKeyPrivate(keyBytes, destination, out bytesWritten);
+        }
+
+        private unsafe bool TryUnwrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, Span<byte> destination, out int bytesWritten)
+        {
             try
             {
-                return TryUnwrapKeyPrivate(keyBytes, destination, out bytesWritten);
+                /*
+                    1) Initialize variables.
+
+                        Set A = C[0]
+                        For i = 1 to n
+                            R[i] = C[i]
+
+                    2) Compute intermediate values.
+
+                        For j = 5 to 0
+                            For i = n to 1
+                                B = AES-1(K, (A ^ t) | R[i]) where t = n*j+i
+                                A = MSB(64, B)
+                                R[i] = LSB(64, B)
+
+                    3) Output results.
+
+                    If A is an appropriate initial value (see 2.2.3),
+                    Then
+                        For i = 1 to n
+                            P[i] = R[i]
+                    Else
+                        Return an error
+                */
+
+                // A = C[0]
+                fixed (byte* inputPtr = inputBuffer)
+                {
+                    var a = Unsafe.ReadUnaligned<ulong>(ref *inputPtr);
+
+                    // The number of input blocks
+                    var n = (inputBuffer.Length - BlockSizeInBytes) >> 3;
+
+                    // The set of input blocks
+                    var r = stackalloc byte[n << 3];
+                    for (var i = 0; i < n; i++)
+                    {
+                        Unsafe.WriteUnaligned(ref Unsafe.Add(ref *r, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *inputPtr, (i + 1) << 3)));
+                    }
+
+                    byte[] block = new byte[16];
+
+                    fixed (byte* blockPtr = &block[0])
+                    {
+                        var t = stackalloc byte[8];
+
+                        // Calculate intermediate values
+                        for (var j = 5; j >= 0; j--)
+                        {
+                            for (var i = n; i > 0; i--)
+                            {
+                                // B = AES-1(K, (A ^ t) | R[i] )                                
+                                // T = ( n * j ) + i
+                                Unsafe.Add(ref *t, 7) = (byte)((n * j) + i);
+                                
+                                // First, A = ( A ^ t )
+                                a ^= Unsafe.ReadUnaligned<ulong>(ref t[0]);
+
+                                // Second, block = ( A | R[i] )
+                                Unsafe.WriteUnaligned(blockPtr, a);
+                                var rValue = Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, (i - 1) << 3));
+                                Unsafe.WriteUnaligned(ref Unsafe.Add(ref *blockPtr, 8), rValue);
+
+                                // Third, b = AES-1( block )
+                                var b = _symmetricAlgorithmDecryptor.TransformFinalBlock(block, 0, 16);
+                                fixed (byte* bPtr = &b[0])
+                                {
+                                    // A = MSB(64, B)
+                                    a = Unsafe.ReadUnaligned<ulong>(bPtr);
+
+                                    // R[i] = LSB(64, B)
+                                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref *r, (i - 1) << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *bPtr, 8)));
+                                }
+                            }
+                        }
+                    }
+
+                    if (a == _defaultIV)
+                    {
+                        fixed (byte* keyBytes = destination)
+                        {
+                            for (var i = 0; i < n; i++)
+                            {
+                                Unsafe.WriteUnaligned(ref Unsafe.Add(ref *keyBytes, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, i << 3)));
+                            }
+                        }
+
+                        bytesWritten = n << 3;
+                        return true;
+                    }
+
+                    bytesWritten = 0;
+                    return false;
+                }
             }
             catch
             {
                 bytesWritten = 0;
                 return false;
+            }
+        }
+        
+        private void ValidateKeySize(byte[] key, string algorithm)
+        {
+            switch (algorithm)
+            {
+                case KeyManagementAlgorithms.Aes128KW:
+                    if (key.Length != 16)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 128, Key.Kid, key.Length << 3));
+                    }
+                    break;
+                case KeyManagementAlgorithms.Aes192KW:
+                    if (key.Length != 24)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 192, Key.Kid, key.Length << 3));
+                    }
+                    break;
+                case KeyManagementAlgorithms.Aes256KW:
+                    if (key.Length != 32)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 256, Key.Kid, key.Length << 3));
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
             }
         }
 
@@ -328,15 +325,7 @@ namespace JsonWebToken
                 }
             }
 
-            try
-            {
-                return TryWrapKeyPrivate(keyBytes, destination, out bytesWritten);
-            }
-            catch
-            {
-                bytesWritten = 0;
-                return false;
-            }
+            return TryWrapKeyPrivate(keyBytes, destination, out bytesWritten);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -364,68 +353,74 @@ namespace JsonWebToken
                        C[i] = R[i]
             */
 
-            // The default initialization vector from RFC3394
-            ulong a = _defaultIV;
-
-            // The number of input blocks
-            var n = inputBuffer.Length >> 3;
-
-            // The set of input blocks
-            var r = stackalloc byte[n << 3];
-            fixed (byte* input = inputBuffer)
+            try
             {
-                for (var i = 0; i < n; i++)
-                {
-                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref *r, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *input, i << 3)));
-                }
-            }
+                // The default initialization vector from RFC3394
+                ulong a = _defaultIV;
 
-            byte[] block = new byte[16];
-            fixed (byte* blockPtr = &block[0])
-            {
-                var t = stackalloc byte[8];
-                Unsafe.As<byte, ulong>(ref *t) = 0;
+                // The number of input blocks
+                var n = inputBuffer.Length >> 3;
 
-                // Calculate intermediate values
-                for (var j = 0; j < 6; j++)
+                // The set of input blocks
+                var r = stackalloc byte[n << 3];
+                fixed (byte* input = inputBuffer)
                 {
                     for (var i = 0; i < n; i++)
                     {
-                        // B = AES( K, A | R[i] )
+                        Unsafe.WriteUnaligned(ref Unsafe.Add(ref *r, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *input, i << 3)));
+                    }
+                }
 
-                        // First, block = A | R[i]
-                        Unsafe.WriteUnaligned(blockPtr, a);
-                        Unsafe.WriteUnaligned(ref Unsafe.Add(ref *blockPtr, 8), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, i << 3)));
+                byte[] block = new byte[16];
+                fixed (byte* blockPtr = &block[0])
+                {
+                    var t = stackalloc byte[8];
+                    Unsafe.As<byte, ulong>(ref *t) = 0;
 
-                        // Second, AES( K, block )
-                        var b = _symmetricAlgorithmEncryptor.TransformFinalBlock(block, 0, 16);
-                        fixed (byte* bPtr = &b[0])
+                    // Calculate intermediate values
+                    for (var j = 0; j < 6; j++)
+                    {
+                        for (var i = 0; i < n; i++)
                         {
-                            // A = MSB( 64, B )
-                            a = Unsafe.ReadUnaligned<ulong>(bPtr);
+                            // B = AES( K, A | R[i] )
+                            // First, block = A | R[i]
+                            Unsafe.WriteUnaligned(blockPtr, a);
+                            Unsafe.WriteUnaligned(ref Unsafe.Add(ref *blockPtr, 8), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, i << 3)));
 
-                            // T = ( n * j ) + i
-                            Unsafe.Add(ref *t, 7) = (byte)((n * j) + i + 1);
+                            // Second, AES( K, block )
+                            var b = _symmetricAlgorithmEncryptor.TransformFinalBlock(block, 0, 16);
+                            fixed (byte* bPtr = &b[0])
+                            {
+                                // A = MSB( 64, B )
+                                a = Unsafe.ReadUnaligned<ulong>(bPtr);
 
-                            // A = A ^ t
-                            a ^= Unsafe.ReadUnaligned<ulong>(ref t[0]);
+                                // T = ( n * j ) + i
+                                Unsafe.Add(ref *t, 7) = (byte)((n * j) + i + 1);
 
-                            // R[i] = LSB( 64, B )
-                            Unsafe.WriteUnaligned(ref Unsafe.Add(ref *r, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *bPtr, 8)));
+                                // A = A ^ t
+                                a ^= Unsafe.ReadUnaligned<ulong>(ref t[0]);
+
+                                // R[i] = LSB( 64, B )
+                                Unsafe.WriteUnaligned(ref Unsafe.Add(ref *r, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *bPtr, 8)));
+                            }
                         }
                     }
                 }
+
+                Unsafe.WriteUnaligned(ref destination[0], a);
+                for (var i = 0; i < n; i++)
+                {
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref destination[0], (i + 1) << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, i << 3)));
+                }
+
+                bytesWritten = (n + 1) << 3;
+                return true;
             }
-
-            Unsafe.WriteUnaligned(ref destination[0], a);
-
-            for (var i = 0; i < n; i++)
+            catch
             {
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destination[0], (i + 1) << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, i << 3)));
+                bytesWritten = 0;
+                return false;
             }
-
-            bytesWritten = (n + 1) << 3;
-            return true;
         }
 
         public override int GetKeyUnwrapSize(int inputSize)
@@ -438,15 +433,14 @@ namespace JsonWebToken
             switch (encryptionAlgorithm)
             {
                 case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
-                    return 40; // ((256 >> 3 >> 3) + 1) << 3
+                    return 40; 
                 case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
-                    return 56; //((384 >> 3 >> 3) + 1) << 3;
+                    return 56; 
                 case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
-                    return 72; // ((512 >> 3 >> 3) + 1) << 3;
+                    return 72; 
             }
 
             throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedKeyedHashAlgorithm, encryptionAlgorithm));
         }
     }
 }
-
