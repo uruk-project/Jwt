@@ -1,4 +1,5 @@
 ﻿using JsonWebToken;
+using JsonWebToken.Performance;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,7 @@ namespace JwtCreator
 
             var writer = new JsonWebTokenWriter();
             var result = new JArray();
+            var invalidJwt = new JArray();
             var json = descriptors.First() as JObject;
 
 
@@ -41,47 +43,22 @@ namespace JwtCreator
                 result.Add(jwt);
             }
 
-            var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
-            var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
-            var issuer = "https://idp.example.com/";
-            var audience = "636C69656E745F6964";
-            //var jti = "756E69717565206964656E746966696572";
-            var bigDescriptor = new JwsDescriptor()
+            foreach (var item in Tokens.Payloads.Keys)
             {
-                IssuedAt = issuedAt,
-                ExpirationTime = expires,
-                Issuer = issuer,
-                Audience = audience,
-                Key = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig)
-            };
-            var data = new byte[1024 * 1024];
-            RandomNumberGenerator.Fill(data);
-            bigDescriptor.Payload["big_claim"] = Base64Url.Base64UrlEncode(data);
-            var bigJwt = writer.WriteToken(bigDescriptor);
-            result.Add(bigJwt);
-
-            var signingKey = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
-            var encryptionAlgorithms = new[] { ContentEncryptionAlgorithms.Aes128CbcHmacSha256, ContentEncryptionAlgorithms.Aes192CbcHmacSha384, ContentEncryptionAlgorithms.Aes256CbcHmacSha512 };
-            foreach (var key in jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Enc))
-            {
-                foreach (var enc in encryptionAlgorithms)
-                {
-                    if (!key.IsSupportedAlgorithm(enc))
-                    {
-                        continue;
-                    }
-
-                    var jweDescriptor = new JweDescriptor(new JObject(), json);
-                    jweDescriptor.Payload.Key = signingKey;
-                    jweDescriptor.Key = key;
-                    jweDescriptor.EncryptionAlgorithm = enc;
-                    var jwt = writer.WriteToken(jweDescriptor);
-                    result.Add(jwt);
-                }
+                result.Add(item);
             }
 
-            var invalidJwt = GenerateInvalidJwt(jwks, json);
-            var payloads = CreateJwtDescriptors();
+            foreach (var item in Tokens.ValidTokens.Keys)
+            {
+                result.Add(item);
+            }
+
+            foreach (var item in Tokens.InvalidTokens)
+            {
+                invalidJwt.Add(item);
+            }
+
+            var payloads = Tokens.Descriptors;
 
             var jwtPath = Path.Combine(dirPath, "./jwts.json");
             var payloadsPath = Path.Combine(dirPath, "./payloads.json");
