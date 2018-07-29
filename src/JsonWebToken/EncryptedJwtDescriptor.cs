@@ -93,21 +93,19 @@ namespace JsonWebToken
             if (!IsDirectEncryption)
             {
                 SymmetricJwk symmetricKey;
-                if (string.Equals(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, encryptionAlgorithm, StringComparison.Ordinal))
+                switch (encryptionAlgorithm)
                 {
+                    case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
                     symmetricKey = SymmetricJwk.GenerateKey(256);
-                }
-                else if (string.Equals(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, encryptionAlgorithm, StringComparison.Ordinal))
-                {
+                        break;
+                    case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
                     symmetricKey = SymmetricJwk.GenerateKey(384);
-                }
-                else if (string.Equals(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, encryptionAlgorithm, StringComparison.Ordinal))
-                {
+                        break;
+                    case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
                     symmetricKey = SymmetricJwk.GenerateKey(512);
-                }
-                else
-                {
-                    throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
+                        break;
+                    default:
+                        throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
                 }
 
                 try

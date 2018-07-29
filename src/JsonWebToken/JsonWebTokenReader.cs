@@ -115,13 +115,13 @@ namespace JsonWebToken
                     header = GetJsonObject<JwtHeader>(rawHeader);
                 }
             }
-            catch (FormatException)
+            catch (FormatException formatException)
             {
-                return TokenValidationResult.MalformedToken();
+                return TokenValidationResult.MalformedToken(formatException);
             }
-            catch (JsonReaderException)
+            catch (JsonReaderException readerException)
             {
-                return TokenValidationResult.MalformedToken();
+                return TokenValidationResult.MalformedToken(readerException);
             }
 
             JsonWebToken jwt;
@@ -134,13 +134,13 @@ namespace JsonWebToken
                 {
                     payload = GetJsonObject<JwtPayload>(rawPayload);
                 }
-                catch (FormatException)
+                catch (FormatException formatException)
                 {
-                    return TokenValidationResult.MalformedToken();
+                    return TokenValidationResult.MalformedToken(formatException);
                 }
-                catch (JsonReaderException)
+                catch (JsonReaderException readerException)
                 {
-                    return TokenValidationResult.MalformedToken();
+                    return TokenValidationResult.MalformedToken(readerException);
                 }
 
                 jwt = new JsonWebToken(header, payload, new TokenSegment(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), segments[2]);
