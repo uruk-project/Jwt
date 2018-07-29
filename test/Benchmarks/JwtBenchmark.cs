@@ -47,7 +47,6 @@ namespace JsonWebToken.Performance
         //    }
         //}
 
-
         //[Benchmark(Baseline = true)]
         //[ArgumentsSource(nameof(GetTokens))]
         //public void ValidateJwt_Cache(string token)

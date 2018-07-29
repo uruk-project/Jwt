@@ -10,34 +10,6 @@ namespace JsonWebToken.Performance
     [MemoryDiagnoser]
     public class JsonSerilization
     {
-        static JObject json = new JObject()
-        {
-            { "sub", "sub value" },
-            { "jti", "1234567890" },
-            { "exp", 12345678 },
-            { "aud", new JArray(new[] { "https://example.org", "abcdef" }) },
-            { "nbf", 23456789 }
-        };
-
-        static JObject jsonMedium = new JObject()
-        {
-            { "sub", "sub value" },
-            { "jti", "1234567890" },
-            { "exp", 12345678 },
-            { "aud", new JArray(new[] { "https://example.org", "abcdef" }) },
-            { "nbf", 23456789 },
-            { "claim0", "".PadRight(100, 'a') },
-            { "claim1", "".PadRight(100, 'b') },
-            { "claim2", "".PadRight(100, 'c') },
-            { "claim3", "".PadRight(100, 'd') },
-            { "claim4", "".PadRight(100, 'e') },
-            { "claim5", "".PadRight(100, 'f') },
-            { "claim6", "".PadRight(100, 'g') },
-            { "claim7", "".PadRight(100, 'h') },
-            { "claim8", "".PadRight(100, 'i') },
-            { "claim9", "".PadRight(100, 'j') }
-        };
-
         static IDictionary<string, object> dictionary = new Dictionary<string, object>()
         {
             { "sub", "sub value" },
@@ -65,6 +37,10 @@ namespace JsonWebToken.Performance
             { "claim8", "".PadRight(100, 'i') },
             { "claim9", "".PadRight(100, 'j') }
         };
+
+        static JObject json = JObject.FromObject(dictionary);
+
+        static JObject jsonMedium = JObject.FromObject(jsonMedium);
 
         static dynamic dyn = new
         {
@@ -111,7 +87,6 @@ namespace JsonWebToken.Performance
         {
             JsonConvert.SerializeObject(dictionary);
         }
-
 
         [Benchmark]
         public void Dictionary_Medium()

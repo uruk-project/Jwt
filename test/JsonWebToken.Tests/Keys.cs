@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JsonWebToken.Performance;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -15,6 +16,9 @@ namespace JsonWebToken.Tests
             var keysPath = Path.Combine(dirPath, "./resources/jwks.json"); ;
             var jwks = File.ReadAllText(keysPath);
             Jwks = new JsonWebKeySet(jwks);
+
+            Jwks.Keys.Add(Tokens.SigningKey);
+            Jwks.Keys.Add(Tokens.EncryptionKey);
         }
 
         public static JsonWebKeySet Jwks { get; }
