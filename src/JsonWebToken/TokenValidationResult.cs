@@ -67,11 +67,12 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult MalformedToken()
+        public static TokenValidationResult MalformedToken(Exception e = null)
         {
             return new TokenValidationResult
             {
                 Status = TokenValidationStatus.MalformedToken,
+                Exception = e
             };
         }
         

@@ -28,28 +28,26 @@ namespace JsonWebToken
         public override Span<byte> Decompress(ReadOnlySpan<byte> compressedCiphertext)
         {
             using (var inputStream = new MemoryStream(compressedCiphertext.ToArray()))
+            using (var compressionStream = CreateDecompressionStream(inputStream))
             {
-                using (var compressionStream = CreateDecompressionStream(inputStream))
+                var buffer = new byte[Constants.DecompressionBufferLength];
+                int uncompressedLength = 0;
+                int readData = 0;
+                while ((readData = compressionStream.Read(buffer, uncompressedLength, Constants.DecompressionBufferLength)) != 0)
                 {
-                    var buffer = new byte[Constants.DecompressionBufferLength];
-                    int uncompressedLength = 0;
-                    int readData = 0;
-                    while ((readData = compressionStream.Read(buffer, uncompressedLength, Constants.DecompressionBufferLength)) != 0)
+                    uncompressedLength += readData;
+                    if (readData < Constants.DecompressionBufferLength)
                     {
-                        uncompressedLength += readData;
-                        if (readData < Constants.DecompressionBufferLength)
-                        {
-                            break;
-                        }
-
-                        if (uncompressedLength == buffer.Length)
-                        {
-                            Array.Resize(ref buffer, buffer.Length * 2);
-                        }
+                        break;
                     }
 
-                    return buffer.AsSpan().Slice(0, uncompressedLength);
+                    if (uncompressedLength == buffer.Length)
+                    {
+                        Array.Resize(ref buffer, buffer.Length * 2);
+                    }
                 }
+
+                return buffer.AsSpan().Slice(0, uncompressedLength);
             }
         }
     }
