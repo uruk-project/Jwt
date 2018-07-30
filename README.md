@@ -50,8 +50,8 @@ Current version - 0.1.0
     string token = writer.WriteToken(descriptor);
 ````
 ## Performances
-See [benchmarks](Benchmark.md). 
-This library is about **70%** faster than the Microsoft.IdentityModel.Tokens.Jwt when decoding the token, **110%** faster when decoding and validation the token, and **30%** faster when writing the token.
+See [benchmarks](Benchmark.md) for details. 
+This library is about **3x** faster than the Microsoft.IdentityModel.Tokens.Jwt when decoding and validating the token, and **2.25x** faster when writing a JWS of common size, with only 1/4 of memory allocation.
 
 The main reason of the speed of this library is the usage of the new API provided in .NET Core 2.0 and .NET Core 2.1.
 
