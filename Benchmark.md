@@ -60,3 +60,12 @@
 |     **Jwt** |  **JWS-small** |     **6.779 us** |   **0.1346 us** |   **0.1322 us** | **147,519.9** |   **1.00** |     **0.00** |   **0.0916** |        **-** |        **-** |    **2.29 KB** |
 |  Wilson |  JWS-small |    15.369 us |   0.2073 us |   0.1939 us |  65,067.3 |   2.27 |     0.05 |   0.3357 |        - |        - |    8.34 KB |
 | Wilson2 |  JWS-small |    10.462 us |   0.1247 us |   0.1166 us |  95,580.8 |   1.54 |     0.03 |   0.1831 |   0.0153 |        - |    4.59 KB |
+=======
+
+
+Empty token: Token with an empty JSON payload
+Small token: Token with 6 claims
+Medium token: Token with 22 claims
+Big token: Token with a claim of 128KB
+
+Wilson was tested in version 5.2.4.
