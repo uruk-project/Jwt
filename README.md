@@ -38,17 +38,13 @@ Current version - 0.1.0
     // Generates a new symmetric key of 256 bits
     var symmetricLKey = SymmetricJwk.GenerateKey(256, "HS256");
 
-    var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
-    var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
-    var issuer = "https://idp.example.com/";
-    var audience = "636C69656E745F6964";
     var descriptor = new JwsDescriptor()
     {
       Key = symmetricKey,
-      ExpirationTime = expires,
-      IssuedAt = issuedAt,
-      Issuer = issuer,
-      Audience = audience
+      ExpirationTime = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc),
+      IssuedAt = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc),
+      Issuer = "https://idp.example.com/",
+      Audience = "636C69656E745F6964"
     };
 
     string token = writer.WriteToken(descriptor);
@@ -61,10 +57,10 @@ The main reason of the speed of this library is the usage of the new API provide
 
 ## Supported JWT
 * [JWS](https://tools.ietf.org/html/rfc7515) 
-* [Unsecure JWT](https://tools.ietf.org/html/rfc7515#appendix-A.5) (JWS without signature)
-* [Plaintext JWE](https://tools.ietf.org/html/rfc7519#appendix-A.1) (JWE with plaintext as payload)
-* Binary JWE (JWE with binary as payload)
-* [Nested JWT](https://tools.ietf.org/html/rfc7519#appendix-A.2), including JWE + JWS (Encrypted JWS)
+* [Nested JWT](https://tools.ietf.org/html/rfc7519#appendix-A.2): JWE with JWS as payload (know as JWE or Encrypted JWS)
+* [Plaintext JWE](https://tools.ietf.org/html/rfc7519#appendix-A.1): JWE with plaintext as payload
+* Binary JWE: JWE with binary as payload
+* [Unsecure JWT](https://tools.ietf.org/html/rfc7515#appendix-A.5): JWS without signature
 
 ## Supported algorithms
 ### JWS signing algorithms
