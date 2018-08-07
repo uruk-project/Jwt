@@ -13,17 +13,17 @@ namespace JsonWebToken.Performance
 
         public KeyWrap()
         {
-            SymmetricKeyWrapProvider kwp = new SymmetricKeyWrapProvider(_key, KeyManagementAlgorithms.Aes256KW);
-            wrappedKey = new byte[kwp.GetKeyWrapSize(ContentEncryptionAlgorithms.Aes128CbcHmacSha256)];
+            AesKeyWrapProvider kwp = new AesKeyWrapProvider(_key, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes256KW);
+            wrappedKey = new byte[kwp.GetKeyWrapSize()];
         }
 
         [Benchmark]
         public void Kw_Optimized()
         {
 
-            SymmetricKeyWrapProvider kwp = new SymmetricKeyWrapProvider(_key, KeyManagementAlgorithms.Aes256KW);
+            AesKeyWrapProvider kwp = new AesKeyWrapProvider(_key, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes256KW);
 
-            kwp.TryWrapKey(_keyToWrap.RawK, wrappedKey, out var bytesWritten);
+            kwp.TryWrapKey(_keyToWrap, null, wrappedKey, out var cek, out var bytesWritten);
         }
     }
 
@@ -37,18 +37,18 @@ namespace JsonWebToken.Performance
 
         public KeyUnwrap()
         {
-            SymmetricKeyWrapProvider kwp = new SymmetricKeyWrapProvider(_key, KeyManagementAlgorithms.Aes256KW);
-            wrappedKey = new byte[kwp.GetKeyWrapSize(ContentEncryptionAlgorithms.Aes128CbcHmacSha256)];
-            kwp.TryWrapKey(_keyToWrap.RawK, wrappedKey, out var bytesWritten);
-            unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
+            AesKeyWrapProvider kwp = new AesKeyWrapProvider(_key, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes256KW);
+            wrappedKey = new byte[kwp.GetKeyWrapSize()];
+            kwp.TryWrapKey(_keyToWrap, null, wrappedKey, out var cek, out var bytesWritten);
+            unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length, KeyManagementAlgorithms.Aes256KW)];
         }
-        
+
         [Benchmark]
         public void Kw_Optimized()
         {
 
-            SymmetricKeyWrapProvider kwp = new SymmetricKeyWrapProvider(_key, KeyManagementAlgorithms.Aes256KW);
-            var unwrapped = kwp.TryUnwrapKey(wrappedKey, unwrappedKey, out int keyWrappedBytesWritten);
+            AesKeyWrapProvider kwp = new AesKeyWrapProvider(_key, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes256KW);
+            var unwrapped = kwp.TryUnwrapKey(wrappedKey, unwrappedKey, null, out int keyWrappedBytesWritten);
         }
     }
 }

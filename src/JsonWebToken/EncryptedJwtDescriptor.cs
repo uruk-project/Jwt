@@ -72,55 +72,41 @@ namespace JsonWebToken
         {
             string encryptionAlgorithm = EncryptionAlgorithm;
             string contentEncryptionAlgorithm = Algorithm;
-            bool IsDirectEncryption = string.Equals(KeyManagementAlgorithms.Direct, contentEncryptionAlgorithm, StringComparison.Ordinal);
-            JsonWebKey key = Key;
+            bool isDirectEncryption = (contentEncryptionAlgorithm == KeyManagementAlgorithms.Direct);
+
             AuthenticatedEncryptionProvider encryptionProvider = null;
             KeyWrapProvider kwProvider = null;
-            if (IsDirectEncryption)
+            if (isDirectEncryption)
             {
-                encryptionProvider = key.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);
+                encryptionProvider = Key.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);
             }
             else
             {
-                kwProvider = key.CreateKeyWrapProvider(contentEncryptionAlgorithm);
+                kwProvider = Key.CreateKeyWrapProvider(encryptionAlgorithm, contentEncryptionAlgorithm);
                 if (kwProvider == null)
                 {
                     throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
                 }
             }
 
-            Span<byte> wrappedKey = IsDirectEncryption ? null : stackalloc byte[kwProvider.GetKeyWrapSize(encryptionAlgorithm)];
-            if (!IsDirectEncryption)
+            var header = (JObject)Header.DeepClone();
+            Span<byte> wrappedKey = isDirectEncryption ? null : stackalloc byte[kwProvider.GetKeyWrapSize()];
+            if (!isDirectEncryption)
             {
-                SymmetricJwk symmetricKey;
-                switch (encryptionAlgorithm)
-                {
-                    case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
-                    symmetricKey = SymmetricJwk.GenerateKey(256);
-                        break;
-                    case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
-                    symmetricKey = SymmetricJwk.GenerateKey(384);
-                        break;
-                    case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
-                    symmetricKey = SymmetricJwk.GenerateKey(512);
-                        break;
-                    default:
-                        throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
-                }
-
+                JsonWebKey cek;
                 try
                 {
-                    if (!kwProvider.TryWrapKey(symmetricKey.RawK, wrappedKey, out var keyWrappedBytesWritten))
+                    if (!kwProvider.TryWrapKey(null, header, wrappedKey, out cek, out var keyWrappedBytesWritten))
                     {
                         throw new JsonWebTokenEncryptionFailedException(ErrorMessages.KeyWrapFailed);
                     }
                 }
                 finally
                 {
-                    key.ReleaseKeyWrapProvider(kwProvider);
+                    Key.ReleaseKeyWrapProvider(kwProvider);
                 }
 
-                encryptionProvider = symmetricKey.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);
+                encryptionProvider = cek.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);
             }
 
             if (encryptionProvider == null)
@@ -128,14 +114,15 @@ namespace JsonWebToken
                 throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
             }
 
-            Header[HeaderParameters.Enc] = encryptionAlgorithm;
-            Header[HeaderParameters.Alg] = key.Alg;
-            Header[HeaderParameters.Kid] = key.Kid;
+            if (header[HeaderParameters.Kid] == null && Key.Kid != null)
+            {
+                header[HeaderParameters.Kid] = Key.Kid;
+            }
 
             try
             {
 #if NETCOREAPP2_1
-                var headerJson = Serialize(Header);
+                var headerJson = Serialize(header);
                 int headerJsonLength = headerJson.Length;
                 int base64EncodedHeaderLength = Base64Url.GetArraySizeRequiredToEncode(headerJsonLength);
 
@@ -272,7 +259,7 @@ namespace JsonWebToken
             }
             catch (Exception ex)
             {
-                throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.EncryptionFailed, encryptionAlgorithm, key.Kid), ex);
+                throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.EncryptionFailed, encryptionAlgorithm, Key.Kid), ex);
             }
         }
     }

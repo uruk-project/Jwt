@@ -64,6 +64,17 @@ namespace JsonWebToken
         [JsonProperty(PropertyName = HeaderParameters.Zip)]
         public string Zip { get; set; }
 
+        #if NETCOREAPP2_1
+        [JsonProperty(PropertyName = HeaderParameters.Epk)]
+        public ECJwk Epk { get; set; }
+
+        [JsonProperty(PropertyName = HeaderParameters.Apu)]
+        public string Apu { get; set; }
+
+        [JsonProperty(PropertyName = HeaderParameters.Apv)]
+        public string Apv { get; set; }
+#endif
+
         [JsonExtensionData]
         public IDictionary<string, JToken> AdditionalData { get; set; }
     }

@@ -8,7 +8,7 @@ namespace JsonWebToken
     public class SymmetricJwk : JsonWebKey
     {
         private readonly ConcurrentDictionary<string, SymmetricSignatureProvider> _signatureProviders = new ConcurrentDictionary<string, SymmetricSignatureProvider>();
-        private readonly ConcurrentDictionary<string, SymmetricKeyWrapProvider> _keyWrapProviders = new ConcurrentDictionary<string, SymmetricKeyWrapProvider>();
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, AesKeyWrapProvider>> _keyWrapProviders = new ConcurrentDictionary<string, ConcurrentDictionary<string, AesKeyWrapProvider>>();
         private readonly ConcurrentDictionary<string, AuthenticatedEncryptionProvider> _encryptionProviders = new ConcurrentDictionary<string, AuthenticatedEncryptionProvider>();
         private string _k;
 
@@ -145,22 +145,31 @@ namespace JsonWebToken
             return null;
         }
 
-        public override KeyWrapProvider CreateKeyWrapProvider(string algorithm)
+        public override KeyWrapProvider CreateKeyWrapProvider(string encryptionAlgorithm, string contentEncryptionAlgorithm)
         {
-            if (algorithm == null)
+            if (contentEncryptionAlgorithm == null)
             {
                 return null;
             }
 
-            if (_keyWrapProviders.TryGetValue(algorithm, out var cachedProvider))
+            if (_keyWrapProviders.TryGetValue(contentEncryptionAlgorithm, out var providers))
             {
-                return cachedProvider;
+                if (providers.TryGetValue(encryptionAlgorithm, out var cachedProvider))
+                {
+                    return cachedProvider;
+                }
             }
 
-            if (IsSupportedAlgorithm(algorithm))
+            if (IsSupportedAlgorithm(contentEncryptionAlgorithm))
             {
-                var provider = new SymmetricKeyWrapProvider(this, algorithm);
-                _keyWrapProviders.TryAdd(algorithm, provider);
+                var provider = new AesKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                if (providers == null)
+                {
+                    providers = new ConcurrentDictionary<string, AesKeyWrapProvider>();
+                    _keyWrapProviders.TryAdd(encryptionAlgorithm, providers);
+                }
+
+                providers.TryAdd(contentEncryptionAlgorithm, provider);
                 return provider;
             }
 
@@ -250,6 +259,11 @@ namespace JsonWebToken
         public override JsonWebKey ExcludeOptionalMembers()
         {
             return new SymmetricJwk(RawK);
-        }    
+        }
+
+        public override byte[] ToByteArray()
+        {
+            return RawK;
+        }
     }
 }

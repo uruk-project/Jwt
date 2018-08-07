@@ -11,14 +11,14 @@ namespace JsonWebToken.Tests
         [Fact]
         public void WrapUnwrap()
         {
-            var kwp = new SymmetricKeyWrapProvider(_key, KeyManagementAlgorithms.Aes256KW);
-            byte[] wrappedKey = new byte[kwp.GetKeyWrapSize(ContentEncryptionAlgorithms.Aes128CbcHmacSha256)];
+            var kwp = new AesKeyWrapProvider(_key, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes256KW);
+            byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
 
-            var wrapped = kwp.TryWrapKey(_keyToWrap.RawK, wrappedKey, out var bytesWritten);
+            var wrapped = kwp.TryWrapKey(_keyToWrap, null, wrappedKey, out var cek, out var bytesWritten);
             Assert.True(wrapped);
 
-            var unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
-            var unwrapped = kwp.TryUnwrapKey(wrappedKey, unwrappedKey, out int keyWrappedBytesWritten);
+            var unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length, KeyManagementAlgorithms.Aes256KW)];
+            var unwrapped = kwp.TryUnwrapKey(wrappedKey, unwrappedKey, null, out int keyWrappedBytesWritten);
             Assert.True(unwrapped);
         }
     }

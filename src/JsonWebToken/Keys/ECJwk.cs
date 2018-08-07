@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿#if NETCOREAPP2_1
+using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -7,10 +8,10 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
-    public class EcdsaJwk : AsymmetricJwk
+    public class ECJwk : AsymmetricJwk
     {
-        private readonly ConcurrentDictionary<string, EcdsaSignatureProvider> _signatureProviders = new ConcurrentDictionary<string, EcdsaSignatureProvider>();
-        private readonly ConcurrentDictionary<string, EcdsaSignatureProvider> _signatureValidationProviders = new ConcurrentDictionary<string, EcdsaSignatureProvider>();
+        private readonly ConcurrentDictionary<string, ECSignatureProvider> _signatureProviders = new ConcurrentDictionary<string, ECSignatureProvider>();
+        private readonly ConcurrentDictionary<string, ECSignatureProvider> _signatureValidationProviders = new ConcurrentDictionary<string, ECSignatureProvider>();
 
         public static readonly Dictionary<string, int> DefaultECDsaKeySizeInBits = new Dictionary<string, int>()
         {
@@ -22,7 +23,7 @@ namespace JsonWebToken
         private string _x;
         private string _y;
 
-        public EcdsaJwk(ECParameters parameters)
+        public ECJwk(ECParameters parameters)
             : this()
         {
             parameters.Validate();
@@ -33,20 +34,20 @@ namespace JsonWebToken
             switch (parameters.Curve.Oid.FriendlyName)
             {
                 case "nistP256":
-                    Crv = JsonWebKeyECTypes.P256;
+                    Crv = EllipticalCurves.P256;
                     break;
                 case "nistP384":
-                    Crv = JsonWebKeyECTypes.P384;
+                    Crv = EllipticalCurves.P384;
                     break;
                 case "nistP521":
-                    Crv = JsonWebKeyECTypes.P521;
+                    Crv = EllipticalCurves.P521;
                     break;
                 default:
                     throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, parameters.Curve.Oid.FriendlyName));
             }
         }
 
-        private EcdsaJwk(string crv, byte[] d, byte[] x, byte[] y)
+        private ECJwk(string crv, byte[] d, byte[] x, byte[] y)
         {
             Crv = crv;
             RawD = CloneArray(d);
@@ -54,7 +55,7 @@ namespace JsonWebToken
             RawY = CloneArray(y);
         }
 
-        public EcdsaJwk()
+        public ECJwk()
         {
             Kty = JsonWebAlgorithmsKeyTypes.EllipticCurve;
         }
@@ -143,11 +144,11 @@ namespace JsonWebToken
             {
                 switch (Crv)
                 {
-                    case JsonWebKeyECTypes.P256:
+                    case EllipticalCurves.P256:
                         return 256;
-                    case JsonWebKeyECTypes.P384:
+                    case EllipticalCurves.P384:
                         return 384;
-                    case JsonWebKeyECTypes.P521:
+                    case EllipticalCurves.P521:
                         return 521;
                     default:
                         throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
@@ -155,7 +156,43 @@ namespace JsonWebToken
             }
         }
 
-        public ECDsa CreateECDsa(string algorithm, bool usePrivateKey)
+#if NETCOREAPP2_1
+        //public ECDiffieHellman CreateECDiffieHellman(bool usePrivateKey)
+        //{
+        //    var keyBlob = GetKeyBlob(usePrivateKey, false);
+        //    if (usePrivateKey)
+        //    {
+        //        using (CngKey cngKey = CngKey.Import(keyBlob, CngKeyBlobFormat.EccPrivateBlob))
+        //        {
+        //            //if (ValidateECDSAKeySize(cngKey.KeySize, algorithm))
+        //            {
+        //                return new ECDiffieHellmanCng(cngKey);
+        //            }
+
+        //            //throw new ArgumentOutOfRangeException(nameof(cngKey.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], cngKey.KeySize));
+        //        }
+        //    }
+        //    else
+        //    {
+        //        using (CngKey cngKey = CngKey.Import(keyBlob, CngKeyBlobFormat.EccPublicBlob))
+        //        {
+        //            //if (ValidateECDSAKeySize(cngKey.KeySize, algorithm))
+        //            {
+        //                return new ECDiffieHellmanCng(cngKey);
+        //            }
+
+        //            //throw new ArgumentOutOfRangeException(nameof(cngKey.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], cngKey.KeySize));
+        //        }
+        //    }
+        //}
+
+        //public ECDiffieHellmanPublicKey CreateECDiffieHellmanPublicKey(bool usePrivateKey)
+        //{
+        //    return ECDiffieHellmanCngPublicKey.FromByteArray(GetKeyBlob(usePrivateKey, false), CngKeyBlobFormat.EccPrivateBlob);
+        //}
+#endif
+
+        public byte[] GetKeyBlob(bool usePrivateKey, bool forSignature)
         {
             if (Crv == null)
             {
@@ -172,15 +209,15 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(Y));
             }
 
-            if (!ValidateECDSAKeySize(KeySizeInBits, algorithm))
+            if (usePrivateKey && D == null)
             {
-                throw new ArgumentOutOfRangeException(nameof(KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], KeySizeInBits));
+                throw new ArgumentNullException(nameof(D));
             }
 
             GCHandle keyBlobHandle = new GCHandle();
             try
             {
-                uint dwMagic = GetMagicValue(usePrivateKey);
+                uint dwMagic = GetMagicValue(usePrivateKey, forSignature);
                 uint cbKey = GetKeyByteCount();
                 byte[] keyBlob;
                 if (usePrivateKey)
@@ -223,11 +260,6 @@ namespace JsonWebToken
 
                 if (usePrivateKey)
                 {
-                    if (D == null)
-                    {
-                        throw new ArgumentNullException(nameof(D));
-                    }
-
                     byte[] d = RawD;
                     if (d.Length > cbKey)
                     {
@@ -240,28 +272,12 @@ namespace JsonWebToken
                     }
 
                     Marshal.Copy(keyBlobPtr, keyBlob, 0, keyBlob.Length);
-                    using (CngKey cngKey = CngKey.Import(keyBlob, CngKeyBlobFormat.EccPrivateBlob))
-                    {
-                        if (ValidateECDSAKeySize(cngKey.KeySize, algorithm))
-                        {
-                            return new ECDsaCng(cngKey);
-                        }
-
-                        throw new ArgumentOutOfRangeException(nameof(cngKey.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], cngKey.KeySize));
-                    }
+                    return keyBlob;
                 }
                 else
                 {
                     Marshal.Copy(keyBlobPtr, keyBlob, 0, keyBlob.Length);
-                    using (CngKey cngKey = CngKey.Import(keyBlob, CngKeyBlobFormat.EccPublicBlob))
-                    {
-                        if (ValidateECDSAKeySize(cngKey.KeySize, algorithm))
-                        {
-                            return new ECDsaCng(cngKey);
-                        }
-
-                        throw new ArgumentOutOfRangeException(nameof(cngKey.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], cngKey.KeySize));
-                    }
+                    return keyBlob;
                 }
             }
             finally
@@ -269,6 +285,40 @@ namespace JsonWebToken
                 if (keyBlobHandle != null)
                 {
                     keyBlobHandle.Free();
+                }
+            }
+        }
+
+        public ECDsa CreateECDsa(string algorithm, bool usePrivateKey)
+        {
+            if (!ValidateECDSAKeySize(KeySizeInBits, algorithm))
+            {
+                throw new ArgumentOutOfRangeException(nameof(KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], KeySizeInBits));
+            }
+
+            var keyBlob = GetKeyBlob(usePrivateKey, true);
+            if (usePrivateKey)
+            {
+                using (CngKey cngKey = CngKey.Import(keyBlob, CngKeyBlobFormat.EccPrivateBlob))
+                {
+                    if (ValidateECDSAKeySize(cngKey.KeySize, algorithm))
+                    {
+                        return new ECDsaCng(cngKey);
+                    }
+
+                    throw new ArgumentOutOfRangeException(nameof(cngKey.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], cngKey.KeySize));
+                }
+            }
+            else
+            {
+                using (CngKey cngKey = CngKey.Import(keyBlob, CngKeyBlobFormat.EccPublicBlob))
+                {
+                    if (ValidateECDSAKeySize(cngKey.KeySize, algorithm))
+                    {
+                        return new ECDsaCng(cngKey);
+                    }
+
+                    throw new ArgumentOutOfRangeException(nameof(cngKey.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], cngKey.KeySize));
                 }
             }
         }
@@ -283,13 +333,13 @@ namespace JsonWebToken
             uint keyByteCount;
             switch (Crv)
             {
-                case JsonWebKeyECTypes.P256:
+                case EllipticalCurves.P256:
                     keyByteCount = 32;
                     break;
-                case JsonWebKeyECTypes.P384:
+                case EllipticalCurves.P384:
                     keyByteCount = 48;
                     break;
-                case JsonWebKeyECTypes.P521:
+                case EllipticalCurves.P521:
                     keyByteCount = 66;
                     break;
                 default:
@@ -299,31 +349,60 @@ namespace JsonWebToken
             return keyByteCount;
         }
 
-        private uint GetMagicValue(bool willCreateSignatures)
+        private uint GetMagicValue(bool usePrivateKey, bool forSignature)
         {
             KeyBlobMagicNumber magicNumber;
-            switch (Crv)
+            if (forSignature)
             {
-                case JsonWebKeyECTypes.P256:
-                    if (willCreateSignatures)
-                        magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PRIVATE_P256_MAGIC;
-                    else
-                        magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PUBLIC_P256_MAGIC;
-                    break;
-                case JsonWebKeyECTypes.P384:
-                    if (willCreateSignatures)
-                        magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PRIVATE_P384_MAGIC;
-                    else
-                        magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PUBLIC_P384_MAGIC;
-                    break;
-                case JsonWebKeyECTypes.P521:
-                    if (willCreateSignatures)
-                        magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PRIVATE_P521_MAGIC;
-                    else
-                        magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PUBLIC_P521_MAGIC;
-                    break;
-                default:
-                    throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
+                switch (Crv)
+                {
+                    case EllipticalCurves.P256:
+                        if (usePrivateKey)
+                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PRIVATE_P256_MAGIC;
+                        else
+                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PUBLIC_P256_MAGIC;
+                        break;
+                    case EllipticalCurves.P384:
+                        if (usePrivateKey)
+                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PRIVATE_P384_MAGIC;
+                        else
+                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PUBLIC_P384_MAGIC;
+                        break;
+                    case EllipticalCurves.P521:
+                        if (usePrivateKey)
+                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PRIVATE_P521_MAGIC;
+                        else
+                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PUBLIC_P521_MAGIC;
+                        break;
+                    default:
+                        throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
+                }
+            }
+            else
+            {
+                switch (Crv)
+                {
+                    case EllipticalCurves.P256:
+                        if (usePrivateKey)
+                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PRIVATE_P256_MAGIC;
+                        else
+                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PUBLIC_P256_MAGIC;
+                        break;
+                    case EllipticalCurves.P384:
+                        if (usePrivateKey)
+                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PRIVATE_P384_MAGIC;
+                        else
+                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PUBLIC_P384_MAGIC;
+                        break;
+                    case EllipticalCurves.P521:
+                        if (usePrivateKey)
+                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PRIVATE_P521_MAGIC;
+                        else
+                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PUBLIC_P521_MAGIC;
+                        break;
+                    default:
+                        throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
+                }
             }
 
             return (uint)magicNumber;
@@ -358,7 +437,7 @@ namespace JsonWebToken
 
             if (IsSupportedAlgorithm(algorithm))
             {
-                var provider = new EcdsaSignatureProvider(this, algorithm, willCreateSignatures);
+                var provider = new ECSignatureProvider(this, algorithm, willCreateSignatures);
                 signatureProviders.TryAdd(algorithm, provider);
                 return provider;
             }
@@ -366,9 +445,9 @@ namespace JsonWebToken
             return null;
         }
 
-        public override KeyWrapProvider CreateKeyWrapProvider(string algorithm)
+        public override KeyWrapProvider CreateKeyWrapProvider(string encryptionAlgorithm, string contentEncryptionAlgorithm)
         {
-            return null;
+            return new ECKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
         }
 
         private enum KeyBlobMagicNumber : uint
@@ -379,9 +458,46 @@ namespace JsonWebToken
             BCRYPT_ECDSA_PRIVATE_P256_MAGIC = 0x32534345,
             BCRYPT_ECDSA_PRIVATE_P384_MAGIC = 0x34534345,
             BCRYPT_ECDSA_PRIVATE_P521_MAGIC = 0x36534345,
+
+            BCRYPT_ECDH_PUBLIC_P256_MAGIC = 0x314B4345,
+            BCRYPT_ECDH_PRIVATE_P256_MAGIC = 0x324B4345,
+            BCRYPT_ECDH_PUBLIC_P384_MAGIC = 0x334B4345,
+            BCRYPT_ECDH_PRIVATE_P384_MAGIC = 0x344B4345,
+            BCRYPT_ECDH_PUBLIC_P521_MAGIC = 0x354B4345,
+            BCRYPT_ECDH_PRIVATE_P521_MAGIC = 0x364B4345,
         }
 
-        public static EcdsaJwk GenerateKey(string curveId, bool withPrivateKey)
+        public ECParameters ToParameters()
+        {
+            var parameters = new ECParameters
+            {
+                D = RawD,
+                Q = new ECPoint
+                {
+                    X = RawX,
+                    Y = RawY
+                }
+            };
+
+            switch (Crv)
+            {
+                case EllipticalCurves.P256:
+                    parameters.Curve = ECCurve.NamedCurves.nistP256;
+                    break;
+                case EllipticalCurves.P384:
+                    parameters.Curve = ECCurve.NamedCurves.nistP384;
+                    break;
+                case EllipticalCurves.P521:
+                    parameters.Curve = ECCurve.NamedCurves.nistP521;
+                    break;
+                default:
+                    throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
+            }
+
+            return parameters;
+        }
+
+        public static ECJwk GenerateKey(string curveId, bool withPrivateKey)
         {
             if (string.IsNullOrEmpty(curveId))
             {
@@ -391,13 +507,13 @@ namespace JsonWebToken
             ECCurve curve;
             switch (curveId)
             {
-                case JsonWebKeyECTypes.P256:
+                case EllipticalCurves.P256:
                     curve = ECCurve.NamedCurves.nistP256;
                     break;
-                case JsonWebKeyECTypes.P384:
+                case EllipticalCurves.P384:
                     curve = ECCurve.NamedCurves.nistP384;
                     break;
-                case JsonWebKeyECTypes.P521:
+                case EllipticalCurves.P521:
                     curve = ECCurve.NamedCurves.nistP521;
                     break;
                 default:
@@ -414,16 +530,16 @@ namespace JsonWebToken
 
         public override JsonWebKey ExcludeOptionalMembers()
         {
-            return new EcdsaJwk(Crv, RawD, RawX, RawY);
+            return new ECJwk(Crv, RawD, RawX, RawY);
         }
 
         /// <summary>
-        /// Returns a new instance of <see cref="EcdsaJwk"/>.
+        /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
         /// <param name="parameters">A <see cref="byte"/> that contains the key parameters.</param>
-        public static EcdsaJwk FromParameters(ECParameters parameters, bool computeThumbprint = false)
+        public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint = false)
         {
-            var key = new EcdsaJwk(parameters);
+            var key = new ECJwk(parameters);
             if (computeThumbprint)
             {
                 key.Kid = key.ComputeThumbprint(false);
@@ -431,5 +547,15 @@ namespace JsonWebToken
 
             return key;
         }
+
+        public override byte[] ToByteArray()
+        {
+            using (var ecdh = ECDiffieHellman.Create())
+            {
+                ecdh.ImportParameters(ToParameters());
+                return ecdh.PublicKey.ToByteArray();
+            }
+        }
     }
 }
+#endif
