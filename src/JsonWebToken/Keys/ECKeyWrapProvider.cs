@@ -114,35 +114,17 @@ namespace JsonWebToken
                 var isDirectEncryption = Algorithm == KeyManagementAlgorithms.EcdhEs;
                 if (!isDirectEncryption)
                 {
-                    int keyLength;
-                    string aesAlgorithm;
-                    switch (Algorithm)
-                    {
-                        case KeyManagementAlgorithms.EcdhEsAes128KW:
-                            aesAlgorithm = KeyManagementAlgorithms.Aes128KW;
-                            keyLength = 16;
-                            break;
-                        case KeyManagementAlgorithms.EcdhEsAes192KW:
-                            aesAlgorithm = KeyManagementAlgorithms.Aes192KW;
-                            keyLength = 24;
-                            break;
-                        case KeyManagementAlgorithms.EcdhEsAes256KW:
-                            aesAlgorithm = KeyManagementAlgorithms.Aes256KW;
-                            keyLength = 32;
-                            break;
-                        default:
-                            throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, EncryptionAlgorithm));
-                    }
+                    var (keyLength, aesAlgorithm) = GetAesAlgorithm();
 
                     var key = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, keyLength), false);
-                    KeyWrapProvider kwp = key.CreateKeyWrapProvider(EncryptionAlgorithm, aesAlgorithm);
+                    KeyWrapProvider aesKeyWrapProvider = key.CreateKeyWrapProvider(EncryptionAlgorithm, aesAlgorithm);
                     try
                     {
-                        return kwp.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
+                        return aesKeyWrapProvider.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
                     }
                     finally
                     {
-                        key.ReleaseKeyWrapProvider(kwp);
+                        key.ReleaseKeyWrapProvider(aesKeyWrapProvider);
                     }
                 }
                 else
@@ -156,6 +138,21 @@ namespace JsonWebToken
             {
                 bytesWritten = 0;
                 return false;
+            }
+        }
+
+        private (int, string) GetAesAlgorithm()
+        {
+            switch (Algorithm)
+            {
+                case KeyManagementAlgorithms.EcdhEsAes128KW:
+                    return (16,  KeyManagementAlgorithms.Aes128KW);
+                case KeyManagementAlgorithms.EcdhEsAes192KW:
+                    return (24, KeyManagementAlgorithms.Aes192KW);
+                case KeyManagementAlgorithms.EcdhEsAes256KW:
+                    return (32, KeyManagementAlgorithms.Aes256KW);
+                default:
+                    throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, EncryptionAlgorithm));
             }
         }
 
@@ -231,26 +228,7 @@ namespace JsonWebToken
 
                     if (!isDirectEncryption)
                     {
-                        int keyLength;
-                        string aesAlgorithm;
-                        switch (Algorithm)
-                        {
-                            case KeyManagementAlgorithms.EcdhEsAes128KW:
-                                aesAlgorithm = KeyManagementAlgorithms.Aes128KW;
-                                keyLength = 16;
-                                break;
-                            case KeyManagementAlgorithms.EcdhEsAes192KW:
-                                aesAlgorithm = KeyManagementAlgorithms.Aes192KW;
-                                keyLength = 24;
-                                break;
-                            case KeyManagementAlgorithms.EcdhEsAes256KW:
-                                aesAlgorithm = KeyManagementAlgorithms.Aes256KW;
-                                keyLength = 32;
-                                break;
-                            default:
-                                throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, EncryptionAlgorithm));
-                        }
-
+                        var (keyLength, aesAlgorithm) = GetAesAlgorithm();
                         var kek = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, keyLength), false);
                         KeyWrapProvider aesKeyWrapProvider = kek.CreateKeyWrapProvider(EncryptionAlgorithm, aesAlgorithm);
                         try
