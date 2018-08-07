@@ -5,6 +5,7 @@ Provides support for JWT.
 This library aims to propose performant JWT primitives. 
 
 [![Build status](https://ci.appveyor.com/api/projects/status/7lt4w59vy0v60s1b/branch/dev?svg=true)](https://ci.appveyor.com/project/ycrumeyrolle/jwt/branch/dev)
+ [![CodeFactor](https://www.codefactor.io/repository/github/ycrumeyrolle/jwt/badge)](https://www.codefactor.io/repository/github/ycrumeyrolle/jwt/badge)
 
 ## Versions
 Current version - 0.1.0
@@ -100,10 +101,10 @@ The main reason of the speed of this library is the usage of the new API provide
 | A192KW             | AES Key Wrap with default initial value using 192-bit key                     | (none)              | <ul><li> - [x] </li></ul>
 | A256KW             | AES Key Wrap with default initial value using 256-bit key                     | (none)              | <ul><li> - [x] </li></ul>
 | dir                | Direct use of a shared symmetric key as the CEK                               | (none)              | <ul><li> - [x] </li></ul>
-| ECDH-ES            | Elliptic Curve Diffie-Hellman Ephemeral Static key agreement using Concat KDF | "epk", "apu", "apv" | <ul><li> - [ ] </li></ul>
-| ECDH-ES+A128KW     | ECDH-ES using Concat KDF and CEK wrapped with "A128KW"                        | "epk", "apu", "apv" | <ul><li> - [ ] </li></ul>
-| ECDH-ES+A192KW     | ECDH-ES using Concat KDF and CEK wrapped with "A192KW"                        | "epk", "apu", "apv" | <ul><li> - [ ] </li></ul>
-| ECDH-ES+A256KW     | ECDH-ES using Concat KDF and CEK wrapped with "A256KW"                        | "epk", "apu", "apv" | <ul><li> - [ ] </li></ul>
+| ECDH-ES            | Elliptic Curve Diffie-Hellman Ephemeral Static key agreement using Concat KDF | "epk", "apu", "apv" | <ul><li> - [X] </li></ul>
+| ECDH-ES+A128KW     | ECDH-ES using Concat KDF and CEK wrapped with "A128KW"                        | "epk", "apu", "apv" | <ul><li> - [X] </li></ul>
+| ECDH-ES+A192KW     | ECDH-ES using Concat KDF and CEK wrapped with "A192KW"                        | "epk", "apu", "apv" | <ul><li> - [X] </li></ul>
+| ECDH-ES+A256KW     | ECDH-ES using Concat KDF and CEK wrapped with "A256KW"                        | "epk", "apu", "apv" | <ul><li> - [X] </li></ul>
 | A128GCMKW          | Key wrapping with AES GCM using 128-bit key                                   | "iv", "tag"         | <ul><li> - [ ] </li></ul>
 | A192GCMKW          | Key wrapping with AES GCM using 192-bit key                                   | "iv", "tag"         | <ul><li> - [ ] </li></ul>
 | A256GCMKW          | Key wrapping with AES GCM using 256-bit key                                   | "iv", "tag"         | <ul><li> - [ ] </li></ul>
