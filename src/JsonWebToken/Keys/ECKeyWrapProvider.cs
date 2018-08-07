@@ -45,20 +45,18 @@ namespace JsonWebToken
 
         public override int GetKeyUnwrapSize(int inputSize, string algorithm)
         {
-            //switch (algorithm)
-            //{
-            //    case KeyManagementAlgorithms.EcdhEs:
-            //        return inputSize;
-            //    case KeyManagementAlgorithms.EcdhEsAes128KW:
-            //        return 32;
-            //    case KeyManagementAlgorithms.EcdhEsAes192KW:
-            //        return 48;
-            //    case KeyManagementAlgorithms.EcdhEsAes256KW:
-            //        return 64;
-                return AesKeyWrapProvider.GetKeyUnwrappedSize(inputSize, algorithm);
-            //    default:
-            //        throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
-            //}
+            //return AesKeyWrapProvider.GetKeyUnwrappedSize(inputSize, algorithm);
+            switch (algorithm)
+            {
+                case KeyManagementAlgorithms.EcdhEs:
+                    return inputSize;
+                case KeyManagementAlgorithms.EcdhEsAes128KW:
+                case KeyManagementAlgorithms.EcdhEsAes192KW:
+                case KeyManagementAlgorithms.EcdhEsAes256KW:
+                    return 32;
+                default:
+                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
+            }
         }
 
         public override int GetKeyWrapSize()
@@ -107,7 +105,8 @@ namespace JsonWebToken
                 WritePartyInfo(partyVInfo, secretAppend.Slice(algorithmLength + partyUInfoLength));
                 WriteSuppInfo(algorithm, secretAppend.Slice(algorithmLength + partyUInfoLength + partyVInfoLength));
 
-                var exchangeHash = privateKey.DeriveKeyFromHash(otherPartyPublicKey, HashAlgorithmName.SHA256, secretPrepend.ToArray(), secretAppend.ToArray());
+                var hashAlgorithm = GetHashAlgorithm(algorithm);
+                var exchangeHash = privateKey.DeriveKeyFromHash(otherPartyPublicKey, hashAlgorithm, secretPrepend.ToArray(), secretAppend.ToArray());
 
                 var isDirectEncryption = Algorithm == KeyManagementAlgorithms.EcdhEs;
                 if (!isDirectEncryption)
@@ -154,6 +153,19 @@ namespace JsonWebToken
             {
                 bytesWritten = 0;
                 return false;
+            }
+        }
+
+        private static HashAlgorithmName GetHashAlgorithm(string algorithm)
+        {
+            switch (algorithm)
+            {
+                case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
+                    return HashAlgorithmName.SHA384;
+                case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
+                    return HashAlgorithmName.SHA512;
+                default:
+                    return HashAlgorithmName.SHA256;
             }
         }
 
@@ -208,7 +220,8 @@ namespace JsonWebToken
                     WritePartyInfo(partyVInfo, secretAppend.Slice(algorithmLength + partyUInfoLength));
                     WriteSuppInfo(algorithm, secretAppend.Slice(algorithmLength + partyUInfoLength + partyVInfoLength));
 
-                    var exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyPublicKey, HashAlgorithmName.SHA256, secretPrepend.ToArray(), secretAppend.ToArray());
+                    var hashAlgorithm = GetHashAlgorithm(algorithm);
+                    var exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyPublicKey, hashAlgorithm, secretPrepend.ToArray(), secretAppend.ToArray());
 
                     var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
                     header.Add(HeaderParameters.Epk, JToken.FromObject(epk));
@@ -357,25 +370,21 @@ namespace JsonWebToken
         {
             switch (algorithm)
             {
+                case KeyManagementAlgorithms.EcdhEsAes128KW:
+                case ContentEncryptionAlgorithms.Aes128Gcm:
+                    return 128;
+                case KeyManagementAlgorithms.EcdhEsAes192KW:
+                case ContentEncryptionAlgorithms.Aes192Gcm:
+                    return 192;
+                case KeyManagementAlgorithms.EcdhEsAes256KW:
                 case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
+                case ContentEncryptionAlgorithms.Aes256Gcm:
                     return 256;
                 case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
                     return 384;
                 case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
                     return 512;
-                case ContentEncryptionAlgorithms.Aes128Gcm:
-                    return 128;
-                case ContentEncryptionAlgorithms.Aes192Gcm:
-                    return 192;
-                case ContentEncryptionAlgorithms.Aes256Gcm:
-                    return 256;
-                case KeyManagementAlgorithms.EcdhEsAes128KW:
-                    return 128;
-                case KeyManagementAlgorithms.EcdhEsAes192KW:
-                    return 192;
-                case KeyManagementAlgorithms.EcdhEsAes256KW:
-                    return 256;
-            }
+             }
 
             throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, Algorithm));
         }

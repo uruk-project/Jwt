@@ -1,18 +1,10 @@
-﻿using Xunit;
+﻿using System.Collections.Generic;
+using Xunit;
 
 namespace JsonWebToken.Tests
 {
     public class EllipticCurveTokenTests
     {
-        private readonly ECJwk _aliceKey = new ECJwk
-        {
-            Kty = "EC",
-            Crv = "P-256",
-            X = "gI0GAILBdu7T53akrFmMyGcsF3n5dO7MmwNBHKW5SV0",
-            Y = "SLW_xSffzlPWrHEVI30DHM_4egVwt3NQqeUD7nMFpps",
-            D = "0_NxaRPUMQoAJt50Gz8YiTr8gRTwyEaCumd-MToTmIo",
-            Alg = KeyManagementAlgorithms.EcdhEsAes128KW
-        };
         private readonly ECJwk _bobKey = new ECJwk
         {
             Kty = "EC",
@@ -23,16 +15,22 @@ namespace JsonWebToken.Tests
         };
         private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithms.HmacSha256);
 
-        [Fact]
-        public void Encode_Decode()
+        [Theory]
+        [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEs)]
+        //[InlineData(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, KeyManagementAlgorithms.EcdhEs)]
+        //[InlineData(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, KeyManagementAlgorithms.EcdhEs)]
+        [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEsAes128KW)]
+        [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEsAes192KW)]
+        [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEsAes256KW)]
+        public void Encode_Decode(string enc, string alg)
         {
             var writer = new JsonWebTokenWriter();
 
             var descriptor = new JweDescriptor
             {
                 Key = _bobKey,
-                EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256,
-                Algorithm = KeyManagementAlgorithms.EcdhEsAes192KW,
+                EncryptionAlgorithm = enc,
+                Algorithm = alg,
                 Payload = new JwsDescriptor
                 {
                     Key = _signingKey,
