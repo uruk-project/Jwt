@@ -19,5 +19,5 @@
         /// unable to determine the existence of private key
         /// </summary>
         Unknown
-    };
+    }
 }

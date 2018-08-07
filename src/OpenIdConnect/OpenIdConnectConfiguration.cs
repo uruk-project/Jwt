@@ -8,7 +8,6 @@ namespace JsonWebToken
 {
     public class OpenIdConnectConfiguration
     {
-
         /// <summary>
         /// Initializes an new instance of <see cref="OpenIdConnectConfiguration"/>.
         /// </summary>

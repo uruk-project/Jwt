@@ -35,16 +35,16 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="input">bytes to sign.</param>
         /// <returns>signed bytes</returns>
-
         public abstract bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten);
+
         /// <summary>
         /// This must be overridden to verify a signature created over the 'input'.
         /// </summary>
         /// <param name="input">bytes to verify.</param>
         /// <param name="signature">signature to compare against.</param>
         /// <returns>true if the computed signature matches the signature parameter, false otherwise.</returns>
-
         public abstract bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature);
+    
         /// <summary>
         /// Calls <see cref="Dispose(bool)"/> and <see cref="GC.SuppressFinalize"/>
         /// </summary>

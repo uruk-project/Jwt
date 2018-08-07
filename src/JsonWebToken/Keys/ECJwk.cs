@@ -10,8 +10,8 @@ namespace JsonWebToken
 {
     public class ECJwk : AsymmetricJwk
     {
-        private readonly ConcurrentDictionary<string, ECSignatureProvider> _signatureProviders = new ConcurrentDictionary<string, ECSignatureProvider>();
-        private readonly ConcurrentDictionary<string, ECSignatureProvider> _signatureValidationProviders = new ConcurrentDictionary<string, ECSignatureProvider>();
+        private readonly ConcurrentDictionary<string, EcdsaSignatureProvider> _signatureProviders = new ConcurrentDictionary<string, EcdsaSignatureProvider>();
+        private readonly ConcurrentDictionary<string, EcdsaSignatureProvider> _signatureValidationProviders = new ConcurrentDictionary<string, EcdsaSignatureProvider>();
 
         public static readonly Dictionary<string, int> DefaultECDsaKeySizeInBits = new Dictionary<string, int>()
         {
@@ -401,7 +401,7 @@ namespace JsonWebToken
 
             if (IsSupportedAlgorithm(algorithm))
             {
-                var provider = new ECSignatureProvider(this, algorithm, willCreateSignatures);
+                var provider = new EcdsaSignatureProvider(this, algorithm, willCreateSignatures);
                 signatureProviders.TryAdd(algorithm, provider);
                 return provider;
             }

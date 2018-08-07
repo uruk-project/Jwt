@@ -380,7 +380,6 @@ namespace JsonWebToken
         [JsonIgnore]
         public byte[] RawQI { get; private set; }
 
-
         public static RsaJwk FromRsaParameters(RSAParameters rsaParameters)
         {
             return new RsaJwk(rsaParameters);
