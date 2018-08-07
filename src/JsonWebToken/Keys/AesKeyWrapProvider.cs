@@ -21,7 +21,7 @@ namespace JsonWebToken
         private ICryptoTransform _symmetricAlgorithmEncryptor;
         private ICryptoTransform _symmetricAlgorithmDecryptor;
         private bool _disposed;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="KeyWrapProvider"/> class used for wrap key and unwrap key.
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for crypto operations.</param>
@@ -317,31 +317,8 @@ namespace JsonWebToken
                 }
             }
 
-            JsonWebKey cek;
-            if (staticKey == null)
-            {
-                switch (EncryptionAlgorithm)
-                {
-                    case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
-                        cek = SymmetricJwk.GenerateKey(256);
-                        break;
-                    case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
-                        cek = SymmetricJwk.GenerateKey(384);
-                        break;
-                    case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
-                        cek = SymmetricJwk.GenerateKey(512);
-                        break;
-                    default:
-                        throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, EncryptionAlgorithm));
-                }
-            }
-            else
-            {
-                cek = staticKey;
-            }
-
-            contentEncryptionKey = cek;
-            return TryWrapKeyPrivate(cek.ToByteArray(), destination, out bytesWritten);
+            contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
+            return TryWrapKeyPrivate(contentEncryptionKey.ToByteArray(), destination, out bytesWritten);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

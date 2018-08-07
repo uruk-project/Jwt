@@ -7,8 +7,10 @@ using System.Text;
 
 namespace JsonWebToken
 {
+
     public class ECKeyWrapProvider : KeyWrapProvider
     {
+        private readonly string _finalAlgorithm;
         private readonly int _keyLength;
 
         public ECKeyWrapProvider(ECJwk key, string encryptionAlgorithm, string contentEncryptionAlgorithm)
@@ -26,7 +28,8 @@ namespace JsonWebToken
             Algorithm = contentEncryptionAlgorithm;
             Key = key ?? throw new ArgumentNullException(nameof(key));
             EncryptionAlgorithm = encryptionAlgorithm;
-            _keyLength = GetKeyLength(GetAlgorithm());
+            _finalAlgorithm = GetFinalAlgorithm();
+            _keyLength = GetKeyLength(_finalAlgorithm);
         }
 
         private bool IsSupportedAlgorithm(string algorithm)
@@ -81,7 +84,7 @@ namespace JsonWebToken
                     return false;
                 }
 
-                string algorithm = GetAlgorithm();
+                string algorithm = GetFinalAlgorithm();
                 byte[] partyUInfo = GetPartyInfo(header.Apu);
                 byte[] partyVInfo = GetPartyInfo(header.Apv);
 
@@ -201,11 +204,9 @@ namespace JsonWebToken
 
                     byte[] partyUInfo = GetPartyInfo(header, HeaderParameters.Apu);
                     byte[] partyVInfo = GetPartyInfo(header, HeaderParameters.Apv);
-
-                    string algorithm = GetAlgorithm();
-
+                    
                     int secretPrependLength = sizeof(int);
-                    int algorithmLength = sizeof(int) + Encoding.ASCII.GetByteCount(algorithm);
+                    int algorithmLength = sizeof(int) + Encoding.ASCII.GetByteCount(_finalAlgorithm);
                     int partyUInfoLength = sizeof(int) + partyUInfo.Length;
                     int partyVInfoLength = sizeof(int) + partyVInfo.Length;
                     int suppPubInfoLength = sizeof(int);
@@ -215,12 +216,12 @@ namespace JsonWebToken
                     Span<byte> secretAppend = stackalloc byte[secretAppendLength];
 
                     WriteRoundNumber(secretPrepend);
-                    WriteAlgorithmId(algorithm, secretAppend);
+                    WriteAlgorithmId(_finalAlgorithm, secretAppend);
                     WritePartyInfo(partyUInfo, secretAppend.Slice(algorithmLength));
                     WritePartyInfo(partyVInfo, secretAppend.Slice(algorithmLength + partyUInfoLength));
-                    WriteSuppInfo(algorithm, secretAppend.Slice(algorithmLength + partyUInfoLength + partyVInfoLength));
+                    WriteSuppInfo(_finalAlgorithm, secretAppend.Slice(algorithmLength + partyUInfoLength + partyVInfoLength));
 
-                    var hashAlgorithm = GetHashAlgorithm(algorithm);
+                    var hashAlgorithm = GetHashAlgorithm(_finalAlgorithm);
                     var exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyPublicKey, hashAlgorithm, secretPrepend.ToArray(), secretAppend.ToArray());
 
                     var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
@@ -340,7 +341,7 @@ namespace JsonWebToken
             }
         }
 
-        private string GetAlgorithm()
+        private string GetFinalAlgorithm()
         {
             switch (Algorithm)
             {

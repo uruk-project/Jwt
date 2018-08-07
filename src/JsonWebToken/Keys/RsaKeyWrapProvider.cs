@@ -21,7 +21,7 @@ namespace JsonWebToken
         public RsaKeyWrapProvider(RsaJwk key, string encryptionAlgorithm, string contentEncryptionAlgorithm)
         {
             if (key == null)
-            {                
+            {
                 throw new ArgumentNullException(nameof(key));
             }
 
@@ -141,34 +141,11 @@ namespace JsonWebToken
 
             try
             {
-                JsonWebKey cek;
-                if (staticKey == null)
-                {
-                    switch (EncryptionAlgorithm)
-                    {
-                        case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
-                            cek = SymmetricJwk.GenerateKey(256);
-                            break;
-                        case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
-                            cek = SymmetricJwk.GenerateKey(384);
-                            break;
-                        case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
-                            cek = SymmetricJwk.GenerateKey(512);
-                            break;
-                        default:
-                            throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, EncryptionAlgorithm));
-                    }
-                }
-                else
-                {
-                    cek = staticKey;
-                }
-
-                contentEncryptionKey = cek;
+                contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
 #if NETCOREAPP2_1
-                return _rsa.TryEncrypt(cek.ToByteArray(), destination, _padding, out bytesWritten);
+                return _rsa.TryEncrypt(contentEncryptionKey.ToByteArray(), destination, _padding, out bytesWritten);
 #else
-                var result = _rsa.Encrypt(cek.ToByteArray(), _padding);
+                var result = _rsa.Encrypt(contentEncryptionKey.ToByteArray(), _padding);
                 result.CopyTo(destination);
                 bytesWritten = result.Length;
                 return true;

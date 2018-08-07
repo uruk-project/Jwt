@@ -155,43 +155,7 @@ namespace JsonWebToken
                 }
             }
         }
-
-#if NETCOREAPP2_1
-        //public ECDiffieHellman CreateECDiffieHellman(bool usePrivateKey)
-        //{
-        //    var keyBlob = GetKeyBlob(usePrivateKey, false);
-        //    if (usePrivateKey)
-        //    {
-        //        using (CngKey cngKey = CngKey.Import(keyBlob, CngKeyBlobFormat.EccPrivateBlob))
-        //        {
-        //            //if (ValidateECDSAKeySize(cngKey.KeySize, algorithm))
-        //            {
-        //                return new ECDiffieHellmanCng(cngKey);
-        //            }
-
-        //            //throw new ArgumentOutOfRangeException(nameof(cngKey.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], cngKey.KeySize));
-        //        }
-        //    }
-        //    else
-        //    {
-        //        using (CngKey cngKey = CngKey.Import(keyBlob, CngKeyBlobFormat.EccPublicBlob))
-        //        {
-        //            //if (ValidateECDSAKeySize(cngKey.KeySize, algorithm))
-        //            {
-        //                return new ECDiffieHellmanCng(cngKey);
-        //            }
-
-        //            //throw new ArgumentOutOfRangeException(nameof(cngKey.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], cngKey.KeySize));
-        //        }
-        //    }
-        //}
-
-        //public ECDiffieHellmanPublicKey CreateECDiffieHellmanPublicKey(bool usePrivateKey)
-        //{
-        //    return ECDiffieHellmanCngPublicKey.FromByteArray(GetKeyBlob(usePrivateKey, false), CngKeyBlobFormat.EccPrivateBlob);
-        //}
-#endif
-
+        
         public byte[] GetKeyBlob(bool usePrivateKey, bool forSignature)
         {
             if (Crv == null)
