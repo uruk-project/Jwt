@@ -14,6 +14,16 @@ namespace JsonWebToken
         private readonly IList<IKeyProvider> _encryptionKeyProviders;
         private readonly JwtHeaderCache _headerCache = new JwtHeaderCache();
 
+        public JsonWebTokenReader(IEnumerable<JsonWebKey> keys)
+           : this(new JsonWebKeySet(keys))
+        {
+        }
+
+        public JsonWebTokenReader(params JsonWebKey[] keys)
+           : this(new JsonWebKeySet(keys))
+        {
+        }
+
         public JsonWebTokenReader(IEnumerable<IKeyProvider> encryptionKeyProviders)
         {
             if (encryptionKeyProviders == null)
@@ -359,13 +369,13 @@ namespace JsonWebToken
             for (int i = 0; i < keys.Count; i++)
             {
                 var key = keys[i];
-                KeyWrapProvider kwp = key.CreateKeyWrapProvider(alg);
+                KeyWrapProvider kwp = key.CreateKeyWrapProvider(header.Enc, alg);
                 try
                 {
                     if (kwp != null)
                     {
-                        Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length)];
-                        if (kwp.TryUnwrapKey(encryptedKey, unwrappedKey, out int keyWrappedBytesWritten))
+                        Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length, alg)];
+                        if (kwp.TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyWrappedBytesWritten))
                         {
                             Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
                             unwrappedKeys.Add(SymmetricJwk.FromSpan(unwrappedKey));

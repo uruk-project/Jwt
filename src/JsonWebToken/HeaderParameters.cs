@@ -20,12 +20,7 @@ namespace JsonWebToken
         /// see:https://tools.ietf.org/html/rfc7516#section-4.1.2
         /// </summary>
         public const string Enc = "enc";
-
-        /// <summary>
-        /// see:https://tools.ietf.org/html/rfc7518#section-4.7.1.1
-        /// </summary>
-        public const string IV = "iv";
-
+        
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7515#section-4.1.2
         /// </summary>
@@ -73,5 +68,40 @@ namespace JsonWebToken
         public const string Zip = "zip";
 
         public const string Address = "address";
+
+        /// <summary>
+        /// see:https://tools.ietf.org/html/rfc7518#section-4.6.1
+        /// </summary>
+        public const string Epk = "epk";
+
+        /// <summary>
+        /// see:https://tools.ietf.org/html/rfc7518#section-4.6.1
+        /// </summary>
+        public const string Apu = "apu";
+
+        /// <summary>
+        /// see:https://tools.ietf.org/html/rfc7518#section-4.6.1
+        /// </summary>
+        public const string Apv = "apv";
+
+        /// <summary>
+        /// see:https://tools.ietf.org/html/rfc7518#section-4.7
+        /// </summary>
+        public const string IV = "iv";
+
+        /// <summary>
+        /// see:https://tools.ietf.org/html/rfc7518#section-4.7
+        /// </summary>
+        public const string Tag = "tag";
+
+        /// <summary>
+        /// see:https://tools.ietf.org/html/rfc7518#section-4.8
+        /// </summary>
+        public const string P2s = "p2s";
+
+        /// <summary>
+        /// see:https://tools.ietf.org/html/rfc7518#section-4.8
+        /// </summary>
+        public const string P2c = "p2c";
     }
 }

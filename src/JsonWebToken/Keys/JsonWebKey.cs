@@ -39,9 +39,11 @@ namespace JsonWebToken
                     case JsonWebAlgorithmsKeyTypes.RSA:
                         jwk = new RsaJwk();
                         break;
+#if NETCOREAPP2_1
                     case JsonWebAlgorithmsKeyTypes.EllipticCurve:
-                        jwk = new EcdsaJwk();
+                        jwk = new ECJwk();
                         break;
+#endif
                     case JsonWebAlgorithmsKeyTypes.Octet:
                         jwk = new SymmetricJwk();
                         break;
@@ -72,6 +74,8 @@ namespace JsonWebToken
         private static readonly JwkJsonConverter jsonConverter = new JwkJsonConverter();
         private static readonly JwkContractResolver contractResolver = new JwkContractResolver();
         private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings { ContractResolver = contractResolver };
+
+        private static JsonSerializer jsonSerializer = new JsonSerializer() { Converters = { jsonConverter }, ContractResolver = contractResolver };
         private List<JsonWebKey> _certificateChain;
 
         /// <summary>
@@ -87,6 +91,21 @@ namespace JsonWebToken
             }
 
             return JsonConvert.DeserializeObject<TKey>(json, jsonConverter);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="TKey"/>.
+        /// </summary>
+        /// <param name="jObject">A string that contains JSON Web Key parameters in JSON format.</param>
+        /// <returns><see cref="TKey"/></returns>
+        public static TKey FromJson<TKey>(JToken jObject) where TKey : JsonWebKey
+        {
+            if (jObject == null)
+            {
+                throw new ArgumentNullException(nameof(jObject));
+            }
+
+            return jObject.ToObject<TKey>(jsonSerializer);
         }
 
         /// <summary>
@@ -223,6 +242,8 @@ namespace JsonWebToken
             return JsonConvert.SerializeObject(this, formatting, serializerSettings);
         }
 
+        public abstract byte[] ToByteArray();
+
         public abstract SignatureProvider CreateSignatureProvider(string algorithm, bool willCreateSignatures);
 
         public void ReleaseSignatureProvider(SignatureProvider signatureProvider)
@@ -233,7 +254,7 @@ namespace JsonWebToken
             //}
         }
 
-        public abstract KeyWrapProvider CreateKeyWrapProvider(string algorithm);
+        public abstract KeyWrapProvider CreateKeyWrapProvider(string encryptionAlgorithm, string contentEncryptionAlgorithm);
 
         public void ReleaseKeyWrapProvider(KeyWrapProvider provider)
         {
@@ -322,15 +343,17 @@ namespace JsonWebToken
                     var rsaParameters = rsa.ExportParameters(false);
                     key = new RsaJwk(rsaParameters);
                 }
+#if NETCOREAPP2_1
                 else
                 {
                     var ecdsa = certificate.GetECDsaPrivateKey();
                     if (ecdsa != null)
                     {
                         var ecParameters = ecdsa.ExportParameters(false);
-                        key = new EcdsaJwk(ecParameters);
+                        key = new ECJwk(ecParameters);
                     }
                 }
+#endif
             }
             else
             {
@@ -340,15 +363,17 @@ namespace JsonWebToken
                     var rsaParameters = rsa.ExportParameters(false);
                     key = new RsaJwk(rsaParameters);
                 }
+#if NETCOREAPP2_1
                 else
                 {
                     var ecdsa = certificate.GetECDsaPublicKey();
                     if (ecdsa != null)
                     {
                         var ecParameters = ecdsa.ExportParameters(false);
-                        key = new EcdsaJwk(ecParameters);
+                        key = new ECJwk(ecParameters);
                     }
                 }
+#endif
             }
 
             if (key == null)

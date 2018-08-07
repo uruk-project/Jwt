@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
@@ -7,7 +8,7 @@ namespace JsonWebToken
     /// <summary>
     /// Provides Wrap key and Unwrap key services.
     /// </summary>
-    public class SymmetricKeyWrapProvider : KeyWrapProvider
+    public class AesKeyWrapProvider : KeyWrapProvider
     {
         private const int BlockSizeInBytes = 8;
 
@@ -26,7 +27,7 @@ namespace JsonWebToken
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for crypto operations.</param>
         /// <param name="algorithm">The KeyWrap algorithm to apply.</param>
         /// </summary>
-        public SymmetricKeyWrapProvider(SymmetricJwk key, string algorithm)
+        public AesKeyWrapProvider(SymmetricJwk key, string encryptionAlgorithm, string algorithm)
         {
             if (key == null)
             {
@@ -49,6 +50,7 @@ namespace JsonWebToken
             }
 
             Algorithm = algorithm;
+            EncryptionAlgorithm = encryptionAlgorithm;
             Key = key;
 
             _symmetricAlgorithm = GetSymmetricAlgorithm(key, algorithm);
@@ -128,7 +130,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keyBytes">the bytes to unwrap.</param>
         /// <returns>Unwrapped key</returns>
-        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWritten)
+        public override bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
             if (keyBytes == null || keyBytes.Length == 0)
             {
@@ -217,7 +219,7 @@ namespace JsonWebToken
                                 // B = AES-1(K, (A ^ t) | R[i] )                                
                                 // T = ( n * j ) + i
                                 Unsafe.Add(ref *t, 7) = (byte)((n * j) + i);
-                                
+
                                 // First, A = ( A ^ t )
                                 a ^= Unsafe.ReadUnaligned<ulong>(ref t[0]);
 
@@ -264,7 +266,7 @@ namespace JsonWebToken
                 return false;
             }
         }
-        
+
         private void ValidateKeySize(byte[] key, string algorithm)
         {
             switch (algorithm)
@@ -297,18 +299,8 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keyBytes">the key to be wrapped</param>
         /// <returns>A wrapped key</returns>
-        public override bool TryWrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWritten)
+        public override bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
         {
-            if (keyBytes == null || keyBytes.Length == 0)
-            {
-                throw new ArgumentNullException(nameof(keyBytes));
-            }
-
-            if (keyBytes.Length % 8 != 0)
-            {
-                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.KeySizeMustBeMultipleOf64, keyBytes.Length << 3), nameof(keyBytes));
-            }
-
             if (_disposed)
             {
                 throw new ObjectDisposedException(GetType().ToString());
@@ -325,7 +317,8 @@ namespace JsonWebToken
                 }
             }
 
-            return TryWrapKeyPrivate(keyBytes, destination, out bytesWritten);
+            contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
+            return TryWrapKeyPrivate(contentEncryptionKey.ToByteArray(), destination, out bytesWritten);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -423,21 +416,31 @@ namespace JsonWebToken
             }
         }
 
-        public override int GetKeyUnwrapSize(int inputSize)
+        public override int GetKeyUnwrapSize(int inputSize, string algorithm)
+        {
+            return GetKeyUnwrappedSize(inputSize, algorithm);
+        }
+
+        public override int GetKeyWrapSize()
+        {
+            return GetKeyWrappedSize(EncryptionAlgorithm);
+        }
+
+        public static int GetKeyUnwrappedSize(int inputSize, string algorithm)
         {
             return inputSize - BlockSizeInBytes;
         }
 
-        public override int GetKeyWrapSize(string encryptionAlgorithm)
+        public static int GetKeyWrappedSize(string encryptionAlgorithm)
         {
             switch (encryptionAlgorithm)
             {
                 case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
-                    return 40; 
+                    return 40;
                 case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
-                    return 56; 
+                    return 56;
                 case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
-                    return 72; 
+                    return 72;
             }
 
             throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedKeyedHashAlgorithm, encryptionAlgorithm));

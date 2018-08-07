@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 
 namespace JsonWebToken
 {
@@ -11,9 +12,10 @@ namespace JsonWebToken
         /// Gets the KeyWrap algorithm that is being used.
         /// </summary>
         public string Algorithm { get; protected set; }
+        public string EncryptionAlgorithm { get; protected set; }
 
         /// <summary>
-        /// Gets the <see cref="SecurityKey"/> that is being used.
+        /// Gets the <see cref="JsonWebKey"/> that is being used.
         /// </summary>
         public JsonWebKey Key { get; protected set; }
 
@@ -37,17 +39,17 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keyBytes">key to unwrap.</param>
         /// <returns>Unwrapped key.</returns>
-        public abstract bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWritten);
+        public abstract bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten);
 
         /// <summary>
         /// Wrap a key.
         /// </summary>
         /// <param name="keyBytes">the key to be wrapped</param>
         /// <returns>wrapped key.</returns>
-        public abstract bool TryWrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, out int bytesWritten);
+        public abstract bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten);
 
-        public abstract int GetKeyUnwrapSize(int inputSize);
+        public abstract int GetKeyUnwrapSize(int inputSize, string algorithm);
 
-        public abstract int GetKeyWrapSize(string encryptionAlgorithm);
+        public abstract int GetKeyWrapSize();
     }
 }

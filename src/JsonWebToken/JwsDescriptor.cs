@@ -267,7 +267,6 @@ namespace JsonWebToken
             return EpochTime.ToDateTime(dateValue.Value<long>());
         }
 
-
         protected void SetClaim(string claimType, DateTime? value)
         {
             if (value.HasValue)

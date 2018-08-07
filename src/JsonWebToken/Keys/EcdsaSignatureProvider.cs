@@ -1,4 +1,5 @@
-﻿using JsonWebToken.ObjectPooling;
+﻿#if NETCOREAPP2_1
+using JsonWebToken.ObjectPooling;
 using System;
 using System.Security.Cryptography;
 
@@ -18,7 +19,7 @@ namespace JsonWebToken
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for signature operations.</param>
         /// <param name="algorithm">The signature algorithm to apply.</param>
         /// <param name="willCreateSignatures">Whether is required to create signatures then set this to true.</param>
-        public EcdsaSignatureProvider(EcdsaJwk key, string algorithm, bool willCreateSignatures)
+        public EcdsaSignatureProvider(ECJwk key, string algorithm, bool willCreateSignatures)
             : base(key, algorithm)
         {
             if (key == null)
@@ -56,13 +57,13 @@ namespace JsonWebToken
 
             switch (key.Crv)
             {
-                case JsonWebKeyECTypes.P256:
+                case EllipticalCurves.P256:
                     _hashSize = 64;
                     break;
-                case JsonWebKeyECTypes.P384:
+                case EllipticalCurves.P384:
                     _hashSize = 96;
                     break;
-                case JsonWebKeyECTypes.P521:
+                case EllipticalCurves.P521:
                     _hashSize = 132;
                     break;
                 default:
@@ -86,7 +87,7 @@ namespace JsonWebToken
             {
                 throw new ArgumentNullException(nameof(input));
             }
-            
+
             if (_ecdsa != null)
             {
 #if NETCOREAPP2_1
@@ -130,13 +131,13 @@ namespace JsonWebToken
             return _ecdsa.VerifyData(input.ToArray(), signature.ToArray(), _hashAlgorithm);
 #endif
         }
-      
-        private static ECDsa ResolveAlgorithm(EcdsaJwk key, string algorithm, bool usePrivateKey)
+
+        private static ECDsa ResolveAlgorithm(ECJwk key, string algorithm, bool usePrivateKey)
         {
             return key.CreateECDsa(algorithm, usePrivateKey);
         }
 
-           /// <summary>
+        /// <summary>
         /// Calls <see cref="ECDsa.Dispose()"/> to release this managed resources.
         /// </summary>
         /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer.</param>
@@ -158,11 +159,11 @@ namespace JsonWebToken
 
         private class ECDsaObjectPoolPolicy : PooledObjectPolicy<ECDsa>
         {
-            private readonly EcdsaJwk _key;
+            private readonly ECJwk _key;
             private readonly string _algorithm;
             private readonly bool _usePrivateKey;
 
-            public ECDsaObjectPoolPolicy(EcdsaJwk key, string algorithm, bool usePrivateKey)
+            public ECDsaObjectPoolPolicy(ECJwk key, string algorithm, bool usePrivateKey)
             {
                 _key = key;
                 _algorithm = algorithm;
@@ -181,5 +182,4 @@ namespace JsonWebToken
         }
     }
 }
-
-
+#endif

@@ -108,11 +108,11 @@ namespace JsonWebToken
             return null;
         }
 
-        public override KeyWrapProvider CreateKeyWrapProvider(string algorithm)
+        public override KeyWrapProvider CreateKeyWrapProvider(string encryptionAlgorithm, string contentEncryptionAlgorithm)
         {
-            if (IsSupportedAlgorithm(algorithm))
+            if (IsSupportedAlgorithm(contentEncryptionAlgorithm))
             {
-                return new RsaKeyWrapProvider(this, algorithm);
+                return new RsaKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
             }
 
             return null;
@@ -380,7 +380,6 @@ namespace JsonWebToken
         [JsonIgnore]
         public byte[] RawQI { get; private set; }
 
-
         public static RsaJwk FromRsaParameters(RSAParameters rsaParameters)
         {
             return new RsaJwk(rsaParameters);
@@ -416,6 +415,11 @@ namespace JsonWebToken
         public override JsonWebKey ExcludeOptionalMembers()
         {
             return new RsaJwk(RawE, RawN);
+        }
+
+        public override byte[] ToByteArray()
+        {
+            throw new NotImplementedException();
         }
     }
 }
