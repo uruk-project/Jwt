@@ -155,103 +155,103 @@ namespace JsonWebToken
                 }
             }
         }
-        
-        public byte[] GetKeyBlob(bool usePrivateKey, bool forSignature)
-        {
-            if (Crv == null)
-            {
-                throw new ArgumentNullException(nameof(Crv));
-            }
 
-            if (X == null)
-            {
-                throw new ArgumentNullException(nameof(X));
-            }
+        //public byte[] GetKeyBlob(bool usePrivateKey, bool forSignature)
+        //{
+        //    if (Crv == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(Crv));
+        //    }
 
-            if (Y == null)
-            {
-                throw new ArgumentNullException(nameof(Y));
-            }
+        //    if (X == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(X));
+        //    }
 
-            if (usePrivateKey && D == null)
-            {
-                throw new ArgumentNullException(nameof(D));
-            }
+        //    if (Y == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(Y));
+        //    }
 
-            GCHandle keyBlobHandle = new GCHandle();
-            try
-            {
-                uint dwMagic = GetMagicValue(usePrivateKey, forSignature);
-                uint cbKey = GetKeyByteCount();
-                byte[] keyBlob;
-                if (usePrivateKey)
-                {
-                    keyBlob = new byte[3 * cbKey + 2 * Marshal.SizeOf<uint>()];
-                }
-                else
-                {
-                    keyBlob = new byte[2 * cbKey + 2 * Marshal.SizeOf<uint>()];
-                }
+        //    if (usePrivateKey && D == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(D));
+        //    }
 
-                keyBlobHandle = GCHandle.Alloc(keyBlob, GCHandleType.Pinned);
-                IntPtr keyBlobPtr = keyBlobHandle.AddrOfPinnedObject();
-                byte[] x = RawX;
+        //    GCHandle keyBlobHandle = new GCHandle();
+        //    try
+        //    {
+        //        uint dwMagic = GetMagicValue(usePrivateKey, forSignature);
+        //        uint cbKey = GetKeyByteCount();
+        //        byte[] keyBlob;
+        //        if (usePrivateKey)
+        //        {
+        //            keyBlob = new byte[3 * cbKey + 2 * Marshal.SizeOf<uint>()];
+        //        }
+        //        else
+        //        {
+        //            keyBlob = new byte[2 * cbKey + 2 * Marshal.SizeOf<uint>()];
+        //        }
 
-                if (x.Length > cbKey)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(x.Length), ErrorMessages.FormatInvariant(ErrorMessages.InvalidSize, nameof(X), cbKey, RawX.Length));
-                }
+        //        keyBlobHandle = GCHandle.Alloc(keyBlob, GCHandleType.Pinned);
+        //        IntPtr keyBlobPtr = keyBlobHandle.AddrOfPinnedObject();
+        //        byte[] x = RawX;
 
-                byte[] y = RawY;
-                if (y.Length > cbKey)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(y.Length), ErrorMessages.FormatInvariant(ErrorMessages.InvalidSize, nameof(Y), cbKey, RawY.Length));
-                }
+        //        if (x.Length > cbKey)
+        //        {
+        //            throw new ArgumentOutOfRangeException(nameof(x.Length), ErrorMessages.FormatInvariant(ErrorMessages.InvalidSize, nameof(X), cbKey, RawX.Length));
+        //        }
 
-                Marshal.WriteInt64(keyBlobPtr, 0, dwMagic);
-                Marshal.WriteInt64(keyBlobPtr, 4, cbKey);
+        //        byte[] y = RawY;
+        //        if (y.Length > cbKey)
+        //        {
+        //            throw new ArgumentOutOfRangeException(nameof(y.Length), ErrorMessages.FormatInvariant(ErrorMessages.InvalidSize, nameof(Y), cbKey, RawY.Length));
+        //        }
 
-                int index = 8;
-                foreach (byte b in x)
-                {
-                    Marshal.WriteByte(keyBlobPtr, index++, b);
-                }
+        //        Marshal.WriteInt64(keyBlobPtr, 0, dwMagic);
+        //        Marshal.WriteInt64(keyBlobPtr, 4, cbKey);
 
-                foreach (byte b in y)
-                {
-                    Marshal.WriteByte(keyBlobPtr, index++, b);
-                }
+        //        int index = 8;
+        //        foreach (byte b in x)
+        //        {
+        //            Marshal.WriteByte(keyBlobPtr, index++, b);
+        //        }
 
-                if (usePrivateKey)
-                {
-                    byte[] d = RawD;
-                    if (d.Length > cbKey)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(d.Length), ErrorMessages.FormatInvariant(ErrorMessages.InvalidSize, nameof(D), cbKey, RawD.Length));
-                    }
+        //        foreach (byte b in y)
+        //        {
+        //            Marshal.WriteByte(keyBlobPtr, index++, b);
+        //        }
 
-                    foreach (byte b in d)
-                    {
-                        Marshal.WriteByte(keyBlobPtr, index++, b);
-                    }
+        //        if (usePrivateKey)
+        //        {
+        //            byte[] d = RawD;
+        //            if (d.Length > cbKey)
+        //            {
+        //                throw new ArgumentOutOfRangeException(nameof(d.Length), ErrorMessages.FormatInvariant(ErrorMessages.InvalidSize, nameof(D), cbKey, RawD.Length));
+        //            }
 
-                    Marshal.Copy(keyBlobPtr, keyBlob, 0, keyBlob.Length);
-                    return keyBlob;
-                }
-                else
-                {
-                    Marshal.Copy(keyBlobPtr, keyBlob, 0, keyBlob.Length);
-                    return keyBlob;
-                }
-            }
-            finally
-            {
-                if (keyBlobHandle != null)
-                {
-                    keyBlobHandle.Free();
-                }
-            }
-        }
+        //            foreach (byte b in d)
+        //            {
+        //                Marshal.WriteByte(keyBlobPtr, index++, b);
+        //            }
+
+        //            Marshal.Copy(keyBlobPtr, keyBlob, 0, keyBlob.Length);
+        //            return keyBlob;
+        //        }
+        //        else
+        //        {
+        //            Marshal.Copy(keyBlobPtr, keyBlob, 0, keyBlob.Length);
+        //            return keyBlob;
+        //        }
+        //    }
+        //    finally
+        //    {
+        //        if (keyBlobHandle != null)
+        //        {
+        //            keyBlobHandle.Free();
+        //        }
+        //    }
+        //}
 
         public ECDsa CreateECDsa(string algorithm, bool usePrivateKey)
         {
@@ -260,31 +260,32 @@ namespace JsonWebToken
                 throw new ArgumentOutOfRangeException(nameof(KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], KeySizeInBits));
             }
 
-            var keyBlob = GetKeyBlob(usePrivateKey, true);
-            if (usePrivateKey)
-            {
-                using (CngKey cngKey = CngKey.Import(keyBlob, CngKeyBlobFormat.EccPrivateBlob))
-                {
-                    if (ValidateECDSAKeySize(cngKey.KeySize, algorithm))
-                    {
-                        return new ECDsaCng(cngKey);
-                    }
+            return ECDsa.Create(ToParameters());
+            //var keyBlob = GetKeyBlob(usePrivateKey, true);
+            //if (usePrivateKey)
+            //{
+            //    using (CngKey cngKey = CngKey.Import(keyBlob, CngKeyBlobFormat.EccPrivateBlob))
+            //    {
+            //        if (ValidateECDSAKeySize(cngKey.KeySize, algorithm))
+            //        {
+            //            return new ECDsaCng(cngKey);
+            //        }
 
-                    throw new ArgumentOutOfRangeException(nameof(cngKey.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], cngKey.KeySize));
-                }
-            }
-            else
-            {
-                using (CngKey cngKey = CngKey.Import(keyBlob, CngKeyBlobFormat.EccPublicBlob))
-                {
-                    if (ValidateECDSAKeySize(cngKey.KeySize, algorithm))
-                    {
-                        return new ECDsaCng(cngKey);
-                    }
+            //        throw new ArgumentOutOfRangeException(nameof(cngKey.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], cngKey.KeySize));
+            //    }
+            //}
+            //else
+            //{
+            //    using (CngKey cngKey = CngKey.Import(keyBlob, CngKeyBlobFormat.EccPublicBlob))
+            //    {
+            //        if (ValidateECDSAKeySize(cngKey.KeySize, algorithm))
+            //        {
+            //            return new ECDsaCng(cngKey);
+            //        }
 
-                    throw new ArgumentOutOfRangeException(nameof(cngKey.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], cngKey.KeySize));
-                }
-            }
+            //        throw new ArgumentOutOfRangeException(nameof(cngKey.KeySize), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, DefaultECDsaKeySizeInBits[algorithm], cngKey.KeySize));
+            //    }
+            //}
         }
 
         private static bool ValidateECDSAKeySize(int keySize, string algorithm)
@@ -313,65 +314,64 @@ namespace JsonWebToken
             return keyByteCount;
         }
 
-        private uint GetMagicValue(bool usePrivateKey, bool forSignature)
-        {
-            KeyBlobMagicNumber magicNumber;
-            if (forSignature)
-            {
-                switch (Crv)
-                {
-                    case EllipticalCurves.P256:
-                        if (usePrivateKey)
-                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PRIVATE_P256_MAGIC;
-                        else
-                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PUBLIC_P256_MAGIC;
-                        break;
-                    case EllipticalCurves.P384:
-                        if (usePrivateKey)
-                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PRIVATE_P384_MAGIC;
-                        else
-                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PUBLIC_P384_MAGIC;
-                        break;
-                    case EllipticalCurves.P521:
-                        if (usePrivateKey)
-                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PRIVATE_P521_MAGIC;
-                        else
-                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PUBLIC_P521_MAGIC;
-                        break;
-                    default:
-                        throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
-                }
-            }
-            else
-            {
-                switch (Crv)
-                {
-                    case EllipticalCurves.P256:
-                        if (usePrivateKey)
-                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PRIVATE_P256_MAGIC;
-                        else
-                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PUBLIC_P256_MAGIC;
-                        break;
-                    case EllipticalCurves.P384:
-                        if (usePrivateKey)
-                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PRIVATE_P384_MAGIC;
-                        else
-                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PUBLIC_P384_MAGIC;
-                        break;
-                    case EllipticalCurves.P521:
-                        if (usePrivateKey)
-                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PRIVATE_P521_MAGIC;
-                        else
-                            magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PUBLIC_P521_MAGIC;
-                        break;
-                    default:
-                        throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
-                }
-            }
+        //private uint GetMagicValue(bool usePrivateKey, bool forSignature)
+        //{
+        //    KeyBlobMagicNumber magicNumber;
+        //    if (forSignature)
+        //    {
+        //        switch (Crv)
+        //        {
+        //            case EllipticalCurves.P256:
+        //                if (usePrivateKey)
+        //                    magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PRIVATE_P256_MAGIC;
+        //                else
+        //                    magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PUBLIC_P256_MAGIC;
+        //                break;
+        //            case EllipticalCurves.P384:
+        //                if (usePrivateKey)
+        //                    magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PRIVATE_P384_MAGIC;
+        //                else
+        //                    magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PUBLIC_P384_MAGIC;
+        //                break;
+        //            case EllipticalCurves.P521:
+        //                if (usePrivateKey)
+        //                    magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PRIVATE_P521_MAGIC;
+        //                else
+        //                    magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PUBLIC_P521_MAGIC;
+        //                break;
+        //            default:
+        //                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
+        //        }
+        //    }
+        //    else
+        //    {
+        //        switch (Crv)
+        //        {
+        //            case EllipticalCurves.P256:
+        //                if (usePrivateKey)
+        //                    magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PRIVATE_P256_MAGIC;
+        //                else
+        //                    magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PUBLIC_P256_MAGIC;
+        //                break;
+        //            case EllipticalCurves.P384:
+        //                if (usePrivateKey)
+        //                    magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PRIVATE_P384_MAGIC;
+        //                else
+        //                    magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PUBLIC_P384_MAGIC;
+        //                break;
+        //            case EllipticalCurves.P521:
+        //                if (usePrivateKey)
+        //                    magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PRIVATE_P521_MAGIC;
+        //                else
+        //                    magicNumber = KeyBlobMagicNumber.BCRYPT_ECDH_PUBLIC_P521_MAGIC;
+        //                break;
+        //            default:
+        //                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
+        //        }
+        //    }
 
-            return (uint)magicNumber;
-        }
-
+        //    return (uint)magicNumber;
+        //}
 
         public override bool IsSupportedAlgorithm(string algorithm)
         {
