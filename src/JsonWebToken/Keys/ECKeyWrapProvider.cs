@@ -1,13 +1,13 @@
 ﻿#if NETCOREAPP2_1
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace JsonWebToken
 {
-
     public class ECKeyWrapProvider : KeyWrapProvider
     {
         private readonly string _finalAlgorithm;
@@ -48,11 +48,9 @@ namespace JsonWebToken
 
         public override int GetKeyUnwrapSize(int inputSize, string algorithm)
         {
-            //return AesKeyWrapProvider.GetKeyUnwrappedSize(inputSize, algorithm);
             switch (algorithm)
             {
                 case KeyManagementAlgorithms.EcdhEs:
-                    return inputSize;
                 case KeyManagementAlgorithms.EcdhEsAes128KW:
                 case KeyManagementAlgorithms.EcdhEsAes192KW:
                 case KeyManagementAlgorithms.EcdhEsAes256KW:
@@ -90,7 +88,7 @@ namespace JsonWebToken
 
                 var ephemeralJwk = header.Epk;
                 var otherPartyPublicKey = CreateECDiffieHellman(ephemeralJwk).PublicKey;
-                var privateKey = CreateECDiffieHellman();
+                var privateKey = CreateECDiffieHellman((ECJwk)Key);
 
                 int secretPrependLength = sizeof(int);
                 int algorithmLength = sizeof(int) + Encoding.ASCII.GetByteCount(algorithm);
@@ -111,8 +109,8 @@ namespace JsonWebToken
                 var hashAlgorithm = GetHashAlgorithm(algorithm);
                 var exchangeHash = privateKey.DeriveKeyFromHash(otherPartyPublicKey, hashAlgorithm, secretPrepend.ToArray(), secretAppend.ToArray());
 
-                var isDirectEncryption = Algorithm == KeyManagementAlgorithms.EcdhEs;
-                if (!isDirectEncryption)
+                var produceEncryptedKey = Algorithm != KeyManagementAlgorithms.EcdhEs;
+                if (produceEncryptedKey)
                 {
                     var (keyLength, aesAlgorithm) = GetAesAlgorithm();
 
@@ -146,7 +144,7 @@ namespace JsonWebToken
             switch (Algorithm)
             {
                 case KeyManagementAlgorithms.EcdhEsAes128KW:
-                    return (16,  KeyManagementAlgorithms.Aes128KW);
+                    return (16, KeyManagementAlgorithms.Aes128KW);
                 case KeyManagementAlgorithms.EcdhEsAes192KW:
                     return (24, KeyManagementAlgorithms.Aes192KW);
                 case KeyManagementAlgorithms.EcdhEsAes256KW:
@@ -167,11 +165,6 @@ namespace JsonWebToken
                 default:
                     return HashAlgorithmName.SHA256;
             }
-        }
-
-        private ECDiffieHellman CreateECDiffieHellman()
-        {
-            return CreateECDiffieHellman((ECJwk)Key);
         }
 
         private static ECDiffieHellman CreateECDiffieHellman(ECJwk key)
@@ -199,9 +192,8 @@ namespace JsonWebToken
 
                     var otherPartyPublicKey = CreateEcdhPublicKey((ECJwk)Key);
 
-                    byte[] partyUInfo = GetPartyInfo(header, HeaderParameters.Apu);
-                    byte[] partyVInfo = GetPartyInfo(header, HeaderParameters.Apv);
-                    
+                    var partyUInfo = GetPartyInfo(header, HeaderParameters.Apu);
+                    var partyVInfo = GetPartyInfo(header, HeaderParameters.Apv);
                     int secretPrependLength = sizeof(int);
                     int algorithmLength = sizeof(int) + Encoding.ASCII.GetByteCount(_finalAlgorithm);
                     int partyUInfoLength = sizeof(int) + partyUInfo.Length;
@@ -218,7 +210,7 @@ namespace JsonWebToken
                     WritePartyInfo(partyVInfo, secretAppend.Slice(algorithmLength + partyUInfoLength));
                     WriteSuppInfo(_finalAlgorithm, secretAppend.Slice(algorithmLength + partyUInfoLength + partyVInfoLength));
 
-                    var hashAlgorithm = GetHashAlgorithm(_finalAlgorithm);
+                    var hashAlgorithm = GetHashAlgorithm(EncryptionAlgorithm);
                     var exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyPublicKey, hashAlgorithm, secretPrepend.ToArray(), secretAppend.ToArray());
 
                     var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
@@ -242,9 +234,8 @@ namespace JsonWebToken
                     }
                     else
                     {
-                        exchangeHash.AsSpan(0, _keyLength >> 3).CopyTo(destination);
-                        bytesWritten = destination.Length;
-                        contentEncryptionKey = SymmetricJwk.FromSpan(destination, false);
+                        bytesWritten = 0;
+                        contentEncryptionKey = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keyLength >> 3), false);
                         return true;
                     }
                 }
@@ -285,37 +276,56 @@ namespace JsonWebToken
 
         private void WriteRoundNumber(Span<byte> destination)
         {
-            BitConverter.TryWriteBytes(destination, 1);
-            if (BitConverter.IsLittleEndian)
-            {
-                destination.Slice(0, 4).Reverse();
-            }
+            uint value = BitConverter.IsLittleEndian ? 0x1000000u : 1u;
+            WriteValue(destination, value);
         }
 
         private void WriteSuppInfo(string algorithm, Span<byte> destination)
         {
-            BitConverter.TryWriteBytes(destination, GetKeyLength(algorithm));
+            uint value = (uint)GetKeyLength(algorithm);
+            WriteValueBigEndian(destination, value);
+        }
+
+        private static unsafe void WriteValueBigEndian(Span<byte> destination, uint value)
+        {
             if (BitConverter.IsLittleEndian)
             {
-                destination.Slice(0, 4).Reverse();
+                value = (value << 16) | (value >> 16);
+                value = (value & 0x00FF00FF) << 8 | (value & 0xFF00FF00) >> 8;
+            }
+
+            fixed (byte* ptr = &MemoryMarshal.GetReference(destination))
+            {
+                Unsafe.WriteUnaligned(ptr, value);
             }
         }
 
-        private void WritePartyInfo(byte[] partyInfo, Span<byte> destination)
+        private static unsafe void WriteZero(Span<byte> destination)
+        {
+            fixed (byte* ptr = &MemoryMarshal.GetReference(destination))
+            {
+                Unsafe.WriteUnaligned(ptr, 0);
+            }
+        }
+
+        private static unsafe void WriteValue(Span<byte> destination, uint value)
+        {
+            fixed (byte* ptr = &MemoryMarshal.GetReference(destination))
+            {
+                Unsafe.WriteUnaligned(ptr, value);
+            }
+        }
+
+        private void WritePartyInfo(Span<byte> partyInfo, Span<byte> destination)
         {
             if (partyInfo.Length == 0)
             {
-                BitConverter.TryWriteBytes(destination, 0);
+                WriteZero(destination);
             }
             else
             {
-                BitConverter.TryWriteBytes(destination, partyInfo.Length);
-                if (BitConverter.IsLittleEndian)
-                {
-                    destination.Slice(0, 4).Reverse();
-                }
-
-                partyInfo.CopyTo(destination.Slice(4));
+                WriteValueBigEndian(destination, (uint)partyInfo.Length);
+                partyInfo.CopyTo(destination.Slice(sizeof(int)));
             }
         }
 
@@ -336,13 +346,8 @@ namespace JsonWebToken
 
         private void WriteAlgorithmId(string algorithm, Span<byte> destination)
         {
-            BitConverter.TryWriteBytes(destination, Encoding.ASCII.GetByteCount(algorithm));
-            if (BitConverter.IsLittleEndian)
-            {
-                destination.Slice(0, 4).Reverse();
-            }
-
-            Encoding.ASCII.GetBytes(algorithm, destination.Slice(4));
+            WriteValueBigEndian(destination, (uint)Encoding.ASCII.GetByteCount(algorithm));
+            Encoding.ASCII.GetBytes(algorithm, destination.Slice(sizeof(uint)));
         }
 
         private int GetKeyLength(string algorithm)
@@ -363,7 +368,7 @@ namespace JsonWebToken
                     return 384;
                 case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
                     return 512;
-             }
+            }
 
             throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, Algorithm));
         }
