@@ -194,7 +194,6 @@ namespace JsonWebToken
 
                     var partyUInfo = GetPartyInfo(header, HeaderParameters.Apu);
                     var partyVInfo = GetPartyInfo(header, HeaderParameters.Apv);
-
                     int secretPrependLength = sizeof(int);
                     int algorithmLength = sizeof(int) + Encoding.ASCII.GetByteCount(_finalAlgorithm);
                     int partyUInfoLength = sizeof(int) + partyUInfo.Length;
@@ -235,7 +234,6 @@ namespace JsonWebToken
                     }
                     else
                     {
-                        //exchangeHash.AsSpan(0, _keyLength >> 3).CopyTo(destination);
                         bytesWritten = 0;
                         contentEncryptionKey = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keyLength >> 3), false);
                         return true;
