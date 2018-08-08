@@ -28,7 +28,7 @@ namespace JsonWebToken.Tests
         public void Wrap()
         {
             var kwp = new ECKeyWrapProvider(_bobKey, ContentEncryptionAlgorithms.Aes128Gcm, KeyManagementAlgorithms.EcdhEs);
-            byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
+            byte[] wrappedKey = null;
             var header = new JObject
             {
                 { HeaderParameters.Apu, Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Alice")) },
@@ -39,7 +39,7 @@ namespace JsonWebToken.Tests
             Assert.True(wrapped);
 
             var expected = new byte[] { 86, 170, 141, 234, 248, 35, 109, 32, 92, 34, 40, 205, 113, 167, 16, 26 };
-            Assert.Equal(expected, wrappedKey);
+            Assert.Equal(expected, cek.ToByteArray());
         }
 
         [Fact]

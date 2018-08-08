@@ -52,11 +52,11 @@ namespace JsonWebToken
                     _hashSizeInBytes = 32;
                     break;
                 case SignatureAlgorithms.HmacSha384:
-                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha256ObjectPoolPolicy(key.RawK));
+                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha384ObjectPoolPolicy(key.RawK));
                     _hashSizeInBytes = 48;
                     break;
                 case SignatureAlgorithms.HmacSha512:
-                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha256ObjectPoolPolicy(key.RawK));
+                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha512ObjectPoolPolicy(key.RawK));
                     _hashSizeInBytes = 64;
                     break;
                 default:
