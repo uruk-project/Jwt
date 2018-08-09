@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System.Collections.Generic;
+using Xunit;
 
 namespace JsonWebToken.Tests
 {
@@ -47,7 +48,6 @@ namespace JsonWebToken.Tests
 
             var result = reader.TryReadToken(token, policy);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
-            Assert.Equal("Alice", result.Token.Subject);
         }
     }
 }
