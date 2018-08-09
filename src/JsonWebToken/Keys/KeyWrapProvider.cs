@@ -48,7 +48,7 @@ namespace JsonWebToken
         /// <returns>wrapped key.</returns>
         public abstract bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten);
 
-        public abstract int GetKeyUnwrapSize(int inputSize, string algorithm);
+        public abstract int GetKeyUnwrapSize(int inputSize);
 
         public abstract int GetKeyWrapSize();
     }

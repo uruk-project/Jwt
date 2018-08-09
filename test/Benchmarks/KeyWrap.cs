@@ -40,7 +40,7 @@ namespace JsonWebToken.Performance
             AesKeyWrapProvider kwp = new AesKeyWrapProvider(_key, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes256KW);
             wrappedKey = new byte[kwp.GetKeyWrapSize()];
             kwp.TryWrapKey(_keyToWrap, null, wrappedKey, out var cek, out var bytesWritten);
-            unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length, KeyManagementAlgorithms.Aes256KW)];
+            unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
         }
 
         [Benchmark]

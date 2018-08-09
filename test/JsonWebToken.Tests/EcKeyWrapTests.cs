@@ -63,7 +63,7 @@ namespace JsonWebToken.Tests
                 Epk = header[HeaderParameters.Epk].ToObject<ECJwk>()
             };
 
-            byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length, KeyManagementAlgorithms.EcdhEsAes128KW)];
+            byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
             var unwrapped = kwp2.TryUnwrapKey(wrappedKey, unwrappedKey, jwtHeader, out bytesWritten);
 
             Assert.True(unwrapped);
@@ -90,7 +90,7 @@ namespace JsonWebToken.Tests
                 Epk = header[HeaderParameters.Epk].ToObject<ECJwk>()
             };
 
-            byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length, KeyManagementAlgorithms.EcdhEsAes128KW)];
+            byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
             var unwrapped = kwp2.TryUnwrapKey(wrappedKey, unwrappedKey, jwtHeader, out bytesWritten);
 
             Assert.True(unwrapped);

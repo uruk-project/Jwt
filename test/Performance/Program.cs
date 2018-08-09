@@ -74,7 +74,7 @@ namespace Performance
 
             var kwp = new AesKeyWrapProvider(_key, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes256KW);
             byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
-            var unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length, KeyManagementAlgorithms.Aes256KW)];
+            var unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
             while (true)
             {
                 var wrapped = kwp.TryWrapKey(_keyToWrap, null, wrappedKey, out var cek, out var bytesWritten);
