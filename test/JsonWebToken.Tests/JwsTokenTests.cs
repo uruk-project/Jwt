@@ -48,7 +48,7 @@ namespace JsonWebToken.Tests
             E = "AQAB",
         };
 
-        private readonly ECJwk _privateEcc256Key = new ECJwk
+        private readonly EccJwk _privateEcc256Key = new EccJwk
         {
             Crv = "P-256",
             X = "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
@@ -56,14 +56,14 @@ namespace JsonWebToken.Tests
             D = "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
         };
 
-        private readonly ECJwk _publicEcc256Key = new ECJwk
+        private readonly EccJwk _publicEcc256Key = new EccJwk
         {
             Crv = "P-256",
             X = "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
             Y = "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck"
         };
 
-        private readonly ECJwk _publicEcc384Key = new ECJwk
+        private readonly EccJwk _publicEcc384Key = new EccJwk
         {
             Crv = "P-384",
             D = "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
@@ -71,7 +71,7 @@ namespace JsonWebToken.Tests
             Y = "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         };
 
-        private readonly ECJwk _privateEcc384Key = new ECJwk
+        private readonly EccJwk _privateEcc384Key = new EccJwk
         {
             Crv = "P-384",
             D = "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
@@ -79,7 +79,7 @@ namespace JsonWebToken.Tests
             Y = "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         };
 
-        private readonly ECJwk _privateEcc512Key = new ECJwk
+        private readonly EccJwk _privateEcc512Key = new EccJwk
         {
             Crv = "P-521",
             D = "Adri8PbGJBWN5upp_67cKF8E0ADCF-w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HISTMh_RSmFFhTfBH",
@@ -87,7 +87,7 @@ namespace JsonWebToken.Tests
             Y = "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y"
         };
 
-        private readonly ECJwk _publicEcc512Key = new ECJwk
+        private readonly EccJwk _publicEcc512Key = new EccJwk
         {
             Crv = "P-521",
             X = "AEeo_Y06znu6MVjyvJW2_SX_JKK2DxbxF3QjAqkZhMTvwgLc3Z073vFwwiCHKcOwK2b5H8H4a7PDN6DGJ6YJjpN0",

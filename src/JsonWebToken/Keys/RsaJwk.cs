@@ -101,7 +101,12 @@ namespace JsonWebToken
             if (IsSupportedAlgorithm(algorithm))
             {
                 var provider = new RsaSignatureProvider(this, algorithm, willCreateSignatures);
-                providers.TryAdd(algorithm, provider);
+                if (!providers.TryAdd(algorithm, provider) && providers.TryGetValue(algorithm, out cachedProvider))
+                {
+                    provider.Dispose();
+                    return cachedProvider;
+                }
+
                 return provider;
             }
 

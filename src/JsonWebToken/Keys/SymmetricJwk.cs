@@ -138,7 +138,12 @@ namespace JsonWebToken
             if (IsSupportedAlgorithm(algorithm))
             {
                 var provider = new SymmetricSignatureProvider(this, algorithm);
-                _signatureProviders.TryAdd(algorithm, provider);
+                if (!_signatureProviders.TryAdd(algorithm, provider) && _signatureProviders.TryGetValue(algorithm, out cachedProvider))
+                {
+                    provider.Dispose();
+                    return cachedProvider;
+                }
+
                 return provider;
             }
 
@@ -169,28 +174,40 @@ namespace JsonWebToken
                     _keyWrapProviders.TryAdd(encryptionAlgorithm, providers);
                 }
 
-                providers.TryAdd(contentEncryptionAlgorithm, provider);
+                if (!providers.TryAdd(contentEncryptionAlgorithm, provider) && providers.TryGetValue(encryptionAlgorithm, out var cachedProvider))
+                {
+                    provider.Dispose();
+                    return cachedProvider;
+                }
+
                 return provider;
             }
 
             return null;
         }
 
-        public override AuthenticatedEncryptionProvider CreateAuthenticatedEncryptionProvider(string algorithm)
+        public override AuthenticatedEncryptionProvider CreateAuthenticatedEncryptionProvider(string encryptionAlgorithm)
         {
-            if (algorithm == null)
+            if (encryptionAlgorithm == null)
             {
                 return null;
             }
 
-            if (_encryptionProviders.TryGetValue(algorithm, out var cachedProvider))
+            if (_encryptionProviders.TryGetValue(encryptionAlgorithm, out var cachedProvider))
             {
                 return cachedProvider;
             }
 
-            if (IsSupportedAuthenticatedEncryptionAlgorithm(algorithm))
+            if (IsSupportedAuthenticatedEncryptionAlgorithm(encryptionAlgorithm))
             {
-                return new AuthenticatedEncryptionProvider(this, algorithm);
+                var provider = new AuthenticatedEncryptionProvider(this, encryptionAlgorithm);
+                if (!_encryptionProviders.TryAdd(encryptionAlgorithm, provider) && _encryptionProviders.TryGetValue(encryptionAlgorithm, out cachedProvider))
+                {
+                    provider.Dispose();
+                    return cachedProvider;
+                }
+
+                return provider;
             }
 
             return null;

@@ -8,12 +8,12 @@ using System.Text;
 
 namespace JsonWebToken
 {
-    public class ECKeyWrapProvider : KeyWrapProvider
+    public class EcdhKeyWrapProvider : KeyWrapProvider
     {
         private readonly string _finalAlgorithm;
         private readonly int _keyLength;
 
-        public ECKeyWrapProvider(ECJwk key, string encryptionAlgorithm, string contentEncryptionAlgorithm)
+        public EcdhKeyWrapProvider(EccJwk key, string encryptionAlgorithm, string contentEncryptionAlgorithm)
         {
             if (contentEncryptionAlgorithm == null)
             {
@@ -92,7 +92,7 @@ namespace JsonWebToken
 
                 var ephemeralJwk = header.Epk;
                 var otherPartyPublicKey = CreateECDiffieHellman(ephemeralJwk).PublicKey;
-                var privateKey = CreateECDiffieHellman((ECJwk)Key);
+                var privateKey = CreateECDiffieHellman((EccJwk)Key);
 
                 int secretPrependLength = sizeof(int);
                 int algorithmLength = sizeof(int) + Encoding.ASCII.GetByteCount(algorithm);
@@ -171,14 +171,14 @@ namespace JsonWebToken
             }
         }
 
-        private static ECDiffieHellman CreateECDiffieHellman(ECJwk key)
+        private static ECDiffieHellman CreateECDiffieHellman(EccJwk key)
         {
             var ecdh = ECDiffieHellman.Create();
             ecdh.ImportParameters(key.ToParameters());
             return ecdh;
         }
 
-        private static ECDiffieHellmanPublicKey CreateEcdhPublicKey(ECJwk key)
+        private static ECDiffieHellmanPublicKey CreateEcdhPublicKey(EccJwk key)
         {
             return CreateECDiffieHellman(key).PublicKey;
         }
@@ -187,14 +187,14 @@ namespace JsonWebToken
         {
             try
             {
-                using (var ephemeralKey = (staticKey == null) ? ECDiffieHellman.Create() : ECDiffieHellman.Create(((ECJwk)staticKey).ToParameters()))
+                using (var ephemeralKey = (staticKey == null) ? ECDiffieHellman.Create() : ECDiffieHellman.Create(((EccJwk)staticKey).ToParameters()))
                 {
                     if (staticKey == null)
                     {
                         ephemeralKey.GenerateKey(ECCurve.NamedCurves.nistP256);
                     }
 
-                    var otherPartyPublicKey = CreateEcdhPublicKey((ECJwk)Key);
+                    var otherPartyPublicKey = CreateEcdhPublicKey((EccJwk)Key);
 
                     var partyUInfo = GetPartyInfo(header, HeaderParameters.Apu);
                     var partyVInfo = GetPartyInfo(header, HeaderParameters.Apv);
@@ -217,7 +217,7 @@ namespace JsonWebToken
                     var hashAlgorithm = GetHashAlgorithm(EncryptionAlgorithm);
                     var exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyPublicKey, hashAlgorithm, secretPrepend.ToArray(), secretAppend.ToArray());
 
-                    var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
+                    var epk = EccJwk.FromParameters(ephemeralKey.ExportParameters(false));
                     header.Add(HeaderParameters.Epk, JToken.FromObject(epk));
 
                     bool isDirectEncryption = Algorithm == KeyManagementAlgorithms.EcdhEs;
