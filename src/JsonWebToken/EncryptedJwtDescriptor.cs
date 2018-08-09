@@ -30,7 +30,7 @@ namespace JsonWebToken
         }
 
 #if NETCOREAPP2_1
-        unsafe protected string EncryptToken(string payload)
+        protected string EncryptToken(string payload)
         {
             if (payload == null)
             {
@@ -57,7 +57,7 @@ namespace JsonWebToken
             }
         }
 #else
-        unsafe protected string EncryptToken(string payload)
+        protected string EncryptToken(string payload)
         {
             if (payload == null)
             {
