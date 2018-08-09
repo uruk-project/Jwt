@@ -21,8 +21,6 @@ namespace JsonWebToken.Tests
         [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEsAes128KW)]
         [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEsAes192KW)]
         [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEsAes256KW)]
-
-        [InlineData(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, KeyManagementAlgorithms.EcdhEsAes128KW)]
         public void Encode_Decode(string enc, string alg)
         {
             var writer = new JsonWebTokenWriter();
