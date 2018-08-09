@@ -416,9 +416,9 @@ namespace JsonWebToken
             }
         }
 
-        public override int GetKeyUnwrapSize(int inputSize, string algorithm)
+        public override int GetKeyUnwrapSize(int inputSize)
         {
-            return GetKeyUnwrappedSize(inputSize, algorithm);
+            return GetKeyUnwrappedSize(inputSize, Algorithm);
         }
 
         public override int GetKeyWrapSize()

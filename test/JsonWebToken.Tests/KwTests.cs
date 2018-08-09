@@ -17,7 +17,7 @@ namespace JsonWebToken.Tests
             var wrapped = kwp.TryWrapKey(_keyToWrap, null, wrappedKey, out var cek, out var bytesWritten);
             Assert.True(wrapped);
 
-            var unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length, KeyManagementAlgorithms.Aes256KW)];
+            var unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
             var unwrapped = kwp.TryUnwrapKey(wrappedKey, unwrappedKey, null, out int keyWrappedBytesWritten);
             Assert.True(unwrapped);
         }

@@ -46,17 +46,21 @@ namespace JsonWebToken
             }
         }
 
-        public override int GetKeyUnwrapSize(int inputSize, string algorithm)
+        public override int GetKeyUnwrapSize(int inputSize)
         {
-            switch (algorithm)
+            switch (EncryptionAlgorithm)
             {
-                case KeyManagementAlgorithms.EcdhEs:
-                case KeyManagementAlgorithms.EcdhEsAes128KW:
-                case KeyManagementAlgorithms.EcdhEsAes192KW:
-                case KeyManagementAlgorithms.EcdhEsAes256KW:
+                case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
+                case ContentEncryptionAlgorithms.Aes128Gcm:
                     return 32;
+                case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
+                case ContentEncryptionAlgorithms.Aes192Gcm:
+                    return 48;
+                case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
+                case ContentEncryptionAlgorithms.Aes256Gcm:
+                    return 64;
                 default:
-                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
+                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, EncryptionAlgorithm));
             }
         }
 
