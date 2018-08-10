@@ -12,6 +12,7 @@ namespace JsonWebToken
     {
         private readonly string _finalAlgorithm;
         private readonly int _keyLength;
+        private readonly HashAlgorithmName _hashAlgorithm;
 
         public EcdhKeyWrapProvider(EccJwk key, string encryptionAlgorithm, string contentEncryptionAlgorithm)
         {
@@ -30,6 +31,7 @@ namespace JsonWebToken
             EncryptionAlgorithm = encryptionAlgorithm;
             _finalAlgorithm = GetFinalAlgorithm();
             _keyLength = GetKeyLength(_finalAlgorithm);
+            _hashAlgorithm = GetHashAlgorithm(encryptionAlgorithm);
         }
 
         private bool IsSupportedAlgorithm(string algorithm)
@@ -86,7 +88,7 @@ namespace JsonWebToken
                     return false;
                 }
 
-                string algorithm = GetFinalAlgorithm();
+                string algorithm = _finalAlgorithm;
                 byte[] partyUInfo = GetPartyInfo(header.Apu);
                 byte[] partyVInfo = GetPartyInfo(header.Apv);
 
@@ -110,8 +112,7 @@ namespace JsonWebToken
                 WritePartyInfo(partyVInfo, secretAppend.Slice(algorithmLength + partyUInfoLength));
                 WriteSuppInfo(algorithm, secretAppend.Slice(algorithmLength + partyUInfoLength + partyVInfoLength));
 
-                var hashAlgorithm = GetHashAlgorithm(algorithm);
-                var exchangeHash = privateKey.DeriveKeyFromHash(otherPartyPublicKey, hashAlgorithm, secretPrepend.ToArray(), secretAppend.ToArray());
+                var exchangeHash = privateKey.DeriveKeyFromHash(otherPartyPublicKey, _hashAlgorithm, secretPrepend.ToArray(), secretAppend.ToArray());
 
                 var produceEncryptedKey = Algorithm != KeyManagementAlgorithms.EcdhEs;
                 if (produceEncryptedKey)
@@ -158,9 +159,9 @@ namespace JsonWebToken
             }
         }
 
-        private static HashAlgorithmName GetHashAlgorithm(string algorithm)
+        private static HashAlgorithmName GetHashAlgorithm(string encryptionAlgorithm)
         {
-            switch (algorithm)
+            switch (encryptionAlgorithm)
             {
                 case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
                     return HashAlgorithmName.SHA384;
@@ -214,8 +215,7 @@ namespace JsonWebToken
                     WritePartyInfo(partyVInfo, secretAppend.Slice(algorithmLength + partyUInfoLength));
                     WriteSuppInfo(_finalAlgorithm, secretAppend.Slice(algorithmLength + partyUInfoLength + partyVInfoLength));
 
-                    var hashAlgorithm = GetHashAlgorithm(EncryptionAlgorithm);
-                    var exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyPublicKey, hashAlgorithm, secretPrepend.ToArray(), secretAppend.ToArray());
+                    var exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyPublicKey, _hashAlgorithm, secretPrepend.ToArray(), secretAppend.ToArray());
 
                     var epk = EccJwk.FromParameters(ephemeralKey.ExportParameters(false));
                     header.Add(HeaderParameters.Epk, JToken.FromObject(epk));
