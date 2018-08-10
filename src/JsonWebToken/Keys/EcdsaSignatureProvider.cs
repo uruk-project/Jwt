@@ -1,5 +1,4 @@
-﻿#if NETCOREAPP2_1
-using JsonWebToken.ObjectPooling;
+﻿using JsonWebToken.ObjectPooling;
 using System;
 using System.Security.Cryptography;
 
@@ -19,7 +18,7 @@ namespace JsonWebToken
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for signature operations.</param>
         /// <param name="algorithm">The signature algorithm to apply.</param>
         /// <param name="willCreateSignatures">Whether is required to create signatures then set this to true.</param>
-        public EcdsaSignatureProvider(ECJwk key, string algorithm, bool willCreateSignatures)
+        public EcdsaSignatureProvider(EccJwk key, string algorithm, bool willCreateSignatures)
             : base(key, algorithm)
         {
             if (key == null)
@@ -132,7 +131,7 @@ namespace JsonWebToken
 #endif
         }
 
-        private static ECDsa ResolveAlgorithm(ECJwk key, string algorithm, bool usePrivateKey)
+        private static ECDsa ResolveAlgorithm(EccJwk key, string algorithm, bool usePrivateKey)
         {
             return key.CreateECDsa(algorithm, usePrivateKey);
         }
@@ -159,11 +158,11 @@ namespace JsonWebToken
 
         private class ECDsaObjectPoolPolicy : PooledObjectPolicy<ECDsa>
         {
-            private readonly ECJwk _key;
+            private readonly EccJwk _key;
             private readonly string _algorithm;
             private readonly bool _usePrivateKey;
 
-            public ECDsaObjectPoolPolicy(ECJwk key, string algorithm, bool usePrivateKey)
+            public ECDsaObjectPoolPolicy(EccJwk key, string algorithm, bool usePrivateKey)
             {
                 _key = key;
                 _algorithm = algorithm;
@@ -182,4 +181,3 @@ namespace JsonWebToken
         }
     }
 }
-#endif

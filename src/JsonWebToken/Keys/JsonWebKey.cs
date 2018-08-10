@@ -41,7 +41,7 @@ namespace JsonWebToken
                         break;
 #if NETCOREAPP2_1
                     case JsonWebAlgorithmsKeyTypes.EllipticCurve:
-                        jwk = new ECJwk();
+                        jwk = new EccJwk();
                         break;
 #endif
                     case JsonWebAlgorithmsKeyTypes.Octet:
@@ -350,7 +350,7 @@ namespace JsonWebToken
                     if (ecdsa != null)
                     {
                         var ecParameters = ecdsa.ExportParameters(false);
-                        key = new ECJwk(ecParameters);
+                        key = new EccJwk(ecParameters);
                     }
                 }
 #endif
@@ -370,7 +370,7 @@ namespace JsonWebToken
                     if (ecdsa != null)
                     {
                         var ecParameters = ecdsa.ExportParameters(false);
-                        key = new ECJwk(ecParameters);
+                        key = new EccJwk(ecParameters);
                     }
                 }
 #endif

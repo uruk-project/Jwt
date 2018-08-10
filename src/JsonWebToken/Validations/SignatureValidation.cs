@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 
 namespace JsonWebToken.Validations
 {
@@ -10,11 +8,13 @@ namespace JsonWebToken.Validations
     {
         private readonly IKeyProvider _keyProvider;
         private readonly bool _supportUnsecure;
+        private readonly string _algorithm;
 
-        public SignatureValidation(IKeyProvider keyProvider, bool supportUnsecure)
+        public SignatureValidation(IKeyProvider keyProvider, bool supportUnsecure, string algorithm)
         {
             _keyProvider = keyProvider;
             _supportUnsecure = supportUnsecure;
+            _algorithm = algorithm;
         }
 
         public TokenValidationResult TryValidate(TokenValidationContext context)
@@ -64,7 +64,7 @@ namespace JsonWebToken.Validations
             for (int i = 0; i < keys.Count; i++)
             {
                 JsonWebKey key = keys[i];
-                if (TryValidateSignature(encodedBytes, signatureBytes, key, key.Alg))
+                if (TryValidateSignature(encodedBytes, signatureBytes, key, _algorithm ?? key.Alg))
                 {
                     jwt.SigningKey = key;
                     return TokenValidationResult.Success(jwt);

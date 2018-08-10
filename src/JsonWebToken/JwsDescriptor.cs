@@ -285,7 +285,7 @@ namespace JsonWebToken
             if (Key != null)
             {
                 var key = Key;
-                signatureProvider = key.CreateSignatureProvider(key.Alg, true);
+                signatureProvider = key.CreateSignatureProvider(Algorithm ?? key.Alg, true);
                 if (signatureProvider == null)
                 {
                     throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, (key == null ? "Null" : key.Alg), (key.Kid ?? "Null")));

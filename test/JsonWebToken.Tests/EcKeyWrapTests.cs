@@ -7,7 +7,7 @@ namespace JsonWebToken.Tests
 {
     public class EcKeyWrapTests
     {
-        private readonly ECJwk _aliceKey = new ECJwk
+        private readonly EccJwk _aliceKey = new EccJwk
         {
             Kty = "EC",
             Crv = "P-256",
@@ -15,7 +15,7 @@ namespace JsonWebToken.Tests
             Y = "SLW_xSffzlPWrHEVI30DHM_4egVwt3NQqeUD7nMFpps",
             D = "0_NxaRPUMQoAJt50Gz8YiTr8gRTwyEaCumd-MToTmIo",
         };
-        private readonly ECJwk _bobKey = new ECJwk
+        private readonly EccJwk _bobKey = new EccJwk
         {
             Kty = "EC",
             Crv = "P-256",
@@ -27,7 +27,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Wrap()
         {
-            var kwp = new ECKeyWrapProvider(_bobKey, ContentEncryptionAlgorithms.Aes128Gcm, KeyManagementAlgorithms.EcdhEs);
+            var kwp = new EcdhKeyWrapProvider(_bobKey, ContentEncryptionAlgorithms.Aes128Gcm, KeyManagementAlgorithms.EcdhEs);
             byte[] wrappedKey = null;
             var header = new JObject
             {
@@ -45,7 +45,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Unwrap()
         {
-            var kwp = new ECKeyWrapProvider(_bobKey, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEsAes128KW);
+            var kwp = new EcdhKeyWrapProvider(_bobKey, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEsAes128KW);
             byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
             var header = new JObject
             {
@@ -55,12 +55,12 @@ namespace JsonWebToken.Tests
 
             var wrapped = kwp.TryWrapKey(_aliceKey, header, wrappedKey, out var cek, out var bytesWritten);
 
-            var kwp2 = new ECKeyWrapProvider(_bobKey, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEsAes128KW);
+            var kwp2 = new EcdhKeyWrapProvider(_bobKey, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEsAes128KW);
             var jwtHeader = new JwtHeader
             {
                 Apu = Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Alice")),
                 Apv = Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Bob")),
-                Epk = header[HeaderParameters.Epk].ToObject<ECJwk>()
+                Epk = header[HeaderParameters.Epk].ToObject<EccJwk>()
             };
 
             byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
@@ -72,7 +72,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Unwrap2()
         {
-            var kwp = new ECKeyWrapProvider(_bobKey, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEsAes128KW);
+            var kwp = new EcdhKeyWrapProvider(_bobKey, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEsAes128KW);
             byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
             var header = new JObject
             {
@@ -82,12 +82,12 @@ namespace JsonWebToken.Tests
 
             var wrapped = kwp.TryWrapKey(_aliceKey, header, wrappedKey, out var cek, out var bytesWritten);
 
-            var kwp2 = new ECKeyWrapProvider(_bobKey, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEsAes128KW);
+            var kwp2 = new EcdhKeyWrapProvider(_bobKey, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEsAes128KW);
             var jwtHeader = new JwtHeader
             {
                 Apu = Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Alice")),
                 Apv = Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Bob")),
-                Epk = header[HeaderParameters.Epk].ToObject<ECJwk>()
+                Epk = header[HeaderParameters.Epk].ToObject<EccJwk>()
             };
 
             byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];

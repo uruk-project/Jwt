@@ -66,7 +66,7 @@ namespace JsonWebToken
 
         #if NETCOREAPP2_1
         [JsonProperty(PropertyName = HeaderParameters.Epk)]
-        public ECJwk Epk { get; set; }
+        public EccJwk Epk { get; set; }
 
         [JsonProperty(PropertyName = HeaderParameters.Apu)]
         public string Apu { get; set; }
