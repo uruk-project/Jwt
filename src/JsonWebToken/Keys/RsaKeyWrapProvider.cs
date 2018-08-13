@@ -25,16 +25,6 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (contentEncryptionAlgorithm == KeyManagementAlgorithm.Empty)
-            {
-                throw new ArgumentNullException(nameof(contentEncryptionAlgorithm));
-            }
-
-            if (encryptionAlgorithm == EncryptionAlgorithm.Empty)
-            {
-                throw new ArgumentNullException(nameof(encryptionAlgorithm));
-            }
-
             if (!key.IsSupportedAlgorithm(contentEncryptionAlgorithm))
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, contentEncryptionAlgorithm));
@@ -69,14 +59,17 @@ namespace JsonWebToken
 
         private static RSAEncryptionPadding ResolvePadding(in KeyManagementAlgorithm algorithm)
         {
-            switch (algorithm.Id)
+            if (algorithm == KeyManagementAlgorithm.RsaOaep)
             {
-                case KeyManagementAlgorithms.RsaOaepId:
-                    return RSAEncryptionPadding.OaepSHA1;
-                case KeyManagementAlgorithms.RsaOaep256Id:
-                    return RSAEncryptionPadding.OaepSHA256;
-                case KeyManagementAlgorithms.RsaPkcs1Id:
-                    return RSAEncryptionPadding.Pkcs1;
+                return RSAEncryptionPadding.OaepSHA1;
+            }
+            else if (algorithm == KeyManagementAlgorithm.RsaOaep256)
+            {
+                return RSAEncryptionPadding.OaepSHA256;
+            }
+            else if (algorithm == KeyManagementAlgorithm.RsaPkcs1)
+            {
+                return RSAEncryptionPadding.OaepSHA256;
             }
 
             throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
@@ -161,14 +154,13 @@ namespace JsonWebToken
 
         private static RSA ResolveRsaAlgorithm(RsaJwk key, in KeyManagementAlgorithm algorithm)
         {
+#if NETCOREAPP2_1
+            return RSA.Create(key.ExportParameters());
+#else
             var rsa = RSA.Create();
-            if (rsa != null)
-            {
-                RSAParameters parameters = key.CreateRsaParameters();
-                rsa.ImportParameters(parameters);
-            }
-
+            rsa.ImportParameters(key.ExportParameters());
             return rsa;
+#endif
         }
 
         public override int GetKeyUnwrapSize(int inputSize)

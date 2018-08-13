@@ -21,7 +21,7 @@ namespace JsonWebToken
 
         public RsaJwk()
         {
-            Kty = KeyTypes.RSA;
+            Kty = JsonWebKeyTypeNames.Rsa;
         }
 
         public RsaJwk(RSAParameters rsaParameters)
@@ -44,7 +44,7 @@ namespace JsonWebToken
             RawN = CloneArray(n);
         }
 
-        public RSAParameters CreateRsaParameters()
+        public RSAParameters ExportParameters()
         {
             if (N == null || E == null)
             {
@@ -68,12 +68,12 @@ namespace JsonWebToken
 
         public override bool IsSupportedAlgorithm(in SignatureAlgorithm algorithm)
         {
-            return algorithm.KeyType == KeyTypes.RSA;
+            return algorithm.Category == AlgorithmCategory.Rsa;
         }
 
         public override bool IsSupportedAlgorithm(in KeyManagementAlgorithm algorithm)
         {
-            return algorithm.KeyType == KeyTypes.RSA;
+            return algorithm.Category == AlgorithmCategory.Rsa;
         }
 
         public override bool IsSupportedAlgorithm(in EncryptionAlgorithm algorithm)

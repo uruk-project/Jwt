@@ -8,9 +8,9 @@ namespace JsonWebToken
     {
         private readonly ObjectPool<RSA> _hashAlgorithmPool;
 
-        private HashAlgorithmName _hashAlgorithm;
-        private int _hashSizeInBytes;
-        private RSASignaturePadding _signaturePadding;
+        private readonly HashAlgorithmName _hashAlgorithm;
+        private readonly int _hashSizeInBytes;
+        private readonly RSASignaturePadding _signaturePadding;
 
         private bool _disposed;
 
@@ -49,17 +49,17 @@ namespace JsonWebToken
             }
 
             _hashAlgorithm = algorithm.HashAlgorithm;
-            switch (algorithm.Id)
+            switch (algorithm.Name)
             {
-                case SignatureAlgorithms.RsaSha256Id:
-                case SignatureAlgorithms.RsaSha384Id:
-                case SignatureAlgorithms.RsaSha512Id:
+                case SignatureAlgorithms.RsaSha256:
+                case SignatureAlgorithms.RsaSha384:
+                case SignatureAlgorithms.RsaSha512:
                     _signaturePadding = RSASignaturePadding.Pkcs1;
                     break;
 
-                case SignatureAlgorithms.RsaSsaPssSha256Id:
-                case SignatureAlgorithms.RsaSsaPssSha384Id:
-                case SignatureAlgorithms.RsaSsaPssSha512Id:
+                case SignatureAlgorithms.RsaSsaPssSha256:
+                case SignatureAlgorithms.RsaSsaPssSha384:
+                case SignatureAlgorithms.RsaSsaPssSha512:
                     _signaturePadding = RSASignaturePadding.Pss;
                     break;
 
@@ -68,7 +68,7 @@ namespace JsonWebToken
             }
 
             _hashSizeInBytes = key.KeySizeInBits >> 3;
-            _hashAlgorithmPool = new ObjectPool<RSA>(new RsaObjectPoolPolicy(key.CreateRsaParameters()));
+            _hashAlgorithmPool = new ObjectPool<RSA>(new RsaObjectPoolPolicy(key.ExportParameters()));
         }
 
         public override int HashSizeInBytes => _hashSizeInBytes;
@@ -170,7 +170,7 @@ namespace JsonWebToken
             }
         }
 
-        private class RsaObjectPoolPolicy : PooledObjectPolicy<RSA>
+        private sealed class RsaObjectPoolPolicy : PooledObjectPolicy<RSA>
         {
             private readonly RSAParameters _parameters;
 
@@ -181,9 +181,13 @@ namespace JsonWebToken
 
             public override RSA Create()
             {
+#if NETCOREAPP2_1
+                return RSA.Create(_parameters);
+#else
                 var rsa = RSA.Create();
                 rsa.ImportParameters(_parameters);
                 return rsa;
+#endif
             }
 
             public override bool Return(RSA obj)

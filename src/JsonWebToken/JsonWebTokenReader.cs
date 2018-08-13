@@ -369,7 +369,7 @@ namespace JsonWebToken
             var operationResult = Base64Url.Base64UrlDecode(rawEncryptedKey, encryptedKey, out int bytesConsumed, out int bytesWritten);
             Debug.Assert(operationResult == OperationStatus.Done);
 
-            var unwrappedKeys = new List<JsonWebKey>();
+            var unwrappedKeys = new List<JsonWebKey>(1);
             for (int i = 0; i < keys.Count; i++)
             {
                 var key = keys[i];
@@ -400,7 +400,7 @@ namespace JsonWebToken
             var kid = header.Kid;
             var alg = header.Alg;
 
-            var keys = new List<JsonWebKey>();
+            var keys = new List<JsonWebKey>(1);
             for (int i = 0; i < _encryptionKeyProviders.Length; i++)
             {
                 var keySet = _encryptionKeyProviders[i].GetKeys(header);

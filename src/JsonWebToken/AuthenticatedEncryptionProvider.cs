@@ -32,13 +32,8 @@ namespace JsonWebToken
             {
                 throw new ArgumentNullException(nameof(key));
             }
-
-            if (encryptionAlgorithm == EncryptionAlgorithm.Empty)
-            {
-                throw new ArgumentNullException(nameof(encryptionAlgorithm));
-            }
-
-            if (encryptionAlgorithm.EncryptionType != EncryptionTypes.AesHmac)
+            
+            if (encryptionAlgorithm.Category != EncryptionTypes.AesHmac)
             {
                 throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
             }

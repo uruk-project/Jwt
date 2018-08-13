@@ -25,7 +25,7 @@ namespace JsonWebToken
 
             if (reader.TokenType == JsonToken.StartArray)
             {
-                var audiences = new List<string>();
+                var audiences = new List<string>(1);
                 reader.Read();
                 while (reader.TokenType == JsonToken.String)
                 {

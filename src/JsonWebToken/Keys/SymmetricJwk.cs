@@ -26,7 +26,7 @@ namespace JsonWebToken
 
         public SymmetricJwk()
         {
-            Kty = KeyTypes.Octet;
+            Kty = JsonWebKeyTypeNames.Octet;
         }
 
         /// <summary>
@@ -100,26 +100,17 @@ namespace JsonWebToken
 
         public override bool IsSupportedAlgorithm(in KeyManagementAlgorithm algorithm)
         {
-            return algorithm.KeyType == KeyTypes.Octet && algorithm.RequiredKeySizeInBits == KeySizeInBits;
+            return algorithm.Category == AlgorithmCategory.Symmetric && algorithm.RequiredKeySizeInBits == KeySizeInBits;
         }
 
         public override bool IsSupportedAlgorithm(in SignatureAlgorithm algorithm)
         {
-            return algorithm.KeyType == KeyTypes.Octet;
+            return algorithm.Category == AlgorithmCategory.Symmetric;
         }
 
         public override bool IsSupportedAlgorithm(in EncryptionAlgorithm algorithm)
         {
-            switch (algorithm.SignatureAlgorithm.HashAlgorithm.Name)
-            {
-                case "SHA256":
-                    return KeySizeInBits >= 256;
-                case "SHA384":
-                    return KeySizeInBits >= 384;
-                case "SHA512":
-                    return KeySizeInBits >= 512;
-            }
-            return false;
+            return algorithm.Category == EncryptionTypes.AesHmac;
         }
 
         public override SignatureProvider CreateSignatureProvider(in SignatureAlgorithm algorithm, bool willCreateSignatures)
@@ -187,17 +178,12 @@ namespace JsonWebToken
 
         public override AuthenticatedEncryptionProvider CreateAuthenticatedEncryptionProvider(in EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (encryptionAlgorithm == EncryptionAlgorithm.Empty)
-            {
-                return null;
-            }
-
             if (_encryptionProviders.TryGetValue(encryptionAlgorithm, out var cachedProvider))
             {
                 return cachedProvider;
             }
 
-            if (IsSupportedAuthenticatedEncryptionAlgorithm(encryptionAlgorithm))
+            if (IsSupportedAlgorithm(encryptionAlgorithm))
             {
                 var provider = new AuthenticatedEncryptionProvider(this, encryptionAlgorithm);
                 if (!_encryptionProviders.TryAdd(encryptionAlgorithm, provider) && _encryptionProviders.TryGetValue(encryptionAlgorithm, out cachedProvider))
@@ -210,11 +196,6 @@ namespace JsonWebToken
             }
 
             return null;
-        }
-
-        private static bool IsSupportedAuthenticatedEncryptionAlgorithm(in EncryptionAlgorithm encryptionAlgorithm)
-        {
-            return encryptionAlgorithm.EncryptionType == EncryptionTypes.AesHmac;
         }
 
         public static SymmetricJwk FromBase64Url(string k, bool computeThumbprint = true)

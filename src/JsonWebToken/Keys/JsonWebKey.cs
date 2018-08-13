@@ -70,13 +70,13 @@ namespace JsonWebToken
                 JsonWebKey jwk;
                 switch (jsonObject[JsonWebKeyParameterNames.Kty].Value<string>())
                 {
-                    case KeyTypes.RSA:
+                    case JsonWebKeyTypeNames.Rsa:
                         jwk = new RsaJwk();
                         break;
-                    case KeyTypes.EllipticCurve:
+                    case JsonWebKeyTypeNames.EllipticCurve:
                         jwk = new EccJwk();
                         break;
-                    case KeyTypes.Octet:
+                    case JsonWebKeyTypeNames.Octet:
                         jwk = new SymmetricJwk();
                         break;
                     default:

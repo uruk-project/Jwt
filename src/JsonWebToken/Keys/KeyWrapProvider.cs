@@ -11,7 +11,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the KeyWrap algorithm that is being used.
         /// </summary>
-        public KeyManagementAlgorithm Algorithm { get; protected set; }
+        public KeyManagementAlgorithm Algorithm { get;  protected set; }
 
         public EncryptionAlgorithm EncryptionAlgorithm { get; protected set; }
 
@@ -45,7 +45,7 @@ namespace JsonWebToken
         /// <summary>
         /// Wrap a key.
         /// </summary>
-        /// <param name="keyBytes">the key to be wrapped</param>
+        /// <param name="staticKey">The key to be wrapped. If <c>null</c>, the key will be ephemeral and generated within this method.</param>
         /// <returns>wrapped key.</returns>
         public abstract bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten);
 

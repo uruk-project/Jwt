@@ -17,22 +17,22 @@ namespace JsonWebToken
 
         public static readonly IDictionary<string, EncryptionAlgorithm> AdditionalAlgorithms = new Dictionary<string, EncryptionAlgorithm>();
 
-        public readonly string Name;
-        public readonly long Id;
+        private readonly long _id;
 
+        public readonly string Name;
         public readonly int RequiredKeySizeInBytes;
         public readonly SignatureAlgorithm SignatureAlgorithm;
         public readonly int RequiredKeyWrappedSizeInBytes;
-        public readonly EncryptionTypes EncryptionType;
+        public readonly EncryptionTypes Category;
 
         private EncryptionAlgorithm(long id, string name, int requiredKeySizeInBytes, SignatureAlgorithm hashAlgorithm, int requiredKeyWrappedSizeInBytes, EncryptionTypes encryptionType)
         {
+            _id = id;
             Name = name;
-            Id = id;
             RequiredKeySizeInBytes = requiredKeySizeInBytes;
             SignatureAlgorithm = hashAlgorithm;
             RequiredKeyWrappedSizeInBytes = requiredKeyWrappedSizeInBytes;
-            EncryptionType = encryptionType;
+            Category = encryptionType;
         }
 
         public override bool Equals(object obj)
@@ -47,25 +47,25 @@ namespace JsonWebToken
 
         public bool Equals(EncryptionAlgorithm other)
         {
-            return Id == other.Id;
+            return _id == other._id;
         }
 
         public override int GetHashCode()
         {
-            return Id.GetHashCode();
+            return _id.GetHashCode();
         }
 
-        public static bool operator ==(EncryptionAlgorithm x, EncryptionAlgorithm y)
+        public static bool operator ==(in EncryptionAlgorithm x, in EncryptionAlgorithm y)
         {
-            return x.Id == y.Id;
+            return x._id == y._id;
         }
 
-        public static bool operator !=(EncryptionAlgorithm x, EncryptionAlgorithm y)
+        public static bool operator !=(in EncryptionAlgorithm x, in EncryptionAlgorithm y)
         {
-            return x.Id != y.Id;
+            return x._id != y._id;
         }
 
-        public static explicit operator string(EncryptionAlgorithm value)
+        public static explicit operator string(in EncryptionAlgorithm value)
         {
             return value.Name;
         }
@@ -99,6 +99,11 @@ namespace JsonWebToken
             }
 
             throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, value));
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

@@ -72,15 +72,13 @@ namespace JsonWebToken
             {
                 return -1;
             }
-
-            long key = alg.Id;
-           
+                       
             if (cty != null && !string.Equals(cty.Value<string>(), ContentTypeValues.Jwt, StringComparison.Ordinal))
             {
                 return -1;
             }
 
-            return key;
+            return (long)alg;
         }
 
         public void AddHeader(JObject header, in SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
@@ -118,7 +116,7 @@ namespace JsonWebToken
                     {
                         Kid = (string)kid,
                         Next = _head,
-                        Entries = new Dictionary<long, byte[]> { { key, base6UrlHeader.ToArray() } }
+                        Entries = new Dictionary<long, byte[]>(1) { { key, base6UrlHeader.ToArray() } }
                     };
                 }
                 else

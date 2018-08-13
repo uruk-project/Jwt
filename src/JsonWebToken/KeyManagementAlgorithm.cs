@@ -9,39 +9,41 @@ namespace JsonWebToken
         public static readonly KeyManagementAlgorithm Empty = default;
 
         // Key wrapping algoritmhs
-        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(1, KeyManagementAlgorithms.Direct, KeyTypes.Octet, 0);
+        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(1, KeyManagementAlgorithms.Direct, AlgorithmCategory.Symmetric, requiredKeySizeInBits: 0, produceEncryptedKey: false);
 
-        public static readonly KeyManagementAlgorithm Aes128KW = new KeyManagementAlgorithm(2, KeyManagementAlgorithms.Aes128KW, KeyTypes.Octet, 128);
-        public static readonly KeyManagementAlgorithm Aes192KW = new KeyManagementAlgorithm(3, KeyManagementAlgorithms.Aes192KW, KeyTypes.Octet, 192);
-        public static readonly KeyManagementAlgorithm Aes256KW = new KeyManagementAlgorithm(4, KeyManagementAlgorithms.Aes256KW, KeyTypes.Octet, 256);
+        public static readonly KeyManagementAlgorithm Aes128KW = new KeyManagementAlgorithm(2, KeyManagementAlgorithms.Aes128KW, AlgorithmCategory.Symmetric, 128);
+        public static readonly KeyManagementAlgorithm Aes192KW = new KeyManagementAlgorithm(3, KeyManagementAlgorithms.Aes192KW, AlgorithmCategory.Symmetric, 192);
+        public static readonly KeyManagementAlgorithm Aes256KW = new KeyManagementAlgorithm(4, KeyManagementAlgorithms.Aes256KW, AlgorithmCategory.Symmetric, 256);
 
-        public static readonly KeyManagementAlgorithm RsaPkcs1 = new KeyManagementAlgorithm(5, KeyManagementAlgorithms.RsaPkcs1, KeyTypes.RSA);
-        public static readonly KeyManagementAlgorithm RsaOaep = new KeyManagementAlgorithm(6, KeyManagementAlgorithms.RsaOaep, KeyTypes.RSA);
-        public static readonly KeyManagementAlgorithm RsaOaep256 = new KeyManagementAlgorithm(7, KeyManagementAlgorithms.RsaOaep256, KeyTypes.RSA);
+        public static readonly KeyManagementAlgorithm RsaPkcs1 = new KeyManagementAlgorithm(5, KeyManagementAlgorithms.RsaPkcs1, AlgorithmCategory.Rsa);
+        public static readonly KeyManagementAlgorithm RsaOaep = new KeyManagementAlgorithm(6, KeyManagementAlgorithms.RsaOaep, AlgorithmCategory.Rsa);
+        public static readonly KeyManagementAlgorithm RsaOaep256 = new KeyManagementAlgorithm(7, KeyManagementAlgorithms.RsaOaep256, AlgorithmCategory.Rsa);
 
-        public static readonly KeyManagementAlgorithm EcdhEs = new KeyManagementAlgorithm(8, KeyManagementAlgorithms.EcdhEs, KeyTypes.EllipticCurve);
+        public static readonly KeyManagementAlgorithm EcdhEs = new KeyManagementAlgorithm(8, KeyManagementAlgorithms.EcdhEs, AlgorithmCategory.EllipticCurve, produceEncryptedKey: false);
 
-        public static readonly KeyManagementAlgorithm EcdhEsAes128KW = new KeyManagementAlgorithm(9, KeyManagementAlgorithms.EcdhEsAes128KW, KeyTypes.EllipticCurve, wrappedAlgorithm: Aes128KW.Name);
-        public static readonly KeyManagementAlgorithm EcdhEsAes192KW = new KeyManagementAlgorithm(10, KeyManagementAlgorithms.EcdhEsAes192KW, KeyTypes.EllipticCurve, wrappedAlgorithm: Aes192KW.Name);
-        public static readonly KeyManagementAlgorithm EcdhEsAes256KW = new KeyManagementAlgorithm(11, KeyManagementAlgorithms.EcdhEsAes256KW, KeyTypes.EllipticCurve, wrappedAlgorithm: Aes256KW.Name);
+        public static readonly KeyManagementAlgorithm EcdhEsAes128KW = new KeyManagementAlgorithm(9, KeyManagementAlgorithms.EcdhEsAes128KW, AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes128KW.Name);
+        public static readonly KeyManagementAlgorithm EcdhEsAes192KW = new KeyManagementAlgorithm(10, KeyManagementAlgorithms.EcdhEsAes192KW, AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes192KW.Name);
+        public static readonly KeyManagementAlgorithm EcdhEsAes256KW = new KeyManagementAlgorithm(11, KeyManagementAlgorithms.EcdhEsAes256KW, AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes256KW.Name);
 
         public static readonly IDictionary<string, KeyManagementAlgorithm> AdditionalAlgorithms = new Dictionary<string, KeyManagementAlgorithm>();
 
-        public readonly string Name;
-        public readonly long Id;
+        private readonly long _id;
 
-        public readonly string KeyType;
+        public readonly string Name;
+        public readonly AlgorithmCategory Category;
         public readonly int RequiredKeySizeInBits;
         public readonly HashAlgorithmName HashAlgorithm;
         public readonly string WrappedAlgorithm;
+        public readonly bool ProduceEncryptedKey;
 
-        private KeyManagementAlgorithm(long id, string name, string keyType, int requiredKeySizeInBits = 0, string wrappedAlgorithm = null)
+        private KeyManagementAlgorithm(long id, string name, AlgorithmCategory keyType, int requiredKeySizeInBits = 0, string wrappedAlgorithm = null, bool produceEncryptedKey = true)
         {
+            _id = id;
             Name = name;
-            Id = id;
-            KeyType = keyType;
+            Category = keyType;
             RequiredKeySizeInBits = requiredKeySizeInBits;
             WrappedAlgorithm = wrappedAlgorithm;
+            ProduceEncryptedKey = produceEncryptedKey;
         }
 
         public override bool Equals(object obj)
@@ -56,25 +58,25 @@ namespace JsonWebToken
 
         public bool Equals(KeyManagementAlgorithm other)
         {
-            return Id == other.Id;
+            return _id == other._id;
         }
 
         public override int GetHashCode()
         {
-            return Id.GetHashCode();
+            return _id.GetHashCode();
         }
 
-        public static bool operator ==(KeyManagementAlgorithm x, KeyManagementAlgorithm y)
+        public static bool operator ==(in KeyManagementAlgorithm x, in KeyManagementAlgorithm y)
         {
-            return x.Id == y.Id;
+            return x._id == y._id;
         }
 
-        public static bool operator !=(KeyManagementAlgorithm x, KeyManagementAlgorithm y)
+        public static bool operator !=(in KeyManagementAlgorithm x, in KeyManagementAlgorithm y)
         {
-            return x.Id != y.Id;
+            return x._id != y._id;
         }
 
-        public static explicit operator string(KeyManagementAlgorithm value)
+        public static explicit operator string(in KeyManagementAlgorithm value)
         {
             return value.Name;
         }

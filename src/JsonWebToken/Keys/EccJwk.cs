@@ -47,7 +47,7 @@ namespace JsonWebToken
 
         public EccJwk()
         {
-            Kty = KeyTypes.EllipticCurve;
+            Kty = JsonWebKeyTypeNames.EllipticCurve;
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace JsonWebToken
                 throw new ArgumentOutOfRangeException(nameof(KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, validKeySize, KeySizeInBits));
             }
 
-            return ECDsa.Create(ToParameters());
+            return ECDsa.Create(ExportParameters(usePrivateKey));
         }
 
         private static int ValidKeySize(in SignatureAlgorithm algorithm)
@@ -164,17 +164,17 @@ namespace JsonWebToken
 
         public override bool IsSupportedAlgorithm(in SignatureAlgorithm algorithm)
         {
-            return algorithm.KeyType == KeyTypes.EllipticCurve;
+            return algorithm.Category == AlgorithmCategory.EllipticCurve;
         }
 
         public override bool IsSupportedAlgorithm(in KeyManagementAlgorithm algorithm)
         {
-            return algorithm.KeyType == KeyTypes.EllipticCurve;
+            return algorithm.Category == AlgorithmCategory.EllipticCurve;
         }
 
         public override bool IsSupportedAlgorithm(in EncryptionAlgorithm algorithm)
         {
-            return false;
+            return algorithm.Category == EncryptionTypes.AesHmac || algorithm.Category == EncryptionTypes.AesGcm;
         }
 
         public override SignatureProvider CreateSignatureProvider(in SignatureAlgorithm algorithm, bool willCreateSignatures)
@@ -214,17 +214,20 @@ namespace JsonWebToken
 #endif
         }
 
-        public ECParameters ToParameters()
+        public ECParameters ExportParameters(bool includePrivateParameters = false)
         {
             var parameters = new ECParameters
             {
-                D = RawD,
                 Q = new ECPoint
                 {
                     X = RawX,
                     Y = RawY
                 }
             };
+            if (includePrivateParameters)
+            {
+                parameters.D = RawD;
+            }
 
             switch (Crv)
             {
@@ -298,9 +301,8 @@ namespace JsonWebToken
         public override byte[] ToByteArray()
         {
 #if NETCOREAPP2_1
-            using (var ecdh = ECDiffieHellman.Create())
+            using (var ecdh = ECDiffieHellman.Create(ExportParameters()))
             {
-                ecdh.ImportParameters(ToParameters());
                 return ecdh.PublicKey.ToByteArray();
             }
 #else

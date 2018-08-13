@@ -33,7 +33,7 @@ namespace JsonWebToken
         {
             var jsonWebKey = new RsaJwk
             {
-                Kty = KeyTypes.RSA,
+                Kty = JsonWebKeyTypeNames.Rsa,
                 Use = JsonWebKeyUseNames.Sig,
                 Kid = certificate.Thumbprint,
                 X5t = Base64Url.Encode(certificate.GetCertHash())

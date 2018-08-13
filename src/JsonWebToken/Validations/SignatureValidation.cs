@@ -101,7 +101,7 @@ namespace JsonWebToken.Validations
 
         private List<JsonWebKey> ResolveSigningKey(JsonWebToken jwt)
         {
-            var keys = new List<JsonWebKey>();
+            var keys = new List<JsonWebKey>(1);
             var keySet = _keyProvider.GetKeys(jwt.Header);
             if (keySet != null)
             {

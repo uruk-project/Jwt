@@ -73,7 +73,6 @@ namespace JsonWebToken
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
             KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)Algorithm;
             bool isDirectEncryption = (contentEncryptionAlgorithm == KeyManagementAlgorithm.Direct);
-            bool produceEncryptedKey = !isDirectEncryption && contentEncryptionAlgorithm != KeyManagementAlgorithm.EcdhEs;
 
             AuthenticatedEncryptionProvider encryptionProvider = null;
             KeyWrapProvider kwProvider = null;
@@ -91,7 +90,9 @@ namespace JsonWebToken
             }
 
             var header = Header;
-            Span<byte> wrappedKey = produceEncryptedKey ? stackalloc byte[kwProvider.GetKeyWrapSize()] : null;
+            Span<byte> wrappedKey = contentEncryptionAlgorithm.ProduceEncryptedKey 
+                                        ? stackalloc byte[kwProvider.GetKeyWrapSize()] 
+                                        : null;
             if (!isDirectEncryption)
             {
                 JsonWebKey cek;

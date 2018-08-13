@@ -34,12 +34,12 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (algorithm == null)
+            if (!key.IsSupportedAlgorithm(encryptionAlgorithm))
             {
-                throw new ArgumentNullException(nameof(algorithm));
+                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
             }
 
-            if (!IsSupportedAlgorithm(key, algorithm))
+            if (!key.IsSupportedAlgorithm(algorithm))
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
             }
@@ -100,21 +100,6 @@ namespace JsonWebToken
             {
                 throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.CreateSymmetricAlgorithmFailed, key.Kid, algorithm), ex);
             }
-        }
-
-        private static bool IsSupportedAlgorithm(SymmetricJwk key, in KeyManagementAlgorithm algorithm)
-        {
-            if (key == null)
-            {
-                return false;
-            }
-
-            if (algorithm == KeyManagementAlgorithm.Empty)
-            {
-                return false;
-            }
-
-            return algorithm.KeyType == KeyTypes.Octet;
         }
 
         /// <summary>
