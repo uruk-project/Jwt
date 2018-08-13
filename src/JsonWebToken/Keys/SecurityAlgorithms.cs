@@ -38,6 +38,5 @@
         public const int RsaSsaPssSha384Id = 11;
         public const int RsaSsaPssSha512Id = 12;
         public const int NoneId = -1;
-
     }
 }

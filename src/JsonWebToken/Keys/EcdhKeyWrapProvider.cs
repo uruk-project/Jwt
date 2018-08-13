@@ -82,23 +82,9 @@ namespace JsonWebToken
                 var otherPartyPublicKey = CreateECDiffieHellman(ephemeralJwk).PublicKey;
                 var privateKey = CreateECDiffieHellman((EccJwk)Key);
 
-                const int secretPrependLength = sizeof(int);
-                int algorithmLength = sizeof(int) + Encoding.ASCII.GetByteCount(_algorithmName);
-                int partyUInfoLength = sizeof(int) + partyUInfo.Length;
-                int partyVInfoLength = sizeof(int) + partyVInfo.Length;
-                const int suppPubInfoLength = sizeof(int);
+                BuildSecret(partyUInfo, partyVInfo, out byte[] secretPrepend, out byte[] secretAppend);
 
-                int secretAppendLength = algorithmLength + partyUInfoLength + partyVInfoLength + suppPubInfoLength;
-                Span<byte> secretPrepend = stackalloc byte[secretPrependLength];
-                Span<byte> secretAppend = stackalloc byte[secretAppendLength];
-
-                WriteRoundNumber(secretPrepend);
-                WriteAlgorithmId(secretAppend);
-                WritePartyInfo(partyUInfo, secretAppend.Slice(algorithmLength));
-                WritePartyInfo(partyVInfo, secretAppend.Slice(algorithmLength + partyUInfoLength));
-                WriteSuppInfo(secretAppend.Slice(algorithmLength + partyUInfoLength + partyVInfoLength));
-
-                var exchangeHash = privateKey.DeriveKeyFromHash(otherPartyPublicKey, _hashAlgorithm, secretPrepend.ToArray(), secretAppend.ToArray());
+                var exchangeHash = privateKey.DeriveKeyFromHash(otherPartyPublicKey, _hashAlgorithm, secretPrepend, secretAppend);
 
                 var produceEncryptedKey = Algorithm != KeyManagementAlgorithm.EcdhEs;
                 if (produceEncryptedKey)
@@ -128,6 +114,25 @@ namespace JsonWebToken
                 bytesWritten = 0;
                 return false;
             }
+        }
+
+        private void BuildSecret(byte[] partyUInfo, byte[] partyVInfo, out byte[] secretPrepend, out byte[] secretAppend)
+        {
+            const int secretPrependLength = sizeof(int);
+            int algorithmLength = sizeof(int) + Encoding.ASCII.GetByteCount(_algorithmName);
+            int partyUInfoLength = sizeof(int) + partyUInfo.Length;
+            int partyVInfoLength = sizeof(int) + partyVInfo.Length;
+            const int suppPubInfoLength = sizeof(int);
+
+            int secretAppendLength = algorithmLength + partyUInfoLength + partyVInfoLength + suppPubInfoLength;
+            secretPrepend = new byte[secretPrependLength];
+            secretAppend = new byte[secretAppendLength];
+            var secretSpan = secretAppend.AsSpan();
+            WriteRoundNumber(secretPrepend);
+            WriteAlgorithmId(secretAppend);
+            WritePartyInfo(partyUInfo, secretSpan.Slice(algorithmLength));
+            WritePartyInfo(partyVInfo, secretSpan.Slice(algorithmLength + partyUInfoLength));
+            WriteSuppInfo(secretSpan.Slice(algorithmLength + partyUInfoLength + partyVInfoLength));
         }
 
         private (int, KeyManagementAlgorithm) GetAesAlgorithm()
@@ -173,23 +178,10 @@ namespace JsonWebToken
 
                     var partyUInfo = GetPartyInfo(header, HeaderParameters.Apu);
                     var partyVInfo = GetPartyInfo(header, HeaderParameters.Apv);
-                    const int secretPrependLength = sizeof(int);
-                    int algorithmLength = sizeof(int) + Encoding.ASCII.GetByteCount(_algorithmName);
-                    int partyUInfoLength = sizeof(int) + partyUInfo.Length;
-                    int partyVInfoLength = sizeof(int) + partyVInfo.Length;
-                    const int suppPubInfoLength = sizeof(int);
 
-                    int secretAppendLength = algorithmLength + partyUInfoLength + partyVInfoLength + suppPubInfoLength;
-                    Span<byte> secretPrepend = stackalloc byte[secretPrependLength];
-                    Span<byte> secretAppend = stackalloc byte[secretAppendLength];
+                    BuildSecret(partyUInfo, partyVInfo, out byte[] secretPrepend, out byte[] secretAppend);
 
-                    WriteRoundNumber(secretPrepend);
-                    WriteAlgorithmId(secretAppend);
-                    WritePartyInfo(partyUInfo, secretAppend.Slice(algorithmLength));
-                    WritePartyInfo(partyVInfo, secretAppend.Slice(algorithmLength + partyUInfoLength));
-                    WriteSuppInfo(secretAppend.Slice(algorithmLength + partyUInfoLength + partyVInfoLength));
-
-                    var exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyPublicKey, _hashAlgorithm, secretPrepend.ToArray(), secretAppend.ToArray());
+                    var exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyPublicKey, _hashAlgorithm, secretPrepend, secretAppend);
 
                     var epk = EccJwk.FromParameters(ephemeralKey.ExportParameters(false));
                     header.Add(HeaderParameters.Epk, JToken.FromObject(epk));
