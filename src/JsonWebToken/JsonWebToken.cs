@@ -10,7 +10,7 @@ namespace JsonWebToken
     /// </summary>
     public class JsonWebToken
     {
-        private static string[] EmptyStrings = Array.Empty<string>();
+        private static readonly string[] EmptyStrings = Array.Empty<string>();
         private readonly JwtPayload _payload;
 
         protected JsonWebToken()
@@ -76,7 +76,7 @@ namespace JsonWebToken
         /// Gets the signature algorithm associated with this instance.
         /// </summary>
         /// <remarks>If there is a <see cref="SigningKey"/> associated with this instance, a value will be returned.  Null otherwise.</remarks>
-        public string SignatureAlgorithm => Header.Alg;
+        public SignatureAlgorithm SignatureAlgorithm => Header.Alg;
 
         /// <summary>
         /// Gets the <see cref="SigningKey"/> to use when writing this token.

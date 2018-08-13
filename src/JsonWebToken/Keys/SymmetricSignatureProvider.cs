@@ -32,7 +32,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key">The <see cref="SymmetricJwk"/> that will be used for signature operations.</param>
         /// <param name="algorithm">The signature algorithm to use.</param>
-        public SymmetricSignatureProvider(SymmetricJwk key, string algorithm)
+        public SymmetricSignatureProvider(SymmetricJwk key, SignatureAlgorithm algorithm)
             : base(key, algorithm)
         {
             if (key == null)
@@ -42,22 +42,20 @@ namespace JsonWebToken
 
             if (key.KeySizeInBits < MinimumKeySizeInBits)
             {
-                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.AlgorithmRequireMinimumKeySize, (algorithm ?? "null"), MinimumKeySizeInBits, key.KeySizeInBits));
+                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.AlgorithmRequireMinimumKeySize, (algorithm.Name ?? "null"), MinimumKeySizeInBits, key.KeySizeInBits));
             }
 
-            switch (Algorithm)
+            _hashSizeInBytes = (Algorithm.RequiredKeySizeInBits >> 3) * 2;
+            switch (Algorithm.Name)
             {
                 case SignatureAlgorithms.HmacSha256:
                     _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha256ObjectPoolPolicy(key.RawK));
-                    _hashSizeInBytes = 32;
                     break;
                 case SignatureAlgorithms.HmacSha384:
                     _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha384ObjectPoolPolicy(key.RawK));
-                    _hashSizeInBytes = 48;
                     break;
                 case SignatureAlgorithms.HmacSha512:
                     _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha512ObjectPoolPolicy(key.RawK));
-                    _hashSizeInBytes = 64;
                     break;
                 default:
                     throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedKeyedHashAlgorithm, algorithm));
@@ -102,7 +100,7 @@ namespace JsonWebToken
             try
             {
 #if NETCOREAPP2_1
-            return keyedHash.TryComputeHash(input, destination, out bytesWritten);
+                return keyedHash.TryComputeHash(input, destination, out bytesWritten);
 #else
                 try
                 {
@@ -218,7 +216,7 @@ namespace JsonWebToken
         /// </returns>
         private static bool AreEqual(ReadOnlySpan<byte> a, Span<byte> b, int length)
         {
-            int lenToUse = 0;
+            int lenToUse;
             ReadOnlySpan<byte> first, second;
 
             if (((a == null) || (b == null)) || (a.Length < length || b.Length < length))
@@ -328,7 +326,7 @@ namespace JsonWebToken
             }
         }
 
-        private class HmacSha256ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
+        private sealed class HmacSha256ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
         {
             private readonly byte[] _keyBytes;
 
@@ -348,7 +346,7 @@ namespace JsonWebToken
             }
         }
 
-        private class HmacSha384ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
+        private sealed class HmacSha384ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
         {
             private readonly byte[] _keyBytes;
 
@@ -368,7 +366,7 @@ namespace JsonWebToken
             }
         }
 
-        private class HmacSha512ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
+        private sealed class HmacSha512ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
         {
             private readonly byte[] _keyBytes;
 

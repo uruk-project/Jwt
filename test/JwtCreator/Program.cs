@@ -235,8 +235,8 @@ namespace JwtCreator
         }
         private static JObject CreateToken(JsonWebKeySet jwks, TokenValidationStatus status, JwsDescriptor descriptor, string claim = null)
         {
-            var key = jwks.Keys.First(k => k.Use == "sig" && k.Alg == "HS256");
-            var encKey = jwks.Keys.First(k => k.Use == "enc" && k.Alg == "dir");
+            var key = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig && k.Alg == SignatureAlgorithm.HmacSha256.Name);
+            var encKey = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Enc && k.Alg == KeyManagementAlgorithm.Direct.Name);
             descriptor.Key = key;
 
             return CreateToken(status, descriptor);
@@ -244,11 +244,11 @@ namespace JwtCreator
 
         private static JObject CreateToken(JsonWebKeySet jwks, TokenValidationStatus status, JweDescriptor descriptor, string claim = null)
         {
-            var key = jwks.Keys.First(k => k.Use == "sig" && k.Alg == "HS256");
-            var encKey = jwks.Keys.First(k => k.Use == "enc" && k.Alg == "dir");
+            var key = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig && k.Alg == SignatureAlgorithm.HmacSha256.Name);
+            var encKey = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Enc && k.Alg == KeyManagementAlgorithm.Direct.Name);
             descriptor.Payload.Key = key;
             descriptor.Key = encKey;
-            descriptor.EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256;
+            descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
 
             return CreateToken(status, descriptor);
         }
@@ -416,7 +416,7 @@ namespace JwtCreator
                 },
             };
 
-            var signingKey = SymmetricJwk.GenerateKey(128, SignatureAlgorithms.HmacSha256);
+            var signingKey = SymmetricJwk.GenerateKey(128, SignatureAlgorithm.HmacSha256.Name);
             var descriptors = new Dictionary<string, JwtDescriptor>();
             foreach (var payload in payloads)
             {
@@ -443,7 +443,7 @@ namespace JwtCreator
                 descriptors.Add(payload.Key, descriptor);
             }
 
-            var encryptionKey = SymmetricJwk.GenerateKey(128, KeyManagementAlgorithms.Aes128KW);
+            var encryptionKey = SymmetricJwk.GenerateKey(128, KeyManagementAlgorithm.Aes128KW.Name);
             foreach (var payload in payloads)
             {
                 var descriptor = new JwsDescriptor()
@@ -470,7 +470,7 @@ namespace JwtCreator
                 {
                     Payload = descriptor,
                     Key = encryptionKey,
-                    EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256
+                    EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256
                 };
 
                 descriptors.Add("JWE-" + payload.Key, jwe);

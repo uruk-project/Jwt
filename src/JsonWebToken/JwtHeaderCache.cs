@@ -5,7 +5,7 @@ namespace JsonWebToken
 {
     public class JwtHeaderCache
     {
-        private class Node
+        private sealed class Node
         {
             public JwtHeader Header;
 

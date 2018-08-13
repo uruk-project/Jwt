@@ -50,14 +50,18 @@ namespace JsonWebToken
             {
                 if (_binaryPayload != null)
                 {
-                    var jwe = new BinaryJweDescriptor(_header, _binaryPayload);
-                    jwe.Key = _encryptionKey;
+                    var jwe = new BinaryJweDescriptor(_header, _binaryPayload)
+                    {
+                        Key = _encryptionKey
+                    };
                     return jwe;
                 }
                 else if (_textPayload != null)
                 {
-                    var jwe = new PlaintextJweDescriptor(_header, _textPayload);
-                    jwe.Key = _encryptionKey;
+                    var jwe = new PlaintextJweDescriptor(_header, _textPayload)
+                    {
+                        Key = _encryptionKey
+                    };
                     return jwe;
                 }
                 else
@@ -72,8 +76,10 @@ namespace JsonWebToken
                         throw new InvalidOperationException("No signing key is defined.");
                     }
 
-                    var jwe = new JweDescriptor(_header, jws);
-                    jwe.Key = _encryptionKey;
+                    var jwe = new JweDescriptor(_header, jws)
+                    {
+                        Key = _encryptionKey
+                    };
 
                     return jwe;
                 }

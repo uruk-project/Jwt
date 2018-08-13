@@ -6,10 +6,10 @@ namespace JsonWebToken
 {
     public class EcdsaSignatureProvider : SignatureProvider
     {
-        private ECDsa _ecdsa;
         private readonly ObjectPool<ECDsa> _hashAlgorithmPool;
-        private int _hashSize;
-        private HashAlgorithmName _hashAlgorithm;
+        private readonly int _hashSize;
+        private readonly HashAlgorithmName _hashAlgorithm;
+        private ECDsa _ecdsa;
         private bool _disposed;
 
         /// <summary>
@@ -18,7 +18,7 @@ namespace JsonWebToken
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for signature operations.</param>
         /// <param name="algorithm">The signature algorithm to apply.</param>
         /// <param name="willCreateSignatures">Whether is required to create signatures then set this to true.</param>
-        public EcdsaSignatureProvider(EccJwk key, string algorithm, bool willCreateSignatures)
+        public EcdsaSignatureProvider(EccJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
             : base(key, algorithm)
         {
             if (key == null)
@@ -36,23 +36,7 @@ namespace JsonWebToken
                 throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.SigningKeyTooSmall, key.Kid, 256, key.KeySizeInBits));
             }
 
-            switch (algorithm)
-            {
-                case SignatureAlgorithms.EcdsaSha256:
-                    _hashAlgorithm = HashAlgorithmName.SHA256;
-                    break;
-
-                case SignatureAlgorithms.EcdsaSha384:
-                    _hashAlgorithm = HashAlgorithmName.SHA256;
-                    break;
-
-                case SignatureAlgorithms.EcdsaSha512:
-                    _hashAlgorithm = HashAlgorithmName.SHA384;
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
-            }
+            _hashAlgorithm = algorithm.HashAlgorithm;
 
             switch (key.Crv)
             {
@@ -131,7 +115,7 @@ namespace JsonWebToken
 #endif
         }
 
-        private static ECDsa ResolveAlgorithm(EccJwk key, string algorithm, bool usePrivateKey)
+        private static ECDsa ResolveAlgorithm(EccJwk key, in SignatureAlgorithm algorithm, bool usePrivateKey)
         {
             return key.CreateECDsa(algorithm, usePrivateKey);
         }
@@ -156,13 +140,13 @@ namespace JsonWebToken
             }
         }
 
-        private class ECDsaObjectPoolPolicy : PooledObjectPolicy<ECDsa>
+        private sealed class ECDsaObjectPoolPolicy : PooledObjectPolicy<ECDsa>
         {
             private readonly EccJwk _key;
-            private readonly string _algorithm;
+            private readonly SignatureAlgorithm _algorithm;
             private readonly bool _usePrivateKey;
 
-            public ECDsaObjectPoolPolicy(EccJwk key, string algorithm, bool usePrivateKey)
+            public ECDsaObjectPoolPolicy(EccJwk key, SignatureAlgorithm algorithm, bool usePrivateKey)
             {
                 _key = key;
                 _algorithm = algorithm;

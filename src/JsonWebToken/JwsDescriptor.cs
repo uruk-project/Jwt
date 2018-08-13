@@ -282,25 +282,26 @@ namespace JsonWebToken
         public override string Encode(EncodingContext context)
         {
             SignatureProvider signatureProvider = null;
+            var alg = (SignatureAlgorithm)(string.IsNullOrEmpty(Algorithm) ? Key == null ? null : Key.Alg : Algorithm);
             if (Key != null)
             {
                 var key = Key;
-                signatureProvider = key.CreateSignatureProvider(Algorithm ?? key.Alg, true);
+                signatureProvider = key.CreateSignatureProvider(alg, true);
                 if (signatureProvider == null)
                 {
-                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, (key == null ? "Null" : key.Alg), (key.Kid ?? "Null")));
+                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, key.Alg, (key.Kid ?? "Null")));
                 }
             }
 
             var payloadJson = Serialize(Payload);
             int length = Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
                        + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBytes))
-                       + Constants.JwsSegmentCount - 1;
+                       + (Constants.JwsSegmentCount - 1);
             string headerJson = null;
 
             var headerCache = context.HeaderCache;
             byte[] base64UrlHeader = null;
-            if (headerCache != null && headerCache.TryGetHeader(Header, out base64UrlHeader))
+            if (headerCache != null && headerCache.TryGetHeader(Header, alg, out base64UrlHeader))
             {
                 length += base64UrlHeader.Length;
             }
@@ -325,7 +326,7 @@ namespace JsonWebToken
                 else
                 {
                     TryEncodeUtf8ToBase64Url(headerJson, buffer, out headerBytesWritten);
-                    headerCache?.AddHeader(Header, buffer.Slice(0, headerBytesWritten));
+                    headerCache?.AddHeader(Header, alg, buffer.Slice(0, headerBytesWritten));
                 }
 
                 buffer[headerBytesWritten] = dot;
@@ -341,7 +342,7 @@ namespace JsonWebToken
                         Debug.Assert(success);
                         Debug.Assert(signature.Length == signatureBytesWritten);
 
-                        Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + Constants.JwsSegmentCount - 1), out int bytesConsumed, out bytesWritten);
+                        Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)), out int bytesConsumed, out bytesWritten);
                     }
                     finally
                     {
@@ -350,9 +351,9 @@ namespace JsonWebToken
                 }
 
 #if NETCOREAPP2_1
-                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + Constants.JwsSegmentCount - 1 + bytesWritten));
+                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten));
 #else
-                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + Constants.JwsSegmentCount - 1 + bytesWritten).ToArray());
+                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten).ToArray());
 #endif
                 return rawData;
             }
@@ -410,8 +411,7 @@ namespace JsonWebToken
 
             foreach (var claim in RequiredClaims)
             {
-                JToken token;
-                if (!Payload.TryGetValue(claim.Key, out token) || token.Type == JTokenType.Null)
+                if (!Payload.TryGetValue(claim.Key, out JToken token) || token.Type == JTokenType.Null)
                 {
                     throw new JwtDescriptorException(ErrorMessages.FormatInvariant("The claim '{0}' is required.", claim.Key));
                 }

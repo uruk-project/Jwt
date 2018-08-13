@@ -7,8 +7,8 @@ namespace JsonWebToken
 {
     public class EccJwk : AsymmetricJwk
     {
-        private readonly ConcurrentDictionary<string, EcdsaSignatureProvider> _signatureProviders = new ConcurrentDictionary<string, EcdsaSignatureProvider>();
-        private readonly ConcurrentDictionary<string, EcdsaSignatureProvider> _signatureValidationProviders = new ConcurrentDictionary<string, EcdsaSignatureProvider>();
+        private readonly ConcurrentDictionary<SignatureAlgorithm, EcdsaSignatureProvider> _signatureProviders = new ConcurrentDictionary<SignatureAlgorithm, EcdsaSignatureProvider>();
+        private readonly ConcurrentDictionary<SignatureAlgorithm, EcdsaSignatureProvider> _signatureValidationProviders = new ConcurrentDictionary<SignatureAlgorithm, EcdsaSignatureProvider>();
 
         private string _x;
         private string _y;
@@ -47,7 +47,7 @@ namespace JsonWebToken
 
         public EccJwk()
         {
-            Kty = JsonWebAlgorithmsKeyTypes.EllipticCurve;
+            Kty = KeyTypes.EllipticCurve;
         }
 
         /// <summary>
@@ -146,7 +146,7 @@ namespace JsonWebToken
             }
         }
 
-        public ECDsa CreateECDsa(string algorithm, bool usePrivateKey)
+        public ECDsa CreateECDsa(in SignatureAlgorithm algorithm, bool usePrivateKey)
         {
             int validKeySize = ValidKeySize(algorithm);
             if (KeySizeInBits != validKeySize)
@@ -157,35 +157,27 @@ namespace JsonWebToken
             return ECDsa.Create(ToParameters());
         }
 
-        private static int ValidKeySize(string algorithm)
+        private static int ValidKeySize(in SignatureAlgorithm algorithm)
         {
-            switch (algorithm)
-            {
-                case SignatureAlgorithms.EcdsaSha256:
-                    return 256;
-                case SignatureAlgorithms.EcdsaSha384:
-                    return 384;
-                case SignatureAlgorithms.EcdsaSha512:
-                    return 521;
-            }
-
-            throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
+            return algorithm.RequiredKeySizeInBits;
         }
 
-        public override bool IsSupportedAlgorithm(string algorithm)
+        public override bool IsSupportedAlgorithm(in SignatureAlgorithm algorithm)
         {
-            switch (algorithm)
-            {
-                case SignatureAlgorithms.EcdsaSha256:
-                case SignatureAlgorithms.EcdsaSha384:
-                case SignatureAlgorithms.EcdsaSha512:
-                    return true;
-            }
+            return algorithm.KeyType == KeyTypes.EllipticCurve;
+        }
 
+        public override bool IsSupportedAlgorithm(in KeyManagementAlgorithm algorithm)
+        {
+            return algorithm.KeyType == KeyTypes.EllipticCurve;
+        }
+
+        public override bool IsSupportedAlgorithm(in EncryptionAlgorithm algorithm)
+        {
             return false;
         }
 
-        public override SignatureProvider CreateSignatureProvider(string algorithm, bool willCreateSignatures)
+        public override SignatureProvider CreateSignatureProvider(in SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (algorithm == null)
             {
@@ -213,7 +205,7 @@ namespace JsonWebToken
             return null;
         }
 
-        public override KeyWrapProvider CreateKeyWrapProvider(string encryptionAlgorithm, string contentEncryptionAlgorithm)
+        public override KeyWrapProvider CreateKeyWrapProvider(in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
 #if NETCOREAPP2_1
             return new EcdhKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);

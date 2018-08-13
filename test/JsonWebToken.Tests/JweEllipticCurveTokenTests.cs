@@ -13,7 +13,7 @@ namespace JsonWebToken.Tests
             Y = "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck",
             D = "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw",
         };
-        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithms.HmacSha256);
+        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256.Name);
 
         [Theory]
         [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.EcdhEs)]
@@ -29,12 +29,12 @@ namespace JsonWebToken.Tests
             var descriptor = new JweDescriptor
             {
                 Key = _bobKey,
-                EncryptionAlgorithm = enc,
+                EncryptionAlgorithm = (EncryptionAlgorithm)enc,
                 Algorithm = alg,
                 Payload = new JwsDescriptor
                 {
                     Key = _signingKey,
-                    Algorithm = SignatureAlgorithms.HmacSha256,
+                    Algorithm = SignatureAlgorithm.HmacSha256.Name,
                     Subject = "Alice"
                 }
             };

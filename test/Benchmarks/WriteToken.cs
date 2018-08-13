@@ -170,7 +170,7 @@ namespace JsonWebToken.Performance
                 {
                     Payload = descriptor,
                     Key = EncryptionKey,
-                    EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256
+                    EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256
                 };
 
                 descriptors.Add("JWE-" + payload.Key, jwe);

@@ -18,47 +18,40 @@ namespace JsonWebToken
         }
 
         private readonly AuthenticatedKeys _authenticatedkeys;
-        private readonly string _hashAlgorithm;
+        private readonly SignatureAlgorithm _signatureAlgorithm;
         private readonly SymmetricSignatureProvider _symmetricSignatureProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticatedEncryptionProvider"/> class used for encryption and decryption.
-        /// <param name="key">The <see cref="SecurityKey"/> that will be used for crypto operations.</param>
-        /// <param name="algorithm">The encryption algorithm to apply.</param>
+        /// <param name="key">The <see cref="JsonWebKey"/> that will be used for crypto operations.</param>
+        /// <param name="encryptionAlgorithm">The encryption algorithm to apply.</param>
         /// </summary>
-        public AuthenticatedEncryptionProvider(SymmetricJwk key, string algorithm)
+        public AuthenticatedEncryptionProvider(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (algorithm == null)
+            if (encryptionAlgorithm == EncryptionAlgorithm.Empty)
             {
-                throw new ArgumentNullException(nameof(algorithm));
+                throw new ArgumentNullException(nameof(encryptionAlgorithm));
             }
 
-            if (!IsSupportedAlgorithm(algorithm))
+            if (encryptionAlgorithm.EncryptionType != EncryptionTypes.AesHmac)
             {
-                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, algorithm));
+                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
             }
 
-            ValidateKeySize(key, algorithm);
-            _authenticatedkeys = GetAlgorithmParameters(key, algorithm);
-            _hashAlgorithm = GetHashAlgorithm(algorithm);
-            _symmetricSignatureProvider = _authenticatedkeys.HmacKey.CreateSignatureProvider(_hashAlgorithm, true) as SymmetricSignatureProvider;
+            ValidateKeySize(key, encryptionAlgorithm);
+            _authenticatedkeys = GetAlgorithmParameters(key, encryptionAlgorithm);
+            _signatureAlgorithm = encryptionAlgorithm.SignatureAlgorithm;
+            _symmetricSignatureProvider = _authenticatedkeys.HmacKey.CreateSignatureProvider(_signatureAlgorithm, true) as SymmetricSignatureProvider;
             if (_symmetricSignatureProvider == null)
             {
-                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureHashAlgorithm, Algorithm));
+                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureHashAlgorithm, encryptionAlgorithm));
             }
-
-            Algorithm = algorithm;
         }
-
-        /// <summary>
-        /// Gets the encryption algorithm that is being used.
-        /// </summary>
-        public string Algorithm { get; private set; }
 
         /// <summary>
         /// Encrypts the 'plaintext'
@@ -206,36 +199,9 @@ namespace JsonWebToken
             }
         }
 
-        private static bool IsSupportedAlgorithm(string algorithm)
+        private static AuthenticatedKeys GetAlgorithmParameters(SymmetricJwk key, in EncryptionAlgorithm encryptionAlgorithm)
         {
-            switch (algorithm)
-            {
-                case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
-                case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
-                case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        private AuthenticatedKeys GetAlgorithmParameters(SymmetricJwk key, string algorithm)
-        {
-            int keyLength;
-            switch (algorithm)
-            {
-                case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
-                    keyLength = 16;
-                    break;
-                case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
-                    keyLength = 24;
-                    break;
-                case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
-                    keyLength = 32;
-                    break;
-                default:
-                    throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, algorithm));
-            }
+            int keyLength = encryptionAlgorithm.RequiredKeySizeInBytes / 2;
 
             var keyBytes = key.RawK;
             byte[] aesKey = new byte[keyLength];
@@ -248,46 +214,12 @@ namespace JsonWebToken
                 HmacKey = SymmetricJwk.FromByteArray(hmacKey, false)
             };
         }
-
-        private string GetHashAlgorithm(string algorithm)
+        
+        private void ValidateKeySize(JsonWebKey key, in EncryptionAlgorithm encryptionAlgorithm)
         {
-            switch (algorithm)
+            if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBytes << 3)
             {
-                case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
-                    return SignatureAlgorithms.HmacSha256;
-                case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
-                    return SignatureAlgorithms.HmacSha384;
-                case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
-                    return SignatureAlgorithms.HmacSha512;
-                default:
-                    throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm), nameof(algorithm));
-            }
-        }
-
-        private void ValidateKeySize(JsonWebKey key, string algorithm)
-        {
-            switch (algorithm)
-            {
-                case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
-                    if (key.KeySizeInBits < 256)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, algorithm, 256, key.KeySizeInBits));
-                    }
-                    break;
-                case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
-                    if (key.KeySizeInBits < 384)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, algorithm, 384, key.KeySizeInBits));
-                    }
-                    break;
-                case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
-                    if (key.KeySizeInBits < 512)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, algorithm, 512, key.KeySizeInBits));
-                    }
-                    break;
-                default:
-                    throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
+                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits));
             }
         }
 

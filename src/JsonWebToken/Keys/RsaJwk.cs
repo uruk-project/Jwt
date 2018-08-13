@@ -8,8 +8,8 @@ namespace JsonWebToken
 {
     public class RsaJwk : AsymmetricJwk
     {
-        private readonly ConcurrentDictionary<string, RsaSignatureProvider> _signatureProviders = new ConcurrentDictionary<string, RsaSignatureProvider>();
-        private readonly ConcurrentDictionary<string, RsaSignatureProvider> _signatureValidationProviders = new ConcurrentDictionary<string, RsaSignatureProvider>();
+        private readonly ConcurrentDictionary<SignatureAlgorithm, RsaSignatureProvider> _signatureProviders = new ConcurrentDictionary<SignatureAlgorithm, RsaSignatureProvider>();
+        private readonly ConcurrentDictionary<SignatureAlgorithm, RsaSignatureProvider> _signatureValidationProviders = new ConcurrentDictionary<SignatureAlgorithm, RsaSignatureProvider>();
 
         private string _dp;
         private string _dq;
@@ -21,7 +21,7 @@ namespace JsonWebToken
 
         public RsaJwk()
         {
-            Kty = JsonWebAlgorithmsKeyTypes.RSA;
+            Kty = KeyTypes.RSA;
         }
 
         public RsaJwk(RSAParameters rsaParameters)
@@ -66,28 +66,24 @@ namespace JsonWebToken
             return parameters;
         }
 
-        public override bool IsSupportedAlgorithm(string algorithm)
+        public override bool IsSupportedAlgorithm(in SignatureAlgorithm algorithm)
         {
-            switch (algorithm)
-            {
-                case SignatureAlgorithms.RsaSha256:
-                case SignatureAlgorithms.RsaSha384:
-                case SignatureAlgorithms.RsaSha512:
-                case SignatureAlgorithms.RsaSsaPssSha256:
-                case SignatureAlgorithms.RsaSsaPssSha384:
-                case SignatureAlgorithms.RsaSsaPssSha512:
-                case KeyManagementAlgorithms.RsaOaep:
-                case KeyManagementAlgorithms.RsaPkcs1:
-                case KeyManagementAlgorithms.RsaOaep256:
-                    return true;
-            }
+            return algorithm.KeyType == KeyTypes.RSA;
+        }
 
+        public override bool IsSupportedAlgorithm(in KeyManagementAlgorithm algorithm)
+        {
+            return algorithm.KeyType == KeyTypes.RSA;
+        }
+
+        public override bool IsSupportedAlgorithm(in EncryptionAlgorithm algorithm)
+        {
             return false;
         }
 
-        public override SignatureProvider CreateSignatureProvider(string algorithm, bool willCreateSignatures)
+        public override SignatureProvider CreateSignatureProvider(in SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
-            if (algorithm == null)
+            if (algorithm == SignatureAlgorithm.Empty)
             {
                 return null;
             }
@@ -113,7 +109,7 @@ namespace JsonWebToken
             return null;
         }
 
-        public override KeyWrapProvider CreateKeyWrapProvider(string encryptionAlgorithm, string contentEncryptionAlgorithm)
+        public override KeyWrapProvider CreateKeyWrapProvider(in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
             if (IsSupportedAlgorithm(contentEncryptionAlgorithm))
             {

@@ -7,6 +7,7 @@ namespace JsonWebToken.Performance
     {
         static void Main(string[] args)
         {
+            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
             BenchmarkSwitcher.FromAssembly(typeof(Program).GetTypeInfo().Assembly).Run(args);
         }
     }

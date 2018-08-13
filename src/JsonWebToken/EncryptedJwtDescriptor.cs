@@ -17,10 +17,10 @@ namespace JsonWebToken
         {
         }
 
-        public string EncryptionAlgorithm
+        public EncryptionAlgorithm EncryptionAlgorithm
         {
-            get => GetHeaderParameter(HeaderParameters.Enc);
-            set => Header[HeaderParameters.Enc] = value;
+            get => (EncryptionAlgorithm)GetHeaderParameter(HeaderParameters.Enc);
+            set => Header[HeaderParameters.Enc] = (string)value;
         }
 
         public string CompressionAlgorithm
@@ -70,10 +70,10 @@ namespace JsonWebToken
 #endif
         unsafe protected string EncryptToken(Span<byte> payload)
         {
-            string encryptionAlgorithm = EncryptionAlgorithm;
-            string contentEncryptionAlgorithm = Algorithm;
-            bool isDirectEncryption = (contentEncryptionAlgorithm == KeyManagementAlgorithms.Direct);
-            bool produceEncryptedKey = !isDirectEncryption && contentEncryptionAlgorithm != KeyManagementAlgorithms.EcdhEs;
+            EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
+            KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)Algorithm;
+            bool isDirectEncryption = (contentEncryptionAlgorithm == KeyManagementAlgorithm.Direct);
+            bool produceEncryptedKey = !isDirectEncryption && contentEncryptionAlgorithm != KeyManagementAlgorithm.EcdhEs;
 
             AuthenticatedEncryptionProvider encryptionProvider = null;
             KeyWrapProvider kwProvider = null;
@@ -90,7 +90,7 @@ namespace JsonWebToken
                 }
             }
 
-            var header = (JObject)Header.DeepClone();
+            var header = Header;
             Span<byte> wrappedKey = produceEncryptedKey ? stackalloc byte[kwProvider.GetKeyWrapSize()] : null;
             if (!isDirectEncryption)
             {
@@ -133,7 +133,6 @@ namespace JsonWebToken
                 Span<byte> asciiEncodedHeader = base64EncodedHeaderLength > Constants.MaxStackallocBytes
                                     ? (arrayByteToReturnToPool = ArrayPool<byte>.Shared.Rent(base64EncodedHeaderLength)).AsSpan(0, base64EncodedHeaderLength)
                                     : stackalloc byte[base64EncodedHeaderLength];
-                byte[] payloadToReturn = null;
 
                 try
                 {
@@ -168,7 +167,7 @@ namespace JsonWebToken
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.IV.Length)
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.Ciphertext.Length)
                         + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.AuthenticationTag.Length)
-                        + Constants.JweSegmentCount - 1;
+                        + (Constants.JweSegmentCount - 1);
                     if (wrappedKey != null)
                     {
                         encryptionLength += Base64Url.GetArraySizeRequiredToEncode(wrappedKey.Length);
@@ -210,11 +209,6 @@ namespace JsonWebToken
                     if (buffer64HeaderToReturnToPool != null)
                     {
                         ArrayPool<char>.Shared.Return(buffer64HeaderToReturnToPool);
-                    }
-
-                    if (payloadToReturn != null)
-                    {
-                        ArrayPool<byte>.Shared.Return(payloadToReturn);
                     }
                 }
 #else

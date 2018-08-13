@@ -32,7 +32,7 @@ namespace JsonWebToken
             {
                 var buffer = new byte[Constants.DecompressionBufferLength];
                 int uncompressedLength = 0;
-                int readData = 0;
+                int readData;
                 while ((readData = compressionStream.Read(buffer, uncompressedLength, Constants.DecompressionBufferLength)) != 0)
                 {
                     uncompressedLength += readData;

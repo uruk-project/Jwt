@@ -29,13 +29,15 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="certificate">X509 security key</param>
         /// <returns>json web key</returns>
-        private static JsonWebKey ConvertFromX509(X509Certificate2 certificate)
+        private static RsaJwk ConvertFromX509(X509Certificate2 certificate)
         {
-            var jsonWebKey = new RsaJwk();
-            jsonWebKey.Kty = JsonWebAlgorithmsKeyTypes.RSA;
-            jsonWebKey.Use = JsonWebKeyUseNames.Sig;
-            jsonWebKey.Kid = certificate.Thumbprint;
-            jsonWebKey.X5t = Base64Url.Encode(certificate.GetCertHash());
+            var jsonWebKey = new RsaJwk
+            {
+                Kty = KeyTypes.RSA,
+                Use = JsonWebKeyUseNames.Sig,
+                Kid = certificate.Thumbprint,
+                X5t = Base64Url.Encode(certificate.GetCertHash())
+            };
             if (certificate.RawData != null)
             {
                 jsonWebKey.X5c.Add(Convert.ToBase64String(certificate.RawData));

@@ -46,7 +46,7 @@ namespace JsonWebToken
             get => GetHeaderParameter(HeaderParameters.Alg);
             set => Header[HeaderParameters.Alg] = value;
         }
-
+        
         public string KeyId
         {
             get => GetHeaderParameter(HeaderParameters.Kid);
@@ -149,8 +149,7 @@ namespace JsonWebToken
         {
             foreach (var header in RequiredHeaderParameters)
             {
-                JToken token;
-                if (!Header.TryGetValue(header.Key, out token) || token.Type == JTokenType.Null)
+                if (!Header.TryGetValue(header.Key, out JToken token) || token.Type == JTokenType.Null)
                 {
                     throw new JwtDescriptorException(ErrorMessages.FormatInvariant("The header parameter '{0}' is required.", header.Key));
                 }
