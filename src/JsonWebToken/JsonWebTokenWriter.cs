@@ -72,8 +72,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var claimsDescriptor = descriptor as IJwtPayloadDescriptor;
-            if (claimsDescriptor != null)
+            if (descriptor is IJwtPayloadDescriptor claimsDescriptor)
             {
                 if (SetDefaultTimesOnTokenCreation && (!claimsDescriptor.ExpirationTime.HasValue || !claimsDescriptor.IssuedAt.HasValue || !claimsDescriptor.NotBefore.HasValue))
                 {
@@ -92,7 +91,7 @@ namespace JsonWebToken
 
             if (descriptor.Algorithm == null)
             {
-                descriptor.Algorithm = SignatureAlgorithms.None;
+                descriptor.Algorithm = SignatureAlgorithm.None.Name;
             }
 
             if (!IgnoreTokenValidation)

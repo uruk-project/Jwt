@@ -17,7 +17,7 @@ namespace JsonWebToken
         private static readonly object _encryptorLock = new object();
         private static readonly object _decryptorLock = new object();
 
-        private SymmetricAlgorithm _symmetricAlgorithm;
+        private Aes _symmetricAlgorithm;
         private ICryptoTransform _symmetricAlgorithmEncryptor;
         private ICryptoTransform _symmetricAlgorithmDecryptor;
         private bool _disposed;
@@ -27,7 +27,7 @@ namespace JsonWebToken
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for crypto operations.</param>
         /// <param name="algorithm">The KeyWrap algorithm to apply.</param>
         /// </summary>
-        public AesKeyWrapProvider(SymmetricJwk key, string encryptionAlgorithm, string algorithm)
+        public AesKeyWrapProvider(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
             if (key == null)
             {
@@ -77,7 +77,7 @@ namespace JsonWebToken
             }
         }
 
-        private SymmetricAlgorithm GetSymmetricAlgorithm(SymmetricJwk key, string algorithm)
+        private Aes GetSymmetricAlgorithm(SymmetricJwk key, in KeyManagementAlgorithm algorithm)
         {
             byte[] keyBytes = key.RawK;
 
@@ -85,7 +85,7 @@ namespace JsonWebToken
             try
             {
                 // Create the AES provider
-                SymmetricAlgorithm symmetricAlgorithm = Aes.Create();
+                Aes symmetricAlgorithm = Aes.Create();
                 symmetricAlgorithm.Mode = CipherMode.ECB;
                 symmetricAlgorithm.Padding = PaddingMode.None;
                 symmetricAlgorithm.KeySize = keyBytes.Length << 3;
@@ -102,27 +102,19 @@ namespace JsonWebToken
             }
         }
 
-        private bool IsSupportedAlgorithm(SymmetricJwk key, string algorithm)
+        private static bool IsSupportedAlgorithm(SymmetricJwk key, in KeyManagementAlgorithm algorithm)
         {
             if (key == null)
             {
                 return false;
             }
 
-            if (algorithm == null)
+            if (algorithm == KeyManagementAlgorithm.Empty)
             {
                 return false;
             }
 
-            switch (algorithm)
-            {
-                case KeyManagementAlgorithms.Aes128KW:
-                case KeyManagementAlgorithms.Aes192KW:
-                case KeyManagementAlgorithms.Aes256KW:
-                    return true;
-            }
-
-            return false;
+            return algorithm.KeyType == KeyTypes.Octet;
         }
 
         /// <summary>
@@ -267,30 +259,11 @@ namespace JsonWebToken
             }
         }
 
-        private void ValidateKeySize(byte[] key, string algorithm)
+        private void ValidateKeySize(byte[] key, in KeyManagementAlgorithm algorithm)
         {
-            switch (algorithm)
+            if (algorithm.RequiredKeySizeInBits >> 3 != key.Length)
             {
-                case KeyManagementAlgorithms.Aes128KW:
-                    if (key.Length != 16)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 128, Key.Kid, key.Length << 3));
-                    }
-                    break;
-                case KeyManagementAlgorithms.Aes192KW:
-                    if (key.Length != 24)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 192, Key.Kid, key.Length << 3));
-                    }
-                    break;
-                case KeyManagementAlgorithms.Aes256KW:
-                    if (key.Length != 32)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, 256, Key.Kid, key.Length << 3));
-                    }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
+                throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, algorithm.RequiredKeySizeInBits >> 3, Key.Kid, key.Length << 3));
             }
         }
 
@@ -426,24 +399,14 @@ namespace JsonWebToken
             return GetKeyWrappedSize(EncryptionAlgorithm);
         }
 
-        public static int GetKeyUnwrappedSize(int inputSize, string algorithm)
+        public static int GetKeyUnwrappedSize(int inputSize, in KeyManagementAlgorithm algorithm)
         {
             return inputSize - BlockSizeInBytes;
         }
 
-        public static int GetKeyWrappedSize(string encryptionAlgorithm)
+        public static int GetKeyWrappedSize(in EncryptionAlgorithm encryptionAlgorithm)
         {
-            switch (encryptionAlgorithm)
-            {
-                case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
-                    return 40;
-                case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
-                    return 56;
-                case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
-                    return 72;
-            }
-
-            throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedKeyedHashAlgorithm, encryptionAlgorithm));
+            return encryptionAlgorithm.RequiredKeyWrappedSizeInBytes;
         }
     }
 }

@@ -1,4 +1,3 @@
-using JsonWebToken.ObjectPooling;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -14,13 +13,48 @@ using System.Text;
 
 namespace JsonWebToken
 {
+    internal sealed class SignatureAlgorithmConverter : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(SignatureAlgorithm);
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            return (SignatureAlgorithm)(string)reader.Value;
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            writer.WriteValue(((SignatureAlgorithm)value).Name);
+        }
+    }
+    internal sealed class CryptographicAlgorithmConverter : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(EncryptionAlgorithm);
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            return (EncryptionAlgorithm)(string)reader.Value;
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            writer.WriteValue(((EncryptionAlgorithm)value).Name);
+        }
+    }
+
     /// <summary>
     /// Represents a JSON Web Key as defined in http://tools.ietf.org/html/rfc7517.
     /// </summary>
     [JsonObject]
     public abstract class JsonWebKey
     {
-        internal class JwkJsonConverter : JsonConverter
+        internal sealed class JwkJsonConverter : JsonConverter
         {
             public override bool CanWrite => true;
 
@@ -36,15 +70,13 @@ namespace JsonWebToken
                 JsonWebKey jwk;
                 switch (jsonObject[JsonWebKeyParameterNames.Kty].Value<string>())
                 {
-                    case JsonWebAlgorithmsKeyTypes.RSA:
+                    case KeyTypes.RSA:
                         jwk = new RsaJwk();
                         break;
-#if NETCOREAPP2_1
-                    case JsonWebAlgorithmsKeyTypes.EllipticCurve:
+                    case KeyTypes.EllipticCurve:
                         jwk = new EccJwk();
                         break;
-#endif
-                    case JsonWebAlgorithmsKeyTypes.Octet:
+                    case KeyTypes.Octet:
                         jwk = new SymmetricJwk();
                         break;
                     default:
@@ -61,7 +93,7 @@ namespace JsonWebToken
             }
         }
 
-        private class JwkContractResolver : DefaultContractResolver
+        private sealed class JwkContractResolver : DefaultContractResolver
         {
             protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
             {
@@ -75,7 +107,7 @@ namespace JsonWebToken
         private static readonly JwkContractResolver contractResolver = new JwkContractResolver();
         private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings { ContractResolver = contractResolver };
 
-        private static JsonSerializer jsonSerializer = new JsonSerializer() { Converters = { jsonConverter }, ContractResolver = contractResolver };
+        private static readonly JsonSerializer jsonSerializer = new JsonSerializer() { Converters = { jsonConverter }, ContractResolver = contractResolver };
         private List<JsonWebKey> _certificateChain;
 
         /// <summary>
@@ -128,6 +160,7 @@ namespace JsonWebToken
         /// Gets or sets the 'alg' (KeyType)..
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Alg, Required = Required.Default)]
+        //[JsonConverter(typeof(SignatureAlgorithmConverter))]
         public string Alg { get; set; }
 
         /// <summary>
@@ -230,7 +263,9 @@ namespace JsonWebToken
             return X5c.Count > 0;
         }
 
-        public abstract bool IsSupportedAlgorithm(string algorithm);
+        public abstract bool IsSupportedAlgorithm(in SignatureAlgorithm algorithm);
+        public abstract bool IsSupportedAlgorithm(in KeyManagementAlgorithm algorithm);
+        public abstract bool IsSupportedAlgorithm(in EncryptionAlgorithm algorithm);
 
         public override string ToString()
         {
@@ -244,7 +279,7 @@ namespace JsonWebToken
 
         public abstract byte[] ToByteArray();
 
-        public abstract SignatureProvider CreateSignatureProvider(string algorithm, bool willCreateSignatures);
+        public abstract SignatureProvider CreateSignatureProvider(in SignatureAlgorithm algorithm, bool willCreateSignatures);
 
         public void ReleaseSignatureProvider(SignatureProvider signatureProvider)
         {
@@ -254,7 +289,7 @@ namespace JsonWebToken
             //}
         }
 
-        public abstract KeyWrapProvider CreateKeyWrapProvider(string encryptionAlgorithm, string contentEncryptionAlgorithm);
+        public abstract KeyWrapProvider CreateKeyWrapProvider(in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm contentEncryptionAlgorithm);
 
         public void ReleaseKeyWrapProvider(KeyWrapProvider provider)
         {
@@ -264,7 +299,7 @@ namespace JsonWebToken
             //}
         }
 
-        public abstract AuthenticatedEncryptionProvider CreateAuthenticatedEncryptionProvider(string algorithm);
+        public abstract AuthenticatedEncryptionProvider CreateAuthenticatedEncryptionProvider(in EncryptionAlgorithm encryptionAlgorithm);
 
         public void ReleaseAuthenticatedEncryptionProvider(AuthenticatedEncryptionProvider provider)
         {

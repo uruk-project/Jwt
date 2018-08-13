@@ -24,7 +24,7 @@ namespace JsonWebToken
         /// Creating signatures requires that the <see cref="JsonWebKey"/> has access to a private key.
         /// Verifying signatures (the default), does not require access to the private key.
         /// </para>
-        public RsaSignatureProvider(RsaJwk key, string algorithm, bool willCreateSignatures)
+        public RsaSignatureProvider(RsaJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
             : base(key, algorithm)
         {
             if (key == null)
@@ -39,7 +39,7 @@ namespace JsonWebToken
 
             if (!key.IsSupportedAlgorithm(algorithm))
             {
-                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, (algorithm ?? "null"), key));
+                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, (algorithm.Name ?? "null"), key));
             }
 
             var minKeySize = willCreateSignatures ? 2048 : 1024;
@@ -48,35 +48,18 @@ namespace JsonWebToken
                 throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.SigningKeyTooSmall, key.Kid, minKeySize, key.KeySizeInBits));
             }
 
-            switch (algorithm)
+            _hashAlgorithm = algorithm.HashAlgorithm;
+            switch (algorithm.Id)
             {
-                case SignatureAlgorithms.RsaSha256:
-                    _hashAlgorithm = HashAlgorithmName.SHA256;
+                case SignatureAlgorithms.RsaSha256Id:
+                case SignatureAlgorithms.RsaSha384Id:
+                case SignatureAlgorithms.RsaSha512Id:
                     _signaturePadding = RSASignaturePadding.Pkcs1;
                     break;
 
-                case SignatureAlgorithms.RsaSsaPssSha256:
-                    _hashAlgorithm = HashAlgorithmName.SHA256;
-                    _signaturePadding = RSASignaturePadding.Pss;
-                    break;
-
-                case SignatureAlgorithms.RsaSha384:
-                    _hashAlgorithm = HashAlgorithmName.SHA384;
-                    _signaturePadding = RSASignaturePadding.Pkcs1;
-                    break;
-
-                case SignatureAlgorithms.RsaSsaPssSha384:
-                    _hashAlgorithm = HashAlgorithmName.SHA384;
-                    _signaturePadding = RSASignaturePadding.Pss;
-                    break;
-
-                case SignatureAlgorithms.RsaSha512:
-                    _hashAlgorithm = HashAlgorithmName.SHA512;
-                    _signaturePadding = RSASignaturePadding.Pkcs1;
-                    break;
-
-                case SignatureAlgorithms.RsaSsaPssSha512:
-                    _hashAlgorithm = HashAlgorithmName.SHA512;
+                case SignatureAlgorithms.RsaSsaPssSha256Id:
+                case SignatureAlgorithms.RsaSsaPssSha384Id:
+                case SignatureAlgorithms.RsaSsaPssSha512Id:
                     _signaturePadding = RSASignaturePadding.Pss;
                     break;
 

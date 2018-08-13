@@ -38,7 +38,7 @@ namespace JsonWebToken.Tests
             var keys = JArray.ReadFrom(new JsonTextReader(new StreamReader(keysPath)));
             foreach (var key in keys["keys"])
             {
-                yield return new[] { key.ToString(), key["kid"].Value<string>(), key["alg"].Value<string>() };
+                yield return new object[] { key.ToString(), key["kid"].Value<string>(), key["alg"].Value<string>() };
             }
         }
 

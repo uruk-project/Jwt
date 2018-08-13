@@ -11,7 +11,7 @@ namespace JsonWebToken.Tests
         public void Create()
         {
             var descriptor = new IdTokenDescriptor();
-            descriptor.Algorithm = SignatureAlgorithms.None;
+            descriptor.Algorithm = SignatureAlgorithm.None.Name;
             descriptor.Issuer = "http://server.example.com";
             descriptor.Subject = "248289761001";
             descriptor.Audience = "s6BhdRkqt3";
@@ -40,7 +40,7 @@ namespace JsonWebToken.Tests
                 Kid = "1e9gdk7",
                 N = "w7Zdfmece8iaB0kiTY8pCtiBtzbptJmP28nSWwtdjRu0f2GFpajvWE4VhfJAjEsOcwYzay7XGN0b-X84BfC8hmCTOj2b2eHT7NsZegFPKRUQzJ9wW8ipn_aDJWMGDuB1XyqT1E7DYqjUCEOD1b4FLpy_xPn6oV_TYOfQ9fZdbE5HGxJUzekuGcOKqOQ8M7wfYHhHHLxGpQVgL0apWuP2gDDOdTtpuld4D2LK1MZK99s9gaSjRHE8JDb1Z4IGhEcEyzkxswVdPndUWzfvWBBWXWxtSUvQGBRkuy1BHOa4sP6FKjWEeeF7gm7UMs2Nm2QUgNZw6xvEDGaLk4KASdIxRQ",
                 E = "AQAB",
-                Alg = "RS256"
+                Alg = SignatureAlgorithm.RsaSha256.Name
             };
             var reader = new JsonWebTokenReader();
 

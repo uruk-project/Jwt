@@ -1,5 +1,6 @@
 ﻿using JsonWebToken;
 using System;
+using System.Security.Cryptography;
 
 namespace Performance
 {
@@ -15,9 +16,9 @@ namespace Performance
             Use = "sig",
             Kid = "kid-hs256",
             K = "GdaXeVyiJwKmz5LFhcbcng",
-            Alg = "HS256"
+            Alg = SignatureAlgorithm.HmacSha256.Name
         };
-        private static readonly JsonWebKey EncryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithms.Aes256KW);
+        private static readonly JsonWebKey EncryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithm.Aes256KW.Name);
         private static readonly JsonWebTokenReader _reader = new JsonWebTokenReader(SharedKey);
         private static readonly JsonWebTokenWriter _writer = new JsonWebTokenWriter();
         private static readonly TokenValidationPolicy policy = new TokenValidationPolicyBuilder()
@@ -42,7 +43,7 @@ namespace Performance
             var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
             var issuer = "https://idp.example.com/";
             var audience = "636C69656E745F6964";
-            var token = new JwsDescriptor()
+            var jws = new JwsDescriptor()
             {
                 IssuedAt = issuedAt,
                 ExpirationTime = expires,
@@ -53,8 +54,8 @@ namespace Performance
             var jwe = new JweDescriptor
             {
                 Key = EncryptionKey,
-                EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256,
-                Payload = token
+                EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
+                Payload = jws
             };
             //var jwt = _writer.WriteToken(jwe);
 
@@ -63,23 +64,35 @@ namespace Performance
             //for (int i = 0; i < 1000000; i++)
             //{
             //    var result = _reader.TryReadToken(jwt.AsSpan(), policy);
-            //}
+            ////}
+            _writer.EnableHeaderCaching = false;
+            while (true)
+            {
+                var jwt = _writer.WriteToken(jws);
+            }
 
-            //for (int i = 0; i < 10000000; i++)
+            //var keyData = new byte[32];
+            //RandomNumberGenerator.Fill(keyData);
+            //var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            //var key = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(keyData);
+            //key.CryptoProviderFactory.CacheSignatureProviders = true;
+            //Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
+            //var signingKey = new Microsoft.IdentityModel.Tokens.SigningCredentials(key, "HS256");
+            //handler.CreateEncodedJwt(new Microsoft.IdentityModel.Tokens.SecurityTokenDescriptor());
+            //while (true)
             //{
-            //    var jwt = _writer.WriteToken(jwe);
+            //    handler.CreateJwtSecurityToken(issuer: "me", signingCredentials: signingKey);
             //}
             ////});
 
-
-            var kwp = new AesKeyWrapProvider(_key, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes256KW);
-            byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
-            var unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
-            while (true)
-            {
-                var wrapped = kwp.TryWrapKey(_keyToWrap, null, wrappedKey, out var cek, out var bytesWritten);
-                var unwrapped = kwp.TryUnwrapKey(wrappedKey, unwrappedKey, null, out int keyWrappedBytesWritten);
-            }
+            //var kwp = new AesKeyWrapProvider(_key, CryptographicAlgorithm.Aes128CbcHmacSha256, SignatureAlgorithm.Aes256KW);
+            //byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
+            //var unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
+            //while (true)
+            //{
+            //    var wrapped = kwp.TryWrapKey(_keyToWrap, null, wrappedKey, out var cek, out var bytesWritten);
+            //    var unwrapped = kwp.TryUnwrapKey(wrappedKey, unwrappedKey, null, out int keyWrappedBytesWritten);
+            //}
         }
     }
 }

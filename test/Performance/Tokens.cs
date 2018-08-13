@@ -36,12 +36,12 @@ namespace JsonWebToken.Performance
 
         private static SymmetricJwk CreateSigningKey()
         {
-            return SymmetricJwk.GenerateKey(128, SignatureAlgorithms.HmacSha256);
+            return SymmetricJwk.GenerateKey(128, SignatureAlgorithm.HmacSha256.Name);
         }
 
         private static SymmetricJwk CreateEncryptionKey()
         {
-            return SymmetricJwk.GenerateKey(256, KeyManagementAlgorithms.Aes256KW);
+            return SymmetricJwk.GenerateKey(256, KeyManagementAlgorithm.Aes256KW.Name);
         }
 
         private static IDictionary<string, JObject> CreatePayloads()
@@ -137,7 +137,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add(payload.Key, descriptor);
+                descriptors.Add("JWS-" + payload.Key, descriptor);
             }
 
             foreach (var payload in payloads)
@@ -166,7 +166,7 @@ namespace JsonWebToken.Performance
                 {
                     Payload = descriptor,
                     Key = encryptionKey,
-                    EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256,
+                    EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
                     ContentType = "JWT"
                 };
 
@@ -350,7 +350,7 @@ namespace JsonWebToken.Performance
         {
             descriptor.Payload.Key = SigningKey;
             descriptor.Key = encryptionKey;
-            descriptor.EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256;
+            descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
 
             return CreateInvalidToken(status, descriptor);
         }

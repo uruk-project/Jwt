@@ -4,7 +4,7 @@ namespace JsonWebToken
     /// Constants for JsonWebAlgorithms  "kty" Key Type (sec 6.1)
     /// http://tools.ietf.org/html/rfc7518#section-6.1
     /// </summary>
-    public static class JsonWebAlgorithmsKeyTypes
+    public static class KeyTypes
     {
         public const string EllipticCurve = "EC";
         public const string RSA = "RSA";
