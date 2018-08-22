@@ -39,6 +39,12 @@ namespace JsonWebToken
             if (header.TryGetValue(HeaderParameters.Kid, out var kid))
             {
                 var key = ComputeHeaderKey(header, alg);
+                if (key == -1)
+                {
+                    base64UrlHeader = null;
+                    return false;
+                }
+
                 var keyId = ((string)kid).AsSpan();
                 var node = _head;
                 while (node != null)
@@ -72,13 +78,14 @@ namespace JsonWebToken
             {
                 return -1;
             }
-                       
+
             if (cty != null && !string.Equals(cty.Value<string>(), ContentTypeValues.Jwt, StringComparison.Ordinal))
             {
+                // only support 'cty': 'JWT' or not cty
                 return -1;
             }
 
-            return (long)alg;
+            return alg;
         }
 
         public void AddHeader(JObject header, in SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
@@ -110,6 +117,11 @@ namespace JsonWebToken
                 }
 
                 var key = ComputeHeaderKey(header, alg);
+                if (key == -1)
+                {
+                    return;
+                }
+
                 if (node == null)
                 {
                     node = new Bucket
