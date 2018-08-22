@@ -198,7 +198,7 @@ namespace JsonWebToken
                                 Unsafe.Add(ref *t, 7) = (byte)((n * j) + i);
 
                                 // First, A = ( A ^ t )
-                                a ^= Unsafe.ReadUnaligned<ulong>(ref t[0]);
+                                a ^= Unsafe.ReadUnaligned<ulong>(ref *t);
 
                                 // Second, block = ( A | R[i] )
                                 Unsafe.WriteUnaligned(blockPtr, a);
