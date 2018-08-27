@@ -66,6 +66,12 @@ namespace JsonWebToken
         [JsonProperty(PropertyName = HeaderParameters.Zip, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public string Zip { get; set; }
 
+        [JsonProperty(PropertyName = HeaderParameters.IV, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public string IV { get; set; }
+
+        [JsonProperty(PropertyName = HeaderParameters.Tag, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public string Tag { get; set; }
+
 #if NETCOREAPP2_1
         [JsonProperty(PropertyName = HeaderParameters.Epk, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public EccJwk Epk { get; set; }

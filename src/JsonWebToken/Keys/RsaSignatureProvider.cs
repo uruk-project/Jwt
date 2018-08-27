@@ -80,7 +80,7 @@ namespace JsonWebToken
         /// <returns>A signature over the input.</returns>
         public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {
-            if (input == null || input.Length == 0)
+            if (input.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(input));
             }
@@ -124,12 +124,12 @@ namespace JsonWebToken
         /// <returns>true if signature matches, false otherwise.</returns>
         public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
         {
-            if (input == null || input.Length == 0)
+            if (input.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(input));
             }
 
-            if (signature == null || signature.Length == 0)
+            if (signature.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(signature));
             }

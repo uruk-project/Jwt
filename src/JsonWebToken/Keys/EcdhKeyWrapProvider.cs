@@ -129,8 +129,6 @@ namespace JsonWebToken
             {
                 var partyUInfo = GetPartyInfo(header, HeaderParameters.Apu);
                 var partyVInfo = GetPartyInfo(header, HeaderParameters.Apv);
-
-
                 var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
                 byte[] exchangeHash;
                 using (var ephemeralKey = (staticKey == null) ? ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256) : ECDiffieHellman.Create(((EccJwk)staticKey).ExportParameters(true)))
@@ -170,6 +168,7 @@ namespace JsonWebToken
                 return false;
             }
         }
+
         private string GetAlgorithmName()
         {
             if (Algorithm == KeyManagementAlgorithm.EcdhEs)
@@ -250,7 +249,7 @@ namespace JsonWebToken
 
         private static void WritePartyInfo(Span<byte> partyInfo, Span<byte> destination)
         {
-            if (partyInfo.Length == 0)
+            if (partyInfo.IsEmpty)
             {
                 WriteZero(destination);
             }

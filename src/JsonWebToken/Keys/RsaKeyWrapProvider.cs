@@ -82,7 +82,7 @@ namespace JsonWebToken
         /// <returns>Unwrapped key</returns>
         public override bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
-            if (keyBytes == null || keyBytes.Length == 0)
+            if (keyBytes.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(keyBytes));
             }

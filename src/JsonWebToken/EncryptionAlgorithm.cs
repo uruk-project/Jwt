@@ -19,11 +19,11 @@ namespace JsonWebToken
 
         private readonly long _id;
 
-        public readonly string Name;
         public readonly int RequiredKeySizeInBytes;
-        public readonly SignatureAlgorithm SignatureAlgorithm;
         public readonly int RequiredKeyWrappedSizeInBytes;
+        public readonly SignatureAlgorithm SignatureAlgorithm;
         public readonly EncryptionTypes Category;
+        public readonly string Name;
 
         private EncryptionAlgorithm(long id, string name, int requiredKeySizeInBytes, SignatureAlgorithm hashAlgorithm, int requiredKeyWrappedSizeInBytes, EncryptionTypes encryptionType)
         {

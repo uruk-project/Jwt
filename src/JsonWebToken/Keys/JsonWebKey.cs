@@ -30,6 +30,7 @@ namespace JsonWebToken
             writer.WriteValue(((SignatureAlgorithm)value).Name);
         }
     }
+
     internal sealed class CryptographicAlgorithmConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)

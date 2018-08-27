@@ -1,12 +1,16 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace JsonWebToken
 {
     public abstract class EncryptedJwtDescriptor<TPayload> : JwtDescriptor<TPayload> where TPayload : class
     {
+        private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
+
         public EncryptedJwtDescriptor(JObject header, TPayload payload)
             : base(header, payload)
         {
@@ -68,11 +72,11 @@ namespace JsonWebToken
             return EncryptToken(encodedPayload);
         }
 #endif
-        unsafe protected string EncryptToken(Span<byte> payload)
+        protected unsafe string EncryptToken(Span<byte> payload)
         {
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
             KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)Algorithm;
-            bool isDirectEncryption = (contentEncryptionAlgorithm == KeyManagementAlgorithm.Direct);
+            bool isDirectEncryption = contentEncryptionAlgorithm == KeyManagementAlgorithm.Direct;
 
             AuthenticatedEncryptionProvider encryptionProvider = null;
             KeyWrapProvider kwProvider = null;
@@ -90,8 +94,8 @@ namespace JsonWebToken
             }
 
             var header = Header;
-            Span<byte> wrappedKey = contentEncryptionAlgorithm.ProduceEncryptedKey 
-                                        ? stackalloc byte[kwProvider.GetKeyWrapSize()] 
+            Span<byte> wrappedKey = contentEncryptionAlgorithm.ProduceEncryptedKey
+                                        ? stackalloc byte[kwProvider.GetKeyWrapSize()]
                                         : null;
             if (!isDirectEncryption)
             {
@@ -123,7 +127,6 @@ namespace JsonWebToken
 
             try
             {
-#if NETCOREAPP2_1
                 var headerJson = Serialize(header);
                 int headerJsonLength = headerJson.Length;
                 int base64EncodedHeaderLength = Base64Url.GetArraySizeRequiredToEncode(headerJsonLength);
@@ -131,6 +134,7 @@ namespace JsonWebToken
                 byte[] arrayByteToReturnToPool = null;
                 char[] arrayCharToReturnToPool = null;
                 char[] buffer64HeaderToReturnToPool = null;
+                byte[] arrayCiphertextToReturnToPool = null;
                 Span<byte> asciiEncodedHeader = base64EncodedHeaderLength > Constants.MaxStackallocBytes
                                     ? (arrayByteToReturnToPool = ArrayPool<byte>.Shared.Rent(base64EncodedHeaderLength)).AsSpan(0, base64EncodedHeaderLength)
                                     : stackalloc byte[base64EncodedHeaderLength];
@@ -138,15 +142,25 @@ namespace JsonWebToken
                 try
                 {
                     Span<byte> utf8EncodedHeader = asciiEncodedHeader.Slice(0, headerJsonLength);
-                    Encoding.UTF8.GetBytes(headerJson, utf8EncodedHeader);
-
                     Span<char> base64EncodedHeader = base64EncodedHeaderLength > Constants.MaxStackallocBytes
                                                     ? (buffer64HeaderToReturnToPool = ArrayPool<char>.Shared.Rent(base64EncodedHeaderLength)).AsSpan(0, base64EncodedHeaderLength)
                                                     : stackalloc char[base64EncodedHeaderLength];
+#if NETCOREAPP2_1
+                    Encoding.UTF8.GetBytes(headerJson, utf8EncodedHeader);
                     int bytesWritten = Base64Url.Base64UrlEncode(utf8EncodedHeader, base64EncodedHeader);
-
                     Encoding.ASCII.GetBytes(base64EncodedHeader, asciiEncodedHeader);
-
+#else
+                    int bytesWritten;
+                    fixed (char* rawPtr = &MemoryMarshal.GetReference(headerJson.AsSpan()))
+                    fixed (byte* utf8Ptr = &MemoryMarshal.GetReference(utf8EncodedHeader))
+                    fixed (char* b64Ptr = &MemoryMarshal.GetReference(base64EncodedHeader))
+                    fixed (byte* header8Ptr = &MemoryMarshal.GetReference(asciiEncodedHeader))
+                    {
+                        Encoding.UTF8.GetBytes(rawPtr, headerJson.Length, utf8Ptr, utf8EncodedHeader.Length);
+                        bytesWritten = Base64Url.Base64UrlEncode(utf8EncodedHeader, base64EncodedHeader);
+                        Encoding.ASCII.GetBytes(b64Ptr, base64EncodedHeader.Length, header8Ptr, asciiEncodedHeader.Length);
+                    }
+#endif                  
                     CompressionProvider compressionProvider = null;
                     if (CompressionAlgorithm != null)
                     {
@@ -162,12 +176,25 @@ namespace JsonWebToken
                         payload = compressionProvider.Compress(payload);
                     }
 
-                    var encryptionResult = encryptionProvider.Encrypt(payload, asciiEncodedHeader);
+                    int ciphertextLength = encryptionProvider.GetCiphertextSize(payload.Length);
+                    Span<byte> tag = stackalloc byte[encryptionProvider.GetTagSize()];
+                    Span<byte> ciphertext = ciphertextLength > Constants.MaxStackallocBytes
+                                                ? (arrayCiphertextToReturnToPool = ArrayPool<byte>.Shared.Rent(ciphertextLength)).AsSpan(0, ciphertextLength)
+                                                : stackalloc byte[ciphertextLength];
+#if NETCOREAPP2_1
+                    Span<byte> nonce = stackalloc byte[encryptionProvider.GetNonceSize()];
+                    RandomNumberGenerator.Fill(nonce);
+#else
+                    var nonce = new byte[encryptionProvider.GetNonceSize()];
+                    _randomNumberGenerator.GetBytes(nonce);
+#endif
+                    encryptionProvider.Encrypt(payload, nonce, asciiEncodedHeader, ciphertext, tag);
+
                     int encryptionLength =
                         base64EncodedHeader.Length
-                        + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.IV.Length)
-                        + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.Ciphertext.Length)
-                        + Base64Url.GetArraySizeRequiredToEncode(encryptionResult.AuthenticationTag.Length)
+                        + Base64Url.GetArraySizeRequiredToEncode(nonce.Length)
+                        + Base64Url.GetArraySizeRequiredToEncode(ciphertext.Length)
+                        + Base64Url.GetArraySizeRequiredToEncode(tag.Length)
                         + (Constants.JweSegmentCount - 1);
                     if (wrappedKey != null)
                     {
@@ -186,11 +213,11 @@ namespace JsonWebToken
                     }
 
                     encryptedToken[bytesWritten++] = '.';
-                    bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.IV, encryptedToken.Slice(bytesWritten));
+                    bytesWritten += Base64Url.Base64UrlEncode(nonce, encryptedToken.Slice(bytesWritten));
                     encryptedToken[bytesWritten++] = '.';
-                    bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.Ciphertext, encryptedToken.Slice(bytesWritten));
+                    bytesWritten += Base64Url.Base64UrlEncode(ciphertext, encryptedToken.Slice(bytesWritten));
                     encryptedToken[bytesWritten++] = '.';
-                    bytesWritten += Base64Url.Base64UrlEncode(encryptionResult.AuthenticationTag, encryptedToken.Slice(bytesWritten));
+                    bytesWritten += Base64Url.Base64UrlEncode(tag, encryptedToken.Slice(bytesWritten));
                     //Debug.Assert(encryptedToken.Length == bytesWritten);
 
                     return encryptedToken.ToString();
@@ -211,47 +238,70 @@ namespace JsonWebToken
                     {
                         ArrayPool<char>.Shared.Return(buffer64HeaderToReturnToPool);
                     }
-                }
-#else
-                var utf8Header = Encoding.UTF8.GetBytes(Serialize(Header));
-                var base64Header = Base64Url.Encode(utf8Header);
-                CompressionProvider compressionProvider = null;
-                if (CompressionAlgorithm != null)
-                {
-                    compressionProvider = CompressionProvider.CreateCompressionProvider(CompressionAlgorithm);
-                    if (compressionProvider == null)
+
+                    if (arrayCiphertextToReturnToPool != null)
                     {
-                        throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedCompressionAlgorithm, CompressionAlgorithm));
+                        ArrayPool<byte>.Shared.Return(arrayCiphertextToReturnToPool);
                     }
                 }
+                //#else
+                //                byte[] arrayCiphertextToReturnToPool = null;
+                //                var utf8Header = Encoding.UTF8.GetBytes(Serialize(Header));
+                //                var base64Header = Base64Url.Encode(utf8Header);
+                //                CompressionProvider compressionProvider = null;
+                //                if (CompressionAlgorithm != null)
+                //                {
+                //                    compressionProvider = CompressionProvider.CreateCompressionProvider(CompressionAlgorithm);
+                //                    if (compressionProvider == null)
+                //                    {
+                //                        throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedCompressionAlgorithm, CompressionAlgorithm));
+                //                    }
+                //                }
 
-                if (compressionProvider != null)
-                {
-                    payload = compressionProvider.Compress(payload);
-                }
+                //                if (compressionProvider != null)
+                //                {
+                //                    payload = compressionProvider.Compress(payload);
+                //                }
 
-                var encryptionResult = encryptionProvider.Encrypt(payload, Encoding.ASCII.GetBytes(base64Header));
-                if (wrappedKey == null)
-                {
-                    return string.Join(
-                        ".",
-                        base64Header,
-                        string.Empty,
-                        Base64Url.Encode(encryptionResult.IV),
-                        Base64Url.Encode(encryptionResult.Ciphertext),
-                        Base64Url.Encode(encryptionResult.AuthenticationTag));
-                }
-                else
-                {
-                    return string.Join(
-                        ".",
-                        base64Header,
-                        Base64Url.Encode(wrappedKey.ToArray()),
-                        Base64Url.Encode(encryptionResult.IV),
-                        Base64Url.Encode(encryptionResult.Ciphertext),
-                        Base64Url.Encode(encryptionResult.AuthenticationTag));
-                }
-#endif
+                //                try
+                //                {
+                //                    int ciphertextLength = encryptionProvider.GetCiphertextSize(payload.Length);
+                //                    var nonce = new byte[16];
+                //                    Span<byte> tag = stackalloc byte[encryptionProvider.GetTagSize()];
+                //                    Span<byte> ciphertext = ciphertextLength > Constants.MaxStackallocBytes
+                //                                                ? (arrayCiphertextToReturnToPool = ArrayPool<byte>.Shared.Rent(ciphertextLength)).AsSpan(0, ciphertextLength)
+                //                                                : stackalloc byte[ciphertextLength];
+                //                    _randomNumberGenerator.GetNonZeroBytes(nonce);
+                //                    encryptionProvider.Encrypt(nonce, payload, ciphertext, tag, Encoding.ASCII.GetBytes(base64Header));
+                //                    if (wrappedKey == null)
+                //                    {
+                //                        return string.Join(
+                //                            ".",
+                //                            base64Header,
+                //                            string.Empty,
+                //                            Base64Url.Base64UrlEncode(nonce),
+                //                            Base64Url.Base64UrlEncode(ciphertext),
+                //                            Base64Url.Base64UrlEncode(tag));
+                //                    }
+                //                    else
+                //                    {
+                //                        return string.Join(
+                //                            ".",
+                //                            base64Header,
+                //                            Base64Url.Base64UrlEncode(wrappedKey),
+                //                            Base64Url.Base64UrlEncode(nonce),
+                //                            Base64Url.Base64UrlEncode(ciphertext),
+                //                            Base64Url.Base64UrlEncode(tag));
+                //                    }
+                //                }
+                //                finally
+                //                {
+                //                    if (arrayCiphertextToReturnToPool != null)
+                //                    {
+                //                        ArrayPool<byte>.Shared.Return(arrayCiphertextToReturnToPool);
+                //                    }
+                //                }
+                //#endif
             }
             catch (Exception ex)
             {

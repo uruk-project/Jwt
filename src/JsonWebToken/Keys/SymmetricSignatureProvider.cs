@@ -91,7 +91,7 @@ namespace JsonWebToken
         /// <returns>Signed bytes</returns>
         public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {
-            if (input == null || input.Length == 0)
+            if (input.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(input));
             }
@@ -130,12 +130,12 @@ namespace JsonWebToken
         /// <returns>true if computed signature matches the signature parameter, false otherwise.</returns>
         public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
         {
-            if (input == null || input.Length == 0)
+            if (input.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(input));
             }
 
-            if (signature == null || signature.Length == 0)
+            if (signature.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(signature));
             }
@@ -167,12 +167,12 @@ namespace JsonWebToken
         /// <returns>true if computed signature matches the signature parameter, false otherwise.</returns>
         public bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature, int length)
         {
-            if (input == null || input.Length == 0)
+            if (input.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(input));
             }
 
-            if (signature == null || signature.Length == 0)
+            if (signature.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(signature));
             }
@@ -248,11 +248,10 @@ namespace JsonWebToken
         /// <returns>
         /// true if the bytes are equal, false otherwise.
         /// </returns>
-        unsafe private static bool AreEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
+        private static unsafe bool AreEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
         {
             ReadOnlySpan<byte> first, second;
-
-            if (((a == null) || (b == null)) || (a.Length != b.Length))
+            if (a.IsEmpty || b.IsEmpty || (a.Length != b.Length))
             {
                 first = s_bytesA;
                 second = s_bytesB;
