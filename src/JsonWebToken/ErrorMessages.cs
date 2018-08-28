@@ -41,7 +41,7 @@ namespace JsonWebToken
         internal const string NotSupportedEncryptionAlgorithm = "Encryption failed. No support for: Algorithm: '{0}'.";
         internal const string EncryptionFailed = "Encryption failed failed for: Algorithm: '{0}', key: '{1}'. See inner exception.";
         internal const string NotSuportedAlgorithmForKeyWrap = "Key wrap is not supported for algorithm '{0}'.";
-        internal const string NotSuportedCompressionAlgorithm = "Compression algorithm '{0}' is not supported.";
+        internal const string NotSupportedCompressionAlgorithm = "Compression algorithm '{0}' is not supported.";
 
         internal const string InvalidSymmetricKeySize = "Invalid key size. Valid key sizes are: 256, 384, and 512.";
         internal const string InvalidEcdsaKeySize = "Invalid key size for '{0}'. Valid key size must be '{1}' bits. Key size: '{2}'.";
@@ -68,6 +68,6 @@ namespace JsonWebToken
         internal const string InvalidRsaKey = "Invalid RSA key: '{0}'. Both modulus (N) and exponent (E) must be present.";
 
         internal const string InvalidSize = "The value of '{0}' must be '{1}' bits, but was {2}.";
-        internal const string NotSupportedCertificate = "The certificate does not contains RSA key material or ECDsa key material.";
+        internal const string InvalidCertificate = "The certificate does not contains RSA key material or ECDsa key material.";
     }
 }

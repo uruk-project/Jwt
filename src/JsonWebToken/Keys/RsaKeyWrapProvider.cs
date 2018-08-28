@@ -94,7 +94,7 @@ namespace JsonWebToken
 
             if (_rsa == null)
             {
-                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
+                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
             }
 
             try
@@ -129,7 +129,7 @@ namespace JsonWebToken
 
             if (_rsa == null)
             {
-                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
+                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
             }
 
             try

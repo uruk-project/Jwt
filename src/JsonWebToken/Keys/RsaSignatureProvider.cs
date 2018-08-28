@@ -64,7 +64,7 @@ namespace JsonWebToken
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
+                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm));
             }
 
             _hashSizeInBytes = key.KeySizeInBits >> 3;

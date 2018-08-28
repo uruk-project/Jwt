@@ -141,7 +141,7 @@ namespace JsonWebToken
                     case EllipticalCurves.P521:
                         return 521;
                     default:
-                        throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
+                        throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
                 }
             }
         }
@@ -241,7 +241,7 @@ namespace JsonWebToken
                     parameters.Curve = ECCurve.NamedCurves.nistP521;
                     break;
                 default:
-                    throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
+                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
             }
 
             return parameters;
@@ -267,7 +267,7 @@ namespace JsonWebToken
                     curve = ECCurve.NamedCurves.nistP521;
                     break;
                 default:
-                    throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, curveId));
+                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, curveId));
             }
 
             using (var ecdsa = ECDsa.Create())

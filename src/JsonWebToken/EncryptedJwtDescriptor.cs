@@ -89,7 +89,7 @@ namespace JsonWebToken
                 kwProvider = Key.CreateKeyWrapProvider(encryptionAlgorithm, contentEncryptionAlgorithm);
                 if (kwProvider == null)
                 {
-                    throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
+                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
                 }
             }
 
@@ -167,7 +167,7 @@ namespace JsonWebToken
                         compressionProvider = CompressionProvider.CreateCompressionProvider(CompressionAlgorithm);
                         if (compressionProvider == null)
                         {
-                            throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedCompressionAlgorithm, CompressionAlgorithm));
+                            throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCompressionAlgorithm, CompressionAlgorithm));
                         }
                     }
 
@@ -244,64 +244,6 @@ namespace JsonWebToken
                         ArrayPool<byte>.Shared.Return(arrayCiphertextToReturnToPool);
                     }
                 }
-                //#else
-                //                byte[] arrayCiphertextToReturnToPool = null;
-                //                var utf8Header = Encoding.UTF8.GetBytes(Serialize(Header));
-                //                var base64Header = Base64Url.Encode(utf8Header);
-                //                CompressionProvider compressionProvider = null;
-                //                if (CompressionAlgorithm != null)
-                //                {
-                //                    compressionProvider = CompressionProvider.CreateCompressionProvider(CompressionAlgorithm);
-                //                    if (compressionProvider == null)
-                //                    {
-                //                        throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedCompressionAlgorithm, CompressionAlgorithm));
-                //                    }
-                //                }
-
-                //                if (compressionProvider != null)
-                //                {
-                //                    payload = compressionProvider.Compress(payload);
-                //                }
-
-                //                try
-                //                {
-                //                    int ciphertextLength = encryptionProvider.GetCiphertextSize(payload.Length);
-                //                    var nonce = new byte[16];
-                //                    Span<byte> tag = stackalloc byte[encryptionProvider.GetTagSize()];
-                //                    Span<byte> ciphertext = ciphertextLength > Constants.MaxStackallocBytes
-                //                                                ? (arrayCiphertextToReturnToPool = ArrayPool<byte>.Shared.Rent(ciphertextLength)).AsSpan(0, ciphertextLength)
-                //                                                : stackalloc byte[ciphertextLength];
-                //                    _randomNumberGenerator.GetNonZeroBytes(nonce);
-                //                    encryptionProvider.Encrypt(nonce, payload, ciphertext, tag, Encoding.ASCII.GetBytes(base64Header));
-                //                    if (wrappedKey == null)
-                //                    {
-                //                        return string.Join(
-                //                            ".",
-                //                            base64Header,
-                //                            string.Empty,
-                //                            Base64Url.Base64UrlEncode(nonce),
-                //                            Base64Url.Base64UrlEncode(ciphertext),
-                //                            Base64Url.Base64UrlEncode(tag));
-                //                    }
-                //                    else
-                //                    {
-                //                        return string.Join(
-                //                            ".",
-                //                            base64Header,
-                //                            Base64Url.Base64UrlEncode(wrappedKey),
-                //                            Base64Url.Base64UrlEncode(nonce),
-                //                            Base64Url.Base64UrlEncode(ciphertext),
-                //                            Base64Url.Base64UrlEncode(tag));
-                //                    }
-                //                }
-                //                finally
-                //                {
-                //                    if (arrayCiphertextToReturnToPool != null)
-                //                    {
-                //                        ArrayPool<byte>.Shared.Return(arrayCiphertextToReturnToPool);
-                //                    }
-                //                }
-                //#endif
             }
             catch (Exception ex)
             {

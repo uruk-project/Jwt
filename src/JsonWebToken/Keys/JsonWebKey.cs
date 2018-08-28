@@ -414,7 +414,7 @@ namespace JsonWebToken
 
             if (key == null)
             {
-                throw new NotSupportedException(ErrorMessages.NotSupportedCertificate);
+                throw new NotSupportedException(ErrorMessages.InvalidCertificate);
             }
 
             key.X5t = Base64Url.Encode(certificate.GetCertHash());

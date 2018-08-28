@@ -50,7 +50,7 @@ namespace JsonWebToken
                     _hashSize = 132;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, key.Crv));
+                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, key.Crv));
             }
 
             _ecdsa = ResolveAlgorithm(key, algorithm, willCreateSignatures);
@@ -82,7 +82,7 @@ namespace JsonWebToken
 #endif
             }
 
-            throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, _hashAlgorithm));
+            throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, _hashAlgorithm));
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace JsonWebToken
 
             if (_ecdsa == null)
             {
-                throw new InvalidOperationException(ErrorMessages.NotSupportedUnwrap);
+                throw new NotSupportedException(ErrorMessages.NotSupportedUnwrap);
             }
 
 #if NETCOREAPP2_1

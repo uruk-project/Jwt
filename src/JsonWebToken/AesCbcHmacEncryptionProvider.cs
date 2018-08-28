@@ -40,7 +40,7 @@ namespace JsonWebToken
             _symmetricSignatureProvider = _hmacKey.CreateSignatureProvider(_signatureAlgorithm, true) as SymmetricSignatureProvider;
             if (_symmetricSignatureProvider == null)
             {
-                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureHashAlgorithm, encryptionAlgorithm));
+                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureHashAlgorithm, encryptionAlgorithm));
             }
         }
 
