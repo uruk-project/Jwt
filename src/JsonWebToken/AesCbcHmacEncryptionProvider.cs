@@ -76,36 +76,42 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(associatedData));
             }
 
-            using (Aes aes = Aes.Create())
+            byte[] arrayToReturnToPool = null;
+            try
             {
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-                aes.Key = _aesKey.RawK;
-                aes.IV = nonce.ToArray();
-
-                Transform(aes.CreateEncryptor(), plaintext, 0, plaintext.Length, ciphertext);
-
-                byte[] arrayToReturnToPool = null;
-                int macLength = associatedData.Length + nonce.Length + ciphertext.Length + sizeof(long);
-                Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
-                    ? stackalloc byte[macLength]
-                    : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
-                try
+                using (Aes aes = Aes.Create())
                 {
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+                    aes.Key = _aesKey.RawK;
+                    aes.IV = nonce.ToArray();
+
+                    Transform(aes.CreateEncryptor(), plaintext, 0, plaintext.Length, ciphertext);
+
+                    int macLength = associatedData.Length + nonce.Length + ciphertext.Length + sizeof(long);
+                    Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
+                        ? stackalloc byte[macLength]
+                        : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
+
                     associatedData.CopyTo(macBytes);
                     nonce.CopyTo(macBytes.Slice(associatedData.Length));
                     ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
-                    BinaryPrimitives.TryWriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length, sizeof(long)), associatedData.Length * 8);
+                    BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length, sizeof(long)), associatedData.Length * 8);
 
                     _symmetricSignatureProvider.TrySign(macBytes, tag, out int writtenBytes);
                     Debug.Assert(writtenBytes == tag.Length);
                 }
-                finally
+            }
+            catch
+            {
+                ciphertext.Clear();
+                throw;
+            }
+            finally
+            {
+                if (arrayToReturnToPool != null)
                 {
-                    if (arrayToReturnToPool != null)
-                    {
-                        ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
-                    }
+                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
                 }
             }
         }
@@ -150,39 +156,36 @@ namespace JsonWebToken
                 associatedData.CopyTo(macBytes);
                 nonce.CopyTo(macBytes.Slice(associatedData.Length));
                 ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
-
-                if (!BinaryPrimitives.TryWriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length), associatedData.Length * 8) ||
-                    !_symmetricSignatureProvider.Verify(macBytes, authenticationTag, _hmacKey.KeySizeInBits / 8))
+                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length), associatedData.Length * 8);
+                if (!_symmetricSignatureProvider.Verify(macBytes, authenticationTag, _hmacKey.KeySizeInBits / 8))
                 {
                     bytesWritten = 0;
                     plaintext.Clear();
                     return false;
                 }
+
+                using (Aes aes = Aes.Create())
+                {
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+                    aes.Key = _aesKey.RawK;
+                    aes.IV = nonce.ToArray();
+
+                    bytesWritten = Transform(aes.CreateDecryptor(), ciphertext.ToArray(), 0, ciphertext.Length, plaintext);
+                    return bytesWritten <= ciphertext.Length;
+                }
+            }
+            catch
+            {
+                bytesWritten = 0;
+                plaintext.Clear();
+                return false;
             }
             finally
             {
                 if (byteArrayToReturnToPool != null)
                 {
                     ArrayPool<byte>.Shared.Return(byteArrayToReturnToPool);
-                }
-            }
-
-            using (Aes aes = Aes.Create())
-            {
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-                aes.Key = _aesKey.RawK;
-                aes.IV = nonce.ToArray();
-                try
-                {
-                    bytesWritten = Transform(aes.CreateDecryptor(), ciphertext.ToArray(), 0, ciphertext.Length, plaintext);
-                    return bytesWritten <= ciphertext.Length;
-                }
-                catch
-                {
-                    bytesWritten = 0;
-                    plaintext.Clear();
-                    return false;
                 }
             }
         }

@@ -351,11 +351,10 @@ namespace JsonWebToken
                 }
 
 #if NETCOREAPP2_1
-                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten));
+                return Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten));
 #else
-                string rawData = Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten).ToArray());
+                return EncodingHelper.GetUtf8String(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten));
 #endif
-                return rawData;
             }
             finally
             {
@@ -368,14 +367,17 @@ namespace JsonWebToken
 
         public bool TryEncodeUtf8ToBase64Url(string input, Span<byte> destination, out int bytesWritten)
         {
-#if NETCOREAPP2_1
             byte[] arrayToReturnToPool = null;
             var encodedBytes = input.Length <= Constants.MaxStackallocBytes
                   ? stackalloc byte[input.Length]
                   : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(input.Length)).AsSpan(0, input.Length);
             try
             {
+#if NETCOREAPP2_1
                 Encoding.UTF8.GetBytes(input, encodedBytes);
+#else
+                EncodingHelper.GetUtf8Bytes(input, encodedBytes);
+#endif
                 var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
                 return status == OperationStatus.Done;
             }
@@ -386,12 +388,6 @@ namespace JsonWebToken
                     ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
                 }
             }
-#else
-            var encodedBytes = Encoding.UTF8.GetBytes(input);
-
-            var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
-            return status == OperationStatus.Done;
-#endif
         }
 
         protected bool HasMandatoryClaim(string claim)

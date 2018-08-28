@@ -47,7 +47,7 @@ namespace JsonWebToken
                     }
                 }
 
-                return buffer.AsSpan().Slice(0, uncompressedLength);
+                return new Span<byte>(buffer, 0, uncompressedLength);
             }
         }
     }

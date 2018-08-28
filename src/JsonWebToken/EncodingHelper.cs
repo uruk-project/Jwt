@@ -7,7 +7,15 @@ namespace JsonWebToken
 {
     public static class EncodingHelper
     {
-        public static unsafe void GetUtf8Bytes(string input, Span<byte> output)
+        public static unsafe string GetUtf8String(Span<byte> input)
+        {
+            fixed (byte* ptr = &MemoryMarshal.GetReference(input))
+            {
+                return Encoding.UTF8.GetString(ptr, input.Length);
+            }
+        }
+
+        public static void GetUtf8Bytes(string input, Span<byte> output)
         {
             GetUtf8Bytes(input.AsSpan(), output);
         }
@@ -21,7 +29,7 @@ namespace JsonWebToken
             }
         }
 
-        public static unsafe void GetAsciiBytes(string input, Span<byte> output)
+        public static void GetAsciiBytes(string input, Span<byte> output)
         {
             GetAsciiBytes(input.AsSpan(), output);
         }

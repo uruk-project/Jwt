@@ -69,7 +69,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(policy));
             }
 
-            if (token == null || token.IsEmpty)
+            if (token.IsEmpty)
             {
                 return TokenValidationResult.MalformedToken();
             }
@@ -79,7 +79,6 @@ namespace JsonWebToken
                 return TokenValidationResult.MalformedToken();
             }
 
-#if NETCOREAPP2_1
             int length = token.Length;
             byte[] utf8ArrayToReturnToPool = null;
             var utf8Buffer = length <= Constants.MaxStackallocBytes
@@ -87,7 +86,11 @@ namespace JsonWebToken
                   : (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
             try
             {
+#if NETCOREAPP2_1
                 Encoding.UTF8.GetBytes(token, utf8Buffer);
+#else
+                EncodingHelper.GetUtf8Bytes(token, utf8Buffer);
+#endif             
                 return TryReadToken(utf8Buffer, policy);
             }
             finally
@@ -97,10 +100,6 @@ namespace JsonWebToken
                     ArrayPool<byte>.Shared.Return(utf8ArrayToReturnToPool);
                 }
             }
-#else
-            var utf8Buffer = Encoding.UTF8.GetBytes(token.ToArray()).AsSpan();
-            return TryReadToken(utf8Buffer, policy);
-#endif
         }
 
         private unsafe TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Buffer, TokenValidationPolicy policy)
@@ -341,6 +340,7 @@ namespace JsonWebToken
                     {
                         ArrayPool<byte>.Shared.Return(arrayToReturn);
                     }
+
                     if (headerArrayToReturn != null)
                     {
                         ArrayPool<char>.Shared.Return(headerArrayToReturn);

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -63,16 +64,7 @@ namespace JsonWebToken
                 }
             }
         }
-        //protected string EncryptToken(string payload)
-        //{
-        //    if (payload == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(payload));
-        //    }
 
-        //    var encodedPayload = Encoding.UTF8.GetBytes(payload);
-        //    return EncryptToken(encodedPayload);
-        //}
         protected unsafe string EncryptToken(Span<byte> payload)
         {
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
@@ -212,9 +204,12 @@ namespace JsonWebToken
                     bytesWritten += Base64Url.Base64UrlEncode(ciphertext, encryptedToken.Slice(bytesWritten));
                     encryptedToken[bytesWritten++] = '.';
                     bytesWritten += Base64Url.Base64UrlEncode(tag, encryptedToken.Slice(bytesWritten));
-                    //Debug.Assert(encryptedToken.Length == bytesWritten);
+                    Debug.Assert(encryptedToken.Length == bytesWritten);
 
-                    return encryptedToken.ToString();
+                    fixed (char* ptr = &MemoryMarshal.GetReference(encryptedToken))
+                    {
+                        return new string(ptr, 0, bytesWritten);
+                    }
                 }
                 finally
                 {
