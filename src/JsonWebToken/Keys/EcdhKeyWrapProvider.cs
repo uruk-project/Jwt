@@ -1,6 +1,7 @@
 ﻿#if NETCOREAPP2_1
 using Newtonsoft.Json.Linq;
 using System;
+using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -16,6 +17,7 @@ namespace JsonWebToken
         private readonly HashAlgorithmName _hashAlgorithm;
 
         private static readonly byte[] _secretPreprend = { 0x0, 0x0, 0x0, 0x1 };
+        private static readonly uint OneBigEndian = BitConverter.IsLittleEndian ? 0x1000000u : 1u;
 
         public EcdhKeyWrapProvider(EccJwk key, in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
@@ -205,30 +207,17 @@ namespace JsonWebToken
             return partyInfo ?? Array.Empty<byte>();
         }
 
-        private static void WriteRoundNumber(Span<byte> destination)
+        private static unsafe void WriteRoundNumber(Span<byte> destination)
         {
-            uint value = BitConverter.IsLittleEndian ? 0x1000000u : 1u;
-            WriteValue(destination, value);
+            fixed (byte* ptr = &MemoryMarshal.GetReference(destination))
+            {
+                Unsafe.WriteUnaligned(ptr, OneBigEndian);
+            }
         }
 
         private void WriteSuppInfo(Span<byte> destination)
         {
-            uint value = (uint)_keyLength;
-            WriteValueBigEndian(destination, value);
-        }
-
-        private static unsafe void WriteValueBigEndian(Span<byte> destination, uint value)
-        {
-            if (BitConverter.IsLittleEndian)
-            {
-                value = (value << 16) | (value >> 16);
-                value = (value & 0x00FF00FF) << 8 | (value & 0xFF00FF00) >> 8;
-            }
-
-            fixed (byte* ptr = &MemoryMarshal.GetReference(destination))
-            {
-                Unsafe.WriteUnaligned(ptr, value);
-            }
+            BinaryPrimitives.WriteInt32BigEndian(destination, _keyLength);
         }
 
         private static unsafe void WriteZero(Span<byte> destination)
@@ -238,15 +227,7 @@ namespace JsonWebToken
                 Unsafe.WriteUnaligned(ptr, 0);
             }
         }
-
-        private static unsafe void WriteValue(Span<byte> destination, uint value)
-        {
-            fixed (byte* ptr = &MemoryMarshal.GetReference(destination))
-            {
-                Unsafe.WriteUnaligned(ptr, value);
-            }
-        }
-
+        
         private static void WritePartyInfo(Span<byte> partyInfo, Span<byte> destination)
         {
             if (partyInfo.IsEmpty)
@@ -255,15 +236,15 @@ namespace JsonWebToken
             }
             else
             {
-                WriteValueBigEndian(destination, (uint)partyInfo.Length);
+                BinaryPrimitives.WriteInt32BigEndian(destination, partyInfo.Length);
                 partyInfo.CopyTo(destination.Slice(sizeof(int)));
             }
         }
 
         private void WriteAlgorithmId(Span<byte> destination)
         {
-            WriteValueBigEndian(destination, (uint)_algorithmNameLength);
-            Encoding.ASCII.GetBytes(_algorithmName, destination.Slice(sizeof(uint)));
+            BinaryPrimitives.WriteInt32BigEndian(destination, _algorithmNameLength);
+            Encoding.ASCII.GetBytes(_algorithmName, destination.Slice(sizeof(int)));
         }
 
         private byte[] BuildSecretAppend(byte[] partyUInfo, byte[] partyVInfo)
