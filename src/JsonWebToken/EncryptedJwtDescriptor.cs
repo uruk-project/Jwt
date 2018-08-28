@@ -33,8 +33,7 @@ namespace JsonWebToken
             set => Header[HeaderParameters.Zip] = value;
         }
 
-#if NETCOREAPP2_1
-        protected string EncryptToken(string payload)
+        protected unsafe string EncryptToken(string payload)
         {
             if (payload == null)
             {
@@ -49,7 +48,11 @@ namespace JsonWebToken
 
             try
             {
+#if NETCOREAPP2_1
                 Encoding.UTF8.GetBytes(payload, encodedPayload);
+#else
+                EncodingHelper.GetUtf8Bytes(payload.AsSpan(), encodedPayload);
+#endif
                 return EncryptToken(encodedPayload);
             }
             finally
@@ -60,18 +63,16 @@ namespace JsonWebToken
                 }
             }
         }
-#else
-        protected string EncryptToken(string payload)
-        {
-            if (payload == null)
-            {
-                throw new ArgumentNullException(nameof(payload));
-            }
+        //protected string EncryptToken(string payload)
+        //{
+        //    if (payload == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(payload));
+        //    }
 
-            var encodedPayload = Encoding.UTF8.GetBytes(payload);
-            return EncryptToken(encodedPayload);
-        }
-#endif
+        //    var encodedPayload = Encoding.UTF8.GetBytes(payload);
+        //    return EncryptToken(encodedPayload);
+        //}
         protected unsafe string EncryptToken(Span<byte> payload)
         {
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
@@ -150,16 +151,9 @@ namespace JsonWebToken
                     int bytesWritten = Base64Url.Base64UrlEncode(utf8EncodedHeader, base64EncodedHeader);
                     Encoding.ASCII.GetBytes(base64EncodedHeader, asciiEncodedHeader);
 #else
-                    int bytesWritten;
-                    fixed (char* rawPtr = &MemoryMarshal.GetReference(headerJson.AsSpan()))
-                    fixed (byte* utf8Ptr = &MemoryMarshal.GetReference(utf8EncodedHeader))
-                    fixed (char* b64Ptr = &MemoryMarshal.GetReference(base64EncodedHeader))
-                    fixed (byte* header8Ptr = &MemoryMarshal.GetReference(asciiEncodedHeader))
-                    {
-                        Encoding.UTF8.GetBytes(rawPtr, headerJson.Length, utf8Ptr, utf8EncodedHeader.Length);
-                        bytesWritten = Base64Url.Base64UrlEncode(utf8EncodedHeader, base64EncodedHeader);
-                        Encoding.ASCII.GetBytes(b64Ptr, base64EncodedHeader.Length, header8Ptr, asciiEncodedHeader.Length);
-                    }
+                    EncodingHelper.GetUtf8Bytes(headerJson, utf8EncodedHeader);
+                    int bytesWritten = Base64Url.Base64UrlEncode(utf8EncodedHeader, base64EncodedHeader);
+                    EncodingHelper.GetAsciiBytes(base64EncodedHeader, asciiEncodedHeader);
 #endif                  
                     CompressionProvider compressionProvider = null;
                     if (CompressionAlgorithm != null)

@@ -317,7 +317,6 @@ namespace JsonWebToken
                         Encoding.UTF8.GetChars(rawPtr, rawHeader.Length, utf8Ptr, utf8Header.Length);
                         Encoding.ASCII.GetBytes(utf8Ptr, utf8Header.Length, header8Ptr, header.Length);
                     }
-
 #endif
                     Base64Url.Base64UrlDecode(rawInitializationVector, initializationVector, out int ivBytesConsumed, out int ivBytesWritten);
                     Debug.Assert(initializationVector.Length == ivBytesWritten);
