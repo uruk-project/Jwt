@@ -33,6 +33,52 @@ namespace JsonWebToken.Tests
         private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256.Name);
 
         [Theory]
+        [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes128GcmKW)]
+        [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes192GcmKW)]
+        [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes256GcmKW)]
+        [InlineData(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, KeyManagementAlgorithms.Aes128GcmKW)]
+        [InlineData(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, KeyManagementAlgorithms.Aes192GcmKW)]
+        [InlineData(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, KeyManagementAlgorithms.Aes256GcmKW)]
+        [InlineData(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, KeyManagementAlgorithms.Aes128GcmKW)]
+        [InlineData(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, KeyManagementAlgorithms.Aes192GcmKW)]
+        [InlineData(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, KeyManagementAlgorithms.Aes256GcmKW)]
+        [InlineData(ContentEncryptionAlgorithms.Aes128Gcm, KeyManagementAlgorithms.Direct)]
+        [InlineData(ContentEncryptionAlgorithms.Aes192Gcm, KeyManagementAlgorithms.Direct)]
+        [InlineData(ContentEncryptionAlgorithms.Aes256Gcm, KeyManagementAlgorithms.Direct)]
+        public void Encode_Decode_NotSuppoted(string enc, string alg)
+        {
+            var writer = new JsonWebTokenWriter();
+            var encryptionKey = SelectKey(enc, alg);
+
+            var descriptor = new JweDescriptor
+            {
+                Key = encryptionKey,
+                EncryptionAlgorithm = (EncryptionAlgorithm)enc,
+                Algorithm = alg,
+                Payload = new JwsDescriptor
+                {
+                    Key = _signingKey,
+                    Algorithm = SignatureAlgorithm.HmacSha256.Name,
+                    Subject = "Alice"
+                }
+            };
+
+            Assert.Throws<NotSupportedException>(() =>
+            {
+                var token = writer.WriteToken(descriptor);
+            });
+
+            //var reader = new JsonWebTokenReader(encryptionKey);
+            //var policy = new TokenValidationPolicyBuilder()
+            //    .RequireSignature(_signingKey)
+            //    .Build();
+
+            //var result = reader.TryReadToken(token, policy);
+            //Assert.Equal(TokenValidationStatus.Success, result.Status);
+            //Assert.Equal("Alice", result.Token.Subject);
+        }
+
+        [Theory]
         [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes128KW)]
         [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes192KW)]
         [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes256KW)]
@@ -68,7 +114,7 @@ namespace JsonWebToken.Tests
             var reader = new JsonWebTokenReader(encryptionKey);
             var policy = new TokenValidationPolicyBuilder()
                 .RequireSignature(_signingKey)
-                    .Build();
+                .Build();
 
             var result = reader.TryReadToken(token, policy);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
@@ -80,19 +126,25 @@ namespace JsonWebToken.Tests
             switch (alg)
             {
                 case KeyManagementAlgorithms.Aes128KW:
+                case KeyManagementAlgorithms.Aes128GcmKW:
                     return _symmetric128Key;
                 case KeyManagementAlgorithms.Aes192KW:
+                case KeyManagementAlgorithms.Aes192GcmKW:
                     return _symmetric192Key;
                 case KeyManagementAlgorithms.Aes256KW:
+                case KeyManagementAlgorithms.Aes256GcmKW:
                     return _symmetric256Key;
                 case KeyManagementAlgorithms.Direct:
                     switch (enc)
                     {
                         case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
+                        case ContentEncryptionAlgorithms.Aes128Gcm:
                             return _symmetric256Key;
                         case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
+                        case ContentEncryptionAlgorithms.Aes192Gcm:
                             return _symmetric384Key;
                         case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
+                        case ContentEncryptionAlgorithms.Aes256Gcm:
                             return _symmetric512Key;
                     }
                     break;

@@ -117,7 +117,7 @@ namespace JsonWebToken
 
             if (encryptionProvider == null)
             {
-                throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
+                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
             }
 
             if (header[HeaderParameters.Kid] == null && Key.Kid != null)

@@ -95,7 +95,7 @@ namespace JsonWebToken
                     associatedData.CopyTo(macBytes);
                     nonce.CopyTo(macBytes.Slice(associatedData.Length));
                     ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
-                    TryConvertToBigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length, sizeof(long)), associatedData.Length * 8);
+                    BinaryPrimitives.TryWriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length, sizeof(long)), associatedData.Length * 8);
 
                     _symmetricSignatureProvider.TrySign(macBytes, tag, out int writtenBytes);
                     Debug.Assert(writtenBytes == tag.Length);
@@ -151,7 +151,7 @@ namespace JsonWebToken
                 nonce.CopyTo(macBytes.Slice(associatedData.Length));
                 ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
 
-                if (!TryConvertToBigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length), associatedData.Length * 8) ||
+                if (!BinaryPrimitives.TryWriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length), associatedData.Length * 8) ||
                     !_symmetricSignatureProvider.Verify(macBytes, authenticationTag, _hmacKey.KeySizeInBits / 8))
                 {
                     bytesWritten = 0;
@@ -209,30 +209,6 @@ namespace JsonWebToken
                 throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits));
             }
         }
-
-#if NETCOREAPP2_1
-        private static bool TryConvertToBigEndian(Span<byte> destination, long i)
-        {
-            if (BitConverter.IsLittleEndian)
-            {
-                i = BinaryPrimitives.ReverseEndianness(i);
-            }
-
-            return BitConverter.TryWriteBytes(destination, i);
-        }
-#else
-        private static bool TryConvertToBigEndian(Span<byte> destination, long i)
-        {
-            if (BitConverter.IsLittleEndian)
-            {
-                i = BinaryPrimitives.ReverseEndianness(i);
-            }
-
-            var bytes = BitConverter.GetBytes(i);
-            bytes.CopyTo(destination);
-            return true;
-        }
-#endif
 
         private static unsafe int Transform(ICryptoTransform transform, ReadOnlySpan<byte> input, int inputOffset, int inputLength, Span<byte> output)
         {

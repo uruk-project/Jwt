@@ -9,6 +9,10 @@
         public const string Aes192KW = "A192KW";
         public const string Aes256KW = "A256KW";
 
+        public const string Aes128GcmKW = "A128GCMKW";
+        public const string Aes192GcmKW = "A192GCMKW";
+        public const string Aes256GcmKW = "A256GCMKW";
+
         public const string RsaPkcs1 = "RSA1_5";
         public const string RsaOaep = "RSA-OAEP";
         public const string RsaOaep256 = "RSA-OAEP-256";

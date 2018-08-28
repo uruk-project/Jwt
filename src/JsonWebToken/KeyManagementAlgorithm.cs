@@ -9,21 +9,25 @@ namespace JsonWebToken
         public static readonly KeyManagementAlgorithm Empty = default;
 
         // Key wrapping algoritmhs
-        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(1, KeyManagementAlgorithms.Direct, AlgorithmCategory.Symmetric, requiredKeySizeInBits: 0, produceEncryptedKey: false);
+        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, KeyManagementAlgorithms.Direct, AlgorithmCategory.Symmetric, requiredKeySizeInBits: 0, produceEncryptedKey: false);
 
-        public static readonly KeyManagementAlgorithm Aes128KW = new KeyManagementAlgorithm(2, KeyManagementAlgorithms.Aes128KW, AlgorithmCategory.Symmetric, 128);
-        public static readonly KeyManagementAlgorithm Aes192KW = new KeyManagementAlgorithm(3, KeyManagementAlgorithms.Aes192KW, AlgorithmCategory.Symmetric, 192);
-        public static readonly KeyManagementAlgorithm Aes256KW = new KeyManagementAlgorithm(4, KeyManagementAlgorithms.Aes256KW, AlgorithmCategory.Symmetric, 256);
+        public static readonly KeyManagementAlgorithm Aes128KW = new KeyManagementAlgorithm(id: 11, KeyManagementAlgorithms.Aes128KW, AlgorithmCategory.Symmetric, requiredKeySizeInBits: 128);
+        public static readonly KeyManagementAlgorithm Aes192KW = new KeyManagementAlgorithm(id: 12, KeyManagementAlgorithms.Aes192KW, AlgorithmCategory.Symmetric, requiredKeySizeInBits: 192);
+        public static readonly KeyManagementAlgorithm Aes256KW = new KeyManagementAlgorithm(id: 13, KeyManagementAlgorithms.Aes256KW, AlgorithmCategory.Symmetric, requiredKeySizeInBits: 256);
 
-        public static readonly KeyManagementAlgorithm RsaPkcs1 = new KeyManagementAlgorithm(5, KeyManagementAlgorithms.RsaPkcs1, AlgorithmCategory.Rsa);
-        public static readonly KeyManagementAlgorithm RsaOaep = new KeyManagementAlgorithm(6, KeyManagementAlgorithms.RsaOaep, AlgorithmCategory.Rsa);
-        public static readonly KeyManagementAlgorithm RsaOaep256 = new KeyManagementAlgorithm(7, KeyManagementAlgorithms.RsaOaep256, AlgorithmCategory.Rsa);
+        public static readonly KeyManagementAlgorithm Aes128GcmKW = new KeyManagementAlgorithm(id: 21, KeyManagementAlgorithms.Aes128GcmKW, AlgorithmCategory.Symmetric, requiredKeySizeInBits: 128);
+        public static readonly KeyManagementAlgorithm Aes192GcmKW = new KeyManagementAlgorithm(id: 22, KeyManagementAlgorithms.Aes192GcmKW, AlgorithmCategory.Symmetric, requiredKeySizeInBits: 192);
+        public static readonly KeyManagementAlgorithm Aes256GcmKW = new KeyManagementAlgorithm(id: 23, KeyManagementAlgorithms.Aes256GcmKW, AlgorithmCategory.Symmetric, requiredKeySizeInBits: 256);
 
-        public static readonly KeyManagementAlgorithm EcdhEs = new KeyManagementAlgorithm(8, KeyManagementAlgorithms.EcdhEs, AlgorithmCategory.EllipticCurve, produceEncryptedKey: false);
+        public static readonly KeyManagementAlgorithm RsaPkcs1 = new KeyManagementAlgorithm(id: 31, KeyManagementAlgorithms.RsaPkcs1, AlgorithmCategory.Rsa);
+        public static readonly KeyManagementAlgorithm RsaOaep = new KeyManagementAlgorithm(id: 32, KeyManagementAlgorithms.RsaOaep, AlgorithmCategory.Rsa);
+        public static readonly KeyManagementAlgorithm RsaOaep256 = new KeyManagementAlgorithm(id: 33, KeyManagementAlgorithms.RsaOaep256, AlgorithmCategory.Rsa);
 
-        public static readonly KeyManagementAlgorithm EcdhEsAes128KW = new KeyManagementAlgorithm(9, KeyManagementAlgorithms.EcdhEsAes128KW, AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes128KW.Name);
-        public static readonly KeyManagementAlgorithm EcdhEsAes192KW = new KeyManagementAlgorithm(10, KeyManagementAlgorithms.EcdhEsAes192KW, AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes192KW.Name);
-        public static readonly KeyManagementAlgorithm EcdhEsAes256KW = new KeyManagementAlgorithm(11, KeyManagementAlgorithms.EcdhEsAes256KW, AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes256KW.Name);
+        public static readonly KeyManagementAlgorithm EcdhEs = new KeyManagementAlgorithm(id: 41, KeyManagementAlgorithms.EcdhEs, AlgorithmCategory.EllipticCurve, produceEncryptedKey: false);
+
+        public static readonly KeyManagementAlgorithm EcdhEsAes128KW = new KeyManagementAlgorithm(id: 51, KeyManagementAlgorithms.EcdhEsAes128KW, AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes128KW.Name);
+        public static readonly KeyManagementAlgorithm EcdhEsAes192KW = new KeyManagementAlgorithm(id: 52, KeyManagementAlgorithms.EcdhEsAes192KW, AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes192KW.Name);
+        public static readonly KeyManagementAlgorithm EcdhEsAes256KW = new KeyManagementAlgorithm(id: 53, KeyManagementAlgorithms.EcdhEsAes256KW, AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes256KW.Name);
 
         public static readonly IDictionary<string, KeyManagementAlgorithm> AdditionalAlgorithms = new Dictionary<string, KeyManagementAlgorithm>();
 
