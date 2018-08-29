@@ -19,14 +19,14 @@ namespace JsonWebToken
         private static readonly byte[] _secretPreprend = { 0x0, 0x0, 0x0, 0x1 };
         private static readonly uint OneBigEndian = BitConverter.IsLittleEndian ? 0x1000000u : 1u;
 
-        public EcdhKeyWrapProvider(EccJwk key, in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public EcdhKeyWrapProvider(EccJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
             
-            if (!key.IsSupportedAlgorithm(in contentEncryptionAlgorithm))
+            if (!key.IsSupportedAlgorithm(contentEncryptionAlgorithm))
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, contentEncryptionAlgorithm));
             }
@@ -36,8 +36,8 @@ namespace JsonWebToken
             EncryptionAlgorithm = encryptionAlgorithm;
             _algorithmName = GetAlgorithmName();
             _algorithmNameLength = Encoding.ASCII.GetByteCount(_algorithmName);
-            _keyLength = GetKeyLength(in contentEncryptionAlgorithm, in encryptionAlgorithm);
-            _hashAlgorithm = GetHashAlgorithm(in encryptionAlgorithm);
+            _keyLength = GetKeyLength(contentEncryptionAlgorithm, encryptionAlgorithm);
+            _hashAlgorithm = GetHashAlgorithm(encryptionAlgorithm);
         }
 
         public override int GetKeyUnwrapSize(int inputSize)
@@ -84,7 +84,7 @@ namespace JsonWebToken
                     var (keyLength, aesAlgorithm) = GetAesAlgorithm();
 
                     var key = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, keyLength), false);
-                    KeyWrapProvider aesKeyWrapProvider = key.CreateKeyWrapProvider(in EncryptionAlgorithm, in aesAlgorithm);
+                    KeyWrapProvider aesKeyWrapProvider = key.CreateKeyWrapProvider(EncryptionAlgorithm, aesAlgorithm);
                     try
                     {
                         return aesKeyWrapProvider.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
@@ -114,7 +114,7 @@ namespace JsonWebToken
             return (aesAlgorithm.RequiredKeySizeInBits >> 3, aesAlgorithm);
         }
 
-        private static HashAlgorithmName GetHashAlgorithm(in EncryptionAlgorithm encryptionAlgorithm)
+        private static HashAlgorithmName GetHashAlgorithm(EncryptionAlgorithm encryptionAlgorithm)
         {
             var hashAlgorithm = encryptionAlgorithm.SignatureAlgorithm.HashAlgorithm;
             if (hashAlgorithm == default)
@@ -146,7 +146,7 @@ namespace JsonWebToken
                 {
                     var (keyLength, aesAlgorithm) = GetAesAlgorithm();
                     var kek = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, keyLength), false);
-                    KeyWrapProvider aesKeyWrapProvider = kek.CreateKeyWrapProvider(in EncryptionAlgorithm, in aesAlgorithm);
+                    KeyWrapProvider aesKeyWrapProvider = kek.CreateKeyWrapProvider(EncryptionAlgorithm, aesAlgorithm);
                     try
                     {
                         return aesKeyWrapProvider.TryWrapKey(null, header, destination, out contentEncryptionKey, out bytesWritten);
@@ -265,7 +265,7 @@ namespace JsonWebToken
             return secretAppend;
         }
 
-        private static int GetKeyLength(in KeyManagementAlgorithm algorithm, in EncryptionAlgorithm encryptionAlgorithm)
+        private static int GetKeyLength(KeyManagementAlgorithm algorithm, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (algorithm == KeyManagementAlgorithm.EcdhEs)
             {

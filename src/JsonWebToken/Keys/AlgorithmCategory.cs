@@ -1,6 +1,6 @@
 namespace JsonWebToken
 {
-    public enum AlgorithmCategory
+    public enum AlgorithmCategory : sbyte
     {
         None = 0,
         EllipticCurve,

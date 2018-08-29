@@ -8,19 +8,19 @@ namespace JsonWebToken
         private const int IVSize = 12;
         private const int TagSize = 16;
 
-        public AesGcmKeyWrapProvider(SymmetricJwk key, in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm algorithm)
+        public AesGcmKeyWrapProvider(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (!key.IsSupportedAlgorithm(in encryptionAlgorithm))
+            if (!key.IsSupportedAlgorithm(encryptionAlgorithm))
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
             }
 
-            if (!key.IsSupportedAlgorithm(in algorithm))
+            if (!key.IsSupportedAlgorithm(algorithm))
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
             }
@@ -37,20 +37,20 @@ namespace JsonWebToken
 
         public override int GetKeyUnwrapSize(int inputSize)
         {
-            return GetKeyUnwrappedSize(inputSize, in Algorithm);
+            return GetKeyUnwrappedSize(inputSize, Algorithm);
         }
 
         public override int GetKeyWrapSize()
         {
-            return GetKeyWrappedSize(in EncryptionAlgorithm);
+            return GetKeyWrappedSize(EncryptionAlgorithm);
         }
 
-        public static int GetKeyUnwrappedSize(int inputSize, in KeyManagementAlgorithm algorithm)
+        public static int GetKeyUnwrappedSize(int inputSize, KeyManagementAlgorithm algorithm)
         {
             return inputSize - 8;
         }
 
-        public static int GetKeyWrappedSize(in EncryptionAlgorithm encryptionAlgorithm)
+        public static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm)
         {
             return encryptionAlgorithm.RequiredKeyWrappedSizeInBytes;
         }
@@ -71,7 +71,7 @@ namespace JsonWebToken
 
         public override bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
         {
-            contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(in EncryptionAlgorithm, staticKey);
+            contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
             Span<byte> nonce = stackalloc byte[IVSize];
             Span<byte> tag = stackalloc byte[TagSize];
             using (var aesGcm = new AesGcm(Key.ToByteArray()))

@@ -2,7 +2,7 @@
 {
     public static class SymmetricKeyHelper
     {
-        public static JsonWebKey CreateSymmetricKey(in EncryptionAlgorithm encryptionAlgorithm, JsonWebKey staticKey)
+        public static JsonWebKey CreateSymmetricKey(EncryptionAlgorithm encryptionAlgorithm, JsonWebKey staticKey)
         {
             if (staticKey != null)
             {

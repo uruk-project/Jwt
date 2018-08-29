@@ -24,8 +24,8 @@ namespace JsonWebToken
         /// Creating signatures requires that the <see cref="JsonWebKey"/> has access to a private key.
         /// Verifying signatures (the default), does not require access to the private key.
         /// </para>
-        public RsaSignatureProvider(RsaJwk key, in SignatureAlgorithm algorithm, bool willCreateSignatures)
-            : base(key, in algorithm)
+        public RsaSignatureProvider(RsaJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
+            : base(key, algorithm)
         {
             if (key == null)
             {
@@ -37,7 +37,7 @@ namespace JsonWebToken
                 throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.MissingPrivateKey, key.Kid));
             }
 
-            if (!key.IsSupportedAlgorithm(in algorithm))
+            if (!key.IsSupportedAlgorithm(algorithm))
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, (algorithm.Name ?? "null"), key));
             }

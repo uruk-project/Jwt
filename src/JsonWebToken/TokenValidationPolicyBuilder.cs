@@ -67,43 +67,43 @@ namespace JsonWebToken
         public TokenValidationPolicyBuilder AcceptUnsecureToken()
         {
             _hasSignatureValidation = true;
-            _validations.Add(new SignatureValidation(new EmptyKeyProvider(), supportUnsecure: true, default));
+            _validations.Add(new SignatureValidation(new EmptyKeyProvider(), supportUnsecure: true, SignatureAlgorithm.None));
             return this;
         }
 
-        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider, in SignatureAlgorithm algorithm = default)
+        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider, SignatureAlgorithm algorithm = null)
         {
             _hasSignatureValidation = true;
-            _validations.Add(new SignatureValidation(keyProvider, supportUnsecure: false, in algorithm));
+            _validations.Add(new SignatureValidation(keyProvider, supportUnsecure: false, algorithm ?? SignatureAlgorithm.Empty));
             return this;
         }
 
-        public TokenValidationPolicyBuilder RequireSignature(string jsonWebKeyUrl, in SignatureAlgorithm algorithm = default, HttpMessageHandler handler = null)
+        public TokenValidationPolicyBuilder RequireSignature(string jsonWebKeyUrl, SignatureAlgorithm algorithm = null, HttpMessageHandler handler = null)
         {
-            RequireSignature(new JwksKeyProvider(jsonWebKeyUrl, handler), in algorithm);
+            RequireSignature(new JwksKeyProvider(jsonWebKeyUrl, handler), algorithm);
             return this;
         }
 
-        public TokenValidationPolicyBuilder RequireSignature(JsonWebKey key, in SignatureAlgorithm algorithm = default)
+        public TokenValidationPolicyBuilder RequireSignature(JsonWebKey key, SignatureAlgorithm algorithm = null)
         {
-            return RequireSignature(new JsonWebKeySet(key), in algorithm);
+            return RequireSignature(new JsonWebKeySet(key), algorithm);
         }
 
-        public TokenValidationPolicyBuilder RequireSignature(IEnumerable<JsonWebKey> keys, in SignatureAlgorithm algorithm = default)
+        public TokenValidationPolicyBuilder RequireSignature(IEnumerable<JsonWebKey> keys, SignatureAlgorithm algorithm = null)
         {
-            return RequireSignature(new JsonWebKeySet(keys), in algorithm);
+            return RequireSignature(new JsonWebKeySet(keys), algorithm);
         }
 
-        public TokenValidationPolicyBuilder RequireSignature(JsonWebKeySet keySet, in SignatureAlgorithm algorithm = default)
+        public TokenValidationPolicyBuilder RequireSignature(JsonWebKeySet keySet, SignatureAlgorithm algorithm = null)
         {
-            return RequireSignature(new StaticKeyProvider(keySet), in algorithm);
+            return RequireSignature(new StaticKeyProvider(keySet), algorithm);
         }
 
-        public TokenValidationPolicyBuilder RequireSignature(IEnumerable<IKeyProvider> keyProviders, in SignatureAlgorithm algorithm = default)
+        public TokenValidationPolicyBuilder RequireSignature(IEnumerable<IKeyProvider> keyProviders, SignatureAlgorithm algorithm = null)
         {
             foreach (var keyProvider in keyProviders)
             {
-                RequireSignature(keyProvider, in algorithm);
+                RequireSignature(keyProvider, algorithm);
             }
 
             return this;

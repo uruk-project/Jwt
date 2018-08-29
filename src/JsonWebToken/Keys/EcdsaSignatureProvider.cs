@@ -18,8 +18,8 @@ namespace JsonWebToken
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for signature operations.</param>
         /// <param name="algorithm">The signature algorithm to apply.</param>
         /// <param name="willCreateSignatures">Whether is required to create signatures then set this to true.</param>
-        public EcdsaSignatureProvider(EccJwk key, in SignatureAlgorithm algorithm, bool willCreateSignatures)
-            : base(key, in algorithm)
+        public EcdsaSignatureProvider(EccJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
+            : base(key, algorithm)
         {
             if (key == null)
             {
@@ -53,8 +53,8 @@ namespace JsonWebToken
                     throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, key.Crv));
             }
 
-            _ecdsa = ResolveAlgorithm(key, in algorithm, willCreateSignatures);
-            _hashAlgorithmPool = new ObjectPool<ECDsa>(new ECDsaObjectPoolPolicy(key, in algorithm, willCreateSignatures));
+            _ecdsa = ResolveAlgorithm(key, algorithm, willCreateSignatures);
+            _hashAlgorithmPool = new ObjectPool<ECDsa>(new ECDsaObjectPoolPolicy(key, algorithm, willCreateSignatures));
         }
 
         public override int HashSizeInBytes => _hashSize;
@@ -115,9 +115,9 @@ namespace JsonWebToken
 #endif
         }
 
-        private static ECDsa ResolveAlgorithm(EccJwk key, in SignatureAlgorithm algorithm, bool usePrivateKey)
+        private static ECDsa ResolveAlgorithm(EccJwk key, SignatureAlgorithm algorithm, bool usePrivateKey)
         {
-            return key.CreateECDsa(in algorithm, usePrivateKey);
+            return key.CreateECDsa(algorithm, usePrivateKey);
         }
 
         /// <summary>
@@ -146,7 +146,7 @@ namespace JsonWebToken
             private readonly SignatureAlgorithm _algorithm;
             private readonly bool _usePrivateKey;
 
-            public ECDsaObjectPoolPolicy(EccJwk key, in SignatureAlgorithm algorithm, bool usePrivateKey)
+            public ECDsaObjectPoolPolicy(EccJwk key, SignatureAlgorithm algorithm, bool usePrivateKey)
             {
                 _key = key;
                 _algorithm = algorithm;
@@ -155,7 +155,7 @@ namespace JsonWebToken
 
             public override ECDsa Create()
             {
-                return _key.CreateECDsa(in _algorithm, _usePrivateKey);
+                return _key.CreateECDsa(_algorithm, _usePrivateKey);
             }
 
             public override bool Return(ECDsa obj)

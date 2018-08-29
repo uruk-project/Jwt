@@ -227,9 +227,9 @@ namespace JsonWebToken
             return X5c.Count > 0;
         }
 
-        public abstract bool IsSupportedAlgorithm(in SignatureAlgorithm algorithm);
-        public abstract bool IsSupportedAlgorithm(in KeyManagementAlgorithm algorithm);
-        public abstract bool IsSupportedAlgorithm(in EncryptionAlgorithm algorithm);
+        public abstract bool IsSupportedAlgorithm(SignatureAlgorithm algorithm);
+        public abstract bool IsSupportedAlgorithm(KeyManagementAlgorithm algorithm);
+        public abstract bool IsSupportedAlgorithm(EncryptionAlgorithm algorithm);
 
         public override string ToString()
         {
@@ -243,7 +243,7 @@ namespace JsonWebToken
 
         public abstract byte[] ToByteArray();
 
-        public abstract SignatureProvider CreateSignatureProvider(in SignatureAlgorithm algorithm, bool willCreateSignatures);
+        public abstract SignatureProvider CreateSignatureProvider(SignatureAlgorithm algorithm, bool willCreateSignatures);
 
         public void ReleaseSignatureProvider(SignatureProvider signatureProvider)
         {
@@ -253,7 +253,7 @@ namespace JsonWebToken
             //}
         }
 
-        public abstract KeyWrapProvider CreateKeyWrapProvider(in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm contentEncryptionAlgorithm);
+        public abstract KeyWrapProvider CreateKeyWrapProvider(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm);
 
         public void ReleaseKeyWrapProvider(KeyWrapProvider provider)
         {
@@ -263,7 +263,7 @@ namespace JsonWebToken
             //}
         }
 
-        public abstract AuthenticatedEncryptionProvider CreateAuthenticatedEncryptionProvider(in EncryptionAlgorithm encryptionAlgorithm);
+        public abstract AuthenticatedEncryptionProvider CreateAuthenticatedEncryptionProvider(EncryptionAlgorithm encryptionAlgorithm);
 
         public void ReleaseAuthenticatedEncryptionProvider(AuthenticatedEncryptionProvider provider)
         {

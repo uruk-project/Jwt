@@ -66,22 +66,22 @@ namespace JsonWebToken
             return parameters;
         }
 
-        public override bool IsSupportedAlgorithm(in SignatureAlgorithm algorithm)
+        public override bool IsSupportedAlgorithm(SignatureAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.Rsa;
         }
 
-        public override bool IsSupportedAlgorithm(in KeyManagementAlgorithm algorithm)
+        public override bool IsSupportedAlgorithm(KeyManagementAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.Rsa;
         }
 
-        public override bool IsSupportedAlgorithm(in EncryptionAlgorithm algorithm)
+        public override bool IsSupportedAlgorithm(EncryptionAlgorithm algorithm)
         {
             return false;
         }
 
-        public override SignatureProvider CreateSignatureProvider(in SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public override SignatureProvider CreateSignatureProvider(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (algorithm == SignatureAlgorithm.Empty)
             {
@@ -94,9 +94,9 @@ namespace JsonWebToken
                 return cachedProvider;
             }
 
-            if (IsSupportedAlgorithm(in algorithm))
+            if (IsSupportedAlgorithm(algorithm))
             {
-                var provider = new RsaSignatureProvider(this, in algorithm, willCreateSignatures);
+                var provider = new RsaSignatureProvider(this, algorithm, willCreateSignatures);
                 if (!providers.TryAdd(algorithm, provider) && providers.TryGetValue(algorithm, out cachedProvider))
                 {
                     provider.Dispose();
@@ -109,11 +109,11 @@ namespace JsonWebToken
             return null;
         }
 
-        public override KeyWrapProvider CreateKeyWrapProvider(in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public override KeyWrapProvider CreateKeyWrapProvider(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
-            if (IsSupportedAlgorithm(in contentEncryptionAlgorithm))
+            if (IsSupportedAlgorithm(contentEncryptionAlgorithm))
             {
-                return new RsaKeyWrapProvider(this, in encryptionAlgorithm, in contentEncryptionAlgorithm);
+                return new RsaKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
             }
 
             return null;

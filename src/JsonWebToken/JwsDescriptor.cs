@@ -286,7 +286,7 @@ namespace JsonWebToken
             if (Key != null)
             {
                 var key = Key;
-                signatureProvider = key.CreateSignatureProvider(in alg, willCreateSignatures: true);
+                signatureProvider = key.CreateSignatureProvider(alg, willCreateSignatures: true);
                 if (signatureProvider == null)
                 {
                     throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, key.Alg, (key.Kid ?? "Null")));
@@ -301,7 +301,7 @@ namespace JsonWebToken
 
             var headerCache = context.HeaderCache;
             byte[] base64UrlHeader = null;
-            if (headerCache != null && headerCache.TryGetHeader(Header, in alg, out base64UrlHeader))
+            if (headerCache != null && headerCache.TryGetHeader(Header, alg, out base64UrlHeader))
             {
                 length += base64UrlHeader.Length;
             }
@@ -326,7 +326,7 @@ namespace JsonWebToken
                 else
                 {
                     TryEncodeUtf8ToBase64Url(headerJson, buffer, out headerBytesWritten);
-                    headerCache?.AddHeader(Header, in alg, buffer.Slice(0, headerBytesWritten));
+                    headerCache?.AddHeader(Header, alg, buffer.Slice(0, headerBytesWritten));
                 }
 
                 buffer[headerBytesWritten] = dot;

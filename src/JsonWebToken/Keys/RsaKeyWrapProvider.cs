@@ -18,14 +18,14 @@ namespace JsonWebToken
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for crypto operations.</param>
         /// <param name="contentEncryptionAlgorithm">The KeyWrap algorithm to apply.</param>
         /// </summary>
-        public RsaKeyWrapProvider(RsaJwk key, in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public RsaKeyWrapProvider(RsaJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (!key.IsSupportedAlgorithm(in contentEncryptionAlgorithm))
+            if (!key.IsSupportedAlgorithm(contentEncryptionAlgorithm))
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, contentEncryptionAlgorithm));
             }
@@ -34,7 +34,7 @@ namespace JsonWebToken
             EncryptionAlgorithm = encryptionAlgorithm;
             Key = key;
             _rsa = ResolveRsaAlgorithm(key);
-            _padding = ResolvePadding(in contentEncryptionAlgorithm);
+            _padding = ResolvePadding(contentEncryptionAlgorithm);
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace JsonWebToken
             }
         }
 
-        private static RSAEncryptionPadding ResolvePadding(in KeyManagementAlgorithm algorithm)
+        private static RSAEncryptionPadding ResolvePadding(KeyManagementAlgorithm algorithm)
         {
             if (algorithm == KeyManagementAlgorithm.RsaOaep)
             {
@@ -134,7 +134,7 @@ namespace JsonWebToken
 
             try
             {
-                contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(in EncryptionAlgorithm, staticKey);
+                contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
 #if NETCOREAPP2_1
                 return _rsa.TryEncrypt(contentEncryptionKey.ToByteArray(), destination, _padding, out bytesWritten);
 #else

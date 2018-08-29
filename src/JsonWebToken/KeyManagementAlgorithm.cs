@@ -4,9 +4,9 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
-    public readonly struct KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>
+    public class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>
     {
-        public static readonly KeyManagementAlgorithm Empty = default;
+        public static readonly KeyManagementAlgorithm Empty = new KeyManagementAlgorithm(0, string.Empty, AlgorithmCategory.None, 0, null, false);
 
         public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, KeyManagementAlgorithms.Direct, AlgorithmCategory.Symmetric, requiredKeySizeInBits: 0, produceEncryptedKey: false);
 
@@ -61,6 +61,11 @@ namespace JsonWebToken
 
         public bool Equals(KeyManagementAlgorithm other)
         {
+            if (other is null)
+            {
+                return false;
+            }
+
             return _id == other._id;
         }
 
@@ -69,19 +74,49 @@ namespace JsonWebToken
             return _id.GetHashCode();
         }
 
-        public static bool operator ==(in KeyManagementAlgorithm x, in KeyManagementAlgorithm y)
+        public static bool operator ==(KeyManagementAlgorithm x, KeyManagementAlgorithm y)
         {
+            if (x is null && y is null)
+            {
+                return true;
+            }
+
+            if (x is null)
+            {
+                return false;
+            }
+
+            if (y is null)
+            {
+                return false;
+            }
+
             return x._id == y._id;
         }
 
-        public static bool operator !=(in KeyManagementAlgorithm x, in KeyManagementAlgorithm y)
+        public static bool operator !=(KeyManagementAlgorithm x, KeyManagementAlgorithm y)
         {
+            if (x is null && y is null)
+            {
+                return false;
+            }
+
+            if (x is null)
+            {
+                return true;
+            }
+
+            if (y is null)
+            {
+                return true;
+            }
+
             return x._id != y._id;
         }
 
-        public static explicit operator string(in KeyManagementAlgorithm value)
+        public static explicit operator string(KeyManagementAlgorithm value)
         {
-            return value.Name;
+            return value?.Name;
         }
 
         public static explicit operator KeyManagementAlgorithm(string value)

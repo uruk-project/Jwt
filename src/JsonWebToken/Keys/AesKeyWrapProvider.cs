@@ -29,19 +29,19 @@ namespace JsonWebToken
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for crypto operations.</param>
         /// <param name="algorithm">The KeyWrap algorithm to apply.</param>
         /// </summary>
-        public AesKeyWrapProvider(SymmetricJwk key, in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm algorithm)
+        public AesKeyWrapProvider(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (!key.IsSupportedAlgorithm(in encryptionAlgorithm))
+            if (!key.IsSupportedAlgorithm(encryptionAlgorithm))
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
             }
 
-            if (!key.IsSupportedAlgorithm(in algorithm))
+            if (!key.IsSupportedAlgorithm(algorithm))
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
             }
@@ -55,7 +55,7 @@ namespace JsonWebToken
             EncryptionAlgorithm = encryptionAlgorithm;
             Key = key;
 
-            _aes = GetSymmetricAlgorithm(key, in algorithm);
+            _aes = GetSymmetricAlgorithm(key, algorithm);
         }
 
         /// <summary>
@@ -79,10 +79,10 @@ namespace JsonWebToken
             }
         }
 
-        private Aes GetSymmetricAlgorithm(SymmetricJwk key, in KeyManagementAlgorithm algorithm)
+        private Aes GetSymmetricAlgorithm(SymmetricJwk key, KeyManagementAlgorithm algorithm)
         {
             byte[] keyBytes = key.RawK;
-            ValidateKeySize(keyBytes, in algorithm);
+            ValidateKeySize(keyBytes, algorithm);
             try
             {
                 // Create the AES provider
@@ -247,7 +247,7 @@ namespace JsonWebToken
             }
         }
 
-        private void ValidateKeySize(byte[] key, in KeyManagementAlgorithm algorithm)
+        private void ValidateKeySize(byte[] key, KeyManagementAlgorithm algorithm)
         {
             if (algorithm.RequiredKeySizeInBits >> 3 != key.Length)
             {
@@ -278,7 +278,7 @@ namespace JsonWebToken
                 }
             }
 
-            contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(in EncryptionAlgorithm, staticKey);
+            contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
             return TryWrapKeyPrivate(contentEncryptionKey.ToByteArray(), destination, out bytesWritten);
         }
 
@@ -379,20 +379,20 @@ namespace JsonWebToken
 
         public override int GetKeyUnwrapSize(int inputSize)
         {
-            return GetKeyUnwrappedSize(inputSize, in Algorithm);
+            return GetKeyUnwrappedSize(inputSize, Algorithm);
         }
 
         public override int GetKeyWrapSize()
         {
-            return GetKeyWrappedSize(in EncryptionAlgorithm);
+            return GetKeyWrappedSize(EncryptionAlgorithm);
         }
 
-        public static int GetKeyUnwrappedSize(int inputSize, in KeyManagementAlgorithm algorithm)
+        public static int GetKeyUnwrappedSize(int inputSize, KeyManagementAlgorithm algorithm)
         {
             return inputSize - BlockSizeInBytes;
         }
 
-        public static int GetKeyWrappedSize(in EncryptionAlgorithm encryptionAlgorithm)
+        public static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm)
         {
             return encryptionAlgorithm.RequiredKeyWrappedSizeInBytes;
         }

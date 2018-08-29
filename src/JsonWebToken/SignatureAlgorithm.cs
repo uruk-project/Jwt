@@ -4,9 +4,9 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
-    public readonly struct SignatureAlgorithm : IEquatable<SignatureAlgorithm>
+    public class SignatureAlgorithm : IEquatable<SignatureAlgorithm>
     {
-        public static readonly SignatureAlgorithm Empty = default;
+        public static readonly SignatureAlgorithm Empty = new SignatureAlgorithm(0, string.Empty, AlgorithmCategory.None, 0, new HashAlgorithmName());
 
         // signature algorithms
         public static readonly SignatureAlgorithm None = new SignatureAlgorithm(id: -1, SignatureAlgorithms.None, AlgorithmCategory.None, requiredKeySizeInBits: 0, new HashAlgorithmName());
@@ -57,6 +57,11 @@ namespace JsonWebToken
 
         public bool Equals(SignatureAlgorithm other)
         {
+            if (other is null)
+            {
+                return false;
+            }
+
             return _id == other._id;
         }
 
@@ -65,19 +70,49 @@ namespace JsonWebToken
             return _id.GetHashCode();
         }
 
-        public static bool operator ==(in SignatureAlgorithm x, SignatureAlgorithm y)
+        public static bool operator ==(SignatureAlgorithm x, SignatureAlgorithm y)
         {
+            if (x is null && y is null)
+            {
+                return true;
+            }
+
+            if (x is null)
+            {
+                return false;
+            }
+
+            if (y is null)
+            {
+                return false;
+            }
+
             return x._id == y._id;
         }
 
-        public static bool operator !=(in SignatureAlgorithm x, in SignatureAlgorithm y)
+        public static bool operator !=(SignatureAlgorithm x, SignatureAlgorithm y)
         {
+            if (x is null && y is null)
+            {
+                return false;
+            }
+
+            if (x is null)
+            {
+                return true;
+            }
+
+            if (y is null)
+            {
+                return true;
+            }
+
             return x._id != y._id;
         }
 
-        public static implicit operator string(in SignatureAlgorithm value)
+        public static implicit operator string(SignatureAlgorithm value)
         {
-            return value.Name;
+            return value?.Name;
         }
 
         public static implicit operator SignatureAlgorithm(string value)
@@ -129,7 +164,7 @@ namespace JsonWebToken
         }
 
 
-        public static implicit operator long(in SignatureAlgorithm value)
+        public static implicit operator long(SignatureAlgorithm value)
         {
             return value._id;
         }

@@ -146,9 +146,9 @@ namespace JsonWebToken
             }
         }
 
-        public ECDsa CreateECDsa(in SignatureAlgorithm algorithm, bool usePrivateKey)
+        public ECDsa CreateECDsa(SignatureAlgorithm algorithm, bool usePrivateKey)
         {
-            int validKeySize = ValidKeySize(in algorithm);
+            int validKeySize = ValidKeySize(algorithm);
             if (KeySizeInBits != validKeySize)
             {
                 throw new ArgumentOutOfRangeException(nameof(KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, validKeySize, KeySizeInBits));
@@ -157,27 +157,27 @@ namespace JsonWebToken
             return ECDsa.Create(ExportParameters(usePrivateKey));
         }
 
-        private static int ValidKeySize(in SignatureAlgorithm algorithm)
+        private static int ValidKeySize(SignatureAlgorithm algorithm)
         {
             return algorithm.RequiredKeySizeInBits;
         }
 
-        public override bool IsSupportedAlgorithm(in SignatureAlgorithm algorithm)
+        public override bool IsSupportedAlgorithm(SignatureAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.EllipticCurve;
         }
 
-        public override bool IsSupportedAlgorithm(in KeyManagementAlgorithm algorithm)
+        public override bool IsSupportedAlgorithm(KeyManagementAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.EllipticCurve;
         }
 
-        public override bool IsSupportedAlgorithm(in EncryptionAlgorithm algorithm)
+        public override bool IsSupportedAlgorithm(EncryptionAlgorithm algorithm)
         {
             return algorithm.Category == EncryptionTypes.AesHmac || algorithm.Category == EncryptionTypes.AesGcm;
         }
 
-        public override SignatureProvider CreateSignatureProvider(in SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public override SignatureProvider CreateSignatureProvider(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (algorithm == null)
             {
@@ -190,9 +190,9 @@ namespace JsonWebToken
                 return cachedProvider;
             }
 
-            if (IsSupportedAlgorithm(in algorithm))
+            if (IsSupportedAlgorithm(algorithm))
             {
-                var provider = new EcdsaSignatureProvider(this, in algorithm, willCreateSignatures);
+                var provider = new EcdsaSignatureProvider(this, algorithm, willCreateSignatures);
                 if (!signatureProviders.TryAdd(algorithm, provider) && signatureProviders.TryGetValue(algorithm, out cachedProvider))
                 {
                     provider.Dispose();
@@ -205,10 +205,10 @@ namespace JsonWebToken
             return null;
         }
 
-        public override KeyWrapProvider CreateKeyWrapProvider(in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public override KeyWrapProvider CreateKeyWrapProvider(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
 #if NETCOREAPP2_1
-            return new EcdhKeyWrapProvider(this, in encryptionAlgorithm, in contentEncryptionAlgorithm);
+            return new EcdhKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
 #else
             return null;
 #endif

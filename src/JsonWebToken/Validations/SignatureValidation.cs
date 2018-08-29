@@ -10,7 +10,7 @@ namespace JsonWebToken.Validations
         private readonly bool _supportUnsecure;
         private readonly SignatureAlgorithm _algorithm;
 
-        public SignatureValidation(IKeyProvider keyProvider, bool supportUnsecure, in SignatureAlgorithm algorithm)
+        public SignatureValidation(IKeyProvider keyProvider, bool supportUnsecure, SignatureAlgorithm algorithm)
         {
             _keyProvider = keyProvider;
             _supportUnsecure = supportUnsecure;
@@ -65,7 +65,7 @@ namespace JsonWebToken.Validations
             {
                 JsonWebKey key = keys[i];
                 var alg = _algorithm != SignatureAlgorithm.Empty ? _algorithm : (SignatureAlgorithm)key.Alg;
-                if (TryValidateSignature(encodedBytes, signatureBytes, key, in alg))
+                if (TryValidateSignature(encodedBytes, signatureBytes, key, alg))
                 {
                     jwt.SigningKey = key;
                     return TokenValidationResult.Success(jwt);
@@ -82,9 +82,9 @@ namespace JsonWebToken.Validations
             return TokenValidationResult.KeyNotFound(jwt);
         }
 
-        private static bool TryValidateSignature(ReadOnlySpan<byte> encodedBytes, ReadOnlySpan<byte> signature, JsonWebKey key, in SignatureAlgorithm algorithm)
+        private static bool TryValidateSignature(ReadOnlySpan<byte> encodedBytes, ReadOnlySpan<byte> signature, JsonWebKey key, SignatureAlgorithm algorithm)
         {
-            var signatureProvider = key.CreateSignatureProvider(in algorithm, willCreateSignatures: false);
+            var signatureProvider = key.CreateSignatureProvider(algorithm, willCreateSignatures: false);
             if (signatureProvider == null)
             {
                 return false;

@@ -7,7 +7,7 @@ namespace JsonWebToken
         private readonly SymmetricJwk _key;
         private readonly EncryptionAlgorithm _encryptionAlgorithm;
 
-        public AesGcmEncryptionProvider(SymmetricJwk key, in EncryptionAlgorithm encryptionAlgorithm)
+        public AesGcmEncryptionProvider(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (encryptionAlgorithm.Category != EncryptionTypes.AesGcm)
             {

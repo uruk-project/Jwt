@@ -3,17 +3,17 @@ using System.Collections.Generic;
 
 namespace JsonWebToken
 {
-    public readonly struct EncryptionAlgorithm : IEquatable<EncryptionAlgorithm>
+    public class EncryptionAlgorithm : IEquatable<EncryptionAlgorithm>
     {
-        public static readonly EncryptionAlgorithm Empty = default;
+        public static readonly EncryptionAlgorithm Empty = new EncryptionAlgorithm(0, string.Empty, 0, SignatureAlgorithm.Empty, 0, EncryptionTypes.None);
 
         public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: 11, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesHmac);
         public static readonly EncryptionAlgorithm Aes192CbcHmacSha384 = new EncryptionAlgorithm(id: 12, ContentEncryptionAlgorithms.Aes192CbcHmacSha384, requiredKeySizeInBytes: 48, SignatureAlgorithm.HmacSha384, requiredKeyWrappedSizeInBytes: 56, EncryptionTypes.AesHmac);
         public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(id: 13, ContentEncryptionAlgorithms.Aes256CbcHmacSha512, requiredKeySizeInBytes: 64, SignatureAlgorithm.HmacSha512, requiredKeyWrappedSizeInBytes: 72, EncryptionTypes.AesHmac);
 
-        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 21, ContentEncryptionAlgorithms.Aes128Gcm, requiredKeySizeInBytes: 16, default, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesGcm);
-        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 22, ContentEncryptionAlgorithms.Aes192Gcm, requiredKeySizeInBytes: 24, default, requiredKeyWrappedSizeInBytes: 56, EncryptionTypes.AesGcm);
-        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, ContentEncryptionAlgorithms.Aes256Gcm, requiredKeySizeInBytes: 32, default, requiredKeyWrappedSizeInBytes: 72, EncryptionTypes.AesGcm);
+        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 21, ContentEncryptionAlgorithms.Aes128Gcm, requiredKeySizeInBytes: 16, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesGcm);
+        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 22, ContentEncryptionAlgorithms.Aes192Gcm, requiredKeySizeInBytes: 24, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 56, EncryptionTypes.AesGcm);
+        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, ContentEncryptionAlgorithms.Aes256Gcm, requiredKeySizeInBytes: 32, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 72, EncryptionTypes.AesGcm);
 
         public static readonly IDictionary<string, EncryptionAlgorithm> AdditionalAlgorithms = new Dictionary<string, EncryptionAlgorithm>();
 
@@ -47,6 +47,11 @@ namespace JsonWebToken
 
         public bool Equals(EncryptionAlgorithm other)
         {
+            if (other is null)
+            {
+                return false;
+            }
+
             return _id == other._id;
         }
 
@@ -55,19 +60,49 @@ namespace JsonWebToken
             return _id.GetHashCode();
         }
 
-        public static bool operator ==(in EncryptionAlgorithm x, in EncryptionAlgorithm y)
+        public static bool operator ==(EncryptionAlgorithm x, EncryptionAlgorithm y)
         {
+            if (x is null && y is null)
+            {
+                return true;
+            }
+
+            if (x is null)
+            {
+                return false;
+            }
+
+            if (y is null)
+            {
+                return false;
+            }
+
             return x._id == y._id;
         }
 
-        public static bool operator !=(in EncryptionAlgorithm x, in EncryptionAlgorithm y)
+        public static bool operator !=(EncryptionAlgorithm x, EncryptionAlgorithm y)
         {
+            if (x is null && y is null)
+            {
+                return false;
+            }
+
+            if (x is null)
+            {
+                return true;
+            }
+
+            if (y is null)
+            {
+                return true;
+            }
+
             return x._id != y._id;
         }
 
-        public static explicit operator string(in EncryptionAlgorithm value)
+        public static explicit operator string(EncryptionAlgorithm value)
         {
-            return value.Name;
+            return value?.Name;
         }
 
         public static explicit operator EncryptionAlgorithm(string value)

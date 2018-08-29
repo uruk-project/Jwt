@@ -32,8 +32,8 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key">The <see cref="SymmetricJwk"/> that will be used for signature operations.</param>
         /// <param name="algorithm">The signature algorithm to use.</param>
-        public SymmetricSignatureProvider(SymmetricJwk key, in SignatureAlgorithm algorithm)
-            : base(key, in algorithm)
+        public SymmetricSignatureProvider(SymmetricJwk key, SignatureAlgorithm algorithm)
+            : base(key, algorithm)
         {
             if (key == null)
             {

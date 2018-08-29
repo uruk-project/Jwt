@@ -22,7 +22,7 @@ namespace JsonWebToken
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for crypto operations.</param>
         /// <param name="encryptionAlgorithm">The encryption algorithm to apply.</param>
         /// </summary>
-        public AesCbcHmacEncryptionProvider(SymmetricJwk key, in EncryptionAlgorithm encryptionAlgorithm)
+        public AesCbcHmacEncryptionProvider(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (key == null)
             {
@@ -34,10 +34,10 @@ namespace JsonWebToken
                 throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
             }
 
-            ValidateKeySize(key, in encryptionAlgorithm);
-            (_aesKey, _hmacKey) = GetKeys(key, in encryptionAlgorithm);
+            ValidateKeySize(key, encryptionAlgorithm);
+            (_aesKey, _hmacKey) = GetKeys(key, encryptionAlgorithm);
             _signatureAlgorithm = encryptionAlgorithm.SignatureAlgorithm;
-            _symmetricSignatureProvider = _hmacKey.CreateSignatureProvider(in _signatureAlgorithm, true) as SymmetricSignatureProvider;
+            _symmetricSignatureProvider = _hmacKey.CreateSignatureProvider(_signatureAlgorithm, true) as SymmetricSignatureProvider;
             if (_symmetricSignatureProvider == null)
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureHashAlgorithm, encryptionAlgorithm));
@@ -190,7 +190,7 @@ namespace JsonWebToken
             }
         }
 
-        private static (SymmetricJwk, SymmetricJwk) GetKeys(SymmetricJwk key, in EncryptionAlgorithm encryptionAlgorithm)
+        private static (SymmetricJwk, SymmetricJwk) GetKeys(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
             int keyLength = encryptionAlgorithm.RequiredKeySizeInBytes / 2;
 
@@ -205,7 +205,7 @@ namespace JsonWebToken
             );
         }
 
-        private void ValidateKeySize(JsonWebKey key, in EncryptionAlgorithm encryptionAlgorithm)
+        private void ValidateKeySize(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBytes << 3)
             {
