@@ -64,7 +64,8 @@ namespace JsonWebToken.Validations
             for (int i = 0; i < keys.Count; i++)
             {
                 JsonWebKey key = keys[i];
-                if (TryValidateSignature(encodedBytes, signatureBytes, key, _algorithm != SignatureAlgorithm.Empty ? _algorithm : (SignatureAlgorithm)key.Alg))
+                var alg = _algorithm != SignatureAlgorithm.Empty ? _algorithm : (SignatureAlgorithm)key.Alg;
+                if (TryValidateSignature(encodedBytes, signatureBytes, key, in alg))
                 {
                     jwt.SigningKey = key;
                     return TokenValidationResult.Success(jwt);
@@ -83,7 +84,7 @@ namespace JsonWebToken.Validations
 
         private static bool TryValidateSignature(ReadOnlySpan<byte> encodedBytes, ReadOnlySpan<byte> signature, JsonWebKey key, in SignatureAlgorithm algorithm)
         {
-            var signatureProvider = key.CreateSignatureProvider(algorithm, false);
+            var signatureProvider = key.CreateSignatureProvider(in algorithm, willCreateSignatures: false);
             if (signatureProvider == null)
             {
                 return false;

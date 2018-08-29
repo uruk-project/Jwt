@@ -35,8 +35,7 @@ namespace JsonWebToken
         /// </summary>
         /// <remarks>If the content mime type is not found, null is returned.</remarks>
         [JsonProperty(PropertyName = HeaderParameters.Enc, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(CryptographicAlgorithmConverter))]
-        public EncryptionAlgorithm Enc { get; set; }
+        public string Enc { get; set; }
 
         /// <summary>
         /// Gets the key identifier for the security key used to sign the token

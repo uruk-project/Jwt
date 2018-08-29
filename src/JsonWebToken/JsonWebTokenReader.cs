@@ -157,14 +157,14 @@ namespace JsonWebToken
             }
             else if (segmentCount == Constants.JweSegmentCount)
             {
-                var enc = header.Enc;
+                var enc = (EncryptionAlgorithm)header.Enc;
                 if (enc == EncryptionAlgorithm.Empty)
                 {
                     return TokenValidationResult.MissingEncryptionAlgorithm();
                 }
 
                 var encryptionKeySegment = segments[1];
-                var keys = GetContentEncryptionKeys(header, utf8Buffer.Slice(encryptionKeySegment.Start, encryptionKeySegment.Length));
+                var keys = GetContentEncryptionKeys(header, utf8Buffer.Slice(encryptionKeySegment.Start, encryptionKeySegment.Length), in enc);
 
                 var ivSegment = segments[2];
                 var rawInitializationVector = utf8Buffer.Slice(ivSegment.Start, ivSegment.Length);
@@ -195,8 +195,7 @@ namespace JsonWebToken
                 var compressionAlgorithm = header.Zip;
                 if (compressionAlgorithm != null)
                 {
-                    CompressionProvider compressionProvider = null;
-                    compressionProvider = CompressionProvider.CreateCompressionProvider(compressionAlgorithm);
+                    CompressionProvider compressionProvider = CompressionProvider.CreateCompressionProvider(compressionAlgorithm);
                     if (compressionProvider == null)
                     {
                         return TokenValidationResult.InvalidHeader(null, HeaderParameters.Zip);
@@ -272,7 +271,7 @@ namespace JsonWebToken
             Span<byte> decryptedBytes,
             out int bytesWritten)
         {
-            var decryptionProvider = key.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);
+            var decryptionProvider = key.CreateAuthenticatedEncryptionProvider(in encryptionAlgorithm);
             if (decryptionProvider == null)
             {
                 bytesWritten = 0;
@@ -355,7 +354,7 @@ namespace JsonWebToken
             }
         }
 
-        private List<JsonWebKey> GetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<byte> rawEncryptedKey)
+        private List<JsonWebKey> GetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<byte> rawEncryptedKey, in EncryptionAlgorithm enc)
         {
             var alg = (KeyManagementAlgorithm)header.Alg;
             var keys = ResolveDecryptionKey(header);
@@ -372,7 +371,7 @@ namespace JsonWebToken
             for (int i = 0; i < keys.Count; i++)
             {
                 var key = keys[i];
-                KeyWrapProvider kwp = key.CreateKeyWrapProvider(header.Enc, alg);
+                KeyWrapProvider kwp = key.CreateKeyWrapProvider(in enc, in alg);
                 try
                 {
                     if (kwp != null)

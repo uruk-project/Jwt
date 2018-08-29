@@ -12,7 +12,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for signature operations.</param>
         /// <param name="algorithm">The signature algorithm to apply.</param>
-        protected SignatureProvider(JsonWebKey key, SignatureAlgorithm algorithm)
+        protected SignatureProvider(JsonWebKey key, in SignatureAlgorithm algorithm)
         {
             Key = key ?? throw new ArgumentNullException(nameof(key));
             Algorithm = algorithm;

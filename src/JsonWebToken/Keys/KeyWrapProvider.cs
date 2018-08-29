@@ -11,9 +11,9 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the KeyWrap algorithm that is being used.
         /// </summary>
-        public KeyManagementAlgorithm Algorithm { get;  protected set; }
+        protected KeyManagementAlgorithm Algorithm;//{ get;  protected set; }
 
-        public EncryptionAlgorithm EncryptionAlgorithm { get; protected set; }
+        protected EncryptionAlgorithm EncryptionAlgorithm;// { get; protected set; }
 
         /// <summary>
         /// Gets the <see cref="JsonWebKey"/> that is being used.

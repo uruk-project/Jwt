@@ -25,7 +25,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (!key.IsSupportedAlgorithm(contentEncryptionAlgorithm))
+            if (!key.IsSupportedAlgorithm(in contentEncryptionAlgorithm))
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, contentEncryptionAlgorithm));
             }
@@ -33,8 +33,8 @@ namespace JsonWebToken
             Algorithm = contentEncryptionAlgorithm;
             EncryptionAlgorithm = encryptionAlgorithm;
             Key = key;
-            _rsa = ResolveRsaAlgorithm(key, contentEncryptionAlgorithm);
-            _padding = ResolvePadding(contentEncryptionAlgorithm);
+            _rsa = ResolveRsaAlgorithm(key);
+            _padding = ResolvePadding(in contentEncryptionAlgorithm);
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace JsonWebToken
 
             try
             {
-                contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
+                contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(in EncryptionAlgorithm, staticKey);
 #if NETCOREAPP2_1
                 return _rsa.TryEncrypt(contentEncryptionKey.ToByteArray(), destination, _padding, out bytesWritten);
 #else
@@ -152,7 +152,7 @@ namespace JsonWebToken
             }
         }
 
-        private static RSA ResolveRsaAlgorithm(RsaJwk key, in KeyManagementAlgorithm algorithm)
+        private static RSA ResolveRsaAlgorithm(RsaJwk key)
         {
 #if NETCOREAPP2_1
             return RSA.Create(key.ExportParameters());

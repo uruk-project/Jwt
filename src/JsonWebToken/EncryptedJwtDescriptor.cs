@@ -75,11 +75,11 @@ namespace JsonWebToken
             KeyWrapProvider kwProvider = null;
             if (isDirectEncryption)
             {
-                encryptionProvider = Key.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);
+                encryptionProvider = Key.CreateAuthenticatedEncryptionProvider(in encryptionAlgorithm);
             }
             else
             {
-                kwProvider = Key.CreateKeyWrapProvider(encryptionAlgorithm, contentEncryptionAlgorithm);
+                kwProvider = Key.CreateKeyWrapProvider(in encryptionAlgorithm, in contentEncryptionAlgorithm);
                 if (kwProvider == null)
                 {
                     throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
@@ -105,7 +105,7 @@ namespace JsonWebToken
                     Key.ReleaseKeyWrapProvider(kwProvider);
                 }
 
-                encryptionProvider = cek.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);
+                encryptionProvider = cek.CreateAuthenticatedEncryptionProvider(in encryptionAlgorithm);
             }
 
             if (encryptionProvider == null)

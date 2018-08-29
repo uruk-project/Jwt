@@ -40,9 +40,9 @@ namespace JsonWebToken
         private EccJwk(string crv, byte[] d, byte[] x, byte[] y)
         {
             Crv = crv;
-            RawD = CloneArray(d);
-            RawX = CloneArray(x);
-            RawY = CloneArray(y);
+            RawD = CloneByteArray(d);
+            RawX = CloneByteArray(x);
+            RawY = CloneByteArray(y);
         }
 
         public EccJwk()
@@ -148,7 +148,7 @@ namespace JsonWebToken
 
         public ECDsa CreateECDsa(in SignatureAlgorithm algorithm, bool usePrivateKey)
         {
-            int validKeySize = ValidKeySize(algorithm);
+            int validKeySize = ValidKeySize(in algorithm);
             if (KeySizeInBits != validKeySize)
             {
                 throw new ArgumentOutOfRangeException(nameof(KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, validKeySize, KeySizeInBits));
@@ -190,9 +190,9 @@ namespace JsonWebToken
                 return cachedProvider;
             }
 
-            if (IsSupportedAlgorithm(algorithm))
+            if (IsSupportedAlgorithm(in algorithm))
             {
-                var provider = new EcdsaSignatureProvider(this, algorithm, willCreateSignatures);
+                var provider = new EcdsaSignatureProvider(this, in algorithm, willCreateSignatures);
                 if (!signatureProviders.TryAdd(algorithm, provider) && signatureProviders.TryGetValue(algorithm, out cachedProvider))
                 {
                     provider.Dispose();
@@ -208,7 +208,7 @@ namespace JsonWebToken
         public override KeyWrapProvider CreateKeyWrapProvider(in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
 #if NETCOREAPP2_1
-            return new EcdhKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+            return new EcdhKeyWrapProvider(this, in encryptionAlgorithm, in contentEncryptionAlgorithm);
 #else
             return null;
 #endif

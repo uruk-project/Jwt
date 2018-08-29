@@ -74,36 +74,36 @@ namespace JsonWebToken
         public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider, in SignatureAlgorithm algorithm = default)
         {
             _hasSignatureValidation = true;
-            _validations.Add(new SignatureValidation(keyProvider, supportUnsecure: false, algorithm));
+            _validations.Add(new SignatureValidation(keyProvider, supportUnsecure: false, in algorithm));
             return this;
         }
 
         public TokenValidationPolicyBuilder RequireSignature(string jsonWebKeyUrl, in SignatureAlgorithm algorithm = default, HttpMessageHandler handler = null)
         {
-            RequireSignature(new JwksKeyProvider(jsonWebKeyUrl, handler), algorithm);
+            RequireSignature(new JwksKeyProvider(jsonWebKeyUrl, handler), in algorithm);
             return this;
         }
 
         public TokenValidationPolicyBuilder RequireSignature(JsonWebKey key, in SignatureAlgorithm algorithm = default)
         {
-            return RequireSignature(new JsonWebKeySet(key), algorithm);
+            return RequireSignature(new JsonWebKeySet(key), in algorithm);
         }
 
         public TokenValidationPolicyBuilder RequireSignature(IEnumerable<JsonWebKey> keys, in SignatureAlgorithm algorithm = default)
         {
-            return RequireSignature(new JsonWebKeySet(keys), algorithm);
+            return RequireSignature(new JsonWebKeySet(keys), in algorithm);
         }
 
         public TokenValidationPolicyBuilder RequireSignature(JsonWebKeySet keySet, in SignatureAlgorithm algorithm = default)
         {
-            return RequireSignature(new StaticKeyProvider(keySet), algorithm);
+            return RequireSignature(new StaticKeyProvider(keySet), in algorithm);
         }
 
         public TokenValidationPolicyBuilder RequireSignature(IEnumerable<IKeyProvider> keyProviders, in SignatureAlgorithm algorithm = default)
         {
             foreach (var keyProvider in keyProviders)
             {
-                RequireSignature(keyProvider, algorithm);
+                RequireSignature(keyProvider, in algorithm);
             }
 
             return this;

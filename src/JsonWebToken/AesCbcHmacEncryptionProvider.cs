@@ -34,10 +34,10 @@ namespace JsonWebToken
                 throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
             }
 
-            ValidateKeySize(key, encryptionAlgorithm);
-            (_aesKey, _hmacKey) = GetKeys(key, encryptionAlgorithm);
+            ValidateKeySize(key, in encryptionAlgorithm);
+            (_aesKey, _hmacKey) = GetKeys(key, in encryptionAlgorithm);
             _signatureAlgorithm = encryptionAlgorithm.SignatureAlgorithm;
-            _symmetricSignatureProvider = _hmacKey.CreateSignatureProvider(_signatureAlgorithm, true) as SymmetricSignatureProvider;
+            _symmetricSignatureProvider = _hmacKey.CreateSignatureProvider(in _signatureAlgorithm, true) as SymmetricSignatureProvider;
             if (_symmetricSignatureProvider == null)
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureHashAlgorithm, encryptionAlgorithm));
@@ -171,7 +171,7 @@ namespace JsonWebToken
                     aes.Key = _aesKey.RawK;
                     aes.IV = nonce.ToArray();
 
-                    bytesWritten = Transform(aes.CreateDecryptor(), ciphertext.ToArray(), 0, ciphertext.Length, plaintext);
+                    bytesWritten = Transform(aes.CreateDecryptor(), ciphertext, 0, ciphertext.Length, plaintext);
                     return bytesWritten <= ciphertext.Length;
                 }
             }

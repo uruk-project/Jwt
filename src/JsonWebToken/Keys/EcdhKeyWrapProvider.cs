@@ -26,7 +26,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(key));
             }
             
-            if (!key.IsSupportedAlgorithm(contentEncryptionAlgorithm))
+            if (!key.IsSupportedAlgorithm(in contentEncryptionAlgorithm))
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, contentEncryptionAlgorithm));
             }
@@ -36,8 +36,8 @@ namespace JsonWebToken
             EncryptionAlgorithm = encryptionAlgorithm;
             _algorithmName = GetAlgorithmName();
             _algorithmNameLength = Encoding.ASCII.GetByteCount(_algorithmName);
-            _keyLength = GetKeyLength(contentEncryptionAlgorithm, encryptionAlgorithm);
-            _hashAlgorithm = GetHashAlgorithm(encryptionAlgorithm);
+            _keyLength = GetKeyLength(in contentEncryptionAlgorithm, in encryptionAlgorithm);
+            _hashAlgorithm = GetHashAlgorithm(in encryptionAlgorithm);
         }
 
         public override int GetKeyUnwrapSize(int inputSize)
@@ -84,7 +84,7 @@ namespace JsonWebToken
                     var (keyLength, aesAlgorithm) = GetAesAlgorithm();
 
                     var key = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, keyLength), false);
-                    KeyWrapProvider aesKeyWrapProvider = key.CreateKeyWrapProvider(EncryptionAlgorithm, aesAlgorithm);
+                    KeyWrapProvider aesKeyWrapProvider = key.CreateKeyWrapProvider(in EncryptionAlgorithm, in aesAlgorithm);
                     try
                     {
                         return aesKeyWrapProvider.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
@@ -146,7 +146,7 @@ namespace JsonWebToken
                 {
                     var (keyLength, aesAlgorithm) = GetAesAlgorithm();
                     var kek = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, keyLength), false);
-                    KeyWrapProvider aesKeyWrapProvider = kek.CreateKeyWrapProvider(EncryptionAlgorithm, aesAlgorithm);
+                    KeyWrapProvider aesKeyWrapProvider = kek.CreateKeyWrapProvider(in EncryptionAlgorithm, in aesAlgorithm);
                     try
                     {
                         return aesKeyWrapProvider.TryWrapKey(null, header, destination, out contentEncryptionKey, out bytesWritten);

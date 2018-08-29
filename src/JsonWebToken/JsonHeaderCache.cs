@@ -30,7 +30,7 @@ namespace JsonWebToken
 
         public bool TryGetHeader(JObject header, in SignatureAlgorithm alg, out byte[] base64UrlHeader)
         {
-            if (!IsSimpleHeader(header, alg))
+            if (!IsSimpleHeader(header, in alg))
             {
                 base64UrlHeader = null;
                 return false;
@@ -38,7 +38,7 @@ namespace JsonWebToken
 
             if (header.TryGetValue(HeaderParameters.Kid, out var kid))
             {
-                var key = ComputeHeaderKey(header, alg);
+                var key = ComputeHeaderKey(header, in alg);
                 if (key == -1)
                 {
                     base64UrlHeader = null;
@@ -95,7 +95,7 @@ namespace JsonWebToken
                 return;
             }
 
-            if (!IsSimpleHeader(header, alg))
+            if (!IsSimpleHeader(header, in alg))
             {
                 return;
             }
@@ -116,7 +116,7 @@ namespace JsonWebToken
                     node = node.Next;
                 }
 
-                var key = ComputeHeaderKey(header, alg);
+                var key = ComputeHeaderKey(header, in alg);
                 if (key == -1)
                 {
                     return;

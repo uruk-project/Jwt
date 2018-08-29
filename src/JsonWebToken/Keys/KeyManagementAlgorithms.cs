@@ -22,21 +22,5 @@
         public const string EcdhEsAes128KW = "ECDH-ES+A128KW";
         public const string EcdhEsAes192KW = "ECDH-ES+A192KW";
         public const string EcdhEsAes256KW = "ECDH-ES+A256KW";
-
-        public const int DirectId = 1;
-                     
-        public const int Aes128KWId = 2;
-        public const int Aes192KWId = 3;
-        public const int Aes256KWId = 4;
-                     
-        public const int RsaPkcs1Id = 5;
-        public const int RsaOaepId = 6;
-        public const int RsaOaep256Id = 7;
-                     
-        public const int EcdhEsId = 8;
-                     
-        public const int EcdhEsAes128KWId = 9;
-        public const int EcdhEsAes192KWId = 10;
-        public const int EcdhEsAes256KWId = 11;
     }
 }

@@ -8,7 +8,6 @@ namespace JsonWebToken
     {
         public static readonly KeyManagementAlgorithm Empty = default;
 
-        // Key wrapping algoritmhs
         public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, KeyManagementAlgorithms.Direct, AlgorithmCategory.Symmetric, requiredKeySizeInBits: 0, produceEncryptedKey: false);
 
         public static readonly KeyManagementAlgorithm Aes128KW = new KeyManagementAlgorithm(id: 11, KeyManagementAlgorithms.Aes128KW, AlgorithmCategory.Symmetric, requiredKeySizeInBits: 128);

@@ -15,7 +15,7 @@ namespace JsonWebToken
         public SymmetricJwk(byte[] bytes)
             : this()
         {
-            RawK = CloneArray(bytes);
+            RawK = CloneByteArray(bytes);
         }
 
         public SymmetricJwk(Span<byte> bytes)
@@ -125,9 +125,9 @@ namespace JsonWebToken
                 return cachedProvider;
             }
 
-            if (IsSupportedAlgorithm(algorithm))
+            if (IsSupportedAlgorithm(in algorithm))
             {
-                var provider = new SymmetricSignatureProvider(this, algorithm);
+                var provider = new SymmetricSignatureProvider(this, in algorithm);
                 if (!_signatureProviders.TryAdd(algorithm, provider) && _signatureProviders.TryGetValue(algorithm, out cachedProvider))
                 {
                     provider.Dispose();
@@ -155,16 +155,16 @@ namespace JsonWebToken
                 }
             }
 
-            if (IsSupportedAlgorithm(contentEncryptionAlgorithm))
+            if (IsSupportedAlgorithm(in contentEncryptionAlgorithm))
             {
                 KeyWrapProvider provider;
                 if (encryptionAlgorithm.Category == EncryptionTypes.AesHmac)
                 {
-                    provider = new AesKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                    provider = new AesKeyWrapProvider(this, in encryptionAlgorithm, in contentEncryptionAlgorithm);
                 }
                 else if (encryptionAlgorithm.Category == EncryptionTypes.AesGcm)
                 {
-                    provider = new AesGcmKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                    provider = new AesGcmKeyWrapProvider(this, in encryptionAlgorithm, in contentEncryptionAlgorithm);
                 }
                 else
                 {
@@ -196,16 +196,16 @@ namespace JsonWebToken
                 return cachedProvider;
             }
 
-            if (IsSupportedAlgorithm(encryptionAlgorithm))
+            if (IsSupportedAlgorithm(in encryptionAlgorithm))
             {
                 AuthenticatedEncryptionProvider provider;
                 if (encryptionAlgorithm.Category == EncryptionTypes.AesHmac)
                 {
-                    provider = new AesCbcHmacEncryptionProvider(this, encryptionAlgorithm);
+                    provider = new AesCbcHmacEncryptionProvider(this, in encryptionAlgorithm);
                 }
                 else if (encryptionAlgorithm.Category == EncryptionTypes.AesGcm)
                 {
-                    provider = new AesGcmEncryptionProvider(this, encryptionAlgorithm);
+                    provider = new AesGcmEncryptionProvider(this, in encryptionAlgorithm);
                 }
                 else
                 {

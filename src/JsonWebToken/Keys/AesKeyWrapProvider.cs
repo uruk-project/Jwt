@@ -36,12 +36,12 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (!key.IsSupportedAlgorithm(encryptionAlgorithm))
+            if (!key.IsSupportedAlgorithm(in encryptionAlgorithm))
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
             }
 
-            if (!key.IsSupportedAlgorithm(algorithm))
+            if (!key.IsSupportedAlgorithm(in algorithm))
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
             }
@@ -55,7 +55,7 @@ namespace JsonWebToken
             EncryptionAlgorithm = encryptionAlgorithm;
             Key = key;
 
-            _aes = GetSymmetricAlgorithm(key, algorithm);
+            _aes = GetSymmetricAlgorithm(key, in algorithm);
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace JsonWebToken
         private Aes GetSymmetricAlgorithm(SymmetricJwk key, in KeyManagementAlgorithm algorithm)
         {
             byte[] keyBytes = key.RawK;
-            ValidateKeySize(keyBytes, algorithm);
+            ValidateKeySize(keyBytes, in algorithm);
             try
             {
                 // Create the AES provider
@@ -278,7 +278,7 @@ namespace JsonWebToken
                 }
             }
 
-            contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
+            contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(in EncryptionAlgorithm, staticKey);
             return TryWrapKeyPrivate(contentEncryptionKey.ToByteArray(), destination, out bytesWritten);
         }
 
@@ -379,12 +379,12 @@ namespace JsonWebToken
 
         public override int GetKeyUnwrapSize(int inputSize)
         {
-            return GetKeyUnwrappedSize(inputSize, Algorithm);
+            return GetKeyUnwrappedSize(inputSize, in Algorithm);
         }
 
         public override int GetKeyWrapSize()
         {
-            return GetKeyWrappedSize(EncryptionAlgorithm);
+            return GetKeyWrappedSize(in EncryptionAlgorithm);
         }
 
         public static int GetKeyUnwrappedSize(int inputSize, in KeyManagementAlgorithm algorithm)

@@ -40,8 +40,8 @@ namespace JsonWebToken
         private RsaJwk(byte[] e, byte[] n)
             : this()
         {
-            RawE = CloneArray(e);
-            RawN = CloneArray(n);
+            RawE = CloneByteArray(e);
+            RawN = CloneByteArray(n);
         }
 
         public RSAParameters ExportParameters()
@@ -94,9 +94,9 @@ namespace JsonWebToken
                 return cachedProvider;
             }
 
-            if (IsSupportedAlgorithm(algorithm))
+            if (IsSupportedAlgorithm(in algorithm))
             {
-                var provider = new RsaSignatureProvider(this, algorithm, willCreateSignatures);
+                var provider = new RsaSignatureProvider(this, in algorithm, willCreateSignatures);
                 if (!providers.TryAdd(algorithm, provider) && providers.TryGetValue(algorithm, out cachedProvider))
                 {
                     provider.Dispose();
@@ -111,9 +111,9 @@ namespace JsonWebToken
 
         public override KeyWrapProvider CreateKeyWrapProvider(in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
-            if (IsSupportedAlgorithm(contentEncryptionAlgorithm))
+            if (IsSupportedAlgorithm(in contentEncryptionAlgorithm))
             {
-                return new RsaKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                return new RsaKeyWrapProvider(this, in encryptionAlgorithm, in contentEncryptionAlgorithm);
             }
 
             return null;

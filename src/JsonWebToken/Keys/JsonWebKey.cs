@@ -13,42 +13,6 @@ using System.Text;
 
 namespace JsonWebToken
 {
-    internal sealed class SignatureAlgorithmConverter : JsonConverter
-    {
-        public override bool CanConvert(Type objectType)
-        {
-            return objectType == typeof(SignatureAlgorithm);
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            return (SignatureAlgorithm)(string)reader.Value;
-        }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            writer.WriteValue(((SignatureAlgorithm)value).Name);
-        }
-    }
-
-    internal sealed class CryptographicAlgorithmConverter : JsonConverter
-    {
-        public override bool CanConvert(Type objectType)
-        {
-            return objectType == typeof(EncryptionAlgorithm);
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            return (EncryptionAlgorithm)(string)reader.Value;
-        }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            writer.WriteValue(((EncryptionAlgorithm)value).Name);
-        }
-    }
-
     /// <summary>
     /// Represents a JSON Web Key as defined in http://tools.ietf.org/html/rfc7517.
     /// </summary>
@@ -161,7 +125,6 @@ namespace JsonWebToken
         /// Gets or sets the 'alg' (KeyType)..
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Alg, Required = Required.Default)]
-        //[JsonConverter(typeof(SignatureAlgorithmConverter))]
         public string Alg { get; set; }
 
         /// <summary>
@@ -192,7 +155,7 @@ namespace JsonWebToken
         /// Gets the 'x5c' collection (X.509 Certificate Chain)..
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.X5c, Required = Required.Default)]
-        public IList<string> X5c { get; private set; } = new List<string>();
+        public List<string> X5c { get; private set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the 'x5t' (X.509 Certificate SHA-1 thumbprint)..
@@ -230,7 +193,7 @@ namespace JsonWebToken
 
                 if (_certificateChain == null)
                 {
-                    _certificateChain = new List<JsonWebKey>();
+                    _certificateChain = new List<JsonWebKey>(X5c.Count);
                     foreach (var certString in X5c)
                     {
                         var certificate = new X509Certificate2(Convert.FromBase64String(certString));
@@ -419,11 +382,10 @@ namespace JsonWebToken
 
             key.X5t = Base64Url.Encode(certificate.GetCertHash());
             key.Kid = key.ComputeThumbprint();
-            key.X5t = Base64Url.Encode(certificate.GetCertHash());
             return key;
         }
 
-        protected static byte[] CloneArray(byte[] array)
+        protected static byte[] CloneByteArray(byte[] array)
         {
             var clone = new byte[array.Length];
             array.CopyTo(clone, 0);

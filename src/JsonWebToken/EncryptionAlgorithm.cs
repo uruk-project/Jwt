@@ -7,13 +7,13 @@ namespace JsonWebToken
     {
         public static readonly EncryptionAlgorithm Empty = default;
 
-        public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(1, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, 32, SignatureAlgorithm.HmacSha256, 40, EncryptionTypes.AesHmac);
-        public static readonly EncryptionAlgorithm Aes192CbcHmacSha384 = new EncryptionAlgorithm(2, ContentEncryptionAlgorithms.Aes192CbcHmacSha384, 48, SignatureAlgorithm.HmacSha384, 56, EncryptionTypes.AesHmac);
-        public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(3, ContentEncryptionAlgorithms.Aes256CbcHmacSha512, 64, SignatureAlgorithm.HmacSha512, 72, EncryptionTypes.AesHmac);
+        public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: 11, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesHmac);
+        public static readonly EncryptionAlgorithm Aes192CbcHmacSha384 = new EncryptionAlgorithm(id: 12, ContentEncryptionAlgorithms.Aes192CbcHmacSha384, requiredKeySizeInBytes: 48, SignatureAlgorithm.HmacSha384, requiredKeyWrappedSizeInBytes: 56, EncryptionTypes.AesHmac);
+        public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(id: 13, ContentEncryptionAlgorithms.Aes256CbcHmacSha512, requiredKeySizeInBytes: 64, SignatureAlgorithm.HmacSha512, requiredKeyWrappedSizeInBytes: 72, EncryptionTypes.AesHmac);
 
-        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(4, ContentEncryptionAlgorithms.Aes128Gcm, 16, default, 40, EncryptionTypes.AesGcm);
-        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(5, ContentEncryptionAlgorithms.Aes192Gcm, 24, default, 56, EncryptionTypes.AesGcm);
-        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(6, ContentEncryptionAlgorithms.Aes256Gcm, 32, default, 72, EncryptionTypes.AesGcm);
+        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 21, ContentEncryptionAlgorithms.Aes128Gcm, requiredKeySizeInBytes: 16, default, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesGcm);
+        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 22, ContentEncryptionAlgorithms.Aes192Gcm, requiredKeySizeInBytes: 24, default, requiredKeyWrappedSizeInBytes: 56, EncryptionTypes.AesGcm);
+        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, ContentEncryptionAlgorithms.Aes256Gcm, requiredKeySizeInBytes: 32, default, requiredKeyWrappedSizeInBytes: 72, EncryptionTypes.AesGcm);
 
         public static readonly IDictionary<string, EncryptionAlgorithm> AdditionalAlgorithms = new Dictionary<string, EncryptionAlgorithm>();
 

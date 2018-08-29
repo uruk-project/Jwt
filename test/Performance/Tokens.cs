@@ -41,7 +41,7 @@ namespace JsonWebToken.Performance
 
         private static SymmetricJwk CreateEncryptionKey()
         {
-            return SymmetricJwk.GenerateKey(256, KeyManagementAlgorithm.Aes256KW.Name);
+            return SymmetricJwk.GenerateKey(128, KeyManagementAlgorithm.Aes128KW.Name);
         }
 
         private static IDictionary<string, JObject> CreatePayloads()
