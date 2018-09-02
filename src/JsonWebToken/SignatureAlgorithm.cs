@@ -29,14 +29,14 @@ namespace JsonWebToken
 
         public static readonly IDictionary<string, SignatureAlgorithm> AdditionalAlgorithms = new Dictionary<string, SignatureAlgorithm>();
 
-        private readonly long _id;
-
-        public readonly string Name;
+        private readonly sbyte _id;
         public readonly AlgorithmCategory Category;
-        public readonly int RequiredKeySizeInBits;
+        public readonly ushort RequiredKeySizeInBits;
         public readonly HashAlgorithmName HashAlgorithm;
 
-        private SignatureAlgorithm(long id, string name, AlgorithmCategory keyType, int requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
+        public readonly string Name;
+
+        private SignatureAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
         {
             _id = id;
             Name = name;

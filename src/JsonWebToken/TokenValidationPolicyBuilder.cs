@@ -64,6 +64,7 @@ namespace JsonWebToken
             _hasSignatureValidation = true;
             return RemoveValidation<SignatureValidation>();
         }
+
         public TokenValidationPolicyBuilder AcceptUnsecureToken()
         {
             _hasSignatureValidation = true;

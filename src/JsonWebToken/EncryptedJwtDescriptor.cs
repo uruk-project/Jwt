@@ -97,7 +97,7 @@ namespace JsonWebToken
                 {
                     if (!kwProvider.TryWrapKey(null, header, wrappedKey, out cek, out var keyWrappedBytesWritten))
                     {
-                        throw new JsonWebTokenEncryptionFailedException(ErrorMessages.KeyWrapFailed);
+                        throw new CryptographicException(ErrorMessages.KeyWrapFailed);
                     }
                 }
                 finally
@@ -236,7 +236,7 @@ namespace JsonWebToken
             }
             catch (Exception ex)
             {
-                throw new JsonWebTokenEncryptionFailedException(ErrorMessages.FormatInvariant(ErrorMessages.EncryptionFailed, encryptionAlgorithm, Key.Kid), ex);
+                throw new CryptographicException(ErrorMessages.FormatInvariant(ErrorMessages.EncryptionFailed, encryptionAlgorithm, Key.Kid), ex);
             }
         }
     }

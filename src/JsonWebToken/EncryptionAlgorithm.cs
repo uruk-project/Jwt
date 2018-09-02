@@ -17,15 +17,15 @@ namespace JsonWebToken
 
         public static readonly IDictionary<string, EncryptionAlgorithm> AdditionalAlgorithms = new Dictionary<string, EncryptionAlgorithm>();
 
-        private readonly long _id;
-
-        public readonly int RequiredKeySizeInBytes;
-        public readonly int RequiredKeyWrappedSizeInBytes;
-        public readonly SignatureAlgorithm SignatureAlgorithm;
+        private readonly sbyte _id;
         public readonly EncryptionTypes Category;
+
+        public readonly ushort RequiredKeySizeInBytes;
+        public readonly ushort RequiredKeyWrappedSizeInBytes;
+        public readonly SignatureAlgorithm SignatureAlgorithm;
         public readonly string Name;
 
-        private EncryptionAlgorithm(long id, string name, int requiredKeySizeInBytes, SignatureAlgorithm hashAlgorithm, int requiredKeyWrappedSizeInBytes, EncryptionTypes encryptionType)
+        private EncryptionAlgorithm(sbyte id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm hashAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionTypes encryptionType)
         {
             _id = id;
             Name = name;

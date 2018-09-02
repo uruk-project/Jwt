@@ -24,22 +24,22 @@ namespace JsonWebToken
 
         public static readonly KeyManagementAlgorithm EcdhEs = new KeyManagementAlgorithm(id: 41, KeyManagementAlgorithms.EcdhEs, AlgorithmCategory.EllipticCurve, produceEncryptedKey: false);
 
-        public static readonly KeyManagementAlgorithm EcdhEsAes128KW = new KeyManagementAlgorithm(id: 51, KeyManagementAlgorithms.EcdhEsAes128KW, AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes128KW.Name);
-        public static readonly KeyManagementAlgorithm EcdhEsAes192KW = new KeyManagementAlgorithm(id: 52, KeyManagementAlgorithms.EcdhEsAes192KW, AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes192KW.Name);
-        public static readonly KeyManagementAlgorithm EcdhEsAes256KW = new KeyManagementAlgorithm(id: 53, KeyManagementAlgorithms.EcdhEsAes256KW, AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes256KW.Name);
+        public static readonly KeyManagementAlgorithm EcdhEsAes128KW = new KeyManagementAlgorithm(id: 51, KeyManagementAlgorithms.EcdhEsAes128KW, AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes128KW);
+        public static readonly KeyManagementAlgorithm EcdhEsAes192KW = new KeyManagementAlgorithm(id: 52, KeyManagementAlgorithms.EcdhEsAes192KW, AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes192KW);
+        public static readonly KeyManagementAlgorithm EcdhEsAes256KW = new KeyManagementAlgorithm(id: 53, KeyManagementAlgorithms.EcdhEsAes256KW, AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes256KW);
 
         public static readonly IDictionary<string, KeyManagementAlgorithm> AdditionalAlgorithms = new Dictionary<string, KeyManagementAlgorithm>();
 
-        private readonly long _id;
+        private readonly sbyte _id;
 
-        public readonly string Name;
+        public readonly ushort RequiredKeySizeInBits;
         public readonly AlgorithmCategory Category;
-        public readonly int RequiredKeySizeInBits;
         public readonly HashAlgorithmName HashAlgorithm;
-        public readonly string WrappedAlgorithm;
+        public readonly KeyManagementAlgorithm WrappedAlgorithm;
+        public readonly string Name;
         public readonly bool ProduceEncryptedKey;
 
-        private KeyManagementAlgorithm(long id, string name, AlgorithmCategory keyType, int requiredKeySizeInBits = 0, string wrappedAlgorithm = null, bool produceEncryptedKey = true)
+        private KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits = 0, KeyManagementAlgorithm wrappedAlgorithm = null, bool produceEncryptedKey = true)
         {
             _id = id;
             Name = name;
