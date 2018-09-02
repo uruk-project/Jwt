@@ -163,7 +163,6 @@ namespace JsonWebToken
             throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, value));
         }
 
-
         public static implicit operator long(SignatureAlgorithm value)
         {
             return value._id;

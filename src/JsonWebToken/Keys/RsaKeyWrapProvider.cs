@@ -19,20 +19,8 @@ namespace JsonWebToken
         /// <param name="contentEncryptionAlgorithm">The KeyWrap algorithm to apply.</param>
         /// </summary>
         public RsaKeyWrapProvider(RsaJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+            :base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (!key.IsSupportedAlgorithm(contentEncryptionAlgorithm))
-            {
-                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, contentEncryptionAlgorithm));
-            }
-
-            Algorithm = contentEncryptionAlgorithm;
-            EncryptionAlgorithm = encryptionAlgorithm;
-            Key = key;
             _rsa = ResolveRsaAlgorithm(key);
             _padding = ResolvePadding(contentEncryptionAlgorithm);
         }

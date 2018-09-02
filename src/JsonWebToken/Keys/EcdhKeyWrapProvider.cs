@@ -20,20 +20,8 @@ namespace JsonWebToken
         private static readonly uint OneBigEndian = BitConverter.IsLittleEndian ? 0x1000000u : 1u;
 
         public EcdhKeyWrapProvider(EccJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+            : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-            
-            if (!key.IsSupportedAlgorithm(contentEncryptionAlgorithm))
-            {
-                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, contentEncryptionAlgorithm));
-            }
-
-            Algorithm = contentEncryptionAlgorithm;
-            Key = key ?? throw new ArgumentNullException(nameof(key));
-            EncryptionAlgorithm = encryptionAlgorithm;
             _algorithmName = GetAlgorithmName();
             _algorithmNameLength = Encoding.ASCII.GetByteCount(_algorithmName);
             _keyLength = GetKeyLength(contentEncryptionAlgorithm, encryptionAlgorithm);
@@ -124,7 +112,7 @@ namespace JsonWebToken
 
             return hashAlgorithm;
         }
-        
+
         public override bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
         {
             try
@@ -227,7 +215,7 @@ namespace JsonWebToken
                 Unsafe.WriteUnaligned(ptr, 0);
             }
         }
-        
+
         private static void WritePartyInfo(Span<byte> partyInfo, Span<byte> destination)
         {
             if (partyInfo.IsEmpty)

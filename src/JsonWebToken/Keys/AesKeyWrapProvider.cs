@@ -30,30 +30,12 @@ namespace JsonWebToken
         /// <param name="algorithm">The KeyWrap algorithm to apply.</param>
         /// </summary>
         public AesKeyWrapProvider(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+            :base(key, encryptionAlgorithm, algorithm)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (!key.IsSupportedAlgorithm(encryptionAlgorithm))
-            {
-                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
-            }
-
-            if (!key.IsSupportedAlgorithm(algorithm))
-            {
-                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
-            }
-
             if (key.K == null)
             {
                 throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.MalformedKey, key.Kid), nameof(key.K));
             }
-
-            Algorithm = algorithm;
-            EncryptionAlgorithm = encryptionAlgorithm;
-            Key = key;
 
             _aes = GetSymmetricAlgorithm(key, algorithm);
         }

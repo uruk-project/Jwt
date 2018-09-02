@@ -11,14 +11,31 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the KeyWrap algorithm that is being used.
         /// </summary>
-        protected KeyManagementAlgorithm Algorithm;//{ get;  protected set; }
+        protected KeyManagementAlgorithm Algorithm;
 
-        protected EncryptionAlgorithm EncryptionAlgorithm;// { get; protected set; }
+        protected EncryptionAlgorithm EncryptionAlgorithm;
 
         /// <summary>
         /// Gets the <see cref="JsonWebKey"/> that is being used.
         /// </summary>
         public JsonWebKey Key { get; protected set; }
+
+        protected KeyWrapProvider(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+            
+            if (!key.IsSupportedAlgorithm(algorithm))
+            {
+                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
+            }
+
+            Algorithm = algorithm;
+            EncryptionAlgorithm = encryptionAlgorithm;
+            Key = key;
+        }
 
         /// <summary>
         /// Calls <see cref="Dispose(bool)"/> and <see cref="GC.SuppressFinalize"/>
