@@ -21,7 +21,7 @@ namespace JsonWebToken
 
         public RsaJwk()
         {
-            Kty = KeyTypes.RSA;
+            Kty = JsonWebKeyTypeNames.Rsa;
         }
 
         public RsaJwk(RSAParameters rsaParameters)
@@ -40,11 +40,11 @@ namespace JsonWebToken
         private RsaJwk(byte[] e, byte[] n)
             : this()
         {
-            RawE = CloneArray(e);
-            RawN = CloneArray(n);
+            RawE = CloneByteArray(e);
+            RawN = CloneByteArray(n);
         }
 
-        public RSAParameters CreateRsaParameters()
+        public RSAParameters ExportParameters()
         {
             if (N == null || E == null)
             {
@@ -66,22 +66,22 @@ namespace JsonWebToken
             return parameters;
         }
 
-        public override bool IsSupportedAlgorithm(in SignatureAlgorithm algorithm)
+        public override bool IsSupportedAlgorithm(SignatureAlgorithm algorithm)
         {
-            return algorithm.KeyType == KeyTypes.RSA;
+            return algorithm.Category == AlgorithmCategory.Rsa;
         }
 
-        public override bool IsSupportedAlgorithm(in KeyManagementAlgorithm algorithm)
+        public override bool IsSupportedAlgorithm(KeyManagementAlgorithm algorithm)
         {
-            return algorithm.KeyType == KeyTypes.RSA;
+            return algorithm.Category == AlgorithmCategory.Rsa;
         }
 
-        public override bool IsSupportedAlgorithm(in EncryptionAlgorithm algorithm)
+        public override bool IsSupportedAlgorithm(EncryptionAlgorithm algorithm)
         {
             return false;
         }
 
-        public override SignatureProvider CreateSignatureProvider(in SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public override SignatureProvider CreateSignatureProvider(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (algorithm == SignatureAlgorithm.Empty)
             {
@@ -109,7 +109,7 @@ namespace JsonWebToken
             return null;
         }
 
-        public override KeyWrapProvider CreateKeyWrapProvider(in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public override KeyWrapProvider CreateKeyWrapProvider(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
             if (IsSupportedAlgorithm(contentEncryptionAlgorithm))
             {

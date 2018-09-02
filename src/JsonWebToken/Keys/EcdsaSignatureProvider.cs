@@ -50,7 +50,7 @@ namespace JsonWebToken
                     _hashSize = 132;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(algorithm), ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, key.Crv));
+                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, key.Crv));
             }
 
             _ecdsa = ResolveAlgorithm(key, algorithm, willCreateSignatures);
@@ -66,7 +66,7 @@ namespace JsonWebToken
         /// <returns>A signature over the input.</returns>
         public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {
-            if (input == null || input.Length == 0)
+            if (input.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(input));
             }
@@ -82,7 +82,7 @@ namespace JsonWebToken
 #endif
             }
 
-            throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, _hashAlgorithm));
+            throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, _hashAlgorithm));
         }
 
         /// <summary>
@@ -93,19 +93,19 @@ namespace JsonWebToken
         /// <returns>true if signature matches, false otherwise.</returns>
         public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
         {
-            if (input == null || input.Length == 0)
+            if (input.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(input));
             }
 
-            if (signature == null || signature.Length == 0)
+            if (signature.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(signature));
             }
 
             if (_ecdsa == null)
             {
-                throw new InvalidOperationException(ErrorMessages.NotSupportedUnwrap);
+                throw new NotSupportedException(ErrorMessages.NotSupportedUnwrap);
             }
 
 #if NETCOREAPP2_1
@@ -115,7 +115,7 @@ namespace JsonWebToken
 #endif
         }
 
-        private static ECDsa ResolveAlgorithm(EccJwk key, in SignatureAlgorithm algorithm, bool usePrivateKey)
+        private static ECDsa ResolveAlgorithm(EccJwk key, SignatureAlgorithm algorithm, bool usePrivateKey)
         {
             return key.CreateECDsa(algorithm, usePrivateKey);
         }

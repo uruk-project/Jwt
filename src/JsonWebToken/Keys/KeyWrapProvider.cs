@@ -11,14 +11,31 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the KeyWrap algorithm that is being used.
         /// </summary>
-        public KeyManagementAlgorithm Algorithm { get; protected set; }
+        protected KeyManagementAlgorithm Algorithm;
 
-        public EncryptionAlgorithm EncryptionAlgorithm { get; protected set; }
+        protected EncryptionAlgorithm EncryptionAlgorithm;
 
         /// <summary>
         /// Gets the <see cref="JsonWebKey"/> that is being used.
         /// </summary>
         public JsonWebKey Key { get; protected set; }
+
+        protected KeyWrapProvider(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+            
+            if (!key.IsSupportedAlgorithm(algorithm))
+            {
+                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
+            }
+
+            Algorithm = algorithm;
+            EncryptionAlgorithm = encryptionAlgorithm;
+            Key = key;
+        }
 
         /// <summary>
         /// Calls <see cref="Dispose(bool)"/> and <see cref="GC.SuppressFinalize"/>
@@ -45,7 +62,7 @@ namespace JsonWebToken
         /// <summary>
         /// Wrap a key.
         /// </summary>
-        /// <param name="keyBytes">the key to be wrapped</param>
+        /// <param name="staticKey">The key to be wrapped. If <c>null</c>, the key will be ephemeral and generated within this method.</param>
         /// <returns>wrapped key.</returns>
         public abstract bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten);
 

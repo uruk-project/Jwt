@@ -40,14 +40,14 @@ namespace JsonWebToken
         private EccJwk(string crv, byte[] d, byte[] x, byte[] y)
         {
             Crv = crv;
-            RawD = CloneArray(d);
-            RawX = CloneArray(x);
-            RawY = CloneArray(y);
+            RawD = CloneByteArray(d);
+            RawX = CloneByteArray(x);
+            RawY = CloneByteArray(y);
         }
 
         public EccJwk()
         {
-            Kty = KeyTypes.EllipticCurve;
+            Kty = JsonWebKeyTypeNames.EllipticCurve;
         }
 
         /// <summary>
@@ -141,12 +141,12 @@ namespace JsonWebToken
                     case EllipticalCurves.P521:
                         return 521;
                     default:
-                        throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
+                        throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
                 }
             }
         }
 
-        public ECDsa CreateECDsa(in SignatureAlgorithm algorithm, bool usePrivateKey)
+        public ECDsa CreateECDsa(SignatureAlgorithm algorithm, bool usePrivateKey)
         {
             int validKeySize = ValidKeySize(algorithm);
             if (KeySizeInBits != validKeySize)
@@ -154,30 +154,30 @@ namespace JsonWebToken
                 throw new ArgumentOutOfRangeException(nameof(KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, validKeySize, KeySizeInBits));
             }
 
-            return ECDsa.Create(ToParameters());
+            return ECDsa.Create(ExportParameters(usePrivateKey));
         }
 
-        private static int ValidKeySize(in SignatureAlgorithm algorithm)
+        private static int ValidKeySize(SignatureAlgorithm algorithm)
         {
             return algorithm.RequiredKeySizeInBits;
         }
 
-        public override bool IsSupportedAlgorithm(in SignatureAlgorithm algorithm)
+        public override bool IsSupportedAlgorithm(SignatureAlgorithm algorithm)
         {
-            return algorithm.KeyType == KeyTypes.EllipticCurve;
+            return algorithm.Category == AlgorithmCategory.EllipticCurve;
         }
 
-        public override bool IsSupportedAlgorithm(in KeyManagementAlgorithm algorithm)
+        public override bool IsSupportedAlgorithm(KeyManagementAlgorithm algorithm)
         {
-            return algorithm.KeyType == KeyTypes.EllipticCurve;
+            return algorithm.Category == AlgorithmCategory.EllipticCurve;
         }
 
-        public override bool IsSupportedAlgorithm(in EncryptionAlgorithm algorithm)
+        public override bool IsSupportedAlgorithm(EncryptionAlgorithm algorithm)
         {
-            return false;
+            return algorithm.Category == EncryptionTypes.AesHmac || algorithm.Category == EncryptionTypes.AesGcm;
         }
 
-        public override SignatureProvider CreateSignatureProvider(in SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public override SignatureProvider CreateSignatureProvider(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (algorithm == null)
             {
@@ -205,7 +205,7 @@ namespace JsonWebToken
             return null;
         }
 
-        public override KeyWrapProvider CreateKeyWrapProvider(in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public override KeyWrapProvider CreateKeyWrapProvider(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
 #if NETCOREAPP2_1
             return new EcdhKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
@@ -214,17 +214,20 @@ namespace JsonWebToken
 #endif
         }
 
-        public ECParameters ToParameters()
+        public ECParameters ExportParameters(bool includePrivateParameters = false)
         {
             var parameters = new ECParameters
             {
-                D = RawD,
                 Q = new ECPoint
                 {
                     X = RawX,
                     Y = RawY
                 }
             };
+            if (includePrivateParameters)
+            {
+                parameters.D = RawD;
+            }
 
             switch (Crv)
             {
@@ -238,7 +241,7 @@ namespace JsonWebToken
                     parameters.Curve = ECCurve.NamedCurves.nistP521;
                     break;
                 default:
-                    throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
+                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
             }
 
             return parameters;
@@ -264,7 +267,7 @@ namespace JsonWebToken
                     curve = ECCurve.NamedCurves.nistP521;
                     break;
                 default:
-                    throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, curveId));
+                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, curveId));
             }
 
             using (var ecdsa = ECDsa.Create())
@@ -298,9 +301,8 @@ namespace JsonWebToken
         public override byte[] ToByteArray()
         {
 #if NETCOREAPP2_1
-            using (var ecdh = ECDiffieHellman.Create())
+            using (var ecdh = ECDiffieHellman.Create(ExportParameters()))
             {
-                ecdh.ImportParameters(ToParameters());
                 return ecdh.PublicKey.ToByteArray();
             }
 #else

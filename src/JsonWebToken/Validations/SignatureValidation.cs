@@ -10,7 +10,7 @@ namespace JsonWebToken.Validations
         private readonly bool _supportUnsecure;
         private readonly SignatureAlgorithm _algorithm;
 
-        public SignatureValidation(IKeyProvider keyProvider, bool supportUnsecure, in SignatureAlgorithm algorithm)
+        public SignatureValidation(IKeyProvider keyProvider, bool supportUnsecure, SignatureAlgorithm algorithm)
         {
             _keyProvider = keyProvider;
             _supportUnsecure = supportUnsecure;
@@ -64,7 +64,8 @@ namespace JsonWebToken.Validations
             for (int i = 0; i < keys.Count; i++)
             {
                 JsonWebKey key = keys[i];
-                if (TryValidateSignature(encodedBytes, signatureBytes, key, _algorithm != SignatureAlgorithm.Empty ? _algorithm : (SignatureAlgorithm)key.Alg))
+                var alg = _algorithm != SignatureAlgorithm.Empty ? _algorithm : (SignatureAlgorithm)key.Alg;
+                if (TryValidateSignature(encodedBytes, signatureBytes, key, alg))
                 {
                     jwt.SigningKey = key;
                     return TokenValidationResult.Success(jwt);
@@ -81,9 +82,9 @@ namespace JsonWebToken.Validations
             return TokenValidationResult.KeyNotFound(jwt);
         }
 
-        private static bool TryValidateSignature(ReadOnlySpan<byte> encodedBytes, ReadOnlySpan<byte> signature, JsonWebKey key, in SignatureAlgorithm algorithm)
+        private static bool TryValidateSignature(ReadOnlySpan<byte> encodedBytes, ReadOnlySpan<byte> signature, JsonWebKey key, SignatureAlgorithm algorithm)
         {
-            var signatureProvider = key.CreateSignatureProvider(algorithm, false);
+            var signatureProvider = key.CreateSignatureProvider(algorithm, willCreateSignatures: false);
             if (signatureProvider == null)
             {
                 return false;
@@ -101,7 +102,7 @@ namespace JsonWebToken.Validations
 
         private List<JsonWebKey> ResolveSigningKey(JsonWebToken jwt)
         {
-            var keys = new List<JsonWebKey>();
+            var keys = new List<JsonWebKey>(1);
             var keySet = _keyProvider.GetKeys(jwt.Header);
             if (keySet != null)
             {

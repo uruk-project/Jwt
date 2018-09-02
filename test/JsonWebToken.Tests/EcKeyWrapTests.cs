@@ -25,7 +25,7 @@ namespace JsonWebToken.Tests
         };
 
         [Fact]
-        public void Wrap()
+        public void Wrap_Rfc7518_Appendix_C()
         {
             var kwp = new EcdhKeyWrapProvider(_bobKey, EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.EcdhEs);
             byte[] wrappedKey = null;

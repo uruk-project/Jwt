@@ -18,32 +18,10 @@ namespace JsonWebToken
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for crypto operations.</param>
         /// <param name="contentEncryptionAlgorithm">The KeyWrap algorithm to apply.</param>
         /// </summary>
-        public RsaKeyWrapProvider(RsaJwk key, in EncryptionAlgorithm encryptionAlgorithm, in KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public RsaKeyWrapProvider(RsaJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+            :base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (contentEncryptionAlgorithm == KeyManagementAlgorithm.Empty)
-            {
-                throw new ArgumentNullException(nameof(contentEncryptionAlgorithm));
-            }
-
-            if (encryptionAlgorithm == EncryptionAlgorithm.Empty)
-            {
-                throw new ArgumentNullException(nameof(encryptionAlgorithm));
-            }
-
-            if (!key.IsSupportedAlgorithm(contentEncryptionAlgorithm))
-            {
-                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, contentEncryptionAlgorithm));
-            }
-
-            Algorithm = contentEncryptionAlgorithm;
-            EncryptionAlgorithm = encryptionAlgorithm;
-            Key = key;
-            _rsa = ResolveRsaAlgorithm(key, contentEncryptionAlgorithm);
+            _rsa = ResolveRsaAlgorithm(key);
             _padding = ResolvePadding(contentEncryptionAlgorithm);
         }
 
@@ -67,16 +45,19 @@ namespace JsonWebToken
             }
         }
 
-        private static RSAEncryptionPadding ResolvePadding(in KeyManagementAlgorithm algorithm)
+        private static RSAEncryptionPadding ResolvePadding(KeyManagementAlgorithm algorithm)
         {
-            switch (algorithm.Id)
+            if (algorithm == KeyManagementAlgorithm.RsaOaep)
             {
-                case KeyManagementAlgorithms.RsaOaepId:
-                    return RSAEncryptionPadding.OaepSHA1;
-                case KeyManagementAlgorithms.RsaOaep256Id:
-                    return RSAEncryptionPadding.OaepSHA256;
-                case KeyManagementAlgorithms.RsaPkcs1Id:
-                    return RSAEncryptionPadding.Pkcs1;
+                return RSAEncryptionPadding.OaepSHA1;
+            }
+            else if (algorithm == KeyManagementAlgorithm.RsaOaep256)
+            {
+                return RSAEncryptionPadding.OaepSHA256;
+            }
+            else if (algorithm == KeyManagementAlgorithm.RsaPkcs1)
+            {
+                return RSAEncryptionPadding.OaepSHA256;
             }
 
             throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
@@ -89,7 +70,7 @@ namespace JsonWebToken
         /// <returns>Unwrapped key</returns>
         public override bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
-            if (keyBytes == null || keyBytes.Length == 0)
+            if (keyBytes.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(keyBytes));
             }
@@ -101,7 +82,7 @@ namespace JsonWebToken
 
             if (_rsa == null)
             {
-                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
+                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
             }
 
             try
@@ -136,7 +117,7 @@ namespace JsonWebToken
 
             if (_rsa == null)
             {
-                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
+                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
             }
 
             try
@@ -159,16 +140,15 @@ namespace JsonWebToken
             }
         }
 
-        private static RSA ResolveRsaAlgorithm(RsaJwk key, in KeyManagementAlgorithm algorithm)
+        private static RSA ResolveRsaAlgorithm(RsaJwk key)
         {
+#if NETCOREAPP2_1
+            return RSA.Create(key.ExportParameters());
+#else
             var rsa = RSA.Create();
-            if (rsa != null)
-            {
-                RSAParameters parameters = key.CreateRsaParameters();
-                rsa.ImportParameters(parameters);
-            }
-
+            rsa.ImportParameters(key.ExportParameters());
             return rsa;
+#endif
         }
 
         public override int GetKeyUnwrapSize(int inputSize)

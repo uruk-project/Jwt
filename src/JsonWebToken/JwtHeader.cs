@@ -35,8 +35,7 @@ namespace JsonWebToken
         /// </summary>
         /// <remarks>If the content mime type is not found, null is returned.</remarks>
         [JsonProperty(PropertyName = HeaderParameters.Enc, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(CryptographicAlgorithmConverter))]
-        public EncryptionAlgorithm Enc { get; set; }
+        public string Enc { get; set; }
 
         /// <summary>
         /// Gets the key identifier for the security key used to sign the token
@@ -65,6 +64,12 @@ namespace JsonWebToken
 
         [JsonProperty(PropertyName = HeaderParameters.Zip, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public string Zip { get; set; }
+
+        [JsonProperty(PropertyName = HeaderParameters.IV, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public string IV { get; set; }
+
+        [JsonProperty(PropertyName = HeaderParameters.Tag, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public string Tag { get; set; }
 
 #if NETCOREAPP2_1
         [JsonProperty(PropertyName = HeaderParameters.Epk, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]

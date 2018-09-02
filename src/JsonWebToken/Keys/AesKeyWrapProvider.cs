@@ -14,12 +14,14 @@ namespace JsonWebToken
 
         private static readonly byte[] _defaultIVArray = new byte[] { 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6 };
         private static readonly ulong _defaultIV = BitConverter.ToUInt64(_defaultIVArray, 0);
+        private static readonly byte[] _emptyIV = BitConverter.GetBytes(0L);
+
         private static readonly object _encryptorLock = new object();
         private static readonly object _decryptorLock = new object();
 
-        private Aes _symmetricAlgorithm;
-        private ICryptoTransform _symmetricAlgorithmEncryptor;
-        private ICryptoTransform _symmetricAlgorithmDecryptor;
+        private Aes _aes;
+        private ICryptoTransform _encryptor;
+        private ICryptoTransform _decryptor;
         private bool _disposed;
 
         /// <summary>
@@ -28,32 +30,14 @@ namespace JsonWebToken
         /// <param name="algorithm">The KeyWrap algorithm to apply.</param>
         /// </summary>
         public AesKeyWrapProvider(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+            :base(key, encryptionAlgorithm, algorithm)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (algorithm == null)
-            {
-                throw new ArgumentNullException(nameof(algorithm));
-            }
-
-            if (!IsSupportedAlgorithm(key, algorithm))
-            {
-                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
-            }
-
             if (key.K == null)
             {
                 throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.MalformedKey, key.Kid), nameof(key.K));
             }
 
-            Algorithm = algorithm;
-            EncryptionAlgorithm = encryptionAlgorithm;
-            Key = key;
-
-            _symmetricAlgorithm = GetSymmetricAlgorithm(key, algorithm);
+            _aes = GetSymmetricAlgorithm(key, algorithm);
         }
 
         /// <summary>
@@ -66,10 +50,10 @@ namespace JsonWebToken
             {
                 if (disposing)
                 {
-                    if (_symmetricAlgorithm != null)
+                    if (_aes != null)
                     {
-                        _symmetricAlgorithm.Dispose();
-                        _symmetricAlgorithm = null;
+                        _aes.Dispose();
+                        _aes = null;
                     }
 
                     _disposed = true;
@@ -77,44 +61,30 @@ namespace JsonWebToken
             }
         }
 
-        private Aes GetSymmetricAlgorithm(SymmetricJwk key, in KeyManagementAlgorithm algorithm)
+        private Aes GetSymmetricAlgorithm(SymmetricJwk key, KeyManagementAlgorithm algorithm)
         {
             byte[] keyBytes = key.RawK;
-
             ValidateKeySize(keyBytes, algorithm);
             try
             {
                 // Create the AES provider
-                Aes symmetricAlgorithm = Aes.Create();
-                symmetricAlgorithm.Mode = CipherMode.ECB;
-                symmetricAlgorithm.Padding = PaddingMode.None;
-                symmetricAlgorithm.KeySize = keyBytes.Length << 3;
-                symmetricAlgorithm.Key = keyBytes;
+                Aes aes = Aes.Create();
+                aes.Mode = CipherMode.ECB;
+                aes.Padding = PaddingMode.None;
+                aes.KeySize = keyBytes.Length << 3;
+                aes.Key = keyBytes;
 
                 // Set the AES IV to Zeroes
-                Unsafe.WriteUnaligned(ref symmetricAlgorithm.IV[0], 0L);
+                var iv = new byte[aes.BlockSize >> 3];
+                Array.Clear(iv, 0, iv.Length);
+                aes.IV = iv;
 
-                return symmetricAlgorithm;
+                return aes;
             }
             catch (Exception ex)
             {
                 throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.CreateSymmetricAlgorithmFailed, key.Kid, algorithm), ex);
             }
-        }
-
-        private static bool IsSupportedAlgorithm(SymmetricJwk key, in KeyManagementAlgorithm algorithm)
-        {
-            if (key == null)
-            {
-                return false;
-            }
-
-            if (algorithm == KeyManagementAlgorithm.Empty)
-            {
-                return false;
-            }
-
-            return algorithm.KeyType == KeyTypes.Octet;
         }
 
         /// <summary>
@@ -124,7 +94,7 @@ namespace JsonWebToken
         /// <returns>Unwrapped key</returns>
         public override bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
-            if (keyBytes == null || keyBytes.Length == 0)
+            if (keyBytes .IsEmpty)
             {
                 throw new ArgumentNullException(nameof(keyBytes));
             }
@@ -139,13 +109,13 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(GetType().ToString());
             }
 
-            if (_symmetricAlgorithmDecryptor == null)
+            if (_decryptor == null)
             {
                 lock (_decryptorLock)
                 {
-                    if (_symmetricAlgorithmDecryptor == null)
+                    if (_decryptor == null)
                     {
-                        _symmetricAlgorithmDecryptor = _symmetricAlgorithm.CreateDecryptor();
+                        _decryptor = _aes.CreateDecryptor();
                     }
                 }
             }
@@ -213,7 +183,7 @@ namespace JsonWebToken
                                 Unsafe.Add(ref *t, 7) = (byte)((n * j) + i);
 
                                 // First, A = ( A ^ t )
-                                a ^= Unsafe.ReadUnaligned<ulong>(ref t[0]);
+                                a ^= Unsafe.ReadUnaligned<ulong>(ref *t);
 
                                 // Second, block = ( A | R[i] )
                                 Unsafe.WriteUnaligned(blockPtr, a);
@@ -221,7 +191,7 @@ namespace JsonWebToken
                                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref *blockPtr, 8), rValue);
 
                                 // Third, b = AES-1( block )
-                                var b = _symmetricAlgorithmDecryptor.TransformFinalBlock(block, 0, 16);
+                                var b = _decryptor.TransformFinalBlock(block, 0, 16);
                                 fixed (byte* bPtr = &b[0])
                                 {
                                     // A = MSB(64, B)
@@ -259,7 +229,7 @@ namespace JsonWebToken
             }
         }
 
-        private void ValidateKeySize(byte[] key, in KeyManagementAlgorithm algorithm)
+        private void ValidateKeySize(byte[] key, KeyManagementAlgorithm algorithm)
         {
             if (algorithm.RequiredKeySizeInBits >> 3 != key.Length)
             {
@@ -279,13 +249,13 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(GetType().ToString());
             }
 
-            if (_symmetricAlgorithmEncryptor == null)
+            if (_encryptor == null)
             {
                 lock (_encryptorLock)
                 {
-                    if (_symmetricAlgorithmEncryptor == null)
+                    if (_encryptor == null)
                     {
-                        _symmetricAlgorithmEncryptor = _symmetricAlgorithm.CreateEncryptor();
+                        _encryptor = _aes.CreateEncryptor();
                     }
                 }
             }
@@ -354,7 +324,7 @@ namespace JsonWebToken
                             Unsafe.WriteUnaligned(ref Unsafe.Add(ref *blockPtr, 8), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, i << 3)));
 
                             // Second, AES( K, block )
-                            var b = _symmetricAlgorithmEncryptor.TransformFinalBlock(block, 0, 16);
+                            var b = _encryptor.TransformFinalBlock(block, 0, 16);
                             fixed (byte* bPtr = &b[0])
                             {
                                 // A = MSB( 64, B )
@@ -399,12 +369,12 @@ namespace JsonWebToken
             return GetKeyWrappedSize(EncryptionAlgorithm);
         }
 
-        public static int GetKeyUnwrappedSize(int inputSize, in KeyManagementAlgorithm algorithm)
+        public static int GetKeyUnwrappedSize(int inputSize, KeyManagementAlgorithm algorithm)
         {
             return inputSize - BlockSizeInBytes;
         }
 
-        public static int GetKeyWrappedSize(in EncryptionAlgorithm encryptionAlgorithm)
+        public static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm)
         {
             return encryptionAlgorithm.RequiredKeyWrappedSizeInBytes;
         }

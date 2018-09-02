@@ -28,7 +28,7 @@ namespace JsonWebToken
         private Bucket _head = null;
         private Bucket _tail = null;
 
-        public bool TryGetHeader(JObject header, in SignatureAlgorithm alg, out byte[] base64UrlHeader)
+        public bool TryGetHeader(JObject header, SignatureAlgorithm alg, out byte[] base64UrlHeader)
         {
             if (!IsSimpleHeader(header, alg))
             {
@@ -39,6 +39,12 @@ namespace JsonWebToken
             if (header.TryGetValue(HeaderParameters.Kid, out var kid))
             {
                 var key = ComputeHeaderKey(header, alg);
+                if (key == -1)
+                {
+                    base64UrlHeader = null;
+                    return false;
+                }
+
                 var keyId = ((string)kid).AsSpan();
                 var node = _head;
                 while (node != null)
@@ -64,7 +70,7 @@ namespace JsonWebToken
             return false;
         }
 
-        private static long ComputeHeaderKey(JObject header, in SignatureAlgorithm alg)
+        private static long ComputeHeaderKey(JObject header, SignatureAlgorithm alg)
         {
             header.TryGetValue(HeaderParameters.Cty, out JToken cty);
 
@@ -73,17 +79,16 @@ namespace JsonWebToken
                 return -1;
             }
 
-            long key = alg.Id;
-           
             if (cty != null && !string.Equals(cty.Value<string>(), ContentTypeValues.Jwt, StringComparison.Ordinal))
             {
+                // only support 'cty': 'JWT' or not cty
                 return -1;
             }
 
-            return key;
+            return alg;
         }
 
-        public void AddHeader(JObject header, in SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
+        public void AddHeader(JObject header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
         {
             if (!header.TryGetValue(HeaderParameters.Kid, out var kid))
             {
@@ -112,13 +117,18 @@ namespace JsonWebToken
                 }
 
                 var key = ComputeHeaderKey(header, alg);
+                if (key == -1)
+                {
+                    return;
+                }
+
                 if (node == null)
                 {
                     node = new Bucket
                     {
                         Kid = (string)kid,
                         Next = _head,
-                        Entries = new Dictionary<long, byte[]> { { key, base6UrlHeader.ToArray() } }
+                        Entries = new Dictionary<long, byte[]>(1) { { key, base6UrlHeader.ToArray() } }
                     };
                 }
                 else
@@ -158,7 +168,7 @@ namespace JsonWebToken
             }
         }
 
-        private static bool IsSimpleHeader(JObject header, in SignatureAlgorithm alg)
+        private static bool IsSimpleHeader(JObject header, SignatureAlgorithm alg)
         {
             if (!header.ContainsKey(HeaderParameters.Kid))
             {
@@ -166,7 +176,7 @@ namespace JsonWebToken
             }
 
             int simpleHeaders = 1;
-            if (alg != default)
+            if (alg != SignatureAlgorithm.Empty)
             {
                 simpleHeaders++;
             }

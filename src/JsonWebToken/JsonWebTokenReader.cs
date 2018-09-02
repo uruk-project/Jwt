@@ -4,6 +4,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace JsonWebToken
@@ -68,7 +69,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(policy));
             }
 
-            if (token == null || token.IsEmpty)
+            if (token.IsEmpty)
             {
                 return TokenValidationResult.MalformedToken();
             }
@@ -78,7 +79,6 @@ namespace JsonWebToken
                 return TokenValidationResult.MalformedToken();
             }
 
-#if NETCOREAPP2_1
             int length = token.Length;
             byte[] utf8ArrayToReturnToPool = null;
             var utf8Buffer = length <= Constants.MaxStackallocBytes
@@ -86,7 +86,11 @@ namespace JsonWebToken
                   : (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
             try
             {
+#if NETCOREAPP2_1
                 Encoding.UTF8.GetBytes(token, utf8Buffer);
+#else
+                EncodingHelper.GetUtf8Bytes(token, utf8Buffer);
+#endif             
                 return TryReadToken(utf8Buffer, policy);
             }
             finally
@@ -96,10 +100,6 @@ namespace JsonWebToken
                     ArrayPool<byte>.Shared.Return(utf8ArrayToReturnToPool);
                 }
             }
-#else
-            var utf8Buffer = Encoding.UTF8.GetBytes(token.ToArray()).AsSpan();
-            return TryReadToken(utf8Buffer, policy);
-#endif
         }
 
         private unsafe TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Buffer, TokenValidationPolicy policy)
@@ -157,14 +157,14 @@ namespace JsonWebToken
             }
             else if (segmentCount == Constants.JweSegmentCount)
             {
-                var enc = header.Enc;
+                var enc = (EncryptionAlgorithm)header.Enc;
                 if (enc == EncryptionAlgorithm.Empty)
                 {
                     return TokenValidationResult.MissingEncryptionAlgorithm();
                 }
 
                 var encryptionKeySegment = segments[1];
-                var keys = GetContentEncryptionKeys(header, utf8Buffer.Slice(encryptionKeySegment.Start, encryptionKeySegment.Length));
+                var keys = GetContentEncryptionKeys(header, utf8Buffer.Slice(encryptionKeySegment.Start, encryptionKeySegment.Length), enc);
 
                 var ivSegment = segments[2];
                 var rawInitializationVector = utf8Buffer.Slice(ivSegment.Start, ivSegment.Length);
@@ -175,15 +175,14 @@ namespace JsonWebToken
                 var authenticationTagSegment = segments[4];
                 var rawAuthenticationTag = utf8Buffer.Slice(authenticationTagSegment.Start, authenticationTagSegment.Length);
 
-                var compressionAlgorithm = header.Zip;
-
-                byte[] decryptedBytes = null;
+                Span<byte> decryptedBytes = new byte[Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length)];
                 JsonWebKey decryptionKey = null;
                 for (int i = 0; i < keys.Count; i++)
                 {
                     decryptionKey = keys[i];
-                    if (TryDecryptToken(rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, enc, compressionAlgorithm, decryptionKey, out decryptedBytes))
+                    if (TryDecryptToken(rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, enc, decryptionKey, decryptedBytes, out int bytesWritten))
                     {
+                        decryptedBytes = decryptedBytes.Slice(0, bytesWritten);
                         break;
                     }
                 }
@@ -193,10 +192,22 @@ namespace JsonWebToken
                     return TokenValidationResult.DecryptionFailed();
                 }
 
+                var compressionAlgorithm = header.Zip;
+                if (compressionAlgorithm != null)
+                {
+                    CompressionProvider compressionProvider = CompressionProvider.CreateCompressionProvider(compressionAlgorithm);
+                    if (compressionProvider == null)
+                    {
+                        return TokenValidationResult.InvalidHeader(null, HeaderParameters.Zip);
+                    }
+
+                    decryptedBytes = compressionProvider.Decompress(decryptedBytes);
+                }
+
                 if (!string.Equals(header.Cty, ContentTypeValues.Jwt, StringComparison.Ordinal))
                 {
                     // The decrypted payload is not a nested JWT
-                    jwt = new JsonWebToken(header, decryptedBytes)
+                    jwt = new JsonWebToken(header, decryptedBytes.ToArray())
                     {
                         EncryptionKey = decryptionKey
                     };
@@ -250,37 +261,25 @@ namespace JsonWebToken
             }
         }
 
-        private static bool TryDecryptToken(
+        private static unsafe bool TryDecryptToken(
             ReadOnlySpan<byte> rawHeader,
             ReadOnlySpan<byte> rawCiphertext,
             ReadOnlySpan<byte> rawInitializationVector,
             ReadOnlySpan<byte> rawAuthenticationTag,
-            in EncryptionAlgorithm encryptionAlgorithm,
-            string compressionAlgorithm,
+            EncryptionAlgorithm encryptionAlgorithm,
             JsonWebKey key,
-            out byte[] decryptedBytes)
+            Span<byte> decryptedBytes,
+            out int bytesWritten)
         {
             var decryptionProvider = key.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);
             if (decryptionProvider == null)
             {
-                decryptedBytes = null;
+                bytesWritten = 0;
                 return false;
-            }
-
-            CompressionProvider compressionProvider = null;
-            if (!string.IsNullOrEmpty(compressionAlgorithm))
-            {
-                compressionProvider = CompressionProvider.CreateCompressionProvider(compressionAlgorithm);
-                if (compressionProvider == null)
-                {
-                    decryptedBytes = null;
-                    return false;
-                }
             }
 
             try
             {
-#if NETCOREAPP2_1
                 int ciphertextLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length);
                 int headerLength = rawHeader.Length;
                 int initializationVectorLength = Base64Url.GetArraySizeRequiredToDecode(rawInitializationVector.Length);
@@ -305,24 +304,33 @@ namespace JsonWebToken
                     Base64Url.Base64UrlDecode(rawCiphertext, ciphertext, out int ciphertextBytesConsumed, out int ciphertextBytesWritten);
                     Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
 
+#if NETCOREAPP2_1
                     Encoding.UTF8.GetChars(rawHeader, utf8Header);
                     Encoding.ASCII.GetBytes(utf8Header, header);
-
+#else
+                    fixed (byte* rawPtr = &MemoryMarshal.GetReference(rawHeader))
+                    fixed (char* utf8Ptr = &MemoryMarshal.GetReference(utf8Header))
+                    fixed (byte* header8Ptr = &MemoryMarshal.GetReference(header))
+                    {
+                        Encoding.UTF8.GetChars(rawPtr, rawHeader.Length, utf8Ptr, utf8Header.Length);
+                        Encoding.ASCII.GetBytes(utf8Ptr, utf8Header.Length, header8Ptr, header.Length);
+                    }
+#endif
                     Base64Url.Base64UrlDecode(rawInitializationVector, initializationVector, out int ivBytesConsumed, out int ivBytesWritten);
                     Debug.Assert(initializationVector.Length == ivBytesWritten);
 
                     Base64Url.Base64UrlDecode(rawAuthenticationTag, authenticationTag, out int authenticationTagBytesConsumed, out int authenticationTagBytesWritten);
                     Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
 
-                    decryptedBytes = decryptionProvider.Decrypt(
+                    if (!decryptionProvider.TryDecrypt(
                         ciphertext,
                         header,
                         initializationVector,
-                        authenticationTag);
-
-                    if (compressionAlgorithm != null)
+                        authenticationTag,
+                        decryptedBytes,
+                        out bytesWritten))
                     {
-                        decryptedBytes = compressionProvider.Decompress(decryptedBytes).ToArray();
+                        return false;
                     }
                 }
                 finally
@@ -331,23 +339,13 @@ namespace JsonWebToken
                     {
                         ArrayPool<byte>.Shared.Return(arrayToReturn);
                     }
+
                     if (headerArrayToReturn != null)
                     {
                         ArrayPool<char>.Shared.Return(headerArrayToReturn);
                     }
                 }
-#else
-                decryptedBytes = decryptionProvider.Decrypt(
-                    Base64Url.Base64UrlDecode(Encoding.UTF8.GetString(rawCiphertext.ToArray())),
-                    Encoding.ASCII.GetBytes(Encoding.UTF8.GetString(rawHeader.ToArray())),
-                    Base64Url.Base64UrlDecode(Encoding.UTF8.GetString(rawInitializationVector.ToArray())),
-                    Base64Url.Base64UrlDecode(Encoding.UTF8.GetString(rawAuthenticationTag.ToArray())));
 
-                if (compressionAlgorithm != null)
-                {
-                    decryptedBytes = compressionProvider.Decompress(decryptedBytes).ToArray();
-                }
-#endif
                 return decryptedBytes != null;
             }
             finally
@@ -356,7 +354,7 @@ namespace JsonWebToken
             }
         }
 
-        private List<JsonWebKey> GetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<byte> rawEncryptedKey)
+        private List<JsonWebKey> GetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc)
         {
             var alg = (KeyManagementAlgorithm)header.Alg;
             var keys = ResolveDecryptionKey(header);
@@ -369,11 +367,11 @@ namespace JsonWebToken
             var operationResult = Base64Url.Base64UrlDecode(rawEncryptedKey, encryptedKey, out int bytesConsumed, out int bytesWritten);
             Debug.Assert(operationResult == OperationStatus.Done);
 
-            var unwrappedKeys = new List<JsonWebKey>();
+            var unwrappedKeys = new List<JsonWebKey>(1);
             for (int i = 0; i < keys.Count; i++)
             {
                 var key = keys[i];
-                KeyWrapProvider kwp = key.CreateKeyWrapProvider(header.Enc, alg);
+                KeyWrapProvider kwp = key.CreateKeyWrapProvider(enc, alg);
                 try
                 {
                     if (kwp != null)
@@ -400,7 +398,7 @@ namespace JsonWebToken
             var kid = header.Kid;
             var alg = header.Alg;
 
-            var keys = new List<JsonWebKey>();
+            var keys = new List<JsonWebKey>(1);
             for (int i = 0; i < _encryptionKeyProviders.Length; i++)
             {
                 var keySet = _encryptionKeyProviders[i].GetKeys(header);

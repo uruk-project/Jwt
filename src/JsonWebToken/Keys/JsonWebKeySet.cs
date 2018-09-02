@@ -83,9 +83,10 @@ namespace JsonWebToken
             {
                 for (int i = 0; i < Keys.Count; i++)
                 {
-                    if (string.Equals(kid, Keys[i].Kid, StringComparison.Ordinal))
+                    var key = Keys[i];
+                    if (string.Equals(kid, key.Kid, StringComparison.Ordinal))
                     {
-                        return Keys[i];
+                        return key;
                     }
                 }
 
