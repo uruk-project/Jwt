@@ -4,12 +4,12 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
-    public class EcdsaSignatureProvider : SignatureProvider
+    public sealed class EcdsaSignatureProvider : SignatureProvider
     {
         private readonly ObjectPool<ECDsa> _hashAlgorithmPool;
         private readonly int _hashSize;
         private readonly HashAlgorithmName _hashAlgorithm;
-        private ECDsa _ecdsa;
+        private readonly ECDsa _ecdsa;
         private bool _disposed;
 
         /// <summary>
@@ -132,10 +132,8 @@ namespace JsonWebToken
 
                 if (disposing)
                 {
-                    if (_ecdsa != null)
-                    {
-                        _ecdsa.Dispose();
-                    }
+                    _ecdsa?.Dispose();
+                    _hashAlgorithmPool.Dispose();
                 }
             }
         }

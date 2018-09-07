@@ -4,6 +4,6 @@ namespace JsonWebToken
 {
     public interface IValidation
     {
-        TokenValidationResult TryValidate(TokenValidationContext context);
+        TokenValidationResult TryValidate(in TokenValidationContext context);
     }
 }

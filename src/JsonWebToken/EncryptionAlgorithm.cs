@@ -17,7 +17,7 @@ namespace JsonWebToken
 
         public static readonly IDictionary<string, EncryptionAlgorithm> AdditionalAlgorithms = new Dictionary<string, EncryptionAlgorithm>();
 
-        private readonly sbyte _id;
+        public readonly sbyte Id;
         public readonly EncryptionTypes Category;
 
         public readonly ushort RequiredKeySizeInBytes;
@@ -27,7 +27,7 @@ namespace JsonWebToken
 
         private EncryptionAlgorithm(sbyte id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm hashAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionTypes encryptionType)
         {
-            _id = id;
+            Id = id;
             Name = name;
             RequiredKeySizeInBytes = requiredKeySizeInBytes;
             SignatureAlgorithm = hashAlgorithm;
@@ -52,12 +52,12 @@ namespace JsonWebToken
                 return false;
             }
 
-            return _id == other._id;
+            return Id == other.Id;
         }
 
         public override int GetHashCode()
         {
-            return _id.GetHashCode();
+            return Id.GetHashCode();
         }
 
         public static bool operator ==(EncryptionAlgorithm x, EncryptionAlgorithm y)
@@ -77,7 +77,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            return x._id == y._id;
+            return x.Id == y.Id;
         }
 
         public static bool operator !=(EncryptionAlgorithm x, EncryptionAlgorithm y)
@@ -97,7 +97,7 @@ namespace JsonWebToken
                 return true;
             }
 
-            return x._id != y._id;
+            return x.Id != y.Id;
         }
 
         public static explicit operator string(EncryptionAlgorithm value)

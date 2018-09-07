@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using JsonWebToken.ObjectPooling;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -16,12 +17,10 @@ namespace JsonWebToken
         private static readonly ulong _defaultIV = BitConverter.ToUInt64(_defaultIVArray, 0);
         private static readonly byte[] _emptyIV = BitConverter.GetBytes(0L);
 
-        private static readonly object _encryptorLock = new object();
-        private static readonly object _decryptorLock = new object();
+        private readonly ObjectPool<ICryptoTransform> _encryptorPool;
+        private readonly ObjectPool<ICryptoTransform> _decryptorPool;
 
-        private Aes _aes;
-        private ICryptoTransform _encryptor;
-        private ICryptoTransform _decryptor;
+        private readonly Aes _aes;
         private bool _disposed;
 
         /// <summary>
@@ -30,7 +29,7 @@ namespace JsonWebToken
         /// <param name="algorithm">The KeyWrap algorithm to apply.</param>
         /// </summary>
         public AesKeyWrapProvider(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
-            :base(key, encryptionAlgorithm, algorithm)
+            : base(key, encryptionAlgorithm, algorithm)
         {
             if (key.K == null)
             {
@@ -38,6 +37,8 @@ namespace JsonWebToken
             }
 
             _aes = GetSymmetricAlgorithm(key, algorithm);
+            _encryptorPool = new ObjectPool<ICryptoTransform>(new PooledEncryptorPolicy(_aes));
+            _decryptorPool = new ObjectPool<ICryptoTransform>(new PooledDecryptorPolicy(_aes));
         }
 
         /// <summary>
@@ -50,12 +51,9 @@ namespace JsonWebToken
             {
                 if (disposing)
                 {
-                    if (_aes != null)
-                    {
-                        _aes.Dispose();
-                        _aes = null;
-                    }
-
+                    _encryptorPool.Dispose();
+                    _decryptorPool.Dispose();
+                    _aes.Dispose();
                     _disposed = true;
                 }
             }
@@ -94,7 +92,7 @@ namespace JsonWebToken
         /// <returns>Unwrapped key</returns>
         public override bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
-            if (keyBytes .IsEmpty)
+            if (keyBytes.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(keyBytes));
             }
@@ -109,22 +107,12 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(GetType().ToString());
             }
 
-            if (_decryptor == null)
-            {
-                lock (_decryptorLock)
-                {
-                    if (_decryptor == null)
-                    {
-                        _decryptor = _aes.CreateDecryptor();
-                    }
-                }
-            }
-
             return TryUnwrapKeyPrivate(keyBytes, destination, out bytesWritten);
         }
 
         private unsafe bool TryUnwrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, Span<byte> destination, out int bytesWritten)
         {
+            var decryptor = _decryptorPool.Get();
             try
             {
                 /*
@@ -168,7 +156,6 @@ namespace JsonWebToken
                     }
 
                     byte[] block = new byte[16];
-
                     fixed (byte* blockPtr = &block[0])
                     {
                         var t = stackalloc byte[8];
@@ -191,7 +178,7 @@ namespace JsonWebToken
                                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref *blockPtr, 8), rValue);
 
                                 // Third, b = AES-1( block )
-                                var b = _decryptor.TransformFinalBlock(block, 0, 16);
+                                var b = decryptor.TransformFinalBlock(block, 0, 16);
                                 fixed (byte* bPtr = &b[0])
                                 {
                                     // A = MSB(64, B)
@@ -227,6 +214,10 @@ namespace JsonWebToken
                 bytesWritten = 0;
                 return false;
             }
+            finally
+            {
+                _decryptorPool.Return(decryptor);
+            }
         }
 
         private void ValidateKeySize(byte[] key, KeyManagementAlgorithm algorithm)
@@ -247,17 +238,6 @@ namespace JsonWebToken
             if (_disposed)
             {
                 throw new ObjectDisposedException(GetType().ToString());
-            }
-
-            if (_encryptor == null)
-            {
-                lock (_encryptorLock)
-                {
-                    if (_encryptor == null)
-                    {
-                        _encryptor = _aes.CreateEncryptor();
-                    }
-                }
             }
 
             contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
@@ -288,7 +268,7 @@ namespace JsonWebToken
                    For i = 1 to n
                        C[i] = R[i]
             */
-
+            var encryptor = _encryptorPool.Get();
             try
             {
                 // The default initialization vector from RFC3394
@@ -324,7 +304,7 @@ namespace JsonWebToken
                             Unsafe.WriteUnaligned(ref Unsafe.Add(ref *blockPtr, 8), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, i << 3)));
 
                             // Second, AES( K, block )
-                            var b = _encryptor.TransformFinalBlock(block, 0, 16);
+                            var b = encryptor.TransformFinalBlock(block, 0, 16);
                             fixed (byte* bPtr = &b[0])
                             {
                                 // A = MSB( 64, B )
@@ -357,6 +337,10 @@ namespace JsonWebToken
                 bytesWritten = 0;
                 return false;
             }
+            finally
+            {
+                _encryptorPool.Return(encryptor);
+            }
         }
 
         public override int GetKeyUnwrapSize(int inputSize)
@@ -377,6 +361,46 @@ namespace JsonWebToken
         public static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm)
         {
             return encryptionAlgorithm.RequiredKeyWrappedSizeInBytes;
+        }
+
+        private class PooledEncryptorPolicy : PooledObjectPolicy<ICryptoTransform>
+        {
+            private readonly Aes _aes;
+
+            public PooledEncryptorPolicy(Aes aes)
+            {
+                _aes = aes;
+            }
+
+            public override ICryptoTransform Create()
+            {
+                return _aes.CreateEncryptor();
+            }
+
+            public override bool Return(ICryptoTransform obj)
+            {
+                return true;
+            }
+        }
+
+        private class PooledDecryptorPolicy : PooledObjectPolicy<ICryptoTransform>
+        {
+            private readonly Aes _aes;
+
+            public PooledDecryptorPolicy(Aes aes)
+            {
+                _aes = aes;
+            }
+
+            public override ICryptoTransform Create()
+            {
+                return _aes.CreateDecryptor();
+            }
+
+            public override bool Return(ICryptoTransform obj)
+            {
+                return true;
+            }
         }
     }
 }

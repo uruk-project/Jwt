@@ -5,8 +5,12 @@ namespace JsonWebToken
     /// <summary>
     /// Provides authenticated encryption and decryption services
     /// </summary>
-    public abstract class AuthenticatedEncryptionProvider
+    public abstract class AuthenticatedEncryptionProvider : IDisposable
     {
+        public virtual void Dispose()
+        {
+        }
+
         public abstract void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> tag);
 
         public abstract int GetCiphertextSize(int plaintextSize);

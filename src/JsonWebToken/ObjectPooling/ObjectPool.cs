@@ -6,7 +6,8 @@ using System.Threading;
 namespace JsonWebToken.ObjectPooling
 {
     // based on https://github.com/aspnet/Common/tree/master/src/Microsoft.Extensions.ObjectPool
-    public class ObjectPool<T> where T : class
+    public class ObjectPool<T> : IDisposable
+        where T : class, IDisposable
     {
         private readonly ObjectWrapper[] _items;
         private readonly PooledObjectPolicy<T> _policy;
@@ -74,6 +75,21 @@ namespace JsonWebToken.ObjectPooling
 
             for (var i = 0; i < items.Length && Interlocked.CompareExchange(ref items[i].Element, obj, null) != null; ++i)
             {
+            }
+        }
+
+        public void Dispose()
+        {
+            ObjectWrapper[] items = _items;
+            T item = null;
+            for (var i = 0; i < items.Length; i++)
+            {
+                item = items[i];
+
+                if (item != null)
+                {
+                    item.Dispose();
+                }
             }
         }
 

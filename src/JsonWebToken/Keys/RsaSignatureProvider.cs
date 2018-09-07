@@ -4,10 +4,9 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
-    public class RsaSignatureProvider : SignatureProvider
+    public sealed class RsaSignatureProvider : SignatureProvider
     {
         private readonly ObjectPool<RSA> _hashAlgorithmPool;
-
         private readonly HashAlgorithmName _hashAlgorithm;
         private readonly int _hashSizeInBytes;
         private readonly RSASignaturePadding _signaturePadding;
@@ -90,15 +89,15 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(GetType().ToString());
             }
 
-            var _rsa = _hashAlgorithmPool.Get();
+            var rsa = _hashAlgorithmPool.Get();
             try
             {
 #if NETCOREAPP2_1
-                return _rsa.TrySignData(input, destination, _hashAlgorithm, _signaturePadding, out bytesWritten);
+                return rsa.TrySignData(input, destination, _hashAlgorithm, _signaturePadding, out bytesWritten);
 #else
                 try
                 {
-                    var result = _rsa.SignData(input.ToArray(), _hashAlgorithm, _signaturePadding);
+                    var result = rsa.SignData(input.ToArray(), _hashAlgorithm, _signaturePadding);
                     bytesWritten = result.Length;
                     result.CopyTo(destination);
                     return true;
@@ -112,7 +111,7 @@ namespace JsonWebToken
             }
             finally
             {
-                _hashAlgorithmPool.Return(_rsa);
+                _hashAlgorithmPool.Return(rsa);
             }
         }
 
@@ -139,18 +138,18 @@ namespace JsonWebToken
                 throw new ObjectDisposedException(GetType().ToString());
             }
 
-            var _rsa = _hashAlgorithmPool.Get();
+            var rsa = _hashAlgorithmPool.Get();
             try
             {
 #if NETCOREAPP2_1
-                return _rsa.VerifyData(input, signature, _hashAlgorithm, _signaturePadding);
+                return rsa.VerifyData(input, signature, _hashAlgorithm, _signaturePadding);
 #else
-                return _rsa.VerifyData(input.ToArray(), signature.ToArray(), _hashAlgorithm, _signaturePadding);
+                return rsa.VerifyData(input.ToArray(), signature.ToArray(), _hashAlgorithm, _signaturePadding);
 #endif
             }
             finally
             {
-                _hashAlgorithmPool.Return(_rsa);
+                _hashAlgorithmPool.Return(rsa);
             }
         }
 
@@ -162,11 +161,12 @@ namespace JsonWebToken
         {
             if (!_disposed)
             {
-                _disposed = true;
-
                 if (disposing)
                 {
+                    _hashAlgorithmPool.Dispose();
                 }
+
+                _disposed = true;
             }
         }
 

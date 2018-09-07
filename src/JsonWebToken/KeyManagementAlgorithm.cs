@@ -30,7 +30,7 @@ namespace JsonWebToken
 
         public static readonly IDictionary<string, KeyManagementAlgorithm> AdditionalAlgorithms = new Dictionary<string, KeyManagementAlgorithm>();
 
-        private readonly sbyte _id;
+        public readonly sbyte Id;
 
         public readonly ushort RequiredKeySizeInBits;
         public readonly AlgorithmCategory Category;
@@ -41,7 +41,7 @@ namespace JsonWebToken
 
         private KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits = 0, KeyManagementAlgorithm wrappedAlgorithm = null, bool produceEncryptedKey = true)
         {
-            _id = id;
+            Id = id;
             Name = name;
             Category = keyType;
             RequiredKeySizeInBits = requiredKeySizeInBits;
@@ -66,12 +66,12 @@ namespace JsonWebToken
                 return false;
             }
 
-            return _id == other._id;
+            return Id == other.Id;
         }
 
         public override int GetHashCode()
         {
-            return _id.GetHashCode();
+            return Id.GetHashCode();
         }
 
         public static bool operator ==(KeyManagementAlgorithm x, KeyManagementAlgorithm y)
@@ -91,7 +91,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            return x._id == y._id;
+            return x.Id == y.Id;
         }
 
         public static bool operator !=(KeyManagementAlgorithm x, KeyManagementAlgorithm y)
@@ -111,7 +111,7 @@ namespace JsonWebToken
                 return true;
             }
 
-            return x._id != y._id;
+            return x.Id != y.Id;
         }
 
         public static explicit operator string(KeyManagementAlgorithm value)

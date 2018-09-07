@@ -3,13 +3,13 @@ using System;
 
 namespace JsonWebToken
 {
-    public class AesGcmKeyWrapProvider : KeyWrapProvider
+    public sealed class AesGcmKeyWrapProvider : KeyWrapProvider
     {
         private const int IVSize = 12;
         private const int TagSize = 16;
 
         public AesGcmKeyWrapProvider(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
-            :base(key, encryptionAlgorithm, algorithm)
+            : base(key, encryptionAlgorithm, algorithm)
         {
             if (key.K == null)
             {
@@ -37,11 +37,17 @@ namespace JsonWebToken
             return encryptionAlgorithm.RequiredKeyWrappedSizeInBytes;
         }
 
-        public override bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
+        public override unsafe bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
-            byte[] nonce = Base64Url.Base64UrlDecode(header.IV);
-            byte[] tag = Base64Url.Base64UrlDecode(header.Tag);
-
+            Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.IV.Length)];
+            Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.Tag.Length)];
+#if NETCOREAPP2_1
+            Base64Url.Base64UrlDecode(header.IV, nonce);
+            Base64Url.Base64UrlDecode(header.Tag, tag);
+#else
+            Base64Url.Base64UrlDecode(header.IV.AsSpan(), nonce);
+            Base64Url.Base64UrlDecode(header.Tag.AsSpan(), tag);
+#endif 
             using (var aesGcm = new AesGcm(Key.ToByteArray()))
             {
                 aesGcm.Decrypt(nonce, keyBytes, tag, destination);
@@ -70,7 +76,6 @@ namespace JsonWebToken
 
         protected override void Dispose(bool disposing)
         {
-            throw new NotImplementedException();
         }
     }
 }

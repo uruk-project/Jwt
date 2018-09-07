@@ -19,9 +19,10 @@ namespace JsonWebToken
 
         protected override JsonWebKeySet DeserializeKeySet(string value)
         {
-            var certificate = new X509Certificate2(Convert.FromBase64String(value));
-
-            return new JsonWebKeySet(new[] { ConvertFromX509(certificate) });
+            using (var certificate = new X509Certificate2(Convert.FromBase64String(value)))
+            {
+                return new JsonWebKeySet(new[] { ConvertFromX509(certificate) });
+            }
         }
 
         /// <summary>

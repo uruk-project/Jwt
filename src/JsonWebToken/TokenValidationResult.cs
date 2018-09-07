@@ -2,7 +2,7 @@
 
 namespace JsonWebToken
 {
-    public class TokenValidationResult
+    public sealed class TokenValidationResult
     {
         public bool Succedeed => Status == TokenValidationStatus.Success;
 
@@ -11,7 +11,9 @@ namespace JsonWebToken
         public TokenValidationStatus Status { get; private set; }
 
         public string ErrorClaim { get; private set; }
+
         public string ErrorHeader { get; private set; }
+
         public Exception Exception { get; private set; }
 
         public static TokenValidationResult Expired(JsonWebToken token)
@@ -64,6 +66,14 @@ namespace JsonWebToken
             {
                 Status = TokenValidationStatus.InvalidSignature,
                 Token = token
+            };
+        }
+
+        public static TokenValidationResult EncryptionKeyNotFound()
+        {
+            return new TokenValidationResult
+            {
+                Status = TokenValidationStatus.EncryptionKeyNotFound
             };
         }
 

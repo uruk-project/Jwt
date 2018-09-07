@@ -9,11 +9,16 @@ using System.Text;
 
 namespace JsonWebToken
 {
-    public class JsonWebTokenReader
+    public sealed class JsonWebTokenReader : IDisposable
     {
         private const byte dot = 0x2E;
         private readonly IKeyProvider[] _encryptionKeyProviders;
         private readonly JwtHeaderCache _headerCache = new JwtHeaderCache();
+        private readonly KeyWrapFactory _keyWrapFactory = new KeyWrapFactory();
+        private readonly SignatureFactory _signatureFactory = new SignatureFactory();
+        private readonly AuthenticatedEncryptionFactory _authenticatedEncryptionFactory = new AuthenticatedEncryptionFactory();
+
+        private bool _disposed;
 
         public JsonWebTokenReader(IEnumerable<JsonWebKey> keys)
            : this(new JsonWebKeySet(keys))
@@ -102,6 +107,19 @@ namespace JsonWebToken
             }
         }
 
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _signatureFactory.Dispose();
+            _keyWrapFactory.Dispose();
+            _authenticatedEncryptionFactory.Dispose();
+            _disposed = true;
+        }
+
         private unsafe TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Buffer, TokenValidationPolicy policy)
         {
             var segments = stackalloc TokenSegment[Constants.JweSegmentCount];
@@ -165,6 +183,10 @@ namespace JsonWebToken
 
                 var encryptionKeySegment = segments[1];
                 var keys = GetContentEncryptionKeys(header, utf8Buffer.Slice(encryptionKeySegment.Start, encryptionKeySegment.Length), enc);
+                if (keys.Count == 0)
+                {
+                    return TokenValidationResult.EncryptionKeyNotFound();
+                }
 
                 var ivSegment = segments[2];
                 var rawInitializationVector = utf8Buffer.Slice(ivSegment.Start, ivSegment.Length);
@@ -177,17 +199,19 @@ namespace JsonWebToken
 
                 Span<byte> decryptedBytes = new byte[Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length)];
                 JsonWebKey decryptionKey = null;
+                bool decrypted = false;
                 for (int i = 0; i < keys.Count; i++)
                 {
                     decryptionKey = keys[i];
                     if (TryDecryptToken(rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, enc, decryptionKey, decryptedBytes, out int bytesWritten))
                     {
                         decryptedBytes = decryptedBytes.Slice(0, bytesWritten);
+                        decrypted = true;
                         break;
                     }
                 }
 
-                if (decryptedBytes == null)
+                if (!decrypted)
                 {
                     return TokenValidationResult.DecryptionFailed();
                 }
@@ -232,7 +256,7 @@ namespace JsonWebToken
                 return TokenValidationResult.MalformedToken();
             }
 
-            return policy.TryValidate(new TokenValidationContext(utf8Buffer, jwt));
+            return policy.TryValidate(new TokenValidationContext(utf8Buffer, jwt, _signatureFactory));
         }
 
         private static T GetJsonObject<T>(ReadOnlySpan<byte> data)
@@ -261,7 +285,7 @@ namespace JsonWebToken
             }
         }
 
-        private static unsafe bool TryDecryptToken(
+        private unsafe bool TryDecryptToken(
             ReadOnlySpan<byte> rawHeader,
             ReadOnlySpan<byte> rawCiphertext,
             ReadOnlySpan<byte> rawInitializationVector,
@@ -271,87 +295,80 @@ namespace JsonWebToken
             Span<byte> decryptedBytes,
             out int bytesWritten)
         {
-            var decryptionProvider = key.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);
+            var decryptionProvider = _authenticatedEncryptionFactory.Create(key, encryptionAlgorithm);
             if (decryptionProvider == null)
             {
                 bytesWritten = 0;
                 return false;
             }
 
+            int ciphertextLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length);
+            int headerLength = rawHeader.Length;
+            int initializationVectorLength = Base64Url.GetArraySizeRequiredToDecode(rawInitializationVector.Length);
+            int authenticationTagLength = Base64Url.GetArraySizeRequiredToDecode(rawAuthenticationTag.Length);
+            int bufferLength = ciphertextLength + headerLength + initializationVectorLength + authenticationTagLength;
+            byte[] arrayToReturn = null;
+            char[] headerArrayToReturn = null;
+            Span<byte> buffer = bufferLength < Constants.MaxStackallocBytes
+                ? stackalloc byte[bufferLength]
+                : (arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength)).AsSpan(0, bufferLength);
+
+            Span<char> utf8Header = headerLength < Constants.MaxStackallocBytes
+                ? stackalloc char[headerLength]
+                : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(headerLength)).AsSpan(0, headerLength);
+
+            Span<byte> ciphertext = buffer.Slice(0, ciphertextLength);
+            Span<byte> header = buffer.Slice(ciphertextLength, headerLength);
+            Span<byte> initializationVector = buffer.Slice(ciphertextLength + headerLength, initializationVectorLength);
+            Span<byte> authenticationTag = buffer.Slice(ciphertextLength + headerLength + initializationVectorLength, authenticationTagLength);
             try
             {
-                int ciphertextLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length);
-                int headerLength = rawHeader.Length;
-                int initializationVectorLength = Base64Url.GetArraySizeRequiredToDecode(rawInitializationVector.Length);
-                int authenticationTagLength = Base64Url.GetArraySizeRequiredToDecode(rawAuthenticationTag.Length);
-                int bufferLength = ciphertextLength + headerLength + initializationVectorLength + authenticationTagLength;
-                byte[] arrayToReturn = null;
-                char[] headerArrayToReturn = null;
-                Span<byte> buffer = bufferLength < Constants.MaxStackallocBytes
-                    ? stackalloc byte[bufferLength]
-                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength)).AsSpan(0, bufferLength);
-
-                Span<char> utf8Header = headerLength < Constants.MaxStackallocBytes
-                    ? stackalloc char[headerLength]
-                    : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(headerLength)).AsSpan(0, headerLength);
-
-                Span<byte> ciphertext = buffer.Slice(0, ciphertextLength);
-                Span<byte> header = buffer.Slice(ciphertextLength, headerLength);
-                Span<byte> initializationVector = buffer.Slice(ciphertextLength + headerLength, initializationVectorLength);
-                Span<byte> authenticationTag = buffer.Slice(ciphertextLength + headerLength + initializationVectorLength, authenticationTagLength);
-                try
-                {
-                    Base64Url.Base64UrlDecode(rawCiphertext, ciphertext, out int ciphertextBytesConsumed, out int ciphertextBytesWritten);
-                    Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
+                Base64Url.Base64UrlDecode(rawCiphertext, ciphertext, out int ciphertextBytesConsumed, out int ciphertextBytesWritten);
+                Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
 
 #if NETCOREAPP2_1
-                    Encoding.UTF8.GetChars(rawHeader, utf8Header);
-                    Encoding.ASCII.GetBytes(utf8Header, header);
+                Encoding.UTF8.GetChars(rawHeader, utf8Header);
+                Encoding.ASCII.GetBytes(utf8Header, header);
 #else
-                    fixed (byte* rawPtr = &MemoryMarshal.GetReference(rawHeader))
-                    fixed (char* utf8Ptr = &MemoryMarshal.GetReference(utf8Header))
-                    fixed (byte* header8Ptr = &MemoryMarshal.GetReference(header))
-                    {
-                        Encoding.UTF8.GetChars(rawPtr, rawHeader.Length, utf8Ptr, utf8Header.Length);
-                        Encoding.ASCII.GetBytes(utf8Ptr, utf8Header.Length, header8Ptr, header.Length);
-                    }
-#endif
-                    Base64Url.Base64UrlDecode(rawInitializationVector, initializationVector, out int ivBytesConsumed, out int ivBytesWritten);
-                    Debug.Assert(initializationVector.Length == ivBytesWritten);
-
-                    Base64Url.Base64UrlDecode(rawAuthenticationTag, authenticationTag, out int authenticationTagBytesConsumed, out int authenticationTagBytesWritten);
-                    Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
-
-                    if (!decryptionProvider.TryDecrypt(
-                        ciphertext,
-                        header,
-                        initializationVector,
-                        authenticationTag,
-                        decryptedBytes,
-                        out bytesWritten))
-                    {
-                        return false;
-                    }
-                }
-                finally
+                fixed (byte* rawPtr = &MemoryMarshal.GetReference(rawHeader))
+                fixed (char* utf8Ptr = &MemoryMarshal.GetReference(utf8Header))
+                fixed (byte* header8Ptr = &MemoryMarshal.GetReference(header))
                 {
-                    if (arrayToReturn != null)
-                    {
-                        ArrayPool<byte>.Shared.Return(arrayToReturn);
-                    }
-
-                    if (headerArrayToReturn != null)
-                    {
-                        ArrayPool<char>.Shared.Return(headerArrayToReturn);
-                    }
+                    Encoding.UTF8.GetChars(rawPtr, rawHeader.Length, utf8Ptr, utf8Header.Length);
+                    Encoding.ASCII.GetBytes(utf8Ptr, utf8Header.Length, header8Ptr, header.Length);
                 }
+#endif
+                Base64Url.Base64UrlDecode(rawInitializationVector, initializationVector, out int ivBytesConsumed, out int ivBytesWritten);
+                Debug.Assert(initializationVector.Length == ivBytesWritten);
 
-                return decryptedBytes != null;
+                Base64Url.Base64UrlDecode(rawAuthenticationTag, authenticationTag, out int authenticationTagBytesConsumed, out int authenticationTagBytesWritten);
+                Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
+
+                if (!decryptionProvider.TryDecrypt(
+                    ciphertext,
+                    header,
+                    initializationVector,
+                    authenticationTag,
+                    decryptedBytes,
+                    out bytesWritten))
+                {
+                    return false;
+                }
             }
             finally
             {
-                key.ReleaseAuthenticatedEncryptionProvider(decryptionProvider);
+                if (arrayToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturn);
+                }
+
+                if (headerArrayToReturn != null)
+                {
+                    ArrayPool<char>.Shared.Return(headerArrayToReturn);
+                }
             }
+
+            return decryptedBytes != null;
         }
 
         private List<JsonWebKey> GetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc)
@@ -371,22 +388,15 @@ namespace JsonWebToken
             for (int i = 0; i < keys.Count; i++)
             {
                 var key = keys[i];
-                KeyWrapProvider kwp = key.CreateKeyWrapProvider(enc, alg);
-                try
+                KeyWrapProvider kwp = _keyWrapFactory.Create(key, enc, alg);
+                if (kwp != null)
                 {
-                    if (kwp != null)
+                    Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length)];
+                    if (kwp.TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyWrappedBytesWritten))
                     {
-                        Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length)];
-                        if (kwp.TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyWrappedBytesWritten))
-                        {
-                            Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
-                            unwrappedKeys.Add(SymmetricJwk.FromSpan(unwrappedKey));
-                        }
+                        Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
+                        unwrappedKeys.Add(SymmetricJwk.FromSpan(unwrappedKey));
                     }
-                }
-                finally
-                {
-                    key.ReleaseKeyWrapProvider(kwp);
                 }
             }
 

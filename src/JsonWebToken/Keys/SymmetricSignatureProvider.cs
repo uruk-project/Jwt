@@ -12,7 +12,7 @@ namespace JsonWebToken
     /// <summary>
     /// Provides signing and verifying operations using a <see cref="SymmetricJwk"/> and specifying an algorithm.
     /// </summary>
-    public class SymmetricSignatureProvider : SignatureProvider
+    public sealed class SymmetricSignatureProvider : SignatureProvider
     {
         private static readonly byte[] s_bytesA = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
         private static readonly byte[] s_bytesB = new byte[] { 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
@@ -45,7 +45,12 @@ namespace JsonWebToken
                 throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.AlgorithmRequireMinimumKeySize, (algorithm.Name ?? "null"), MinimumKeySizeInBits, key.KeySizeInBits));
             }
 
-            _hashSizeInBytes = (Algorithm.RequiredKeySizeInBits >> 3) * 2;
+            if (algorithm.Category != AlgorithmCategory.Symmetric)
+            {
+                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm.Name), nameof(algorithm));
+            }
+
+            _hashSizeInBytes = Algorithm.RequiredKeySizeInBits >> 2;
             switch (Algorithm.Name)
             {
                 case SignatureAlgorithms.HmacSha256:
@@ -317,11 +322,12 @@ namespace JsonWebToken
         {
             if (!_disposed)
             {
-                _disposed = true;
-
                 if (disposing)
                 {
+                    _hashAlgorithmPool.Dispose();
                 }
+
+                _disposed = true;
             }
         }
 

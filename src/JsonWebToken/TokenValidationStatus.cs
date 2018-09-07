@@ -65,6 +65,7 @@
         MissingClaim,
         InvalidHeader,
         MissingHeader,
-        DecompressionFailed
+        DecompressionFailed,
+        EncryptionKeyNotFound
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace JsonWebToken
 {
-    public class JsonWebTokenBuilder
+    public sealed class JsonWebTokenBuilder
     {
         private readonly JObject _header = new JObject();
         private readonly JObject _jsonPayload = new JObject();

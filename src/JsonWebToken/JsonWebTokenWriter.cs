@@ -5,7 +5,7 @@ namespace JsonWebToken
     /// <summary>
     /// See: http://tools.ietf.org/html/rfc7519 and http://www.rfc-editor.org/info/rfc7515
     /// </summary>
-    public class JsonWebTokenWriter
+    public sealed class JsonWebTokenWriter : IDisposable
     {
         private int _defaultTokenLifetimeInMinutes = DefaultTokenLifetimeInMinutes;
 
@@ -13,7 +13,11 @@ namespace JsonWebToken
         /// Default lifetime of tokens created. When creating tokens, if 'expires' and 'notbefore' are both null, then a default will be set to: expires = DateTime.UtcNow, notbefore = DateTime.UtcNow + TimeSpan.FromMinutes(TokenLifetimeInMinutes).
         /// </summary>
         public static readonly int DefaultTokenLifetimeInMinutes = 60;
+        private readonly SignatureFactory _signatureFactory = new SignatureFactory();
+        private readonly KeyWrapFactory _keyWrapFactory = new KeyWrapFactory();
+        private readonly AuthenticatedEncryptionFactory _authenticatedEncryptionFactory = new AuthenticatedEncryptionFactory();
         private JsonHeaderCache _headerCache = new JsonHeaderCache();
+        private bool _disposed;
 
         /// <summary>
         /// Gets or sets the token lifetime in minutes.
@@ -99,11 +103,21 @@ namespace JsonWebToken
                 descriptor.Validate();
             }
 
-            var encodingContext = new EncodingContext
-            {
-                HeaderCache = _headerCache
-            };
+            var encodingContext = new EncodingContext(_headerCache, _signatureFactory, _keyWrapFactory, _authenticatedEncryptionFactory);
             return descriptor.Encode(encodingContext);
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _authenticatedEncryptionFactory.Dispose();
+            _signatureFactory.Dispose();
+            _keyWrapFactory.Dispose();
+            _disposed = true;
         }
     }
 }

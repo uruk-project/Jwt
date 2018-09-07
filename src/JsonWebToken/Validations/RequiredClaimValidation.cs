@@ -15,7 +15,7 @@ namespace JsonWebToken.Validations
             _value = value;
         }
 
-        public TokenValidationResult TryValidate(TokenValidationContext context)
+        public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
             var jwt = context.Jwt;
             var claim = jwt.Payload[_claim];

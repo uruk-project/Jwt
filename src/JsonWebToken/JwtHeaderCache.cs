@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace JsonWebToken
 {
-    public class JwtHeaderCache
+    public sealed class JwtHeaderCache
     {
         private sealed class Node
         {
@@ -112,7 +112,10 @@ namespace JsonWebToken
                         }
                         else
                         {
-                            node.Next.Previous = node.Previous;
+                            if (node.Next != null)
+                            {
+                                node.Next.Previous = node.Previous;
+                            }
                         }
 
                         node.Previous.Next = node.Next;

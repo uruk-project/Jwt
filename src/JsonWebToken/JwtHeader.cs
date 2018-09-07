@@ -9,12 +9,8 @@ namespace JsonWebToken
     /// representing the cryptographic operations applied to the JWT and optionally 
     /// any additional properties of the JWT. 
     /// </summary>
-    public class JwtHeader
+    public sealed class JwtHeader
     {
-        public JwtHeader()
-        {
-        }
-
         /// <summary>
         /// Gets the signature algorithm that was used to create the signature.
         /// </summary>

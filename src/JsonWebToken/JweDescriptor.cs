@@ -2,7 +2,7 @@
 
 namespace JsonWebToken
 {
-    public class JweDescriptor : JweDescriptor<JwsDescriptor>
+    public sealed class JweDescriptor : JweDescriptor<JwsDescriptor>
     {
         public JweDescriptor()
             : base()

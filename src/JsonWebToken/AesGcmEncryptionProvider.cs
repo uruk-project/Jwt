@@ -2,7 +2,7 @@
 
 namespace JsonWebToken
 {
-    public class AesGcmEncryptionProvider : AuthenticatedEncryptionProvider
+    public sealed class AesGcmEncryptionProvider : AuthenticatedEncryptionProvider
     {
         private readonly SymmetricJwk _key;
         private readonly EncryptionAlgorithm _encryptionAlgorithm;
@@ -48,7 +48,7 @@ namespace JsonWebToken
 
         public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
         {
-            using (var aes = new AesGcm(_key.RawK))
+            using (var aes = new AesGcm(_key.ToByteArray()))
             {
                 aes.Decrypt(nonce, ciphertext, authenticationTag, plaintext, associatedData);
                 bytesWritten = plaintext.Length;

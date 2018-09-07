@@ -8,9 +8,6 @@ namespace JsonWebToken
 {
     public class RsaJwk : AsymmetricJwk
     {
-        private readonly ConcurrentDictionary<SignatureAlgorithm, RsaSignatureProvider> _signatureProviders = new ConcurrentDictionary<SignatureAlgorithm, RsaSignatureProvider>();
-        private readonly ConcurrentDictionary<SignatureAlgorithm, RsaSignatureProvider> _signatureValidationProviders = new ConcurrentDictionary<SignatureAlgorithm, RsaSignatureProvider>();
-
         private string _dp;
         private string _dq;
         private string _e;
@@ -83,27 +80,14 @@ namespace JsonWebToken
 
         public override SignatureProvider CreateSignatureProvider(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
-            if (algorithm == SignatureAlgorithm.Empty)
+            if (algorithm == null)
             {
                 return null;
             }
 
-            var providers = willCreateSignatures ? _signatureProviders : _signatureValidationProviders;
-            if (providers.TryGetValue(algorithm, out var cachedProvider))
-            {
-                return cachedProvider;
-            }
-
             if (IsSupportedAlgorithm(algorithm))
             {
-                var provider = new RsaSignatureProvider(this, algorithm, willCreateSignatures);
-                if (!providers.TryAdd(algorithm, provider) && providers.TryGetValue(algorithm, out cachedProvider))
-                {
-                    provider.Dispose();
-                    return cachedProvider;
-                }
-
-                return provider;
+                return new RsaSignatureProvider(this, algorithm, willCreateSignatures);
             }
 
             return null;
@@ -388,14 +372,14 @@ namespace JsonWebToken
 
         public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, string algorithm = null)
         {
-            //Generate a public/private key pair.  
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(sizeInBits);
-            //Save the public key information to an RSAParameters structure.  
-            RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
+            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(sizeInBits))
+            {
+                RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
 
-            var key = FromParameters(rsaParameters, false);
-            key.Alg = algorithm;
-            return key;
+                var key = FromParameters(rsaParameters, false);
+                key.Alg = algorithm;
+                return key;
+            }
         }
 
         /// <summary>
