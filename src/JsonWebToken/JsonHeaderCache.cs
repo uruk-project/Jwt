@@ -202,27 +202,7 @@ namespace JsonWebToken
                 try
                 {
                     _spinLock.Enter(ref lockTaken);
-                    if (node != _head)
-                    {
-                        if (_head != null)
-                        {
-                            _head.Previous = node;
-                        }
-
-                        if (node == _tail)
-                        {
-                            _tail = node.Previous;
-                        }
-                        else
-                        {
-                            node.Next.Previous = node.Previous;
-                        }
-
-                        node.Previous.Next = node.Next;
-                        node.Next = _head;
-                        node.Previous = null;
-                        _head = node;
-                    }
+                    MoveToHeadLocked(node);
                 }
                 finally
                 {
@@ -231,6 +211,31 @@ namespace JsonWebToken
                         _spinLock.Exit();
                     }
                 }
+            }
+        }
+
+        private void MoveToHeadLocked(Bucket node)
+        {
+            if (node != _head)
+            {
+                if (_head != null)
+                {
+                    _head.Previous = node;
+                }
+
+                if (node == _tail)
+                {
+                    _tail = node.Previous;
+                }
+                else
+                {
+                    node.Next.Previous = node.Previous;
+                }
+
+                node.Previous.Next = node.Next;
+                node.Next = _head;
+                node.Previous = null;
+                _head = node;
             }
         }
 
