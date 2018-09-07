@@ -48,8 +48,11 @@ namespace JsonWebToken
                         throw new NotSupportedException();
                 }
 
-                serializer.Populate(jsonObject.CreateReader(), jwk);
-                return jwk;
+                using (var reader2 = jsonObject.CreateReader())
+                {
+                    serializer.Populate(reader2, jwk);
+                    return jwk;
+                }
             }
 
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -196,10 +199,12 @@ namespace JsonWebToken
                     _certificateChain = new List<JsonWebKey>(X5c.Count);
                     foreach (var certString in X5c)
                     {
-                        var certificate = new X509Certificate2(Convert.FromBase64String(certString));
-                        var key = FromX509Certificate(certificate, false);
-                        key.Kid = Kid;
-                        _certificateChain.Add(key);
+                        using (var certificate = new X509Certificate2(Convert.FromBase64String(certString)))
+                        {
+                            var key = FromX509Certificate(certificate, false);
+                            key.Kid = Kid;
+                            _certificateChain.Add(key);
+                        }
                     }
                 }
 
@@ -228,7 +233,9 @@ namespace JsonWebToken
         }
 
         public abstract bool IsSupportedAlgorithm(SignatureAlgorithm algorithm);
+
         public abstract bool IsSupportedAlgorithm(KeyManagementAlgorithm algorithm);
+
         public abstract bool IsSupportedAlgorithm(EncryptionAlgorithm algorithm);
 
         public override string ToString()
@@ -245,33 +252,9 @@ namespace JsonWebToken
 
         public abstract SignatureProvider CreateSignatureProvider(SignatureAlgorithm algorithm, bool willCreateSignatures);
 
-        public void ReleaseSignatureProvider(SignatureProvider signatureProvider)
-        {
-            //if (signatureProvider != null)
-            //{
-            //    signatureProvider.Dispose();
-            //}
-        }
-
         public abstract KeyWrapProvider CreateKeyWrapProvider(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm);
 
-        public void ReleaseKeyWrapProvider(KeyWrapProvider provider)
-        {
-            //if (provider != null)
-            //{
-            //    provider.Dispose();
-            //}
-        }
-
         public abstract AuthenticatedEncryptionProvider CreateAuthenticatedEncryptionProvider(EncryptionAlgorithm encryptionAlgorithm);
-
-        public void ReleaseAuthenticatedEncryptionProvider(AuthenticatedEncryptionProvider provider)
-        {
-            //if (provider != null)
-            //{
-            //    provider.Dispose();
-            //}
-        }
 
         public abstract JsonWebKey ExcludeOptionalMembers();
 
@@ -336,43 +319,51 @@ namespace JsonWebToken
             AsymmetricJwk key = null;
             if (withPrivateKey)
             {
-                var rsa = certificate.GetRSAPrivateKey();
-                if (rsa != null)
+                using (var rsa = certificate.GetRSAPrivateKey())
                 {
-                    var rsaParameters = rsa.ExportParameters(false);
-                    key = new RsaJwk(rsaParameters);
-                }
-#if NETCOREAPP2_1
-                else
-                {
-                    var ecdsa = certificate.GetECDsaPrivateKey();
-                    if (ecdsa != null)
+                    if (rsa != null)
                     {
-                        var ecParameters = ecdsa.ExportParameters(false);
-                        key = new EccJwk(ecParameters);
+                        var rsaParameters = rsa.ExportParameters(false);
+                        key = new RsaJwk(rsaParameters);
                     }
-                }
+#if NETCOREAPP2_1
+                    else
+                    {
+                        using (var ecdsa = certificate.GetECDsaPrivateKey())
+                        {
+                            if (ecdsa != null)
+                            {
+                                var ecParameters = ecdsa.ExportParameters(false);
+                                key = new EccJwk(ecParameters);
+                            }
+                        }
+                    }
 #endif
+                }
             }
             else
             {
-                var rsa = certificate.GetRSAPublicKey();
-                if (rsa != null)
+                using (var rsa = certificate.GetRSAPublicKey())
                 {
-                    var rsaParameters = rsa.ExportParameters(false);
-                    key = new RsaJwk(rsaParameters);
-                }
-#if NETCOREAPP2_1
-                else
-                {
-                    var ecdsa = certificate.GetECDsaPublicKey();
-                    if (ecdsa != null)
+                    if (rsa != null)
                     {
-                        var ecParameters = ecdsa.ExportParameters(false);
-                        key = new EccJwk(ecParameters);
+                        var rsaParameters = rsa.ExportParameters(false);
+                        key = new RsaJwk(rsaParameters);
                     }
-                }
+#if NETCOREAPP2_1
+                    else
+                    {
+                        using (var ecdsa = certificate.GetECDsaPublicKey())
+                        {
+                            if (ecdsa != null)
+                            {
+                                var ecParameters = ecdsa.ExportParameters(false);
+                                key = new EccJwk(ecParameters);
+                            }
+                        }
+                    }
 #endif
+                }
             }
 
             if (key == null)

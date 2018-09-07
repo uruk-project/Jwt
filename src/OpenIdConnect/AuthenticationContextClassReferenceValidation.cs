@@ -13,7 +13,7 @@ namespace JsonWebToken
             _requiredAcr = requiredAcr;
         }
 
-        public TokenValidationResult TryValidate(TokenValidationContext context)
+        public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
             var jwt = context.Jwt;
             var act = jwt.Payload[Claims.Acr];

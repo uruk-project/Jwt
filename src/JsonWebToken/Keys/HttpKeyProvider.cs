@@ -9,7 +9,8 @@ namespace JsonWebToken
     {
         private readonly SemaphoreSlim _refreshLock = new SemaphoreSlim(1);
         private readonly HttpDocumentRetriever _documentRetriever;
-        private TimeSpan _refreshInterval = DefaultRefreshInterval;
+        private readonly TimeSpan _refreshInterval = DefaultRefreshInterval;
+        private readonly TimeSpan _automaticRefreshInterval = DefaultAutomaticRefreshInterval;
         private DateTimeOffset _syncAfter;
         private JsonWebKeySet _currentKeys;
 
@@ -34,8 +35,6 @@ namespace JsonWebToken
         /// 1 second is the minimum time interval that must pass for <see cref="RequestRefresh"/> to obtain new configuration.
         /// </summary>
         public static readonly TimeSpan MinimumRefreshInterval = new TimeSpan(0, 0, 0, 1);
-
-        private TimeSpan _automaticRefreshInterval = DefaultAutomaticRefreshInterval;
 
         public HttpKeyProvider(HttpDocumentRetriever documentRetriever)
         {

@@ -12,7 +12,7 @@ namespace JsonWebToken.Validations
             _audiences = audiences;
         }
 
-        public TokenValidationResult TryValidate(TokenValidationContext context)
+        public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
             var jwt = context.Jwt;
             bool missingAudience = true;

@@ -8,16 +8,8 @@ namespace JsonWebToken
     /// <summary>
     /// Initializes a new instance of <see cref="JwtPayload"/> which contains JSON objects representing the claims contained in the JWT. Each claim is a JSON object of the form { Name, Value }.
     /// </summary>
-    public class JwtPayload
+    public sealed class JwtPayload
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JwtPayload"/> class with no claims. . 
-        /// Creates a empty <see cref="JwtPayload"/>
-        /// </summary>
-        public JwtPayload()
-        {
-        }
-
         public JToken this[string key]
         {
             get

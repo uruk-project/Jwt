@@ -7,9 +7,6 @@ namespace JsonWebToken
 {
     public class SymmetricJwk : JsonWebKey
     {
-        private readonly ConcurrentDictionary<SignatureAlgorithm, SymmetricSignatureProvider> _signatureProviders = new ConcurrentDictionary<SignatureAlgorithm, SymmetricSignatureProvider>();
-        private readonly ConcurrentDictionary<KeyManagementAlgorithm, ConcurrentDictionary<EncryptionAlgorithm, KeyWrapProvider>> _keyWrapProviders = new ConcurrentDictionary<KeyManagementAlgorithm, ConcurrentDictionary<EncryptionAlgorithm, KeyWrapProvider>>();
-        private readonly ConcurrentDictionary<EncryptionAlgorithm, AuthenticatedEncryptionProvider> _encryptionProviders = new ConcurrentDictionary<EncryptionAlgorithm, AuthenticatedEncryptionProvider>();
         private string _k;
 
         public SymmetricJwk(byte[] bytes)
@@ -120,21 +117,9 @@ namespace JsonWebToken
                 return null;
             }
 
-            if (_signatureProviders.TryGetValue(algorithm, out var cachedProvider))
-            {
-                return cachedProvider;
-            }
-
             if (IsSupportedAlgorithm(algorithm))
             {
-                var provider = new SymmetricSignatureProvider(this, algorithm);
-                if (!_signatureProviders.TryAdd(algorithm, provider) && _signatureProviders.TryGetValue(algorithm, out cachedProvider))
-                {
-                    provider.Dispose();
-                    return cachedProvider;
-                }
-
-                return provider;
+                return new SymmetricSignatureProvider(this, algorithm);
             }
 
             return null;
@@ -146,44 +131,18 @@ namespace JsonWebToken
             {
                 return null;
             }
-
-            if (_keyWrapProviders.TryGetValue(contentEncryptionAlgorithm, out var providers))
-            {
-                if (providers.TryGetValue(encryptionAlgorithm, out var cachedProvider))
-                {
-                    return cachedProvider;
-                }
-            }
-
+            
             if (IsSupportedAlgorithm(contentEncryptionAlgorithm))
             {
-                KeyWrapProvider provider;
-                if (encryptionAlgorithm.Category == EncryptionTypes.AesHmac)
+                switch (encryptionAlgorithm.Category)
                 {
-                    provider = new AesKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-                }
-                else if (encryptionAlgorithm.Category == EncryptionTypes.AesGcm)
-                {
-                    provider = new AesGcmKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-                }
-                else
-                {
-                    return null;
-                }
-
-                if (providers == null)
-                {
-                    providers = new ConcurrentDictionary<EncryptionAlgorithm, KeyWrapProvider>();
-                    var x = _keyWrapProviders.TryAdd(contentEncryptionAlgorithm, providers);
-                }
-
-                if (!providers.TryAdd(encryptionAlgorithm, provider) && providers.TryGetValue(encryptionAlgorithm, out var cachedProvider))
-                {
-                    provider.Dispose();
-                    return cachedProvider;
-                }
-
-                return provider;
+                    case EncryptionTypes.AesHmac:
+                        return new AesKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                    case EncryptionTypes.AesGcm:
+                        return new AesGcmKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                    default:
+                        return null;
+                }              
             }
 
             return null;
@@ -191,33 +150,19 @@ namespace JsonWebToken
 
         public override AuthenticatedEncryptionProvider CreateAuthenticatedEncryptionProvider(EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (_encryptionProviders.TryGetValue(encryptionAlgorithm, out var cachedProvider))
-            {
-                return cachedProvider;
-            }
-
             if (IsSupportedAlgorithm(encryptionAlgorithm))
             {
-                AuthenticatedEncryptionProvider provider;
-                if (encryptionAlgorithm.Category == EncryptionTypes.AesHmac)
+                switch (encryptionAlgorithm.Category)
                 {
-                    provider = new AesCbcHmacEncryptionProvider(this, encryptionAlgorithm);
+                    case EncryptionTypes.None:
+                        break;
+                    case EncryptionTypes.AesHmac:
+                        return new AesCbcHmacEncryptionProvider(this, encryptionAlgorithm);
+                    case EncryptionTypes.AesGcm:
+                        return new AesGcmEncryptionProvider(this, encryptionAlgorithm);
+                    default:
+                        return null;
                 }
-                else if (encryptionAlgorithm.Category == EncryptionTypes.AesGcm)
-                {
-                    provider = new AesGcmEncryptionProvider(this, encryptionAlgorithm);
-                }
-                else
-                {
-                    return null;
-                }
-                if (!_encryptionProviders.TryAdd(encryptionAlgorithm, provider) && _encryptionProviders.TryGetValue(encryptionAlgorithm, out cachedProvider))
-                {
-                    (provider as IDisposable)?.Dispose();
-                    return cachedProvider;
-                }
-
-                return provider;
             }
 
             return null;

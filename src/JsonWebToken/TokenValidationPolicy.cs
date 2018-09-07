@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace JsonWebToken
 {
-    public class TokenValidationPolicy
+    public sealed class TokenValidationPolicy
     {
         public static TokenValidationPolicy NoValidation = new TokenValidationPolicyBuilder()
                                                             .IgnoreSignature()
@@ -18,7 +18,7 @@ namespace JsonWebToken
 
         public int MaximumTokenSizeInBytes { get; set; }
 
-        public TokenValidationResult TryValidate(TokenValidationContext context)
+        public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
             for (int i = 0; i < _validations.Count; i++)
             {

@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace JsonWebToken
 {
-    public class JsonHeaderCache
+    public sealed class JsonHeaderCache
     {
         private sealed class Bucket
         {

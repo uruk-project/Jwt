@@ -2,7 +2,7 @@
 
 namespace JsonWebToken
 {
-    public class PlaintextJweDescriptor : EncryptedJwtDescriptor<string>
+    public sealed class PlaintextJweDescriptor : EncryptedJwtDescriptor<string>
     {
         public PlaintextJweDescriptor(JObject header, string payload)
             : base(header, payload)
@@ -16,7 +16,7 @@ namespace JsonWebToken
 
         public override string Encode(EncodingContext context)
         {
-            return EncryptToken(Payload);
+            return EncryptToken(context, Payload);
         }
     }
 }

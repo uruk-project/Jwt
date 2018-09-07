@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JsonWebToken.ObjectPooling;
+using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
@@ -10,12 +11,11 @@ namespace JsonWebToken
     /// <summary>
     /// Provides authenticated encryption and decryption services.
     /// </summary>
-    public class AesCbcHmacEncryptionProvider : AuthenticatedEncryptionProvider
+    public sealed class AesCbcHmacEncryptionProvider : AuthenticatedEncryptionProvider
     {
         private readonly SignatureAlgorithm _signatureAlgorithm;
         private readonly SymmetricSignatureProvider _symmetricSignatureProvider;
-        private readonly SymmetricJwk _aesKey;
-        private readonly SymmetricJwk _hmacKey;
+        private readonly ObjectPool<Aes> _aesPool;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AesCbcHmacEncryptionProvider"/> class used for encryption and decryption.
@@ -35,9 +35,15 @@ namespace JsonWebToken
             }
 
             ValidateKeySize(key, encryptionAlgorithm);
-            (_aesKey, _hmacKey) = GetKeys(key, encryptionAlgorithm);
+            int keyLength = encryptionAlgorithm.RequiredKeySizeInBytes / 2;
+
+            var keyBytes = key.RawK.AsSpan();
+            var aesKey = keyBytes.Slice(keyLength).ToArray();
+            var hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
+
+            _aesPool = new ObjectPool<Aes>(new AesPooledPolicy(aesKey));
             _signatureAlgorithm = encryptionAlgorithm.SignatureAlgorithm;
-            _symmetricSignatureProvider = _hmacKey.CreateSignatureProvider(_signatureAlgorithm, true) as SymmetricSignatureProvider;
+            _symmetricSignatureProvider = hmacKey.CreateSignatureProvider(_signatureAlgorithm, true) as SymmetricSignatureProvider;
             if (_symmetricSignatureProvider == null)
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureHashAlgorithm, encryptionAlgorithm));
@@ -77,30 +83,25 @@ namespace JsonWebToken
             }
 
             byte[] arrayToReturnToPool = null;
+            Aes aes = _aesPool.Get();
             try
             {
-                using (Aes aes = Aes.Create())
-                {
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-                    aes.Key = _aesKey.RawK;
-                    aes.IV = nonce.ToArray();
+                aes.IV = nonce.ToArray();
 
-                    Transform(aes.CreateEncryptor(), plaintext, 0, plaintext.Length, ciphertext);
+                Transform(aes.CreateEncryptor(), plaintext, 0, plaintext.Length, ciphertext);
 
-                    int macLength = associatedData.Length + nonce.Length + ciphertext.Length + sizeof(long);
-                    Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
-                        ? stackalloc byte[macLength]
-                        : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
+                int macLength = associatedData.Length + nonce.Length + ciphertext.Length + sizeof(long);
+                Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
+                    ? stackalloc byte[macLength]
+                    : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
 
-                    associatedData.CopyTo(macBytes);
-                    nonce.CopyTo(macBytes.Slice(associatedData.Length));
-                    ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
-                    BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length, sizeof(long)), associatedData.Length * 8);
+                associatedData.CopyTo(macBytes);
+                nonce.CopyTo(macBytes.Slice(associatedData.Length));
+                ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
+                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length, sizeof(long)), associatedData.Length * 8);
 
-                    _symmetricSignatureProvider.TrySign(macBytes, tag, out int writtenBytes);
-                    Debug.Assert(writtenBytes == tag.Length);
-                }
+                _symmetricSignatureProvider.TrySign(macBytes, tag, out int writtenBytes);
+                Debug.Assert(writtenBytes == tag.Length);
             }
             catch
             {
@@ -109,6 +110,7 @@ namespace JsonWebToken
             }
             finally
             {
+                _aesPool.Return(aes);
                 if (arrayToReturnToPool != null)
                 {
                     ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
@@ -157,22 +159,27 @@ namespace JsonWebToken
                 nonce.CopyTo(macBytes.Slice(associatedData.Length));
                 ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
                 BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length), associatedData.Length * 8);
-                if (!_symmetricSignatureProvider.Verify(macBytes, authenticationTag, _hmacKey.KeySizeInBits / 8))
+                if (!_symmetricSignatureProvider.Verify(macBytes, authenticationTag, _symmetricSignatureProvider.Key.KeySizeInBits >> 3))
                 {
                     bytesWritten = 0;
                     plaintext.Clear();
                     return false;
                 }
 
-                using (Aes aes = Aes.Create())
+                Aes aes = _aesPool.Get();
+                try
                 {
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-                    aes.Key = _aesKey.RawK;
                     aes.IV = nonce.ToArray();
+                    using (var decryptor = aes.CreateDecryptor())
+                    {
+                        bytesWritten = Transform(decryptor, ciphertext, 0, ciphertext.Length, plaintext);
+                    }
 
-                    bytesWritten = Transform(aes.CreateDecryptor(), ciphertext, 0, ciphertext.Length, plaintext);
                     return bytesWritten <= ciphertext.Length;
+                }
+                finally
+                {
+                    _aesPool.Return(aes);
                 }
             }
             catch
@@ -190,21 +197,6 @@ namespace JsonWebToken
             }
         }
 
-        private static (SymmetricJwk, SymmetricJwk) GetKeys(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
-        {
-            int keyLength = encryptionAlgorithm.RequiredKeySizeInBytes / 2;
-
-            var keyBytes = key.RawK;
-            byte[] aesKey = new byte[keyLength];
-            byte[] hmacKey = new byte[keyLength];
-            Array.Copy(keyBytes, keyLength, aesKey, 0, keyLength);
-            Array.Copy(keyBytes, hmacKey, keyLength);
-            return (
-                SymmetricJwk.FromByteArray(aesKey, false),
-                SymmetricJwk.FromByteArray(hmacKey, false)
-            );
-        }
-
         private void ValidateKeySize(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBytes << 3)
@@ -216,6 +208,7 @@ namespace JsonWebToken
         private static unsafe int Transform(ICryptoTransform transform, ReadOnlySpan<byte> input, int inputOffset, int inputLength, Span<byte> output)
         {
             fixed (byte* buffer = &output[0])
+            {
                 using (var messageStream = new UnmanagedMemoryStream(buffer, output.Length, output.Length, FileAccess.Write))
                 using (CryptoStream cryptoStream = new CryptoStream(messageStream, transform, CryptoStreamMode.Write))
                 {
@@ -227,13 +220,36 @@ namespace JsonWebToken
                     cryptoStream.FlushFinalBlock();
                     return (int)messageStream.Position;
                 }
+            }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
-            if (_symmetricSignatureProvider != null)
+            _symmetricSignatureProvider.Dispose();
+            _aesPool.Dispose();
+        }
+
+        private class AesPooledPolicy : PooledObjectPolicy<Aes>
+        {
+            private readonly byte[] _key;
+
+            public AesPooledPolicy(byte[] key)
             {
-                _symmetricSignatureProvider.Dispose();
+                _key = key;
+            }
+
+            public override Aes Create()
+            {
+                var aes = Aes.Create();
+                aes.Key = _key;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+                return aes;
+            }
+
+            public override bool Return(Aes obj)
+            {
+                return true;
             }
         }
     }

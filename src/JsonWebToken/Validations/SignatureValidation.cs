@@ -17,7 +17,7 @@ namespace JsonWebToken.Validations
             _algorithm = algorithm;
         }
 
-        public TokenValidationResult TryValidate(TokenValidationContext context)
+        public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
             var jwt = context.Jwt;
             if (jwt.ContentSegment.Length == 0 && jwt.SignatureSegment.Length == 0)
@@ -65,7 +65,7 @@ namespace JsonWebToken.Validations
             {
                 JsonWebKey key = keys[i];
                 var alg = _algorithm != SignatureAlgorithm.Empty ? _algorithm : (SignatureAlgorithm)key.Alg;
-                if (TryValidateSignature(encodedBytes, signatureBytes, key, alg))
+                if (TryValidateSignature(context, encodedBytes, signatureBytes, key, alg))
                 {
                     jwt.SigningKey = key;
                     return TokenValidationResult.Success(jwt);
@@ -82,22 +82,15 @@ namespace JsonWebToken.Validations
             return TokenValidationResult.KeyNotFound(jwt);
         }
 
-        private static bool TryValidateSignature(ReadOnlySpan<byte> encodedBytes, ReadOnlySpan<byte> signature, JsonWebKey key, SignatureAlgorithm algorithm)
+        private static bool TryValidateSignature(in TokenValidationContext context, ReadOnlySpan<byte> encodedBytes, ReadOnlySpan<byte> signature, JsonWebKey key, SignatureAlgorithm algorithm)
         {
-            var signatureProvider = key.CreateSignatureProvider(algorithm, willCreateSignatures: false);
+            var signatureProvider = context.SignatureFactory.Create(key, algorithm, willCreateSignatures: false);
             if (signatureProvider == null)
             {
                 return false;
             }
 
-            try
-            {
-                return signatureProvider.Verify(encodedBytes, signature);
-            }
-            finally
-            {
-                key.ReleaseSignatureProvider(signatureProvider);
-            }
+            return signatureProvider.Verify(encodedBytes, signature);
         }
 
         private List<JsonWebKey> ResolveSigningKey(JsonWebToken jwt)

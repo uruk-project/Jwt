@@ -7,9 +7,6 @@ namespace JsonWebToken
 {
     public class EccJwk : AsymmetricJwk
     {
-        private readonly ConcurrentDictionary<SignatureAlgorithm, EcdsaSignatureProvider> _signatureProviders = new ConcurrentDictionary<SignatureAlgorithm, EcdsaSignatureProvider>();
-        private readonly ConcurrentDictionary<SignatureAlgorithm, EcdsaSignatureProvider> _signatureValidationProviders = new ConcurrentDictionary<SignatureAlgorithm, EcdsaSignatureProvider>();
-
         private string _x;
         private string _y;
 
@@ -184,22 +181,9 @@ namespace JsonWebToken
                 return null;
             }
 
-            var signatureProviders = willCreateSignatures ? _signatureProviders : _signatureValidationProviders;
-            if (signatureProviders.TryGetValue(algorithm, out var cachedProvider))
-            {
-                return cachedProvider;
-            }
-
             if (IsSupportedAlgorithm(algorithm))
             {
-                var provider = new EcdsaSignatureProvider(this, algorithm, willCreateSignatures);
-                if (!signatureProviders.TryAdd(algorithm, provider) && signatureProviders.TryGetValue(algorithm, out cachedProvider))
-                {
-                    provider.Dispose();
-                    return cachedProvider;
-                }
-
-                return provider;
+                return new EcdsaSignatureProvider(this, algorithm, willCreateSignatures);
             }
 
             return null;

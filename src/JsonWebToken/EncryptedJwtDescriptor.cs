@@ -34,7 +34,7 @@ namespace JsonWebToken
             set => Header[HeaderParameters.Zip] = value;
         }
 
-        protected unsafe string EncryptToken(string payload)
+        protected unsafe string EncryptToken(EncodingContext context, string payload)
         {
             if (payload == null)
             {
@@ -54,7 +54,7 @@ namespace JsonWebToken
 #else
                 EncodingHelper.GetUtf8Bytes(payload.AsSpan(), encodedPayload);
 #endif
-                return EncryptToken(encodedPayload);
+                return EncryptToken(context, encodedPayload);
             }
             finally
             {
@@ -65,7 +65,7 @@ namespace JsonWebToken
             }
         }
 
-        protected unsafe string EncryptToken(Span<byte> payload)
+        protected unsafe string EncryptToken(EncodingContext context, Span<byte> payload)
         {
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
             KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)Algorithm;
@@ -75,11 +75,11 @@ namespace JsonWebToken
             KeyWrapProvider kwProvider = null;
             if (isDirectEncryption)
             {
-                encryptionProvider = Key.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);
+                encryptionProvider = context.AuthenticatedEncryptionFactory.Create(Key, encryptionAlgorithm);
             }
             else
             {
-                kwProvider = Key.CreateKeyWrapProvider(encryptionAlgorithm, contentEncryptionAlgorithm);
+                kwProvider = context.KeyWrapFactory.Create(Key, encryptionAlgorithm, contentEncryptionAlgorithm);
                 if (kwProvider == null)
                 {
                     throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
@@ -92,17 +92,9 @@ namespace JsonWebToken
                                         : null;
             if (!isDirectEncryption)
             {
-                JsonWebKey cek;
-                try
+                if (!kwProvider.TryWrapKey(null, header, wrappedKey, out var cek, out var keyWrappedBytesWritten))
                 {
-                    if (!kwProvider.TryWrapKey(null, header, wrappedKey, out cek, out var keyWrappedBytesWritten))
-                    {
-                        throw new CryptographicException(ErrorMessages.KeyWrapFailed);
-                    }
-                }
-                finally
-                {
-                    Key.ReleaseKeyWrapProvider(kwProvider);
+                    throw new CryptographicException(ErrorMessages.KeyWrapFailed);
                 }
 
                 encryptionProvider = cek.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);

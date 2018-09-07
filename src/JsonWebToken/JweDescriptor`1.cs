@@ -34,7 +34,7 @@ namespace JsonWebToken
         public override string Encode(EncodingContext context)
         {
             var payload = Payload.Encode(context);
-            var rawData = EncryptToken(payload);
+            var rawData = EncryptToken(context, payload);
 
             return rawData;
         }

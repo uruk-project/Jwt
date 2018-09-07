@@ -286,10 +286,10 @@ namespace JsonWebToken
             if (Key != null)
             {
                 var key = Key;
-                signatureProvider = key.CreateSignatureProvider(alg, willCreateSignatures: true);
+                signatureProvider = context.SignatureFactory.Create(key, alg, willCreateSignatures: true);
                 if (signatureProvider == null)
                 {
-                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, key.Alg, (key.Kid ?? "Null")));
+                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, key.Alg, key.Kid));
                 }
             }
 
@@ -336,18 +336,11 @@ namespace JsonWebToken
                 if (signatureProvider != null)
                 {
                     Span<byte> signature = stackalloc byte[signatureProvider.HashSizeInBytes];
-                    try
-                    {
-                        bool success = signatureProvider.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signatureBytesWritten);
-                        Debug.Assert(success);
-                        Debug.Assert(signature.Length == signatureBytesWritten);
+                    bool success = signatureProvider.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signatureBytesWritten);
+                    Debug.Assert(success);
+                    Debug.Assert(signature.Length == signatureBytesWritten);
 
-                        Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)), out int bytesConsumed, out bytesWritten);
-                    }
-                    finally
-                    {
-                        Key.ReleaseSignatureProvider(signatureProvider);
-                    }
+                    Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)), out int bytesConsumed, out bytesWritten);
                 }
 
 #if NETCOREAPP2_1

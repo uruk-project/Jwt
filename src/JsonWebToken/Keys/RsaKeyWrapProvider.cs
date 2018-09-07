@@ -7,7 +7,7 @@ namespace JsonWebToken
     /// <summary>
     /// Provides RSA Wrap key and Unwrap key services.
     /// </summary>
-    public class RsaKeyWrapProvider : KeyWrapProvider
+    public sealed class RsaKeyWrapProvider : KeyWrapProvider
     {
         private RSA _rsa;
         private readonly RSAEncryptionPadding _padding;
@@ -19,7 +19,7 @@ namespace JsonWebToken
         /// <param name="contentEncryptionAlgorithm">The KeyWrap algorithm to apply.</param>
         /// </summary>
         public RsaKeyWrapProvider(RsaJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
-            :base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
+            : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
             _rsa = ResolveRsaAlgorithm(key);
             _padding = ResolvePadding(contentEncryptionAlgorithm);
@@ -39,9 +39,9 @@ namespace JsonWebToken
                     {
                         _rsa.Dispose();
                     }
-
-                    _disposed = true;
                 }
+
+                _disposed = true;
             }
         }
 

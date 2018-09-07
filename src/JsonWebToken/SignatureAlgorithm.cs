@@ -29,7 +29,7 @@ namespace JsonWebToken
 
         public static readonly IDictionary<string, SignatureAlgorithm> AdditionalAlgorithms = new Dictionary<string, SignatureAlgorithm>();
 
-        private readonly sbyte _id;
+        public readonly sbyte Id;
         public readonly AlgorithmCategory Category;
         public readonly ushort RequiredKeySizeInBits;
         public readonly HashAlgorithmName HashAlgorithm;
@@ -38,7 +38,7 @@ namespace JsonWebToken
 
         private SignatureAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
         {
-            _id = id;
+            Id = id;
             Name = name;
             Category = keyType;
             RequiredKeySizeInBits = requiredKeySizeInBits;
@@ -62,12 +62,12 @@ namespace JsonWebToken
                 return false;
             }
 
-            return _id == other._id;
+            return Id == other.Id;
         }
 
         public override int GetHashCode()
         {
-            return _id.GetHashCode();
+            return Id.GetHashCode();
         }
 
         public static bool operator ==(SignatureAlgorithm x, SignatureAlgorithm y)
@@ -87,7 +87,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            return x._id == y._id;
+            return x.Id == y.Id;
         }
 
         public static bool operator !=(SignatureAlgorithm x, SignatureAlgorithm y)
@@ -107,7 +107,7 @@ namespace JsonWebToken
                 return true;
             }
 
-            return x._id != y._id;
+            return x.Id != y.Id;
         }
 
         public static implicit operator string(SignatureAlgorithm value)
@@ -165,7 +165,7 @@ namespace JsonWebToken
 
         public static implicit operator long(SignatureAlgorithm value)
         {
-            return value._id;
+            return value.Id;
         }
 
         public override string ToString()

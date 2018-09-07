@@ -15,7 +15,7 @@ namespace JsonWebToken.Validations
             _negativeClockSkew = TimeSpan.FromSeconds(-clockSkew);
         }
 
-        public TokenValidationResult TryValidate(TokenValidationContext context)
+        public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
             var jwt = context.Jwt;
             var expires = jwt.Payload.Exp;
