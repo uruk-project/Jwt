@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
-    public sealed class EcdsaSignatureProvider : SignatureProvider
+    public sealed class EcdsaSigner : Signer
     {
         private readonly ObjectPool<ECDsa> _hashAlgorithmPool;
         private readonly int _hashSize;
@@ -13,12 +13,12 @@ namespace JsonWebToken
         private bool _disposed;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EcdsaSignatureProvider"/> class used to create and verify signatures.
+        /// Initializes a new instance of the <see cref="EcdsaSigner"/> class used to create and verify signatures.
         /// </summary>
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for signature operations.</param>
         /// <param name="algorithm">The signature algorithm to apply.</param>
         /// <param name="willCreateSignatures">Whether is required to create signatures then set this to true.</param>
-        public EcdsaSignatureProvider(EccJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public EcdsaSigner(EccJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
             : base(key, algorithm)
         {
             if (key == null)

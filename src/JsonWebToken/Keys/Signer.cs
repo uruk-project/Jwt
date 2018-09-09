@@ -5,14 +5,14 @@ namespace JsonWebToken
     /// <summary>
     /// Provides signature services, signing and verifying.
     /// </summary>
-    public abstract class SignatureProvider : IDisposable
+    public abstract class Signer : IDisposable
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SignatureProvider"/> class used to create and verify signatures.
+        /// Initializes a new instance of the <see cref="Signer"/> class used to create and verify signatures.
         /// </summary>
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for signature operations.</param>
         /// <param name="algorithm">The signature algorithm to apply.</param>
-        protected SignatureProvider(JsonWebKey key, SignatureAlgorithm algorithm)
+        protected Signer(JsonWebKey key, SignatureAlgorithm algorithm)
         {
             Key = key ?? throw new ArgumentNullException(nameof(key));
             Algorithm = algorithm;

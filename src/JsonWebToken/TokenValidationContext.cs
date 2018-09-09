@@ -4,7 +4,7 @@ namespace JsonWebToken
 {
     public readonly ref struct TokenValidationContext
     {
-        public TokenValidationContext(ReadOnlySpan<byte> token, JsonWebToken jwt, SignatureFactory signatureFactory)
+        public TokenValidationContext(ReadOnlySpan<byte> token, JsonWebToken jwt, SignerFactory signatureFactory)
         {
             Token = token;
             Jwt = jwt;
@@ -15,6 +15,6 @@ namespace JsonWebToken
 
         public readonly JsonWebToken Jwt;
 
-        public readonly SignatureFactory SignatureFactory;
+        public readonly SignerFactory SignatureFactory;
     }
 }

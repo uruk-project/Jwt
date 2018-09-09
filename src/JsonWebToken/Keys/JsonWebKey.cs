@@ -232,11 +232,11 @@ namespace JsonWebToken
             return X5c.Count > 0;
         }
 
-        public abstract bool IsSupportedAlgorithm(SignatureAlgorithm algorithm);
+        public abstract bool IsSupported(SignatureAlgorithm algorithm);
 
-        public abstract bool IsSupportedAlgorithm(KeyManagementAlgorithm algorithm);
+        public abstract bool IsSupported(KeyManagementAlgorithm algorithm);
 
-        public abstract bool IsSupportedAlgorithm(EncryptionAlgorithm algorithm);
+        public abstract bool IsSupported(EncryptionAlgorithm algorithm);
 
         public override string ToString()
         {
@@ -250,11 +250,11 @@ namespace JsonWebToken
 
         public abstract byte[] ToByteArray();
 
-        public abstract SignatureProvider CreateSignatureProvider(SignatureAlgorithm algorithm, bool willCreateSignatures);
+        public abstract Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures);
 
-        public abstract KeyWrapProvider CreateKeyWrapProvider(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm);
+        public abstract KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm);
 
-        public abstract AuthenticatedEncryptionProvider CreateAuthenticatedEncryptionProvider(EncryptionAlgorithm encryptionAlgorithm);
+        public abstract AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm);
 
         public abstract JsonWebKey ExcludeOptionalMembers();
 

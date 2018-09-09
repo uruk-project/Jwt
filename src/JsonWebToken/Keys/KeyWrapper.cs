@@ -6,7 +6,7 @@ namespace JsonWebToken
     /// <summary>
     /// Provides Wrap key and Unwrap key services.
     /// </summary>
-    public abstract class KeyWrapProvider : IDisposable
+    public abstract class KeyWrapper : IDisposable
     {
         /// <summary>
         /// Gets the KeyWrap algorithm that is being used.
@@ -20,14 +20,14 @@ namespace JsonWebToken
         /// </summary>
         public JsonWebKey Key { get; protected set; }
 
-        protected KeyWrapProvider(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        protected KeyWrapper(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
             
-            if (!key.IsSupportedAlgorithm(algorithm))
+            if (!key.IsSupported(algorithm))
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
             }

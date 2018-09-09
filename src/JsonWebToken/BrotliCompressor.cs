@@ -4,7 +4,7 @@
 //namespace JsonWebToken
 //{
 //#if NETCOREAPP2_1
-//    public sealed class BrotliCompressionProvider : CompressionProvider<BrotliStream>
+//    public sealed class BrotliCompressor : Compressor<BrotliStream>
 //    {
 //        public override BrotliStream CreateCompressionStream(Stream outputStream)
 //        {

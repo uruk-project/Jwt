@@ -49,7 +49,7 @@ namespace JsonWebToken
         [JsonIgnore]
         public abstract bool HasPrivateKey { get; }
 
-        public override AuthenticatedEncryptionProvider CreateAuthenticatedEncryptionProvider(EncryptionAlgorithm algorithm)
+        public override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm algorithm)
         {
             return null;
         }

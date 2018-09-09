@@ -57,23 +57,23 @@ namespace JsonWebToken.ObjectPooling
             return item ?? _policy.Create();
         }
 
-        public void Return(T obj)
+        public void Return(T pooledObject)
         {
-            if (_policy.Return(obj))
+            if (_policy.Return(pooledObject))
             {
-                if (_firstItem != null || Interlocked.CompareExchange(ref _firstItem, obj, null) != null)
+                if (_firstItem != null || Interlocked.CompareExchange(ref _firstItem, pooledObject, null) != null)
                 {
-                    ReturnViaScan(obj);
+                    ReturnViaScan(pooledObject);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ReturnViaScan(T obj)
+        private void ReturnViaScan(T pooledObject)
         {
             ObjectWrapper[] items = _items;
 
-            for (var i = 0; i < items.Length && Interlocked.CompareExchange(ref items[i].Element, obj, null) != null; ++i)
+            for (var i = 0; i < items.Length && Interlocked.CompareExchange(ref items[i].Element, pooledObject, null) != null; ++i)
             {
             }
         }
@@ -98,7 +98,7 @@ namespace JsonWebToken.ObjectPooling
         {
             public T Element;
 
-            public ObjectWrapper(T item) => Element = item;
+            public ObjectWrapper(T element) => Element = element;
 
             public static implicit operator T(ObjectWrapper wrapper) => wrapper.Element;
         }

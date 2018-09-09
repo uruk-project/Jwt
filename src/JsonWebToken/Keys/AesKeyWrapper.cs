@@ -9,7 +9,7 @@ namespace JsonWebToken
     /// <summary>
     /// Provides Wrap key and Unwrap key services.
     /// </summary>
-    public class AesKeyWrapProvider : KeyWrapProvider
+    public class AesKeyWrapper : KeyWrapper
     {
         private const int BlockSizeInBytes = 8;
 
@@ -24,11 +24,11 @@ namespace JsonWebToken
         private bool _disposed;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="KeyWrapProvider"/> class used for wrap key and unwrap key.
+        /// Initializes a new instance of the <see cref="KeyWrapper"/> class used for wrap key and unwrap key.
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for crypto operations.</param>
         /// <param name="algorithm">The KeyWrap algorithm to apply.</param>
         /// </summary>
-        public AesKeyWrapProvider(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        public AesKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
             if (key.K == null)

@@ -63,41 +63,41 @@ namespace JsonWebToken
             return parameters;
         }
 
-        public override bool IsSupportedAlgorithm(SignatureAlgorithm algorithm)
+        public override bool IsSupported(SignatureAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.Rsa;
         }
 
-        public override bool IsSupportedAlgorithm(KeyManagementAlgorithm algorithm)
+        public override bool IsSupported(KeyManagementAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.Rsa;
         }
 
-        public override bool IsSupportedAlgorithm(EncryptionAlgorithm algorithm)
+        public override bool IsSupported(EncryptionAlgorithm algorithm)
         {
             return false;
         }
 
-        public override SignatureProvider CreateSignatureProvider(SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public override Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (algorithm == null)
             {
                 return null;
             }
 
-            if (IsSupportedAlgorithm(algorithm))
+            if (IsSupported(algorithm))
             {
-                return new RsaSignatureProvider(this, algorithm, willCreateSignatures);
+                return new RsaSigner(this, algorithm, willCreateSignatures);
             }
 
             return null;
         }
 
-        public override KeyWrapProvider CreateKeyWrapProvider(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
-            if (IsSupportedAlgorithm(contentEncryptionAlgorithm))
+            if (IsSupported(contentEncryptionAlgorithm))
             {
-                return new RsaKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                return new RsaKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
             }
 
             return null;

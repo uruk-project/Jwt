@@ -281,7 +281,7 @@ namespace JsonWebToken
 
         public override string Encode(EncodingContext context)
         {
-            SignatureProvider signatureProvider = null;
+            Signer signatureProvider = null;
             var alg = (SignatureAlgorithm)(string.IsNullOrEmpty(Algorithm) ? Key?.Alg : Algorithm);
             if (Key != null)
             {
