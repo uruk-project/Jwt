@@ -33,7 +33,7 @@ namespace JsonWebToken
         {
             if (key.K == null)
             {
-                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.MalformedKey, key.Kid), nameof(key.K));
+                throw new ArgumentException(ErrorMessages.MalformedKey(key), nameof(key.K));
             }
 
             _aes = GetSymmetricAlgorithm(key, algorithm);
@@ -81,7 +81,7 @@ namespace JsonWebToken
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.CreateSymmetricAlgorithmFailed, key.Kid, algorithm), ex);
+                throw new InvalidOperationException(ErrorMessages.CreateSymmetricAlgorithmFailed(key, algorithm), ex);
             }
         }
 
@@ -99,7 +99,7 @@ namespace JsonWebToken
 
             if (keyBytes.Length % 8 != 0)
             {
-                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.KeySizeMustBeMultipleOf64, keyBytes.Length << 3), nameof(keyBytes));
+                throw new ArgumentException(ErrorMessages.KeySizeMustBeMultipleOf64(keyBytes.Length << 3), nameof(keyBytes));
             }
 
             if (_disposed)
@@ -224,7 +224,7 @@ namespace JsonWebToken
         {
             if (algorithm.RequiredKeySizeInBits >> 3 != key.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.FormatInvariant(ErrorMessages.KeyWrapKeySizeIncorrect, algorithm, algorithm.RequiredKeySizeInBits >> 3, Key.Kid, key.Length << 3));
+                throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.KeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, Key, key.Length << 3));
             }
         }
 

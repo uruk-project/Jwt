@@ -1,73 +1,200 @@
-using System.Globalization;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace JsonWebToken
 {
     /// <summary>
     /// Error messages.
     /// </summary>
-    public static class ErrorMessages
+    internal static class ErrorMessages
     {
-        /// <summary>
-        /// Formats the string using InvariantCulture
-        /// </summary>
-        /// <param name="format">Format string.</param>
-        /// <param name="args">Format arguments.</param>
-        /// <returns>Formatted string.</returns>
-        public static string FormatInvariant(string format, params object[] args)
+        public static string UnableToObtainKeys(string address)
         {
-            return string.Format(CultureInfo.InvariantCulture, format, args);
+            return $"Unable to obtain keys from: '{address}'";
         }
 
-        public static string FormatInvariant(string format, object arg0)
+        internal static string RequireHttps(string address)
         {
-            return string.Format(CultureInfo.InvariantCulture, format, arg0);
+            return $"The address specified '{address}' is not valid as per HTTPS scheme.";
         }
 
-        public static string FormatInvariant(string format, object arg0, object arg1)
+        internal static string UnexpectedTokenParsingDate(JsonToken tokenType)
         {
-            return string.Format(CultureInfo.InvariantCulture, format, arg0, arg1);
+            return $"Unexpected token parsing date. Expected {nameof(JsonToken.Integer)}, got {tokenType}";
         }
 
-        public static string FormatInvariant(string format, object arg0, object arg1, object arg2)
+        internal static string PolicyBuilderRequireSignature()
         {
-            return string.Format(CultureInfo.InvariantCulture, format, arg0, arg1, arg2);
+            return $"Signature validation must be either defined by calling the method '{nameof(TokenValidationPolicyBuilder.RequireSignature)}' or explicitly ignored by calling the '{nameof(TokenValidationPolicyBuilder.AcceptUnsecureToken)}' method.";
         }
 
-        internal const string MustBeGreaterThanZero = "{0} must be greater than zero. value: '{1}'.";
-        internal const string MustBeGreaterThanTimeSpanZero = "{0} must be greater than TimeSpan.Zero. value: '{1}'.";
+        internal static string ClaimIsRequired(string claim)
+        {
+            return $"The claim '{claim}' is required.";
+        }
 
-        internal const string MustNoBeNullIfRequired = "{0} is set to '{1}' but {2} is 'null' or empty.";
-        internal const string NotSupportedEncryptionAlgorithm = "Encryption failed. No support for: Algorithm: '{0}'.";
-        internal const string EncryptionFailed = "Encryption failed failed for: Algorithm: '{0}', key: '{1}'. See inner exception.";
-        internal const string NotSuportedAlgorithmForKeyWrap = "Key wrap is not supported for algorithm '{0}'.";
-        internal const string NotSupportedCompressionAlgorithm = "Compression algorithm '{0}' is not supported.";
+        internal static string ClaimIsProhibited(string claim)
+        {
+            return $"The claim '{claim}' is prohibited.";
+        }
 
-        internal const string InvalidSymmetricKeySize = "Invalid key size. Valid key sizes are: 256, 384, and 512.";
-        internal const string InvalidEcdsaKeySize = "Invalid key size for '{0}'. Valid key size must be '{1}' bits. Key size: '{2}'.";
+        internal static string ClaimMustBeOfType(KeyValuePair<string, JTokenType[]> claim)
+        {
+            var claimTypes = string.Join(", ", claim.Value.Select(t => t.ToString()));
+            return $"The claim '{claim.Key}' must be of type[{claimTypes}].";
+        }
 
-        internal const string AlgorithmRequireMinimumKeySize = "The algorithm '{0}' requires the a key size to be greater than '{1}' bits. Key size is '{2}'.";
-        internal const string MustBeAtLeast = "{0} must be at least '{1}'.";
-        internal const string SigningKeyTooSmall = "The key '{0}' for signing cannot be smaller than '{1}' bits. Key size: '{2}'.";
-        internal const string VerifyKeyTooSmall = "The key '{0}' for verifying cannot be smaller than '{1}' bits. Key size: '{2}'.";
-        internal const string EncryptionKeyTooSmall = "The key '{0}' for encryption with algorithm '{1}' cannot be smaller than '{2}' bits. Key size: '{3}'.";
-        internal const string KeyWrapKeySizeIncorrect = "Key wrap algorithm '{0}' requires a key of '{1}' bits. Key : '{2}', key size: '{3}'.";
-        internal const string NotSupportedSignatureAlgorithm = "Signature failed. No support for: Algorithm: '{0}', key: '{1}'.";
-        internal const string NotSupportedSignatureHashAlgorithm = "Signature failed. No support for: Algorithm: '{0}'.";
-        internal const string MissingPrivateKey = "The key '{0}' has no private key.";
-        internal const string NotSupportedUnwrap = "Key unwrap failed. Algorithm: '{0}'.";
-        internal const string NotSupportedCurve = "Elliptical Curve not supported for curveId: '{0}'";
-        internal const string NotSupportedAlgorithm = "The algorithm '{0}' is not supported.";
-        internal const string MalformedKey = "The key '{0}' is malformed.";
-        internal const string KeyWrapFailed = "Key wrapping failed";
-        internal const string CreateSymmetricAlgorithmFailed = "Failed to create symmetric algorithm for key wrap with key: '{0}', algorithm: '{1}'.";
-        internal const string KeySizeMustBeMultipleOf64 = "The length of the key to unwrap must be a multiple of 64 bits. The size is: '{0}' bits.";
-        internal const string NotAuthenticData = "Data is not authentic.";
-        internal const string NotSupportedKeyedHashAlgorithm = "Unable to create KeyedHashAlgorithm for algorithm '{0}'.";
+        internal static string HeaderMustBeOfType(KeyValuePair<string, JTokenType[]> header)
+        {
+            var claimTypes = string.Join(", ", header.Value.Select(t => t.ToString()));
+            return $"The header parameter '{header.Key}' must be of type[{claimTypes}].";
+        }
 
-        internal const string InvalidRsaKey = "Invalid RSA key: '{0}'. Both modulus (N) and exponent (E) must be present.";
+        internal static string HeaderIsRequired(string header)
+        {
+            return $"The header parameter '{header}' is required.";
+        }
 
-        internal const string InvalidSize = "The value of '{0}' must be '{1}' bits, but was {2}.";
-        internal const string InvalidCertificate = "The certificate does not contains RSA key material or ECDsa key material.";
+        internal static string MustBeGreaterThanZero(string name, int currentValue)
+        {
+            return $"{name} must be greater than zero. value: '{currentValue}'.";
+        }
+
+        internal static string MustBeGreaterThanTimeSpanZero(string name, int currentValue)
+        {
+            return $"{name} must be greater than TimeSpan.Zero. value: '{currentValue}'.";
+        }
+
+        internal static string NotSupportedEncryptionAlgorithm(EncryptionAlgorithm algorithm)
+        {
+            return $"Encryption failed. No support for: Algorithm: '{algorithm.Name}'.";
+        }
+
+        internal static string EncryptionFailed(EncryptionAlgorithm algorithm, JsonWebKey key)
+        {
+            return $"Encryption failed for: Algorithm: '{algorithm.Name}', key: '{key.Kid}'. See inner exception.";
+        }
+
+        internal static string NotSuportedAlgorithmForKeyWrap(EncryptionAlgorithm algorithm)
+        {
+            return $"Key wrap is not supported for algorithm: '{algorithm.Name}'.";
+        }
+
+        internal static string NotSuportedAlgorithmForKeyWrap(KeyManagementAlgorithm algorithm)
+        {
+            return $"Key wrap is not supported for algorithm: '{algorithm.Name}'.";
+        }
+
+        internal static string NotSupportedCompressionAlgorithm(string compressionAlgorithm)
+        {
+            return $"Compression algorithm: '{compressionAlgorithm}' is not supported.";
+        }
+
+        internal static string InvalidEcdsaKeySize(JsonWebKey key, int validKeySize, int keySize)
+        {
+            return $"Invalid key size for '{key.Kid}'. Valid key size must be '{validKeySize}' bits. Key size: '{keySize}'.";
+        }
+
+        internal static string AlgorithmRequireMinimumKeySize(string algorithm, int validKeySize, int keySize)
+        {
+            return $"The algorithm '{algorithm}' requires the a key size to be greater than '{validKeySize}' bits. Key size is '{keySize}'.";
+        }
+
+        internal static string MustBeAtLeast(string name, int value)
+        {
+            return $"{name} must be at least '{value}'.";
+        }
+
+        internal static string SigningKeyTooSmall(JsonWebKey key, int minimalValue, int currentKeySize)
+        {
+            return $"The key '{key.Kid}' for signing cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'.";
+        }
+
+        internal static string VerifyKeyTooSmall(JsonWebKey key, int minimalValue, int currentKeySize)
+        {
+            return $"The key '{key.Kid}' for verifying cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'.";
+        }
+
+        internal static string EncryptionKeyTooSmall(JsonWebKey key, EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize)
+        {
+            return $"The key '{key.Kid}' for encryption with algorithm '{algorithm.Name}' cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'.";
+        }
+
+        internal static string KeyWrapKeySizeIncorrect(KeyManagementAlgorithm algorithm, int requiredValue, JsonWebKey key, int currentKeySize)
+        {
+            return $"The key '{key.Kid}' for key wrapping with algorithm '{algorithm.Name}' must be of '{requiredValue}' bits. Key size: '{currentKeySize}'.";
+        }
+
+        internal static string NotSupportedSignatureAlgorithm(SignatureAlgorithm algorithm, JsonWebKey key)
+        {
+            return $"Signature failed. No support for: Algorithm: '{algorithm.Name}', key: '{key.Kid}'.";
+        }
+
+        internal static string NotSupportedSignatureAlgorithm(SignatureAlgorithm algorithm)
+        {
+            return $"Signature failed. No support for: Algorithm: '{algorithm.Name}'.";
+        }
+
+        internal static string MissingPrivateKey(JsonWebKey key)
+        {
+            return $"The key '{key.Kid}' has no private key.";
+        }
+
+        internal static string NotSupportedUnwrap(KeyManagementAlgorithm algorithm)
+        {
+            return $"Key unwrap failed. No support for: Algorithm: '{algorithm.Name}'.";
+        }
+
+        internal static string NotSupportedCurve(string curveId)
+        {
+            return $"Elliptical Curve not supported for curveId: '{curveId}'";
+        }
+
+        internal static string NotSupportedAlgorithm(string algorithm)
+        {
+            return $"The algorithm '{algorithm}' is not supported.";
+        }
+
+        internal static string MalformedKey(JsonWebKey key)
+        {
+            return $"The key '{key.Kid}' is malformed.";
+        }
+
+        internal static string KeyWrapFailed()
+        {
+            return "Key wrapping failed.";
+        }
+
+        internal static string CreateSymmetricAlgorithmFailed(JsonWebKey key, KeyManagementAlgorithm algorithm)
+        {
+            return $"Failed to create symmetric algorithm for key wrap with key: '{key.Kid}', algorithm: '{algorithm.Name}'.";
+        }
+
+        internal static string KeySizeMustBeMultipleOf64(int keySize)
+        {
+            return $"The length of the key to unwrap must be a multiple of 64 bits. The size is: '{keySize}' bits.";
+        }
+
+        internal static string NotAuthenticData()
+        {
+            return "Data is not authentic.";
+        }
+
+        internal static string NotSupportedKeyedHashAlgorithm(SignatureAlgorithm algorithm)
+        {
+            return $"Unable to create hash algorithm for algorithm '{algorithm.Name}'.";
+        }
+
+        internal static string InvalidRsaKey(JsonWebKey key)
+        {
+            return $"Invalid RSA key: '{key.Kid}'. Both modulus (N) and exponent (E) must be present.";
+        }
+
+        internal static string InvalidCertificate()
+        {
+            return "The certificate does not contains RSA key material or ECDsa key material.";
+        }
     }
 }

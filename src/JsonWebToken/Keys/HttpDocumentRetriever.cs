@@ -48,7 +48,7 @@ namespace JsonWebToken
 
             if (!IsHttps(address) && RequireHttps)
             {
-                throw new ArgumentException(ErrorMessages.FormatInvariant("The address specified '{0}' is not valid as per HTTPS scheme.", address), nameof(address));
+                throw new ArgumentException(ErrorMessages.RequireHttps(address), nameof(address));
             }
 
             using (HttpResponseMessage response = _httpClient.GetAsync(address, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult().EnsureSuccessStatusCode())

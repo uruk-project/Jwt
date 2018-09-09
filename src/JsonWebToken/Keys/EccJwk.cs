@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Concurrent;
 using System.Security.Cryptography;
 
 namespace JsonWebToken
@@ -30,7 +29,7 @@ namespace JsonWebToken
                     Crv = EllipticalCurves.P521;
                     break;
                 default:
-                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, parameters.Curve.Oid.FriendlyName));
+                    throw new NotSupportedException(ErrorMessages.NotSupportedCurve(parameters.Curve.Oid.FriendlyName));
             }
         }
 
@@ -138,7 +137,7 @@ namespace JsonWebToken
                     case EllipticalCurves.P521:
                         return 521;
                     default:
-                        throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
+                        throw new NotSupportedException(ErrorMessages.NotSupportedCurve(Crv));
                 }
             }
         }
@@ -148,7 +147,7 @@ namespace JsonWebToken
             int validKeySize = ValidKeySize(algorithm);
             if (KeySizeInBits != validKeySize)
             {
-                throw new ArgumentOutOfRangeException(nameof(KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.InvalidEcdsaKeySize, Kid, validKeySize, KeySizeInBits));
+                throw new ArgumentOutOfRangeException(nameof(KeySizeInBits), ErrorMessages.InvalidEcdsaKeySize(this, validKeySize, KeySizeInBits));
             }
 
             return ECDsa.Create(ExportParameters(usePrivateKey));
@@ -225,7 +224,7 @@ namespace JsonWebToken
                     parameters.Curve = ECCurve.NamedCurves.nistP521;
                     break;
                 default:
-                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, Crv));
+                    throw new NotSupportedException(ErrorMessages.NotSupportedCurve(Crv));
             }
 
             return parameters;
@@ -251,7 +250,7 @@ namespace JsonWebToken
                     curve = ECCurve.NamedCurves.nistP521;
                     break;
                 default:
-                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, curveId));
+                    throw new NotSupportedException(ErrorMessages.NotSupportedCurve(curveId));
             }
 
             using (var ecdsa = ECDsa.Create())

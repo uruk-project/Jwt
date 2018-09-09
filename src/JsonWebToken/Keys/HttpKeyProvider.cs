@@ -80,7 +80,7 @@ namespace JsonWebToken
 
                 if (_currentKeys == null)
                 {
-                    throw new InvalidOperationException(ErrorMessages.FormatInvariant("Unable to obtain keys from: '{0}'", (metadataAddress ?? "null")));
+                    throw new InvalidOperationException(ErrorMessages.UnableToObtainKeys(metadataAddress));
                 }
 
                 return _currentKeys.GetKeys(kid);

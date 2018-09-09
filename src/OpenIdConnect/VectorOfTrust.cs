@@ -34,24 +34,24 @@ namespace JsonWebToken
                 var value = vector[i++];
                 if (!char.IsUpper(dimension))
                 {
-                    throw new ArgumentException(nameof(vector), ErrorMessages.FormatInvariant("Invalid vector value. The dimension '{0}' is not valid.", dimension));
+                    throw new ArgumentException(nameof(vector), ErrorMessages.VotIncorrectDimension(dimension));
                 }
 
                 if (!char.IsLower(value) && !char.IsDigit(value))
                 {
-                    throw new ArgumentException(nameof(vector), ErrorMessages.FormatInvariant("Invalid vector value. The value '{0}' for dimension '{1}' is not valid. Must be a lowercase letter [a-z] or a single digit [0-9].", value, dimension));
+                    throw new ArgumentException(nameof(vector), ErrorMessages.VotIncorrectValue(value, dimension));
                 }
 
                 if (i != vector.Length && vector[i] != '.')
                 {
-                    throw new ArgumentException(nameof(vector), ErrorMessages.FormatInvariant("Invalid vector value. The separator '{0}' is not valid. Should be '.'.", vector[i]));
+                    throw new ArgumentException(nameof(vector), ErrorMessages.VotIncorrectSeparator(vector[i]));
                 }
 
                 if (_vector.TryGetValue(dimension, out var values))
                 {
                     if (values.Contains(value))
                     {
-                        throw new ArgumentException(nameof(vector), ErrorMessages.FormatInvariant("Invalid vector value. The dimension '{0}' define the value '{1}' more than once.", dimension, value));
+                        throw new ArgumentException(nameof(vector), ErrorMessages.VotTooManyValues(dimension, value));
                     }
 
                     values.Add(value);
