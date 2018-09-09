@@ -82,7 +82,7 @@ namespace JsonWebToken
                 kwProvider = context.KeyWrapFactory.Create(Key, encryptionAlgorithm, contentEncryptionAlgorithm);
                 if (kwProvider == null)
                 {
-                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, encryptionAlgorithm));
+                    throw new NotSupportedException(ErrorMessages.NotSuportedAlgorithmForKeyWrap(encryptionAlgorithm));
                 }
             }
 
@@ -94,7 +94,7 @@ namespace JsonWebToken
             {
                 if (!kwProvider.TryWrapKey(null, header, wrappedKey, out var cek, out var keyWrappedBytesWritten))
                 {
-                    throw new CryptographicException(ErrorMessages.KeyWrapFailed);
+                    throw new CryptographicException(ErrorMessages.KeyWrapFailed());
                 }
 
                 encryptionProvider = cek.CreateAuthenticatedEncryptor(encryptionAlgorithm);
@@ -102,7 +102,7 @@ namespace JsonWebToken
 
             if (encryptionProvider == null)
             {
-                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
+                throw new NotSupportedException(ErrorMessages.NotSupportedEncryptionAlgorithm(encryptionAlgorithm));
             }
 
             if (header[HeaderParameters.Kid] == null && Key.Kid != null)
@@ -145,7 +145,7 @@ namespace JsonWebToken
                         compressionProvider = Compressor.Create(CompressionAlgorithm);
                         if (compressionProvider == null)
                         {
-                            throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCompressionAlgorithm, CompressionAlgorithm));
+                            throw new NotSupportedException(ErrorMessages.NotSupportedCompressionAlgorithm(CompressionAlgorithm));
                         }
                     }
 
@@ -228,7 +228,7 @@ namespace JsonWebToken
             }
             catch (Exception ex)
             {
-                throw new CryptographicException(ErrorMessages.FormatInvariant(ErrorMessages.EncryptionFailed, encryptionAlgorithm, Key.Kid), ex);
+                throw new CryptographicException(ErrorMessages.EncryptionFailed(encryptionAlgorithm, Key), ex);
             }
         }
     }

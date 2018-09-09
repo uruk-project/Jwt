@@ -23,7 +23,7 @@ namespace JsonWebToken
                 return EpochTime.ToDateTime((long)reader.Value);
             }
 
-            throw new JsonSerializationException(ErrorMessages.FormatInvariant("Unexpected token parsing date. Expected Integer, got {0}.", reader.TokenType));
+            throw new JsonSerializationException(ErrorMessages.UnexpectedTokenParsingDate(reader.TokenType));
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

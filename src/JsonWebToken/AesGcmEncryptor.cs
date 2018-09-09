@@ -11,13 +11,13 @@ namespace JsonWebToken
         {
             if (encryptionAlgorithm.Category != EncryptionTypes.AesGcm)
             {
-                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
+                throw new ArgumentException(ErrorMessages.NotSupportedEncryptionAlgorithm(encryptionAlgorithm));
             }
 
             _key = key ?? throw new ArgumentNullException(nameof(key));
             if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBytes << 3)
             {
-                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits));
+                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.EncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits));
             }
 
             _encryptionAlgorithm = encryptionAlgorithm;

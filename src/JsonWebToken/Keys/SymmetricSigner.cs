@@ -42,12 +42,12 @@ namespace JsonWebToken
 
             if (key.KeySizeInBits < MinimumKeySizeInBits)
             {
-                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.AlgorithmRequireMinimumKeySize, (algorithm.Name ?? "null"), MinimumKeySizeInBits, key.KeySizeInBits));
+                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.AlgorithmRequireMinimumKeySize(algorithm.Name, MinimumKeySizeInBits, key.KeySizeInBits));
             }
 
             if (algorithm.Category != AlgorithmCategory.Symmetric)
             {
-                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedAlgorithm, algorithm.Name), nameof(algorithm));
+                throw new ArgumentException(ErrorMessages.NotSupportedAlgorithm(algorithm.Name), nameof(algorithm));
             }
 
             _hashSizeInBytes = Algorithm.RequiredKeySizeInBits >> 2;
@@ -63,7 +63,7 @@ namespace JsonWebToken
                     _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha512ObjectPoolPolicy(key.RawK));
                     break;
                 default:
-                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedKeyedHashAlgorithm, algorithm));
+                    throw new NotSupportedException(ErrorMessages.NotSupportedKeyedHashAlgorithm(algorithm));
             }
         }
 
@@ -83,7 +83,7 @@ namespace JsonWebToken
             {
                 if (value < DefaultMinimumSymmetricKeySizeInBits)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), ErrorMessages.FormatInvariant(ErrorMessages.MustBeAtLeast, nameof(DefaultMinimumSymmetricKeySizeInBits), DefaultMinimumSymmetricKeySizeInBits));
+                    throw new ArgumentOutOfRangeException(nameof(value), ErrorMessages.MustBeAtLeast(nameof(DefaultMinimumSymmetricKeySizeInBits), DefaultMinimumSymmetricKeySizeInBits));
                 }
 
                 _minimumKeySizeInBits = value;
@@ -185,7 +185,7 @@ namespace JsonWebToken
 
             if (length <= 0)
             {
-                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.MustBeGreaterThanZero, nameof(length), length));
+                throw new ArgumentException(ErrorMessages.MustBeGreaterThanZero(nameof(length), length));
             }
 
             var keyedHash = _hashAlgorithmPool.Get();

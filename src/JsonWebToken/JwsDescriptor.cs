@@ -289,7 +289,7 @@ namespace JsonWebToken
                 signatureProvider = context.SignatureFactory.Create(key, alg, willCreateSignatures: true);
                 if (signatureProvider == null)
                 {
-                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, key.Alg, key.Kid));
+                    throw new NotSupportedException(ErrorMessages.NotSupportedSignatureAlgorithm(alg, key));
                 }
             }
 
@@ -394,7 +394,7 @@ namespace JsonWebToken
             {
                 if (Payload.ContainsKey(ProhibitedClaims[i]))
                 {
-                    throw new JwtDescriptorException(ErrorMessages.FormatInvariant("The claim '{0}' is prohibited.", ProhibitedClaims[i]));
+                    throw new JwtDescriptorException(ErrorMessages.ClaimIsProhibited(ProhibitedClaims[i]));
                 }
             }
 
@@ -402,7 +402,7 @@ namespace JsonWebToken
             {
                 if (!Payload.TryGetValue(claim.Key, out JToken token) || token.Type == JTokenType.Null)
                 {
-                    throw new JwtDescriptorException(ErrorMessages.FormatInvariant("The claim '{0}' is required.", claim.Key));
+                    throw new JwtDescriptorException(ErrorMessages.ClaimIsRequired(claim.Key));
                 }
 
                 bool claimFound = false;
@@ -417,7 +417,7 @@ namespace JsonWebToken
 
                 if (!claimFound)
                 {
-                    throw new JwtDescriptorException(ErrorMessages.FormatInvariant("The claim '{0}' must be of type [{1}].", claim.Key, string.Join(", ", claim.Value.Select(t => t.ToString()))));
+                    throw new JwtDescriptorException(ErrorMessages.ClaimMustBeOfType(claim));
                 }
             }
 

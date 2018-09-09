@@ -60,7 +60,7 @@ namespace JsonWebToken
                 return RSAEncryptionPadding.OaepSHA256;
             }
 
-            throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSuportedAlgorithmForKeyWrap, algorithm));
+            throw new NotSupportedException(ErrorMessages.NotSuportedAlgorithmForKeyWrap(algorithm));
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace JsonWebToken
 
             if (_rsa == null)
             {
-                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
+                throw new NotSupportedException(ErrorMessages.NotSupportedUnwrap(Algorithm));
             }
 
             try
@@ -117,7 +117,7 @@ namespace JsonWebToken
 
             if (_rsa == null)
             {
-                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, Algorithm));
+                throw new NotSupportedException(ErrorMessages.NotSupportedUnwrap(Algorithm));
             }
 
             try

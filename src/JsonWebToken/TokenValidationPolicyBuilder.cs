@@ -52,7 +52,7 @@ namespace JsonWebToken
         {
             if (bytes <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(bytes), ErrorMessages.FormatInvariant(ErrorMessages.MustBeGreaterThanZero, nameof(bytes), bytes));
+                throw new ArgumentOutOfRangeException(nameof(bytes), ErrorMessages.MustBeGreaterThanZero(nameof(bytes), bytes));
             }
 
             _maximumTokenSizeInBytes = bytes;
@@ -124,7 +124,7 @@ namespace JsonWebToken
         {
             if (clockSkew <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(clockSkew), ErrorMessages.FormatInvariant(ErrorMessages.MustBeGreaterThanTimeSpanZero, nameof(clockSkew), clockSkew));
+                throw new ArgumentOutOfRangeException(nameof(clockSkew), ErrorMessages.MustBeGreaterThanTimeSpanZero(nameof(clockSkew), clockSkew));
             }
 
             _validations.Add(new LifetimeValidation(requireExpirationTime, clockSkew));
@@ -179,7 +179,7 @@ namespace JsonWebToken
         {
             if (!_hasSignatureValidation)
             {
-                throw new InvalidOperationException(ErrorMessages.FormatInvariant("Signature validation must be either defined by calling the method '{0}' or explicitly ignored by calling the '{1}' method.", nameof(RequireSignature), nameof(AcceptUnsecureToken)));
+                throw new InvalidOperationException(ErrorMessages.PolicyBuilderRequireSignature());
             }
         }
 

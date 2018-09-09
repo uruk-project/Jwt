@@ -28,12 +28,12 @@ namespace JsonWebToken
 
             if (willCreateSignatures && !key.HasPrivateKey)
             {
-                throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.MissingPrivateKey, key.Kid));
+                throw new InvalidOperationException(ErrorMessages.MissingPrivateKey(key));
             }
 
             if (key.KeySizeInBits < 256)
             {
-                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.SigningKeyTooSmall, key.Kid, 256, key.KeySizeInBits));
+                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.SigningKeyTooSmall(key, 256, key.KeySizeInBits));
             }
 
             _hashAlgorithm = algorithm.HashAlgorithm;
@@ -50,7 +50,7 @@ namespace JsonWebToken
                     _hashSize = 132;
                     break;
                 default:
-                    throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCurve, key.Crv));
+                    throw new NotSupportedException(ErrorMessages.NotSupportedCurve(key.Crv));
             }
 
             _ecdsa = ResolveAlgorithm(key, algorithm, willCreateSignatures);
@@ -71,18 +71,14 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(input));
             }
 
-            if (_ecdsa != null)
-            {
 #if NETCOREAPP2_1
                 return _ecdsa.TrySignData(input, destination, _hashAlgorithm, out bytesWritten);
 #else
                 var result = _ecdsa.SignData(input.ToArray(), _hashAlgorithm);
                 bytesWritten = result.Length;
-                result.CopyTo(destination);
+            result.CopyTo(destination);
+                return true;
 #endif
-            }
-
-            throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedUnwrap, _hashAlgorithm));
         }
 
         /// <summary>
@@ -101,11 +97,6 @@ namespace JsonWebToken
             if (signature.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(signature));
-            }
-
-            if (_ecdsa == null)
-            {
-                throw new NotSupportedException(ErrorMessages.NotSupportedUnwrap);
             }
 
 #if NETCOREAPP2_1

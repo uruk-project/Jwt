@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace JsonWebToken
 {
@@ -17,7 +15,7 @@ namespace JsonWebToken
         private JsonWebKey _key;
 
         public JwtDescriptor()
-            :this(new JObject())
+            : this(new JObject())
         {
         }
 
@@ -46,7 +44,7 @@ namespace JsonWebToken
             get => GetHeaderParameter(HeaderParameters.Alg);
             set => Header[HeaderParameters.Alg] = value;
         }
-        
+
         public string KeyId
         {
             get => GetHeaderParameter(HeaderParameters.Kid);
@@ -151,7 +149,7 @@ namespace JsonWebToken
             {
                 if (!Header.TryGetValue(header.Key, out JToken token) || token.Type == JTokenType.Null)
                 {
-                    throw new JwtDescriptorException(ErrorMessages.FormatInvariant("The header parameter '{0}' is required.", header.Key));
+                    throw new JwtDescriptorException(ErrorMessages.HeaderIsRequired(header.Key));
                 }
 
                 bool headerFound = false;
@@ -166,7 +164,7 @@ namespace JsonWebToken
 
                 if (!headerFound)
                 {
-                    throw new JwtDescriptorException(ErrorMessages.FormatInvariant("The header parameter '{0}' must be of type [{1}].", header.Key, string.Join(", ", header.Value.Select(t => t.ToString()))));
+                    throw new JwtDescriptorException(ErrorMessages.HeaderMustBeOfType(header));
                 }
             }
         }

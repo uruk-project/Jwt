@@ -31,7 +31,7 @@ namespace JsonWebToken
 
             if (encryptionAlgorithm.Category != EncryptionTypes.AesHmac)
             {
-                throw new ArgumentException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedEncryptionAlgorithm, encryptionAlgorithm));
+                throw new ArgumentException(ErrorMessages.NotSupportedEncryptionAlgorithm(encryptionAlgorithm));
             }
 
             ValidateKeySize(key, encryptionAlgorithm);
@@ -46,7 +46,7 @@ namespace JsonWebToken
             _symmetricSignatureProvider = hmacKey.CreateSigner(_signatureAlgorithm, true) as SymmetricSigner;
             if (_symmetricSignatureProvider == null)
             {
-                throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureHashAlgorithm, encryptionAlgorithm));
+                throw new NotSupportedException(ErrorMessages.NotSupportedSignatureAlgorithm(_signatureAlgorithm));
             }
         }
 
@@ -201,7 +201,7 @@ namespace JsonWebToken
         {
             if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBytes << 3)
             {
-                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.FormatInvariant(ErrorMessages.EncryptionKeyTooSmall, key.Kid, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits));
+                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.EncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits));
             }
         }
 
