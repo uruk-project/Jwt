@@ -99,7 +99,6 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(signature));
             }
 
-
 #if NETCOREAPP2_1
             return _ecdsa.VerifyData(input, signature, _hashAlgorithm);
 #else
