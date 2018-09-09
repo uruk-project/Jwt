@@ -5,7 +5,7 @@ namespace JsonWebToken
     /// <summary>
     /// Provides authenticated encryption and decryption services
     /// </summary>
-    public abstract class AuthenticatedEncryptionProvider : IDisposable
+    public abstract class AuthenticatedEncryptor : IDisposable
     {
         public virtual void Dispose()
         {

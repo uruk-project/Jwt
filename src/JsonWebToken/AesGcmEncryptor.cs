@@ -2,12 +2,12 @@
 
 namespace JsonWebToken
 {
-    public sealed class AesGcmEncryptionProvider : AuthenticatedEncryptionProvider
+    public sealed class AesGcmEncryptor : AuthenticatedEncryptor
     {
         private readonly SymmetricJwk _key;
         private readonly EncryptionAlgorithm _encryptionAlgorithm;
 
-        public AesGcmEncryptionProvider(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
+        public AesGcmEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (encryptionAlgorithm.Category != EncryptionTypes.AesGcm)
             {

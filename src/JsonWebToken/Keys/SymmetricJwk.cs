@@ -95,51 +95,51 @@ namespace JsonWebToken
             return key;
         }
 
-        public override bool IsSupportedAlgorithm(KeyManagementAlgorithm algorithm)
+        public override bool IsSupported(KeyManagementAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.Symmetric && algorithm.RequiredKeySizeInBits == KeySizeInBits;
         }
 
-        public override bool IsSupportedAlgorithm(SignatureAlgorithm algorithm)
+        public override bool IsSupported(SignatureAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.Symmetric;
         }
 
-        public override bool IsSupportedAlgorithm(EncryptionAlgorithm algorithm)
+        public override bool IsSupported(EncryptionAlgorithm algorithm)
         {
             return algorithm.Category == EncryptionTypes.AesHmac;
         }
 
-        public override SignatureProvider CreateSignatureProvider(SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public override Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (algorithm == null)
             {
                 return null;
             }
 
-            if (IsSupportedAlgorithm(algorithm))
+            if (IsSupported(algorithm))
             {
-                return new SymmetricSignatureProvider(this, algorithm);
+                return new SymmetricSigner(this, algorithm);
             }
 
             return null;
         }
 
-        public override KeyWrapProvider CreateKeyWrapProvider(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
             if (contentEncryptionAlgorithm == null)
             {
                 return null;
             }
             
-            if (IsSupportedAlgorithm(contentEncryptionAlgorithm))
+            if (IsSupported(contentEncryptionAlgorithm))
             {
                 switch (encryptionAlgorithm.Category)
                 {
                     case EncryptionTypes.AesHmac:
-                        return new AesKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                        return new AesKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
                     case EncryptionTypes.AesGcm:
-                        return new AesGcmKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                        return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
                     default:
                         return null;
                 }              
@@ -148,18 +148,18 @@ namespace JsonWebToken
             return null;
         }
 
-        public override AuthenticatedEncryptionProvider CreateAuthenticatedEncryptionProvider(EncryptionAlgorithm encryptionAlgorithm)
+        public override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (IsSupportedAlgorithm(encryptionAlgorithm))
+            if (IsSupported(encryptionAlgorithm))
             {
                 switch (encryptionAlgorithm.Category)
                 {
                     case EncryptionTypes.None:
                         break;
                     case EncryptionTypes.AesHmac:
-                        return new AesCbcHmacEncryptionProvider(this, encryptionAlgorithm);
+                        return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
                     case EncryptionTypes.AesGcm:
-                        return new AesGcmEncryptionProvider(this, encryptionAlgorithm);
+                        return new AesGcmEncryptor(this, encryptionAlgorithm);
                     default:
                         return null;
                 }

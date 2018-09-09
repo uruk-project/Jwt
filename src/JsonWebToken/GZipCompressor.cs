@@ -3,7 +3,7 @@
 
 //namespace JsonWebToken
 //{
-//    public class GZipCompressionProvider : CompressionProvider<GZipStream>
+//    public class GZipCompressor : Compressor<GZipStream>
 //    {
 //        public override GZipStream CreateCompressionStream(Stream outputStream)
 //        {

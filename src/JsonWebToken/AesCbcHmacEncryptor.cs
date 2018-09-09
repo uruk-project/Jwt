@@ -11,18 +11,18 @@ namespace JsonWebToken
     /// <summary>
     /// Provides authenticated encryption and decryption services.
     /// </summary>
-    public sealed class AesCbcHmacEncryptionProvider : AuthenticatedEncryptionProvider
+    public sealed class AesCbcHmacEncryptor : AuthenticatedEncryptor
     {
         private readonly SignatureAlgorithm _signatureAlgorithm;
-        private readonly SymmetricSignatureProvider _symmetricSignatureProvider;
+        private readonly SymmetricSigner _symmetricSignatureProvider;
         private readonly ObjectPool<Aes> _aesPool;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AesCbcHmacEncryptionProvider"/> class used for encryption and decryption.
+        /// Initializes a new instance of the <see cref="AesCbcHmacEncryptor"/> class used for encryption and decryption.
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for crypto operations.</param>
         /// <param name="encryptionAlgorithm">The encryption algorithm to apply.</param>
         /// </summary>
-        public AesCbcHmacEncryptionProvider(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
+        public AesCbcHmacEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (key == null)
             {
@@ -43,7 +43,7 @@ namespace JsonWebToken
 
             _aesPool = new ObjectPool<Aes>(new AesPooledPolicy(aesKey));
             _signatureAlgorithm = encryptionAlgorithm.SignatureAlgorithm;
-            _symmetricSignatureProvider = hmacKey.CreateSignatureProvider(_signatureAlgorithm, true) as SymmetricSignatureProvider;
+            _symmetricSignatureProvider = hmacKey.CreateSigner(_signatureAlgorithm, true) as SymmetricSigner;
             if (_symmetricSignatureProvider == null)
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureHashAlgorithm, encryptionAlgorithm));

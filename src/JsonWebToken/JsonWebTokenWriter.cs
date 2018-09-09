@@ -13,9 +13,9 @@ namespace JsonWebToken
         /// Default lifetime of tokens created. When creating tokens, if 'expires' and 'notbefore' are both null, then a default will be set to: expires = DateTime.UtcNow, notbefore = DateTime.UtcNow + TimeSpan.FromMinutes(TokenLifetimeInMinutes).
         /// </summary>
         public static readonly int DefaultTokenLifetimeInMinutes = 60;
-        private readonly SignatureFactory _signatureFactory = new SignatureFactory();
-        private readonly KeyWrapFactory _keyWrapFactory = new KeyWrapFactory();
-        private readonly AuthenticatedEncryptionFactory _authenticatedEncryptionFactory = new AuthenticatedEncryptionFactory();
+        private readonly SignerFactory _signatureFactory = new SignerFactory();
+        private readonly KeyWrapperFactory _keyWrapFactory = new KeyWrapperFactory();
+        private readonly AuthenticatedEncryptorFactory _authenticatedEncryptionFactory = new AuthenticatedEncryptorFactory();
         private JsonHeaderCache _headerCache = new JsonHeaderCache();
         private bool _disposed;
 

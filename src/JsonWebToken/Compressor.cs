@@ -2,21 +2,21 @@
 
 namespace JsonWebToken
 {
-    public abstract class CompressionProvider
+    public abstract class Compressor
     {
-        public static readonly CompressionProvider Deflate = new DeflateCompressionProvider();
+        public static readonly Compressor Deflate = new DeflateCompressor();
 
-//        public static readonly CompressionProvider GZip = new GZipCompressionProvider();
+//        public static readonly Compressor GZip = new GZipCompressor();
 
 //#if NETCOREAPP2_1
-//        public static readonly CompressionProvider Brotli = new BrotliCompressionProvider();
+//        public static readonly Compressor Brotli = new BrotliCompressor();
 //#endif
 
         public abstract Span<byte> Compress(ReadOnlySpan<byte> ciphertext);
 
         public abstract Span<byte> Decompress(ReadOnlySpan<byte> compressedCiphertext);
 
-        public static CompressionProvider CreateCompressionProvider(string compressionAlgorithm)
+        public static Compressor Create(string compressionAlgorithm)
         {
             switch (compressionAlgorithm)
             {

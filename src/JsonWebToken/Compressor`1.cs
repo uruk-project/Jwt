@@ -3,7 +3,7 @@ using System.IO;
 
 namespace JsonWebToken
 {
-    public abstract class CompressionProvider<TStream> : CompressionProvider where TStream : Stream
+    public abstract class Compressor<TStream> : Compressor where TStream : Stream
     {
         public abstract TStream CreateDecompressionStream(Stream outputStream);
 

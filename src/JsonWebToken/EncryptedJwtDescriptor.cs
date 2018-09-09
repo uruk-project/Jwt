@@ -71,8 +71,8 @@ namespace JsonWebToken
             KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)Algorithm;
             bool isDirectEncryption = contentEncryptionAlgorithm == KeyManagementAlgorithm.Direct;
 
-            AuthenticatedEncryptionProvider encryptionProvider = null;
-            KeyWrapProvider kwProvider = null;
+            AuthenticatedEncryptor encryptionProvider = null;
+            KeyWrapper kwProvider = null;
             if (isDirectEncryption)
             {
                 encryptionProvider = context.AuthenticatedEncryptionFactory.Create(Key, encryptionAlgorithm);
@@ -97,7 +97,7 @@ namespace JsonWebToken
                     throw new CryptographicException(ErrorMessages.KeyWrapFailed);
                 }
 
-                encryptionProvider = cek.CreateAuthenticatedEncryptionProvider(encryptionAlgorithm);
+                encryptionProvider = cek.CreateAuthenticatedEncryptor(encryptionAlgorithm);
             }
 
             if (encryptionProvider == null)
@@ -139,10 +139,10 @@ namespace JsonWebToken
                     int bytesWritten = Base64Url.Base64UrlEncode(utf8EncodedHeader, base64EncodedHeader);
                     EncodingHelper.GetAsciiBytes(base64EncodedHeader, asciiEncodedHeader);
 #endif                  
-                    CompressionProvider compressionProvider = null;
+                    Compressor compressionProvider = null;
                     if (CompressionAlgorithm != null)
                     {
-                        compressionProvider = CompressionProvider.CreateCompressionProvider(CompressionAlgorithm);
+                        compressionProvider = Compressor.Create(CompressionAlgorithm);
                         if (compressionProvider == null)
                         {
                             throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedCompressionAlgorithm, CompressionAlgorithm));

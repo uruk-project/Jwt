@@ -9,7 +9,7 @@ using System.Text;
 
 namespace JsonWebToken
 {
-    public sealed class EcdhKeyWrapProvider : KeyWrapProvider
+    public sealed class EcdhKeyWrapper : KeyWrapper
     {
         private static readonly byte[] _secretPreprend = { 0x0, 0x0, 0x0, 0x1 };
         private static readonly uint OneBigEndian = BitConverter.IsLittleEndian ? 0x1000000u : 1u;
@@ -19,7 +19,7 @@ namespace JsonWebToken
         private readonly int _keyLength;
         private readonly HashAlgorithmName _hashAlgorithm;
 
-        public EcdhKeyWrapProvider(EccJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public EcdhKeyWrapper(EccJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
             : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
             _algorithmName = GetAlgorithmName();
@@ -72,7 +72,7 @@ namespace JsonWebToken
                     var (keyLength, aesAlgorithm) = GetAesAlgorithm();
 
                     var key = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, keyLength), false);
-                    using (KeyWrapProvider aesKeyWrapProvider = key.CreateKeyWrapProvider(EncryptionAlgorithm, aesAlgorithm))
+                    using (KeyWrapper aesKeyWrapProvider = key.CreateKeyWrapper(EncryptionAlgorithm, aesAlgorithm))
                     {
                         return aesKeyWrapProvider.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
                     }
@@ -129,7 +129,7 @@ namespace JsonWebToken
                 {
                     var (keyLength, aesAlgorithm) = GetAesAlgorithm();
                     var kek = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, keyLength), false);
-                    using (KeyWrapProvider aesKeyWrapProvider = kek.CreateKeyWrapProvider(EncryptionAlgorithm, aesAlgorithm))
+                    using (KeyWrapper aesKeyWrapProvider = kek.CreateKeyWrapper(EncryptionAlgorithm, aesAlgorithm))
                     {
                         return aesKeyWrapProvider.TryWrapKey(null, header, destination, out contentEncryptionKey, out bytesWritten);
                     }

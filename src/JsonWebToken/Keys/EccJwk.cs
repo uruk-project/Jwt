@@ -159,40 +159,40 @@ namespace JsonWebToken
             return algorithm.RequiredKeySizeInBits;
         }
 
-        public override bool IsSupportedAlgorithm(SignatureAlgorithm algorithm)
+        public override bool IsSupported(SignatureAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.EllipticCurve;
         }
 
-        public override bool IsSupportedAlgorithm(KeyManagementAlgorithm algorithm)
+        public override bool IsSupported(KeyManagementAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.EllipticCurve;
         }
 
-        public override bool IsSupportedAlgorithm(EncryptionAlgorithm algorithm)
+        public override bool IsSupported(EncryptionAlgorithm algorithm)
         {
             return algorithm.Category == EncryptionTypes.AesHmac || algorithm.Category == EncryptionTypes.AesGcm;
         }
 
-        public override SignatureProvider CreateSignatureProvider(SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public override Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (algorithm == null)
             {
                 return null;
             }
 
-            if (IsSupportedAlgorithm(algorithm))
+            if (IsSupported(algorithm))
             {
-                return new EcdsaSignatureProvider(this, algorithm, willCreateSignatures);
+                return new EcdsaSigner(this, algorithm, willCreateSignatures);
             }
 
             return null;
         }
 
-        public override KeyWrapProvider CreateKeyWrapProvider(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
 #if NETCOREAPP2_1
-            return new EcdhKeyWrapProvider(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+            return new EcdhKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
 #else
             return null;
 #endif

@@ -3,7 +3,7 @@ using System.IO.Compression;
 
 namespace JsonWebToken
 {
-    public sealed class DeflateCompressionProvider : CompressionProvider<DeflateStream>
+    public sealed class DeflateCompressor : Compressor<DeflateStream>
     {
         public override DeflateStream CreateCompressionStream(Stream outputStream)
         {

@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
-    public sealed class RsaSignatureProvider : SignatureProvider
+    public sealed class RsaSigner : Signer
     {
         private readonly ObjectPool<RSA> _hashAlgorithmPool;
         private readonly HashAlgorithmName _hashAlgorithm;
@@ -23,7 +23,7 @@ namespace JsonWebToken
         /// Creating signatures requires that the <see cref="JsonWebKey"/> has access to a private key.
         /// Verifying signatures (the default), does not require access to the private key.
         /// </para>
-        public RsaSignatureProvider(RsaJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public RsaSigner(RsaJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
             : base(key, algorithm)
         {
             if (key == null)
@@ -36,7 +36,7 @@ namespace JsonWebToken
                 throw new InvalidOperationException(ErrorMessages.FormatInvariant(ErrorMessages.MissingPrivateKey, key.Kid));
             }
 
-            if (!key.IsSupportedAlgorithm(algorithm))
+            if (!key.IsSupported(algorithm))
             {
                 throw new NotSupportedException(ErrorMessages.FormatInvariant(ErrorMessages.NotSupportedSignatureAlgorithm, (algorithm.Name ?? "null"), key));
             }

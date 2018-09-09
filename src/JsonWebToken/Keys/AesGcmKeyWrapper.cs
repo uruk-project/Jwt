@@ -3,12 +3,12 @@ using System;
 
 namespace JsonWebToken
 {
-    public sealed class AesGcmKeyWrapProvider : KeyWrapProvider
+    public sealed class AesGcmKeyWrapper : KeyWrapper
     {
         private const int IVSize = 12;
         private const int TagSize = 16;
 
-        public AesGcmKeyWrapProvider(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        public AesGcmKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
             if (key.K == null)

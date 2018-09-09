@@ -14,9 +14,9 @@ namespace JsonWebToken
         private const byte dot = 0x2E;
         private readonly IKeyProvider[] _encryptionKeyProviders;
         private readonly JwtHeaderCache _headerCache = new JwtHeaderCache();
-        private readonly KeyWrapFactory _keyWrapFactory = new KeyWrapFactory();
-        private readonly SignatureFactory _signatureFactory = new SignatureFactory();
-        private readonly AuthenticatedEncryptionFactory _authenticatedEncryptionFactory = new AuthenticatedEncryptionFactory();
+        private readonly KeyWrapperFactory _keyWrapFactory = new KeyWrapperFactory();
+        private readonly SignerFactory _signatureFactory = new SignerFactory();
+        private readonly AuthenticatedEncryptorFactory _authenticatedEncryptionFactory = new AuthenticatedEncryptorFactory();
 
         private bool _disposed;
 
@@ -219,7 +219,7 @@ namespace JsonWebToken
                 var compressionAlgorithm = header.Zip;
                 if (compressionAlgorithm != null)
                 {
-                    CompressionProvider compressionProvider = CompressionProvider.CreateCompressionProvider(compressionAlgorithm);
+                    Compressor compressionProvider = Compressor.Create(compressionAlgorithm);
                     if (compressionProvider == null)
                     {
                         return TokenValidationResult.InvalidHeader(null, HeaderParameters.Zip);
@@ -388,7 +388,7 @@ namespace JsonWebToken
             for (int i = 0; i < keys.Count; i++)
             {
                 var key = keys[i];
-                KeyWrapProvider kwp = _keyWrapFactory.Create(key, enc, alg);
+                KeyWrapper kwp = _keyWrapFactory.Create(key, enc, alg);
                 if (kwp != null)
                 {
                     Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length)];
