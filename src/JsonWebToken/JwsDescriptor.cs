@@ -289,7 +289,7 @@ namespace JsonWebToken
                 signatureProvider = context.SignatureFactory.Create(key, alg, willCreateSignatures: true);
                 if (signatureProvider == null)
                 {
-                    throw new NotSupportedException(ErrorMessages.NotSupportedSignatureAlgorithm(alg, key));
+                    Errors.ThrowNotSupportedSignatureAlgorithm(alg, key);
                 }
             }
 
@@ -394,7 +394,7 @@ namespace JsonWebToken
             {
                 if (Payload.ContainsKey(ProhibitedClaims[i]))
                 {
-                    throw new JwtDescriptorException(ErrorMessages.ClaimIsProhibited(ProhibitedClaims[i]));
+                    Errors.ThrowClaimIsProhibited(ProhibitedClaims[i]);
                 }
             }
 
@@ -402,7 +402,7 @@ namespace JsonWebToken
             {
                 if (!Payload.TryGetValue(claim.Key, out JToken token) || token.Type == JTokenType.Null)
                 {
-                    throw new JwtDescriptorException(ErrorMessages.ClaimIsRequired(claim.Key));
+                    Errors.ThrowClaimIsRequired(claim.Key);
                 }
 
                 bool claimFound = false;
@@ -417,7 +417,7 @@ namespace JsonWebToken
 
                 if (!claimFound)
                 {
-                    throw new JwtDescriptorException(ErrorMessages.ClaimMustBeOfType(claim));
+                    Errors.ThrowClaimMustBeOfType(claim);
                 }
             }
 

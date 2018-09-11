@@ -29,7 +29,7 @@ namespace JsonWebToken
             
             if (!key.IsSupported(algorithm))
             {
-                throw new NotSupportedException(ErrorMessages.NotSuportedAlgorithmForKeyWrap(algorithm));
+                Errors.ThrowNotSupportedAlgorithmForKeyWrap(algorithm);
             }
 
             Algorithm = algorithm;

@@ -149,7 +149,7 @@ namespace JsonWebToken
             {
                 if (!Header.TryGetValue(header.Key, out JToken token) || token.Type == JTokenType.Null)
                 {
-                    throw new JwtDescriptorException(ErrorMessages.HeaderIsRequired(header.Key));
+                    Errors.ThrowHeaderIsRequired(header.Key);
                 }
 
                 bool headerFound = false;
@@ -164,7 +164,7 @@ namespace JsonWebToken
 
                 if (!headerFound)
                 {
-                    throw new JwtDescriptorException(ErrorMessages.HeaderMustBeOfType(header));
+                    Errors.ThrowHeaderMustBeOfType(header);
                 }
             }
         }

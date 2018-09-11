@@ -82,7 +82,7 @@ namespace JsonWebToken
                 kwProvider = context.KeyWrapFactory.Create(Key, encryptionAlgorithm, contentEncryptionAlgorithm);
                 if (kwProvider == null)
                 {
-                    throw new NotSupportedException(ErrorMessages.NotSuportedAlgorithmForKeyWrap(encryptionAlgorithm));
+                    Errors.ThrowNotSuportedAlgorithmForKeyWrap(encryptionAlgorithm);
                 }
             }
 
@@ -94,7 +94,7 @@ namespace JsonWebToken
             {
                 if (!kwProvider.TryWrapKey(null, header, wrappedKey, out var cek, out var keyWrappedBytesWritten))
                 {
-                    throw new CryptographicException(ErrorMessages.KeyWrapFailed());
+                    Errors.ThrowKeyWrapFailed();
                 }
 
                 encryptionProvider = cek.CreateAuthenticatedEncryptor(encryptionAlgorithm);
@@ -102,7 +102,7 @@ namespace JsonWebToken
 
             if (encryptionProvider == null)
             {
-                throw new NotSupportedException(ErrorMessages.NotSupportedEncryptionAlgorithm(encryptionAlgorithm));
+                Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
             }
 
             if (header[HeaderParameters.Kid] == null && Key.Kid != null)
@@ -145,7 +145,7 @@ namespace JsonWebToken
                         compressionProvider = Compressor.Create(CompressionAlgorithm);
                         if (compressionProvider == null)
                         {
-                            throw new NotSupportedException(ErrorMessages.NotSupportedCompressionAlgorithm(CompressionAlgorithm));
+                            Errors.ThrowNotSupportedCompressionAlgorithm(CompressionAlgorithm);
                         }
                     }
 
@@ -228,7 +228,8 @@ namespace JsonWebToken
             }
             catch (Exception ex)
             {
-                throw new CryptographicException(ErrorMessages.EncryptionFailed(encryptionAlgorithm, Key), ex);
+                Errors.ThrowEncryptionFailed(encryptionAlgorithm, Key, ex);
+                return null;
             }
         }
     }

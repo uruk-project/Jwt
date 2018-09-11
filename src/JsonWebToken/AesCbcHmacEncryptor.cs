@@ -31,7 +31,7 @@ namespace JsonWebToken
 
             if (encryptionAlgorithm.Category != EncryptionTypes.AesHmac)
             {
-                throw new ArgumentException(ErrorMessages.NotSupportedEncryptionAlgorithm(encryptionAlgorithm));
+                Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
             }
 
             ValidateKeySize(key, encryptionAlgorithm);
@@ -46,7 +46,7 @@ namespace JsonWebToken
             _symmetricSignatureProvider = hmacKey.CreateSigner(_signatureAlgorithm, true) as SymmetricSigner;
             if (_symmetricSignatureProvider == null)
             {
-                throw new NotSupportedException(ErrorMessages.NotSupportedSignatureAlgorithm(_signatureAlgorithm));
+                Errors.ThrowNotSupportedSignatureAlgorithm(_signatureAlgorithm);
             }
         }
 
@@ -160,10 +160,9 @@ namespace JsonWebToken
                 ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
                 BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length), associatedData.Length * 8);
                 if (!_symmetricSignatureProvider.Verify(macBytes, authenticationTag, _symmetricSignatureProvider.Key.KeySizeInBits >> 3))
-                {
-                    bytesWritten = 0;
+                {                   
                     plaintext.Clear();
-                    return false;
+                    return Errors.TryWriteError(out bytesWritten);
                 }
 
                 Aes aes = _aesPool.Get();
@@ -184,9 +183,8 @@ namespace JsonWebToken
             }
             catch
             {
-                bytesWritten = 0;
                 plaintext.Clear();
-                return false;
+                return Errors.TryWriteError(out bytesWritten);
             }
             finally
             {
@@ -201,7 +199,7 @@ namespace JsonWebToken
         {
             if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBytes << 3)
             {
-                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.EncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits));
+                Errors.ThrowEncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
             }
         }
 

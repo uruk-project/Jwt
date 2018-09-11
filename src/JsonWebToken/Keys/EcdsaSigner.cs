@@ -28,12 +28,12 @@ namespace JsonWebToken
 
             if (willCreateSignatures && !key.HasPrivateKey)
             {
-                throw new InvalidOperationException(ErrorMessages.MissingPrivateKey(key));
+                Errors.ThrowMissingPrivateKey(key);
             }
 
             if (key.KeySizeInBits < 256)
             {
-                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.SigningKeyTooSmall(key, 256, key.KeySizeInBits));
+                Errors.ThrowSigningKeyTooSmall(key, 256);
             }
 
             _hashAlgorithm = algorithm.HashAlgorithm;
@@ -50,7 +50,8 @@ namespace JsonWebToken
                     _hashSize = 132;
                     break;
                 default:
-                    throw new NotSupportedException(ErrorMessages.NotSupportedCurve(key.Crv));
+                    Errors.ThrowNotSupportedCurve(key.Crv);
+                    break;
             }
 
             _ecdsa = ResolveAlgorithm(key, algorithm, willCreateSignatures);

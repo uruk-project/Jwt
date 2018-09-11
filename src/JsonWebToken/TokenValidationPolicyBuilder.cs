@@ -48,14 +48,14 @@ namespace JsonWebToken
             return this;
         }
 
-        public TokenValidationPolicyBuilder MaximumTokenSizeInBytes(int bytes)
+        public TokenValidationPolicyBuilder MaximumTokenSizeInBytes(int size)
         {
-            if (bytes <= 0)
+            if (size <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(bytes), ErrorMessages.MustBeGreaterThanZero(nameof(bytes), bytes));
+                Errors.ThrowMustBeGreaterThanZero(nameof(size), size);
             }
 
-            _maximumTokenSizeInBytes = bytes;
+            _maximumTokenSizeInBytes = size;
             return this;
         }
 
@@ -124,7 +124,7 @@ namespace JsonWebToken
         {
             if (clockSkew <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(clockSkew), ErrorMessages.MustBeGreaterThanTimeSpanZero(nameof(clockSkew), clockSkew));
+                Errors.ThrowMustBeGreaterThanTimeSpanZero(nameof(clockSkew), clockSkew);
             }
 
             _validations.Add(new LifetimeValidation(requireExpirationTime, clockSkew));
@@ -179,7 +179,7 @@ namespace JsonWebToken
         {
             if (!_hasSignatureValidation)
             {
-                throw new InvalidOperationException(ErrorMessages.PolicyBuilderRequireSignature());
+                Errors.ThrowPolicyBuilderRequireSignature();
             }
         }
 

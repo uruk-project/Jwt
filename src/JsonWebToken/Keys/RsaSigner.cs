@@ -33,18 +33,18 @@ namespace JsonWebToken
 
             if (willCreateSignatures && !key.HasPrivateKey)
             {
-                throw new InvalidOperationException(ErrorMessages.MissingPrivateKey(key));
+                Errors.ThrowMissingPrivateKey(key);
             }
 
             if (!key.IsSupported(algorithm))
             {
-                throw new NotSupportedException(ErrorMessages.NotSupportedSignatureAlgorithm(algorithm, key));
+                Errors.ThrowNotSupportedSignatureAlgorithm(algorithm, key);
             }
 
             var minKeySize = willCreateSignatures ? 2048 : 1024;
             if (key.KeySizeInBits < minKeySize)
             {
-                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.SigningKeyTooSmall(key, minKeySize, key.KeySizeInBits));
+                Errors.ThrowSigningKeyTooSmall(key, minKeySize);
             }
 
             _hashAlgorithm = algorithm.HashAlgorithm;
@@ -63,7 +63,8 @@ namespace JsonWebToken
                     break;
 
                 default:
-                    throw new NotSupportedException(ErrorMessages.NotSupportedAlgorithm(algorithm));
+                    Errors.ThrowNotSupportedAlgorithm(algorithm);
+                    break;
             }
 
             _hashSizeInBytes = key.KeySizeInBits >> 3;
@@ -104,8 +105,7 @@ namespace JsonWebToken
                 }
                 catch
                 {
-                    bytesWritten = 0;
-                    return false;
+                    return Errors.TryWriteError(out bytesWritten);
                 }
 #endif
             }

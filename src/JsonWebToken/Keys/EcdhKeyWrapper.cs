@@ -51,8 +51,7 @@ namespace JsonWebToken
             {
                 if (header.Epk == null)
                 {
-                    bytesWritten = 0;
-                    return false;
+                    return Errors.TryWriteError(out bytesWritten);
                 }
 
                 byte[] partyUInfo = GetPartyInfo(header.Apu);
@@ -86,8 +85,7 @@ namespace JsonWebToken
             }
             catch
             {
-                bytesWritten = 0;
-                return false;
+                return Errors.TryWriteError(out bytesWritten);
             }
         }
 
@@ -136,16 +134,15 @@ namespace JsonWebToken
                 }
                 else
                 {
-                    bytesWritten = 0;
                     contentEncryptionKey = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keyLength >> 3), false);
+                    bytesWritten = 0;
                     return true;
                 }
             }
             catch
             {
                 contentEncryptionKey = null;
-                bytesWritten = 0;
-                return false;
+                return Errors.TryWriteError(out bytesWritten);
             }
         }
 

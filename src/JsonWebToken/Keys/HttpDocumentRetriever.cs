@@ -48,7 +48,7 @@ namespace JsonWebToken
 
             if (!IsHttps(address) && RequireHttps)
             {
-                throw new ArgumentException(ErrorMessages.RequireHttps(address), nameof(address));
+                Errors.ThrowRequireHttps(address);
             }
 
             using (HttpResponseMessage response = _httpClient.GetAsync(address, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult().EnsureSuccessStatusCode())

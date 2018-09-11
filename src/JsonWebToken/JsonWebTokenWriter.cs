@@ -35,7 +35,7 @@ namespace JsonWebToken
             {
                 if (value < 1)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), ErrorMessages.MustBeGreaterThanZero(nameof(TokenLifetimeInMinutes), value));
+                    Errors.ThrowMustBeGreaterThanZero(nameof(value), value);
                 }
 
                 _defaultTokenLifetimeInMinutes = value;
