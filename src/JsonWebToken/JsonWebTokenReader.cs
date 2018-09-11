@@ -172,6 +172,7 @@ namespace JsonWebToken
                 }
 
                 jwt = new JsonWebToken(header, payload, new TokenSegment(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), segments[2]);
+                return policy.TryValidate(new TokenValidationContext(utf8Buffer, jwt, _signatureFactory));
             }
             else if (segmentCount == Constants.JweSegmentCount)
             {
@@ -216,10 +217,10 @@ namespace JsonWebToken
                     return TokenValidationResult.DecryptionFailed();
                 }
 
-                var compressionAlgorithm = header.Zip;
-                if (compressionAlgorithm != null)
+                var zip = (CompressionAlgorithm)header.Zip;
+                if (zip != CompressionAlgorithm.Empty)
                 {
-                    Compressor compressionProvider = Compressor.Create(compressionAlgorithm);
+                    Compressor compressionProvider = zip.Compressor;
                     if (compressionProvider == null)
                     {
                         return TokenValidationResult.InvalidHeader(null, HeaderParameters.Zip);
@@ -255,8 +256,6 @@ namespace JsonWebToken
             {
                 return TokenValidationResult.MalformedToken();
             }
-
-            return policy.TryValidate(new TokenValidationContext(utf8Buffer, jwt, _signatureFactory));
         }
 
         private static T GetJsonObject<T>(ReadOnlySpan<byte> data)

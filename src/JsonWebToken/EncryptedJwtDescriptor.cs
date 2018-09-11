@@ -28,10 +28,10 @@ namespace JsonWebToken
             set => Header[HeaderParameters.Enc] = (string)value;
         }
 
-        public string CompressionAlgorithm
+        public CompressionAlgorithm CompressionAlgorithm
         {
-            get => GetHeaderParameter(HeaderParameters.Zip);
-            set => Header[HeaderParameters.Zip] = value;
+            get => (CompressionAlgorithm)GetHeaderParameter(HeaderParameters.Zip);
+            set => Header[HeaderParameters.Zip] = (string)value;
         }
 
         protected unsafe string EncryptToken(EncodingContext context, string payload)
@@ -140,9 +140,9 @@ namespace JsonWebToken
                     EncodingHelper.GetAsciiBytes(base64EncodedHeader, asciiEncodedHeader);
 #endif                  
                     Compressor compressionProvider = null;
-                    if (CompressionAlgorithm != null)
+                    if (CompressionAlgorithm != CompressionAlgorithm.Empty)
                     {
-                        compressionProvider = Compressor.Create(CompressionAlgorithm);
+                        compressionProvider = CompressionAlgorithm.Compressor;
                         if (compressionProvider == null)
                         {
                             throw new NotSupportedException(ErrorMessages.NotSupportedCompressionAlgorithm(CompressionAlgorithm));
