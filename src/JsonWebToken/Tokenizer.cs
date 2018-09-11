@@ -21,7 +21,7 @@ namespace JsonWebToken
 
             // Residue
             var length = span.Length;
-            if (length > 0 && count < maxCount)
+            if (count < maxCount)
             {
                 segments[count++] = new TokenSegment(start, length);
             }

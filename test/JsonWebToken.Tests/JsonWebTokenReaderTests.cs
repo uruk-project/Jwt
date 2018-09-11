@@ -63,6 +63,26 @@ namespace JsonWebToken.Tests
             Assert.Equal(TokenValidationStatus.Success, result.Status);
         }
 
+        [Theory]
+        [InlineData("eyJhbGciOiJSUzI1NiIsImtpZCI6IjZiYmRjYTc4MGFmM2E2NzE2M2NhNzUzMTU0NWRhN2E5IiwidHlwIjoiSldUIn0.eyJuYmYiOjE1Mjc5NzMyNDIsImV4cCI6MTUyNzk3Njg0MiwiaXNzIjoiaHR0cHM6Ly9kZW1vLmlkZW50aXR5c2VydmVyLmlvIiwiYXVkIjpbImh0dHBzOi8vZGVtby5pZGVudGl0eXNlcnZlci5pby9yZXNvdXJjZXMiLCJhcGkiXSwiY2xpZW50X2lkIjoiY2xpZW50Iiwic2NvcGUiOlsiYXBpIl19")]
+        [InlineData("eyJhbGciOiJSUzI1NiIsImtpZCI6IjZiYmRjYTc4MGFmM2E2NzE2M2NhNzUzMTU0NWRhN2E5IiwidHlwIjoiSldUIn0")]
+        [InlineData("eyJhbGciOiJSUzI1NiIsImtpZCI6IjZiYmRjYTc4MGFmM2E2NzE2M2NhNzUzMTU0NWRhN2E5IiwidHlwIjoiSldUIn0.")]
+        [InlineData("....")]
+        [InlineData("...")]
+        [InlineData("..")]
+        [InlineData(".")]
+        [InlineData("")]
+        public void ReadJwt_Malformed(string jwt)
+        {
+            var reader = new JsonWebTokenReader(Keys.Jwks);
+            var policy = new TokenValidationPolicyBuilder()
+                    .AcceptUnsecureToken()
+                    .Build();
+
+            var result = reader.TryReadToken(jwt, policy);
+            Assert.Equal(TokenValidationStatus.MalformedToken, result.Status);
+        }
+
         public static IEnumerable<object[]> GetValidTokens()
         {
             foreach (var item in Tokens.ValidTokens.Where(t => !t.Key.EndsWith("empty")))

@@ -32,5 +32,7 @@ namespace JsonWebToken
         {
             return $"Segment({Start}:{Length})";
         }
+
+        public bool IsEmpty => Length == 0;
     }
 }
