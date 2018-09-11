@@ -29,7 +29,8 @@ namespace JsonWebToken
                     Crv = EllipticalCurves.P521;
                     break;
                 default:
-                    throw new NotSupportedException(ErrorMessages.NotSupportedCurve(parameters.Curve.Oid.FriendlyName));
+                    Errors.ThrowNotSupportedCurve(parameters.Curve.Oid.FriendlyName);
+                    break;
             }
         }
 
@@ -137,7 +138,8 @@ namespace JsonWebToken
                     case EllipticalCurves.P521:
                         return 521;
                     default:
-                        throw new NotSupportedException(ErrorMessages.NotSupportedCurve(Crv));
+                        Errors.ThrowNotSupportedCurve(Crv);
+                        return 0;
                 }
             }
         }
@@ -147,7 +149,7 @@ namespace JsonWebToken
             int validKeySize = ValidKeySize(algorithm);
             if (KeySizeInBits != validKeySize)
             {
-                throw new ArgumentOutOfRangeException(nameof(KeySizeInBits), ErrorMessages.InvalidEcdsaKeySize(this, validKeySize, KeySizeInBits));
+                Errors.ThrowInvalidEcdsaKeySize(this, algorithm, validKeySize, KeySizeInBits);
             }
 
             return ECDsa.Create(ExportParameters(usePrivateKey));
@@ -224,7 +226,8 @@ namespace JsonWebToken
                     parameters.Curve = ECCurve.NamedCurves.nistP521;
                     break;
                 default:
-                    throw new NotSupportedException(ErrorMessages.NotSupportedCurve(Crv));
+                    Errors.ThrowNotSupportedCurve(Crv);
+                    break;
             }
 
             return parameters;
@@ -237,7 +240,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(curveId));
             }
 
-            ECCurve curve;
+            ECCurve curve = default;
             switch (curveId)
             {
                 case EllipticalCurves.P256:
@@ -250,7 +253,8 @@ namespace JsonWebToken
                     curve = ECCurve.NamedCurves.nistP521;
                     break;
                 default:
-                    throw new NotSupportedException(ErrorMessages.NotSupportedCurve(curveId));
+                    Errors.ThrowNotSupportedCurve(curveId);
+                    break;
             }
 
             using (var ecdsa = ECDsa.Create())

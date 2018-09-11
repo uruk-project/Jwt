@@ -13,7 +13,7 @@ namespace JsonWebToken
         {
             if (key.K == null)
             {
-                throw new ArgumentException(ErrorMessages.MalformedKey(key), nameof(key.K));
+                Errors.ThrowMalformedKey(key);
             }
         }
 

@@ -128,12 +128,12 @@ namespace JsonWebToken
                     return Empty;
             }
 
-            if (AdditionalAlgorithms.TryGetValue(value, out var algorithm))
+            if (!AdditionalAlgorithms.TryGetValue(value, out var algorithm))
             {
-                return algorithm;
+                Errors.ThrowNotSupportedAlgorithm(value);
             }
 
-            throw new NotSupportedException(ErrorMessages.NotSupportedAlgorithm(value));
+            return algorithm;
         }
 
         public override string ToString()

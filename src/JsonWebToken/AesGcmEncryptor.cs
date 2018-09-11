@@ -11,13 +11,13 @@ namespace JsonWebToken
         {
             if (encryptionAlgorithm.Category != EncryptionTypes.AesGcm)
             {
-                throw new ArgumentException(ErrorMessages.NotSupportedEncryptionAlgorithm(encryptionAlgorithm));
+                Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
             }
 
             _key = key ?? throw new ArgumentNullException(nameof(key));
             if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBytes << 3)
             {
-                throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), ErrorMessages.EncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits));
+                Errors.ThrowEncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
             }
 
             _encryptionAlgorithm = encryptionAlgorithm;
@@ -54,6 +54,6 @@ namespace JsonWebToken
                 bytesWritten = plaintext.Length;
                 return true;
             }
-        }     
+        }
     }
 }

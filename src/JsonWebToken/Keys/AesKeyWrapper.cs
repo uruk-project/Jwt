@@ -33,7 +33,7 @@ namespace JsonWebToken
         {
             if (key.K == null)
             {
-                throw new ArgumentException(ErrorMessages.MalformedKey(key), nameof(key.K));
+                Errors.ThrowMalformedKey(key);
             }
 
             _aes = GetSymmetricAlgorithm(key, algorithm);
@@ -81,7 +81,8 @@ namespace JsonWebToken
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException(ErrorMessages.CreateSymmetricAlgorithmFailed(key, algorithm), ex);
+                Errors.ThrowCreateSymmetricAlgorithmFailed(key, algorithm, ex);
+                return null;
             }
         }
 
@@ -99,7 +100,7 @@ namespace JsonWebToken
 
             if (keyBytes.Length % 8 != 0)
             {
-                throw new ArgumentException(ErrorMessages.KeySizeMustBeMultipleOf64(keyBytes.Length << 3), nameof(keyBytes));
+                Errors.ThrowKeySizeMustBeMultipleOf64(keyBytes);
             }
 
             if (_disposed)
@@ -205,14 +206,12 @@ namespace JsonWebToken
                         return true;
                     }
 
-                    bytesWritten = 0;
-                    return false;
+                    return Errors.TryWriteError(out bytesWritten);
                 }
             }
             catch
             {
-                bytesWritten = 0;
-                return false;
+                return Errors.TryWriteError(out bytesWritten);
             }
             finally
             {
@@ -224,7 +223,7 @@ namespace JsonWebToken
         {
             if (algorithm.RequiredKeySizeInBits >> 3 != key.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(key.Length), ErrorMessages.KeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, Key, key.Length << 3));
+                Errors.ThrowKeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, Key, key.Length << 3);
             }
         }
 
@@ -334,8 +333,7 @@ namespace JsonWebToken
             }
             catch
             {
-                bytesWritten = 0;
-                return false;
+                return Errors.TryWriteError(out bytesWritten);
             }
             finally
             {

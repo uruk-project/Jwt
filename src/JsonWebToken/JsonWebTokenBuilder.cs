@@ -73,7 +73,7 @@ namespace JsonWebToken
                     }
                     else if (!_noSignature)
                     {
-                        throw new InvalidOperationException("No signing key is defined.");
+                        Errors.ThrowNoSigningKeyDefined();
                     }
 
                     var jwe = new JweDescriptor(_header, jws)

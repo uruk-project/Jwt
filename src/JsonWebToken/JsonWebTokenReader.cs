@@ -298,8 +298,7 @@ namespace JsonWebToken
             var decryptionProvider = _authenticatedEncryptionFactory.Create(key, encryptionAlgorithm);
             if (decryptionProvider == null)
             {
-                bytesWritten = 0;
-                return false;
+                return Errors.TryWriteError(out bytesWritten);
             }
 
             int ciphertextLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length);

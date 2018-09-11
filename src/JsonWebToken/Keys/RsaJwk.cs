@@ -45,7 +45,7 @@ namespace JsonWebToken
         {
             if (N == null || E == null)
             {
-                throw new ArgumentException(ErrorMessages.InvalidRsaKey(this));
+                Errors.ThrowInvalidRsaKey(this);
             }
 
             RSAParameters parameters = new RSAParameters
