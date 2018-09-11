@@ -109,15 +109,13 @@ namespace JsonWebToken
 
         public void Dispose()
         {
-            if (_disposed)
+            if (!_disposed)
             {
-                return;
+                _signatureFactory.Dispose();
+                _keyWrapFactory.Dispose();
+                _authenticatedEncryptionFactory.Dispose();
+                _disposed = true;
             }
-
-            _signatureFactory.Dispose();
-            _keyWrapFactory.Dispose();
-            _authenticatedEncryptionFactory.Dispose();
-            _disposed = true;
         }
 
         private unsafe TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Buffer, TokenValidationPolicy policy)
@@ -125,9 +123,13 @@ namespace JsonWebToken
             var segments = stackalloc TokenSegment[Constants.JweSegmentCount];
             var segmentCount = Tokenizer.Tokenize(utf8Buffer, segments, Constants.JweSegmentCount);
             var headerSegment = segments[0];
+            if (headerSegment.IsEmpty)
+            {
+                return TokenValidationResult.MalformedToken();
+            }
+
             JwtHeader header;
             var rawHeader = utf8Buffer.Slice(headerSegment.Start, headerSegment.Length);
-
             try
             {
                 if (EnableHeaderCaching)
@@ -153,7 +155,7 @@ namespace JsonWebToken
             }
 
             JsonWebToken jwt;
-            if (segmentCount == Constants.JwsSegmentCount || segmentCount == Constants.JwsSegmentCount - 1)
+            if (segmentCount == Constants.JwsSegmentCount)
             {
                 var payloadSegment = segments[1];
                 var rawPayload = utf8Buffer.Slice(payloadSegment.Start, payloadSegment.Length);
