@@ -16,7 +16,7 @@ namespace JsonWebToken
 
         private readonly string _algorithmName;
         private readonly int _algorithmNameLength;
-        private readonly int _keyLength;
+        private readonly int _keySizeInBytes;
         private readonly HashAlgorithmName _hashAlgorithm;
 
         public EcdhKeyWrapper(EccJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
@@ -25,12 +25,12 @@ namespace JsonWebToken
             if (contentEncryptionAlgorithm == KeyManagementAlgorithm.EcdhEs)
             {
                 _algorithmName = encryptionAlgorithm.Name;
-                _keyLength = encryptionAlgorithm.RequiredKeySizeInBytes << 3;
+                _keySizeInBytes = encryptionAlgorithm.RequiredKeySizeInBytes;
             }
             else
             {
                 _algorithmName = contentEncryptionAlgorithm.Name;
-                _keyLength = contentEncryptionAlgorithm.WrappedAlgorithm.RequiredKeySizeInBits;
+                _keySizeInBytes = contentEncryptionAlgorithm.WrappedAlgorithm.RequiredKeySizeInBits >> 3;
             }
 
             _algorithmNameLength = Encoding.ASCII.GetByteCount(_algorithmName);
@@ -46,7 +46,7 @@ namespace JsonWebToken
         {
             if (Algorithm == KeyManagementAlgorithm.EcdhEs)
             {
-                return _keyLength >> 3;
+                return _keySizeInBytes;
             }
             else
             {
@@ -84,7 +84,7 @@ namespace JsonWebToken
                 }
                 else
                 {
-                    exchangeHash.AsSpan(0, _keyLength >> 3).CopyTo(destination);
+                    exchangeHash.AsSpan(0, _keySizeInBytes).CopyTo(destination);
                     bytesWritten = destination.Length;
                     return true;
                 }
@@ -140,7 +140,7 @@ namespace JsonWebToken
                 }
                 else
                 {
-                    contentEncryptionKey = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keyLength >> 3), false);
+                    contentEncryptionKey = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keySizeInBytes), false);
                     bytesWritten = 0;
                     return true;
                 }
@@ -183,7 +183,7 @@ namespace JsonWebToken
 
         private void WriteSuppInfo(Span<byte> destination)
         {
-            BinaryPrimitives.WriteInt32BigEndian(destination, _keyLength);
+            BinaryPrimitives.WriteInt32BigEndian(destination, _keySizeInBytes << 3);
         }
 
         private static unsafe void WriteZero(Span<byte> destination)
