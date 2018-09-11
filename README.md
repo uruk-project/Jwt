@@ -4,7 +4,7 @@ JSON Web Token  for .Net
 Provides support for JWT. 
 This library aims to propose performant JWT primitives. 
 
-[![Build status](https://ci.appveyor.com/api/projects/status/7lt4w59vy0v60s1b/branch/dev?svg=true)](https://ci.appveyor.com/project/ycrumeyrolle/jwt/branch/dev)
+[![Build status](https://ci.appveyor.com/api/projects/status/7lt4w59vy0v60s1b?svg=true)](https://ci.appveyor.com/project/ycrumeyrolle/jwt)
  [![CodeFactor](https://www.codefactor.io/repository/github/ycrumeyrolle/jwt/badge)](https://www.codefactor.io/repository/github/ycrumeyrolle/jwt)
 
 ## Versions
