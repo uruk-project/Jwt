@@ -22,9 +22,18 @@ namespace JsonWebToken
         public EcdhKeyWrapper(EccJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
             : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
-            _algorithmName = GetAlgorithmName();
+            if (contentEncryptionAlgorithm == KeyManagementAlgorithm.EcdhEs)
+            {
+                _algorithmName = encryptionAlgorithm.Name;
+                _keyLength = encryptionAlgorithm.RequiredKeySizeInBytes << 3;
+            }
+            else
+            {
+                _algorithmName = contentEncryptionAlgorithm.Name;
+                _keyLength = contentEncryptionAlgorithm.WrappedAlgorithm.RequiredKeySizeInBits;
+            }
+
             _algorithmNameLength = Encoding.ASCII.GetByteCount(_algorithmName);
-            _keyLength = GetKeyLength(contentEncryptionAlgorithm, encryptionAlgorithm);
             _hashAlgorithm = GetHashAlgorithm(encryptionAlgorithm);
         }
 
@@ -54,10 +63,7 @@ namespace JsonWebToken
                     return Errors.TryWriteError(out bytesWritten);
                 }
 
-                byte[] partyUInfo = GetPartyInfo(header.Apu);
-                byte[] partyVInfo = GetPartyInfo(header.Apv);
-
-                byte[] secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
+                byte[] secretAppend = BuildSecretAppend(header.Apu, header.Apv);
                 var ephemeralJwk = header.Epk;
                 byte[] exchangeHash;
                 using (var ephemeralKey = ECDiffieHellman.Create(ephemeralJwk.ExportParameters()))
@@ -146,29 +152,14 @@ namespace JsonWebToken
             }
         }
 
-        private string GetAlgorithmName()
+        private static string GetPartyInfo(JObject header, string headerName)
         {
-            if (Algorithm == KeyManagementAlgorithm.EcdhEs)
-            {
-                return EncryptionAlgorithm.Name;
-            }
-
-            return Algorithm.Name;
-        }
-
-        private static byte[] GetPartyInfo(JObject header, string headerName)
-        {
-            byte[] partyInfo = null;
             if (header.TryGetValue(headerName, out var token))
             {
-                partyInfo = token.Annotation<byte[]>();
-                if (partyInfo == null)
-                {
-                    partyInfo = Base64Url.Base64UrlDecode(token.Value<string>());
-                }
+                return token.Value<string>();
             }
 
-            return partyInfo ?? Array.Empty<byte>();
+            return null;
         }
 
         private static byte[] GetPartyInfo(string header)
@@ -203,16 +194,16 @@ namespace JsonWebToken
             }
         }
 
-        private static void WritePartyInfo(Span<byte> partyInfo, Span<byte> destination)
+        private static void WritePartyInfo(string partyInfo, int partyInfoLength, Span<byte> destination)
         {
-            if (partyInfo.IsEmpty)
+            if (partyInfoLength == 0)
             {
                 WriteZero(destination);
             }
             else
             {
-                BinaryPrimitives.WriteInt32BigEndian(destination, partyInfo.Length);
-                partyInfo.CopyTo(destination.Slice(sizeof(int)));
+                BinaryPrimitives.WriteInt32BigEndian(destination, partyInfoLength);
+                Base64Url.Base64UrlDecode(partyInfo, destination.Slice(sizeof(int)));
             }
         }
 
@@ -222,34 +213,25 @@ namespace JsonWebToken
             Encoding.ASCII.GetBytes(_algorithmName, destination.Slice(sizeof(int)));
         }
 
-        private byte[] BuildSecretAppend(byte[] partyUInfo, byte[] partyVInfo)
+        private byte[] BuildSecretAppend(string apu, string apv)
         {
+            int apuLength = apu == null ? 0 : Base64Url.GetArraySizeRequiredToDecode(apu.Length);
+            int apvLength = apv == null ? 0 : Base64Url.GetArraySizeRequiredToDecode(apv.Length);
+
             int algorithmLength = sizeof(int) + _algorithmNameLength;
-            int partyUInfoLength = sizeof(int) + partyUInfo.Length;
-            int partyVInfoLength = sizeof(int) + partyVInfo.Length;
+            int partyUInfoLength = sizeof(int) + apuLength;
+            int partyVInfoLength = sizeof(int) + apvLength;
             const int suppPubInfoLength = sizeof(int);
 
             int secretAppendLength = algorithmLength + partyUInfoLength + partyVInfoLength + suppPubInfoLength;
             var secretAppend = new byte[secretAppendLength];
             var secretAppendSpan = secretAppend.AsSpan();
             WriteAlgorithmId(secretAppend);
-            WritePartyInfo(partyUInfo, secretAppendSpan.Slice(algorithmLength));
-            WritePartyInfo(partyVInfo, secretAppendSpan.Slice(algorithmLength + partyUInfoLength));
+            WritePartyInfo(apu, apuLength, secretAppendSpan.Slice(algorithmLength));
+            WritePartyInfo(apv, apvLength, secretAppendSpan.Slice(algorithmLength + partyUInfoLength));
             WriteSuppInfo(secretAppendSpan.Slice(algorithmLength + partyUInfoLength + partyVInfoLength));
 
             return secretAppend;
-        }
-
-        private static int GetKeyLength(KeyManagementAlgorithm algorithm, EncryptionAlgorithm encryptionAlgorithm)
-        {
-            if (algorithm == KeyManagementAlgorithm.EcdhEs)
-            {
-                return encryptionAlgorithm.RequiredKeySizeInBytes << 3;
-            }
-            else
-            {
-                return algorithm.WrappedAlgorithm.RequiredKeySizeInBits;
-            }
         }
 
         protected override void Dispose(bool disposing)
