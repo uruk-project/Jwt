@@ -92,7 +92,7 @@ The main reason of the speed of this library is the usage of the new API provide
 | A256GCM       | AES GCM using 256-bit key                                   
 
 ### JWE content encryption key algorithm
-| "alg" Param Value  | Key Management Algorithm    | More Header Params                                                    
+| "alg" Param Value  | Key Management Algorithm                                                    
 |--------------------|--------------------|--------                                                                        
 | RSA1_5             | RSAES-PKCS1-v1_5                                                              
 | RSA-OAEP           | RSAES OAEP using default parameters                                           
