@@ -164,7 +164,7 @@ namespace JsonWebToken.Performance
 
         public readonly ref struct ParamRefReadonlyStruct
         {
-            public static ParamRefReadonlyStruct Aes128CbcHmacSha256 => new ParamRefReadonlyStruct(id: 11, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesHmac);
+            public static ParamRefReadonlyStruct Aes128CbcHmacSha256 => new ParamRefReadonlyStruct(id: 11, EncryptionAlgorithm.Aes128CbcHmacSha256, requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesHmac);
 
             public static readonly IDictionary<string, EncryptionAlgorithm> AdditionalAlgorithms = new Dictionary<string, EncryptionAlgorithm>();
 
@@ -188,7 +188,7 @@ namespace JsonWebToken.Performance
         }
         public readonly struct ParamReadonlyStruct
         {
-            public static readonly ParamReadonlyStruct Aes128CbcHmacSha256 = new ParamReadonlyStruct(id: 11, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesHmac);
+            public static readonly ParamReadonlyStruct Aes128CbcHmacSha256 = new ParamReadonlyStruct(id: 11, EncryptionAlgorithm.Aes128CbcHmacSha256, requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesHmac);
 
             public static readonly IDictionary<string, EncryptionAlgorithm> AdditionalAlgorithms = new Dictionary<string, EncryptionAlgorithm>();
 
@@ -212,7 +212,7 @@ namespace JsonWebToken.Performance
         }
         public struct ParamStruct
         {
-            public static readonly ParamStruct Aes128CbcHmacSha256 = new ParamStruct(id: 11, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesHmac);
+            public static readonly ParamStruct Aes128CbcHmacSha256 = new ParamStruct(id: 11, EncryptionAlgorithm.Aes128CbcHmacSha256, requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesHmac);
 
             public static readonly IDictionary<string, EncryptionAlgorithm> AdditionalAlgorithms = new Dictionary<string, EncryptionAlgorithm>();
 
@@ -237,7 +237,7 @@ namespace JsonWebToken.Performance
 
         public class ParamClass
         {
-            public static readonly ParamClass Aes128CbcHmacSha256 = new ParamClass(id: 11, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesHmac);
+            public static readonly ParamClass Aes128CbcHmacSha256 = new ParamClass(id: 11, EncryptionAlgorithm.Aes128CbcHmacSha256, requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesHmac);
 
             public static readonly IDictionary<string, EncryptionAlgorithm> AdditionalAlgorithms = new Dictionary<string, EncryptionAlgorithm>();
 

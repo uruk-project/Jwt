@@ -214,7 +214,7 @@ namespace JsonWebToken.Performance
                 var descriptor = new SecurityTokenDescriptor()
                 {
                     SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.Alg),
-                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.RawK), KeyManagementAlgorithms.Aes128KW, ContentEncryptionAlgorithms.Aes128CbcHmacSha256),
+                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.RawK), KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256),
                     Subject = new ClaimsIdentity(),
                     Expires = payload.Value.ContainsKey("exp") ? EpochTime.ToDateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
                     IssuedAt = payload.Value.ContainsKey("iat") ? EpochTime.ToDateTime(payload.Value.Value<long>("iat")) : default(DateTime?),

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -95,18 +96,7 @@ namespace JsonWebToken.Tests
         };
 
         [Theory]
-        [InlineData(SignatureAlgorithms.HmacSha256)]
-        [InlineData(SignatureAlgorithms.HmacSha384)]
-        [InlineData(SignatureAlgorithms.HmacSha512)]
-        [InlineData(SignatureAlgorithms.RsaSha256)]
-        [InlineData(SignatureAlgorithms.RsaSha384)]
-        [InlineData(SignatureAlgorithms.RsaSha512)]
-        [InlineData(SignatureAlgorithms.RsaSsaPssSha256)]
-        [InlineData(SignatureAlgorithms.RsaSsaPssSha384)]
-        [InlineData(SignatureAlgorithms.RsaSsaPssSha512)]
-        [InlineData(SignatureAlgorithms.EcdsaSha256)]
-        [InlineData(SignatureAlgorithms.EcdsaSha384)]
-        [InlineData(SignatureAlgorithms.EcdsaSha512)]
+        [MemberData(nameof(GetSupportedAlgorithm))]
         public void Encode_Decode(string alg)
         {
             var (signingKey, validationKey) = SelectKeys(alg);
@@ -130,36 +120,52 @@ namespace JsonWebToken.Tests
             Assert.Equal("Alice", result.Token.Subject);
         }
 
+        public static IEnumerable<object[]> GetSupportedAlgorithm()
+        {
+            yield return new object[] { (string)SignatureAlgorithm.HmacSha256 };
+            yield return new object[] { (string)SignatureAlgorithm.HmacSha384 };
+            yield return new object[] { (string)SignatureAlgorithm.HmacSha512 };
+            yield return new object[] { (string)SignatureAlgorithm.RsaSha256 };
+            yield return new object[] { (string)SignatureAlgorithm.RsaSha384 };
+            yield return new object[] { (string)SignatureAlgorithm.RsaSha512 };
+            yield return new object[] { (string)SignatureAlgorithm.RsaSsaPssSha256 };
+            yield return new object[] { (string)SignatureAlgorithm.RsaSsaPssSha384 };
+            yield return new object[] { (string)SignatureAlgorithm.RsaSsaPssSha512 };
+            yield return new object[] { (string)SignatureAlgorithm.EcdsaSha256 };
+            yield return new object[] { (string)SignatureAlgorithm.EcdsaSha384 };
+            yield return new object[] { (string)SignatureAlgorithm.EcdsaSha512 };
+        }
+
         private (JsonWebKey, JsonWebKey) SelectKeys(string alg)
         {
             switch (alg)
             {
-                case SignatureAlgorithms.HmacSha256:
+                case "HS256":
                     return (_symmetric128Key, _symmetric128Key);
-                case SignatureAlgorithms.HmacSha384:
+                case "HS384":
                     return (_symmetric128Key, _symmetric128Key);
-                case SignatureAlgorithms.HmacSha512:
+                case "HS512":
                     return (_symmetric128Key, _symmetric128Key);
 
-                case SignatureAlgorithms.RsaSha256:
+                case "RS256":
                     return (_privateRsa2048Key, _publicRsa2048Key);
-                case SignatureAlgorithms.RsaSha384:
+                case "RS384":
                     return (_privateRsa2048Key, _publicRsa2048Key);
-                case SignatureAlgorithms.RsaSha512:
-                    return (_privateRsa2048Key, _publicRsa2048Key);
-
-                case SignatureAlgorithms.RsaSsaPssSha256:
-                    return (_privateRsa2048Key, _publicRsa2048Key);
-                case SignatureAlgorithms.RsaSsaPssSha384:
-                    return (_privateRsa2048Key, _publicRsa2048Key);
-                case SignatureAlgorithms.RsaSsaPssSha512:
+                case "RS512":
                     return (_privateRsa2048Key, _publicRsa2048Key);
 
-                case SignatureAlgorithms.EcdsaSha256:
+                case "PS256":
+                    return (_privateRsa2048Key, _publicRsa2048Key);
+                case "PS384":
+                    return (_privateRsa2048Key, _publicRsa2048Key);
+                case "PS512":
+                    return (_privateRsa2048Key, _publicRsa2048Key);
+
+                case "ES256":
                     return (_privateEcc256Key, _publicEcc256Key);
-                case SignatureAlgorithms.EcdsaSha384:
+                case "ES384":
                     return (_privateEcc384Key, _publicEcc384Key);
-                case SignatureAlgorithms.EcdsaSha512:
+                case "ES512":
                     return (_privateEcc512Key, _publicEcc512Key);
             }
 

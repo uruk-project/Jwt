@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -33,18 +34,7 @@ namespace JsonWebToken.Tests
         private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256.Name);
 
         [Theory]
-        [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes128GcmKW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes192GcmKW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes256GcmKW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, KeyManagementAlgorithms.Aes128GcmKW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, KeyManagementAlgorithms.Aes192GcmKW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, KeyManagementAlgorithms.Aes256GcmKW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, KeyManagementAlgorithms.Aes128GcmKW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, KeyManagementAlgorithms.Aes192GcmKW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, KeyManagementAlgorithms.Aes256GcmKW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes128Gcm, KeyManagementAlgorithms.Direct)]
-        [InlineData(ContentEncryptionAlgorithms.Aes192Gcm, KeyManagementAlgorithms.Direct)]
-        [InlineData(ContentEncryptionAlgorithms.Aes256Gcm, KeyManagementAlgorithms.Direct)]
+        [MemberData(nameof(GetNotSupportedAlgorithms))]
         public void Encode_Decode_NotSuppoted(string enc, string alg)
         {
             var writer = new JsonWebTokenWriter();
@@ -79,18 +69,7 @@ namespace JsonWebToken.Tests
         }
 
         [Theory]
-        [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes128KW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes192KW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Aes256KW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes128CbcHmacSha256, KeyManagementAlgorithms.Direct)]
-        [InlineData(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, KeyManagementAlgorithms.Aes128KW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, KeyManagementAlgorithms.Aes192KW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, KeyManagementAlgorithms.Aes256KW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes192CbcHmacSha384, KeyManagementAlgorithms.Direct)]
-        [InlineData(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, KeyManagementAlgorithms.Aes128KW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, KeyManagementAlgorithms.Aes192KW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, KeyManagementAlgorithms.Aes256KW)]
-        [InlineData(ContentEncryptionAlgorithms.Aes256CbcHmacSha512, KeyManagementAlgorithms.Direct)]
+        [MemberData(nameof(GetSupportedAlgorithms))]
         public void Encode_Decode(string enc, string alg)
         {
             var writer = new JsonWebTokenWriter();
@@ -125,26 +104,26 @@ namespace JsonWebToken.Tests
         {
             switch (alg)
             {
-                case KeyManagementAlgorithms.Aes128KW:
-                case KeyManagementAlgorithms.Aes128GcmKW:
+                case "A128KW":
+                case "A128GCMKW":
                     return _symmetric128Key;
-                case KeyManagementAlgorithms.Aes192KW:
-                case KeyManagementAlgorithms.Aes192GcmKW:
+                case "A192KW":
+                case "A192GCMKW":
                     return _symmetric192Key;
-                case KeyManagementAlgorithms.Aes256KW:
-                case KeyManagementAlgorithms.Aes256GcmKW:
+                case "A256KW":
+                case "A256GCMKW":
                     return _symmetric256Key;
-                case KeyManagementAlgorithms.Direct:
+                case "dir":
                     switch (enc)
                     {
-                        case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
-                        case ContentEncryptionAlgorithms.Aes128Gcm:
+                        case "A128CBC-HS256":
+                        case "A128GCM":
                             return _symmetric256Key;
-                        case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
-                        case ContentEncryptionAlgorithms.Aes192Gcm:
+                        case "A192CBC-HS384":
+                        case "A192GCM":
                             return _symmetric384Key;
-                        case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
-                        case ContentEncryptionAlgorithms.Aes256Gcm:
+                        case "A256CBC-HS512":
+                        case "A256GCM":
                             return _symmetric512Key;
                     }
                     break;
@@ -152,5 +131,40 @@ namespace JsonWebToken.Tests
 
             throw new NotSupportedException();
         }
+
+
+        public static IEnumerable<object[]> GetSupportedAlgorithms()
+        {
+            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256.Name, KeyManagementAlgorithm.Aes128KW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256.Name, KeyManagementAlgorithm.Aes192KW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256.Name, KeyManagementAlgorithm.Aes256KW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256.Name, KeyManagementAlgorithm.Direct.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384.Name, KeyManagementAlgorithm.Aes128KW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384.Name, KeyManagementAlgorithm.Aes192KW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384.Name, KeyManagementAlgorithm.Aes256KW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384.Name, KeyManagementAlgorithm.Direct.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512.Name, KeyManagementAlgorithm.Aes128KW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512.Name, KeyManagementAlgorithm.Aes192KW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512.Name, KeyManagementAlgorithm.Aes256KW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512.Name, KeyManagementAlgorithm.Direct.Name };
+
+            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256.Name, KeyManagementAlgorithm.Aes128GcmKW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256.Name, KeyManagementAlgorithm.Aes192GcmKW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256.Name, KeyManagementAlgorithm.Aes256GcmKW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384.Name, KeyManagementAlgorithm.Aes128GcmKW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384.Name, KeyManagementAlgorithm.Aes192GcmKW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384.Name, KeyManagementAlgorithm.Aes256GcmKW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512.Name, KeyManagementAlgorithm.Aes128GcmKW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512.Name, KeyManagementAlgorithm.Aes192GcmKW.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512.Name, KeyManagementAlgorithm.Aes256GcmKW.Name };
+        }
+
+        public static IEnumerable<object[]> GetNotSupportedAlgorithms()
+        {
+            yield return new object[] { EncryptionAlgorithm.Aes128Gcm.Name, KeyManagementAlgorithm.Direct.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192Gcm.Name, KeyManagementAlgorithm.Direct.Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256Gcm.Name, KeyManagementAlgorithm.Direct.Name };
+        }
+
     }
 }
