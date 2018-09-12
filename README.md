@@ -90,7 +90,7 @@ The main reason of the speed of this library is the usage of the new API provide
 
 ### JWE content encryption key algorithm
 | "alg" Param Value  | Key Management Algorithm                                                    
-|--------------------|--------------------|--------                                                                        
+|--------------------|--------------------                                                                       
 | RSA1_5             | RSAES-PKCS1-v1_5                                                              
 | RSA-OAEP           | RSAES OAEP using default parameters                                           
 | RSA-OAEP-256       | RSAES OAEP using SHA-256 and MGF1 with SHA-256                                
