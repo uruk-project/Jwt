@@ -14,10 +14,10 @@ Current version - 0.1.0
 ### JWT validation
 ````
     var key = new SymmetricJwk { K = "R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU" };
-    var reader = new JsonWebTokenReader(key);
+    var reader = new JsonWebTokenReader();
     var validationParameters = new TokenValidationBuilder()
-                                   .RequireAudience("valid_audience>")
 				   .RequireSignature(key)
+                                   .RequireAudience("valid_audience>")
 				   .RequireIssuer("<valid_issuer>")
 				   .Build()
 
@@ -36,12 +36,9 @@ Current version - 0.1.0
 ````
     var writer = new JsonWebTokenWriter();
     
-    // Generates a new symmetric key of 256 bits
-    var symmetricLKey = SymmetricJwk.GenerateKey(256, "HS256");
-
     var descriptor = new JwsDescriptor()
     {
-      Key = symmetricKey,
+      Key = new SymmetricJwk { K = "R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU", Alg = "HS256" };,
       ExpirationTime = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc),
       IssuedAt = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc),
       Issuer = "https://idp.example.com/",
