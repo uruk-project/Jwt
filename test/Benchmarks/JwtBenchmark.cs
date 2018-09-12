@@ -105,7 +105,7 @@ namespace JsonWebToken.Performance
 
             foreach (var payload in Tokens.Payloads)
             {
-                foreach (var compression in new[] { null, "DEF" })
+                foreach (var compression in new[] { null, CompressionAlgorithm.Deflate })
                 {
                     var descriptor = new JwsDescriptor()
                     {

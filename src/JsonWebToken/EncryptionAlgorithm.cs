@@ -7,13 +7,13 @@ namespace JsonWebToken
     {
         public static readonly EncryptionAlgorithm Empty = new EncryptionAlgorithm(0, string.Empty, 0, SignatureAlgorithm.Empty, 0, EncryptionTypes.None);
 
-        public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: 11, ContentEncryptionAlgorithms.Aes128CbcHmacSha256, requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesHmac);
-        public static readonly EncryptionAlgorithm Aes192CbcHmacSha384 = new EncryptionAlgorithm(id: 12, ContentEncryptionAlgorithms.Aes192CbcHmacSha384, requiredKeySizeInBytes: 48, SignatureAlgorithm.HmacSha384, requiredKeyWrappedSizeInBytes: 56, EncryptionTypes.AesHmac);
-        public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(id: 13, ContentEncryptionAlgorithms.Aes256CbcHmacSha512, requiredKeySizeInBytes: 64, SignatureAlgorithm.HmacSha512, requiredKeyWrappedSizeInBytes: 72, EncryptionTypes.AesHmac);
+        public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: 11, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesHmac);
+        public static readonly EncryptionAlgorithm Aes192CbcHmacSha384 = new EncryptionAlgorithm(id: 12, "A192CBC-HS384", requiredKeySizeInBytes: 48, SignatureAlgorithm.HmacSha384, requiredKeyWrappedSizeInBytes: 56, EncryptionTypes.AesHmac);
+        public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(id: 13, "A256CBC-HS512", requiredKeySizeInBytes: 64, SignatureAlgorithm.HmacSha512, requiredKeyWrappedSizeInBytes: 72, EncryptionTypes.AesHmac);
 
-        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 21, ContentEncryptionAlgorithms.Aes128Gcm, requiredKeySizeInBytes: 16, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesGcm);
-        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 22, ContentEncryptionAlgorithms.Aes192Gcm, requiredKeySizeInBytes: 24, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 56, EncryptionTypes.AesGcm);
-        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, ContentEncryptionAlgorithms.Aes256Gcm, requiredKeySizeInBytes: 32, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 72, EncryptionTypes.AesGcm);
+        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 21, "A128GCM", requiredKeySizeInBytes: 16, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesGcm);
+        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 22, "A192GCM", requiredKeySizeInBytes: 24, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 56, EncryptionTypes.AesGcm);
+        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, "A256GCM", requiredKeySizeInBytes: 32, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 72, EncryptionTypes.AesGcm);
 
         public static readonly IDictionary<string, EncryptionAlgorithm> AdditionalAlgorithms = new Dictionary<string, EncryptionAlgorithm>();
 
@@ -100,7 +100,7 @@ namespace JsonWebToken
             return x.Id != y.Id;
         }
 
-        public static explicit operator string(EncryptionAlgorithm value)
+        public static implicit operator string(EncryptionAlgorithm value)
         {
             return value?.Name;
         }
@@ -109,18 +109,18 @@ namespace JsonWebToken
         {
             switch (value)
             {
-                case ContentEncryptionAlgorithms.Aes128CbcHmacSha256:
+                case "A128CBC-HS256":
                     return Aes128CbcHmacSha256;
-                case ContentEncryptionAlgorithms.Aes192CbcHmacSha384:
+                case "A192CBC-HS384":
                     return Aes192CbcHmacSha384;
-                case ContentEncryptionAlgorithms.Aes256CbcHmacSha512:
+                case "A256CBC-HS512":
                     return Aes256CbcHmacSha512;
 
-                case ContentEncryptionAlgorithms.Aes128Gcm:
+                case "A128GCM":
                     return Aes128Gcm;
-                case ContentEncryptionAlgorithms.Aes192Gcm:
+                case "A192GCM":
                     return Aes192Gcm;
-                case ContentEncryptionAlgorithms.Aes256Gcm:
+                case "A256GCM":
                     return Aes256Gcm;
 
                 case null:

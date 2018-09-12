@@ -102,7 +102,7 @@ namespace JsonWebToken.Tests
             var descriptor = new PlaintextJweDescriptor(plaintext);
             descriptor.Key = RsaKey;
             descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
-            descriptor.CompressionAlgorithm = CompressionAlgorithms.Deflate;
+            descriptor.CompressionAlgorithm = CompressionAlgorithm.Deflate;
 
             JsonWebTokenWriter writer = new JsonWebTokenWriter();
             var value = writer.WriteToken(descriptor);

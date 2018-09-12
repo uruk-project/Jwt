@@ -8,8 +8,7 @@ namespace JsonWebToken
 {
     public class TokenValidationPolicyBuilder
     {
-        private const string LifetimeValidationName = "";
-        public const int DefaultMaximumTokenSizeInBytes = 1024 * 1024 * 2; // 2MB
+        public const int DefaultMaximumTokenSizeInBytes = 1024 * 1024 * 2;
         private readonly List<IValidation> _validations = new List<IValidation>();
         private int _maximumTokenSizeInBytes = DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
@@ -192,6 +191,11 @@ namespace JsonWebToken
                 MaximumTokenSizeInBytes = _maximumTokenSizeInBytes
             };
             return policy;
+        }
+
+        public static implicit operator TokenValidationPolicy(TokenValidationPolicyBuilder builder)
+        {
+            return builder?.Build();
         }
 
         private sealed class EmptyKeyProvider : IKeyProvider

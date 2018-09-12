@@ -36,12 +36,12 @@ namespace JsonWebToken.Performance
 
         private static SymmetricJwk CreateSigningKey()
         {
-            return SymmetricJwk.GenerateKey(128, SignatureAlgorithm.HmacSha256.Name);
+            return SymmetricJwk.GenerateKey(128, SignatureAlgorithm.HmacSha256);
         }
 
         private static SymmetricJwk CreateEncryptionKey()
         {
-            return SymmetricJwk.GenerateKey(128, KeyManagementAlgorithm.Aes128KW.Name);
+            return SymmetricJwk.GenerateKey(128, KeyManagementAlgorithm.Aes128KW);
         }
 
         private static IDictionary<string, JObject> CreatePayloads()

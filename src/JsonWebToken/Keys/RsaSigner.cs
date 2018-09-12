@@ -50,15 +50,15 @@ namespace JsonWebToken
             _hashAlgorithm = algorithm.HashAlgorithm;
             switch (algorithm.Name)
             {
-                case SignatureAlgorithms.RsaSha256:
-                case SignatureAlgorithms.RsaSha384:
-                case SignatureAlgorithms.RsaSha512:
+                case "RS256":
+                case "RS384":
+                case "RS512":
                     _signaturePadding = RSASignaturePadding.Pkcs1;
                     break;
 
-                case SignatureAlgorithms.RsaSsaPssSha256:
-                case SignatureAlgorithms.RsaSsaPssSha384:
-                case SignatureAlgorithms.RsaSsaPssSha512:
+                case "PS256":
+                case "PS384":
+                case "PS512":
                     _signaturePadding = RSASignaturePadding.Pss;
                     break;
 

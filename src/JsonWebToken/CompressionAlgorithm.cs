@@ -7,10 +7,10 @@ namespace JsonWebToken
     {
         public static readonly CompressionAlgorithm Empty = new CompressionAlgorithm(id: 0, string.Empty, Compressor.Null);
 
-        public static readonly CompressionAlgorithm Deflate = new CompressionAlgorithm(id: 1, CompressionAlgorithms.Deflate, new DeflateCompressor());
-        //public static readonly CompressionAlgorithm GZip = new CompressionAlgorithm(id: 2, CompressionAlgorithms.GZip, new GZipCompressor());
+        public static readonly CompressionAlgorithm Deflate = new CompressionAlgorithm(id: 1, "DEF", new DeflateCompressor());
+        //public static readonly CompressionAlgorithm GZip = new CompressionAlgorithm(id: 2, "ZIP", new GZipCompressor());
         //#if NETCOREAPP2_1
-        //public static readonly CompressionAlgorithm Brotli = new CompressionAlgorithm(id: 3, CompressionAlgorithms.Brotli, new BrotliCompressor());
+        //public static readonly CompressionAlgorithm Brotli = new CompressionAlgorithm(id: 3, "BRO", new BrotliCompressor());
         //#endif
 
         public static readonly IDictionary<string, CompressionAlgorithm> AdditionalAlgorithms = new Dictionary<string, CompressionAlgorithm>();
@@ -97,16 +97,16 @@ namespace JsonWebToken
             return value?.Name;
         }
 
-        public static implicit operator CompressionAlgorithm(string value)
+        public static explicit operator CompressionAlgorithm(string value)
         {
             switch (value)
             {
-                case CompressionAlgorithms.Deflate:
+                case "DEF":
                     return Deflate;
-                //case CompressionAlgorithms.GZip:
+                //case "ZIP":
                 //    return GZip;
                 //#if NETCOREAPP2_1
-                //case CompressionAlgorithms.Brotli:
+                //case "BRO":
                 //    return Brotli;
                 //#endif
 

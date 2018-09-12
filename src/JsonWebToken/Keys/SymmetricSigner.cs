@@ -53,13 +53,13 @@ namespace JsonWebToken
             _hashSizeInBytes = Algorithm.RequiredKeySizeInBits >> 2;
             switch (Algorithm.Name)
             {
-                case SignatureAlgorithms.HmacSha256:
+                case "HS256":
                     _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha256ObjectPoolPolicy(key.RawK));
                     break;
-                case SignatureAlgorithms.HmacSha384:
+                case "HS384":
                     _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha384ObjectPoolPolicy(key.RawK));
                     break;
-                case SignatureAlgorithms.HmacSha512:
+                case "HS512":
                     _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha512ObjectPoolPolicy(key.RawK));
                     break;
                 default:
