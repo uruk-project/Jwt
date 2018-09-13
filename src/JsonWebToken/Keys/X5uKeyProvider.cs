@@ -1,11 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 
 namespace JsonWebToken
 {
-    public class X5uKeyProvider : HttpKeyProvider
+    public sealed class X5uKeyProvider : HttpKeyProvider
     {
         public X5uKeyProvider(HttpDocumentRetriever documentRetriever)
             : base(documentRetriever)

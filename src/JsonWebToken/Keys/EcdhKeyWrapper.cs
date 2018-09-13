@@ -19,6 +19,8 @@ namespace JsonWebToken
         private readonly int _keySizeInBytes;
         private readonly HashAlgorithmName _hashAlgorithm;
 
+        private bool _disposed;
+
         public EcdhKeyWrapper(EccJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
             : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
@@ -56,6 +58,11 @@ namespace JsonWebToken
 
         public override bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
             try
             {
                 if (header.Epk == null)
@@ -114,6 +121,11 @@ namespace JsonWebToken
 
         public override bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
         {
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
             try
             {
                 var partyUInfo = GetPartyInfo(header, HeaderParameters.Apu);
@@ -236,6 +248,7 @@ namespace JsonWebToken
 
         protected override void Dispose(bool disposing)
         {
+            _disposed = true;
         }
     }
 }

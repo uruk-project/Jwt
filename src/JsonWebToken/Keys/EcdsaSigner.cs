@@ -72,8 +72,13 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(input));
             }
 
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
 #if NETCOREAPP2_1
-                return _ecdsa.TrySignData(input, destination, _hashAlgorithm, out bytesWritten);
+            return _ecdsa.TrySignData(input, destination, _hashAlgorithm, out bytesWritten);
 #else
                 var result = _ecdsa.SignData(input.ToArray(), _hashAlgorithm);
                 bytesWritten = result.Length;
@@ -100,6 +105,11 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(signature));
             }
 
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
 #if NETCOREAPP2_1
             return _ecdsa.VerifyData(input, signature, _hashAlgorithm);
 #else
@@ -120,13 +130,13 @@ namespace JsonWebToken
         {
             if (!_disposed)
             {
-                _disposed = true;
-
                 if (disposing)
                 {
                     _ecdsa?.Dispose();
                     _hashAlgorithmPool.Dispose();
                 }
+
+                _disposed = true;
             }
         }
 

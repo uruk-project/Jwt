@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace JsonWebToken
 {
-    public class JkuKeyProvider : HttpKeyProvider
+    public sealed class JkuKeyProvider : HttpKeyProvider
     {
         public JkuKeyProvider(HttpDocumentRetriever documentRetriever)
             : base(documentRetriever)

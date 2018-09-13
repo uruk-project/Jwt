@@ -54,8 +54,9 @@ namespace JsonWebToken
                     _encryptorPool.Dispose();
                     _decryptorPool.Dispose();
                     _aes.Dispose();
-                    _disposed = true;
                 }
+
+                _disposed = true;
             }
         }
 
@@ -105,7 +106,7 @@ namespace JsonWebToken
 
             if (_disposed)
             {
-                throw new ObjectDisposedException(GetType().ToString());
+                Errors.ThrowObjectDisposed(GetType());
             }
 
             return TryUnwrapKeyPrivate(keyBytes, destination, out bytesWritten);
@@ -236,7 +237,7 @@ namespace JsonWebToken
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(GetType().ToString());
+                Errors.ThrowObjectDisposed(GetType());
             }
 
             contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);

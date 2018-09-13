@@ -199,5 +199,10 @@ namespace JsonWebToken
         {
             throw new InvalidOperationException("The certificate does not contains RSA key material or ECDsa key material.");
         }
+
+        internal static void ThrowObjectDisposed(Type type)
+        {
+            throw new ObjectDisposedException(type.ToString());
+        }
     }
 }

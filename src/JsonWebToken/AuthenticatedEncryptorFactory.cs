@@ -7,8 +7,15 @@ namespace JsonWebToken
     {
         private readonly ConcurrentDictionary<ProviderFactoryKey, AuthenticatedEncryptor> _encryptors = new ConcurrentDictionary<ProviderFactoryKey, AuthenticatedEncryptor>(JwkEqualityComparer.Default);
 
+        private bool _disposed;
+
         public AuthenticatedEncryptor Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm)
         {
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
             var factoryKey = new ProviderFactoryKey(key, encryptionAlgorithm.Id);
             if (_encryptors.TryGetValue(factoryKey, out var cachedEncryptor))
             {
@@ -35,9 +42,14 @@ namespace JsonWebToken
 
         public void Dispose()
         {
-            foreach (var encryptor in _encryptors)
+            if (!_disposed)
             {
-                encryptor.Value.Dispose();
+                foreach (var encryptor in _encryptors)
+                {
+                    encryptor.Value.Dispose();
+                }
+
+                _disposed = true;
             }
         }
     }

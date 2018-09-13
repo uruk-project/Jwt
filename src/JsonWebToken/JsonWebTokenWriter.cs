@@ -76,6 +76,11 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
             if (descriptor is IJwtPayloadDescriptor claimsDescriptor)
             {
                 if (SetDefaultTimesOnTokenCreation && (!claimsDescriptor.ExpirationTime.HasValue || !claimsDescriptor.IssuedAt.HasValue || !claimsDescriptor.NotBefore.HasValue))
@@ -109,15 +114,13 @@ namespace JsonWebToken
 
         public void Dispose()
         {
-            if (_disposed)
+            if (!_disposed)
             {
-                return;
+                _authenticatedEncryptionFactory.Dispose();
+                _signatureFactory.Dispose();
+                _keyWrapFactory.Dispose();
+                _disposed = true;
             }
-
-            _authenticatedEncryptionFactory.Dispose();
-            _signatureFactory.Dispose();
-            _keyWrapFactory.Dispose();
-            _disposed = true;
         }
     }
 }

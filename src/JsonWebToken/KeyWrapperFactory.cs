@@ -6,9 +6,15 @@ namespace JsonWebToken
     public sealed class KeyWrapperFactory : IDisposable
     {
         private readonly ConcurrentDictionary<ProviderFactoryKey, KeyWrapper> _keyWrappers = new ConcurrentDictionary<ProviderFactoryKey, KeyWrapper>(JwkEqualityComparer.Default);
+        private bool _disposed;
 
         public KeyWrapper Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
             if (encryptionAlgorithm == null || contentEncryptionAlgorithm == null)
             {
                 return null;
@@ -40,9 +46,14 @@ namespace JsonWebToken
 
         public void Dispose()
         {
-            foreach (var keyWrapper in _keyWrappers)
+            if (!_disposed)
             {
-                keyWrapper.Value.Dispose();
+                foreach (var keyWrapper in _keyWrappers)
+                {
+                    keyWrapper.Value.Dispose();
+                }
+
+                _disposed = true;
             }
         }
     }

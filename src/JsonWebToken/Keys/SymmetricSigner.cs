@@ -40,6 +40,11 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(key));
             }
 
+            if (algorithm == null)
+            {
+                throw new ArgumentNullException(nameof(algorithm));
+            }
+
             if (key.KeySizeInBits < MinimumKeySizeInBits)
             {
                 Errors.ThrowAlgorithmRequireMinimumKeySize(key, algorithm.Name, MinimumKeySizeInBits, key.KeySizeInBits);
@@ -98,9 +103,9 @@ namespace JsonWebToken
         /// <returns>Signed bytes</returns>
         public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {
-            if (input.IsEmpty)
+            if (_disposed)
             {
-                throw new ArgumentNullException(nameof(input));
+                Errors.ThrowObjectDisposed(GetType());
             }
 
             var keyedHash = _hashAlgorithmPool.Get();
@@ -136,14 +141,9 @@ namespace JsonWebToken
         /// <returns>true if computed signature matches the signature parameter, false otherwise.</returns>
         public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
         {
-            if (input.IsEmpty)
+            if (_disposed)
             {
-                throw new ArgumentNullException(nameof(input));
-            }
-
-            if (signature.IsEmpty)
-            {
-                throw new ArgumentNullException(nameof(signature));
+                Errors.ThrowObjectDisposed(GetType());
             }
 
             var keyedHash = _hashAlgorithmPool.Get();
@@ -173,14 +173,9 @@ namespace JsonWebToken
         /// <returns>true if computed signature matches the signature parameter, false otherwise.</returns>
         public bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature, int length)
         {
-            if (input.IsEmpty)
+            if (_disposed)
             {
-                throw new ArgumentNullException(nameof(input));
-            }
-
-            if (signature.IsEmpty)
-            {
-                throw new ArgumentNullException(nameof(signature));
+                Errors.ThrowObjectDisposed(GetType());
             }
 
             if (length <= 0)

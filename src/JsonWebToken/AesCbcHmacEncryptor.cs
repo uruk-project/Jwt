@@ -16,6 +16,7 @@ namespace JsonWebToken
         private readonly SignatureAlgorithm _signatureAlgorithm;
         private readonly SymmetricSigner _symmetricSignatureProvider;
         private readonly ObjectPool<Aes> _aesPool;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AesCbcHmacEncryptor"/> class used for encryption and decryption.
@@ -82,13 +83,20 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(associatedData));
             }
 
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
             byte[] arrayToReturnToPool = null;
             Aes aes = _aesPool.Get();
             try
             {
                 aes.IV = nonce.ToArray();
-
-                Transform(aes.CreateEncryptor(), plaintext, 0, plaintext.Length, ciphertext);
+                using (ICryptoTransform encryptor = aes.CreateEncryptor())
+                {
+                    Transform(encryptor, plaintext, 0, plaintext.Length, ciphertext);
+                }
 
                 int macLength = associatedData.Length + nonce.Length + ciphertext.Length + sizeof(long);
                 Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
@@ -148,6 +156,11 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(authenticationTag));
             }
 
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
             byte[] byteArrayToReturnToPool = null;
             int macLength = associatedData.Length + nonce.Length + ciphertext.Length + sizeof(long);
             Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
@@ -160,7 +173,7 @@ namespace JsonWebToken
                 ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
                 BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length), associatedData.Length * 8);
                 if (!_symmetricSignatureProvider.Verify(macBytes, authenticationTag, _symmetricSignatureProvider.Key.KeySizeInBits >> 3))
-                {                   
+                {
                     plaintext.Clear();
                     return Errors.TryWriteError(out bytesWritten);
                 }
@@ -220,11 +233,16 @@ namespace JsonWebToken
                 }
             }
         }
-
+        
         public override void Dispose()
         {
-            _symmetricSignatureProvider.Dispose();
-            _aesPool.Dispose();
+            if (!_disposed)
+            {
+                _symmetricSignatureProvider.Dispose();
+                _aesPool.Dispose();
+
+                _disposed = true;
+            }
         }
 
         private class AesPooledPolicy : PooledObjectPolicy<Aes>

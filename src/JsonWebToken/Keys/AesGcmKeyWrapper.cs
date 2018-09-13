@@ -8,6 +8,8 @@ namespace JsonWebToken
         private const int IVSize = 12;
         private const int TagSize = 16;
 
+        private bool _disposed;
+
         public AesGcmKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
@@ -39,6 +41,11 @@ namespace JsonWebToken
 
         public override unsafe bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
             Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.IV.Length)];
             Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.Tag.Length)];
 #if NETCOREAPP2_1
@@ -59,6 +66,11 @@ namespace JsonWebToken
 
         public override bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
         {
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
             contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
             Span<byte> nonce = stackalloc byte[IVSize];
             Span<byte> tag = stackalloc byte[TagSize];
@@ -76,6 +88,7 @@ namespace JsonWebToken
 
         protected override void Dispose(bool disposing)
         {
+            _disposed = true;
         }
     }
 }

@@ -1,23 +1,22 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Net.Http;
 
 namespace JsonWebToken
 {
-    public class JwksKeyProvider : HttpKeyProvider
+    public sealed class JwksKeyProvider : HttpKeyProvider
     {
         private readonly string _jwksAddress;
 
         public JwksKeyProvider(string jwksAddress, HttpDocumentRetriever documentRetriever)
             : base(documentRetriever)
         {
-            _jwksAddress = jwksAddress;
+            _jwksAddress = jwksAddress ?? throw new System.ArgumentNullException(nameof(jwksAddress));
         }
         public JwksKeyProvider(string jwksAddress, HttpMessageHandler handler)
             : base(new HttpDocumentRetriever(handler))
         {
-            _jwksAddress = jwksAddress;
+            _jwksAddress = jwksAddress ?? throw new System.ArgumentNullException(nameof(jwksAddress));
         }
 
         public JwksKeyProvider(string metadataAddress)

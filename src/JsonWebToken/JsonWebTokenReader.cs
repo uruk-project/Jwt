@@ -74,6 +74,11 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(policy));
             }
 
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
             if (token.IsEmpty)
             {
                 return TokenValidationResult.MalformedToken();

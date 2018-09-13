@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace JsonWebToken
 {
-    public class StaticKeyProvider : IKeyProvider
+    public sealed class StaticKeyProvider : IKeyProvider
     {
         private readonly JsonWebKeySet _jwks;
 

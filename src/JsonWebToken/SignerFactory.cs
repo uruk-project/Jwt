@@ -7,9 +7,15 @@ namespace JsonWebToken
     {
         private readonly ConcurrentDictionary<ProviderFactoryKey, Signer> _signers = new ConcurrentDictionary<ProviderFactoryKey, Signer>(JwkEqualityComparer.Default);
         private readonly ConcurrentDictionary<ProviderFactoryKey, Signer> _validationSigners = new ConcurrentDictionary<ProviderFactoryKey, Signer>(JwkEqualityComparer.Default);
+        private bool _disposed;
 
         public Signer Create(JsonWebKey key, SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
             if (algorithm == null)
             {
                 return null;
@@ -41,9 +47,14 @@ namespace JsonWebToken
 
         public void Dispose()
         {
-            foreach (var signer in _signers)
+            if (!_disposed)
             {
-                signer.Value.Dispose();
+                foreach (var signer in _signers)
+                {
+                    signer.Value.Dispose();
+                }
+
+                _disposed = true;
             }
         }
     }

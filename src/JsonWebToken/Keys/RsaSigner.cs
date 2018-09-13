@@ -87,7 +87,7 @@ namespace JsonWebToken
 
             if (_disposed)
             {
-                throw new ObjectDisposedException(GetType().ToString());
+                Errors.ThrowObjectDisposed(GetType());
             }
 
             var rsa = _hashAlgorithmPool.Get();
@@ -135,7 +135,7 @@ namespace JsonWebToken
 
             if (_disposed)
             {
-                throw new ObjectDisposedException(GetType().ToString());
+                Errors.ThrowObjectDisposed(GetType());
             }
 
             var rsa = _hashAlgorithmPool.Get();
