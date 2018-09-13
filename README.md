@@ -8,7 +8,7 @@ This library aims to propose performant JWT primitives.
  [![CodeFactor](https://www.codefactor.io/repository/github/ycrumeyrolle/jwt/badge)](https://www.codefactor.io/repository/github/ycrumeyrolle/jwt)
 
 ## Versions
-Current version - 0.1.0
+Current version - [0.1.2](https://www.nuget.org/packages/JsonWebToken/)
 
 ## Usage
 ### JWT validation

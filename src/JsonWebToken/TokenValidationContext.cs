@@ -1,10 +1,13 @@
-﻿using System;
+﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
+using System;
 
 namespace JsonWebToken
 {
     public readonly ref struct TokenValidationContext
     {
-        public TokenValidationContext(ReadOnlySpan<byte> token, JsonWebToken jwt, SignerFactory signatureFactory)
+        public TokenValidationContext(ReadOnlySpan<byte> token, JsonWebToken jwt, ISignerFactory signatureFactory)
         {
             Token = token;
             Jwt = jwt;
@@ -15,6 +18,6 @@ namespace JsonWebToken
 
         public readonly JsonWebToken Jwt;
 
-        public readonly SignerFactory SignatureFactory;
+        public readonly ISignerFactory SignatureFactory;
     }
 }

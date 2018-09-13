@@ -1,4 +1,5 @@
 ﻿using JsonWebToken;
+using JsonWebToken.Internal;
 using JsonWebToken.Performance;
 using Newtonsoft.Json.Linq;
 using System;
@@ -327,19 +328,19 @@ namespace JwtCreator
                 keys.Add(key);
             }
 
-            var esKey = EccJwk.GenerateKey(EllipticalCurves.P256, true);
+            var esKey = ECJwk.GenerateKey(EllipticalCurves.P256, true);
             esKey.Use = JsonWebKeyUseNames.Sig;
             esKey.Alg = "ES256";
             esKey.Kid = "ecdsa-" + esKey.KeySizeInBits;
             keys.Add(esKey);
 
-            esKey = EccJwk.GenerateKey(EllipticalCurves.P384, true);
+            esKey = ECJwk.GenerateKey(EllipticalCurves.P384, true);
             esKey.Use = JsonWebKeyUseNames.Sig;
             esKey.Alg = "ES384";
             esKey.Kid = "ecdsa-" + esKey.KeySizeInBits;
             keys.Add(esKey);
 
-            esKey = EccJwk.GenerateKey(EllipticalCurves.P521, true);
+            esKey = ECJwk.GenerateKey(EllipticalCurves.P521, true);
             esKey.Use = JsonWebKeyUseNames.Sig;
             esKey.Alg = "ES512";
             esKey.Kid = "ecdsa-" + esKey.KeySizeInBits;

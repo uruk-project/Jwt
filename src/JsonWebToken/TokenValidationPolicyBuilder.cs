@@ -1,4 +1,7 @@
-﻿using JsonWebToken.Validations;
+﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
+using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -8,9 +11,8 @@ namespace JsonWebToken
 {
     public class TokenValidationPolicyBuilder
     {
-        public const int DefaultMaximumTokenSizeInBytes = 1024 * 1024 * 2;
         private readonly List<IValidation> _validations = new List<IValidation>();
-        private int _maximumTokenSizeInBytes = DefaultMaximumTokenSizeInBytes;
+        private int _maximumTokenSizeInBytes = TokenValidationPolicy.DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
 
         public TokenValidationPolicyBuilder Clear()
@@ -71,35 +73,51 @@ namespace JsonWebToken
             return this;
         }
 
-        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider, SignatureAlgorithm algorithm = null)
+        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider) => RequireSignature(keyProvider, null);
+
+        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider, SignatureAlgorithm algorithm)
         {
             _hasSignatureValidation = true;
             _validations.Add(new SignatureValidation(keyProvider, supportUnsecure: false, algorithm ?? SignatureAlgorithm.Empty));
             return this;
         }
 
-        public TokenValidationPolicyBuilder RequireSignature(string jsonWebKeyUrl, SignatureAlgorithm algorithm = null, HttpMessageHandler handler = null)
+        public TokenValidationPolicyBuilder RequireSignature(string jsonWebKeyUrl) => RequireSignature(jsonWebKeyUrl, null, null);
+
+        public TokenValidationPolicyBuilder RequireSignature(string jsonWebKeyUrl, SignatureAlgorithm algorithm) => RequireSignature(jsonWebKeyUrl, algorithm, null);
+
+        public TokenValidationPolicyBuilder RequireSignature(string jsonWebKeyUrl, HttpMessageHandler handler) => RequireSignature(jsonWebKeyUrl, null, handler);
+
+        public TokenValidationPolicyBuilder RequireSignature(string jsonWebKeyUrl, SignatureAlgorithm algorithm, HttpMessageHandler handler)
         {
             RequireSignature(new JwksKeyProvider(jsonWebKeyUrl, handler), algorithm);
             return this;
         }
 
-        public TokenValidationPolicyBuilder RequireSignature(JsonWebKey key, SignatureAlgorithm algorithm = null)
+        public TokenValidationPolicyBuilder RequireSignature(JsonWebKey key) => RequireSignature(key, null);
+
+        public TokenValidationPolicyBuilder RequireSignature(JsonWebKey key, SignatureAlgorithm algorithm)
         {
             return RequireSignature(new JsonWebKeySet(key), algorithm);
         }
 
-        public TokenValidationPolicyBuilder RequireSignature(IEnumerable<JsonWebKey> keys, SignatureAlgorithm algorithm = null)
+        public TokenValidationPolicyBuilder RequireSignature(ICollection<JsonWebKey> keys) => RequireSignature(keys, null);
+
+        public TokenValidationPolicyBuilder RequireSignature(ICollection<JsonWebKey> keys, SignatureAlgorithm algorithm)
         {
             return RequireSignature(new JsonWebKeySet(keys), algorithm);
         }
 
-        public TokenValidationPolicyBuilder RequireSignature(JsonWebKeySet keySet, SignatureAlgorithm algorithm = null)
+        public TokenValidationPolicyBuilder RequireSignature(JsonWebKeySet keySet) => RequireSignature(keySet, null);
+
+        public TokenValidationPolicyBuilder RequireSignature(JsonWebKeySet keySet, SignatureAlgorithm algorithm)
         {
             return RequireSignature(new StaticKeyProvider(keySet), algorithm);
         }
 
-        public TokenValidationPolicyBuilder RequireSignature(IEnumerable<IKeyProvider> keyProviders, SignatureAlgorithm algorithm = null)
+        public TokenValidationPolicyBuilder RequireSignature(IEnumerable<IKeyProvider> keyProviders) => RequireSignature(keyProviders, null);
+
+        public TokenValidationPolicyBuilder RequireSignature(IEnumerable<IKeyProvider> keyProviders, SignatureAlgorithm algorithm)
         {
             foreach (var keyProvider in keyProviders)
             {
@@ -113,12 +131,7 @@ namespace JsonWebToken
         {
             return AddValidation(new RequiredClaimValidation<JObject>(requiredClaim));
         }
-
-        public TokenValidationPolicyBuilder RequireHeader(string requiredHeader)
-        {
-            return AddValidation(null);
-        }
-
+        
         public TokenValidationPolicyBuilder AddLifetimeValidation(bool requireExpirationTime = true, int clockSkew = 300)
         {
             if (clockSkew <= 0)

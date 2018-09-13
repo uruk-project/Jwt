@@ -1,11 +1,22 @@
-﻿using System;
+﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines the validations to apply to a JWT.
+    /// </summary>
     public sealed class TokenValidationPolicy
     {
-        public static TokenValidationPolicy NoValidation = new TokenValidationPolicyBuilder()
+        public const int DefaultMaximumTokenSizeInBytes = 1024 * 1024 * 2;
+   
+        /// <summary>
+        /// Represents an policy without any validation.
+        /// </summary>
+        public static readonly TokenValidationPolicy NoValidation = new TokenValidationPolicyBuilder()
                                                             .IgnoreSignature()
                                                             .Build();
 
@@ -16,7 +27,7 @@ namespace JsonWebToken
             _validations = validations ?? throw new ArgumentNullException(nameof(validations));
         }
 
-        public int MaximumTokenSizeInBytes { get; set; }
+        public int MaximumTokenSizeInBytes { get; set; } = DefaultMaximumTokenSizeInBytes;
 
         public TokenValidationResult TryValidate(in TokenValidationContext context)
         {

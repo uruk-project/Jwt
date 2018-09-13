@@ -1,36 +1,48 @@
-﻿using Newtonsoft.Json;
+﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
+using JsonWebToken.Internal;
+using Newtonsoft.Json;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Reads and validates a JWT.
+    /// </summary>
     public sealed class JsonWebTokenReader : IDisposable
     {
         private const byte dot = 0x2E;
+
         private readonly IKeyProvider[] _encryptionKeyProviders;
-        private readonly JwtHeaderCache _headerCache = new JwtHeaderCache();
-        private readonly KeyWrapperFactory _keyWrapFactory = new KeyWrapperFactory();
-        private readonly SignerFactory _signatureFactory = new SignerFactory();
-        private readonly AuthenticatedEncryptorFactory _authenticatedEncryptionFactory = new AuthenticatedEncryptorFactory();
+        private readonly JwtHeaderCache _headerCache;
+        private readonly IKeyWrapperFactory _keyWrapFactory;
+        private readonly ISignerFactory _signatureFactory;
+        private readonly IAuthenticatedEncryptorFactory _authenticatedEncryptionFactory;
+        private readonly bool _disposeFactories;
 
         private bool _disposed;
 
-        public JsonWebTokenReader(IEnumerable<JsonWebKey> keys)
-           : this(new JsonWebKeySet(keys))
+        public JsonWebTokenReader(
+            ICollection<IKeyProvider> encryptionKeyProviders,
+            ISignerFactory signerFactory,
+            IKeyWrapperFactory keyWrapperFactory,
+            IAuthenticatedEncryptorFactory authenticatedEncryptorFactory)
+            : this(encryptionKeyProviders, signerFactory, keyWrapperFactory, authenticatedEncryptorFactory, null)
         {
         }
 
-        public JsonWebTokenReader(params JsonWebKey[] keys)
-           : this(new JsonWebKeySet(keys))
-        {
-        }
-
-        public JsonWebTokenReader(IEnumerable<IKeyProvider> encryptionKeyProviders)
+        public JsonWebTokenReader(
+                  ICollection<IKeyProvider> encryptionKeyProviders,
+                  ISignerFactory signerFactory,
+                  IKeyWrapperFactory keyWrapperFactory,
+                  IAuthenticatedEncryptorFactory authenticatedEncryptorFactory,
+                  JwtHeaderCache headerCache)
         {
             if (encryptionKeyProviders == null)
             {
@@ -38,6 +50,26 @@ namespace JsonWebToken
             }
 
             _encryptionKeyProviders = encryptionKeyProviders.ToArray();
+            _signatureFactory = signerFactory ?? throw new ArgumentNullException(nameof(signerFactory));
+            _keyWrapFactory = keyWrapperFactory ?? throw new ArgumentNullException(nameof(keyWrapperFactory));
+            _authenticatedEncryptionFactory = authenticatedEncryptorFactory ?? throw new ArgumentNullException(nameof(authenticatedEncryptorFactory));
+            _headerCache = headerCache ?? new JwtHeaderCache();
+        }
+
+        public JsonWebTokenReader(ICollection<IKeyProvider> encryptionKeyProviders)
+            : this(encryptionKeyProviders, new DefaultSignerFactory(), new DefaultKeyWrapperFactory(), new DefaultAuthenticatedEncryptorFactory())
+        {
+            _disposeFactories = true;
+        }
+
+        public JsonWebTokenReader(IList<JsonWebKey> keys)
+           : this(new JsonWebKeySet(keys))
+        {
+        }
+
+        public JsonWebTokenReader(params JsonWebKey[] keys)
+           : this(new JsonWebKeySet(keys))
+        {
         }
 
         public JsonWebTokenReader(IKeyProvider encryptionKeyProvider)
@@ -56,17 +88,17 @@ namespace JsonWebToken
         }
 
         public JsonWebTokenReader()
+            : this(Array.Empty<IKeyProvider>())
         {
-            _encryptionKeyProviders = Array.Empty<IKeyProvider>();
         }
 
         public bool EnableHeaderCaching { get; set; } = true;
 
         /// <summary>
-        /// Reads and validates a 'JSON Web Token' (JWT) encoded as a JWS or JWE in Compact Serialized Format.
+        /// Reads and validates a JWT encoded as a JWS or JWE in compact serialized format.
         /// </summary>
         /// <param name="token">the JWT encoded as JWE or JWS</param>
-        /// <param name="policy">Contains validation policy for the <see cref="JsonWebToken"/>.</param>
+        /// <param name="policy">The validation policy.</param>
         public TokenValidationResult TryReadToken(ReadOnlySpan<char> token, TokenValidationPolicy policy)
         {
             if (policy == null)
@@ -112,20 +144,9 @@ namespace JsonWebToken
             }
         }
 
-        public void Dispose()
+        private TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Buffer, TokenValidationPolicy policy)
         {
-            if (!_disposed)
-            {
-                _signatureFactory.Dispose();
-                _keyWrapFactory.Dispose();
-                _authenticatedEncryptionFactory.Dispose();
-                _disposed = true;
-            }
-        }
-
-        private unsafe TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Buffer, TokenValidationPolicy policy)
-        {
-            var segments = stackalloc TokenSegment[Constants.JweSegmentCount];
+            Span<TokenSegment> segments = stackalloc TokenSegment[Constants.JweSegmentCount];
             var segmentCount = Tokenizer.Tokenize(utf8Buffer, segments, Constants.JweSegmentCount);
             var headerSegment = segments[0];
             if (headerSegment.IsEmpty)
@@ -233,7 +254,14 @@ namespace JsonWebToken
                         return TokenValidationResult.InvalidHeader(null, HeaderParameters.Zip);
                     }
 
-                    decryptedBytes = compressionProvider.Decompress(decryptedBytes);
+                    try
+                    {
+                        decryptedBytes = compressionProvider.Decompress(decryptedBytes);
+                    }
+                    catch (Exception e)
+                    {
+                        return TokenValidationResult.DecompressionFailed(e);
+                    }
                 }
 
                 if (!string.Equals(header.Cty, ContentTypeValues.Jwt, StringComparison.Ordinal))
@@ -274,7 +302,7 @@ namespace JsonWebToken
               : (base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64UrlLength)).AsSpan(0, base64UrlLength);
             try
             {
-                Base64Url.Base64UrlDecode(data, buffer, out int byteConsumed, out int bytesWritten);
+                Base64Url.Base64UrlDecode(data, buffer);
 #if NETCOREAPP2_1
                 var json = Encoding.UTF8.GetString(buffer);
 #else
@@ -291,7 +319,7 @@ namespace JsonWebToken
             }
         }
 
-        private unsafe bool TryDecryptToken(
+        private bool TryDecryptToken(
             ReadOnlySpan<byte> rawHeader,
             ReadOnlySpan<byte> rawCiphertext,
             ReadOnlySpan<byte> rawInitializationVector,
@@ -313,14 +341,9 @@ namespace JsonWebToken
             int authenticationTagLength = Base64Url.GetArraySizeRequiredToDecode(rawAuthenticationTag.Length);
             int bufferLength = ciphertextLength + headerLength + initializationVectorLength + authenticationTagLength;
             byte[] arrayToReturn = null;
-            char[] headerArrayToReturn = null;
             Span<byte> buffer = bufferLength < Constants.MaxStackallocBytes
                 ? stackalloc byte[bufferLength]
                 : (arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength)).AsSpan(0, bufferLength);
-
-            Span<char> utf8Header = headerLength < Constants.MaxStackallocBytes
-                ? stackalloc char[headerLength]
-                : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(headerLength)).AsSpan(0, headerLength);
 
             Span<byte> ciphertext = buffer.Slice(0, ciphertextLength);
             Span<byte> header = buffer.Slice(ciphertextLength, headerLength);
@@ -332,16 +355,25 @@ namespace JsonWebToken
                 Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
 
 #if NETCOREAPP2_1
-                Encoding.UTF8.GetChars(rawHeader, utf8Header);
-                Encoding.ASCII.GetBytes(utf8Header, header);
-#else
-                fixed (byte* rawPtr = &MemoryMarshal.GetReference(rawHeader))
-                fixed (char* utf8Ptr = &MemoryMarshal.GetReference(utf8Header))
-                fixed (byte* header8Ptr = &MemoryMarshal.GetReference(header))
+                char[] headerArrayToReturn = null;
+                try
                 {
-                    Encoding.UTF8.GetChars(rawPtr, rawHeader.Length, utf8Ptr, utf8Header.Length);
-                    Encoding.ASCII.GetBytes(utf8Ptr, utf8Header.Length, header8Ptr, header.Length);
+                    Span<char> utf8Header = header.Length < Constants.MaxStackallocBytes
+                    ? stackalloc char[header.Length]
+                    : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(header.Length)).AsSpan(0, header.Length);
+
+                    Encoding.UTF8.GetChars(rawHeader, utf8Header);
+                    Encoding.ASCII.GetBytes(utf8Header, header);
                 }
+                finally
+                {
+                    if (headerArrayToReturn != null)
+                    {
+                        ArrayPool<char>.Shared.Return(headerArrayToReturn);
+                    }
+                }
+#else
+                EncodingHelper.GetAsciiBytes(rawHeader, header);
 #endif
                 Base64Url.Base64UrlDecode(rawInitializationVector, initializationVector, out int ivBytesConsumed, out int ivBytesWritten);
                 Debug.Assert(initializationVector.Length == ivBytesWritten);
@@ -365,11 +397,6 @@ namespace JsonWebToken
                 if (arrayToReturn != null)
                 {
                     ArrayPool<byte>.Shared.Return(arrayToReturn);
-                }
-
-                if (headerArrayToReturn != null)
-                {
-                    ArrayPool<char>.Shared.Return(headerArrayToReturn);
                 }
             }
 
@@ -430,6 +457,17 @@ namespace JsonWebToken
             }
 
             return keys;
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed && _disposeFactories)
+            {
+                _signatureFactory.Dispose();
+                _keyWrapFactory.Dispose();
+                _authenticatedEncryptionFactory.Dispose();
+                _disposed = true;
+            }
         }
     }
 }

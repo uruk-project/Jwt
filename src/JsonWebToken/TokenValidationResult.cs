@@ -1,7 +1,13 @@
-﻿using System;
+﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
+using System;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represents the result of a token validation.
+    /// </summary>
     public sealed class TokenValidationResult
     {
         public bool Succedeed => Status == TokenValidationStatus.Success;
@@ -156,7 +162,7 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult DecompressionFailed(Exception exception = null)
+        public static TokenValidationResult DecompressionFailed(Exception exception)
         {
             return new TokenValidationResult
             {

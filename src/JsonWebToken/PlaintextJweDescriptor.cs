@@ -1,7 +1,13 @@
-﻿using Newtonsoft.Json.Linq;
+﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
+using Newtonsoft.Json.Linq;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines an encrypted JWT with a <see cref="string"/> payload.
+    /// </summary>
     public sealed class PlaintextJweDescriptor : EncryptedJwtDescriptor<string>
     {
         public PlaintextJweDescriptor(JObject header, string payload)
@@ -10,7 +16,7 @@ namespace JsonWebToken
         }
 
         public PlaintextJweDescriptor(string payload)
-            :base(payload)
+            : base(payload)
         {
         }
 

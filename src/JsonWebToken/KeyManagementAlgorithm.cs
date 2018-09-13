@@ -1,14 +1,19 @@
-﻿using System;
+﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines key management algorithm.
+    /// </summary>
     public class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>
     {
-        public static readonly KeyManagementAlgorithm Empty = new KeyManagementAlgorithm(0, string.Empty, AlgorithmCategory.None, 0, null, false);
+        public static readonly KeyManagementAlgorithm Empty = new KeyManagementAlgorithm(0, string.Empty, AlgorithmCategory.None, produceEncryptedKey: false);
 
-        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, "dir", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 0, produceEncryptedKey: false);
+        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, "dir", AlgorithmCategory.Symmetric, produceEncryptedKey: false);
 
         public static readonly KeyManagementAlgorithm Aes128KW = new KeyManagementAlgorithm(id: 11, "A128KW", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 128);
         public static readonly KeyManagementAlgorithm Aes192KW = new KeyManagementAlgorithm(id: 12, "A192KW", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 192);
@@ -21,6 +26,8 @@ namespace JsonWebToken
         public static readonly KeyManagementAlgorithm RsaPkcs1 = new KeyManagementAlgorithm(id: 31, "RSA1_5", AlgorithmCategory.Rsa);
         public static readonly KeyManagementAlgorithm RsaOaep = new KeyManagementAlgorithm(id: 32, "RSA-OAEP", AlgorithmCategory.Rsa);
         public static readonly KeyManagementAlgorithm RsaOaep256 = new KeyManagementAlgorithm(id: 33, "RSA-OAEP-256", AlgorithmCategory.Rsa);
+        public static readonly KeyManagementAlgorithm RsaOaep384 = new KeyManagementAlgorithm(id: 34, "RSA-OAEP-384", AlgorithmCategory.Rsa);
+        public static readonly KeyManagementAlgorithm RsaOaep512 = new KeyManagementAlgorithm(id: 35, "RSA-OAEP-512", AlgorithmCategory.Rsa);
 
         public static readonly KeyManagementAlgorithm EcdhEs = new KeyManagementAlgorithm(id: 41, "ECDH-ES", AlgorithmCategory.EllipticCurve, produceEncryptedKey: false);
 
@@ -28,18 +35,60 @@ namespace JsonWebToken
         public static readonly KeyManagementAlgorithm EcdhEsAes192KW = new KeyManagementAlgorithm(id: 52, "ECDH-ES+A192KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes192KW);
         public static readonly KeyManagementAlgorithm EcdhEsAes256KW = new KeyManagementAlgorithm(id: 53, "ECDH-ES+A256KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes256KW);
 
-        public static readonly IDictionary<string, KeyManagementAlgorithm> AdditionalAlgorithms = new Dictionary<string, KeyManagementAlgorithm>();
+        public sbyte Id { get; }
 
-        public readonly sbyte Id;
+        public ushort RequiredKeySizeInBits { get; }
 
-        public readonly ushort RequiredKeySizeInBits;
-        public readonly AlgorithmCategory Category;
-        public readonly HashAlgorithmName HashAlgorithm;
-        public readonly KeyManagementAlgorithm WrappedAlgorithm;
-        public readonly string Name;
-        public readonly bool ProduceEncryptedKey;
+        public AlgorithmCategory Category { get; }
 
-        private KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits = 0, KeyManagementAlgorithm wrappedAlgorithm = null, bool produceEncryptedKey = true)
+        public KeyManagementAlgorithm WrappedAlgorithm { get; }
+
+        public string Name { get; }
+
+        public bool ProduceEncryptedKey { get; }
+
+        public static IDictionary<string, KeyManagementAlgorithm> Algorithms { get; } = new Dictionary<string, KeyManagementAlgorithm>
+        {
+            { EcdhEsAes128KW.Name, EcdhEsAes128KW },
+            { EcdhEsAes192KW.Name, EcdhEsAes192KW },
+            { EcdhEsAes256KW.Name, EcdhEsAes256KW },
+            { EcdhEs.Name, EcdhEs },
+            { Aes128KW.Name, Aes128KW },
+            { Aes192KW.Name, Aes192KW },
+            { Aes256KW.Name, Aes256KW },
+            { Aes128GcmKW.Name, Aes128GcmKW },
+            { Aes192GcmKW.Name, Aes192GcmKW },
+            { Aes256GcmKW.Name, Aes256GcmKW },
+            { Direct.Name, Direct },
+            { RsaOaep.Name, RsaOaep},
+            { RsaOaep256.Name, RsaOaep256},
+            { RsaOaep384.Name, RsaOaep384},
+            { RsaOaep512.Name, RsaOaep512},
+            { RsaPkcs1.Name, RsaPkcs1 },
+            { Empty.Name, Empty }
+        };
+
+        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType)
+            : this(id, name, keyType, 0, null, true)
+        {
+        }
+
+        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, KeyManagementAlgorithm wrappedAlgorithm)
+                : this(id, name, keyType, 0, wrappedAlgorithm, true)
+        {
+        }
+
+        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits)
+            : this(id, name, keyType, requiredKeySizeInBits, null, true)
+        {
+        }
+
+        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, bool produceEncryptedKey)
+            : this(id, name, keyType, 0, null, produceEncryptedKey)
+        {
+        }
+
+        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, KeyManagementAlgorithm wrappedAlgorithm, bool produceEncryptedKey)
         {
             Id = id;
             Name = name;
@@ -121,48 +170,12 @@ namespace JsonWebToken
 
         public static explicit operator KeyManagementAlgorithm(string value)
         {
-            switch (value)
+            if (value == null)
             {
-                case "ECDH-ES+A128KW":
-                    return EcdhEsAes128KW;
-                case "ECDH-ES+A192KW":
-                    return EcdhEsAes192KW;
-                case "ECDH-ES+A256KW":
-                    return EcdhEsAes256KW;
-
-                case "ECDH-ES":
-                    return EcdhEs;
-
-                case "A128KW":
-                    return Aes128KW;
-                case "A192KW":
-                    return Aes192KW;
-                case "A256KW":
-                    return Aes256KW;
-
-                case "A128GCMKW":
-                    return Aes128GcmKW;
-                case "A192GCMKW":
-                    return Aes192GcmKW;
-                case "A256GCMKW":
-                    return Aes256GcmKW;
-
-                case "dir":
-                    return Direct;
-
-                case "RSA-OAEP":
-                    return RsaOaep;
-                case "RSA-OAEP-256":
-                    return RsaOaep;
-                case "RSA1_5":
-                    return RsaPkcs1;
-
-                case null:
-                case "":
-                    return Empty;
+                return Empty;
             }
 
-            if (!AdditionalAlgorithms.TryGetValue(value, out var algorithm))
+            if (!Algorithms.TryGetValue(value, out var algorithm))
             {
                 Errors.ThrowNotSupportedAlgorithm(value);
             }

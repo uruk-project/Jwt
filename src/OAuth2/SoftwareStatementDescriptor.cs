@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
+using System.Collections.Generic;
+using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 
 namespace JsonWebToken
@@ -8,7 +12,7 @@ namespace JsonWebToken
     /// </summary>
     public class SoftwareStatementDescriptor : JwsDescriptor
     {
-        private static IReadOnlyDictionary<string, JTokenType[]> SoftwareStatementRequiredClaims = new Dictionary<string, JTokenType[]>
+        private static readonly IReadOnlyDictionary<string, JTokenType[]> SoftwareStatementRequiredClaims = new Dictionary<string, JTokenType[]>
         {
             { Claims.Iss, new [] { JTokenType.String } }
         };
@@ -26,5 +30,7 @@ namespace JsonWebToken
             get { return GetStringClaim(Claims.SoftwareId); }
             set { AddClaim(Claims.SoftwareId, value); }
         }
+
+        protected override IReadOnlyDictionary<string, JTokenType[]> RequiredClaims => SoftwareStatementRequiredClaims;
     }
 }

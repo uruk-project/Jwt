@@ -1,14 +1,19 @@
-﻿using System;
+﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines signature algorithm.
+    /// </summary>
     public class SignatureAlgorithm : IEquatable<SignatureAlgorithm>
     {
         public static readonly SignatureAlgorithm Empty = new SignatureAlgorithm(0, string.Empty, AlgorithmCategory.None, 0, new HashAlgorithmName());
 
-        // signature algorithms
         public static readonly SignatureAlgorithm None = new SignatureAlgorithm(id: -1, "none", AlgorithmCategory.None, requiredKeySizeInBits: 0, new HashAlgorithmName());
 
         public static readonly SignatureAlgorithm HmacSha256 = new SignatureAlgorithm(id: 11, "HS256", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 128/*?*/, HashAlgorithmName.SHA256);
@@ -27,20 +32,39 @@ namespace JsonWebToken
         public static readonly SignatureAlgorithm RsaSsaPssSha384 = new SignatureAlgorithm(id: 41, "PS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA384);
         public static readonly SignatureAlgorithm RsaSsaPssSha512 = new SignatureAlgorithm(id: 42, "PS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA512);
 
-        public static readonly IDictionary<string, SignatureAlgorithm> AdditionalAlgorithms = new Dictionary<string, SignatureAlgorithm>();
+        public sbyte Id { get; }
 
-        public readonly sbyte Id;
-        public readonly AlgorithmCategory Category;
-        public readonly ushort RequiredKeySizeInBits;
-        public readonly HashAlgorithmName HashAlgorithm;
+        public string Name { get; }
 
-        public readonly string Name;
+        public AlgorithmCategory Category { get; }
 
-        private SignatureAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
+        public ushort RequiredKeySizeInBits { get; }
+
+        public HashAlgorithmName HashAlgorithm { get; }
+
+        public static IDictionary<string, SignatureAlgorithm> Algorithms { get; } = new Dictionary<string, SignatureAlgorithm>
+        {
+            { EcdsaSha256.Name, EcdsaSha256 },
+            { EcdsaSha384.Name, EcdsaSha384 },
+            { EcdsaSha512.Name, EcdsaSha512 },
+            { HmacSha256.Name, HmacSha256 },
+            { HmacSha384.Name, HmacSha384 },
+            { HmacSha512.Name, HmacSha512 },
+            { RsaSha256.Name, RsaSha256 },
+            { RsaSha384.Name, RsaSha384 },
+            { RsaSha512.Name, RsaSha512 },
+            { RsaSsaPssSha256.Name, RsaSsaPssSha256},
+            { RsaSsaPssSha384.Name, RsaSsaPssSha384},
+            { RsaSsaPssSha512.Name, RsaSsaPssSha512},
+            { None.Name, None },
+            { Empty.Name, Empty}
+        };
+
+        public SignatureAlgorithm(sbyte id, string name, AlgorithmCategory category, ushort requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
         {
             Id = id;
             Name = name;
-            Category = keyType;
+            Category = category;
             RequiredKeySizeInBits = requiredKeySizeInBits;
             HashAlgorithm = hashAlgorithm;
         }
@@ -117,45 +141,12 @@ namespace JsonWebToken
 
         public static implicit operator SignatureAlgorithm(string value)
         {
-            switch (value)
+            if (value == null)
             {
-                case "ES256":
-                    return EcdsaSha256;
-                case "ES384":
-                    return EcdsaSha384;
-                case "ES512":
-                    return EcdsaSha512;
-
-                case "HS256":
-                    return HmacSha256;
-                case "HS384":
-                    return HmacSha384;
-                case "HS512":
-                    return HmacSha512;
-
-                case "RS256":
-                    return RsaSha256;
-                case "RS384":
-                    return RsaSha384;
-                case "RS512":
-                    return RsaSha512;
-
-                case "PS256":
-                    return RsaSsaPssSha256;
-                case "PS384":
-                    return RsaSsaPssSha384;
-                case "PS512":
-                    return RsaSsaPssSha512;
-
-                case "none":
-                    return None;
-
-                case null:
-                case "":
-                    return Empty;
+                return Empty;
             }
 
-            if (!AdditionalAlgorithms.TryGetValue(value, out var algorithm))
+            if (!Algorithms.TryGetValue(value, out var algorithm))
             {
                 Errors.ThrowNotSupportedAlgorithm(value);
             }

@@ -1,9 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
+using JsonWebToken.Internal;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines an abstract class for representing a JWT.
+    /// </summary>
+    [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class JwtDescriptor
     {
         private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings
@@ -14,12 +23,12 @@ namespace JsonWebToken
         private static readonly Dictionary<string, JTokenType[]> DefaultRequiredHeaderParameters = new Dictionary<string, JTokenType[]>();
         private JsonWebKey _key;
 
-        public JwtDescriptor()
+        protected JwtDescriptor()
             : this(new JObject())
         {
         }
 
-        public JwtDescriptor(JObject header)
+        protected JwtDescriptor(JObject header)
         {
             Header = header;
         }
@@ -169,9 +178,14 @@ namespace JsonWebToken
             }
         }
 
-        protected string Serialize(object value)
+        protected string Serialize(object value, Formatting formatting)
         {
-            return JsonConvert.SerializeObject(value, serializerSettings);
+            return JsonConvert.SerializeObject(value, formatting, serializerSettings);
+        }
+
+        private string DebuggerDisplay()
+        {
+            return Serialize(Header, Formatting.Indented);
         }
     }
 }

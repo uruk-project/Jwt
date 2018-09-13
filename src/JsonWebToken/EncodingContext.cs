@@ -1,23 +1,29 @@
-﻿using System;
+﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
+using System;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Encapsulate the context required for a JWT encoding.
+    /// </summary>
     public class EncodingContext
     {
-        public EncodingContext(JsonHeaderCache headerCache, SignerFactory signatureFactory, KeyWrapperFactory keyWrapFactory, AuthenticatedEncryptorFactory authenticatedEncryptionFactory)
+        public EncodingContext(ISignerFactory signatureFactory, IKeyWrapperFactory keyWrapFactory, IAuthenticatedEncryptorFactory authenticatedEncryptionFactory, JsonHeaderCache headerCache)
         {
-            HeaderCache = headerCache ?? throw new ArgumentNullException(nameof(headerCache));
             SignatureFactory = signatureFactory ?? throw new ArgumentNullException(nameof(signatureFactory));
             KeyWrapFactory = keyWrapFactory ?? throw new ArgumentNullException(nameof(keyWrapFactory));
             AuthenticatedEncryptionFactory = authenticatedEncryptionFactory ?? throw new ArgumentNullException(nameof(authenticatedEncryptionFactory));
+            HeaderCache = headerCache;
         }
 
         public JsonHeaderCache HeaderCache { get; }
 
-        public SignerFactory SignatureFactory { get;  }
+        public ISignerFactory SignatureFactory { get;  }
 
-        public KeyWrapperFactory KeyWrapFactory { get;  }
+        public IKeyWrapperFactory KeyWrapFactory { get;  }
 
-        public AuthenticatedEncryptorFactory AuthenticatedEncryptionFactory { get; }
+        public IAuthenticatedEncryptorFactory AuthenticatedEncryptionFactory { get; }
     }
 }

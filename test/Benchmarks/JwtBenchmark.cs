@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
+using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
 

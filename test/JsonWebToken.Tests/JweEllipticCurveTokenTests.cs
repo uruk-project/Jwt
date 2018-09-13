@@ -5,7 +5,7 @@ namespace JsonWebToken.Tests
 {
     public class JweEllipticCurveTokenTests
     {
-        private readonly EccJwk _bobKey = new EccJwk
+        private readonly ECJwk _bobKey = new ECJwk
         {
             Kty = "EC",
             Crv = "P-256",

@@ -1,4 +1,7 @@
-﻿namespace JsonWebToken
+﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
+namespace JsonWebToken
 {
     public enum TokenValidationStatus
     {
@@ -55,17 +58,33 @@
         NotYetValid,
 
         /// <summary>
-        /// hee token has an invalid claim.
+        /// The token has an invalid claim.
         /// </summary>
         InvalidClaim,
 
         /// <summary>
-        /// The token has an missing claim.
+        /// The token has a missing claim.
         /// </summary>
         MissingClaim,
+
+        /// <summary>
+        /// The token has an invalid header. 
+        /// </summary>
         InvalidHeader,
+
+        /// <summary>
+        /// The token has a missing header.
+        /// </summary>
         MissingHeader,
+
+        /// <summary>
+        /// The token decompression has failed.
+        /// </summary>
         DecompressionFailed,
+
+        /// <summary>
+        /// The encrption key was not found.
+        /// </summary>
         EncryptionKeyNotFound
     }
 }

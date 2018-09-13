@@ -1,4 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
+﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
+using JsonWebToken.Internal;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -8,6 +13,9 @@ using System.Text;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines a signed JWT with a JSON payload.
+    /// </summary>
     public class JwsDescriptor : JwtDescriptor<JObject>, IJwtPayloadDescriptor
     {
         private static readonly byte dot = Convert.ToByte('.');
@@ -271,7 +279,7 @@ namespace JsonWebToken
         {
             if (value.HasValue)
             {
-                Payload[claimType] = EpochTime.GetIntDate(value.Value);
+                Payload[claimType] = value.ToEpochTime();
             }
             else
             {
@@ -282,7 +290,7 @@ namespace JsonWebToken
         public override string Encode(EncodingContext context)
         {
             Signer signatureProvider = null;
-            var alg = (SignatureAlgorithm)(string.IsNullOrEmpty(Algorithm) ? Key?.Alg : Algorithm);
+            var alg = (SignatureAlgorithm)(Algorithm ?? Key?.Alg);
             if (Key != null)
             {
                 var key = Key;
@@ -293,7 +301,7 @@ namespace JsonWebToken
                 }
             }
 
-            var payloadJson = Serialize(Payload);
+            var payloadJson = Serialize(Payload, Formatting.None);
             int length = Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
                        + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBytes))
                        + (Constants.JwsSegmentCount - 1);
@@ -307,7 +315,7 @@ namespace JsonWebToken
             }
             else
             {
-                headerJson = Serialize(Header);
+                headerJson = Serialize(Header, Formatting.None);
                 length += Base64Url.GetArraySizeRequiredToEncode(headerJson.Length);
             }
 
@@ -340,7 +348,7 @@ namespace JsonWebToken
                     Debug.Assert(success);
                     Debug.Assert(signature.Length == signatureBytesWritten);
 
-                    Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)), out int bytesConsumed, out bytesWritten);
+                    bytesWritten = Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)));
                 }
 
 #if NETCOREAPP2_1
@@ -358,7 +366,7 @@ namespace JsonWebToken
             }
         }
 
-        public bool TryEncodeUtf8ToBase64Url(string input, Span<byte> destination, out int bytesWritten)
+        public static bool TryEncodeUtf8ToBase64Url(string input, Span<byte> destination, out int bytesWritten)
         {
             byte[] arrayToReturnToPool = null;
             var encodedBytes = input.Length <= Constants.MaxStackallocBytes
@@ -371,8 +379,8 @@ namespace JsonWebToken
 #else
                 EncodingHelper.GetUtf8Bytes(input, encodedBytes);
 #endif
-                var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
-                return status == OperationStatus.Done;
+                bytesWritten = Base64Url.Base64UrlEncode(encodedBytes, destination);
+                return bytesWritten == destination.Length;
             }
             finally
             {
