@@ -7,9 +7,7 @@ namespace JsonWebToken
     /// </summary>
     public abstract class AuthenticatedEncryptor : IDisposable
     {
-        public virtual void Dispose()
-        {
-        }
+        public abstract void Dispose();
 
         public abstract void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> tag);
 

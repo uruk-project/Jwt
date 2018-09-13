@@ -7,9 +7,10 @@ namespace JsonWebToken
     /// <summary>
     /// Retrieves metadata information using HttpClient.
     /// </summary>
-    public class HttpDocumentRetriever
+    public sealed class HttpDocumentRetriever : IDisposable
     {
         private readonly HttpClient _httpClient;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpDocumentRetriever"/> class.
@@ -51,9 +52,23 @@ namespace JsonWebToken
                 Errors.ThrowRequireHttps(address);
             }
 
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
             using (HttpResponseMessage response = _httpClient.GetAsync(address, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult().EnsureSuccessStatusCode())
             {
                 return response.Content.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _httpClient.Dispose();
+                _disposed = true;
             }
         }
 
@@ -78,6 +93,14 @@ namespace JsonWebToken
         private static bool IsHttps(Uri uri)
         {
             return uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
         }
     }
 }

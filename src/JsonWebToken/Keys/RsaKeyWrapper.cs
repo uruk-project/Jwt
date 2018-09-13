@@ -35,10 +35,7 @@ namespace JsonWebToken
             {
                 if (disposing)
                 {
-                    if (_rsa != null)
-                    {
-                        _rsa.Dispose();
-                    }
+                    _rsa.Dispose();
                 }
 
                 _disposed = true;
@@ -76,16 +73,16 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(keyBytes));
             }
 
+            if (header == null)
+            {
+                throw new ArgumentNullException(nameof(header));
+            }
+
             if (_disposed)
             {
-                throw new ObjectDisposedException(GetType().ToString());
+                Errors.ThrowObjectDisposed(GetType());
             }
-
-            if (_rsa == null)
-            {
-                Errors.ThrowNotSupportedUnwrap(Algorithm);
-            }
-
+            
             try
             {
 #if NETCOREAPP2_1
@@ -110,16 +107,16 @@ namespace JsonWebToken
         /// <returns>A wrapped key</returns>
         public override bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
         {
+            if (header == null)
+            {
+                throw new ArgumentNullException(nameof(header));
+            }
+
             if (_disposed)
             {
-                throw new ObjectDisposedException(GetType().ToString());
+                Errors.ThrowObjectDisposed(GetType());
             }
-
-            if (_rsa == null)
-            {
-                Errors.ThrowNotSupportedUnwrap(Algorithm);
-            }
-
+            
             try
             {
                 contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);

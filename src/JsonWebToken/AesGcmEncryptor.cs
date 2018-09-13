@@ -7,6 +7,8 @@ namespace JsonWebToken
         private readonly SymmetricJwk _key;
         private readonly EncryptionAlgorithm _encryptionAlgorithm;
 
+        private bool _disposed;
+
         public AesGcmEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (encryptionAlgorithm.Category != EncryptionTypes.AesGcm)
@@ -25,6 +27,11 @@ namespace JsonWebToken
 
         public override void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> tag)
         {
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
             using (var aes = new AesGcm(_key.RawK))
             {
                 aes.Encrypt(plaintext, nonce, ciphertext, tag, associatedData);
@@ -48,12 +55,22 @@ namespace JsonWebToken
 
         public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
         {
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
             using (var aes = new AesGcm(_key.ToByteArray()))
             {
                 aes.Decrypt(nonce, ciphertext, authenticationTag, plaintext, associatedData);
                 bytesWritten = plaintext.Length;
                 return true;
             }
+        }
+
+        public override void Dispose()
+        {
+            _disposed = true;
         }
     }
 }

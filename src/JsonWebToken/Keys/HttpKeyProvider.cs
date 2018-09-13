@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace JsonWebToken
 {
-    public abstract class HttpKeyProvider : IKeyProvider
+    public abstract class HttpKeyProvider : IKeyProvider, IDisposable
     {
         private readonly SemaphoreSlim _refreshLock = new SemaphoreSlim(1);
         private readonly HttpDocumentRetriever _documentRetriever;
@@ -13,6 +13,7 @@ namespace JsonWebToken
         private readonly TimeSpan _automaticRefreshInterval = DefaultAutomaticRefreshInterval;
         private DateTimeOffset _syncAfter;
         private JsonWebKeySet _currentKeys;
+        private bool _disposed;
 
         private static readonly JsonWebKey[] Empty = Array.Empty<JsonWebKey>();
 
@@ -38,7 +39,7 @@ namespace JsonWebToken
 
         public HttpKeyProvider(HttpDocumentRetriever documentRetriever)
         {
-            _documentRetriever = documentRetriever;
+            _documentRetriever = documentRetriever ?? throw new ArgumentNullException(nameof(documentRetriever));
         }
 
         public HttpKeyProvider()
@@ -52,6 +53,11 @@ namespace JsonWebToken
 
         protected IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header, string metadataAddress)
         {
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
             var kid = header.Kid;
             DateTimeOffset now = DateTimeOffset.UtcNow;
             if (_currentKeys != null && _syncAfter > now)
@@ -67,7 +73,6 @@ namespace JsonWebToken
                     try
                     {
                         var value = _documentRetriever.GetDocument(metadataAddress, CancellationToken.None);
-
                         _currentKeys = JsonConvert.DeserializeObject<JsonWebKeySet>(value);
                         _syncAfter = DateTimeUtil.Add(now.UtcDateTime, _automaticRefreshInterval);
                     }
@@ -89,6 +94,26 @@ namespace JsonWebToken
             {
                 _refreshLock.Release();
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _refreshLock.Dispose();
+                    _documentRetriever.Dispose();
+                }
+
+                _disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            Dispose(true);
         }
     }
 }
