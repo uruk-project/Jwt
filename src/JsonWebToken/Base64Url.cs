@@ -270,7 +270,6 @@ namespace JsonWebToken
             try
             {
 #endif
-
                 var base64Url = base64UrlLen <= MaxStackallocBytes / sizeof(char)
                     ? stackalloc char[base64UrlLen]
 #if NET461

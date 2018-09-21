@@ -1,5 +1,4 @@
-﻿using JsonWebToken.ObjectPooling;
-using System;
+﻿using System;
 using System.Security.Cryptography;
 
 namespace JsonWebToken

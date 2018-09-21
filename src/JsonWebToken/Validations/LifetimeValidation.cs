@@ -5,14 +5,14 @@ namespace JsonWebToken.Validations
     public class LifetimeValidation : IValidation
     {
         private readonly bool _requireExpirationTime;
-        private readonly TimeSpan _clockSkew;
-        private readonly TimeSpan _negativeClockSkew;
+        private readonly long _clockSkewTicks;
+        private readonly long _negativeClockSkewTicks;
 
-        public LifetimeValidation(bool requireExpirationTime, int clockSkew)
+        public LifetimeValidation(bool requireExpirationTime, int clockSkewInSeconds)
         {
             _requireExpirationTime = requireExpirationTime;
-            _clockSkew = TimeSpan.FromSeconds(clockSkew);
-            _negativeClockSkew = TimeSpan.FromSeconds(-clockSkew);
+            _clockSkewTicks = clockSkewInSeconds * TimeSpan.TicksPerSecond;
+            _negativeClockSkewTicks = -_clockSkewTicks;
         }
 
         public TokenValidationResult TryValidate(in TokenValidationContext context)
@@ -25,13 +25,13 @@ namespace JsonWebToken.Validations
             }
 
             var utcNow = DateTime.UtcNow;
-            if (expires.HasValue && (expires.Value < DateTimeUtil.Add(utcNow, _negativeClockSkew)))
+            if (expires.HasValue && (expires.Value < utcNow.AddSafe(_negativeClockSkewTicks)))
             {
                 return TokenValidationResult.Expired(jwt);
             }
 
             var notBefore = jwt.Payload.Nbf;
-            if (notBefore.HasValue && (notBefore.Value > DateTimeUtil.Add(utcNow, _clockSkew)))
+            if (notBefore.HasValue && (notBefore.Value > utcNow.AddSafe(_clockSkewTicks)))
             {
                 return TokenValidationResult.NotYetValid(jwt);
             }

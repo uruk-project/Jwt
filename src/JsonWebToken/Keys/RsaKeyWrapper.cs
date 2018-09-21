@@ -21,44 +21,29 @@ namespace JsonWebToken
         public RsaKeyWrapper(RsaJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
             : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
-            _rsa = ResolveRsaAlgorithm(key);
-            _padding = ResolvePadding(contentEncryptionAlgorithm);
-        }
+#if NETCOREAPP2_1
+            _rsa = RSA.Create(key.ExportParameters());
+#else
+            _rsa = RSA.Create();
+            _rsa.ImportParameters(key.ExportParameters());
+#endif
 
-        /// <summary>
-        /// Disposes of internal components.
-        /// </summary>
-        /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (!_disposed)
+            if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep)
             {
-                if (disposing)
-                {
-                    _rsa.Dispose();
-                }
-
-                _disposed = true;
+                _padding = RSAEncryptionPadding.OaepSHA1;
             }
-        }
-
-        private static RSAEncryptionPadding ResolvePadding(KeyManagementAlgorithm algorithm)
-        {
-            if (algorithm == KeyManagementAlgorithm.RsaOaep)
+            else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep256)
             {
-                return RSAEncryptionPadding.OaepSHA1;
+                _padding = RSAEncryptionPadding.OaepSHA256;
             }
-            else if (algorithm == KeyManagementAlgorithm.RsaOaep256)
+            else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaPkcs1)
             {
-                return RSAEncryptionPadding.OaepSHA256;
+                _padding = RSAEncryptionPadding.OaepSHA256;
             }
-            else if (algorithm == KeyManagementAlgorithm.RsaPkcs1)
+            else
             {
-                return RSAEncryptionPadding.OaepSHA256;
+                Errors.ThrowNotSupportedAlgorithmForKeyWrap(contentEncryptionAlgorithm);
             }
-
-            Errors.ThrowNotSupportedAlgorithmForKeyWrap(algorithm);
-            return null;
         }
 
         /// <summary>
@@ -82,7 +67,7 @@ namespace JsonWebToken
             {
                 Errors.ThrowObjectDisposed(GetType());
             }
-            
+
             try
             {
 #if NETCOREAPP2_1
@@ -116,7 +101,7 @@ namespace JsonWebToken
             {
                 Errors.ThrowObjectDisposed(GetType());
             }
-            
+
             try
             {
                 contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
@@ -136,17 +121,6 @@ namespace JsonWebToken
             }
         }
 
-        private static RSA ResolveRsaAlgorithm(RsaJwk key)
-        {
-#if NETCOREAPP2_1
-            return RSA.Create(key.ExportParameters());
-#else
-            var rsa = RSA.Create();
-            rsa.ImportParameters(key.ExportParameters());
-            return rsa;
-#endif
-        }
-
         public override int GetKeyUnwrapSize(int inputSize)
         {
             return EncryptionAlgorithm.RequiredKeySizeInBytes;
@@ -155,6 +129,23 @@ namespace JsonWebToken
         public override int GetKeyWrapSize()
         {
             return Key.KeySizeInBits >> 3;
+        }
+
+        /// <summary>
+        /// Disposes of internal components.
+        /// </summary>
+        /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _rsa.Dispose();
+                }
+
+                _disposed = true;
+            }
         }
     }
 }

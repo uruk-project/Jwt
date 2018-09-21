@@ -4,7 +4,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace JsonWebToken
@@ -335,9 +334,9 @@ namespace JsonWebToken
                 Encoding.UTF8.GetChars(rawHeader, utf8Header);
                 Encoding.ASCII.GetBytes(utf8Header, header);
 #else
-                fixed (byte* rawPtr = &MemoryMarshal.GetReference(rawHeader))
-                fixed (char* utf8Ptr = &MemoryMarshal.GetReference(utf8Header))
-                fixed (byte* header8Ptr = &MemoryMarshal.GetReference(header))
+                fixed (byte* rawPtr = rawHeader)
+                fixed (char* utf8Ptr = utf8Header)
+                fixed (byte* header8Ptr = header)
                 {
                     Encoding.UTF8.GetChars(rawPtr, rawHeader.Length, utf8Ptr, utf8Header.Length);
                     Encoding.ASCII.GetBytes(utf8Ptr, utf8Header.Length, header8Ptr, header.Length);

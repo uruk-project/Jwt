@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace JsonWebToken.ObjectPooling
+namespace JsonWebToken
 {
     // based on https://github.com/aspnet/Common/tree/master/src/Microsoft.Extensions.ObjectPool
     public class ObjectPool<T> : IDisposable

@@ -9,8 +9,8 @@ namespace JsonWebToken
     {
         private readonly SemaphoreSlim _refreshLock = new SemaphoreSlim(1);
         private readonly HttpDocumentRetriever _documentRetriever;
-        private readonly TimeSpan _refreshInterval = DefaultRefreshInterval;
-        private readonly TimeSpan _automaticRefreshInterval = DefaultAutomaticRefreshInterval;
+        private readonly long _refreshInterval = DefaultRefreshInterval;
+        private readonly long _automaticRefreshInterval = DefaultAutomaticRefreshInterval;
         private DateTimeOffset _syncAfter;
         private JsonWebKeySet _currentKeys;
         private bool _disposed;
@@ -20,22 +20,22 @@ namespace JsonWebToken
         /// <summary>
         /// 1 day is the default time interval that afterwards, <see cref="GetConfigurationAsync()"/> will obtain new configuration.
         /// </summary>
-        public static readonly TimeSpan DefaultAutomaticRefreshInterval = new TimeSpan(1, 0, 0, 0);
+        public static readonly long DefaultAutomaticRefreshInterval = TimeSpan.TicksPerDay;
 
         /// <summary>
         /// 30 seconds is the default time interval that must pass for <see cref="RequestRefresh"/> to obtain a new configuration.
         /// </summary>
-        public static readonly TimeSpan DefaultRefreshInterval = new TimeSpan(0, 0, 0, 30);
+        public static readonly long DefaultRefreshInterval = 30 * TimeSpan.TicksPerSecond;
 
         /// <summary>
         /// 5 minutes is the minimum value for automatic refresh. <see cref="AutomaticRefreshInterval"/> can not be set less than this value.
         /// </summary>
-        public static readonly TimeSpan MinimumAutomaticRefreshInterval = new TimeSpan(0, 0, 5, 0);
+        public static readonly long MinimumAutomaticRefreshInterval = 5 * TimeSpan.TicksPerMinute;
 
         /// <summary>
         /// 1 second is the minimum time interval that must pass for <see cref="RequestRefresh"/> to obtain new configuration.
         /// </summary>
-        public static readonly TimeSpan MinimumRefreshInterval = new TimeSpan(0, 0, 0, 1);
+        public static readonly long MinimumRefreshInterval = TimeSpan.TicksPerSecond;
 
         public HttpKeyProvider(HttpDocumentRetriever documentRetriever)
         {
@@ -65,35 +65,32 @@ namespace JsonWebToken
                 return _currentKeys.GetKeys(kid);
             }
 
-            _refreshLock.Wait();
-            try
+            if (_syncAfter <= now)
             {
-                if (_syncAfter <= now)
+                _refreshLock.Wait();
+                try
                 {
-                    try
-                    {
-                        var value = _documentRetriever.GetDocument(metadataAddress, CancellationToken.None);
-                        _currentKeys = JsonConvert.DeserializeObject<JsonWebKeySet>(value);
-                        _syncAfter = DateTimeUtil.Add(now.UtcDateTime, _automaticRefreshInterval);
-                    }
-                    catch
-                    {
-                        _syncAfter = DateTimeUtil.Add(now.UtcDateTime, _automaticRefreshInterval < _refreshInterval ? _automaticRefreshInterval : _refreshInterval);
-                        throw;
-                    }
+                    var value = _documentRetriever.GetDocument(metadataAddress, CancellationToken.None);
+                    _currentKeys = JsonConvert.DeserializeObject<JsonWebKeySet>(value);
+                    _syncAfter = now.UtcDateTime.AddSafe(_automaticRefreshInterval);
                 }
-
-                if (_currentKeys == null)
+                catch
                 {
-                    Errors.ThrowUnableToObtainKeys(metadataAddress);
+                    _syncAfter = now.UtcDateTime.AddSafe(_automaticRefreshInterval < _refreshInterval ? _automaticRefreshInterval : _refreshInterval);
+                    throw;
                 }
-
-                return _currentKeys.GetKeys(kid);
+                finally
+                {
+                    _refreshLock.Release();
+                }
             }
-            finally
+
+            if (_currentKeys == null)
             {
-                _refreshLock.Release();
+                Errors.ThrowUnableToObtainKeys(metadataAddress);
             }
+
+            return _currentKeys.GetKeys(kid);
         }
 
         protected virtual void Dispose(bool disposing)

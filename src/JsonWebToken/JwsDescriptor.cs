@@ -271,7 +271,7 @@ namespace JsonWebToken
         {
             if (value.HasValue)
             {
-                Payload[claimType] = EpochTime.GetIntDate(value.Value);
+                Payload[claimType] = value.ToEpochTime();
             }
             else
             {

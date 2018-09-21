@@ -1,5 +1,4 @@
-﻿using JsonWebToken.ObjectPooling;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -158,7 +157,7 @@ namespace JsonWebToken
                     }
 
                     byte[] block = new byte[16];
-                    fixed (byte* blockPtr = &block[0])
+                    fixed (byte* blockPtr = block)
                     {
                         var t = stackalloc byte[8];
 
@@ -181,7 +180,7 @@ namespace JsonWebToken
 
                                 // Third, b = AES-1( block )
                                 var b = decryptor.TransformFinalBlock(block, 0, 16);
-                                fixed (byte* bPtr = &b[0])
+                                fixed (byte* bPtr = b)
                                 {
                                     // A = MSB(64, B)
                                     a = Unsafe.ReadUnaligned<ulong>(bPtr);
@@ -288,7 +287,7 @@ namespace JsonWebToken
                 }
 
                 byte[] block = new byte[16];
-                fixed (byte* blockPtr = &block[0])
+                fixed (byte* blockPtr = block)
                 {
                     var t = stackalloc byte[8];
                     Unsafe.As<byte, ulong>(ref *t) = 0;
@@ -305,7 +304,7 @@ namespace JsonWebToken
 
                             // Second, AES( K, block )
                             var b = encryptor.TransformFinalBlock(block, 0, 16);
-                            fixed (byte* bPtr = &b[0])
+                            fixed (byte* bPtr = b)
                             {
                                 // A = MSB( 64, B )
                                 a = Unsafe.ReadUnaligned<ulong>(bPtr);

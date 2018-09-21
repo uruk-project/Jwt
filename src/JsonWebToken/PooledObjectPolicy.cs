@@ -1,4 +1,4 @@
-﻿namespace JsonWebToken.ObjectPooling
+﻿namespace JsonWebToken
 {
     public abstract class PooledObjectPolicy<T>
     {

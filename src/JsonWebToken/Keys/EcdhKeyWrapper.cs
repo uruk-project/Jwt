@@ -81,10 +81,8 @@ namespace JsonWebToken
 
                 if (Algorithm.ProduceEncryptedKey)
                 {
-                    var (keyLength, aesAlgorithm) = GetAesAlgorithm();
-
-                    var key = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, keyLength), false);
-                    using (KeyWrapper aesKeyWrapProvider = key.CreateKeyWrapper(EncryptionAlgorithm, aesAlgorithm))
+                    var key = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keySizeInBytes), false);
+                    using (KeyWrapper aesKeyWrapProvider = key.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
                     {
                         return aesKeyWrapProvider.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
                     }
@@ -100,12 +98,6 @@ namespace JsonWebToken
             {
                 return Errors.TryWriteError(out bytesWritten);
             }
-        }
-
-        private (int, KeyManagementAlgorithm) GetAesAlgorithm()
-        {
-            KeyManagementAlgorithm aesAlgorithm = (KeyManagementAlgorithm)Algorithm.WrappedAlgorithm;
-            return (aesAlgorithm.RequiredKeySizeInBits >> 3, aesAlgorithm);
         }
 
         private static HashAlgorithmName GetHashAlgorithm(EncryptionAlgorithm encryptionAlgorithm)
@@ -143,9 +135,8 @@ namespace JsonWebToken
 
                 if (Algorithm.ProduceEncryptedKey)
                 {
-                    var (keyLength, aesAlgorithm) = GetAesAlgorithm();
-                    var kek = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, keyLength), false);
-                    using (KeyWrapper aesKeyWrapProvider = kek.CreateKeyWrapper(EncryptionAlgorithm, aesAlgorithm))
+                    var kek = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keySizeInBytes), false);
+                    using (KeyWrapper aesKeyWrapProvider = kek.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
                     {
                         return aesKeyWrapProvider.TryWrapKey(null, header, destination, out contentEncryptionKey, out bytesWritten);
                     }
@@ -187,7 +178,7 @@ namespace JsonWebToken
 
         private static unsafe void WriteRoundNumber(Span<byte> destination)
         {
-            fixed (byte* ptr = &MemoryMarshal.GetReference(destination))
+            fixed (byte* ptr = destination)
             {
                 Unsafe.WriteUnaligned(ptr, OneBigEndian);
             }
@@ -200,7 +191,7 @@ namespace JsonWebToken
 
         private static unsafe void WriteZero(Span<byte> destination)
         {
-            fixed (byte* ptr = &MemoryMarshal.GetReference(destination))
+            fixed (byte* ptr = destination)
             {
                 Unsafe.WriteUnaligned(ptr, 0);
             }

@@ -32,7 +32,7 @@ namespace JsonWebToken
             var epochTime = value as DateTime?;
             if (epochTime.HasValue)
             {
-                writer.WriteValue(EpochTime.GetIntDate(epochTime));
+                writer.WriteValue(epochTime.ToEpochTime());
             }
         }
     }

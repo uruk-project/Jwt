@@ -1,5 +1,4 @@
-﻿using JsonWebToken.ObjectPooling;
-using System;
+﻿using System;
 using System.Security.Cryptography;
 
 namespace JsonWebToken
@@ -54,7 +53,7 @@ namespace JsonWebToken
                     break;
             }
 
-            _ecdsa = ResolveAlgorithm(key, algorithm, willCreateSignatures);
+            _ecdsa = key.CreateECDsa(algorithm, willCreateSignatures);
             _hashAlgorithmPool = new ObjectPool<ECDsa>(new ECDsaObjectPoolPolicy(key, algorithm, willCreateSignatures));
         }
 
@@ -80,10 +79,10 @@ namespace JsonWebToken
 #if NETCOREAPP2_1
             return _ecdsa.TrySignData(input, destination, _hashAlgorithm, out bytesWritten);
 #else
-                var result = _ecdsa.SignData(input.ToArray(), _hashAlgorithm);
-                bytesWritten = result.Length;
+            var result = _ecdsa.SignData(input.ToArray(), _hashAlgorithm);
+            bytesWritten = result.Length;
             result.CopyTo(destination);
-                return true;
+            return true;
 #endif
         }
 
@@ -115,11 +114,6 @@ namespace JsonWebToken
 #else
             return _ecdsa.VerifyData(input.ToArray(), signature.ToArray(), _hashAlgorithm);
 #endif
-        }
-
-        private static ECDsa ResolveAlgorithm(EccJwk key, SignatureAlgorithm algorithm, bool usePrivateKey)
-        {
-            return key.CreateECDsa(algorithm, usePrivateKey);
         }
 
         /// <summary>

@@ -9,7 +9,7 @@ namespace JsonWebToken
     {
         public static unsafe string GetUtf8String(Span<byte> input)
         {
-            fixed (byte* ptr = &MemoryMarshal.GetReference(input))
+            fixed (byte* ptr = input)
             {
                 return Encoding.UTF8.GetString(ptr, input.Length);
             }
@@ -22,8 +22,8 @@ namespace JsonWebToken
 
         public static unsafe void GetUtf8Bytes(ReadOnlySpan<char> input, Span<byte> output)
         {
-            fixed (char* inputPtr = &MemoryMarshal.GetReference(input))
-            fixed (byte* outputPtr = &MemoryMarshal.GetReference(output))
+            fixed (char* inputPtr = input)
+            fixed (byte* outputPtr = output)
             {
                 Encoding.UTF8.GetBytes(inputPtr, input.Length, outputPtr, output.Length);
             }
@@ -36,8 +36,8 @@ namespace JsonWebToken
 
         public static unsafe void GetAsciiBytes(ReadOnlySpan<char> input, Span<byte> output)
         {
-            fixed (char* inputPtr = &MemoryMarshal.GetReference(input))
-            fixed (byte* outputPtr = &MemoryMarshal.GetReference(output))
+            fixed (char* inputPtr = input)
+            fixed (byte* outputPtr = output)
             {
                 Encoding.ASCII.GetBytes(inputPtr, input.Length, outputPtr, output.Length);
             }

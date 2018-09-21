@@ -1,5 +1,4 @@
-﻿using JsonWebToken.ObjectPooling;
-using System;
+﻿using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
@@ -218,7 +217,7 @@ namespace JsonWebToken
 
         private static unsafe int Transform(ICryptoTransform transform, ReadOnlySpan<byte> input, int inputOffset, int inputLength, Span<byte> output)
         {
-            fixed (byte* buffer = &output[0])
+            fixed (byte* buffer = output)
             {
                 using (var messageStream = new UnmanagedMemoryStream(buffer, output.Length, output.Length, FileAccess.Write))
                 using (CryptoStream cryptoStream = new CryptoStream(messageStream, transform, CryptoStreamMode.Write))
