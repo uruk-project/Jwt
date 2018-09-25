@@ -180,7 +180,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(k));
             }
 
-            var key = new SymmetricJwk()
+            var key = new SymmetricJwk
             {
                 K = k
             };

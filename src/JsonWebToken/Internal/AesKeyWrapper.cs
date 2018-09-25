@@ -14,7 +14,6 @@ namespace JsonWebToken
 
         private static readonly byte[] _defaultIVArray = new byte[] { 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6 };
         private static readonly ulong _defaultIV = BitConverter.ToUInt64(_defaultIVArray, 0);
-        private static readonly byte[] _emptyIV = BitConverter.GetBytes(0L);
 
         private readonly ObjectPool<ICryptoTransform> _encryptorPool;
         private readonly ObjectPool<ICryptoTransform> _decryptorPool;
@@ -59,7 +58,7 @@ namespace JsonWebToken
             }
         }
 
-        private Aes GetSymmetricAlgorithm(SymmetricJwk key, KeyManagementAlgorithm algorithm)
+        private static Aes GetSymmetricAlgorithm(SymmetricJwk key, KeyManagementAlgorithm algorithm)
         {
             if (algorithm.RequiredKeySizeInBits != key.KeySizeInBits)
             {
