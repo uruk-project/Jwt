@@ -1,6 +1,8 @@
-﻿namespace JsonWebToken
+﻿using System;
+
+namespace JsonWebToken
 {
-    public interface IKeyWrapperFactory
+    public interface IKeyWrapperFactory : IDisposable
     {
         KeyWrapper Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm);
     }

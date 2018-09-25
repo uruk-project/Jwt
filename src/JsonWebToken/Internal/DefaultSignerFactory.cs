@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 
 namespace JsonWebToken
 {
-    public class DefaultSignerFactory : ISignerFactory, IDisposable
+    public class DefaultSignerFactory : ISignerFactory
     {
         private readonly ConcurrentDictionary<ProviderFactoryKey, Signer> _signers = new ConcurrentDictionary<ProviderFactoryKey, Signer>(JwkEqualityComparer.Default);
         private readonly ConcurrentDictionary<ProviderFactoryKey, Signer> _validationSigners = new ConcurrentDictionary<ProviderFactoryKey, Signer>(JwkEqualityComparer.Default);

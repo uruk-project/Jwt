@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 
 namespace JsonWebToken
 {
-    public class DefaultAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory, IDisposable
+    public class DefaultAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
     {
         private readonly ConcurrentDictionary<ProviderFactoryKey, AuthenticatedEncryptor> _encryptors = new ConcurrentDictionary<ProviderFactoryKey, AuthenticatedEncryptor>(JwkEqualityComparer.Default);
 

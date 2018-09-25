@@ -62,7 +62,7 @@ namespace JsonWebToken
         {
             if (algorithm.RequiredKeySizeInBits != key.KeySizeInBits)
             {
-                Errors.ThrowKeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, Key, key.KeySizeInBits);
+                Errors.ThrowKeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, key, key.KeySizeInBits);
             }
 
             byte[] keyBytes = key.RawK;
@@ -119,32 +119,6 @@ namespace JsonWebToken
             var decryptor = _decryptorPool.Get();
             try
             {
-                /*
-                    1) Initialize variables.
-
-                        Set A = C[0]
-                        For i = 1 to n
-                            R[i] = C[i]
-
-                    2) Compute intermediate values.
-
-                        For j = 5 to 0
-                            For i = n to 1
-                                B = AES-1(K, (A ^ t) | R[i]) where t = n*j+i
-                                A = MSB(64, B)
-                                R[i] = LSB(64, B)
-
-                    3) Output results.
-
-                    If A is an appropriate initial value (see 2.2.3),
-                    Then
-                        For i = 1 to n
-                            P[i] = R[i]
-                    Else
-                        Return an error
-                */
-
-                // A = C[0]
                 fixed (byte* inputPtr = inputBuffer)
                 {
                     var a = Unsafe.ReadUnaligned<ulong>(ref *inputPtr);
@@ -163,32 +137,19 @@ namespace JsonWebToken
                     fixed (byte* blockPtr = block)
                     {
                         var t = stackalloc byte[8];
-
-                        // Calculate intermediate values
                         for (var j = 5; j >= 0; j--)
                         {
                             for (var i = n; i > 0; i--)
                             {
-                                // B = AES-1(K, (A ^ t) | R[i] )                                
-                                // T = ( n * j ) + i
                                 Unsafe.Add(ref *t, 7) = (byte)((n * j) + i);
-
-                                // First, A = ( A ^ t )
                                 a ^= Unsafe.ReadUnaligned<ulong>(ref *t);
-
-                                // Second, block = ( A | R[i] )
                                 Unsafe.WriteUnaligned(blockPtr, a);
                                 var rValue = Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, (i - 1) << 3));
                                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref *blockPtr, 8), rValue);
-
-                                // Third, b = AES-1( block )
                                 var b = decryptor.TransformFinalBlock(block, 0, 16);
                                 fixed (byte* bPtr = b)
                                 {
-                                    // A = MSB(64, B)
                                     a = Unsafe.ReadUnaligned<ulong>(bPtr);
-
-                                    // R[i] = LSB(64, B)
                                     Unsafe.WriteUnaligned(ref Unsafe.Add(ref *r, (i - 1) << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *bPtr, 8)));
                                 }
                             }
@@ -241,37 +202,12 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private unsafe bool TryWrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, Span<byte> destination, out int bytesWritten)
         {
-            /*
-               1) Initialize variables.
-
-                   Set A = IV, an initial value (see 2.2.3)
-                   For i = 1 to n
-                       R[i] = P[i]
-
-               2) Calculate intermediate values.
-
-                   For j = 0 to 5
-                       For i=1 to n
-                           B = AES(K, A | R[i])
-                           A = MSB(64, B) ^ t where t = (n*j)+i
-                           R[i] = LSB(64, B)
-
-               3) Output the results.
-
-                   Set C[0] = A
-                   For i = 1 to n
-                       C[i] = R[i]
-            */
             var encryptor = _encryptorPool.Get();
             try
             {
                 // The default initialization vector from RFC3394
                 ulong a = _defaultIV;
-
-                // The number of input blocks
                 var n = inputBuffer.Length >> 3;
-
-                // The set of input blocks
                 var r = stackalloc byte[n << 3];
                 fixed (byte* input = inputBuffer)
                 {
@@ -286,31 +222,19 @@ namespace JsonWebToken
                 {
                     var t = stackalloc byte[8];
                     Unsafe.As<byte, ulong>(ref *t) = 0;
-
-                    // Calculate intermediate values
                     for (var j = 0; j < 6; j++)
                     {
                         for (var i = 0; i < n; i++)
                         {
-                            // B = AES( K, A | R[i] )
-                            // First, block = A | R[i]
                             Unsafe.WriteUnaligned(blockPtr, a);
                             Unsafe.WriteUnaligned(ref Unsafe.Add(ref *blockPtr, 8), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *r, i << 3)));
 
-                            // Second, AES( K, block )
                             var b = encryptor.TransformFinalBlock(block, 0, 16);
                             fixed (byte* bPtr = b)
                             {
-                                // A = MSB( 64, B )
                                 a = Unsafe.ReadUnaligned<ulong>(bPtr);
-
-                                // T = ( n * j ) + i
                                 Unsafe.Add(ref *t, 7) = (byte)((n * j) + i + 1);
-
-                                // A = A ^ t
-                                a ^= Unsafe.ReadUnaligned<ulong>(ref t[0]);
-
-                                // R[i] = LSB( 64, B )
+                                a ^= Unsafe.ReadUnaligned<ulong>(ref *t);
                                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref *r, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref *bPtr, 8)));
                             }
                         }

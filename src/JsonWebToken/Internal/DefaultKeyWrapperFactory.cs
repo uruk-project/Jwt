@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 
 namespace JsonWebToken
 {
-    public class DefaultKeyWrapperFactory : IKeyWrapperFactory, IDisposable
+    public class DefaultKeyWrapperFactory : IKeyWrapperFactory
     {
         private readonly ConcurrentDictionary<ProviderFactoryKey, KeyWrapper> _keyWrappers = new ConcurrentDictionary<ProviderFactoryKey, KeyWrapper>(JwkEqualityComparer.Default);
         private bool _disposed;
