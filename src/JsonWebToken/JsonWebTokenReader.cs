@@ -457,9 +457,9 @@ namespace JsonWebToken
         {
             if (!_disposed && _disposeFactories)
             {
-                (_signatureFactory as IDisposable)?.Dispose();
-                (_keyWrapFactory as IDisposable)?.Dispose();
-                (_authenticatedEncryptionFactory as IDisposable)?.Dispose();
+                _signatureFactory.Dispose();
+                _keyWrapFactory.Dispose();
+                _authenticatedEncryptionFactory.Dispose();
                 _disposed = true;
             }
         }

@@ -140,9 +140,9 @@ namespace JsonWebToken
         {
             if (!_disposed && _disposeFactories)
             {
-                (_authenticatedEncryptionFactory as IDisposable)?.Dispose();
-                (_signatureFactory as IDisposable)?.Dispose();
-                (_keyWrapFactory as IDisposable)?.Dispose();
+                _authenticatedEncryptionFactory.Dispose();
+                _signatureFactory.Dispose();
+                _keyWrapFactory.Dispose();
                 _disposed = true;
             }
         }
