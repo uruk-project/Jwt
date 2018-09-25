@@ -20,7 +20,7 @@ namespace JsonWebToken
 
             if (reader.TokenType == JsonToken.String)
             {
-                return new string[] { (string)reader.Value };
+                return new[] { (string)reader.Value };
             }
 
             if (reader.TokenType == JsonToken.StartArray)

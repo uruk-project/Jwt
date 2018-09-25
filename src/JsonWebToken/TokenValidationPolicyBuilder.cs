@@ -89,7 +89,7 @@ namespace JsonWebToken
             return RequireSignature(new JsonWebKeySet(key), algorithm);
         }
 
-        public TokenValidationPolicyBuilder RequireSignature(IEnumerable<JsonWebKey> keys, SignatureAlgorithm algorithm = null)
+        public TokenValidationPolicyBuilder RequireSignature(ICollection<JsonWebKey> keys, SignatureAlgorithm algorithm = null)
         {
             return RequireSignature(new JsonWebKeySet(keys), algorithm);
         }

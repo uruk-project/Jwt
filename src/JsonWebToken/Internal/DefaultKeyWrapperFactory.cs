@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace JsonWebToken
 {
-    public sealed class KeyWrapperFactory : IDisposable
+    public class DefaultKeyWrapperFactory : IKeyWrapperFactory
     {
         private readonly ConcurrentDictionary<ProviderFactoryKey, KeyWrapper> _keyWrappers = new ConcurrentDictionary<ProviderFactoryKey, KeyWrapper>(JwkEqualityComparer.Default);
         private bool _disposed;
 
-        public KeyWrapper Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public virtual KeyWrapper Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
             if (_disposed)
             {

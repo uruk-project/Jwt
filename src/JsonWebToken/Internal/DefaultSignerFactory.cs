@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace JsonWebToken
 {
-    public sealed class SignerFactory : IDisposable
+    public class DefaultSignerFactory : ISignerFactory
     {
         private readonly ConcurrentDictionary<ProviderFactoryKey, Signer> _signers = new ConcurrentDictionary<ProviderFactoryKey, Signer>(JwkEqualityComparer.Default);
         private readonly ConcurrentDictionary<ProviderFactoryKey, Signer> _validationSigners = new ConcurrentDictionary<ProviderFactoryKey, Signer>(JwkEqualityComparer.Default);
         private bool _disposed;
 
-        public Signer Create(JsonWebKey key, SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public virtual Signer Create(JsonWebKey key, SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (_disposed)
             {

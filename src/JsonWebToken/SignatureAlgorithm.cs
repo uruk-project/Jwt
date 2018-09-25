@@ -8,7 +8,6 @@ namespace JsonWebToken
     {
         public static readonly SignatureAlgorithm Empty = new SignatureAlgorithm(0, string.Empty, AlgorithmCategory.None, 0, new HashAlgorithmName());
 
-        // signature algorithms
         public static readonly SignatureAlgorithm None = new SignatureAlgorithm(id: -1, "none", AlgorithmCategory.None, requiredKeySizeInBits: 0, new HashAlgorithmName());
 
         public static readonly SignatureAlgorithm HmacSha256 = new SignatureAlgorithm(id: 11, "HS256", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 128/*?*/, HashAlgorithmName.SHA256);
@@ -27,20 +26,23 @@ namespace JsonWebToken
         public static readonly SignatureAlgorithm RsaSsaPssSha384 = new SignatureAlgorithm(id: 41, "PS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA384);
         public static readonly SignatureAlgorithm RsaSsaPssSha512 = new SignatureAlgorithm(id: 42, "PS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA512);
 
-        public static readonly IDictionary<string, SignatureAlgorithm> AdditionalAlgorithms = new Dictionary<string, SignatureAlgorithm>();
+        public sbyte Id { get; }
 
-        public readonly sbyte Id;
-        public readonly AlgorithmCategory Category;
-        public readonly ushort RequiredKeySizeInBits;
-        public readonly HashAlgorithmName HashAlgorithm;
+        public string Name { get; }
 
-        public readonly string Name;
+        public AlgorithmCategory Category { get; }
 
-        private SignatureAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
+        public ushort RequiredKeySizeInBits { get; }
+
+        public HashAlgorithmName HashAlgorithm { get; }
+        
+        public static IDictionary<string, SignatureAlgorithm> AdditionalAlgorithms { get; } = new Dictionary<string, SignatureAlgorithm>();
+        
+        public SignatureAlgorithm(sbyte id, string name, AlgorithmCategory category, ushort requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
         {
             Id = id;
             Name = name;
-            Category = keyType;
+            Category = category;
             RequiredKeySizeInBits = requiredKeySizeInBits;
             HashAlgorithm = hashAlgorithm;
         }
@@ -153,14 +155,15 @@ namespace JsonWebToken
                 case null:
                 case "":
                     return Empty;
-            }
 
-            if (!AdditionalAlgorithms.TryGetValue(value, out var algorithm))
-            {
-                Errors.ThrowNotSupportedAlgorithm(value);
-            }
+                default:
+                    if (!AdditionalAlgorithms.TryGetValue(value, out var algorithm))
+                    {
+                        Errors.ThrowNotSupportedAlgorithm(value);
+                    }
 
-            return algorithm;
+                    return algorithm;
+            }
         }
 
         public static implicit operator long(SignatureAlgorithm value)

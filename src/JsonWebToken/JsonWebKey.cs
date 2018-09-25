@@ -263,7 +263,7 @@ namespace JsonWebToken
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
         /// <returns></returns>
-        public string ComputeThumbprint(bool excludeOptionalMembers = true)
+        public string ComputeThumbprint(bool excludeOptionalMembers)
         {
             var json = excludeOptionalMembers ? ExcludeOptionalMembers().ToString() : ToString();
             int jsonLength = json.Length;
@@ -297,7 +297,7 @@ namespace JsonWebToken
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
         /// <returns></returns>
-        public string ComputeThumbprint(bool excludeOptionalMembers = true)
+        public string ComputeThumbprint(bool excludeOptionalMembers)
         {
             var json = excludeOptionalMembers ? ExcludeOptionalMembers().ToString() : ToString();
             var buffer = Encoding.UTF8.GetBytes(json);
@@ -308,6 +308,8 @@ namespace JsonWebToken
             }
         }
 #endif
+
+        public string ComputeThumbprint() => ComputeThumbprint(true);
 
         public static AsymmetricJwk FromX509Certificate(X509Certificate2 certificate, bool withPrivateKey)
         {

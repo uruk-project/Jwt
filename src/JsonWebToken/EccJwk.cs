@@ -274,7 +274,7 @@ namespace JsonWebToken
         /// Returns a new instance of <see cref="EccJwk"/>.
         /// </summary>
         /// <param name="parameters">A <see cref="byte"/> that contains the key parameters.</param>
-        public static EccJwk FromParameters(ECParameters parameters, bool computeThumbprint = false)
+        public static EccJwk FromParameters(ECParameters parameters, bool computeThumbprint)
         {
             var key = new EccJwk(parameters);
             if (computeThumbprint)
@@ -284,6 +284,8 @@ namespace JsonWebToken
 
             return key;
         }
+
+        public static EccJwk FromParameters(ECParameters parameters) => FromParameters(parameters, false);
 
         public override byte[] ToByteArray()
         {

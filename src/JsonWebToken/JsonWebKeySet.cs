@@ -46,9 +46,16 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes an new instance of <see cref="JsonWebKeySet"/>.
         /// </summary>
-        public JsonWebKeySet(IEnumerable<JsonWebKey> keys)
+        public JsonWebKeySet(ICollection<JsonWebKey> keys)
         {
-            Keys = new List<JsonWebKey>(keys);
+            if (keys == null)
+            {
+                throw new ArgumentNullException(nameof(keys));
+            }
+
+            var k = new JsonWebKey[keys.Count];
+            keys.CopyTo(k, 0);
+            Keys = new List<JsonWebKey>(k);
         }
 
         /// <summary>
@@ -164,5 +171,7 @@ namespace JsonWebToken
 
             return UnidentifiedKeys;
         }
+
+        public static implicit operator JsonWebKeySet(JsonWebKey[] keys) => new JsonWebKeySet(keys);
     }
 }

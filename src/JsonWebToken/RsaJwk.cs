@@ -365,12 +365,9 @@ namespace JsonWebToken
         [JsonIgnore]
         public byte[] RawQI { get; private set; }
 
-        public static RsaJwk FromRsaParameters(RSAParameters rsaParameters)
-        {
-            return new RsaJwk(rsaParameters);
-        }
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey) => GenerateKey(sizeInBits, withPrivateKey, null);
 
-        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, string algorithm = null)
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, string algorithm)
         {
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(sizeInBits))
             {
@@ -386,7 +383,7 @@ namespace JsonWebToken
         /// Returns a new instance of <see cref="RsaJwk"/>.
         /// </summary>
         /// <param name="parameters">A <see cref="byte"/> that contains the key parameters.</param>
-        public static RsaJwk FromParameters(RSAParameters parameters, bool computeThumbprint = false)
+        public static RsaJwk FromParameters(RSAParameters parameters, bool computeThumbprint)
         {
             var key = new RsaJwk(parameters);
             if (computeThumbprint)
@@ -396,6 +393,8 @@ namespace JsonWebToken
 
             return key;
         }
+
+        public static RsaJwk FromParameters(RSAParameters parameters) => FromParameters(parameters, false);
 
         public override JsonWebKey ExcludeOptionalMembers()
         {

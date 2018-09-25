@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Concurrent;
 using System.Security.Cryptography;
 
 namespace JsonWebToken
@@ -59,11 +58,13 @@ namespace JsonWebToken
 
         public override int KeySizeInBits => RawK?.Length != 0 ? RawK.Length << 3 : 0;
 
+        public static SymmetricJwk FromByteArray(byte[] bytes) => FromByteArray(bytes, computeThumbprint: false);
+
         /// <summary>
         /// Returns a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         /// <param name="bytes">An array of <see cref="byte"/> that contains the key in binary.</param>
-        public static SymmetricJwk FromByteArray(byte[] bytes, bool computeThumbprint = true)
+        public static SymmetricJwk FromByteArray(byte[] bytes, bool computeThumbprint)
         {
             if (bytes == null)
             {
@@ -78,6 +79,8 @@ namespace JsonWebToken
 
             return key;
         }
+
+        public static SymmetricJwk FromSpan(Span<byte> bytes) => FromSpan(bytes, computeThumbprint: false);
 
         public static SymmetricJwk FromSpan(Span<byte> bytes, bool computeThumbprint = false)
         {
@@ -131,7 +134,7 @@ namespace JsonWebToken
             {
                 return null;
             }
-            
+
             if (IsSupported(contentEncryptionAlgorithm))
             {
                 switch (encryptionAlgorithm.Category)
@@ -142,7 +145,7 @@ namespace JsonWebToken
                         return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
                     default:
                         return null;
-                }              
+                }
             }
 
             return null;
@@ -188,7 +191,9 @@ namespace JsonWebToken
             return key;
         }
 
-        public static SymmetricJwk GenerateKey(int sizeInBits, string algorithm = null)
+        public static SymmetricJwk GenerateKey(int sizeInBits) => GenerateKey(sizeInBits, algorithm: null);
+
+        public static SymmetricJwk GenerateKey(int sizeInBits, string algorithm)
         {
             var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
             key.Alg = algorithm;

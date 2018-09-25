@@ -5,7 +5,7 @@ namespace JsonWebToken
 {
     public sealed class TokenValidationPolicy
     {
-        public static TokenValidationPolicy NoValidation = new TokenValidationPolicyBuilder()
+        public static readonly TokenValidationPolicy NoValidation = new TokenValidationPolicyBuilder()
                                                             .IgnoreSignature()
                                                             .Build();
 

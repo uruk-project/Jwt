@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
@@ -30,16 +29,19 @@ namespace JsonWebToken
 
         public static readonly IDictionary<string, KeyManagementAlgorithm> AdditionalAlgorithms = new Dictionary<string, KeyManagementAlgorithm>();
 
-        public readonly sbyte Id;
+        public sbyte Id { get; }
 
-        public readonly ushort RequiredKeySizeInBits;
-        public readonly AlgorithmCategory Category;
-        public readonly HashAlgorithmName HashAlgorithm;
-        public readonly KeyManagementAlgorithm WrappedAlgorithm;
-        public readonly string Name;
-        public readonly bool ProduceEncryptedKey;
+        public ushort RequiredKeySizeInBits { get; }
 
-        private KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits = 0, KeyManagementAlgorithm wrappedAlgorithm = null, bool produceEncryptedKey = true)
+        public AlgorithmCategory Category { get; }
+
+        public KeyManagementAlgorithm WrappedAlgorithm { get; }
+
+        public string Name { get; }
+
+        public bool ProduceEncryptedKey { get; }
+
+        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits = 0, KeyManagementAlgorithm wrappedAlgorithm = null, bool produceEncryptedKey = true)
         {
             Id = id;
             Name = name;

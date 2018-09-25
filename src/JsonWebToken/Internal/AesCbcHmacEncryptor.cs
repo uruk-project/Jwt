@@ -34,7 +34,11 @@ namespace JsonWebToken
                 Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
             }
 
-            ValidateKeySize(key, encryptionAlgorithm);
+            if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBytes << 3)
+            {
+                Errors.ThrowEncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
+            }
+
             int keyLength = encryptionAlgorithm.RequiredKeySizeInBytes / 2;
 
             var keyBytes = key.RawK.AsSpan();
@@ -206,15 +210,7 @@ namespace JsonWebToken
                 }
             }
         }
-
-        private void ValidateKeySize(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm)
-        {
-            if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBytes << 3)
-            {
-                Errors.ThrowEncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
-            }
-        }
-
+        
         private static unsafe int Transform(ICryptoTransform transform, ReadOnlySpan<byte> input, int inputOffset, int inputLength, Span<byte> output)
         {
             fixed (byte* buffer = output)

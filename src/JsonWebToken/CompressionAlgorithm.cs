@@ -15,16 +15,17 @@ namespace JsonWebToken
 
         public static readonly IDictionary<string, CompressionAlgorithm> AdditionalAlgorithms = new Dictionary<string, CompressionAlgorithm>();
 
-        public readonly sbyte Id;
+        public sbyte Id { get; }
 
-        public readonly string Name;
-        public readonly Compressor Compressor;
+        public string Name { get; }
+
+        public Compressor Compressor { get; }
 
         public CompressionAlgorithm(sbyte id, string name, Compressor compressor)
         {
             Id = id;
             Name = name ?? throw new ArgumentNullException(nameof(name));
-            Compressor = compressor;
+            Compressor = compressor ?? throw new ArgumentNullException(nameof(compressor));
         }
 
         public override bool Equals(object obj)

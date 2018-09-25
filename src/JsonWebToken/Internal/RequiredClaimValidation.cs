@@ -8,6 +8,10 @@ namespace JsonWebToken.Validations
         private readonly string _claim;
         private readonly TClaim _value;
 
+        public RequiredClaimValidation(string claim) : this(claim, default)
+        {
+        }
+
         public RequiredClaimValidation(string claim, TClaim value = default)
         {
             _claim = claim ?? throw new ArgumentNullException(nameof(claim));

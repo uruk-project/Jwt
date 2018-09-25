@@ -17,5 +17,8 @@ namespace JsonWebToken
             var kid = header.Kid;
             return _jwks.GetKeys(kid);
         }
+
+        public static implicit operator StaticKeyProvider(JsonWebKeySet keys) => new StaticKeyProvider(keys);
+        public static implicit operator StaticKeyProvider(JsonWebKey key) => new StaticKeyProvider(new JsonWebKeySet(key));
     }
 }

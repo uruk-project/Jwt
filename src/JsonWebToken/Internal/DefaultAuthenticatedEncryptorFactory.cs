@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace JsonWebToken
 {
-    public sealed class AuthenticatedEncryptorFactory : IDisposable
+    public class DefaultAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
     {
         private readonly ConcurrentDictionary<ProviderFactoryKey, AuthenticatedEncryptor> _encryptors = new ConcurrentDictionary<ProviderFactoryKey, AuthenticatedEncryptor>(JwkEqualityComparer.Default);
 
         private bool _disposed;
 
-        public AuthenticatedEncryptor Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm)
+        public virtual AuthenticatedEncryptor Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (_disposed)
             {
