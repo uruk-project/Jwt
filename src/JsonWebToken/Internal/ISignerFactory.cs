@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace JsonWebToken
+﻿namespace JsonWebToken
 {
-    public interface ISignerFactory : IDisposable
+    public interface ISignerFactory
     {
         Signer Create(JsonWebKey key, SignatureAlgorithm algorithm, bool willCreateSignatures);
     }

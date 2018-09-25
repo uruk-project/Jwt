@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace JsonWebToken
+﻿namespace JsonWebToken
 {
-    public interface IAuthenticatedEncryptorFactory : IDisposable
+    public interface IAuthenticatedEncryptorFactory
     {
         AuthenticatedEncryptor Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm);
     }

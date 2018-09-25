@@ -1,8 +1,9 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 
 namespace JsonWebToken
 {
-    public class DefaultKeyWrapperFactory : IKeyWrapperFactory
+    public class DefaultKeyWrapperFactory : IKeyWrapperFactory, IDisposable
     {
         private readonly ConcurrentDictionary<ProviderFactoryKey, KeyWrapper> _keyWrappers = new ConcurrentDictionary<ProviderFactoryKey, KeyWrapper>(JwkEqualityComparer.Default);
         private bool _disposed;
@@ -43,17 +44,25 @@ namespace JsonWebToken
             return null;
         }
 
-        public void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {
-                foreach (var keyWrapper in _keyWrappers)
+                if (disposing)
                 {
-                    keyWrapper.Value.Dispose();
+                    foreach (var keyWrapper in _keyWrappers)
+                    {
+                        keyWrapper.Value.Dispose();
+                    }
                 }
 
                 _disposed = true;
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

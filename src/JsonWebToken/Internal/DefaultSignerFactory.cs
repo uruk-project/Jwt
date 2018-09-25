@@ -1,8 +1,9 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 
 namespace JsonWebToken
 {
-    public class DefaultSignerFactory : ISignerFactory
+    public class DefaultSignerFactory : ISignerFactory, IDisposable
     {
         private readonly ConcurrentDictionary<ProviderFactoryKey, Signer> _signers = new ConcurrentDictionary<ProviderFactoryKey, Signer>(JwkEqualityComparer.Default);
         private readonly ConcurrentDictionary<ProviderFactoryKey, Signer> _validationSigners = new ConcurrentDictionary<ProviderFactoryKey, Signer>(JwkEqualityComparer.Default);
@@ -44,17 +45,25 @@ namespace JsonWebToken
             return null;
         }
 
-        public void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {
-                foreach (var signer in _signers)
+                if (disposing)
                 {
-                    signer.Value.Dispose();
+                    foreach (var signer in _signers)
+                    {
+                        signer.Value.Dispose();
+                    }
                 }
 
                 _disposed = true;
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

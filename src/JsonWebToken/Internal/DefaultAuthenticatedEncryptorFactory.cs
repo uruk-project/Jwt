@@ -1,8 +1,9 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 
 namespace JsonWebToken
 {
-    public class DefaultAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
+    public class DefaultAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory, IDisposable
     {
         private readonly ConcurrentDictionary<ProviderFactoryKey, AuthenticatedEncryptor> _encryptors = new ConcurrentDictionary<ProviderFactoryKey, AuthenticatedEncryptor>(JwkEqualityComparer.Default);
 
@@ -39,17 +40,25 @@ namespace JsonWebToken
             return null;
         }
 
-        public void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {
-                foreach (var encryptor in _encryptors)
+                if (disposing)
                 {
-                    encryptor.Value.Dispose();
+                    foreach (var encryptor in _encryptors)
+                    {
+                        encryptor.Value.Dispose();
+                    }
                 }
 
                 _disposed = true;
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

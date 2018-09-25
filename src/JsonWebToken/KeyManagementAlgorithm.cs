@@ -5,9 +5,9 @@ namespace JsonWebToken
 {
     public class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>
     {
-        public static readonly KeyManagementAlgorithm Empty = new KeyManagementAlgorithm(0, string.Empty, AlgorithmCategory.None, 0, null, false);
+        public static readonly KeyManagementAlgorithm Empty = new KeyManagementAlgorithm(0, string.Empty, AlgorithmCategory.None, produceEncryptedKey: false);
 
-        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, "dir", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 0, produceEncryptedKey: false);
+        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, "dir", AlgorithmCategory.Symmetric, produceEncryptedKey: false);
 
         public static readonly KeyManagementAlgorithm Aes128KW = new KeyManagementAlgorithm(id: 11, "A128KW", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 128);
         public static readonly KeyManagementAlgorithm Aes192KW = new KeyManagementAlgorithm(id: 12, "A192KW", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 192);
@@ -58,7 +58,27 @@ namespace JsonWebToken
             { Empty.Name, Empty }
         };
 
-        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits = 0, KeyManagementAlgorithm wrappedAlgorithm = null, bool produceEncryptedKey = true)
+        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType)
+            : this(id, name, keyType, 0, null, true)
+        {
+        }
+
+        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, KeyManagementAlgorithm wrappedAlgorithm)
+                : this(id, name, keyType, 0, wrappedAlgorithm, true)
+        {
+        }
+
+        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits)
+            : this(id, name, keyType, requiredKeySizeInBits, null, true)
+        {
+        }
+
+        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, bool produceEncryptedKey)
+            : this(id, name, keyType, 0, null, produceEncryptedKey)
+        {
+        }
+
+        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, KeyManagementAlgorithm wrappedAlgorithm, bool produceEncryptedKey)
         {
             Id = id;
             Name = name;
