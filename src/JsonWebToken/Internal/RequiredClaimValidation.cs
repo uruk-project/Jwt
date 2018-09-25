@@ -12,7 +12,7 @@ namespace JsonWebToken.Validations
         {
         }
 
-        public RequiredClaimValidation(string claim, TClaim value = default)
+        public RequiredClaimValidation(string claim, TClaim value)
         {
             _claim = claim ?? throw new ArgumentNullException(nameof(claim));
             _value = value;
@@ -27,7 +27,7 @@ namespace JsonWebToken.Validations
                 return TokenValidationResult.MissingClaim(jwt, _claim);
             }
 
-            if (_value != null && !_value.Equals(claim.Value<TClaim>()))
+            if (_value != default && !_value.Equals(claim.Value<TClaim>()))
             {
                 return TokenValidationResult.InvalidClaim(jwt, _claim);
             }

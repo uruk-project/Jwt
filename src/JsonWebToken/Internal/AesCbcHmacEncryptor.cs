@@ -12,7 +12,6 @@ namespace JsonWebToken
     /// </summary>
     public sealed class AesCbcHmacEncryptor : AuthenticatedEncryptor
     {
-        private readonly SignatureAlgorithm _signatureAlgorithm;
         private readonly SymmetricSigner _symmetricSignatureProvider;
         private readonly ObjectPool<Aes> _aesPool;
         private bool _disposed;
@@ -46,11 +45,10 @@ namespace JsonWebToken
             var hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
 
             _aesPool = new ObjectPool<Aes>(new AesPooledPolicy(aesKey));
-            _signatureAlgorithm = encryptionAlgorithm.SignatureAlgorithm;
-            _symmetricSignatureProvider = hmacKey.CreateSigner(_signatureAlgorithm, true) as SymmetricSigner;
+            _symmetricSignatureProvider = hmacKey.CreateSigner(encryptionAlgorithm.SignatureAlgorithm, true) as SymmetricSigner;
             if (_symmetricSignatureProvider == null)
             {
-                Errors.ThrowNotSupportedSignatureAlgorithm(_signatureAlgorithm);
+                Errors.ThrowNotSupportedSignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
             }
         }
 
@@ -256,11 +254,6 @@ namespace JsonWebToken
                 aes.Mode = CipherMode.CBC;
                 aes.Padding = PaddingMode.PKCS7;
                 return aes;
-            }
-
-            public override bool Return(Aes obj)
-            {
-                return true;
             }
         }
     }

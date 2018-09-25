@@ -61,8 +61,12 @@ namespace JsonWebToken
 
         private Aes GetSymmetricAlgorithm(SymmetricJwk key, KeyManagementAlgorithm algorithm)
         {
+            if (algorithm.RequiredKeySizeInBits != key.KeySizeInBits)
+            {
+                Errors.ThrowKeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, Key, key.KeySizeInBits);
+            }
+
             byte[] keyBytes = key.RawK;
-            ValidateKeySize(keyBytes, algorithm);
             try
             {
                 // Create the AES provider
@@ -218,15 +222,7 @@ namespace JsonWebToken
                 _decryptorPool.Return(decryptor);
             }
         }
-
-        private void ValidateKeySize(byte[] key, KeyManagementAlgorithm algorithm)
-        {
-            if (algorithm.RequiredKeySizeInBits >> 3 != key.Length)
-            {
-                Errors.ThrowKeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, Key, key.Length << 3);
-            }
-        }
-
+        
         /// <summary>
         /// Wrap a key using RSA encryption.
         /// </summary>
@@ -374,11 +370,6 @@ namespace JsonWebToken
             {
                 return _aes.CreateEncryptor();
             }
-
-            public override bool Return(ICryptoTransform obj)
-            {
-                return true;
-            }
         }
 
         private class PooledDecryptorPolicy : PooledObjectPolicy<ICryptoTransform>
@@ -393,11 +384,6 @@ namespace JsonWebToken
             public override ICryptoTransform Create()
             {
                 return _aes.CreateDecryptor();
-            }
-
-            public override bool Return(ICryptoTransform obj)
-            {
-                return true;
             }
         }
     }

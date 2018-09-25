@@ -82,7 +82,7 @@ namespace JsonWebToken
 
         public static SymmetricJwk FromSpan(Span<byte> bytes) => FromSpan(bytes, computeThumbprint: false);
 
-        public static SymmetricJwk FromSpan(Span<byte> bytes, bool computeThumbprint = false)
+        public static SymmetricJwk FromSpan(Span<byte> bytes, bool computeThumbprint)
         {
             if (bytes == null)
             {
@@ -171,7 +171,9 @@ namespace JsonWebToken
             return null;
         }
 
-        public static SymmetricJwk FromBase64Url(string k, bool computeThumbprint = true)
+        public static SymmetricJwk FromBase64Url(string k) => FromBase64Url(k, computeThumbprint: false);
+
+        public static SymmetricJwk FromBase64Url(string k, bool computeThumbprint)
         {
             if (k == null)
             {

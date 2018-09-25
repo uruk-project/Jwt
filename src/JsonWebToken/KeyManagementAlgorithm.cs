@@ -27,8 +27,6 @@ namespace JsonWebToken
         public static readonly KeyManagementAlgorithm EcdhEsAes192KW = new KeyManagementAlgorithm(id: 52, "ECDH-ES+A192KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes192KW);
         public static readonly KeyManagementAlgorithm EcdhEsAes256KW = new KeyManagementAlgorithm(id: 53, "ECDH-ES+A256KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes256KW);
 
-        public static readonly IDictionary<string, KeyManagementAlgorithm> AdditionalAlgorithms = new Dictionary<string, KeyManagementAlgorithm>();
-
         public sbyte Id { get; }
 
         public ushort RequiredKeySizeInBits { get; }
@@ -40,6 +38,25 @@ namespace JsonWebToken
         public string Name { get; }
 
         public bool ProduceEncryptedKey { get; }
+
+        public static IDictionary<string, KeyManagementAlgorithm> Algorithms { get; } = new Dictionary<string, KeyManagementAlgorithm>()
+        {
+            { EcdhEsAes128KW.Name, EcdhEsAes128KW },
+            { EcdhEsAes192KW.Name, EcdhEsAes192KW },
+            { EcdhEsAes256KW.Name, EcdhEsAes256KW },
+            { EcdhEs.Name, EcdhEs },
+            { Aes128KW.Name, Aes128KW },
+            { Aes192KW.Name, Aes192KW },
+            { Aes256KW.Name, Aes256KW },
+            { Aes128GcmKW.Name, Aes128GcmKW },
+            { Aes192GcmKW.Name, Aes192GcmKW },
+            { Aes256GcmKW.Name, Aes256GcmKW },
+            { Direct.Name, Direct },
+            { RsaOaep.Name, RsaOaep},
+            { RsaOaep256.Name, RsaOaep256},
+            { RsaPkcs1.Name, RsaPkcs1 },
+            { Empty.Name, Empty }
+        };
 
         public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits = 0, KeyManagementAlgorithm wrappedAlgorithm = null, bool produceEncryptedKey = true)
         {
@@ -123,48 +140,12 @@ namespace JsonWebToken
 
         public static explicit operator KeyManagementAlgorithm(string value)
         {
-            switch (value)
+            if (value == null)
             {
-                case "ECDH-ES+A128KW":
-                    return EcdhEsAes128KW;
-                case "ECDH-ES+A192KW":
-                    return EcdhEsAes192KW;
-                case "ECDH-ES+A256KW":
-                    return EcdhEsAes256KW;
-
-                case "ECDH-ES":
-                    return EcdhEs;
-
-                case "A128KW":
-                    return Aes128KW;
-                case "A192KW":
-                    return Aes192KW;
-                case "A256KW":
-                    return Aes256KW;
-
-                case "A128GCMKW":
-                    return Aes128GcmKW;
-                case "A192GCMKW":
-                    return Aes192GcmKW;
-                case "A256GCMKW":
-                    return Aes256GcmKW;
-
-                case "dir":
-                    return Direct;
-
-                case "RSA-OAEP":
-                    return RsaOaep;
-                case "RSA-OAEP-256":
-                    return RsaOaep;
-                case "RSA1_5":
-                    return RsaPkcs1;
-
-                case null:
-                case "":
-                    return Empty;
+                return Empty;
             }
 
-            if (!AdditionalAlgorithms.TryGetValue(value, out var algorithm))
+            if (!Algorithms.TryGetValue(value, out var algorithm))
             {
                 Errors.ThrowNotSupportedAlgorithm(value);
             }

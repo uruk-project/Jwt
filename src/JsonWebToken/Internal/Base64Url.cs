@@ -488,7 +488,7 @@ namespace JsonWebToken
                 var numPaddingChars = GetNumBase64PaddingCharsToAddForDecode(urlEncodedLen);
                 var base64Len = urlEncodedLen + numPaddingChars;
                 Debug.Assert(base64Len % 4 == 0, "Invariant: Array length must be a multiple of 4.");
-                dataLength = (base64Len >> 2) * 3 - numPaddingChars;
+                dataLength = ((base64Len >> 2) * 3) - numPaddingChars;
 
                 return base64Len;
             }

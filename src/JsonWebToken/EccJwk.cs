@@ -199,7 +199,9 @@ namespace JsonWebToken
 #endif
         }
 
-        public ECParameters ExportParameters(bool includePrivateParameters = false)
+        public ECParameters ExportParameters() => ExportParameters(false);
+
+        public ECParameters ExportParameters(bool includePrivateParameters)
         {
             var parameters = new ECParameters
             {

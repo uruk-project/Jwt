@@ -9,9 +9,9 @@ namespace JsonWebToken
     /// </summary>
     public sealed class RsaKeyWrapper : KeyWrapper
     {
-        private RSA _rsa;
+        private readonly RSA _rsa;
         private readonly RSAEncryptionPadding _padding;
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RsaKeyWrapper"/> class used for wrap key and unwrap key.
@@ -32,11 +32,8 @@ namespace JsonWebToken
             {
                 _padding = RSAEncryptionPadding.OaepSHA1;
             }
-            else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep256)
-            {
-                _padding = RSAEncryptionPadding.OaepSHA256;
-            }
-            else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaPkcs1)
+            else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep256
+                || contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaPkcs1)
             {
                 _padding = RSAEncryptionPadding.OaepSHA256;
             }

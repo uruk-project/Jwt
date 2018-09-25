@@ -59,12 +59,9 @@ namespace JsonWebToken
 
         public void Return(T pooledObject)
         {
-            if (_policy.Return(pooledObject))
+            if (_firstItem != null || Interlocked.CompareExchange(ref _firstItem, pooledObject, null) != null)
             {
-                if (_firstItem != null || Interlocked.CompareExchange(ref _firstItem, pooledObject, null) != null)
-                {
-                    ReturnViaScan(pooledObject);
-                }
+                ReturnViaScan(pooledObject);
             }
         }
 
@@ -74,8 +71,7 @@ namespace JsonWebToken
             ObjectWrapper[] items = _items;
 
             for (var i = 0; i < items.Length && Interlocked.CompareExchange(ref items[i].Element, pooledObject, null) != null; ++i)
-            {
-            }
+                ;
         }
 
         public void Dispose()
@@ -97,8 +93,6 @@ namespace JsonWebToken
         private struct ObjectWrapper
         {
             public T Element;
-
-            public ObjectWrapper(T element) => Element = element;
 
             public static implicit operator T(ObjectWrapper wrapper) => wrapper.Element;
         }

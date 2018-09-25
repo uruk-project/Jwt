@@ -248,7 +248,7 @@ namespace JsonWebToken
         /// <returns>
         /// true if the bytes are equal, false otherwise.
         /// </returns>
-        private static unsafe bool AreEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
+        private static bool AreEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
         {
             ReadOnlySpan<byte> first, second;
             if (a.IsEmpty || b.IsEmpty || (a.Length != b.Length))
@@ -339,11 +339,6 @@ namespace JsonWebToken
             {
                 return new HMACSHA256(_keyBytes);
             }
-
-            public override bool Return(KeyedHashAlgorithm obj)
-            {
-                return true;
-            }
         }
 
         private sealed class HmacSha384ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
@@ -359,11 +354,6 @@ namespace JsonWebToken
             {
                 return new HMACSHA384(_keyBytes);
             }
-
-            public override bool Return(KeyedHashAlgorithm obj)
-            {
-                return true;
-            }
         }
 
         private sealed class HmacSha512ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
@@ -378,11 +368,6 @@ namespace JsonWebToken
             public override KeyedHashAlgorithm Create()
             {
                 return new HMACSHA512(_keyBytes);
-            }
-
-            public override bool Return(KeyedHashAlgorithm obj)
-            {
-                return true;
             }
         }
     }

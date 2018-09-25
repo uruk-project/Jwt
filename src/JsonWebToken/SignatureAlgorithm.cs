@@ -35,9 +35,25 @@ namespace JsonWebToken
         public ushort RequiredKeySizeInBits { get; }
 
         public HashAlgorithmName HashAlgorithm { get; }
-        
-        public static IDictionary<string, SignatureAlgorithm> AdditionalAlgorithms { get; } = new Dictionary<string, SignatureAlgorithm>();
-        
+
+        public static IDictionary<string, SignatureAlgorithm> Algorithms { get; } = new Dictionary<string, SignatureAlgorithm>()
+        {
+            { EcdsaSha256.Name, EcdsaSha256 },
+            { EcdsaSha384.Name, EcdsaSha384 },
+            { EcdsaSha512.Name, EcdsaSha512 },
+            { HmacSha256.Name, HmacSha256 },
+            { HmacSha384.Name, HmacSha384 },
+            { HmacSha512.Name, HmacSha512 },
+            { RsaSha256.Name, RsaSha256 },
+            { RsaSha384.Name, RsaSha384 },
+            { RsaSha512.Name, RsaSha512 },
+            { RsaSsaPssSha256.Name, RsaSsaPssSha256},
+            { RsaSsaPssSha384.Name, RsaSsaPssSha384},
+            { RsaSsaPssSha512.Name, RsaSsaPssSha512},
+            { None.Name, None },
+            { Empty.Name, Empty}
+        };
+
         public SignatureAlgorithm(sbyte id, string name, AlgorithmCategory category, ushort requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
         {
             Id = id;
@@ -119,51 +135,17 @@ namespace JsonWebToken
 
         public static implicit operator SignatureAlgorithm(string value)
         {
-            switch (value)
+            if (value == null)
             {
-                case "ES256":
-                    return EcdsaSha256;
-                case "ES384":
-                    return EcdsaSha384;
-                case "ES512":
-                    return EcdsaSha512;
-
-                case "HS256":
-                    return HmacSha256;
-                case "HS384":
-                    return HmacSha384;
-                case "HS512":
-                    return HmacSha512;
-
-                case "RS256":
-                    return RsaSha256;
-                case "RS384":
-                    return RsaSha384;
-                case "RS512":
-                    return RsaSha512;
-
-                case "PS256":
-                    return RsaSsaPssSha256;
-                case "PS384":
-                    return RsaSsaPssSha384;
-                case "PS512":
-                    return RsaSsaPssSha512;
-
-                case "none":
-                    return None;
-
-                case null:
-                case "":
-                    return Empty;
-
-                default:
-                    if (!AdditionalAlgorithms.TryGetValue(value, out var algorithm))
-                    {
-                        Errors.ThrowNotSupportedAlgorithm(value);
-                    }
-
-                    return algorithm;
+                return Empty;
             }
+
+            if (!Algorithms.TryGetValue(value, out var algorithm))
+            {
+                Errors.ThrowNotSupportedAlgorithm(value);
+            }
+
+            return algorithm;
         }
 
         public static implicit operator long(SignatureAlgorithm value)

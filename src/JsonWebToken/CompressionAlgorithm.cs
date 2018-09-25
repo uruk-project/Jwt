@@ -8,18 +8,18 @@ namespace JsonWebToken
         public static readonly CompressionAlgorithm Empty = new CompressionAlgorithm(id: 0, string.Empty, Compressor.Null);
 
         public static readonly CompressionAlgorithm Deflate = new CompressionAlgorithm(id: 1, "DEF", new DeflateCompressor());
-        //public static readonly CompressionAlgorithm GZip = new CompressionAlgorithm(id: 2, "ZIP", new GZipCompressor());
-        //#if NETCOREAPP2_1
-        //public static readonly CompressionAlgorithm Brotli = new CompressionAlgorithm(id: 3, "BRO", new BrotliCompressor());
-        //#endif
-
-        public static readonly IDictionary<string, CompressionAlgorithm> AdditionalAlgorithms = new Dictionary<string, CompressionAlgorithm>();
 
         public sbyte Id { get; }
 
         public string Name { get; }
 
         public Compressor Compressor { get; }
+
+        public static IDictionary<string, CompressionAlgorithm> Algorithms { get; } = new Dictionary<string, CompressionAlgorithm>()
+        {
+            { Deflate.Name, Deflate },
+            { Empty.Name, Empty }
+        };
 
         public CompressionAlgorithm(sbyte id, string name, Compressor compressor)
         {
@@ -100,23 +100,12 @@ namespace JsonWebToken
 
         public static explicit operator CompressionAlgorithm(string value)
         {
-            switch (value)
+            if (value == null)
             {
-                case "DEF":
-                    return Deflate;
-                //case "ZIP":
-                //    return GZip;
-                //#if NETCOREAPP2_1
-                //case "BRO":
-                //    return Brotli;
-                //#endif
-
-                case null:
-                case "":
-                    return Empty;
+                return Empty;
             }
 
-            if (!AdditionalAlgorithms.TryGetValue(value, out var algorithm))
+            if (!Algorithms.TryGetValue(value, out var algorithm))
             {
                 Errors.ThrowNotSupportedAlgorithm(value);
             }

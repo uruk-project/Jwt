@@ -11,8 +11,8 @@ namespace JsonWebToken
         /// DateTime as UTC for UnixEpoch
         /// </summary>
         public static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-        public static long MaxValue = TimeSpan.MaxValue.Ticks;
-        public static long MinValue = UnixEpoch.Ticks;
+        public static readonly long MaxValue = TimeSpan.MaxValue.Ticks;
+        public static readonly long MinValue = UnixEpoch.Ticks;
 
         /// <summary>
         /// Per JWT spec:

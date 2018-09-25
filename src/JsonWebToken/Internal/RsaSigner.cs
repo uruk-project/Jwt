@@ -188,11 +188,6 @@ namespace JsonWebToken
                 return rsa;
 #endif
             }
-
-            public override bool Return(RSA obj)
-            {
-                return true;
-            }
         }
     }
 }

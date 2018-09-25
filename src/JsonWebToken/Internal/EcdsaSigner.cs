@@ -151,11 +151,6 @@ namespace JsonWebToken
             {
                 return _key.CreateECDsa(_algorithm, _usePrivateKey);
             }
-
-            public override bool Return(ECDsa obj)
-            {
-                return true;
-            }
         }
     }
 }

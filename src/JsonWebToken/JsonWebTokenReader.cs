@@ -25,8 +25,17 @@ namespace JsonWebToken
             ICollection<IKeyProvider> encryptionKeyProviders,
             ISignerFactory signerFactory,
             IKeyWrapperFactory keyWrapperFactory,
-            IAuthenticatedEncryptorFactory authenticatedEncryptorFactory,
-            JwtHeaderCache headerCache = null)
+            IAuthenticatedEncryptorFactory authenticatedEncryptorFactory)
+            : this(encryptionKeyProviders, signerFactory, keyWrapperFactory, authenticatedEncryptorFactory, null)
+        {
+        }
+
+        public JsonWebTokenReader(
+                  ICollection<IKeyProvider> encryptionKeyProviders,
+                  ISignerFactory signerFactory,
+                  IKeyWrapperFactory keyWrapperFactory,
+                  IAuthenticatedEncryptorFactory authenticatedEncryptorFactory,
+                  JwtHeaderCache headerCache)
         {
             if (encryptionKeyProviders == null)
             {
@@ -237,7 +246,6 @@ namespace JsonWebToken
                     {
                         return TokenValidationResult.InvalidHeader(null, HeaderParameters.Zip);
                     }
-
 
                     try
                     {

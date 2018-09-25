@@ -15,8 +15,6 @@ namespace JsonWebToken
         private JsonWebKeySet _currentKeys;
         private bool _disposed;
 
-        private static readonly JsonWebKey[] Empty = Array.Empty<JsonWebKey>();
-
         /// <summary>
         /// 1 day is the default time interval that afterwards, <see cref="GetConfigurationAsync()"/> will obtain new configuration.
         /// </summary>
@@ -37,12 +35,12 @@ namespace JsonWebToken
         /// </summary>
         public static readonly long MinimumRefreshInterval = TimeSpan.TicksPerSecond;
 
-        public HttpKeyProvider(HttpDocumentRetriever documentRetriever)
+        protected HttpKeyProvider(HttpDocumentRetriever documentRetriever)
         {
             _documentRetriever = documentRetriever ?? throw new ArgumentNullException(nameof(documentRetriever));
         }
 
-        public HttpKeyProvider()
+        protected HttpKeyProvider()
             : this(new HttpDocumentRetriever())
         {
         }

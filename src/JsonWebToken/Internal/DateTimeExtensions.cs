@@ -12,9 +12,6 @@ namespace JsonWebToken
         private static readonly DateTime MinValueUtc = new DateTime(DateTime.MinValue.Ticks, DateTimeKind.Utc);
         private static readonly DateTime MinValueLocal = new DateTime(DateTime.MinValue.Ticks, DateTimeKind.Local);
 
-        private static readonly long MaxValue = DateTime.MaxValue.Ticks;
-        private static readonly long MinValue = DateTime.MinValue.Ticks;
-
         /// <summary>
         /// Add a DateTime and a Ticks.
         /// The maximum time is DateTime.MaxTime.  It is not an error if time + ticks > MaxTime.

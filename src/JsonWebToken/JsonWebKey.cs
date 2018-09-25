@@ -75,7 +75,7 @@ namespace JsonWebToken
         private static readonly JwkContractResolver contractResolver = new JwkContractResolver();
         private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings { ContractResolver = contractResolver };
 
-        private static readonly JsonSerializer jsonSerializer = new JsonSerializer() { Converters = { jsonConverter }, ContractResolver = contractResolver };
+        private static readonly JsonSerializer jsonSerializer = new JsonSerializer { Converters = { jsonConverter }, ContractResolver = contractResolver };
         private List<JsonWebKey> _certificateChain;
 
         /// <summary>
@@ -368,14 +368,15 @@ namespace JsonWebToken
                 }
             }
 
-            if (key == null)
+            if (key != null)
             {
-                Errors.ThrowInvalidCertificate();
+                key.X5t = Base64Url.Encode(certificate.GetCertHash());
+                key.Kid = key.ComputeThumbprint();
+                return key;
             }
 
-            key.X5t = Base64Url.Encode(certificate.GetCertHash());
-            key.Kid = key.ComputeThumbprint();
-            return key;
+            Errors.ThrowInvalidCertificate();
+            return null;
         }
 
         protected static byte[] CloneByteArray(byte[] array)
