@@ -1,4 +1,6 @@
-﻿namespace JsonWebToken
+﻿using System;
+
+namespace JsonWebToken
 {
     public class DefaultSignerFactory : ISignerFactory
     {
@@ -51,6 +53,11 @@
         public void Dispose()
         {
             Dispose(true);
+        }
+
+        void IDisposable.Dispose()
+        {
+            Dispose();
         }
     }
 }

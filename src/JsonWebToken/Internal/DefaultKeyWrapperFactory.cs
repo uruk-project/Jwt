@@ -1,4 +1,6 @@
-﻿namespace JsonWebToken
+﻿using System;
+
+namespace JsonWebToken
 {
     public class DefaultKeyWrapperFactory : IKeyWrapperFactory
     {
@@ -49,6 +51,11 @@
         public void Dispose()
         {
             Dispose(true);
+        }
+
+        void IDisposable.Dispose()
+        {
+            Dispose();
         }
     }
 }

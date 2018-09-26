@@ -48,5 +48,10 @@ namespace JsonWebToken
         {
             Dispose(true);
         }
+
+        void IDisposable.Dispose()
+        {
+            Dispose();
+        }
     }
 }
