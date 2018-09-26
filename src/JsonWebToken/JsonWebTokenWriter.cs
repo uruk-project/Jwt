@@ -26,6 +26,14 @@ namespace JsonWebToken
         public JsonWebTokenWriter(
             ISignerFactory signerFactory,
             IKeyWrapperFactory keyWrapperFactory,
+            IAuthenticatedEncryptorFactory authenticatedEncryptorFactory)
+            : this(signerFactory, keyWrapperFactory, authenticatedEncryptorFactory, null)
+        {
+        }
+
+        public JsonWebTokenWriter(
+            ISignerFactory signerFactory,
+            IKeyWrapperFactory keyWrapperFactory,
             IAuthenticatedEncryptorFactory authenticatedEncryptorFactory,
             JsonHeaderCache headerCache)
         {
@@ -33,14 +41,6 @@ namespace JsonWebToken
             _keyWrapFactory = keyWrapperFactory ?? throw new ArgumentNullException(nameof(keyWrapperFactory));
             _authenticatedEncryptionFactory = authenticatedEncryptorFactory ?? throw new ArgumentNullException(nameof(authenticatedEncryptorFactory));
             _headerCache = headerCache ?? new JsonHeaderCache();
-        }
-
-        public JsonWebTokenWriter(
-            ISignerFactory signerFactory,
-            IKeyWrapperFactory keyWrapperFactory,
-            IAuthenticatedEncryptorFactory authenticatedEncryptorFactory)
-            :this(signerFactory, keyWrapperFactory, authenticatedEncryptorFactory, null)
-        {
         }
 
         /// <summary>
