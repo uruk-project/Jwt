@@ -5,7 +5,7 @@ namespace JsonWebToken
 {
     public class DefaultAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
     {
-        private readonly ConcurrentDictionary<ProviderFactoryKey, AuthenticatedEncryptor> _encryptors = new ConcurrentDictionary<ProviderFactoryKey, AuthenticatedEncryptor>(JwkEqualityComparer.Default);
+        private readonly CryptographicStore<AuthenticatedEncryptor> _encryptors = new CryptographicStore<AuthenticatedEncryptor>();
 
         private bool _disposed;
 
@@ -16,7 +16,7 @@ namespace JsonWebToken
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-            var factoryKey = new ProviderFactoryKey(key, encryptionAlgorithm.Id);
+            var factoryKey = new CryprographicFactoryKey(key, encryptionAlgorithm.Id);
             if (_encryptors.TryGetValue(factoryKey, out var cachedEncryptor))
             {
                 return cachedEncryptor;
@@ -25,16 +25,7 @@ namespace JsonWebToken
             if (key.IsSupported(encryptionAlgorithm))
             {
                 var encryptor = key.CreateAuthenticatedEncryptor(encryptionAlgorithm);
-
-                if (!_encryptors.TryAdd(factoryKey, encryptor) && _encryptors.TryGetValue(factoryKey, out cachedEncryptor))
-                {
-                    encryptor.Dispose();
-                    return cachedEncryptor;
-                }
-                else
-                {
-                    return encryptor;
-                }
+                return _encryptors.AddValue(factoryKey, encryptor);
             }
 
             return null;
@@ -46,10 +37,7 @@ namespace JsonWebToken
             {
                 if (disposing)
                 {
-                    foreach (var encryptor in _encryptors)
-                    {
-                        encryptor.Value.Dispose();
-                    }
+                    _encryptors.Dispose();
                 }
 
                 _disposed = true;

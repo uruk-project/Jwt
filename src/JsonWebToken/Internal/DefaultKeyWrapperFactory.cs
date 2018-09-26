@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Concurrent;
-
-namespace JsonWebToken
+﻿namespace JsonWebToken
 {
     public class DefaultKeyWrapperFactory : IKeyWrapperFactory
     {
-        private readonly ConcurrentDictionary<ProviderFactoryKey, KeyWrapper> _keyWrappers = new ConcurrentDictionary<ProviderFactoryKey, KeyWrapper>(JwkEqualityComparer.Default);
+        private readonly CryptographicStore< KeyWrapper> _keyWrappers = new CryptographicStore<KeyWrapper>();
         private bool _disposed;
 
         public virtual KeyWrapper Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
@@ -21,7 +18,7 @@ namespace JsonWebToken
             }
 
             var algorithmKey = (encryptionAlgorithm.Id << 8) | (byte)contentEncryptionAlgorithm.Id;
-            var factoryKey = new ProviderFactoryKey(key, algorithmKey);
+            var factoryKey = new CryprographicFactoryKey(key, algorithmKey);
             if (_keyWrappers.TryGetValue(factoryKey, out var cachedKeyWrapper))
             {
                 return cachedKeyWrapper;
@@ -30,15 +27,7 @@ namespace JsonWebToken
             if (key.IsSupported(contentEncryptionAlgorithm))
             {
                 var keyWrapper = key.CreateKeyWrapper(encryptionAlgorithm, contentEncryptionAlgorithm);
-                if (!_keyWrappers.TryAdd(factoryKey, keyWrapper) && _keyWrappers.TryGetValue(factoryKey, out cachedKeyWrapper))
-                {
-                    keyWrapper.Dispose();
-                    return cachedKeyWrapper;
-                }
-                else
-                {
-                    return keyWrapper;
-                }
+                return _keyWrappers.AddValue(factoryKey, keyWrapper);
             }
 
             return null;
@@ -50,10 +39,7 @@ namespace JsonWebToken
             {
                 if (disposing)
                 {
-                    foreach (var keyWrapper in _keyWrappers)
-                    {
-                        keyWrapper.Value.Dispose();
-                    }
+                    _keyWrappers.Dispose();
                 }
 
                 _disposed = true;

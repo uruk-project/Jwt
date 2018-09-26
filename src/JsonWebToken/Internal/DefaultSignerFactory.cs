@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Concurrent;
-
-namespace JsonWebToken
+﻿namespace JsonWebToken
 {
     public class DefaultSignerFactory : ISignerFactory
     {
-        private readonly ConcurrentDictionary<ProviderFactoryKey, Signer> _signers = new ConcurrentDictionary<ProviderFactoryKey, Signer>(JwkEqualityComparer.Default);
-        private readonly ConcurrentDictionary<ProviderFactoryKey, Signer> _validationSigners = new ConcurrentDictionary<ProviderFactoryKey, Signer>(JwkEqualityComparer.Default);
+        private readonly CryptographicStore<Signer> _signers = new CryptographicStore<Signer>();
+        private readonly CryptographicStore<Signer> _validationSigners = new CryptographicStore<Signer>();
         private bool _disposed;
 
         public virtual Signer Create(JsonWebKey key, SignatureAlgorithm algorithm, bool willCreateSignatures)
@@ -22,7 +19,7 @@ namespace JsonWebToken
             }
 
             var signers = willCreateSignatures ? _validationSigners : _signers;
-            var factoryKey = new ProviderFactoryKey(key, algorithm.Id);
+            var factoryKey = new CryprographicFactoryKey(key, algorithm.Id);
             if (signers.TryGetValue(factoryKey, out var cachedSigner))
             {
                 return cachedSigner;
@@ -31,15 +28,7 @@ namespace JsonWebToken
             if (key.IsSupported(algorithm))
             {
                 var signer = key.CreateSigner(algorithm, willCreateSignatures);
-                if (!signers.TryAdd(factoryKey, signer) && signers.TryGetValue(factoryKey, out cachedSigner))
-                {
-                    signer.Dispose();
-                    return cachedSigner;
-                }
-                else
-                {
-                    return signer;
-                }
+                return signers.AddValue(factoryKey, signer);
             }
 
             return null;
@@ -51,10 +40,8 @@ namespace JsonWebToken
             {
                 if (disposing)
                 {
-                    foreach (var signer in _signers)
-                    {
-                        signer.Value.Dispose();
-                    }
+                    _signers.Dispose();
+                    _validationSigners.Dispose();
                 }
 
                 _disposed = true;
