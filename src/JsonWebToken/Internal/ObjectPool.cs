@@ -28,7 +28,7 @@ namespace JsonWebToken
 
         public T Get()
         {
-            T item = _firstItem;
+            var item = _firstItem;
 
             if (item == null || Interlocked.CompareExchange(ref _firstItem, null, item) != item)
             {
@@ -41,22 +41,22 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private T GetViaScan()
         {
-            ObjectWrapper[] items = _items;
-            T item = null;
+            var items = _items;
 
             for (var i = 0; i < items.Length; i++)
             {
-                item = items[i];
+                var item = items[i].Element;
 
                 if (item != null && Interlocked.CompareExchange(ref items[i].Element, null, item) == item)
                 {
-                    break;
+                    return item;
                 }
             }
 
-            return item ?? _policy.Create();
+            return _policy.Create();
         }
 
+        // PERF: the struct wrapper avoids array-covariance-checks from the runtime when assigning to elements of the array.
         public void Return(T pooledObject)
         {
             if (_firstItem != null || Interlocked.CompareExchange(ref _firstItem, pooledObject, null) != null)
@@ -76,25 +76,19 @@ namespace JsonWebToken
 
         public void Dispose()
         {
-            ObjectWrapper[] items = _items;
-            T item = null;
+            var items = _items;
+
             for (var i = 0; i < items.Length; i++)
             {
-                item = items[i];
-
-                if (item != null)
-                {
-                    item.Dispose();
-                }
+                items[i].Element?.Dispose();
             }
         }
 
+        // PERF: the struct wrapper avoids array-covariance-checks from the runtime when assigning to elements of the array.
         [DebuggerDisplay("{Element}")]
         private struct ObjectWrapper
         {
             public T Element;
-
-            public static implicit operator T(ObjectWrapper wrapper) => wrapper.Element;
         }
     }
 }
