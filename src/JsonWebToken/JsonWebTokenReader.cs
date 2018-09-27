@@ -4,7 +4,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace JsonWebToken
@@ -12,25 +11,31 @@ namespace JsonWebToken
     public sealed class JsonWebTokenReader : IDisposable
     {
         private const byte dot = 0x2E;
+
         private readonly IKeyProvider[] _encryptionKeyProviders;
-        private readonly JwtHeaderCache _headerCache = new JwtHeaderCache();
-        private readonly KeyWrapperFactory _keyWrapFactory = new KeyWrapperFactory();
-        private readonly SignerFactory _signatureFactory = new SignerFactory();
-        private readonly AuthenticatedEncryptorFactory _authenticatedEncryptionFactory = new AuthenticatedEncryptorFactory();
+        private readonly JwtHeaderCache _headerCache;
+        private readonly IKeyWrapperFactory _keyWrapFactory;
+        private readonly ISignerFactory _signatureFactory;
+        private readonly IAuthenticatedEncryptorFactory _authenticatedEncryptionFactory;
+        private readonly bool _disposeFactories;
 
         private bool _disposed;
 
-        public JsonWebTokenReader(IEnumerable<JsonWebKey> keys)
-           : this(new JsonWebKeySet(keys))
+        public JsonWebTokenReader(
+            ICollection<IKeyProvider> encryptionKeyProviders,
+            ISignerFactory signerFactory,
+            IKeyWrapperFactory keyWrapperFactory,
+            IAuthenticatedEncryptorFactory authenticatedEncryptorFactory)
+            : this(encryptionKeyProviders, signerFactory, keyWrapperFactory, authenticatedEncryptorFactory, null)
         {
         }
 
-        public JsonWebTokenReader(params JsonWebKey[] keys)
-           : this(new JsonWebKeySet(keys))
-        {
-        }
-
-        public JsonWebTokenReader(IEnumerable<IKeyProvider> encryptionKeyProviders)
+        public JsonWebTokenReader(
+                  ICollection<IKeyProvider> encryptionKeyProviders,
+                  ISignerFactory signerFactory,
+                  IKeyWrapperFactory keyWrapperFactory,
+                  IAuthenticatedEncryptorFactory authenticatedEncryptorFactory,
+                  JwtHeaderCache headerCache)
         {
             if (encryptionKeyProviders == null)
             {
@@ -38,6 +43,26 @@ namespace JsonWebToken
             }
 
             _encryptionKeyProviders = encryptionKeyProviders.ToArray();
+            _signatureFactory = signerFactory ?? throw new ArgumentNullException(nameof(signerFactory));
+            _keyWrapFactory = keyWrapperFactory ?? throw new ArgumentNullException(nameof(keyWrapperFactory));
+            _authenticatedEncryptionFactory = authenticatedEncryptorFactory ?? throw new ArgumentNullException(nameof(authenticatedEncryptorFactory));
+            _headerCache = headerCache ?? new JwtHeaderCache();
+        }
+
+        public JsonWebTokenReader(ICollection<IKeyProvider> encryptionKeyProviders)
+            : this(encryptionKeyProviders, new DefaultSignerFactory(), new DefaultKeyWrapperFactory(), new DefaultAuthenticatedEncryptorFactory())
+        {
+            _disposeFactories = true;
+        }
+
+        public JsonWebTokenReader(IList<JsonWebKey> keys)
+           : this(new JsonWebKeySet(keys))
+        {
+        }
+
+        public JsonWebTokenReader(params JsonWebKey[] keys)
+           : this(new JsonWebKeySet(keys))
+        {
         }
 
         public JsonWebTokenReader(IKeyProvider encryptionKeyProvider)
@@ -56,8 +81,8 @@ namespace JsonWebToken
         }
 
         public JsonWebTokenReader()
+            : this(Array.Empty<IKeyProvider>())
         {
-            _encryptionKeyProviders = Array.Empty<IKeyProvider>();
         }
 
         public bool EnableHeaderCaching { get; set; } = true;
@@ -109,17 +134,6 @@ namespace JsonWebToken
                 {
                     ArrayPool<byte>.Shared.Return(utf8ArrayToReturnToPool);
                 }
-            }
-        }
-
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                _signatureFactory.Dispose();
-                _keyWrapFactory.Dispose();
-                _authenticatedEncryptionFactory.Dispose();
-                _disposed = true;
             }
         }
 
@@ -233,7 +247,14 @@ namespace JsonWebToken
                         return TokenValidationResult.InvalidHeader(null, HeaderParameters.Zip);
                     }
 
-                    decryptedBytes = compressionProvider.Decompress(decryptedBytes);
+                    try
+                    {
+                        decryptedBytes = compressionProvider.Decompress(decryptedBytes);
+                    }
+                    catch (Exception e)
+                    {
+                        return TokenValidationResult.DecompressionFailed(e);
+                    }
                 }
 
                 if (!string.Equals(header.Cty, ContentTypeValues.Jwt, StringComparison.Ordinal))
@@ -335,9 +356,9 @@ namespace JsonWebToken
                 Encoding.UTF8.GetChars(rawHeader, utf8Header);
                 Encoding.ASCII.GetBytes(utf8Header, header);
 #else
-                fixed (byte* rawPtr = &MemoryMarshal.GetReference(rawHeader))
-                fixed (char* utf8Ptr = &MemoryMarshal.GetReference(utf8Header))
-                fixed (byte* header8Ptr = &MemoryMarshal.GetReference(header))
+                fixed (byte* rawPtr = rawHeader)
+                fixed (char* utf8Ptr = utf8Header)
+                fixed (byte* header8Ptr = header)
                 {
                     Encoding.UTF8.GetChars(rawPtr, rawHeader.Length, utf8Ptr, utf8Header.Length);
                     Encoding.ASCII.GetBytes(utf8Ptr, utf8Header.Length, header8Ptr, header.Length);
@@ -430,6 +451,17 @@ namespace JsonWebToken
             }
 
             return keys;
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed && _disposeFactories)
+            {
+                _signatureFactory.Dispose();
+                _keyWrapFactory.Dispose();
+                _authenticatedEncryptionFactory.Dispose();
+                _disposed = true;
+            }
         }
     }
 }

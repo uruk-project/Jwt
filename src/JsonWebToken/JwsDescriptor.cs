@@ -271,7 +271,7 @@ namespace JsonWebToken
         {
             if (value.HasValue)
             {
-                Payload[claimType] = EpochTime.GetIntDate(value.Value);
+                Payload[claimType] = value.ToEpochTime();
             }
             else
             {
@@ -358,7 +358,7 @@ namespace JsonWebToken
             }
         }
 
-        public bool TryEncodeUtf8ToBase64Url(string input, Span<byte> destination, out int bytesWritten)
+        public static bool TryEncodeUtf8ToBase64Url(string input, Span<byte> destination, out int bytesWritten)
         {
             byte[] arrayToReturnToPool = null;
             var encodedBytes = input.Length <= Constants.MaxStackallocBytes

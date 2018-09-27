@@ -14,12 +14,12 @@ namespace JsonWebToken
         private static readonly Dictionary<string, JTokenType[]> DefaultRequiredHeaderParameters = new Dictionary<string, JTokenType[]>();
         private JsonWebKey _key;
 
-        public JwtDescriptor()
+        protected JwtDescriptor()
             : this(new JObject())
         {
         }
 
-        public JwtDescriptor(JObject header)
+        protected JwtDescriptor(JObject header)
         {
             Header = header;
         }

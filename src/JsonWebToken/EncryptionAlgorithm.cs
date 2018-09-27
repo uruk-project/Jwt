@@ -15,24 +15,37 @@ namespace JsonWebToken
         public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 22, "A192GCM", requiredKeySizeInBytes: 24, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 56, EncryptionTypes.AesGcm);
         public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, "A256GCM", requiredKeySizeInBytes: 32, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 72, EncryptionTypes.AesGcm);
 
-        public static readonly IDictionary<string, EncryptionAlgorithm> AdditionalAlgorithms = new Dictionary<string, EncryptionAlgorithm>();
+        public sbyte Id { get; }
 
-        public readonly sbyte Id;
-        public readonly EncryptionTypes Category;
+        public EncryptionTypes Category { get; }
 
-        public readonly ushort RequiredKeySizeInBytes;
-        public readonly ushort RequiredKeyWrappedSizeInBytes;
-        public readonly SignatureAlgorithm SignatureAlgorithm;
-        public readonly string Name;
+        public ushort RequiredKeySizeInBytes { get; }
 
-        private EncryptionAlgorithm(sbyte id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm hashAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionTypes encryptionType)
+        public ushort RequiredKeyWrappedSizeInBytes { get; }
+
+        public SignatureAlgorithm SignatureAlgorithm { get; }
+
+        public string Name { get; }
+
+        public static IDictionary<string, EncryptionAlgorithm> Algorithms { get; } = new Dictionary<string, EncryptionAlgorithm>
+        {
+            { Aes128CbcHmacSha256.Name, Aes128CbcHmacSha256 },
+            { Aes192CbcHmacSha384.Name, Aes192CbcHmacSha384 },
+            { Aes256CbcHmacSha512.Name, Aes256CbcHmacSha512 },
+            { Aes128Gcm.Name, Aes128Gcm },
+            { Aes192Gcm.Name, Aes192Gcm },
+            { Aes256Gcm.Name , Aes256Gcm },
+            { Empty.Name, Empty }
+        };
+
+        public EncryptionAlgorithm(sbyte id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm hashAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionTypes category)
         {
             Id = id;
             Name = name;
             RequiredKeySizeInBytes = requiredKeySizeInBytes;
             SignatureAlgorithm = hashAlgorithm;
             RequiredKeyWrappedSizeInBytes = requiredKeyWrappedSizeInBytes;
-            Category = encryptionType;
+            Category = category;
         }
 
         public override bool Equals(object obj)
@@ -107,28 +120,12 @@ namespace JsonWebToken
 
         public static explicit operator EncryptionAlgorithm(string value)
         {
-            switch (value)
+            if (value == null)
             {
-                case "A128CBC-HS256":
-                    return Aes128CbcHmacSha256;
-                case "A192CBC-HS384":
-                    return Aes192CbcHmacSha384;
-                case "A256CBC-HS512":
-                    return Aes256CbcHmacSha512;
-
-                case "A128GCM":
-                    return Aes128Gcm;
-                case "A192GCM":
-                    return Aes192Gcm;
-                case "A256GCM":
-                    return Aes256Gcm;
-
-                case null:
-                case "":
-                    return Empty;
+                return Empty;
             }
-
-            if (!AdditionalAlgorithms.TryGetValue(value, out var algorithm))
+     
+            if (!Algorithms.TryGetValue(value, out var algorithm))
             {
                 Errors.ThrowNotSupportedAlgorithm(value);
             }

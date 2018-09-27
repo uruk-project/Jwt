@@ -198,7 +198,7 @@ namespace JsonWebToken
                     bytesWritten += Base64Url.Base64UrlEncode(tag, encryptedToken.Slice(bytesWritten));
                     Debug.Assert(encryptedToken.Length == bytesWritten);
 
-                    fixed (char* ptr = &MemoryMarshal.GetReference(encryptedToken))
+                    fixed (char* ptr = encryptedToken)
                     {
                         return new string(ptr, 0, bytesWritten);
                     }

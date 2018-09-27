@@ -133,7 +133,7 @@ namespace JsonWebToken.Performance
                         case "iat":
                         case "nbf":
                         case "exp":
-                            descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
+                            descriptor.AddClaim(property.Name, Microsoft.IdentityModel.Tokens.EpochTime.DateTime((long)property.Value));
                             break;
                         default:
                             descriptor.AddClaim(property.Name, (string)property.Value);
@@ -158,7 +158,7 @@ namespace JsonWebToken.Performance
                         case "iat":
                         case "nbf":
                         case "exp":
-                            descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
+                            descriptor.AddClaim(property.Name, Microsoft.IdentityModel.Tokens.EpochTime.DateTime((long)property.Value));
                             break;
                         default:
                             descriptor.AddClaim(property.Name, (string)property.Value);
@@ -188,8 +188,8 @@ namespace JsonWebToken.Performance
                 {
                     SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.Alg),
                     Subject = new ClaimsIdentity(),
-                    Expires = payload.Value.ContainsKey("exp") ? EpochTime.ToDateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
-                    IssuedAt = payload.Value.ContainsKey("iat") ? EpochTime.ToDateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
+                    Expires = payload.Value.ContainsKey("exp") ? Microsoft.IdentityModel.Tokens.EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
+                    IssuedAt = payload.Value.ContainsKey("iat") ? Microsoft.IdentityModel.Tokens.EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -216,8 +216,8 @@ namespace JsonWebToken.Performance
                     SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.Alg),
                     EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.RawK), KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256),
                     Subject = new ClaimsIdentity(),
-                    Expires = payload.Value.ContainsKey("exp") ? EpochTime.ToDateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
-                    IssuedAt = payload.Value.ContainsKey("iat") ? EpochTime.ToDateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
+                    Expires = payload.Value.ContainsKey("exp") ? Microsoft.IdentityModel.Tokens.EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
+                    IssuedAt = payload.Value.ContainsKey("iat") ? Microsoft.IdentityModel.Tokens.EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
                 };
 
                 foreach (var property in payload.Value.Properties())

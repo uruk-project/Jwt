@@ -156,7 +156,7 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult DecompressionFailed(Exception exception = null)
+        public static TokenValidationResult DecompressionFailed(Exception exception)
         {
             return new TokenValidationResult
             {

@@ -2,27 +2,51 @@
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// See: http://tools.ietf.org/html/rfc7519 and http://www.rfc-editor.org/info/rfc7515
-    /// </summary>
     public sealed class JsonWebTokenWriter : IDisposable
     {
         private int _defaultTokenLifetimeInMinutes = DefaultTokenLifetimeInMinutes;
 
         /// <summary>
-        /// Default lifetime of tokens created. When creating tokens, if 'expires' and 'notbefore' are both null, then a default will be set to: expires = DateTime.UtcNow, notbefore = DateTime.UtcNow + TimeSpan.FromMinutes(TokenLifetimeInMinutes).
+        /// Default lifetime of tokens created. When creating tokens, if 'exp' and 'nbf' are both null, then a default will be set to: exp = DateTime.UtcNow, nbf = DateTime.UtcNow + TimeSpan.FromMinutes(TokenLifetimeInMinutes).
         /// </summary>
         public static readonly int DefaultTokenLifetimeInMinutes = 60;
-        private readonly SignerFactory _signatureFactory = new SignerFactory();
-        private readonly KeyWrapperFactory _keyWrapFactory = new KeyWrapperFactory();
-        private readonly AuthenticatedEncryptorFactory _authenticatedEncryptionFactory = new AuthenticatedEncryptorFactory();
-        private JsonHeaderCache _headerCache = new JsonHeaderCache();
+        private readonly ISignerFactory _signatureFactory;
+        private readonly IKeyWrapperFactory _keyWrapFactory;
+        private readonly IAuthenticatedEncryptorFactory _authenticatedEncryptionFactory;
+        private JsonHeaderCache _headerCache;
+        private readonly bool _disposeFactories;
         private bool _disposed;
+
+        public JsonWebTokenWriter() :
+            this(new DefaultSignerFactory(), new DefaultKeyWrapperFactory(), new DefaultAuthenticatedEncryptorFactory(), new JsonHeaderCache())
+        {
+            _disposeFactories = true;
+        }
+
+        public JsonWebTokenWriter(
+            ISignerFactory signerFactory,
+            IKeyWrapperFactory keyWrapperFactory,
+            IAuthenticatedEncryptorFactory authenticatedEncryptorFactory)
+            : this(signerFactory, keyWrapperFactory, authenticatedEncryptorFactory, null)
+        {
+        }
+
+        public JsonWebTokenWriter(
+            ISignerFactory signerFactory,
+            IKeyWrapperFactory keyWrapperFactory,
+            IAuthenticatedEncryptorFactory authenticatedEncryptorFactory,
+            JsonHeaderCache headerCache)
+        {
+            _signatureFactory = signerFactory ?? throw new ArgumentNullException(nameof(signerFactory));
+            _keyWrapFactory = keyWrapperFactory ?? throw new ArgumentNullException(nameof(keyWrapperFactory));
+            _authenticatedEncryptionFactory = authenticatedEncryptorFactory ?? throw new ArgumentNullException(nameof(authenticatedEncryptorFactory));
+            _headerCache = headerCache ?? new JsonHeaderCache();
+        }
 
         /// <summary>
         /// Gets or sets the token lifetime in minutes.
         /// </summary>
-        /// <remarks>Used by <see cref="CreateToken(JsonWebTokenDescriptor)"/> to set the default expiration ('exp'). <see cref="DefaultTokenLifetimeInMinutes"/> for the default.</remarks>
+        /// <remarks>Used by <see cref="WriteToken(JwtDescriptor)"/> to set the default expiration ('exp'). <see cref="DefaultTokenLifetimeInMinutes"/> for the default.</remarks>
         /// <exception cref="ArgumentOutOfRangeException">'value' less than 1.</exception>
         public int TokenLifetimeInMinutes
         {
@@ -55,9 +79,9 @@ namespace JsonWebToken
             get => _headerCache != null;
             set
             {
-                if (value )
+                if (value)
                 {
-                    if ( _headerCache == null)
+                    if (_headerCache == null)
                     {
                         _headerCache = new JsonHeaderCache();
                     }
@@ -114,7 +138,7 @@ namespace JsonWebToken
 
         public void Dispose()
         {
-            if (!_disposed)
+            if (!_disposed && _disposeFactories)
             {
                 _authenticatedEncryptionFactory.Dispose();
                 _signatureFactory.Dispose();
