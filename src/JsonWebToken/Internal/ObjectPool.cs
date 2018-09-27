@@ -71,7 +71,8 @@ namespace JsonWebToken
             ObjectWrapper[] items = _items;
 
             for (var i = 0; i < items.Length && Interlocked.CompareExchange(ref items[i].Element, pooledObject, null) != null; ++i)
-                ;
+            {
+            }
         }
 
         public void Dispose()

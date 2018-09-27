@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace JsonWebToken
 {
@@ -553,7 +552,7 @@ namespace JsonWebToken
             // 1 -> 2
             // 2 -> 1
 
-            return dataLength % 3 == 0 ? 0 : 3 - dataLength % 3;
+            return dataLength % 3 == 0 ? 0 : 3 - (dataLength % 3);
         }
 
         private static void ThrowInvalidArguments(object input, int offset, int count, char[] buffer = null, int bufferOffset = 0, ExceptionArgument bufferName = ExceptionArgument.buffer, bool validateBuffer = false)
@@ -591,7 +590,7 @@ namespace JsonWebToken
             }
         }
 
-        private static readonly sbyte[] s_decodingMap = 
+        private static readonly sbyte[] s_decodingMap =
         {
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -611,7 +610,7 @@ namespace JsonWebToken
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
         };
 
-        private static readonly byte[] s_encodingMap = 
+        private static readonly byte[] s_encodingMap =
         {
             65/*A*/,  66/*B*/,  67/*C*/,  68/*D*/,  69/*E*/,  70/*F*/,  71/*G*/,  72/*H*/,
             73/*I*/,  74/*J*/,  75/*K*/,  76/*L*/,  77/*M*/,  78/*N*/,  79/*O*/,  80/*P*/,
@@ -1084,7 +1083,7 @@ namespace JsonWebToken
 
             public static ArgumentException GetInvalidCountOffsetOrLengthException(ExceptionArgument arg1, ExceptionArgument arg2, ExceptionArgument arg3)
             {
-                return new ArgumentException(EncoderResources.FormatWebEncoders_InvalidCountOffsetOrLength(
+                return new ArgumentException(FormatWebEncoders_InvalidCountOffsetOrLength(
                     GetArgumentName(arg1),
                     GetArgumentName(arg2),
                     GetArgumentName(arg3)));
@@ -1095,9 +1094,9 @@ namespace JsonWebToken
                 switch (status)
                 {
                     case OperationStatus.DestinationTooSmall:
-                        return new InvalidOperationException(EncoderResources.WebEncoders_DestinationTooSmall);
+                        return new InvalidOperationException(WebEncoders_DestinationTooSmall);
                     case OperationStatus.InvalidData:
-                        return new FormatException(EncoderResources.WebEncoders_InvalidInput);
+                        return new FormatException(WebEncoders_InvalidInput);
                     default:                                // This case won't happen.
                         throw new NotSupportedException();  // Just in case new states are introduced
                 }
@@ -1113,7 +1112,7 @@ namespace JsonWebToken
 
             private static FormatException GetMalformdedInputException(int inputLength)
             {
-                return new FormatException(EncoderResources.FormatWebEncoders_MalformedInput(inputLength));
+                return new FormatException(FormatWebEncoders_MalformedInput(inputLength));
             }
         }
 
@@ -1127,10 +1126,7 @@ namespace JsonWebToken
             bufferOffset,
             outputOffset
         }
-    }
 
-    internal static class EncoderResources
-    {
         /// <summary>
         /// Invalid {0}, {1} or {2} length.
         /// </summary>
