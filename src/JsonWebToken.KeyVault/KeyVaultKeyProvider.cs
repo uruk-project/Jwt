@@ -3,8 +3,11 @@ using Microsoft.Azure.KeyVault.WebKey;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using SscECParameters = System.Security.Cryptography.ECParameters;
+using KVECParameters = Microsoft.Azure.KeyVault.WebKey.ECParameters;
 
 namespace JsonWebToken.KeyVault
 {
@@ -57,7 +60,10 @@ namespace JsonWebToken.KeyVault
                         key = new RsaJwk(kvKey.Key.ToRSAParameters());
                         break;
                     case JsonWebKeyType.EllipticCurve:
-                        throw new NotSupportedException();
+                    case JsonWebKeyType.EllipticCurveHsm:
+                        var parameters = kvKey.Key.ToEcParameters();
+                        key = EccJwk.FromParameters(ConvertToECParameters(parameters));
+                        break;
                     default:
                         continue;
                 }
@@ -73,6 +79,36 @@ namespace JsonWebToken.KeyVault
             }
 
             return keys;
+        }
+
+        private static SscECParameters ConvertToECParameters(KVECParameters inputParameters)
+        {
+            ECCurve curve;
+            switch (inputParameters.Curve)
+            {
+                case EllipticalCurves.P256:
+                    curve = ECCurve.NamedCurves.nistP256;
+                    break;
+                case EllipticalCurves.P384:
+                    curve = ECCurve.NamedCurves.nistP384;
+                    break;
+                case EllipticalCurves.P521:
+                    curve = ECCurve.NamedCurves.nistP521;
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return new SscECParameters
+            {
+                Curve = curve,
+                D = inputParameters.D,
+                Q = new ECPoint
+                {
+                    X = inputParameters.X,
+                    Y = inputParameters.Y
+                }                
+            };
         }
 
         private static async Task<string> GetTokenFromClientCertificate(string authority, string resource, string clientId, X509Certificate2 certificate)

@@ -20,6 +20,8 @@ namespace JsonWebToken
         public static readonly KeyManagementAlgorithm RsaPkcs1 = new KeyManagementAlgorithm(id: 31, "RSA1_5", AlgorithmCategory.Rsa);
         public static readonly KeyManagementAlgorithm RsaOaep = new KeyManagementAlgorithm(id: 32, "RSA-OAEP", AlgorithmCategory.Rsa);
         public static readonly KeyManagementAlgorithm RsaOaep256 = new KeyManagementAlgorithm(id: 33, "RSA-OAEP-256", AlgorithmCategory.Rsa);
+        public static readonly KeyManagementAlgorithm RsaOaep384 = new KeyManagementAlgorithm(id: 34, "RSA-OAEP-384", AlgorithmCategory.Rsa);
+        public static readonly KeyManagementAlgorithm RsaOaep512 = new KeyManagementAlgorithm(id: 35, "RSA-OAEP-512", AlgorithmCategory.Rsa);
 
         public static readonly KeyManagementAlgorithm EcdhEs = new KeyManagementAlgorithm(id: 41, "ECDH-ES", AlgorithmCategory.EllipticCurve, produceEncryptedKey: false);
 
@@ -54,6 +56,8 @@ namespace JsonWebToken
             { Direct.Name, Direct },
             { RsaOaep.Name, RsaOaep},
             { RsaOaep256.Name, RsaOaep256},
+            { RsaOaep384.Name, RsaOaep384},
+            { RsaOaep512.Name, RsaOaep512},
             { RsaPkcs1.Name, RsaPkcs1 },
             { Empty.Name, Empty }
         };
