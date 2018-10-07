@@ -295,7 +295,7 @@ namespace JsonWebToken
               : (base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64UrlLength)).AsSpan(0, base64UrlLength);
             try
             {
-                Base64Url.Base64UrlDecode(data, buffer, out int byteConsumed, out int bytesWritten);
+                Base64Url.Base64UrlDecode(data, buffer);
 #if NETCOREAPP2_1
                 var json = Encoding.UTF8.GetString(buffer);
 #else

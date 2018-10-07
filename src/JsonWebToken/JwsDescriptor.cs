@@ -340,7 +340,7 @@ namespace JsonWebToken
                     Debug.Assert(success);
                     Debug.Assert(signature.Length == signatureBytesWritten);
 
-                    Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)), out int bytesConsumed, out bytesWritten);
+                    bytesWritten = Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)));
                 }
 
 #if NETCOREAPP2_1
@@ -371,8 +371,8 @@ namespace JsonWebToken
 #else
                 EncodingHelper.GetUtf8Bytes(input, encodedBytes);
 #endif
-                var status = Base64Url.Base64UrlEncode(encodedBytes, destination, out int bytesConsumed, out bytesWritten);
-                return status == OperationStatus.Done;
+                bytesWritten = Base64Url.Base64UrlEncode(encodedBytes, destination);
+                return bytesWritten == destination.Length;
             }
             finally
             {

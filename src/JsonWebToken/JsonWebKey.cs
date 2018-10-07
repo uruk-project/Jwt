@@ -370,7 +370,7 @@ namespace JsonWebToken
 
             if (key != null)
             {
-                key.X5t = Base64Url.Encode(certificate.GetCertHash());
+                key.X5t = Base64Url.Base64UrlEncode(certificate.GetCertHash());
                 key.Kid = key.ComputeThumbprint();
                 return key;
             }

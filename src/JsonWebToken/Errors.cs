@@ -204,5 +204,10 @@ namespace JsonWebToken
         {
             throw new ObjectDisposedException(type.ToString());
         }
+
+        internal static void ThrowFormatException()
+        {
+            throw new FormatException();
+        }
     }
 }

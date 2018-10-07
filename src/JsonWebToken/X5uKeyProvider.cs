@@ -36,7 +36,7 @@ namespace JsonWebToken
                 Kty = JsonWebKeyTypeNames.Rsa,
                 Use = JsonWebKeyUseNames.Sig,
                 Kid = certificate.Thumbprint,
-                X5t = Base64Url.Encode(certificate.GetCertHash())
+                X5t = Base64Url.Base64UrlEncode(certificate.GetCertHash())
             };
             if (certificate.RawData != null)
             {

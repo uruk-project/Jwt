@@ -37,11 +37,11 @@ namespace JsonWebToken
             {
                 _padding = RSAEncryptionPadding.OaepSHA256;
             }
-            if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep384)
+            else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep384)
             {
                 _padding = RSAEncryptionPadding.OaepSHA384;
             }
-            if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep512)
+            else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep512)
             {
                 _padding = RSAEncryptionPadding.OaepSHA512;
             }

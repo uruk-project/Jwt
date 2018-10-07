@@ -52,8 +52,8 @@ namespace JsonWebToken
             Base64Url.Base64UrlDecode(header.IV, nonce);
             Base64Url.Base64UrlDecode(header.Tag, tag);
 #else
-            Base64Url.Base64UrlDecode(header.IV.AsSpan(), nonce);
-            Base64Url.Base64UrlDecode(header.Tag.AsSpan(), tag);
+            Base64Url.Base64UrlDecode(header.IV, nonce);
+            Base64Url.Base64UrlDecode(header.Tag, tag);
 #endif 
             using (var aesGcm = new AesGcm(Key.ToByteArray()))
             {

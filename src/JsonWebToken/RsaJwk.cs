@@ -119,7 +119,7 @@ namespace JsonWebToken
                 {
                     if (RawDP != null && RawDP.Length != 0)
                     {
-                        _dp = Base64Url.Encode(RawDP);
+                        _dp = Base64Url.Base64UrlEncode(RawDP);
                     }
                 }
 
@@ -155,7 +155,7 @@ namespace JsonWebToken
                 {
                     if (RawDQ != null && RawDQ.Length != 0)
                     {
-                        _dq = Base64Url.Encode(RawDQ);
+                        _dq = Base64Url.Base64UrlEncode(RawDQ);
                     }
                 }
 
@@ -191,7 +191,7 @@ namespace JsonWebToken
                 {
                     if (RawE != null && RawE.Length != 0)
                     {
-                        _e = Base64Url.Encode(RawE);
+                        _e = Base64Url.Base64UrlEncode(RawE);
                     }
                 }
 
@@ -227,7 +227,7 @@ namespace JsonWebToken
                 {
                     if (RawN != null && RawN.Length != 0)
                     {
-                        _n = Base64Url.Encode(RawN);
+                        _n = Base64Url.Base64UrlEncode(RawN);
                     }
                 }
 
@@ -269,7 +269,7 @@ namespace JsonWebToken
                 {
                     if (RawP != null && RawP.Length != 0)
                     {
-                        _p = Base64Url.Encode(RawP);
+                        _p = Base64Url.Base64UrlEncode(RawP);
                     }
                 }
 
@@ -305,7 +305,7 @@ namespace JsonWebToken
                 {
                     if (RawQ != null && RawQ.Length != 0)
                     {
-                        _q = Base64Url.Encode(RawQ);
+                        _q = Base64Url.Base64UrlEncode(RawQ);
                     }
                 }
 
@@ -341,7 +341,7 @@ namespace JsonWebToken
                 {
                     if (RawQI != null && RawQI.Length != 0)
                     {
-                        _qi = Base64Url.Encode(RawQI);
+                        _qi = Base64Url.Base64UrlEncode(RawQI);
                     }
                 }
 
