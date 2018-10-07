@@ -22,7 +22,7 @@ namespace JsonWebToken
                 {
                     if (RawD != null && RawD.Length != 0)
                     {
-                        _d = Base64Url.Encode(RawD);
+                        _d = Base64Url.Base64UrlEncode(RawD);
                     }
                 }
 

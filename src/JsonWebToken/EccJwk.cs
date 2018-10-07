@@ -65,7 +65,7 @@ namespace JsonWebToken
                 {
                     if (RawX != null && RawX.Length != 0)
                     {
-                        _x = Base64Url.Encode(RawX);
+                        _x = Base64Url.Base64UrlEncode(RawX);
                     }
                 }
 
@@ -100,7 +100,7 @@ namespace JsonWebToken
                 {
                     if (RawY != null && RawY.Length != 0)
                     {
-                        _y = Base64Url.Encode(RawY);
+                        _y = Base64Url.Base64UrlEncode(RawY);
                     }
                 }
 
