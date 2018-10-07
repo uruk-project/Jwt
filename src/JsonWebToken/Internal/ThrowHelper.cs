@@ -64,7 +64,6 @@ namespace JsonWebToken
             return new FormatException(FormatMalformedInput(inputLength));
         }
 
-
         /// <summary>
         /// Invalid {0}, {1} or {2} length.
         /// </summary>
@@ -84,15 +83,7 @@ namespace JsonWebToken
         /// Destination buffer is too small.
         /// </summary>
         internal static readonly string DestinationTooSmall = "The destination buffer is too small.";
-
-        /// <summary>
-        /// Invalid {0}, {1} or {2} length.
-        /// </summary>
-        internal static string FormatInvalidCountOffsetOrLength(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, InvalidCountOffsetOrLength, p0, p1, p2);
-        }
-
+       
         /// <summary>
         /// Malformed input: {0} is an invalid input length.
         /// </summary>

@@ -14,7 +14,6 @@ namespace JsonWebToken
     /// </remarks>
     public static class Base64Url
     {
-        private const int MaxEncodedLength = (int.MaxValue / 4) * 3;  // encode inflates the data by 4/3
         private static readonly IBase64Url _base64 = new SoftwareBase64Url();
 
         private static readonly byte[] EmptyBytes = new byte[0];
