@@ -33,7 +33,7 @@ namespace JsonWebToken
             if (srcLength <= MaximumEncodeLength && destLength >= GetMaxEncodedToUtf8Length(srcLength))
                 maxSrcLength = srcLength - 2;
             else
-                maxSrcLength = (destLength >> 2) * 3 - 2;
+                maxSrcLength = ((destLength >> 2) * 3) - 2;
 
             int sourceIndex = 0;
             int destIndex = 0;
@@ -89,11 +89,9 @@ namespace JsonWebToken
         private static int GetNumBase64PaddingCharsAddedByEncode(int dataLength)
         {
             // Calculation is:
-            // switch (dataLength % 3)
             // 0 -> 0
             // 1 -> 2
             // 2 -> 1
-
             return dataLength % 3 == 0 ? 0 : 3 - (dataLength % 3);
         }
         //--------------------------------------------------------------------- 
@@ -165,7 +163,6 @@ namespace JsonWebToken
         }
         public OperationStatus DecodeFromUtf8(ReadOnlySpan<byte> encoded, Span<byte> data, out int bytesConsumed, out int bytesWritten)
         {
-            bool isFinalBlock = true;
             ref var source = ref MemoryMarshal.GetReference(encoded);
             ref var destBytes = ref MemoryMarshal.GetReference(data);
 
@@ -185,7 +182,7 @@ namespace JsonWebToken
 
             // Last bytes could have padding characters, so process them separately and treat them as valid only if isFinalBlock is true.
             // If isFinalBlock is false, padding characters are considered invalid.
-            var skipLastChunk = isFinalBlock ? 4 : 0;
+            var skipLastChunk = 4;
 
             var maxSrcLength = 0;
             if (destLength >= dataLength)
@@ -219,12 +216,7 @@ namespace JsonWebToken
             // If input is not a multiple of 4, sourceIndex == srcLength != 0
             if (sourceIndex == srcLength)
             {
-                if (isFinalBlock)
-                {
-                    goto InvalidExit;
-                }
-
-                goto NeedMoreExit;
+                goto InvalidExit;
             }
 
             // If isFinalBlock is false, we will never reach this point.
@@ -292,18 +284,13 @@ namespace JsonWebToken
             return OperationStatus.Done;
 
             DestinationSmallExit:
-            if (srcLength != encoded.Length && isFinalBlock)
+            if (srcLength != encoded.Length)
             {
                 goto InvalidExit;   // if input is not a multiple of 4, and there is no more data, return invalid data instead
             }
             bytesConsumed = sourceIndex;
             bytesWritten = destIndex;
             return OperationStatus.DestinationTooSmall;
-
-            NeedMoreExit:
-            bytesConsumed = sourceIndex;
-            bytesWritten = destIndex;
-            return OperationStatus.NeedMoreData;
 
             InvalidExit:
             bytesConsumed = sourceIndex;
@@ -430,6 +417,5 @@ namespace JsonWebToken
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
         };
-
     }
 }

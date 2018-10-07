@@ -130,7 +130,6 @@ namespace JsonWebToken
 
                 try
                 {
-
 #if NETCOREAPP2_1
                     Encoding.UTF8.GetBytes(headerJson, utf8HeaderBuffer);
 #else

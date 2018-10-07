@@ -14,7 +14,6 @@ namespace JsonWebToken
     /// </remarks>
     public static class Base64Url
     {
-        private const int MaxStackallocBytes = 256;
         private const int MaxEncodedLength = (int.MaxValue / 4) * 3;  // encode inflates the data by 4/3
         private static readonly IBase64Url _base64 = new SoftwareBase64Url();
 
@@ -58,7 +57,7 @@ namespace JsonWebToken
 
             var dataLength = GetArraySizeRequiredToDecode(base64Url.Length);
             var data = new byte[dataLength];
-            var status = Base64UrlDecodeCore(base64Url, data, out int consumed, out int written);
+            var status = _base64.DecodeFromUtf8(base64Url, data, out int consumed, out int written);
             if (status != OperationStatus.Done)
             {
                 ThrowHelper.ThrowOperationNotDone(status);
@@ -98,7 +97,7 @@ namespace JsonWebToken
                 return 0;
             }
 
-            var status = Base64UrlDecodeCore(base64Url, data, out int consumed, out int written);
+            var status = _base64.DecodeFromUtf8(base64Url, data, out int consumed, out int written);
             if (status != OperationStatus.Done)
             {
                 ThrowHelper.ThrowOperationNotDone(status);
@@ -136,7 +135,7 @@ namespace JsonWebToken
         /// - NeedMoreData - only if isFinalBlock is false and the input is not a multiple of 4, otherwise the partial input would be considered as InvalidData
         /// - InvalidData - if the input contains bytes outside of the expected base 64 range, or if it contains invalid/more than two padding characters,
         ///   or if the input is incomplete (i.e. not a multiple of 4) and isFinalBlock is true.</returns>
-        public static OperationStatus Base64UrlDecode(ReadOnlySpan<byte> base64Url, Span<byte> data, out int bytesConsumed, out int bytesWritten, bool isFinalBlock = true)
+        public static OperationStatus Base64UrlDecode(ReadOnlySpan<byte> base64Url, Span<byte> data, out int bytesConsumed, out int bytesWritten)
         {
             // Special-case empty input
             if (base64Url.IsEmpty)
@@ -146,7 +145,7 @@ namespace JsonWebToken
                 return OperationStatus.Done;
             }
 
-            return Base64UrlDecodeCore(base64Url, data, out bytesConsumed, out bytesWritten, isFinalBlock);
+            return _base64.DecodeFromUtf8(base64Url, data, out bytesConsumed, out bytesWritten);
         }
 
         /// <summary>
@@ -181,129 +180,6 @@ namespace JsonWebToken
         public static int GetArraySizeRequiredToEncode(int count)
         {
             return _base64.GetMaxEncodedToUtf8Length(count);
-        }
-
-        private static OperationStatus Base64UrlDecodeCore(ReadOnlySpan<byte> base64Url, Span<byte> data, out int consumed, out int written, bool isFinalBlock = true)
-        {
-            return _base64.DecodeFromUtf8(base64Url, data, out consumed, out written);
-        }
-
-        private static readonly sbyte[] s_decodingMap =
-        {
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1,
-                52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1,
-                -1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
-                15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, 63,
-                -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-                41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1,
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-            };
-    }
-
-    internal static class ThrowHelper
-    {
-        public static void ThrowArgumentNullException()
-        {
-            throw GetArgumentNullException();
-        }
-
-        public static void ThrowArgumentOutOfRangeException()
-        {
-            throw GetArgumentOutOfRangeException();
-        }
-
-        public static void ThrowInvalidCountOffsetOrLengthException()
-        {
-            throw GetInvalidCountOffsetOrLengthException();
-        }
-
-        public static void ThrowMalformedInputException(int inputLength)
-        {
-            throw GetMalformdedInputException(inputLength);
-        }
-
-        public static void ThrowOperationNotDone(OperationStatus status)
-        {
-            throw GetOperationNotDoneException(status);
-        }
-
-        public static ArgumentNullException GetArgumentNullException()
-        {
-            return new ArgumentNullException("length");
-        }
-
-        public static ArgumentOutOfRangeException GetArgumentOutOfRangeException()
-        {
-            return new ArgumentOutOfRangeException("length");
-        }
-
-        public static ArgumentException GetInvalidCountOffsetOrLengthException()
-        {
-            return new ArgumentException(InvalidCountOffsetOrLength, "length");
-        }
-
-        private static Exception GetOperationNotDoneException(OperationStatus status)
-        {
-            switch (status)
-            {
-                case OperationStatus.DestinationTooSmall:
-                    return new InvalidOperationException(DestinationTooSmall);
-                case OperationStatus.InvalidData:
-                    return new FormatException(InvalidInput);
-                default:                                // This case won't happen.
-                    throw new NotSupportedException();  // Just in case new states are introduced
-            }
-        }
-
-        private static FormatException GetMalformdedInputException(int inputLength)
-        {
-            return new FormatException(FormatMalformedInput(inputLength));
-        }
-
-
-        /// <summary>
-        /// Invalid {0}, {1} or {2} length.
-        /// </summary>
-        internal static readonly string InvalidCountOffsetOrLength = "Invalid length.";
-
-        /// <summary>
-        /// Malformed input: {0} is an invalid input length.
-        /// </summary>
-        internal static readonly string MalformedInput = "Malformed input: {0} is an invalid input length.";
-
-        /// <summary>
-        /// Invalid input, that doesn't conform a base64 string.
-        /// </summary>
-        internal static readonly string InvalidInput = "The input is not a valid Base-64 string as it contains a non-base 64 character, more than two padding characters, or an illegal character among the padding characters.";
-
-        /// <summary>
-        /// Destination buffer is too small.
-        /// </summary>
-        internal static readonly string DestinationTooSmall = "The destination buffer is too small.";
-
-        /// <summary>
-        /// Invalid {0}, {1} or {2} length.
-        /// </summary>
-        internal static string FormatInvalidCountOffsetOrLength(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, InvalidCountOffsetOrLength, p0, p1, p2);
-        }
-
-        /// <summary>
-        /// Malformed input: {0} is an invalid input length.
-        /// </summary>
-        internal static string FormatMalformedInput(int p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, MalformedInput, p0);
         }
     }
 }
