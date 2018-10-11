@@ -31,8 +31,8 @@ namespace JsonWebToken.Tests
             byte[] wrappedKey = null;
             var header = new JObject
             {
-                { HeaderParameters.Apu, Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Alice")) },
-                { HeaderParameters.Apv, Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Bob")) }
+                { HeaderParameters.Apu, Base64Url.Base64UrlEncode("Alice") },
+                { HeaderParameters.Apv, Base64Url.Base64UrlEncode("Bob") }
             };
 
             var wrapped = kwp.TryWrapKey(_aliceKey, header, wrappedKey, out var cek, out var bytesWritten);
@@ -49,8 +49,8 @@ namespace JsonWebToken.Tests
             byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
             var header = new JObject
             {
-                { HeaderParameters.Apu, Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Alice")) },
-                { HeaderParameters.Apv, Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Bob")) }
+                { HeaderParameters.Apu, Base64Url.Base64UrlEncode("Alice") },
+                { HeaderParameters.Apv, Base64Url.Base64UrlEncode("Bob") }
             };
 
             var wrapped = kwp.TryWrapKey(_aliceKey, header, wrappedKey, out var cek, out var bytesWritten);
@@ -58,8 +58,8 @@ namespace JsonWebToken.Tests
             var kwp2 = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW);
             var jwtHeader = new JwtHeader
             {
-                Apu = Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Alice")),
-                Apv = Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Bob")),
+                Apu = Base64Url.Base64UrlEncode("Alice"),
+                Apv = Base64Url.Base64UrlEncode("Bob"),
                 Epk = header[HeaderParameters.Epk].ToObject<EccJwk>()
             };
 
@@ -76,8 +76,8 @@ namespace JsonWebToken.Tests
             byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
             var header = new JObject
             {
-                { HeaderParameters.Apu, Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Alice")) },
-                { HeaderParameters.Apv, Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Bob")) }
+                { HeaderParameters.Apu, Base64Url.Base64UrlEncode("Alice") },
+                { HeaderParameters.Apv, Base64Url.Base64UrlEncode("Bob") }
             };
 
             var wrapped = kwp.TryWrapKey(_aliceKey, header, wrappedKey, out var cek, out var bytesWritten);
@@ -85,8 +85,8 @@ namespace JsonWebToken.Tests
             var kwp2 = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW);
             var jwtHeader = new JwtHeader
             {
-                Apu = Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Alice")),
-                Apv = Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Bob")),
+                Apu = Base64Url.Base64UrlEncode("Alice"),
+                Apv = Base64Url.Base64UrlEncode("Bob"),
                 Epk = header[HeaderParameters.Epk].ToObject<EccJwk>()
             };
 

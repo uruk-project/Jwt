@@ -16,6 +16,11 @@
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Keys\**" />
+    <EmbeddedResource Remove="Keys\**" />
+    <None Remove="Keys\**" />
+  </ItemGroup>
 
 
   <ItemGroup>
@@ -39,11 +44,6 @@
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.0" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <Folder Include="Keys\" />
   </ItemGroup>
   
 </Project>
