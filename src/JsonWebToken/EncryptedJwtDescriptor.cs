@@ -33,7 +33,7 @@ namespace JsonWebToken
             set => Header[HeaderParameters.Zip] = (string)value;
         }
 
-        protected unsafe string EncryptToken(EncodingContext context, string payload)
+        protected string EncryptToken(EncodingContext context, string payload)
         {
             if (payload == null)
             {
@@ -64,7 +64,7 @@ namespace JsonWebToken
             }
         }
 
-        protected unsafe string EncryptToken(EncodingContext context, Span<byte> payload)
+        protected string EncryptToken(EncodingContext context, Span<byte> payload)
         {
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
             KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)Algorithm;

@@ -6,7 +6,7 @@ namespace JsonWebToken
     {
         private const byte dot = 0x2E;
              
-        public static unsafe int Tokenize(ReadOnlySpan<byte> token, TokenSegment* segments, int maxCount)
+        public static unsafe int Tokenize(ReadOnlySpan<byte> token, Span<TokenSegment> segments, int maxCount)
         {
             int count = 0;
             int start = 0; 

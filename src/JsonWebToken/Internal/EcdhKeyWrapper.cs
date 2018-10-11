@@ -176,12 +176,9 @@ namespace JsonWebToken
             return partyInfo ?? Array.Empty<byte>();
         }
 
-        private static unsafe void WriteRoundNumber(Span<byte> destination)
+        private static void WriteRoundNumber(Span<byte> destination)
         {
-            fixed (byte* ptr = destination)
-            {
-                Unsafe.WriteUnaligned(ptr, OneBigEndian);
-            }
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), OneBigEndian);
         }
 
         private void WriteSuppInfo(Span<byte> destination)
@@ -189,12 +186,9 @@ namespace JsonWebToken
             BinaryPrimitives.WriteInt32BigEndian(destination, _keySizeInBytes << 3);
         }
 
-        private static unsafe void WriteZero(Span<byte> destination)
+        private static void WriteZero(Span<byte> destination)
         {
-            fixed (byte* ptr = destination)
-            {
-                Unsafe.WriteUnaligned(ptr, 0);
-            }
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), 0);
         }
 
         private static void WritePartyInfo(string partyInfo, int partyInfoLength, Span<byte> destination)

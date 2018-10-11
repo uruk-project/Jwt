@@ -39,7 +39,7 @@ namespace JsonWebToken
             return encryptionAlgorithm.RequiredKeyWrappedSizeInBytes;
         }
 
-        public override unsafe bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
+        public override bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
             if (_disposed)
             {
