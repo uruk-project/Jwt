@@ -1,4 +1,5 @@
 ﻿using JsonWebToken;
+using JsonWebToken.Internal;
 using JsonWebToken.Performance;
 using Newtonsoft.Json.Linq;
 using System;

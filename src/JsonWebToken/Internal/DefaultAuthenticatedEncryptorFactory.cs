@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Concurrent;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public class DefaultAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
     {
@@ -16,7 +15,7 @@ namespace JsonWebToken
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-            var factoryKey = new CryprographicFactoryKey(key, encryptionAlgorithm.Id);
+            var factoryKey = new CryptographicFactoryKey(key, encryptionAlgorithm.Id);
             if (_encryptors.TryGetValue(factoryKey, out var cachedEncryptor))
             {
                 return cachedEncryptor;

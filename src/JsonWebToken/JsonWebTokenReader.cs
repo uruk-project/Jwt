@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using JsonWebToken.Internal;
+using Newtonsoft.Json;
 using System;
 using System.Buffers;
 using System.Collections.Generic;

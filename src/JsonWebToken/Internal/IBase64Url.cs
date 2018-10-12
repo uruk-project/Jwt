@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Buffers;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public interface IBase64Url
     {

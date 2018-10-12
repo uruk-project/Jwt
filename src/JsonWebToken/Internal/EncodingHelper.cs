@@ -4,7 +4,7 @@ using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public static class EncodingHelper
     {

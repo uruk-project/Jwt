@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public sealed class JkuKeyProvider : HttpKeyProvider
     {

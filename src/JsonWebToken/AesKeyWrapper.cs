@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using JsonWebToken.Internal;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -133,7 +134,7 @@ namespace JsonWebToken
 
                 // The set of input blocks
                 Span<byte> r = stackalloc byte[n << 3];
-                ref var rPtr = ref MemoryMarshal.GetReference<byte>(r);
+                ref var rPtr = ref MemoryMarshal.GetReference(r);
                 for (var i = 0; i < n; i++)
                 {
                     Unsafe.WriteUnaligned(ref Unsafe.Add(ref rPtr, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref inputPtr, (i + 1) << 3)));
@@ -142,7 +143,7 @@ namespace JsonWebToken
                 byte[] block = new byte[16];
                 ref var blockPtr = ref MemoryMarshal.GetReference<byte>(block);
                 Span<byte> t = stackalloc byte[8];
-                ref var tPtr = ref MemoryMarshal.GetReference<byte>(t);
+                ref var tPtr = ref MemoryMarshal.GetReference(t);
                 for (var j = 5; j >= 0; j--)
                 {
                     for (var i = n; i > 0; i--)
@@ -150,12 +151,13 @@ namespace JsonWebToken
                         Unsafe.Add(ref tPtr, 7) = (byte)((n * j) + i);
                         a ^= Unsafe.ReadUnaligned<ulong>(ref tPtr);
                         Unsafe.WriteUnaligned(ref blockPtr, a);
-                        var rValue = Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref rPtr, (i - 1) << 3));
+                        ref var rCurrent = ref Unsafe.Add(ref rPtr, (i - 1) << 3);
+                        var rValue = Unsafe.ReadUnaligned<ulong>(ref rCurrent);
                         Unsafe.WriteUnaligned(ref Unsafe.Add(ref blockPtr, 8), rValue);
                         var b = decryptor.TransformFinalBlock(block, 0, 16);
                         ref var bPtr = ref MemoryMarshal.GetReference<byte>(b);
                         a = Unsafe.ReadUnaligned<ulong>(ref bPtr);
-                        Unsafe.WriteUnaligned(ref Unsafe.Add(ref rPtr, (i - 1) << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref bPtr, 8)));
+                        Unsafe.WriteUnaligned(ref rCurrent, Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref bPtr, 8)));
                     }
                 }
 
@@ -171,10 +173,6 @@ namespace JsonWebToken
                     return true;
                 }
 
-                return Errors.TryWriteError(out bytesWritten);
-            }
-            catch
-            {
                 return Errors.TryWriteError(out bytesWritten);
             }
             finally
@@ -245,10 +243,6 @@ namespace JsonWebToken
 
                 bytesWritten = (n + 1) << 3;
                 return true;
-            }
-            catch
-            {
-                return Errors.TryWriteError(out bytesWritten);
             }
             finally
             {

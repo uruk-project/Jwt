@@ -1,4 +1,4 @@
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     /// <summary>
     /// Names for Json Web Key Values

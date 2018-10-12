@@ -4,15 +4,17 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public class SoftwareBase64Url : IBase64Url
     {
         // Force init of map
-        static SoftwareBase64Url() { }
-        //---------------------------------------------------------------------
-        private const int MaximumEncodeLength = (int.MaxValue / 4) * 3; // 1610612733
-        //---------------------------------------------------------------------
+        static SoftwareBase64Url()
+        {
+        }
+
+        private const int MaximumEncodeLength = (int.MaxValue / 4) * 3;
+
         public virtual OperationStatus EncodeToUtf8(ReadOnlySpan<byte> data, Span<byte> encoded, out int bytesConsumed, out int bytesWritten)
         {
             ref byte srcBytes = ref MemoryMarshal.GetReference(data);
@@ -20,14 +22,14 @@ namespace JsonWebToken
 
             return EncodeToUtf8(ref srcBytes, data.Length, ref destBytes, encoded.Length, out bytesConsumed, out bytesWritten);
         }
-        //---------------------------------------------------------------------
+
         protected OperationStatus EncodeToUtf8(
-            ref byte srcBytes,
-            int srcLength,
-            ref byte destBytes,
-            int destLength,
-            out int bytesConsumed,
-            out int bytesWritten)
+                 ref byte srcBytes,
+                 int srcLength,
+                 ref byte destBytes,
+                 int destLength,
+                 out int bytesConsumed,
+                 out int bytesWritten)
         {
             int maxSrcLength = 0;
             if (srcLength <= MaximumEncodeLength && destLength >= GetMaxEncodedToUtf8Length(srcLength))
@@ -76,7 +78,7 @@ namespace JsonWebToken
             bytesWritten = destIndex;
             return OperationStatus.DestinationTooSmall;
         }
-        //---------------------------------------------------------------------
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetMaxEncodedToUtf8Length(int length)
         {
@@ -85,6 +87,7 @@ namespace JsonWebToken
 
             return (((length + 2) / 3) * 4) - GetNumBase64PaddingCharsAddedByEncode(length);
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetNumBase64PaddingCharsAddedByEncode(int dataLength)
         {
@@ -94,7 +97,7 @@ namespace JsonWebToken
             // 2 -> 1
             return dataLength % 3 == 0 ? 0 : 3 - (dataLength % 3);
         }
-        //--------------------------------------------------------------------- 
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int EncodeThreeBytes(ref byte threeBytes, ref byte encodingMap)
         {
@@ -109,7 +112,7 @@ namespace JsonWebToken
 
             return i0 | (i1 << 8) | (i2 << 16) | (i3 << 24);
         }
-        //---------------------------------------------------------------------
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int EncodeTwoBytes(ref byte twoBytes, ref byte encodingMap)
         {
@@ -122,7 +125,7 @@ namespace JsonWebToken
 
             return i0 | (i1 << 8) | (i2 << 16);
         }
-        //---------------------------------------------------------------------
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static short EncodeOneByte(ref byte oneByte, ref byte encodingMap)
         {
@@ -146,7 +149,6 @@ namespace JsonWebToken
         private static int GetNumBase64PaddingCharsToAddForDecode(int urlEncodedLen)
         {
             // Calculation is:
-            // switch (inputLength % 4)
             // 0 -> 0
             // 2 -> 2
             // 3 -> 1
@@ -219,8 +221,6 @@ namespace JsonWebToken
                 goto InvalidExit;
             }
 
-            // If isFinalBlock is false, we will never reach this point.
-
             // Handle last four bytes. There are 0, 1, 2 padding chars.
             var numPaddingChars = base64Len - encoded.Length;
             ref var lastFourStart = ref Unsafe.Add(ref source, srcLength - 4);
@@ -286,7 +286,8 @@ namespace JsonWebToken
             DestinationSmallExit:
             if (srcLength != encoded.Length)
             {
-                goto InvalidExit;   // if input is not a multiple of 4, and there is no more data, return invalid data instead
+                // if input is not a multiple of 4, and there is no more data, return invalid data instead
+                goto InvalidExit;
             }
             bytesConsumed = sourceIndex;
             bytesWritten = destIndex;

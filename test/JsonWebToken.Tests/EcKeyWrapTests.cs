@@ -2,6 +2,7 @@
 using System;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken.Tests
 {

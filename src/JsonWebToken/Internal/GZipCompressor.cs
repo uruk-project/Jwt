@@ -1,7 +1,7 @@
 ﻿//using System.IO;
 //using System.IO.Compression;
 
-//namespace JsonWebToken
+//namespace JsonWebToken.Internal
 //{
 //    public class GZipCompressor : Compressor<GZipStream>
 //    {

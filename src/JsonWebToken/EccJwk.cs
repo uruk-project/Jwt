@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using JsonWebToken.Internal;
+using Newtonsoft.Json;
 using System;
 using System.Security.Cryptography;
 
@@ -172,7 +173,7 @@ namespace JsonWebToken
 
         public override bool IsSupported(EncryptionAlgorithm algorithm)
         {
-            return algorithm.Category == EncryptionTypes.AesHmac || algorithm.Category == EncryptionTypes.AesGcm;
+            return algorithm.Category == EncryptionType.AesHmac || algorithm.Category == EncryptionType.AesGcm;
         }
 
         public override Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)

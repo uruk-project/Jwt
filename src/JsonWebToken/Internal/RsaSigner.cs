@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JsonWebToken.Internal;
+using System;
 using System.Security.Cryptography;
 
 namespace JsonWebToken

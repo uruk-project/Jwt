@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace JsonWebToken.Validations
+namespace JsonWebToken.Internal
 {
     public class AudienceValidation : IValidation
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonWebToken.Validations
+namespace JsonWebToken.Internal
 {
     public class TokenReplayValidation : IValidation
     {

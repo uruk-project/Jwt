@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public sealed class X5uKeyProvider : HttpKeyProvider
     {

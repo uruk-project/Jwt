@@ -1,7 +1,7 @@
 ﻿//using System.IO;
 //using System.IO.Compression;
 
-//namespace JsonWebToken
+//namespace JsonWebToken.Internal
 //{
 //#if NETCOREAPP2_1
 //    public sealed class BrotliCompressor : Compressor<BrotliStream>

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public class DefaultKeyWrapperFactory : IKeyWrapperFactory
     {
@@ -20,7 +20,7 @@ namespace JsonWebToken
             }
 
             var algorithmKey = (encryptionAlgorithm.Id << 8) | (byte)contentEncryptionAlgorithm.Id;
-            var factoryKey = new CryprographicFactoryKey(key, algorithmKey);
+            var factoryKey = new CryptographicFactoryKey(key, algorithmKey);
             if (_keyWrappers.TryGetValue(factoryKey, out var cachedKeyWrapper))
             {
                 return cachedKeyWrapper;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JsonWebToken.Internal;
+using System;
 
 namespace JsonWebToken
 {
@@ -11,7 +12,7 @@ namespace JsonWebToken
 
         public AesGcmEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (encryptionAlgorithm.Category != EncryptionTypes.AesGcm)
+            if (encryptionAlgorithm.Category != EncryptionType.AesGcm)
             {
                 Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
             }

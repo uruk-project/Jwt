@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public class AudienceConverter : JsonConverter
     {

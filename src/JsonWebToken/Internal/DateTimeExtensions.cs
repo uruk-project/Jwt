@@ -1,6 +1,6 @@
 using System;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     /// <summary>
     /// Helper class for adding DateTimes and Timespans.

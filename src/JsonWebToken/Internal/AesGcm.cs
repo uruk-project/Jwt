@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public class AesGcm : IDisposable
     {

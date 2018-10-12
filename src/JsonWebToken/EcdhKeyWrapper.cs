@@ -1,4 +1,5 @@
 ﻿#if NETCOREAPP2_1
+using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers.Binary;

@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 
-namespace JsonWebToken.Validations
+namespace JsonWebToken.Internal
 {
     public class RequiredClaimValidation<TClaim> : IValidation
     {

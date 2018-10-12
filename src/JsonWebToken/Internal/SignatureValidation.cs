@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace JsonWebToken.Validations
+namespace JsonWebToken.Internal
 {
     public class SignatureValidation : IValidation
     {

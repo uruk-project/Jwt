@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public sealed class JwksKeyProvider : HttpKeyProvider
     {

@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using JsonWebToken.Internal;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public abstract class HttpKeyProvider : IKeyProvider, IDisposable
     {

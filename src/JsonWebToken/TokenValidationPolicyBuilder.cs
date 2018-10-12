@@ -1,4 +1,4 @@
-﻿using JsonWebToken.Validations;
+﻿using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;

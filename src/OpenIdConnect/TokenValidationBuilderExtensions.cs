@@ -1,5 +1,4 @@
-﻿using JsonWebToken;
-using JsonWebToken.Validations;
+﻿using JsonWebToken.Internal;
 using System;
 
 namespace JsonWebToken

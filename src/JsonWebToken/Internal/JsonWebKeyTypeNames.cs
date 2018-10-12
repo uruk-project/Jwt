@@ -1,4 +1,4 @@
-﻿namespace JsonWebToken
+﻿namespace JsonWebToken.Internal
 {
     /// <summary>
     /// Constants for JsonWebAlgorithms  "kty" Key Type (sec 6.1)

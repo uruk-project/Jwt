@@ -2,7 +2,7 @@
 using System.Buffers;
 using System.Globalization;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     internal static class ThrowHelper
     {
