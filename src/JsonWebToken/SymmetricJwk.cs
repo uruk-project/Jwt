@@ -217,7 +217,7 @@ namespace JsonWebToken
         ///  Creates a minimal representation of the current key.
         /// </summary>
         /// <returns></returns>
-        public override JsonWebKey ExcludeOptionalMembers()
+        public override JsonWebKey Normalize()
         {
             return new SymmetricJwk(RawK);
         }

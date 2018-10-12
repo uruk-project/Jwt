@@ -56,7 +56,7 @@ namespace JsonWebToken
             }
         }
 
-        public override bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
+        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
             if (_disposed)
             {

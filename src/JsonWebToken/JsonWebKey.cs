@@ -17,6 +17,7 @@ namespace JsonWebToken
     /// Represents a JSON Web Key as defined in http://tools.ietf.org/html/rfc7517.
     /// </summary>
     [JsonObject]
+    [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class JsonWebKey
     {
         internal sealed class JwkJsonConverter : JsonConverter
@@ -256,16 +257,17 @@ namespace JsonWebToken
 
         public abstract AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm);
 
-        public abstract JsonWebKey ExcludeOptionalMembers();
+        public abstract JsonWebKey Normalize();
 
 #if NETCOREAPP2_1
         /// <summary>
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
         /// <returns></returns>
-        public string ComputeThumbprint(bool excludeOptionalMembers)
+        public string ComputeThumbprint(bool normalize)
         {
-            var json = excludeOptionalMembers ? ExcludeOptionalMembers().ToString() : ToString();
+            var key = normalize ? Normalize() : this;
+            var json = key.ToString();
             int jsonLength = json.Length;
             byte[] arrayToReturnToPool = null;
             Span<byte> buffer = jsonLength <= Constants.MaxStackallocBytes
@@ -291,15 +293,14 @@ namespace JsonWebToken
                 }
             }
         }
-
 #else
         /// <summary>
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
         /// <returns></returns>
-        public string ComputeThumbprint(bool excludeOptionalMembers)
+        public string ComputeThumbprint(bool normalize)
         {
-            var json = excludeOptionalMembers ? ExcludeOptionalMembers().ToString() : ToString();
+            var json = normalize ? Normalize().ToString() : ToString();
             var buffer = Encoding.UTF8.GetBytes(json);
             using (var hashAlgorithm = SHA256.Create())
             {
@@ -384,6 +385,11 @@ namespace JsonWebToken
             var clone = new byte[array.Length];
             array.CopyTo(clone, 0);
             return clone;
+        }
+
+        private string DebuggerDisplay()
+        {
+            return ToString(Formatting.Indented);
         }
     }
 }

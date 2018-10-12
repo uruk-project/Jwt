@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace JsonWebToken
 {
+    [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class JwtDescriptor
     {
         private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings
@@ -169,9 +171,14 @@ namespace JsonWebToken
             }
         }
 
-        protected string Serialize(object value)
+        protected string Serialize(object value, Formatting formatting)
         {
-            return JsonConvert.SerializeObject(value, serializerSettings);
+            return JsonConvert.SerializeObject(value, formatting, serializerSettings);
+        }
+
+        private string DebuggerDisplay()
+        {
+            return Serialize(Header, Formatting.Indented);
         }
     }
 }

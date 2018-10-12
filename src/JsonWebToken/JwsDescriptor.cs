@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -293,7 +294,7 @@ namespace JsonWebToken
                 }
             }
 
-            var payloadJson = Serialize(Payload);
+            var payloadJson = Serialize(Payload, Formatting.None);
             int length = Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
                        + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBytes))
                        + (Constants.JwsSegmentCount - 1);
@@ -307,7 +308,7 @@ namespace JsonWebToken
             }
             else
             {
-                headerJson = Serialize(Header);
+                headerJson = Serialize(Header, Formatting.None);
                 length += Base64Url.GetArraySizeRequiredToEncode(headerJson.Length);
             }
 

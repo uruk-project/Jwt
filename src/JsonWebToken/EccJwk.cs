@@ -267,7 +267,7 @@ namespace JsonWebToken
             }
         }
 
-        public override JsonWebKey ExcludeOptionalMembers()
+        public override JsonWebKey Normalize()
         {
             return new EccJwk(Crv, RawD, RawX, RawY);
         }

@@ -396,7 +396,7 @@ namespace JsonWebToken
 
         public static RsaJwk FromParameters(RSAParameters parameters) => FromParameters(parameters, false);
 
-        public override JsonWebKey ExcludeOptionalMembers()
+        public override JsonWebKey Normalize()
         {
             return new RsaJwk(RawE, RawN);
         }

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers;
 using System.Diagnostics;
@@ -111,7 +112,7 @@ namespace JsonWebToken
 
             try
             {
-                var headerJson = Serialize(header);
+                var headerJson = Serialize(header, Formatting.None);
                 int headerJsonLength = headerJson.Length;
                 int base64EncodedHeaderLength = Base64Url.GetArraySizeRequiredToEncode(headerJsonLength);
 
