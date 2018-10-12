@@ -33,27 +33,16 @@ namespace JsonWebToken
             public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
             {
                 var jsonObject = JObject.Load(reader);
-
-                JsonWebKey jwk;
                 switch (jsonObject[JsonWebKeyParameterNames.Kty].Value<string>())
                 {
                     case JsonWebKeyTypeNames.Rsa:
-                        jwk = new RsaJwk();
-                        break;
+                        return jsonObject.ToObject<RsaJwk>();
                     case JsonWebKeyTypeNames.EllipticCurve:
-                        jwk = new EccJwk();
-                        break;
+                        return jsonObject.ToObject<ECJwk>();
                     case JsonWebKeyTypeNames.Octet:
-                        jwk = new SymmetricJwk();
-                        break;
+                        return jsonObject.ToObject<SymmetricJwk>();
                     default:
                         throw new NotSupportedException();
-                }
-
-                using (var reader2 = jsonObject.CreateReader())
-                {
-                    serializer.Populate(reader2, jwk);
-                    return jwk;
                 }
             }
 
@@ -338,7 +327,7 @@ namespace JsonWebToken
                             if (ecdsa != null)
                             {
                                 var ecParameters = ecdsa.ExportParameters(false);
-                                key = new EccJwk(ecParameters);
+                                key = new ECJwk(ecParameters);
                             }
                         }
                     }
@@ -362,7 +351,7 @@ namespace JsonWebToken
                             if (ecdsa != null)
                             {
                                 var ecParameters = ecdsa.ExportParameters(false);
-                                key = new EccJwk(ecParameters);
+                                key = new ECJwk(ecParameters);
                             }
                         }
                     }

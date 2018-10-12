@@ -22,7 +22,7 @@ namespace JsonWebToken
 
         private bool _disposed;
 
-        public EcdhKeyWrapper(EccJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public EcdhKeyWrapper(ECJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
             : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
             if (contentEncryptionAlgorithm == KeyManagementAlgorithm.EcdhEs)
@@ -75,7 +75,7 @@ namespace JsonWebToken
                 var ephemeralJwk = header.Epk;
                 byte[] exchangeHash;
                 using (var ephemeralKey = ECDiffieHellman.Create(ephemeralJwk.ExportParameters()))
-                using (var privateKey = ECDiffieHellman.Create(((EccJwk)Key).ExportParameters(true)))
+                using (var privateKey = ECDiffieHellman.Create(((ECJwk)Key).ExportParameters(true)))
                 {
                     exchangeHash = privateKey.DeriveKeyFromHash(ephemeralKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
                 }
@@ -125,12 +125,12 @@ namespace JsonWebToken
                 var partyVInfo = GetPartyInfo(header, HeaderParameters.Apv);
                 var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
                 byte[] exchangeHash;
-                using (var ephemeralKey = (staticKey == null) ? ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256) : ECDiffieHellman.Create(((EccJwk)staticKey).ExportParameters(true)))
-                using (var otherPartyKey = ECDiffieHellman.Create(((EccJwk)Key).ExportParameters()))
+                using (var ephemeralKey = (staticKey == null) ? ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256) : ECDiffieHellman.Create(((ECJwk)staticKey).ExportParameters(true)))
+                using (var otherPartyKey = ECDiffieHellman.Create(((ECJwk)Key).ExportParameters()))
                 {
                     exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
 
-                    var epk = EccJwk.FromParameters(ephemeralKey.ExportParameters(false));
+                    var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
                     header.Add(HeaderParameters.Epk, JToken.FromObject(epk));
                 }
 

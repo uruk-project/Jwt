@@ -5,12 +5,12 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
-    public class EccJwk : AsymmetricJwk
+    public class ECJwk : AsymmetricJwk
     {
         private string _x;
         private string _y;
 
-        public EccJwk(ECParameters parameters)
+        public ECJwk(ECParameters parameters)
             : this()
         {
             parameters.Validate();
@@ -35,7 +35,7 @@ namespace JsonWebToken
             }
         }
 
-        private EccJwk(string crv, byte[] d, byte[] x, byte[] y)
+        private ECJwk(string crv, byte[] d, byte[] x, byte[] y)
         {
             Crv = crv;
             RawD = CloneByteArray(d);
@@ -43,7 +43,7 @@ namespace JsonWebToken
             RawY = CloneByteArray(y);
         }
 
-        public EccJwk()
+        public ECJwk()
         {
             Kty = JsonWebKeyTypeNames.EllipticCurve;
         }
@@ -236,7 +236,7 @@ namespace JsonWebToken
             return parameters;
         }
 
-        public static EccJwk GenerateKey(string curveId, bool withPrivateKey)
+        public static ECJwk GenerateKey(string curveId, bool withPrivateKey)
         {
             if (string.IsNullOrEmpty(curveId))
             {
@@ -270,16 +270,16 @@ namespace JsonWebToken
 
         public override JsonWebKey Normalize()
         {
-            return new EccJwk(Crv, RawD, RawX, RawY);
+            return new ECJwk(Crv, RawD, RawX, RawY);
         }
 
         /// <summary>
-        /// Returns a new instance of <see cref="EccJwk"/>.
+        /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
         /// <param name="parameters">A <see cref="byte"/> that contains the key parameters.</param>
-        public static EccJwk FromParameters(ECParameters parameters, bool computeThumbprint)
+        public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint)
         {
-            var key = new EccJwk(parameters);
+            var key = new ECJwk(parameters);
             if (computeThumbprint)
             {
                 key.Kid = key.ComputeThumbprint(false);
@@ -288,7 +288,7 @@ namespace JsonWebToken
             return key;
         }
 
-        public static EccJwk FromParameters(ECParameters parameters) => FromParameters(parameters, false);
+        public static ECJwk FromParameters(ECParameters parameters) => FromParameters(parameters, false);
 
         public override byte[] ToByteArray()
         {

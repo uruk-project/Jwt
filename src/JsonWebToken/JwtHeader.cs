@@ -70,7 +70,7 @@ namespace JsonWebToken
 
 #if NETCOREAPP2_1
         [JsonProperty(PropertyName = HeaderParameters.Epk, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public EccJwk Epk { get; set; }
+        public ECJwk Epk { get; set; }
 
         [JsonProperty(PropertyName = HeaderParameters.Apu, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public string Apu { get; set; }

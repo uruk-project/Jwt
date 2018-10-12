@@ -8,7 +8,7 @@ namespace JsonWebToken.Tests
 {
     public class EcKeyWrapTests
     {
-        private readonly EccJwk _aliceKey = new EccJwk
+        private readonly ECJwk _aliceKey = new ECJwk
         {
             Kty = "EC",
             Crv = "P-256",
@@ -16,7 +16,7 @@ namespace JsonWebToken.Tests
             Y = "SLW_xSffzlPWrHEVI30DHM_4egVwt3NQqeUD7nMFpps",
             D = "0_NxaRPUMQoAJt50Gz8YiTr8gRTwyEaCumd-MToTmIo",
         };
-        private readonly EccJwk _bobKey = new EccJwk
+        private readonly ECJwk _bobKey = new ECJwk
         {
             Kty = "EC",
             Crv = "P-256",
@@ -61,7 +61,7 @@ namespace JsonWebToken.Tests
             {
                 Apu = Base64Url.Base64UrlEncode("Alice"),
                 Apv = Base64Url.Base64UrlEncode("Bob"),
-                Epk = header[HeaderParameters.Epk].ToObject<EccJwk>()
+                Epk = header[HeaderParameters.Epk].ToObject<ECJwk>()
             };
 
             byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
@@ -88,7 +88,7 @@ namespace JsonWebToken.Tests
             {
                 Apu = Base64Url.Base64UrlEncode("Alice"),
                 Apv = Base64Url.Base64UrlEncode("Bob"),
-                Epk = header[HeaderParameters.Epk].ToObject<EccJwk>()
+                Epk = header[HeaderParameters.Epk].ToObject<ECJwk>()
             };
 
             byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
