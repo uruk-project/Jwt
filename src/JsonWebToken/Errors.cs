@@ -180,7 +180,7 @@ namespace JsonWebToken
             throw new CryptographicException($"Failed to create symmetric algorithm for key wrap with key: '{key.Kid}', algorithm: '{algorithm}'.", innerException);
         }
 
-        internal static void ThrowKeySizeMustBeMultipleOf64(Span<byte> keyBytes)
+        internal static void ThrowKeySizeMustBeMultipleOf64(ReadOnlySpan<byte> keyBytes)
         {
             throw new ArgumentException($"The length of the key to unwrap must be a multiple of 64 bits. The size is: '{keyBytes.Length << 3}' bits.", nameof(keyBytes));
         }

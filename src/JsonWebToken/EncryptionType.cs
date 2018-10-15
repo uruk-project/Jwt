@@ -1,6 +1,6 @@
 ﻿namespace JsonWebToken
 {
-    public enum EncryptionTypes
+    public enum EncryptionType
     {
         None = 0,
         AesHmac,

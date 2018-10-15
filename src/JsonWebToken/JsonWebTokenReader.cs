@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using JsonWebToken.Internal;
+using Newtonsoft.Json;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -137,9 +138,9 @@ namespace JsonWebToken
             }
         }
 
-        private unsafe TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Buffer, TokenValidationPolicy policy)
+        private TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Buffer, TokenValidationPolicy policy)
         {
-            var segments = stackalloc TokenSegment[Constants.JweSegmentCount];
+            Span<TokenSegment> segments = stackalloc TokenSegment[Constants.JweSegmentCount];
             var segmentCount = Tokenizer.Tokenize(utf8Buffer, segments, Constants.JweSegmentCount);
             var headerSegment = segments[0];
             if (headerSegment.IsEmpty)
@@ -312,7 +313,7 @@ namespace JsonWebToken
             }
         }
 
-        private unsafe bool TryDecryptToken(
+        private bool TryDecryptToken(
             ReadOnlySpan<byte> rawHeader,
             ReadOnlySpan<byte> rawCiphertext,
             ReadOnlySpan<byte> rawInitializationVector,
@@ -334,14 +335,9 @@ namespace JsonWebToken
             int authenticationTagLength = Base64Url.GetArraySizeRequiredToDecode(rawAuthenticationTag.Length);
             int bufferLength = ciphertextLength + headerLength + initializationVectorLength + authenticationTagLength;
             byte[] arrayToReturn = null;
-            char[] headerArrayToReturn = null;
             Span<byte> buffer = bufferLength < Constants.MaxStackallocBytes
                 ? stackalloc byte[bufferLength]
                 : (arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength)).AsSpan(0, bufferLength);
-
-            Span<char> utf8Header = headerLength < Constants.MaxStackallocBytes
-                ? stackalloc char[headerLength]
-                : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(headerLength)).AsSpan(0, headerLength);
 
             Span<byte> ciphertext = buffer.Slice(0, ciphertextLength);
             Span<byte> header = buffer.Slice(ciphertextLength, headerLength);
@@ -353,16 +349,25 @@ namespace JsonWebToken
                 Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
 
 #if NETCOREAPP2_1
-                Encoding.UTF8.GetChars(rawHeader, utf8Header);
-                Encoding.ASCII.GetBytes(utf8Header, header);
-#else
-                fixed (byte* rawPtr = rawHeader)
-                fixed (char* utf8Ptr = utf8Header)
-                fixed (byte* header8Ptr = header)
+                char[] headerArrayToReturn = null;
+                try
                 {
-                    Encoding.UTF8.GetChars(rawPtr, rawHeader.Length, utf8Ptr, utf8Header.Length);
-                    Encoding.ASCII.GetBytes(utf8Ptr, utf8Header.Length, header8Ptr, header.Length);
+                    Span<char> utf8Header = header.Length < Constants.MaxStackallocBytes
+                    ? stackalloc char[header.Length]
+                    : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(header.Length)).AsSpan(0, header.Length);
+
+                    Encoding.UTF8.GetChars(rawHeader, utf8Header);
+                    Encoding.ASCII.GetBytes(utf8Header, header);
                 }
+                finally
+                {
+                    if (headerArrayToReturn != null)
+                    {
+                        ArrayPool<char>.Shared.Return(headerArrayToReturn);
+                    }
+                }
+#else
+                EncodingHelper.GetAsciiBytes(rawHeader, header);
 #endif
                 Base64Url.Base64UrlDecode(rawInitializationVector, initializationVector, out int ivBytesConsumed, out int ivBytesWritten);
                 Debug.Assert(initializationVector.Length == ivBytesWritten);
@@ -386,11 +391,6 @@ namespace JsonWebToken
                 if (arrayToReturn != null)
                 {
                     ArrayPool<byte>.Shared.Return(arrayToReturn);
-                }
-
-                if (headerArrayToReturn != null)
-                {
-                    ArrayPool<char>.Shared.Return(headerArrayToReturn);
                 }
             }
 

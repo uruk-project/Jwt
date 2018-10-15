@@ -1,4 +1,6 @@
-﻿namespace JsonWebToken
+﻿using JsonWebToken.Internal;
+
+namespace JsonWebToken
 {
     public static class SetTokenValidationBuilderExtensions
     {

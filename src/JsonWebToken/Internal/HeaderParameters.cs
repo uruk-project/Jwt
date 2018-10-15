@@ -1,4 +1,4 @@
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     /// <summary>
     /// List of header parameter names see: http://tools.ietf.org/html/rfc7519#section-5.

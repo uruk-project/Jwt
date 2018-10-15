@@ -57,7 +57,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keyBytes">key to unwrap.</param>
         /// <returns>Unwrapped key.</returns>
-        public abstract bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten);
+        public abstract bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten);
 
         /// <summary>
         /// Wrap a key.

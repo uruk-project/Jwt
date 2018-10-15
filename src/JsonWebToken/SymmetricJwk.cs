@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using JsonWebToken.Internal;
+using Newtonsoft.Json;
 using System;
 using System.Security.Cryptography;
 
@@ -110,7 +111,7 @@ namespace JsonWebToken
 
         public override bool IsSupported(EncryptionAlgorithm algorithm)
         {
-            return algorithm.Category == EncryptionTypes.AesHmac;
+            return algorithm.Category == EncryptionType.AesHmac;
         }
 
         public override Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
@@ -139,9 +140,9 @@ namespace JsonWebToken
             {
                 switch (encryptionAlgorithm.Category)
                 {
-                    case EncryptionTypes.AesHmac:
+                    case EncryptionType.AesHmac:
                         return new AesKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-                    case EncryptionTypes.AesGcm:
+                    case EncryptionType.AesGcm:
                         return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
                     default:
                         return null;
@@ -157,11 +158,11 @@ namespace JsonWebToken
             {
                 switch (encryptionAlgorithm.Category)
                 {
-                    case EncryptionTypes.None:
+                    case EncryptionType.None:
                         break;
-                    case EncryptionTypes.AesHmac:
+                    case EncryptionType.AesHmac:
                         return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
-                    case EncryptionTypes.AesGcm:
+                    case EncryptionType.AesGcm:
                         return new AesGcmEncryptor(this, encryptionAlgorithm);
                     default:
                         return null;
@@ -217,7 +218,7 @@ namespace JsonWebToken
         ///  Creates a minimal representation of the current key.
         /// </summary>
         /// <returns></returns>
-        public override JsonWebKey ExcludeOptionalMembers()
+        public override JsonWebKey Normalize()
         {
             return new SymmetricJwk(RawK);
         }

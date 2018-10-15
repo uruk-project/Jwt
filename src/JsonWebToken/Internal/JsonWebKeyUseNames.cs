@@ -1,4 +1,4 @@
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     /// <summary>
     /// Constants for JsonWebKeyUse (sec 4.2)

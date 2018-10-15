@@ -2,12 +2,13 @@
 using System;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken.Tests
 {
     public class EcKeyWrapTests
     {
-        private readonly EccJwk _aliceKey = new EccJwk
+        private readonly ECJwk _aliceKey = new ECJwk
         {
             Kty = "EC",
             Crv = "P-256",
@@ -15,7 +16,7 @@ namespace JsonWebToken.Tests
             Y = "SLW_xSffzlPWrHEVI30DHM_4egVwt3NQqeUD7nMFpps",
             D = "0_NxaRPUMQoAJt50Gz8YiTr8gRTwyEaCumd-MToTmIo",
         };
-        private readonly EccJwk _bobKey = new EccJwk
+        private readonly ECJwk _bobKey = new ECJwk
         {
             Kty = "EC",
             Crv = "P-256",
@@ -31,8 +32,8 @@ namespace JsonWebToken.Tests
             byte[] wrappedKey = null;
             var header = new JObject
             {
-                { HeaderParameters.Apu, Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Alice")) },
-                { HeaderParameters.Apv, Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Bob")) }
+                { HeaderParameters.Apu, Base64Url.Base64UrlEncode("Alice") },
+                { HeaderParameters.Apv, Base64Url.Base64UrlEncode("Bob") }
             };
 
             var wrapped = kwp.TryWrapKey(_aliceKey, header, wrappedKey, out var cek, out var bytesWritten);
@@ -49,8 +50,8 @@ namespace JsonWebToken.Tests
             byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
             var header = new JObject
             {
-                { HeaderParameters.Apu, Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Alice")) },
-                { HeaderParameters.Apv, Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Bob")) }
+                { HeaderParameters.Apu, Base64Url.Base64UrlEncode("Alice") },
+                { HeaderParameters.Apv, Base64Url.Base64UrlEncode("Bob") }
             };
 
             var wrapped = kwp.TryWrapKey(_aliceKey, header, wrappedKey, out var cek, out var bytesWritten);
@@ -58,9 +59,9 @@ namespace JsonWebToken.Tests
             var kwp2 = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW);
             var jwtHeader = new JwtHeader
             {
-                Apu = Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Alice")),
-                Apv = Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Bob")),
-                Epk = header[HeaderParameters.Epk].ToObject<EccJwk>()
+                Apu = Base64Url.Base64UrlEncode("Alice"),
+                Apv = Base64Url.Base64UrlEncode("Bob"),
+                Epk = header[HeaderParameters.Epk].ToObject<ECJwk>()
             };
 
             byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
@@ -76,8 +77,8 @@ namespace JsonWebToken.Tests
             byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
             var header = new JObject
             {
-                { HeaderParameters.Apu, Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Alice")) },
-                { HeaderParameters.Apv, Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Bob")) }
+                { HeaderParameters.Apu, Base64Url.Base64UrlEncode("Alice") },
+                { HeaderParameters.Apv, Base64Url.Base64UrlEncode("Bob") }
             };
 
             var wrapped = kwp.TryWrapKey(_aliceKey, header, wrappedKey, out var cek, out var bytesWritten);
@@ -85,9 +86,9 @@ namespace JsonWebToken.Tests
             var kwp2 = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW);
             var jwtHeader = new JwtHeader
             {
-                Apu = Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Alice")),
-                Apv = Base64Url.Base64UrlEncode(Encoding.UTF8.GetBytes("Bob")),
-                Epk = header[HeaderParameters.Epk].ToObject<EccJwk>()
+                Apu = Base64Url.Base64UrlEncode("Alice"),
+                Apv = Base64Url.Base64UrlEncode("Bob"),
+                Epk = header[HeaderParameters.Epk].ToObject<ECJwk>()
             };
 
             byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];

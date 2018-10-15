@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JsonWebToken.Internal;
+using System;
 
 namespace JsonWebToken
 {

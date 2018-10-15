@@ -1,5 +1,6 @@
 ﻿using JsonWebToken;
 using System;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Performance
@@ -56,6 +57,8 @@ namespace Performance
                 EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
                 Payload = jws
             };
+            var jwX = new PlaintextJweDescriptor("Hello world !");
+            var jwB = new BinaryJweDescriptor(Encoding.UTF8.GetBytes("Hello world !"));
             var jwt = _writer.WriteToken(jwe);
 
             Parallel.For(0, 10, _ =>

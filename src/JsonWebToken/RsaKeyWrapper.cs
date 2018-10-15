@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using JsonWebToken.Internal;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Security.Cryptography;
 
@@ -56,7 +57,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keyBytes">the bytes to unwrap.</param>
         /// <returns>Unwrapped key</returns>
-        public override bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
+        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
             if (keyBytes.IsEmpty)
             {

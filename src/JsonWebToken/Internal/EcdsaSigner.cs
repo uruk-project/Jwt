@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public sealed class EcdsaSigner : Signer
     {
@@ -17,7 +17,7 @@ namespace JsonWebToken
         /// <param name="key">The <see cref="JsonWebKey"/> that will be used for signature operations.</param>
         /// <param name="algorithm">The signature algorithm to apply.</param>
         /// <param name="willCreateSignatures">Whether is required to create signatures then set this to true.</param>
-        public EcdsaSigner(EccJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public EcdsaSigner(ECJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
             : base(key, algorithm)
         {
             if (key == null)
@@ -136,11 +136,11 @@ namespace JsonWebToken
 
         private sealed class ECDsaObjectPoolPolicy : PooledObjectPolicy<ECDsa>
         {
-            private readonly EccJwk _key;
+            private readonly ECJwk _key;
             private readonly SignatureAlgorithm _algorithm;
             private readonly bool _usePrivateKey;
 
-            public ECDsaObjectPoolPolicy(EccJwk key, SignatureAlgorithm algorithm, bool usePrivateKey)
+            public ECDsaObjectPoolPolicy(ECJwk key, SignatureAlgorithm algorithm, bool usePrivateKey)
             {
                 _key = key;
                 _algorithm = algorithm;

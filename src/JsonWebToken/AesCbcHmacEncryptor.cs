@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JsonWebToken.Internal;
+using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
@@ -28,7 +29,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (encryptionAlgorithm.Category != EncryptionTypes.AesHmac)
+            if (encryptionAlgorithm.Category != EncryptionType.AesHmac)
             {
                 Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
             }

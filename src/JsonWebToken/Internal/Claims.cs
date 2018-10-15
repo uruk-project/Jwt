@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     /// <summary>
     /// List of registered claims from different sources

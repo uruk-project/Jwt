@@ -1,4 +1,4 @@
-﻿namespace JsonWebToken
+﻿namespace JsonWebToken.Internal
 {
     public static class SymmetricKeyHelper
     {

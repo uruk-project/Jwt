@@ -62,7 +62,7 @@ namespace JsonWebToken.KeyVault
                     case JsonWebKeyType.EllipticCurve:
                     case JsonWebKeyType.EllipticCurveHsm:
                         var parameters = kvKey.Key.ToEcParameters();
-                        key = EccJwk.FromParameters(ConvertToECParameters(parameters));
+                        key = ECJwk.FromParameters(ConvertToECParameters(parameters));
                         break;
                     default:
                         continue;

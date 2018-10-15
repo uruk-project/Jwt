@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using JsonWebToken.Internal;
+using Newtonsoft.Json.Linq;
 using System;
 
 namespace JsonWebToken
@@ -39,7 +40,7 @@ namespace JsonWebToken
             return encryptionAlgorithm.RequiredKeyWrappedSizeInBytes;
         }
 
-        public override unsafe bool TryUnwrapKey(Span<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
+        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
             if (_disposed)
             {
@@ -48,13 +49,8 @@ namespace JsonWebToken
 
             Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.IV.Length)];
             Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.Tag.Length)];
-#if NETCOREAPP2_1
             Base64Url.Base64UrlDecode(header.IV, nonce);
             Base64Url.Base64UrlDecode(header.Tag, tag);
-#else
-            Base64Url.Base64UrlDecode(header.IV, nonce);
-            Base64Url.Base64UrlDecode(header.Tag, tag);
-#endif 
             using (var aesGcm = new AesGcm(Key.ToByteArray()))
             {
                 aesGcm.Decrypt(nonce, keyBytes, tag, destination);

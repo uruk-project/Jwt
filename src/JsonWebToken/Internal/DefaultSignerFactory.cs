@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public class DefaultSignerFactory : ISignerFactory
     {
@@ -21,7 +21,7 @@ namespace JsonWebToken
             }
 
             var signers = willCreateSignatures ? _validationSigners : _signers;
-            var factoryKey = new CryprographicFactoryKey(key, algorithm.Id);
+            var factoryKey = new CryptographicFactoryKey(key, algorithm.Id);
             if (signers.TryGetValue(factoryKey, out var cachedSigner))
             {
                 return cachedSigner;

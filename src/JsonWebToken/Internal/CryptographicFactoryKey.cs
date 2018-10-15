@@ -1,14 +1,14 @@
 ﻿using System;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
-    internal readonly struct CryprographicFactoryKey
+    internal readonly struct CryptographicFactoryKey
     {
         public readonly JsonWebKey Key;
 
         public readonly int Algorithm;
 
-        public CryprographicFactoryKey(JsonWebKey key, int algorithm)
+        public CryptographicFactoryKey(JsonWebKey key, int algorithm)
         {
             Key = key ?? throw new ArgumentNullException(nameof(key));
             Algorithm = algorithm;

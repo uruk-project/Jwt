@@ -1,4 +1,4 @@
-﻿namespace JsonWebToken.Validations
+﻿namespace JsonWebToken.Internal
 {
     public class IssuerValidation : RequiredClaimValidation<string>
     {

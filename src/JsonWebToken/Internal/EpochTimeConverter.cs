@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public class EpochTimeConverter : JsonConverter
     {

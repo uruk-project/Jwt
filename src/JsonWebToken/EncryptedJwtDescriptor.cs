@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using JsonWebToken.Internal;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers;
 using System.Diagnostics;
@@ -33,7 +35,7 @@ namespace JsonWebToken
             set => Header[HeaderParameters.Zip] = (string)value;
         }
 
-        protected unsafe string EncryptToken(EncodingContext context, string payload)
+        protected string EncryptToken(EncodingContext context, string payload)
         {
             if (payload == null)
             {
@@ -64,7 +66,7 @@ namespace JsonWebToken
             }
         }
 
-        protected unsafe string EncryptToken(EncodingContext context, Span<byte> payload)
+        protected string EncryptToken(EncodingContext context, Span<byte> payload)
         {
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
             KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)Algorithm;
@@ -111,7 +113,7 @@ namespace JsonWebToken
 
             try
             {
-                var headerJson = Serialize(header);
+                var headerJson = Serialize(header, Formatting.None);
                 int headerJsonLength = headerJson.Length;
                 int base64EncodedHeaderLength = Base64Url.GetArraySizeRequiredToEncode(headerJsonLength);
 

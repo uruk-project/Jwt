@@ -5,19 +5,19 @@ namespace JsonWebToken
 {
     public class EncryptionAlgorithm : IEquatable<EncryptionAlgorithm>
     {
-        public static readonly EncryptionAlgorithm Empty = new EncryptionAlgorithm(0, string.Empty, 0, SignatureAlgorithm.Empty, 0, EncryptionTypes.None);
+        public static readonly EncryptionAlgorithm Empty = new EncryptionAlgorithm(0, string.Empty, 0, SignatureAlgorithm.Empty, 0, EncryptionType.None);
 
-        public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: 11, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesHmac);
-        public static readonly EncryptionAlgorithm Aes192CbcHmacSha384 = new EncryptionAlgorithm(id: 12, "A192CBC-HS384", requiredKeySizeInBytes: 48, SignatureAlgorithm.HmacSha384, requiredKeyWrappedSizeInBytes: 56, EncryptionTypes.AesHmac);
-        public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(id: 13, "A256CBC-HS512", requiredKeySizeInBytes: 64, SignatureAlgorithm.HmacSha512, requiredKeyWrappedSizeInBytes: 72, EncryptionTypes.AesHmac);
+        public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: 11, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesHmac);
+        public static readonly EncryptionAlgorithm Aes192CbcHmacSha384 = new EncryptionAlgorithm(id: 12, "A192CBC-HS384", requiredKeySizeInBytes: 48, SignatureAlgorithm.HmacSha384, requiredKeyWrappedSizeInBytes: 56, EncryptionType.AesHmac);
+        public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(id: 13, "A256CBC-HS512", requiredKeySizeInBytes: 64, SignatureAlgorithm.HmacSha512, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesHmac);
 
-        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 21, "A128GCM", requiredKeySizeInBytes: 16, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 40, EncryptionTypes.AesGcm);
-        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 22, "A192GCM", requiredKeySizeInBytes: 24, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 56, EncryptionTypes.AesGcm);
-        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, "A256GCM", requiredKeySizeInBytes: 32, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 72, EncryptionTypes.AesGcm);
+        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 21, "A128GCM", requiredKeySizeInBytes: 16, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 22, "A192GCM", requiredKeySizeInBytes: 24, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 56, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, "A256GCM", requiredKeySizeInBytes: 32, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesGcm);
 
         public sbyte Id { get; }
 
-        public EncryptionTypes Category { get; }
+        public EncryptionType Category { get; }
 
         public ushort RequiredKeySizeInBytes { get; }
 
@@ -38,7 +38,7 @@ namespace JsonWebToken
             { Empty.Name, Empty }
         };
 
-        public EncryptionAlgorithm(sbyte id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm hashAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionTypes category)
+        public EncryptionAlgorithm(sbyte id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm hashAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionType category)
         {
             Id = id;
             Name = name;
