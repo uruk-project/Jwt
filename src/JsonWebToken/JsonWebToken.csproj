@@ -15,7 +15,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
-    <DefineConstants>RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0</DefineConstants>
+    <DefineConstants>TRACE;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0</DefineConstants>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
