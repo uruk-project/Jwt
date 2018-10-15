@@ -27,5 +27,7 @@ namespace JsonWebToken
             get { return GetStringClaim(Claims.SoftwareId); }
             set { AddClaim(Claims.SoftwareId, value); }
         }
+
+        protected override IReadOnlyDictionary<string, JTokenType[]> RequiredClaims => SoftwareStatementRequiredClaims;
     }
 }

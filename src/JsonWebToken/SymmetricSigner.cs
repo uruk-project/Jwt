@@ -275,7 +275,6 @@ namespace JsonWebToken
             {
                 int equals = 0;
                 ref var firstEnd = ref Unsafe.Add(ref first, length);
-                ref var secondEnd = ref Unsafe.Add(ref second, length);
                 while (Unsafe.IsAddressLessThan(ref first, ref firstEnd))
                 {
                     equals |= Unsafe.ReadUnaligned<byte>(ref first) - Unsafe.ReadUnaligned<byte>(ref second);
