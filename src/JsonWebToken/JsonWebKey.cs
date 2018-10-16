@@ -192,7 +192,6 @@ namespace JsonWebToken
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
         public abstract KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
 
-
         /// <summary>
         /// Creates a <see cref="AuthenticatedEncryptor"/> with the current <see cref="JsonWebKey"/> as key.
         /// </summary>
@@ -259,7 +258,6 @@ namespace JsonWebToken
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
         public string ComputeThumbprint() => ComputeThumbprint(true);
-
 
         /// <summary>
         /// Returns a new instance of <see cref="TKey"/>.

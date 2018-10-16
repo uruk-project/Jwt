@@ -1,9 +1,7 @@
-﻿using JsonWebToken.Internal;
-using System;
+﻿using System;
 
 namespace JsonWebToken.Internal
 {
-
     /// <summary>
     /// Provides authenticated encryption and decryption for AES GCM algorithm.
     /// </summary>
