@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public sealed class EcdhKeyWrapper : KeyWrapper
     {

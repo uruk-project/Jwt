@@ -3,7 +3,7 @@
 namespace JsonWebToken
 {
     /// <summary>
-    /// Provides authenticated encryption and decryption services
+    /// Provides authenticated encryption and decryption.
     /// </summary>
     public abstract class AuthenticatedEncryptor : IDisposable
     {

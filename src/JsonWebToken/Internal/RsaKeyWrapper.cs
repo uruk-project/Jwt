@@ -1,12 +1,11 @@
-﻿using JsonWebToken.Internal;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Security.Cryptography;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     /// <summary>
-    /// Provides RSA Wrap key and Unwrap key services.
+    /// Provides RSA key wrapping and key unwrapping services.
     /// </summary>
     public sealed class RsaKeyWrapper : KeyWrapper
     {
@@ -14,11 +13,6 @@ namespace JsonWebToken
         private readonly RSAEncryptionPadding _padding;
         private bool _disposed;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RsaKeyWrapper"/> class used for wrap key and unwrap key.
-        /// <param name="key">The <see cref="JsonWebKey"/> that will be used for crypto operations.</param>
-        /// <param name="contentEncryptionAlgorithm">The KeyWrap algorithm to apply.</param>
-        /// </summary>
         public RsaKeyWrapper(RsaJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
             : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
@@ -52,11 +46,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Unwrap a key using RSA decryption.
-        /// </summary>
-        /// <param name="keyBytes">the bytes to unwrap.</param>
-        /// <returns>Unwrapped key</returns>
         public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
             if (keyBytes.IsEmpty)
@@ -91,11 +80,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Wrap a key using RSA encryption.
-        /// </summary>
-        /// <param name="keyBytes">the key to be wrapped</param>
-        /// <returns>A wrapped key</returns>
         public override bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
         {
             if (header == null)
@@ -137,10 +121,6 @@ namespace JsonWebToken
             return Key.KeySizeInBits >> 3;
         }
 
-        /// <summary>
-        /// Disposes of internal components.
-        /// </summary>
-        /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer.</param>
         protected override void Dispose(bool disposing)
         {
             if (!_disposed)

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represents a static provider of keys.
+    /// </summary>
     public sealed class StaticKeyProvider : IKeyProvider
     {
         private readonly JsonWebKeySet _jwks;

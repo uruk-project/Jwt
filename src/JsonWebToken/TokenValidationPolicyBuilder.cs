@@ -8,9 +8,8 @@ namespace JsonWebToken
 {
     public class TokenValidationPolicyBuilder
     {
-        public const int DefaultMaximumTokenSizeInBytes = 1024 * 1024 * 2;
         private readonly List<IValidation> _validations = new List<IValidation>();
-        private int _maximumTokenSizeInBytes = DefaultMaximumTokenSizeInBytes;
+        private int _maximumTokenSizeInBytes = TokenValidationPolicy.DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
 
         public TokenValidationPolicyBuilder Clear()

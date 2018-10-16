@@ -5,6 +5,9 @@ using System.Diagnostics;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines an JWT with a <typeparamref name="TPayload"/> payload.
+    /// </summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class JwtDescriptor<TPayload> : JwtDescriptor where TPayload : class
     {

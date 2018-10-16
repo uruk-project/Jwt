@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represent a standard JWT payload.
+    /// </summary>
     public interface IJwtPayloadDescriptor
     {
         string Subject { get; set; }

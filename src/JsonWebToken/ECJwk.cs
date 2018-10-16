@@ -5,6 +5,9 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represents an Elliptic Curve JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
+    /// </summary>
     public class ECJwk : AsymmetricJwk
     {
         private string _x;

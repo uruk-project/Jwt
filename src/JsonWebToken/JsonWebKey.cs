@@ -21,94 +21,13 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class JsonWebKey
     {
-        internal sealed class JwkJsonConverter : JsonConverter
-        {
-            public override bool CanWrite => true;
-
-            public override bool CanConvert(Type objectType)
-            {
-                return typeof(JsonWebKey).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
-            }
-
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-            {
-                var jsonObject = JObject.Load(reader);
-                switch (jsonObject[JsonWebKeyParameterNames.Kty].Value<string>())
-                {
-                    case JsonWebKeyTypeNames.Rsa:
-                        return jsonObject.ToObject<RsaJwk>();
-                    case JsonWebKeyTypeNames.EllipticCurve:
-                        return jsonObject.ToObject<ECJwk>();
-                    case JsonWebKeyTypeNames.Octet:
-                        return jsonObject.ToObject<SymmetricJwk>();
-                    default:
-                        throw new NotSupportedException();
-                }
-            }
-
-            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-            {
-                serializer.Serialize(writer, value);
-            }
-        }
-
-        private sealed class JwkContractResolver : DefaultContractResolver
-        {
-            protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
-            {
-                IList<JsonProperty> properties = base.CreateProperties(type, memberSerialization);
-                properties = properties.OrderBy(p => p.PropertyName).ToList();
-                return properties;
-            }
-        }
-
         private static readonly JwkJsonConverter jsonConverter = new JwkJsonConverter();
         private static readonly JwkContractResolver contractResolver = new JwkContractResolver();
         private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings { ContractResolver = contractResolver };
 
         private static readonly JsonSerializer jsonSerializer = new JsonSerializer { Converters = { jsonConverter }, ContractResolver = contractResolver };
         private List<JsonWebKey> _certificateChain;
-
-        /// <summary>
-        /// Returns a new instance of <see cref="TKey"/>.
-        /// </summary>
-        /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
-        /// <returns><see cref="TKey"/></returns>
-        public static TKey FromJson<TKey>(string json) where TKey : JsonWebKey
-        {
-            if (string.IsNullOrEmpty(json))
-            {
-                throw new ArgumentNullException(nameof(json));
-            }
-
-            return JsonConvert.DeserializeObject<TKey>(json, jsonConverter);
-        }
-
-        /// <summary>
-        /// Returns a new instance of <see cref="TKey"/>.
-        /// </summary>
-        /// <param name="jObject">A string that contains JSON Web Key parameters in JSON format.</param>
-        /// <returns><see cref="TKey"/></returns>
-        public static TKey FromJson<TKey>(JToken jObject) where TKey : JsonWebKey
-        {
-            if (jObject == null)
-            {
-                throw new ArgumentNullException(nameof(jObject));
-            }
-
-            return jObject.ToObject<TKey>(jsonSerializer);
-        }
-
-        /// <summary>
-        /// Returns a new instance of <see cref="JsonWebKey"/>.
-        /// </summary>
-        /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
-        /// <returns><see cref="JsonWebKey"/></returns>
-        public static JsonWebKey FromJson(string json)
-        {
-            return FromJson<JsonWebKey>(json);
-        }
-
+        
         /// <summary>
         /// When deserializing from JSON any properties that are not defined will be placed here.
         /// </summary>
@@ -116,55 +35,55 @@ namespace JsonWebToken
         public IDictionary<string, object> AdditionalData { get; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// Gets or sets the 'alg' (KeyType)..
+        /// Gets or sets the 'alg' (KeyType).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Alg, Required = Required.Default)]
         public string Alg { get; set; }
 
         /// <summary>
-        /// Gets the 'key_ops' (Key Operations)..
+        /// Gets the 'key_ops' (Key Operations).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.KeyOps, Required = Required.Default)]
         public IList<string> KeyOps { get; private set; } = new List<string>();
 
         /// <summary>
-        /// Gets or sets the 'kid' (Key ID)..
+        /// Gets or sets the 'kid' (Key ID).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Kid, Required = Required.Default)]
         public string Kid { get; set; }
 
         /// <summary>
-        /// Gets or sets the 'kty' (Key Type)..
+        /// Gets or sets the 'kty' (Key Type).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Kty, Required = Required.Default)]
         public string Kty { get; set; }
 
         /// <summary>
-        /// Gets or sets the 'use' (Public Key Use)..
+        /// Gets or sets the 'use' (Public Key Use).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Use, Required = Required.Default)]
         public string Use { get; set; }
 
         /// <summary>
-        /// Gets the 'x5c' collection (X.509 Certificate Chain)..
+        /// Gets the 'x5c' collection (X.509 Certificate Chain).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.X5c, Required = Required.Default)]
         public List<string> X5c { get; private set; } = new List<string>();
 
         /// <summary>
-        /// Gets or sets the 'x5t' (X.509 Certificate SHA-1 thumbprint)..
+        /// Gets or sets the 'x5t' (X.509 Certificate SHA-1 thumbprint).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.X5t, Required = Required.Default)]
         public string X5t { get; set; }
 
         /// <summary>
-        /// Gets or sets the 'x5t#S256' (X.509 Certificate SHA-1 thumbprint)..
+        /// Gets or sets the 'x5t#S256' (X.509 Certificate SHA-1 thumbprint).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.X5tS256, Required = Required.Default)]
         public string X5tS256 { get; set; }
 
         /// <summary>
-        /// Gets or sets the 'x5u' (X.509 URL)..
+        /// Gets or sets the 'x5u' (X.509 URL).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.X5u, Required = Required.Default)]
         public string X5u { get; set; }
@@ -223,10 +142,25 @@ namespace JsonWebToken
             return X5c.Count > 0;
         }
 
+        /// <summary>
+        /// Determines if the <see cref="JsonWebKey"/> supports the <paramref name="algorithm"/>.
+        /// </summary>
+        /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> to verify.</param>
+        /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
         public abstract bool IsSupported(SignatureAlgorithm algorithm);
 
+        /// <summary>
+        /// Determines if the <see cref="JsonWebKey"/> supports the <paramref name="algorithm"/>.
+        /// </summary>
+        /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> to verify.</param>
+        /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
         public abstract bool IsSupported(KeyManagementAlgorithm algorithm);
 
+        /// <summary>
+        /// Determines if the <see cref="JsonWebKey"/> supports the <paramref name="algorithm"/>.
+        /// </summary>
+        /// <param name="algorithm">The <see cref="EncryptionAlgorithm"/> to verify.</param>
+        /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
         public abstract bool IsSupported(EncryptionAlgorithm algorithm);
 
         public override string ToString()
@@ -239,14 +173,35 @@ namespace JsonWebToken
             return JsonConvert.SerializeObject(this, formatting, serializerSettings);
         }
 
+        /// <summary>
+        /// Provides the binary representation of the key.
+        /// </summary>
         public abstract byte[] ToByteArray();
 
+        /// <summary>
+        /// Creates a <see cref="Signer"/> with the current <see cref="JsonWebKey"/> as key.
+        /// </summary>
+        /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
+        /// <param name="willCreateSignatures">Determines if the <see cref="Signer"/> will create or only verify signatures.</param>
         public abstract Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures);
 
-        public abstract KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm);
+        /// <summary>
+        /// Creates a <see cref="KeyWrapper"/> with the current <see cref="JsonWebKey"/> as key.
+        /// </summary>
+        /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
+        /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
+        public abstract KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
 
+        /// <summary>
+        /// Creates a <see cref="AuthenticatedEncryptor"/> with the current <see cref="JsonWebKey"/> as key.
+        /// </summary>
+        /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
         public abstract AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm);
 
+        /// <summary>
+        /// Returns a new <see cref="JsonWebKey"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
+        /// </summary>
+        /// <returns></returns>
         public abstract JsonWebKey Normalize();
 
 #if NETCOREAPP2_1
@@ -287,7 +242,6 @@ namespace JsonWebToken
         /// <summary>
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
-        /// <returns></returns>
         public string ComputeThumbprint(bool normalize)
         {
             var json = normalize ? Normalize().ToString() : ToString();
@@ -300,8 +254,17 @@ namespace JsonWebToken
         }
 #endif
 
+        /// <summary>
+        /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
+        /// </summary>
         public string ComputeThumbprint() => ComputeThumbprint(true);
 
+        /// <summary>
+        /// Returns a new instance of <see cref="TKey"/>.
+        /// </summary>
+        /// <param name="certificate">A <see cref="X509Certificate2"/> that contains JSON Web Key parameters.</param>
+        /// <param name="withPrivateKey">Determines if the private key must be extracted from the certificate.</param>
+        /// <returns><see cref="TKey"/></returns>
         public static AsymmetricJwk FromX509Certificate(X509Certificate2 certificate, bool withPrivateKey)
         {
             if (certificate == null)
@@ -370,6 +333,46 @@ namespace JsonWebToken
             return null;
         }
 
+        /// <summary>
+        /// Returns a new instance of <see cref="TKey"/>.
+        /// </summary>
+        /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
+        /// <returns><see cref="TKey"/></returns>
+        public static TKey FromJson<TKey>(string json) where TKey : JsonWebKey
+        {
+            if (string.IsNullOrEmpty(json))
+            {
+                throw new ArgumentNullException(nameof(json));
+            }
+
+            return JsonConvert.DeserializeObject<TKey>(json, jsonConverter);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="TKey"/>.
+        /// </summary>
+        /// <param name="jObject">A string that contains JSON Web Key parameters in JSON format.</param>
+        /// <returns><see cref="TKey"/></returns>
+        public static TKey FromJson<TKey>(JToken jObject) where TKey : JsonWebKey
+        {
+            if (jObject == null)
+            {
+                throw new ArgumentNullException(nameof(jObject));
+            }
+
+            return jObject.ToObject<TKey>(jsonSerializer);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="JsonWebKey"/>.
+        /// </summary>
+        /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
+        /// <returns><see cref="JsonWebKey"/></returns>
+        public static JsonWebKey FromJson(string json)
+        {
+            return FromJson<JsonWebKey>(json);
+        }
+
         protected static byte[] CloneByteArray(byte[] array)
         {
             var clone = new byte[array.Length];
@@ -380,6 +383,47 @@ namespace JsonWebToken
         private string DebuggerDisplay()
         {
             return ToString(Formatting.Indented);
+        }
+
+        internal sealed class JwkJsonConverter : JsonConverter
+        {
+            public override bool CanWrite => true;
+
+            public override bool CanConvert(Type objectType)
+            {
+                return typeof(JsonWebKey).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
+            }
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+                var jsonObject = JObject.Load(reader);
+                switch (jsonObject[JsonWebKeyParameterNames.Kty].Value<string>())
+                {
+                    case JsonWebKeyTypeNames.Rsa:
+                        return jsonObject.ToObject<RsaJwk>();
+                    case JsonWebKeyTypeNames.EllipticCurve:
+                        return jsonObject.ToObject<ECJwk>();
+                    case JsonWebKeyTypeNames.Octet:
+                        return jsonObject.ToObject<SymmetricJwk>();
+                    default:
+                        throw new NotSupportedException();
+                }
+            }
+
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                serializer.Serialize(writer, value);
+            }
+        }
+
+        private sealed class JwkContractResolver : DefaultContractResolver
+        {
+            protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+            {
+                IList<JsonProperty> properties = base.CreateProperties(type, memberSerialization);
+                properties = properties.OrderBy(p => p.PropertyName).ToList();
+                return properties;
+            }
         }
     }
 }

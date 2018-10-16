@@ -2,6 +2,9 @@
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represents the result of a token validation.
+    /// </summary>
     public sealed class TokenValidationResult
     {
         public bool Succedeed => Status == TokenValidationStatus.Success;

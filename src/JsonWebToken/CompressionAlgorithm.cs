@@ -1,8 +1,12 @@
-﻿using System;
+﻿using JsonWebToken.Internal;
+using System;
 using System.Collections.Generic;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines compression algorithm.
+    /// </summary>
     public class CompressionAlgorithm : IEquatable<CompressionAlgorithm>
     {
         public static readonly CompressionAlgorithm Empty = new CompressionAlgorithm(id: 0, string.Empty, Compressor.Null);

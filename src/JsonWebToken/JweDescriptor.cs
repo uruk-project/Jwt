@@ -3,6 +3,9 @@ using Newtonsoft.Json.Linq;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines an encrypted JWT with a <see cref="JwsDescriptor"/> payload.
+    /// </summary>
     public sealed class JweDescriptor : JweDescriptor<JwsDescriptor>
     {
         public JweDescriptor()

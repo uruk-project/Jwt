@@ -9,6 +9,9 @@ using System.Text;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines an encrypted JWT with a <typeparamref name="TPayload"/> payload.
+    /// </summary>
     public abstract class EncryptedJwtDescriptor<TPayload> : JwtDescriptor<TPayload> where TPayload : class
     {
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();

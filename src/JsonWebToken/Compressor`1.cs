@@ -3,6 +3,9 @@ using System.IO;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Provides compression and decompression services, based on <typeparamref name="TStream"/>.
+    /// </summary>
     public abstract class Compressor<TStream> : Compressor where TStream : Stream
     {
         public abstract TStream CreateDecompressionStream(Stream outputStream);

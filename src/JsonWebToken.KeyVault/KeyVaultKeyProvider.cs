@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.KeyVault;
+﻿using JsonWebToken.Internal;
+using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.WebKey;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System;
@@ -6,8 +7,8 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using SscECParameters = System.Security.Cryptography.ECParameters;
 using KVECParameters = Microsoft.Azure.KeyVault.WebKey.ECParameters;
+using SscECParameters = System.Security.Cryptography.ECParameters;
 
 namespace JsonWebToken.KeyVault
 {

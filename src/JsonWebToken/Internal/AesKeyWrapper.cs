@@ -1,11 +1,10 @@
-﻿using JsonWebToken.Internal;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     /// <summary>
     /// Provides Wrap key and Unwrap key services.
@@ -14,8 +13,7 @@ namespace JsonWebToken
     {
         private const int BlockSizeInBytes = 8;
 
-        private static readonly byte[] _defaultIVArray = new byte[] { 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6 };
-        private static readonly ulong _defaultIV = BitConverter.ToUInt64(_defaultIVArray, 0);
+        private static readonly ulong _defaultIV = 0XA6A6A6A6A6A6A6A6;
 
         private readonly ObjectPool<ICryptoTransform> _encryptorPool;
         private readonly ObjectPool<ICryptoTransform> _decryptorPool;
@@ -23,11 +21,6 @@ namespace JsonWebToken
         private readonly Aes _aes;
         private bool _disposed;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="KeyWrapper"/> class used for wrap key and unwrap key.
-        /// <param name="key">The <see cref="JsonWebKey"/> that will be used for crypto operations.</param>
-        /// <param name="algorithm">The KeyWrap algorithm to apply.</param>
-        /// </summary>
         public AesKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
@@ -41,10 +34,6 @@ namespace JsonWebToken
             _decryptorPool = new ObjectPool<ICryptoTransform>(new PooledDecryptorPolicy(_aes));
         }
 
-        /// <summary>
-        /// Disposes of internal components.
-        /// </summary>
-        /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer.</param>
         protected override void Dispose(bool disposing)
         {
             if (!_disposed)

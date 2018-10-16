@@ -2,14 +2,17 @@
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Encapsulate the context required for a JWT encoding.
+    /// </summary>
     public class EncodingContext
     {
-        public EncodingContext(JsonHeaderCache headerCache, ISignerFactory signatureFactory, IKeyWrapperFactory keyWrapFactory, IAuthenticatedEncryptorFactory authenticatedEncryptionFactory)
+        public EncodingContext(ISignerFactory signatureFactory, IKeyWrapperFactory keyWrapFactory, IAuthenticatedEncryptorFactory authenticatedEncryptionFactory, JsonHeaderCache headerCache)
         {
-            HeaderCache = headerCache ?? throw new ArgumentNullException(nameof(headerCache));
             SignatureFactory = signatureFactory ?? throw new ArgumentNullException(nameof(signatureFactory));
             KeyWrapFactory = keyWrapFactory ?? throw new ArgumentNullException(nameof(keyWrapFactory));
             AuthenticatedEncryptionFactory = authenticatedEncryptionFactory ?? throw new ArgumentNullException(nameof(authenticatedEncryptionFactory));
+            HeaderCache = headerCache;
         }
 
         public JsonHeaderCache HeaderCache { get; }

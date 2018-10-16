@@ -2,6 +2,9 @@
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Provides compression and decompression services.
+    /// </summary>
     public abstract class Compressor
     {
         public static readonly Compressor Null = new NullCompressor();
