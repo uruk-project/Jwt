@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     public sealed class AesGcmKeyWrapper : KeyWrapper
     {

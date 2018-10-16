@@ -2,6 +2,9 @@
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines an encrypted JWT with a binary payload.
+    /// </summary>
     public sealed class BinaryJweDescriptor : EncryptedJwtDescriptor<byte[]>
     {
         public BinaryJweDescriptor(byte[] payload)

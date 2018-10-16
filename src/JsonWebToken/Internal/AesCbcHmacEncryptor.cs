@@ -6,10 +6,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     /// <summary>
-    /// Provides authenticated encryption and decryption services.
+    /// Provides authenticated encryption and decryption for AES CBC HMAC algorithm.
     /// </summary>
     public sealed class AesCbcHmacEncryptor : AuthenticatedEncryptor
     {
@@ -17,11 +17,6 @@ namespace JsonWebToken
         private readonly ObjectPool<Aes> _aesPool;
         private bool _disposed;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AesCbcHmacEncryptor"/> class used for encryption and decryption.
-        /// <param name="key">The <see cref="JsonWebKey"/> that will be used for crypto operations.</param>
-        /// <param name="encryptionAlgorithm">The encryption algorithm to apply.</param>
-        /// </summary>
         public AesCbcHmacEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (key == null)
@@ -128,14 +123,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Decrypts ciphertext into plaintext
-        /// </summary>
-        /// <param name="ciphertext">the encrypted text to decrypt.</param>
-        /// <param name="associatedData">the authenticateData that is used in verification.</param>
-        /// <param name="nonce">the initialization vector used when creating the ciphertext.</param>
-        /// <param name="authenticationTag">the authenticationTag that was created during the encyption.</param>
-        /// <returns>decrypted ciphertext</returns>
         public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
         {
             if (ciphertext.IsEmpty)

@@ -2,14 +2,8 @@ using System;
 
 namespace JsonWebToken.Internal
 {
-    /// <summary>
-    /// Returns the absolute DateTime or the Seconds since Unix Epoch, where Epoch is UTC 1970-01-01T0:0:0Z.
-    /// </summary>
     public static class EpochTime
     {
-        /// <summary>
-        /// DateTime as UTC for UnixEpoch
-        /// </summary>
         public static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
         public static readonly long MaxValue = TimeSpan.MaxValue.Ticks;
         public static readonly long MinValue = UnixEpoch.Ticks;

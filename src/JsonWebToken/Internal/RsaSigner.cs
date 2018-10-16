@@ -13,16 +13,6 @@ namespace JsonWebToken
 
         private bool _disposed;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AsymmetricSignatureProvider"/> class used to create and verify signatures.
-        /// </summary>
-        /// <param name="key">The <see cref="JsonWebKey"/> that will be used for signature operations.</param>
-        /// <param name="algorithm">The signature algorithm to apply.</param>
-        /// <param name="willCreateSignatures">Whether this <see cref="AsymmetricSignatureProvider"/> is required to create signatures then set this to true.</param>
-        /// <para>
-        /// Creating signatures requires that the <see cref="JsonWebKey"/> has access to a private key.
-        /// Verifying signatures (the default), does not require access to the private key.
-        /// </para>
         public RsaSigner(RsaJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
             : base(key, algorithm)
         {
@@ -73,11 +63,6 @@ namespace JsonWebToken
 
         public override int HashSizeInBytes => _hashSizeInBytes;
 
-        /// <summary>
-        /// Produces a signature over the 'input' using the <see cref="AsymmetricJwk"/> and algorithm passed to <see cref="AsymmetricSignatureProvider( JsonWebKey, string, bool )"/>.
-        /// </summary>
-        /// <param name="input">The bytes to be signed.</param>
-        /// <returns>A signature over the input.</returns>
         public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {
             if (input.IsEmpty)
@@ -115,12 +100,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Verifies that a signature over the' input' matches the signature.
-        /// </summary>
-        /// <param name="input">The bytes to generate the signature over.</param>
-        /// <param name="signature">The value to verify against.</param>
-        /// <returns>true if signature matches, false otherwise.</returns>
         public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
         {
             if (input.IsEmpty)
@@ -153,10 +132,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Calls <see cref="RSA.Dispose()"/> to release this managed resources.
-        /// </summary>
-        /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer.</param>
         protected override void Dispose(bool disposing)
         {
             if (!_disposed)

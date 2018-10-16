@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -11,7 +8,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Build_Jwe()
         {
-            var builder = new JsonWebTokenBuilder();
+            var builder = new JwtDescriptorBuilder();
 
             builder
                 .SignWith(RsaJwk.GenerateKey(2048, true, SignatureAlgorithm.RsaSsaPssSha256.Name))
@@ -27,7 +24,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Build_Jws()
         {
-            var builder = new JsonWebTokenBuilder();
+            var builder = new JwtDescriptorBuilder();
 
             builder
                 .SignWith(RsaJwk.GenerateKey(2048, true, SignatureAlgorithm.RsaSsaPssSha256.Name))
@@ -42,7 +39,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Build_Jwt_Unsigned()
         {
-            var builder = new JsonWebTokenBuilder();
+            var builder = new JwtDescriptorBuilder();
 
             builder
                 .IgnoreSignature()
@@ -57,7 +54,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Build_BinaryJwt()
         {
-            var builder = new JsonWebTokenBuilder();
+            var builder = new JwtDescriptorBuilder();
 
             builder
                 .EncryptWith(SymmetricJwk.GenerateKey(128))
@@ -71,7 +68,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Build_TextJwt()
         {
-            var builder = new JsonWebTokenBuilder();
+            var builder = new JwtDescriptorBuilder();
 
             builder
                 .Plaintext("Live long and prosper.")

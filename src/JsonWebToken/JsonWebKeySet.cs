@@ -7,30 +7,14 @@ using System.Linq;
 namespace JsonWebToken
 {
     /// <summary>
-    /// Contains a collection of <see cref="JsonWebKey"/> that can be populated from a json string.
+    /// Contains a collection of <see cref="JsonWebKey"/>.
     /// </summary>
-    /// <remarks>provides support for http://tools.ietf.org/html/rfc7517.</remarks>
     [JsonObject]
     public class JsonWebKeySet
     {
         public static readonly JsonWebKeySet Empty = new JsonWebKeySet();
         private JsonWebKey[] _unidentifiedKeys;
         private Dictionary<string, List<JsonWebKey>> _identifiedKeys;
-
-        /// <summary>
-        /// Returns a new instance of <see cref="JsonWebKeySet"/>.
-        /// </summary>
-        /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
-        /// <returns><see cref="JsonWebKeySet"/></returns>
-        public static JsonWebKeySet Create(string json)
-        {
-            if (string.IsNullOrEmpty(json))
-            {
-                throw new ArgumentNullException(nameof(json));
-            }
-
-            return new JsonWebKeySet(json);
-        }
 
         /// <summary>
         /// Initializes an new instance of <see cref="JsonWebKeySet"/>.
@@ -100,6 +84,21 @@ namespace JsonWebToken
 
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="JsonWebKeySet"/>.
+        /// </summary>
+        /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
+        /// <returns><see cref="JsonWebKeySet"/></returns>
+        public static JsonWebKeySet FromJson(string json)
+        {
+            if (string.IsNullOrEmpty(json))
+            {
+                throw new ArgumentNullException(nameof(json));
+            }
+
+            return new JsonWebKeySet(json);
         }
 
         public void Add(JsonWebKey key)

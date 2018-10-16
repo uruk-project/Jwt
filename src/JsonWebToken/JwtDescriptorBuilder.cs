@@ -5,7 +5,10 @@ using System.Collections.Generic;
 
 namespace JsonWebToken
 {
-    public sealed class JsonWebTokenBuilder
+    /// <summary>
+    /// A builder of <see cref="JwtDescriptor"/>. 
+    /// </summary>
+    public sealed class JwtDescriptorBuilder
     {
         private readonly JObject _header = new JObject();
         private readonly JObject _jsonPayload = new JObject();
@@ -17,29 +20,29 @@ namespace JsonWebToken
         private TimeSpan _expireIn;
         private bool _noSignature;
 
-        public JsonWebTokenBuilder AddHeader(string headerName, JToken headerValue)
+        public JwtDescriptorBuilder AddHeader(string headerName, JToken headerValue)
         {
             _header[headerName] = headerValue;
             return this;
         }
 
-        public JsonWebTokenBuilder IssuedBy(string iss)
+        public JwtDescriptorBuilder IssuedBy(string iss)
         {
             return AddClaim(Claims.Iss, iss);
         }
 
-        public JsonWebTokenBuilder Expires(DateTime exp)
+        public JwtDescriptorBuilder Expires(DateTime exp)
         {
             return AddClaim(Claims.Exp, exp);
         }
 
-        public JsonWebTokenBuilder ExpiresIn(TimeSpan duration)
+        public JwtDescriptorBuilder ExpiresIn(TimeSpan duration)
         {
             _expireIn = duration;
             return this;
         }
 
-        public JsonWebTokenBuilder AddClaim(string claimName, JToken claimValue)
+        public JwtDescriptorBuilder AddClaim(string claimName, JToken claimValue)
         {
             _jsonPayload[claimName] = claimValue;
             return this;
@@ -103,73 +106,73 @@ namespace JsonWebToken
             throw new InvalidOperationException();
         }
 
-        public JsonWebTokenBuilder Plaintext(string text)
+        public JwtDescriptorBuilder Plaintext(string text)
         {
             _textPayload = text;
             return this;
         }
 
-        public JsonWebTokenBuilder Binary(byte[] data)
+        public JwtDescriptorBuilder Binary(byte[] data)
         {
             _binaryPayload = data;
             return this;
         }
 
-        public JsonWebTokenBuilder Algorithm(string algorithm)
+        public JwtDescriptorBuilder Algorithm(string algorithm)
         {
             return AddHeader(HeaderParameters.Alg, algorithm);
         }
-        public JsonWebTokenBuilder KeyId(string kid)
+        public JwtDescriptorBuilder KeyId(string kid)
         {
             return AddHeader(HeaderParameters.Kid, kid);
         }
-        public JsonWebTokenBuilder JwkSetUrl(string jku)
+        public JwtDescriptorBuilder JwkSetUrl(string jku)
         {
             return AddHeader(HeaderParameters.Jku, jku);
         }
-        public JsonWebTokenBuilder JsonWebKey(JsonWebKey jwk)
+        public JwtDescriptorBuilder JsonWebKey(JsonWebKey jwk)
         {
             return AddHeader(HeaderParameters.Jwk, jwk.ToString());
         }
-        public JsonWebTokenBuilder X509Url(string x5u)
+        public JwtDescriptorBuilder X509Url(string x5u)
         {
             return AddHeader(HeaderParameters.X5u, x5u);
         }
-        public JsonWebTokenBuilder X509CertificateChain(IList<string> x5c)
+        public JwtDescriptorBuilder X509CertificateChain(IList<string> x5c)
         {
             return AddHeader(HeaderParameters.X5c, JArray.FromObject(x5c));
         }
-        public JsonWebTokenBuilder X509CertificateSha1Thumbprint(string x5t)
+        public JwtDescriptorBuilder X509CertificateSha1Thumbprint(string x5t)
         {
             return AddHeader(HeaderParameters.X5t, x5t);
         }
-        public JsonWebTokenBuilder Type(string typ)
+        public JwtDescriptorBuilder Type(string typ)
         {
             return AddHeader(HeaderParameters.Typ, typ);
         }
 
-        public JsonWebTokenBuilder ContentType(string cty)
+        public JwtDescriptorBuilder ContentType(string cty)
         {
             return AddHeader(HeaderParameters.Cty, cty);
         }
-        public JsonWebTokenBuilder Critical(IList<string> crit)
+        public JwtDescriptorBuilder Critical(IList<string> crit)
         {
             return AddHeader(HeaderParameters.Crit, JArray.FromObject(crit));
         }
 
-        public JsonWebTokenBuilder SignWith(JsonWebKey jwk)
+        public JwtDescriptorBuilder SignWith(JsonWebKey jwk)
         {
             _signingKey = jwk ?? throw new ArgumentNullException(nameof(jwk));
             return this;
         }
 
-        public JsonWebTokenBuilder EncryptWith(JsonWebKey jwk)
+        public JwtDescriptorBuilder EncryptWith(JsonWebKey jwk)
         {
             _encryptionKey = jwk ?? throw new ArgumentNullException(nameof(jwk));
             return this;
         }
 
-        public JsonWebTokenBuilder IgnoreSignature()
+        public JwtDescriptorBuilder IgnoreSignature()
         {
             _noSignature = true;
             return this;

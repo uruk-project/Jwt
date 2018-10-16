@@ -1,5 +1,6 @@
 ﻿using Xunit;
 using System;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken.Tests
 {

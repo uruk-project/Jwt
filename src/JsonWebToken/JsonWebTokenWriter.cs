@@ -3,6 +3,9 @@ using System;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Writes a JWT.
+    /// </summary>
     public sealed class JsonWebTokenWriter : IDisposable
     {
         private int _defaultTokenLifetimeInMinutes = DefaultTokenLifetimeInMinutes;
@@ -14,7 +17,7 @@ namespace JsonWebToken
         private readonly ISignerFactory _signatureFactory;
         private readonly IKeyWrapperFactory _keyWrapFactory;
         private readonly IAuthenticatedEncryptorFactory _authenticatedEncryptionFactory;
-        private JsonHeaderCache _headerCache;
+        private readonly JsonHeaderCache _headerCache;
         private readonly bool _disposeFactories;
         private bool _disposed;
 
@@ -68,32 +71,25 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Gets or sets a bool that controls if token creation will set default 'exp', 'nbf' and 'iat' if not specified.
+        /// Gets or sets whether token creation will set default 'exp', 'nbf' and 'iat' if not specified.
         /// </summary>
-        /// <remarks>See: <see cref="DefaultTokenLifetimeInMinutes"/>, <see cref="TokenLifetimeInMinutes"/> for defaults and configuration.</remarks>
         public bool SetDefaultTimesOnTokenCreation { get; set; } = false;
 
+        /// <summary>
+        /// Gets or sets whether the <see cref="JwtDescriptor"/> has to be validated.
+        /// </summary>
         public bool IgnoreTokenValidation { get; set; } = false;
 
-        public bool EnableHeaderCaching
-        {
-            get => _headerCache != null;
-            set
-            {
-                if (value)
-                {
-                    if (_headerCache == null)
-                    {
-                        _headerCache = new JsonHeaderCache();
-                    }
-                }
-                else
-                {
-                    _headerCache = null;
-                }
-            }
-        }
+        /// <summary>
+        /// Gets or sets whether the JWT header will be cached.
+        /// </summary>
+        public bool EnableHeaderCaching { get; set; } = true;
 
+        /// <summary>
+        /// Writes a JWT in its compact serialization format.
+        /// </summary>
+        /// <param name="descriptor">The descriptor of the JWT.</param>
+        /// <returns></returns>
         public string WriteToken(JwtDescriptor descriptor)
         {
             if (descriptor == null)
@@ -133,7 +129,7 @@ namespace JsonWebToken
                 descriptor.Validate();
             }
 
-            var encodingContext = new EncodingContext(_headerCache, _signatureFactory, _keyWrapFactory, _authenticatedEncryptionFactory);
+            var encodingContext = new EncodingContext(_signatureFactory, _keyWrapFactory, _authenticatedEncryptionFactory, EnableHeaderCaching ? _headerCache : null);
             return descriptor.Encode(encodingContext);
         }
 

@@ -6,6 +6,10 @@ using System.Diagnostics;
 
 namespace JsonWebToken
 {
+
+    /// <summary>
+    /// Defines an abstract class for representing a JWT.
+    /// </summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class JwtDescriptor
     {

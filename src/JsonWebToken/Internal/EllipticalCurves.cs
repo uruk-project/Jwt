@@ -1,4 +1,4 @@
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     /// <summary>
     /// Constants for JsonWebKey Elliptical Curve Types

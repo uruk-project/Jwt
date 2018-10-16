@@ -17,7 +17,6 @@ namespace JsonWebToken.Internal
         {
             var jwt = context.Jwt;
 
-            // check if token if replay cache is set, then there must be an expiration time.
             var expires = jwt.ExpirationTime;
             if (!expires.HasValue)
             {

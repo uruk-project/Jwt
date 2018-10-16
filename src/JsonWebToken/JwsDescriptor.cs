@@ -10,6 +10,9 @@ using System.Text;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines a signed JWT with a JSON payload.
+    /// </summary>
     public class JwsDescriptor : JwtDescriptor<JObject>, IJwtPayloadDescriptor
     {
         private static readonly byte dot = Convert.ToByte('.');

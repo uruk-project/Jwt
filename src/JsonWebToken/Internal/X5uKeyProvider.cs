@@ -24,11 +24,6 @@ namespace JsonWebToken.Internal
             }
         }
 
-        /// <summary>
-        /// Convert X509 security key into json web key.
-        /// </summary>
-        /// <param name="certificate">X509 security key</param>
-        /// <returns>json web key</returns>
         private static RsaJwk ConvertFromX509(X509Certificate2 certificate)
         {
             var jsonWebKey = new RsaJwk

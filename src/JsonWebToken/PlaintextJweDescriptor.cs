@@ -2,6 +2,9 @@
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines an encrypted JWT with a <see cref="string"/> payload.
+    /// </summary>
     public sealed class PlaintextJweDescriptor : EncryptedJwtDescriptor<string>
     {
         public PlaintextJweDescriptor(JObject header, string payload)
@@ -10,7 +13,7 @@ namespace JsonWebToken
         }
 
         public PlaintextJweDescriptor(string payload)
-            :base(payload)
+            : base(payload)
         {
         }
 

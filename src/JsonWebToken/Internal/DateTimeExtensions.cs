@@ -2,9 +2,6 @@ using System;
 
 namespace JsonWebToken.Internal
 {
-    /// <summary>
-    /// Helper class for adding DateTimes and Timespans.
-    /// </summary>
     internal static class DateTimeExtensions
     {
         private static readonly DateTime MaxValueUtc = new DateTime(DateTime.MaxValue.Ticks, DateTimeKind.Utc);
@@ -12,14 +9,6 @@ namespace JsonWebToken.Internal
         private static readonly DateTime MinValueUtc = new DateTime(DateTime.MinValue.Ticks, DateTimeKind.Utc);
         private static readonly DateTime MinValueLocal = new DateTime(DateTime.MinValue.Ticks, DateTimeKind.Local);
 
-        /// <summary>
-        /// Add a DateTime and a Ticks.
-        /// The maximum time is DateTime.MaxTime.  It is not an error if time + ticks > MaxTime.
-        /// Just return MaxTime.
-        /// </summary>
-        /// <param name="time">Initial <see cref="DateTime"/> value.</param>
-        /// <param name="ticks"><see cref="TimeSpan.Ticks"/> to add.</param>
-        /// <returns><see cref="DateTime"/> as the sum of time and timespan.</returns>
         public static DateTime AddSafe(this DateTime time, long ticks)
         {
             if (ticks == 0)

@@ -4,21 +4,24 @@ using System;
 namespace JsonWebToken
 {
     /// <summary>
-    /// Provides Wrap key and Unwrap key services.
+    /// Provides key wrapping and key unwrapping services.
     /// </summary>
     public abstract class KeyWrapper : IDisposable
     {
         /// <summary>
-        /// Gets the KeyWrap algorithm that is being used.
-        /// </summary>
-        protected KeyManagementAlgorithm Algorithm;
-
-        protected EncryptionAlgorithm EncryptionAlgorithm;
-
-        /// <summary>
         /// Gets the <see cref="JsonWebKey"/> that is being used.
         /// </summary>
-        public JsonWebKey Key { get; protected set; }
+        public JsonWebKey Key { get; }
+
+        /// <summary>
+        /// Gets the <see cref="KeyManagementAlgorithm"/> that is being used.
+        /// </summary>
+        public KeyManagementAlgorithm Algorithm { get; }
+
+        /// <summary>
+        /// Gets the <see cref="EncryptionAlgorithm"/> that is being used.
+        /// </summary>
+        public EncryptionAlgorithm EncryptionAlgorithm { get; }
 
         protected KeyWrapper(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
@@ -26,7 +29,7 @@ namespace JsonWebToken
             {
                 throw new ArgumentNullException(nameof(key));
             }
-            
+
             if (!key.IsSupported(algorithm))
             {
                 Errors.ThrowNotSupportedAlgorithmForKeyWrap(algorithm);

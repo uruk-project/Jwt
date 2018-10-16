@@ -9,6 +9,9 @@ using System.Text;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Reads and validates a JWT.
+    /// </summary>
     public sealed class JsonWebTokenReader : IDisposable
     {
         private const byte dot = 0x2E;
@@ -89,10 +92,10 @@ namespace JsonWebToken
         public bool EnableHeaderCaching { get; set; } = true;
 
         /// <summary>
-        /// Reads and validates a 'JSON Web Token' (JWT) encoded as a JWS or JWE in Compact Serialized Format.
+        /// Reads and validates a JWT encoded as a JWS or JWE in compact serialized format.
         /// </summary>
         /// <param name="token">the JWT encoded as JWE or JWS</param>
-        /// <param name="policy">Contains validation policy for the <see cref="JsonWebToken"/>.</param>
+        /// <param name="policy">The validation policy.</param>
         public TokenValidationResult TryReadToken(ReadOnlySpan<char> token, TokenValidationPolicy policy)
         {
             if (policy == null)

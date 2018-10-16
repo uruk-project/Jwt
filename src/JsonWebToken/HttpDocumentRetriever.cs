@@ -5,7 +5,7 @@ using System.Threading;
 namespace JsonWebToken
 {
     /// <summary>
-    /// Retrieves metadata information using HttpClient.
+    /// Retrieves metadata information using <see cref="HttpClient"/>.
     /// </summary>
     public sealed class HttpDocumentRetriever : IDisposable
     {

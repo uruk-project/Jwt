@@ -1,4 +1,3 @@
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Diagnostics;
@@ -7,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
-namespace JsonWebToken
+namespace JsonWebToken.Internal
 {
     /// <summary>
     /// Provides signing and verifying operations using a <see cref="SymmetricJwk"/> and specifying an algorithm.
@@ -24,11 +23,6 @@ namespace JsonWebToken
         private readonly int _hashSizeInBytes;
         private int _minimumKeySizeInBits = DefaultMinimumSymmetricKeySizeInBits;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SymmetricSigner"/> class that uses an <see cref="JsonWebKey"/> to create and / or verify signatures over a array of bytes.
-        /// </summary>
-        /// <param name="key">The <see cref="SymmetricJwk"/> that will be used for signature operations.</param>
-        /// <param name="algorithm">The signature algorithm to use.</param>
         public SymmetricSigner(SymmetricJwk key, SignatureAlgorithm algorithm)
             : base(key, algorithm)
         {
@@ -73,7 +67,7 @@ namespace JsonWebToken
         public override int HashSizeInBytes => _hashSizeInBytes;
 
         /// <summary>
-        /// Gets or sets the minimum <see cref="SymmetricJwk"/>.KeySize"/>.
+        /// Gets or sets the minimum <see cref="SymmetricJwk"/>.KeySize. />.
         /// </summary>
         public int MinimumKeySizeInBits
         {
@@ -93,11 +87,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Produces a signature over the 'input' using the <see cref="SymmetricJwk"/> and 'algorithm' passed to <see cref="SymmetricSignatureProvider( JsonWebKey, string )"/>.
-        /// </summary>
-        /// <param name="input">The bytes to sign.</param>
-        /// <returns>Signed bytes</returns>
         public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {
             if (_disposed)
@@ -130,12 +119,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Verifies that a signature created over the 'input' matches the signature. Using <see cref="SymmetricJwk"/> and 'algorithm' passed to <see cref="SymmetricSignatureProvider( JsonWebKey, string )"/>.
-        /// </summary>
-        /// <param name="input">The bytes to verify.</param>
-        /// <param name="signature">signature to compare against.</param>
-        /// <returns>true if computed signature matches the signature parameter, false otherwise.</returns>
         public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
         {
             if (_disposed)
@@ -161,13 +144,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Verifies that a signature created over the 'input' matches the signature. Using <see cref="SymmetricJwk"/> and 'algorithm' passed to <see cref="SymmetricSignatureProvider( JsonWebKey, string )"/>.
-        /// </summary>
-        /// <param name="input">The bytes to verify.</param>
-        /// <param name="signature">signature to compare against.</param>
-        /// <param name="length">number of bytes of signature to use.</param>
-        /// <returns>true if computed signature matches the signature parameter, false otherwise.</returns>
         public bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature, int length)
         {
             if (_disposed)
@@ -198,36 +174,11 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Compares two byte arrays for equality. Hash size is fixed normally it is 32 bytes.
-        /// The attempt here is to take the same time if an attacker shortens the signature OR changes some of the signed contents.
-        /// </summary>
-        /// <param name="a">
-        /// One set of bytes to compare.
-        /// </param>
-        /// <param name="b">
-        /// The other set of bytes to compare with.
-        /// </param>
-        /// true if the bytes are equal, false otherwise.
-        /// </returns>
         private static bool AreEqual(ReadOnlySpan<byte> a, Span<byte> b)
         {
             return AreEqual(a, b, a.Length);
         }
 
-        /// <summary>
-        /// Compares two byte arrays for equality. Hash size is fixed normally it is 32 bytes.
-        /// The attempt here is to take the same time if an attacker shortens the signature OR changes some of the signed contents.
-        /// </summary>
-        /// <param name="a">
-        /// One set of bytes to compare.
-        /// </param>
-        /// <param name="b">
-        /// The other set of bytes to compare with.
-        /// </param>
-        /// <returns>
-        /// true if the bytes are equal, false otherwise.
-        /// </returns>
         // Optimized byte-based AreEqual. Inspired from https://github.com/dotnet/corefx/blob/master/src/Common/src/CoreLib/System/SpanHelpers.Byte.cs
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         private static bool AreEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b, int length)
@@ -286,10 +237,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Disposes of internal components.
-        /// </summary>
-        /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer.</param>
         protected override void Dispose(bool disposing)
         {
             if (!_disposed)

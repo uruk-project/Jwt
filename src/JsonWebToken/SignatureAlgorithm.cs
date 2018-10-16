@@ -4,6 +4,9 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines signature algorithm.
+    /// </summary>
     public class SignatureAlgorithm : IEquatable<SignatureAlgorithm>
     {
         public static readonly SignatureAlgorithm Empty = new SignatureAlgorithm(0, string.Empty, AlgorithmCategory.None, 0, new HashAlgorithmName());

@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Running;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken.Performance
 {

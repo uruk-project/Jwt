@@ -3,6 +3,9 @@ using Newtonsoft.Json;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represents an asymmetric JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
+    /// </summary>
     public abstract class AsymmetricJwk : JsonWebKey
     {
         private string _d;
@@ -50,6 +53,7 @@ namespace JsonWebToken
         [JsonIgnore]
         public abstract bool HasPrivateKey { get; }
 
+        /// <inheritsdoc/>
         public override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm algorithm)
         {
             return null;
