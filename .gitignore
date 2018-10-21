@@ -263,3 +263,4 @@ __pycache__/
 /test/Certs
 /test/JsonWebToken.Performance/BenchmarkDotNet.Artifacts/results
 /test/Benchmarks/BenchmarkDotNet.Artifacts/results
+*.licenseheader
