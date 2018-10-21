@@ -1,3 +1,4 @@
+
 # .NET Desktop
 # Build and run tests for .NET Desktop or Windows classic desktop solutions.
 # Add steps that publish symbols, save build artifacts, and more:
@@ -14,9 +15,10 @@ variables:
 steps:
 - task: NuGetToolInstaller@0
 
-- task: NuGetCommand@2
+- task: DotNetCoreCLI@2
   inputs:
-    restoreSolution: '$(solution)'
+    command: 'restore'
+    projects: '**/*.csproj'
 
 - task: VSBuild@1
   inputs:
@@ -29,9 +31,10 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
     
-- task: NuGetCommand@2
+- task: DotNetCoreCLI@2
   inputs:
-    command: pack
+    command: 'pack'
+    configuration: 'release'
     packagesToPack: '**/*.csproj'
     
 - task: DotNetCoreCLI@2
