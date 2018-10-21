@@ -24,8 +24,11 @@ Provides Key Vault support.
   <ItemGroup>
     <ProjectReference Include="..\JsonWebToken\JsonWebToken.csproj" />
   </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.0" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.19.8" />
   </ItemGroup>
+  
+  
 </Project>
