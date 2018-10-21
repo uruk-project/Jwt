@@ -6,11 +6,11 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     
     <PackageTags>jwt OAuth2</PackageTags>
-    <!--<Description>
+    <Description>
 High-performance JWT library.
 Provides Key Vault support.
     </Description>
-    <sumary>High-performance JWT library with Key Vault support.</sumary>-->
+    <sumary>High-performance JWT library with Key Vault support.</sumary>
     
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>../../jwt.snk</AssemblyOriginatorKeyFile>

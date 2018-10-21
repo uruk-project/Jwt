@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!--<PackageTags>jwt security jsonwebtoken cryptography</PackageTags>-->
+    <PackageTags>jwt security jsonwebtoken cryptography</PackageTags>
     <Description>High-performance JWT library.
 Provides Json Web Token primitives.
 </Description>
