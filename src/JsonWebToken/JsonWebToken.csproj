@@ -8,6 +8,13 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>../../jwt.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageTags>jwt security jsonwebtoken cryptography</PackageTags>
+    <Description>High-performance JWT library.
+Provides Json Web Token primitives.
+</Description>
+  </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>full</DebugType>
