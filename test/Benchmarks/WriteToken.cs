@@ -63,7 +63,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetNotEncryptedPayloads))]
         public void Wilson2(string payload)
         {
-            var token = Handler2.CreateToken(Tokens.Payloads[payload.Substring(4)], signingCredentials);
+            var token = Handler2.CreateToken(Tokens.Payloads[payload.Substring(4)].ToString(), signingCredentials);
         }
 
         //[Benchmark]
