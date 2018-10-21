@@ -33,3 +33,10 @@ steps:
   inputs:
     command: pack
     packagesToPack: '**/*.csproj'
+    
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'push'
+    nuGetFeedType: 'external'
+    packagesToPush: '$(build.artifactStagingDirectory)/*.nupkg'
+    publishFeedCredentials: 'NugetFeed'
