@@ -1,4 +1,7 @@
-﻿namespace JsonWebToken
+﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
+namespace JsonWebToken
 {
     /// <summary>
     /// http://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata 
