@@ -5,23 +5,18 @@
     <LangVersion>7.3</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>../../jwt.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>false</DelaySign>
 
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
-    <DefineConstants>RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0</DefineConstants>
-    <DebugType>full</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Keys\**" />
-    <EmbeddedResource Remove="Keys\**" />
-    <None Remove="Keys\**" />
-  </ItemGroup>
-
+  <!--<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <DefineConstants>TRACE;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0;RELEASE;NETSTANDARD;NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>-->
 
   <ItemGroup>
     <PackageReference Include="IDisposableAnalyzers" Version="2.0.3.3">
