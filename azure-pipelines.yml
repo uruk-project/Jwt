@@ -36,11 +36,3 @@ steps:
     command: 'pack'
     configuration: 'release'
     packagesToPack: '**/*.csproj'
-    
-- task: NuGetCommand@2
-  inputs:
-    command: 'push'
-    nuGetFeedType: 'external'
-    packagesToPush: '$(build.artifactStagingDirectory)/*.nupkg'
-    publishFeedCredentials: 'NugetFeed'
-    allowPackageConflicts: 'true'
