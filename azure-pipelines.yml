@@ -43,3 +43,4 @@ steps:
     nuGetFeedType: 'external'
     packagesToPush: '$(build.artifactStagingDirectory)/*.nupkg'
     publishFeedCredentials: 'NugetFeed'
+    allowPackageConflicts: true
