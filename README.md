@@ -65,7 +65,7 @@ The main reason of the speed of this library is the usage of the new API provide
 
 ## Supported algorithms
 ### JWS signing algorithms
-| "alg" Param Value | Digital Signature or MAC Algorithm        | Required dotnet version   
+| "alg" Param Value | Digital Signature or MAC Algorithm        | Target Framework   
 |--------------|------------------------------------------------|-
 | HS256        | HMAC using SHA-256                             | netstandard2.0
 | HS384        | HMAC using SHA-384                             | netstandard2.0
@@ -82,7 +82,7 @@ The main reason of the speed of this library is the usage of the new API provide
 | none         | No digital signature or MAC performed          | netstandard2.0
 
 ### JWE encryption algorithms
-| "enc" Param Value | Content Encryption Algorithm | Required dotnet version                           
+| "enc" Param Value | Content Encryption Algorithm | Target Framework                           
 |---------------|----------------------------------|-                           
 | A128CBC-HS256 | AES_128_CBC_HMAC_SHA_256 authenticated encryption algorithm | netstandard2.0
 | A192CBC-HS384 | AES_192_CBC_HMAC_SHA_384 authenticated encryption algorithm | netstandard2.0
@@ -92,7 +92,7 @@ The main reason of the speed of this library is the usage of the new API provide
 | A256GCM       | AES GCM using 256-bit key                                   | netcoreapp2.2 (not ready)
 
 ### JWE content encryption key algorithm
-| "alg" Param Value  | Key Management Algorithm                                                      | Required dotnet version
+| "alg" Param Value  | Key Management Algorithm                                                      | Target Framework
 |--------------------|-------------------------------------------------------------------------------|-
 | RSA1_5             | RSAES-PKCS1-v1_5                                                              | netstandard2.0
 | RSA-OAEP           | RSAES OAEP using default parameters                                           | netstandard2.0
