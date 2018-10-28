@@ -361,22 +361,6 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Returns a new instance of <see cref="TKey"/>.
-        /// </summary>
-        /// <param name="jObject">A string that contains JSON Web Key parameters in JSON format.</param>
-        /// <returns><see cref="TKey"/></returns>
-        /// <typeparam name="TKey">The type of key.</typeparam>
-        public static TKey FromJson<TKey>(JToken jObject) where TKey : JsonWebKey
-        {
-            if (jObject == null)
-            {
-                throw new ArgumentNullException(nameof(jObject));
-            }
-
-            return jObject.ToObject<TKey>(jsonSerializer);
-        }
-
-        /// <summary>
         /// Returns a new instance of <see cref="JsonWebKey"/>.
         /// </summary>
         /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>

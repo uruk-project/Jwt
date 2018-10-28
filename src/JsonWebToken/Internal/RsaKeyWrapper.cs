@@ -87,11 +87,6 @@ namespace JsonWebToken.Internal
         /// <inheritsdoc />
         public override bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
         {
-            if (header == null)
-            {
-                throw new ArgumentNullException(nameof(header));
-            }
-
             if (_disposed)
             {
                 Errors.ThrowObjectDisposed(GetType());
