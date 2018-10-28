@@ -7,30 +7,31 @@ using System.Diagnostics;
 
 namespace JsonWebToken.Internal
 {
-    public class SignatureValidation : IValidation
+    public class SignatureValidator : IValidator
     {
         private readonly IKeyProvider _keyProvider;
         private readonly bool _supportUnsecure;
         private readonly SignatureAlgorithm _algorithm;
 
-        public SignatureValidation(IKeyProvider keyProvider, bool supportUnsecure, SignatureAlgorithm algorithm)
+        public SignatureValidator(IKeyProvider keyProvider, bool supportUnsecure, SignatureAlgorithm algorithm)
         {
             _keyProvider = keyProvider;
             _supportUnsecure = supportUnsecure;
             _algorithm = algorithm;
         }
 
+        /// <inheritdoc />
         public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
             var jwt = context.Jwt;
-            if (jwt.ContentSegment.Length == 0 && jwt.SignatureSegment.Length == 0)
+            if (context.ContentSegment.Length == 0 && context.SignatureSegment.Length == 0)
             {
                 // This is not a JWS
                 return TokenValidationResult.Success(jwt);
             }
 
             var token = context.Token;
-            if (token.Length <= jwt.ContentSegment.Length + 1)
+            if (token.Length <= context.ContentSegment.Length + 1)
             {
                 if (_supportUnsecure && jwt.SignatureAlgorithm == SignatureAlgorithm.None)
                 {
@@ -43,7 +44,7 @@ namespace JsonWebToken.Internal
             int signatureBytesLength;
             try
             {
-                signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(jwt.SignatureSegment.Length);
+                signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(context.SignatureSegment.Length);
             }
             catch (FormatException)
             {
@@ -53,7 +54,7 @@ namespace JsonWebToken.Internal
             Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
             try
             {
-                Base64Url.Base64UrlDecode(token.Slice(jwt.SignatureSegment.Start), signatureBytes, out int byteConsumed, out int bytesWritten);
+                Base64Url.Base64UrlDecode(token.Slice(context.SignatureSegment.Start), signatureBytes, out int byteConsumed, out int bytesWritten);
                 Debug.Assert(bytesWritten == signatureBytes.Length);
             }
             catch (FormatException)
@@ -62,7 +63,7 @@ namespace JsonWebToken.Internal
             }
 
             bool keysTried = false;
-            var encodedBytes = token.Slice(jwt.ContentSegment.Start, jwt.ContentSegment.Length);
+            var encodedBytes = token.Slice(context.ContentSegment.Start, context.ContentSegment.Length);
             var keys = ResolveSigningKey(jwt);
             for (int i = 0; i < keys.Count; i++)
             {

@@ -10,6 +10,12 @@ namespace JsonWebToken
     /// </summary>
     public interface IKeyWrapperFactory : IDisposable
     {
+        /// <summary>
+        /// Creates a <see cref="KeyWrapper"/>.
+        /// </summary>
+        /// <param name="key">The key used for key wrapping.</param>
+        /// <param name="encryptionAlgorithm">The encryption algorithm.</param>
+        /// <param name="contentEncryptionAlgorithm">The content encryption algorithm.</param>
         KeyWrapper Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm);
     }
 }

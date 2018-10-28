@@ -6,15 +6,16 @@ using System.Collections.Generic;
 
 namespace JsonWebToken.Internal
 {
-    public class AudienceValidation : IValidation
+    public class AudienceValidator : IValidator
     {
         private readonly IEnumerable<string> _audiences;
 
-        public AudienceValidation(IEnumerable<string> audiences)
+        public AudienceValidator(IEnumerable<string> audiences)
         {
             _audiences = audiences;
         }
 
+        /// <inheritsdoc />
         public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
             var jwt = context.Jwt;

@@ -72,6 +72,9 @@ namespace JsonWebToken
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeySetParameterNames.Keys, Required = Required.Default, ItemConverterType = typeof(JsonWebKey.JwkJsonConverter))]
         public IList<JsonWebKey> Keys { get; } = new List<JsonWebKey>();
 
+        /// <summary>
+        /// Gets or sets the first <see cref="JsonWebKey"/> with its 'kid'.
+        /// </summary>
         public JsonWebKey this[string kid]
         {
             get
@@ -104,6 +107,10 @@ namespace JsonWebToken
             return new JsonWebKeySet(json);
         }
 
+        /// <summary>
+        /// Adds the <paramref name="key"/> to the JWKS.
+        /// </summary>
+        /// <param name="key"></param>
         public void Add(JsonWebKey key)
         {
             if (key == null)
@@ -114,6 +121,10 @@ namespace JsonWebToken
             Keys.Add(key);
         }
 
+        /// <summary>
+        /// Removes the <paramref name="key"/> from the JWKS.
+        /// </summary>
+        /// <param name="key"></param>
         public void Remove(JsonWebKey key)
         {
             if (key == null)
@@ -129,7 +140,7 @@ namespace JsonWebToken
             return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
 
-        public IReadOnlyList<JsonWebKey> UnidentifiedKeys
+        private IReadOnlyList<JsonWebKey> UnidentifiedKeys
         {
             get
             {
@@ -144,7 +155,7 @@ namespace JsonWebToken
             }
         }
 
-        public IDictionary<string, List<JsonWebKey>> IdentifiedKeys
+        private IDictionary<string, List<JsonWebKey>> IdentifiedKeys
         {
             get
             {
@@ -160,6 +171,11 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Gets the list of <see cref="JsonWebKey"/> identified by the 'kid'.
+        /// </summary>
+        /// <param name="kid"></param>
+        /// <returns></returns>
         public IReadOnlyList<JsonWebKey> GetKeys(string kid)
         {
             if (kid == null)

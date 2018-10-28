@@ -67,6 +67,7 @@ namespace JsonWebToken.Internal
             }
         }
 
+        /// <inheritsdoc />
         public override int HashSizeInBytes => _hashSizeInBytes;
 
         /// <summary>
@@ -90,6 +91,7 @@ namespace JsonWebToken.Internal
             }
         }
 
+        /// <inheritsdoc />
         public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {
             if (_disposed)
@@ -122,6 +124,7 @@ namespace JsonWebToken.Internal
             }
         }
 
+        /// <inheritsdoc />
         public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
         {
             if (_disposed)
@@ -147,50 +150,16 @@ namespace JsonWebToken.Internal
             }
         }
 
-        public bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature, int length)
-        {
-            if (_disposed)
-            {
-                Errors.ThrowObjectDisposed(GetType());
-            }
-
-            if (length <= 0)
-            {
-                Errors.ThrowMustBeGreaterThanZero(nameof(length), length);
-            }
-
-            var keyedHash = _hashAlgorithmPool.Get();
-            try
-            {
-#if NETCOREAPP2_1
-                Span<byte> hash = stackalloc byte[_hashSizeInBytes];
-                bool result = keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash, length);
-                Debug.Assert(hash.Length == bytesWritten);
-                return result;
-#else
-                return AreEqual(signature, keyedHash.ComputeHash(input.ToArray()), length);
-#endif
-            }
-            finally
-            {
-                _hashAlgorithmPool.Return(keyedHash);
-            }
-        }
-
-        private static bool AreEqual(ReadOnlySpan<byte> a, Span<byte> b)
-        {
-            return AreEqual(a, b, a.Length);
-        }
-
         // Optimized byte-based AreEqual. Inspired from https://github.com/dotnet/corefx/blob/master/src/Common/src/CoreLib/System/SpanHelpers.Byte.cs
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        private static bool AreEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b, int length)
+        private static bool AreEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
         {
             if (a.Length != b.Length)
             {
                 return false;
             }
 
+            int length = a.Length;
             ref var first = ref MemoryMarshal.GetReference(a);
             ref byte second = ref MemoryMarshal.GetReference(b);
 
@@ -240,6 +209,7 @@ namespace JsonWebToken.Internal
             }
         }
 
+        /// <inheritsdoc />
         protected override void Dispose(bool disposing)
         {
             if (!_disposed)

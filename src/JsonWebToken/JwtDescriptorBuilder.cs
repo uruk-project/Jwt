@@ -20,7 +20,6 @@ namespace JsonWebToken
 
         private JsonWebKey _signingKey;
         private JsonWebKey _encryptionKey;
-        private TimeSpan _expireIn;
         private bool _noSignature;
 
         public JwtDescriptorBuilder AddHeader(string headerName, JToken headerValue)
@@ -37,12 +36,6 @@ namespace JsonWebToken
         public JwtDescriptorBuilder Expires(DateTime exp)
         {
             return AddClaim(Claims.Exp, exp);
-        }
-
-        public JwtDescriptorBuilder ExpiresIn(TimeSpan duration)
-        {
-            _expireIn = duration;
-            return this;
         }
 
         public JwtDescriptorBuilder AddClaim(string claimName, JToken claimValue)
@@ -93,6 +86,16 @@ namespace JsonWebToken
             }
             else
             {
+                if (_binaryPayload != null)
+                {
+                    throw new InvalidOperationException("A binary payload was defined, but not encryption key is set.");
+                }
+
+                if (_textPayload != null)
+                {
+                    throw new InvalidOperationException("A plaintext payload was defined, but not encryption key is set.");
+                }
+
                 var jws = new JwsDescriptor(_header, _jsonPayload);
                 if (_signingKey != null)
                 {
@@ -100,13 +103,11 @@ namespace JsonWebToken
                 }
                 else if (!_noSignature)
                 {
-                    throw new InvalidOperationException("No signing key is defined.");
+                    Errors.ThrowNoSigningKeyDefined();
                 }
 
                 return jws;
             }
-
-            throw new InvalidOperationException();
         }
 
         public JwtDescriptorBuilder Plaintext(string text)

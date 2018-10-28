@@ -10,6 +10,9 @@ namespace JsonWebToken
     /// </summary>
     public interface IKeyProvider
     {
+        /// <summary>
+        /// Gets a list of <see cref="JsonWebKey"/>.
+        /// </summary>
         IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header);
     }
 }

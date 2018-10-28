@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 using System;
 
@@ -23,26 +22,19 @@ namespace JsonWebToken.Internal
             }
         }
 
-        public override int GetKeyUnwrapSize(int inputSize)
+        /// <inheritsdoc />
+        public override int GetKeyUnwrapSize(int wrappedKeySize)
         {
-            return GetKeyUnwrappedSize(inputSize, Algorithm);
+            return GetKeyUnwrappedSize(wrappedKeySize, Algorithm);
         }
 
+        /// <inheritsdoc />
         public override int GetKeyWrapSize()
         {
             return GetKeyWrappedSize(EncryptionAlgorithm);
         }
 
-        public static int GetKeyUnwrappedSize(int inputSize, KeyManagementAlgorithm algorithm)
-        {
-            return inputSize - 8;
-        }
-
-        public static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm)
-        {
-            return encryptionAlgorithm.RequiredKeyWrappedSizeInBytes;
-        }
-
+        /// <inheritsdoc />
         public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
             if (_disposed)
@@ -52,17 +44,25 @@ namespace JsonWebToken.Internal
 
             Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.IV.Length)];
             Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.Tag.Length)];
-            Base64Url.Base64UrlDecode(header.IV, nonce);
-            Base64Url.Base64UrlDecode(header.Tag, tag);
-            using (var aesGcm = new AesGcm(Key.ToByteArray()))
+            try
             {
-                aesGcm.Decrypt(nonce, keyBytes, tag, destination);
-                bytesWritten = destination.Length;
+                Base64Url.Base64UrlDecode(header.IV, nonce);
+                Base64Url.Base64UrlDecode(header.Tag, tag);
+                using (var aesGcm = new AesGcm(Key.ToByteArray()))
+                {
+                    aesGcm.Decrypt(nonce, keyBytes, tag, destination);
+                    bytesWritten = destination.Length;
 
-                return true;
+                    return true;
+                }
+            }
+            catch
+            {
+                return Errors.TryWriteError(out bytesWritten);
             }
         }
 
+        /// <inheritsdoc />
         public override bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
@@ -73,21 +73,41 @@ namespace JsonWebToken.Internal
             contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
             Span<byte> nonce = stackalloc byte[IVSize];
             Span<byte> tag = stackalloc byte[TagSize];
-            using (var aesGcm = new AesGcm(Key.ToByteArray()))
+
+            try
             {
-                aesGcm.Encrypt(nonce, contentEncryptionKey.ToByteArray(), destination, tag);
-                bytesWritten = destination.Length;
+                using (var aesGcm = new AesGcm(Key.ToByteArray()))
+                {
+                    aesGcm.Encrypt(nonce, contentEncryptionKey.ToByteArray(), destination, tag);
+                    bytesWritten = destination.Length;
 
-                header.Add(HeaderParameters.IV, Base64Url.Base64UrlEncode(nonce));
-                header.Add(HeaderParameters.Tag, Base64Url.Base64UrlEncode(tag));
+                    header.Add(HeaderParameters.IV, Base64Url.Base64UrlEncode(nonce));
+                    header.Add(HeaderParameters.Tag, Base64Url.Base64UrlEncode(tag));
 
-                return true;
+                    return true;
+                }
+            }
+            catch
+            {
+                contentEncryptionKey = null;
+                return Errors.TryWriteError(out bytesWritten);
             }
         }
 
+        /// <inheritsdoc />
         protected override void Dispose(bool disposing)
         {
             _disposed = true;
+        }
+
+        private static int GetKeyUnwrappedSize(int wrappedKeySize, KeyManagementAlgorithm algorithm)
+        {
+            return wrappedKeySize - 8;
+        }
+
+        private static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm)
+        {
+            return encryptionAlgorithm.RequiredKeyWrappedSizeInBytes;
         }
     }
 }

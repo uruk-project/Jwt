@@ -5,17 +5,16 @@ using System;
 
 namespace JsonWebToken.Internal
 {
-    public class TokenReplayValidation : IValidation
+    public class TokenReplayValidator : IValidator
     {
         private readonly ITokenReplayCache _tokenReplayCache;
 
-        public TokenReplayValidation(ITokenReplayCache tokenReplayCache)
+        public TokenReplayValidator(ITokenReplayCache tokenReplayCache)
         {
             _tokenReplayCache = tokenReplayCache ?? throw new ArgumentNullException(nameof(tokenReplayCache));
         }
-
-        public string Name => nameof(TokenReplayValidation);
-
+        
+        /// <inheritdoc />
         public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
             var jwt = context.Jwt;

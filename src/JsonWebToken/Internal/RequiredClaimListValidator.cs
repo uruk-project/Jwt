@@ -7,17 +7,18 @@ using System.Collections.Generic;
 
 namespace JsonWebToken.Internal
 {
-    public class RequiredClaimListValidation<TClaim> : IValidation
+    public class RequiredClaimListValidator<TClaim> : IValidator
     {
         private readonly string _claim;
         private readonly IList<TClaim> _values;
 
-        public RequiredClaimListValidation(string claim, IList<TClaim> values)
+        public RequiredClaimListValidator(string claim, IList<TClaim> values)
         {
             _claim = claim ?? throw new ArgumentNullException(nameof(claim));
             _values = values ?? throw new ArgumentNullException(nameof(values));
         }
 
+        /// <inheritdoc />
         public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
             var jwt = context.Jwt;

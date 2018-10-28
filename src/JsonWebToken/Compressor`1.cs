@@ -11,10 +11,17 @@ namespace JsonWebToken
     /// </summary>
     public abstract class Compressor<TStream> : Compressor where TStream : Stream
     {
-        public abstract TStream CreateDecompressionStream(Stream outputStream);
+        /// <summary>
+        /// Creates a decompression <see cref="Stream"/>.
+        /// </summary>
+        public abstract TStream CreateDecompressionStream(Stream inputStream);
 
-        public abstract TStream CreateCompressionStream(Stream outputStream);
+        /// <summary>
+        /// Creates a compression <see cref="Stream"/>.
+        /// </summary> 
+        public abstract TStream CreateCompressionStream(Stream inputStream);
 
+        /// <inheritdoc />
         public override Span<byte> Compress(ReadOnlySpan<byte> ciphertext)
         {
             using (var outputStream = new MemoryStream())
@@ -31,6 +38,7 @@ namespace JsonWebToken
             }
         }
 
+        /// <inheritdoc />
         public override Span<byte> Decompress(ReadOnlySpan<byte> compressedCiphertext)
         {
             using (var inputStream = new MemoryStream(compressedCiphertext.ToArray()))

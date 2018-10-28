@@ -49,6 +49,7 @@ namespace JsonWebToken.Internal
             }
         }
 
+        /// <inheritsdoc />
         public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
             if (keyBytes.IsEmpty)
@@ -83,6 +84,7 @@ namespace JsonWebToken.Internal
             }
         }
 
+        /// <inheritsdoc />
         public override bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
         {
             if (header == null)
@@ -114,16 +116,19 @@ namespace JsonWebToken.Internal
             }
         }
 
-        public override int GetKeyUnwrapSize(int inputSize)
+        /// <inheritsdoc />
+        public override int GetKeyUnwrapSize(int wrappedKeySize)
         {
             return EncryptionAlgorithm.RequiredKeySizeInBytes;
         }
 
+        /// <inheritsdoc />
         public override int GetKeyWrapSize()
         {
             return Key.KeySizeInBits >> 3;
         }
 
+        /// <inheritsdoc />
         protected override void Dispose(bool disposing)
         {
             if (!_disposed)

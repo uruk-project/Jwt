@@ -14,11 +14,13 @@ namespace JsonWebToken.Internal
         {
         }
 
+        /// <inheritsdoc />
         public override IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header)
         {
             return GetKeys(header, header.X5u);
         }
 
+        /// <inheritsdoc />
         protected override JsonWebKeySet DeserializeKeySet(string value)
         {
             using (var certificate = new X509Certificate2(Convert.FromBase64String(value)))

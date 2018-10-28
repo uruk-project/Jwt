@@ -69,11 +69,21 @@ namespace JsonWebToken
         /// Wrap a key.
         /// </summary>
         /// <param name="staticKey">The key to be wrapped. If <c>null</c>, the key will be ephemeral and generated within this method.</param>
-        /// <returns>wrapped key.</returns>
+        /// <param name="header">The key-values representing the JWT header.</param>
+        /// <param name="destination">The destination span.</param>
+        /// <param name="contentEncryptionKey">The generated content encryption key.</param>
+        /// <param name="bytesWritten">The count of bytes written.</param>
+        /// <returns>True .</returns>
         public abstract bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten);
 
-        public abstract int GetKeyUnwrapSize(int inputSize);
+        /// <summary>
+        /// Gets the size of the unwrapped key.
+        /// </summary>
+        public abstract int GetKeyUnwrapSize(int wrappedKeySize);
 
+        /// <summary>
+        /// Gets the size of the wrapped key.
+        /// </summary>
         public abstract int GetKeyWrapSize();
     }
 }

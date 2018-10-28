@@ -1,13 +1,12 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
+using System;
 
 namespace JsonWebToken.Internal
 {
-    public class EpochTimeConverter : JsonConverter
+    internal class EpochTimeConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {

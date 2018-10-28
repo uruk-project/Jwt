@@ -6,21 +6,22 @@ using System;
 
 namespace JsonWebToken.Internal
 {
-    public class RequiredClaimValidation<TClaim> : IValidation
+    public class RequiredClaimValidator<TClaim> : IValidator
     {
         private readonly string _claim;
         private readonly TClaim _value;
 
-        public RequiredClaimValidation(string claim) : this(claim, default)
+        public RequiredClaimValidator(string claim) : this(claim, default)
         {
         }
 
-        public RequiredClaimValidation(string claim, TClaim value)
+        public RequiredClaimValidator(string claim, TClaim value)
         {
             _claim = claim ?? throw new ArgumentNullException(nameof(claim));
             _value = value;
         }
 
+        /// <inheritdoc />
         public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
             var jwt = context.Jwt;

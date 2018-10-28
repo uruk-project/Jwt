@@ -14,9 +14,10 @@ namespace JsonWebToken
         private int _defaultTokenLifetimeInMinutes = DefaultTokenLifetimeInMinutes;
 
         /// <summary>
-        /// Default lifetime of tokens created. When creating tokens, if 'exp' and 'nbf' are both null, then a default will be set to: exp = DateTime.UtcNow, nbf = DateTime.UtcNow + TimeSpan.FromMinutes(TokenLifetimeInMinutes).
+        /// Default lifetime of tokens created. 
         /// </summary>
         public static readonly int DefaultTokenLifetimeInMinutes = 60;
+
         private readonly ISignerFactory _signatureFactory;
         private readonly IKeyWrapperFactory _keyWrapFactory;
         private readonly IAuthenticatedEncryptorFactory _authenticatedEncryptionFactory;
@@ -74,17 +75,17 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Gets or sets whether token creation will set default 'exp', 'nbf' and 'iat' if not specified.
+        /// Gets or sets whether token creation will set default 'exp', 'nbf' and 'iat' if not specified. Default value is <c>false</c>.
         /// </summary>
         public bool SetDefaultTimesOnTokenCreation { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets whether the <see cref="JwtDescriptor"/> has to be validated.
+        /// Gets or sets whether the <see cref="JwtDescriptor"/> has to be validated. Default value is <c>false</c>.
         /// </summary>
         public bool IgnoreTokenValidation { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets whether the JWT header will be cached.
+        /// Gets or sets whether the JWT header will be cached. Default value is <c>true</c>.
         /// </summary>
         public bool EnableHeaderCaching { get; set; } = true;
 

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace JsonWebToken.Internal
 {
-    public class AudienceConverter : JsonConverter
+    internal class AudienceConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {

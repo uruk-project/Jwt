@@ -30,7 +30,7 @@ namespace JsonWebToken
 
         private static readonly JsonSerializer jsonSerializer = new JsonSerializer { Converters = { jsonConverter }, ContractResolver = contractResolver };
         private List<JsonWebKey> _certificateChain;
-        
+
         /// <summary>
         /// When deserializing from JSON any properties that are not defined will be placed here.
         /// </summary>
@@ -97,6 +97,9 @@ namespace JsonWebToken
         [JsonIgnore]
         public abstract int KeySizeInBits { get; }
 
+        /// <summary>
+        /// Gets the X.509 certificate chain.
+        /// </summary>
         [JsonIgnore]
         public IList<JsonWebKey> X509CertificateChain
         {
@@ -166,11 +169,17 @@ namespace JsonWebToken
         /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
         public abstract bool IsSupported(EncryptionAlgorithm algorithm);
 
+        /// <summary>
+        /// Returns a string that represents the <see cref="JsonWebKey"/> in JSON.
+        /// </summary>
         public override string ToString()
         {
             return ToString(Formatting.None);
         }
 
+        /// <summary>
+        /// Returns a string that represents the <see cref="JsonWebKey"/> in JSON.
+        /// </summary>
         public string ToString(Formatting formatting)
         {
             return JsonConvert.SerializeObject(this, formatting, serializerSettings);
@@ -356,6 +365,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="jObject">A string that contains JSON Web Key parameters in JSON format.</param>
         /// <returns><see cref="TKey"/></returns>
+        /// <typeparam name="TKey">The type of key.</typeparam>
         public static TKey FromJson<TKey>(JToken jObject) where TKey : JsonWebKey
         {
             if (jObject == null)
@@ -376,7 +386,7 @@ namespace JsonWebToken
             return FromJson<JsonWebKey>(json);
         }
 
-        protected static byte[] CloneByteArray(byte[] array)
+        internal static byte[] CloneByteArray(byte[] array)
         {
             var clone = new byte[array.Length];
             array.CopyTo(clone, 0);

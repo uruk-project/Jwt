@@ -11,6 +11,11 @@ namespace JsonWebToken.Internal
 
         private bool _disposed;
 
+        /// <summary>
+        /// Creates an <see cref="AuthenticatedEncryptor"/>.
+        /// </summary>
+        /// <param name="key">The key used for encryption.</param>
+        /// <param name="encryptionAlgorithm">then encryption algorithm/</param>
         public virtual AuthenticatedEncryptor Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (_disposed)
