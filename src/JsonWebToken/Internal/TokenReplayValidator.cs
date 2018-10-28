@@ -13,9 +13,7 @@ namespace JsonWebToken.Internal
         {
             _tokenReplayCache = tokenReplayCache ?? throw new ArgumentNullException(nameof(tokenReplayCache));
         }
-
-        public string Name => nameof(TokenReplayValidator);
-
+        
         /// <inheritdoc />
         public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
