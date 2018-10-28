@@ -15,7 +15,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return builder.AddValidation(new AuthenticationContextClassReferenceValidation(requiredAcr));
+            return builder.AddValidator(new AuthenticationContextClassReferenceValidator(requiredAcr));
         }
 
         public static TokenValidationPolicyBuilder RequireAuthTime(this TokenValidationPolicyBuilder builder)
@@ -25,7 +25,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return builder.AddValidation(new RequiredClaimValidation<int>(Claims.AuthTime));
+            return builder.AddValidator(new RequiredClaimValidator<int>(Claims.AuthTime));
         }
 
         public static TokenValidationPolicyBuilder RequireNonce(this TokenValidationPolicyBuilder builder)
@@ -35,7 +35,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return builder.AddValidation(new RequiredClaimValidation<string>(Claims.Nonce));
+            return builder.AddValidator(new RequiredClaimValidator<string>(Claims.Nonce));
         }
     }
 }

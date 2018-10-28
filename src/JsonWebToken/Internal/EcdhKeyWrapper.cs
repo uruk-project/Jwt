@@ -43,11 +43,13 @@ namespace JsonWebToken.Internal
             _hashAlgorithm = GetHashAlgorithm(encryptionAlgorithm);
         }
 
+        /// <inheritsdoc />
         public override int GetKeyUnwrapSize(int inputSize)
         {
             return EncryptionAlgorithm.RequiredKeySizeInBytes;
         }
 
+        /// <inheritsdoc />
         public override int GetKeyWrapSize()
         {
             if (Algorithm == KeyManagementAlgorithm.EcdhEs)
@@ -60,6 +62,7 @@ namespace JsonWebToken.Internal
             }
         }
 
+        /// <inheritsdoc />
         public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
             if (_disposed)
@@ -104,17 +107,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private static HashAlgorithmName GetHashAlgorithm(EncryptionAlgorithm encryptionAlgorithm)
-        {
-            var hashAlgorithm = encryptionAlgorithm.SignatureAlgorithm.HashAlgorithm;
-            if (hashAlgorithm == default)
-            {
-                return HashAlgorithmName.SHA256;
-            }
-
-            return hashAlgorithm;
-        }
-
+        /// <inheritsdoc />
         public override bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
@@ -157,6 +150,22 @@ namespace JsonWebToken.Internal
                 contentEncryptionKey = null;
                 return Errors.TryWriteError(out bytesWritten);
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _disposed = true;
+        }
+
+        private static HashAlgorithmName GetHashAlgorithm(EncryptionAlgorithm encryptionAlgorithm)
+        {
+            var hashAlgorithm = encryptionAlgorithm.SignatureAlgorithm.HashAlgorithm;
+            if (hashAlgorithm == default)
+            {
+                return HashAlgorithmName.SHA256;
+            }
+
+            return hashAlgorithm;
         }
 
         private static string GetPartyInfo(JObject header, string headerName)
@@ -233,11 +242,6 @@ namespace JsonWebToken.Internal
             WriteSuppInfo(secretAppendSpan.Slice(algorithmLength + partyUInfoLength + partyVInfoLength));
 
             return secretAppend;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            _disposed = true;
         }
     }
 }

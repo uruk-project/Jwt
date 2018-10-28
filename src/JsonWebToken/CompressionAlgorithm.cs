@@ -35,6 +35,7 @@ namespace JsonWebToken
             Compressor = compressor ?? throw new ArgumentNullException(nameof(compressor));
         }
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             if (obj is CompressionAlgorithm alg)
@@ -55,6 +56,7 @@ namespace JsonWebToken
             return Id == other.Id;
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return Id.GetHashCode();

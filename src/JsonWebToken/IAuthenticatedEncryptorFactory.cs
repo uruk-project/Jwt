@@ -10,6 +10,11 @@ namespace JsonWebToken
     /// </summary>
     public interface IAuthenticatedEncryptorFactory : IDisposable
     {
+        /// <summary>
+        /// Creates an <see cref="AuthenticatedEncryptor"/>.
+        /// </summary>
+        /// <param name="key">The key used for encryption.</param>
+        /// <param name="encryptionAlgorithm">The encryption algorithm.</param>
         AuthenticatedEncryptor Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm);
     }
 }

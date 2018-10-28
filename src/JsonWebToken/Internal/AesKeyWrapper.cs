@@ -88,11 +88,6 @@ namespace JsonWebToken.Internal
             }
         }
 
-        /// <summary>
-        /// Unwrap a key using AES decryption.
-        /// </summary>
-        /// <param name="keyBytes">the bytes to unwrap.</param>
-        /// <returns>Unwrapped key</returns>
         public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
             if (keyBytes.IsEmpty)
@@ -186,7 +181,15 @@ namespace JsonWebToken.Internal
             }
 
             contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
-            return TryWrapKeyPrivate(contentEncryptionKey.ToByteArray(), destination, out bytesWritten);
+            try
+            {
+                return TryWrapKeyPrivate(contentEncryptionKey.ToByteArray(), destination, out bytesWritten);
+            }
+            catch (Exception)
+            {
+                contentEncryptionKey = null;
+                return Errors.TryWriteError(out bytesWritten);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -242,9 +245,9 @@ namespace JsonWebToken.Internal
             }
         }
 
-        public override int GetKeyUnwrapSize(int inputSize)
+        public override int GetKeyUnwrapSize(int wrappedKeySize)
         {
-            return GetKeyUnwrappedSize(inputSize, Algorithm);
+            return GetKeyUnwrappedSize(wrappedKeySize, Algorithm);
         }
 
         public override int GetKeyWrapSize()
@@ -252,9 +255,9 @@ namespace JsonWebToken.Internal
             return GetKeyWrappedSize(EncryptionAlgorithm);
         }
 
-        public static int GetKeyUnwrappedSize(int inputSize, KeyManagementAlgorithm algorithm)
+        public static int GetKeyUnwrappedSize(int wrappedKeySize, KeyManagementAlgorithm algorithm)
         {
-            return inputSize - BlockSizeInBytes;
+            return wrappedKeySize - BlockSizeInBytes;
         }
 
         public static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm)

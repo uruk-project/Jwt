@@ -12,20 +12,30 @@ namespace JsonWebToken
     {
         public static readonly Compressor Null = new NullCompressor();
 
-        public abstract Span<byte> Compress(ReadOnlySpan<byte> ciphertext);
+        /// <summary>
+        /// Compresses the data.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public abstract Span<byte> Compress(ReadOnlySpan<byte> data);
 
-        public abstract Span<byte> Decompress(ReadOnlySpan<byte> compressedCiphertext);
+        /// <summary>
+        /// Decompresses the compressed data.
+        /// </summary>
+        /// <param name="compressedData">The compressed data.</param>
+        /// <returns></returns>
+        public abstract Span<byte> Decompress(ReadOnlySpan<byte> compressedData);
 
         private class NullCompressor : Compressor
         {
-            public override Span<byte> Compress(ReadOnlySpan<byte> ciphertext)
+            public override Span<byte> Compress(ReadOnlySpan<byte> data)
             {
-                return ciphertext.ToArray();
+                return data.ToArray();
             }
 
-            public override Span<byte> Decompress(ReadOnlySpan<byte> compressedCiphertext)
+            public override Span<byte> Decompress(ReadOnlySpan<byte> compressedData)
             {
-                  return compressedCiphertext.ToArray();
+                  return compressedData.ToArray();
             }
         }
     }

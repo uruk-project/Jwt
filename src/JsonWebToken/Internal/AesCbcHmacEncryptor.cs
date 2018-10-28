@@ -50,27 +50,31 @@ namespace JsonWebToken.Internal
             }
         }
 
+        /// <inheritdoc />
         public override int GetCiphertextSize(int plaintextSize)
         {
             return (plaintextSize + 16) & ~15;
         }
 
+        /// <inheritdoc />
         public override int GetTagSize()
         {
             return _symmetricSignatureProvider.HashSizeInBytes;
         }
 
+        /// <inheritdoc />
         public override int GetNonceSize()
         {
             return 16;
         }
 
+        /// <inheritdoc />
         public override void Encrypt(
             ReadOnlySpan<byte> plaintext,
             ReadOnlySpan<byte> nonce,
             ReadOnlySpan<byte> associatedData,
             Span<byte> ciphertext,
-            Span<byte> tag)
+            Span<byte> authenticationTag)
         {
             if (plaintext.IsEmpty)
             {
@@ -107,8 +111,8 @@ namespace JsonWebToken.Internal
                 ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
                 BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length, sizeof(long)), associatedData.Length * 8);
 
-                _symmetricSignatureProvider.TrySign(macBytes, tag, out int writtenBytes);
-                Debug.Assert(writtenBytes == tag.Length);
+                _symmetricSignatureProvider.TrySign(macBytes, authenticationTag, out int writtenBytes);
+                Debug.Assert(writtenBytes == authenticationTag.Length);
             }
             catch
             {
@@ -125,6 +129,7 @@ namespace JsonWebToken.Internal
             }
         }
 
+        /// <inheritdoc />
         public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
         {
             if (ciphertext.IsEmpty)
@@ -163,7 +168,7 @@ namespace JsonWebToken.Internal
                 nonce.CopyTo(macBytes.Slice(associatedData.Length));
                 ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
                 BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length), associatedData.Length * 8);
-                if (!_symmetricSignatureProvider.Verify(macBytes, authenticationTag, _symmetricSignatureProvider.Key.KeySizeInBits >> 3))
+                if (!_symmetricSignatureProvider.Verify(macBytes, authenticationTag))
                 {
                     plaintext.Clear();
                     return Errors.TryWriteError(out bytesWritten);
@@ -198,6 +203,18 @@ namespace JsonWebToken.Internal
                 }
             }
         }
+
+        /// <inheritdoc />
+        public override void Dispose()
+        {
+            if (!_disposed)
+            {
+                _symmetricSignatureProvider.Dispose();
+                _aesPool.Dispose();
+
+                _disposed = true;
+            }
+        }
         
         private static unsafe int Transform(ICryptoTransform transform, ReadOnlySpan<byte> input, int inputOffset, int inputLength, Span<byte> output)
         {
@@ -214,17 +231,6 @@ namespace JsonWebToken.Internal
                     cryptoStream.FlushFinalBlock();
                     return (int)messageStream.Position;
                 }
-            }
-        }
-        
-        public override void Dispose()
-        {
-            if (!_disposed)
-            {
-                _symmetricSignatureProvider.Dispose();
-                _aesPool.Dispose();
-
-                _disposed = true;
             }
         }
 

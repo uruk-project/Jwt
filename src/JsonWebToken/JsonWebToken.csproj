@@ -11,9 +11,8 @@
 
   <PropertyGroup>
     <PackageTags>jwt security jsonwebtoken cryptography</PackageTags>
-    <Description>High-performance JWT library.
-Provides Json Web Token primitives.
-</Description>
+    <Description>High-performance JWT library. Provides Json Web Token primitives.</Description>
+    <DocumentationFile>$(OutputPath)JsonWebToken.xml</DocumentationFile>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -22,10 +21,6 @@ Provides Json Web Token primitives.
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="IDisposableAnalyzers" Version="2.0.5">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="System.Buffers" Version="4.5.0" />
     <PackageReference Include="System.Collections" Version="4.3.0" />

@@ -31,7 +31,8 @@ namespace JsonWebToken.Internal
             _encryptionAlgorithm = encryptionAlgorithm;
         }
 
-        public override void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> tag)
+        /// <inheritdoc />
+        public override void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag)
         {
             if (_disposed)
             {
@@ -40,25 +41,29 @@ namespace JsonWebToken.Internal
 
             using (var aes = new AesGcm(_key.RawK))
             {
-                aes.Encrypt(plaintext, nonce, ciphertext, tag, associatedData);
+                aes.Encrypt(plaintext, nonce, ciphertext, authenticationTag, associatedData);
             }
         }
 
+        /// <inheritdoc />
         public override int GetCiphertextSize(int plaintextSize)
         {
             return plaintextSize;
         }
 
+        /// <inheritdoc />
         public override int GetNonceSize()
         {
             return 12;
         }
 
+        /// <inheritdoc />
         public override int GetTagSize()
         {
             return 16;
         }
 
+        /// <inheritdoc />
         public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
         {
             if (_disposed)
@@ -66,14 +71,23 @@ namespace JsonWebToken.Internal
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-            using (var aes = new AesGcm(_key.ToByteArray()))
+            try
             {
-                aes.Decrypt(nonce, ciphertext, authenticationTag, plaintext, associatedData);
-                bytesWritten = plaintext.Length;
-                return true;
+                using (var aes = new AesGcm(_key.ToByteArray()))
+                {
+                    aes.Decrypt(nonce, ciphertext, authenticationTag, plaintext, associatedData);
+                    bytesWritten = plaintext.Length;
+                    return true;
+                }
+            }
+            catch
+            {
+                plaintext.Clear();
+                return Errors.TryWriteError(out bytesWritten);
             }
         }
 
+        /// <inheritdoc />
         public override void Dispose()
         {
             _disposed = true;

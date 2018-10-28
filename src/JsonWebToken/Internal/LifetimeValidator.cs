@@ -5,19 +5,20 @@ using System;
 
 namespace JsonWebToken.Internal
 {
-    public class LifetimeValidation : IValidation
+    public class LifetimeValidator : IValidator
     {
         private readonly bool _requireExpirationTime;
         private readonly long _clockSkewTicks;
         private readonly long _negativeClockSkewTicks;
 
-        public LifetimeValidation(bool requireExpirationTime, int clockSkewInSeconds)
+        public LifetimeValidator(bool requireExpirationTime, int clockSkewInSeconds)
         {
             _requireExpirationTime = requireExpirationTime;
             _clockSkewTicks = clockSkewInSeconds * TimeSpan.TicksPerSecond;
             _negativeClockSkewTicks = -_clockSkewTicks;
         }
 
+        /// <inheritdoc />
         public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
             var jwt = context.Jwt;

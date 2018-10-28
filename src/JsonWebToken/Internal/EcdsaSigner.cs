@@ -54,8 +54,10 @@ namespace JsonWebToken.Internal
             _hashAlgorithmPool = new ObjectPool<ECDsa>(new ECDsaObjectPoolPolicy(key, algorithm, willCreateSignatures));
         }
 
+        /// <inheritsdoc />
         public override int HashSizeInBytes => _hashSize;
 
+        /// <inheritsdoc />
         public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {
             if (input.IsEmpty)
@@ -78,6 +80,7 @@ namespace JsonWebToken.Internal
 #endif
         }
 
+        /// <inheritsdoc />
         public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
         {
             if (input.IsEmpty)
@@ -102,6 +105,7 @@ namespace JsonWebToken.Internal
 #endif
         }
 
+        /// <inheritsdoc />
         protected override void Dispose(bool disposing)
         {
             if (!_disposed)

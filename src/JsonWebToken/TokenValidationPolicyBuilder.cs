@@ -11,41 +11,41 @@ namespace JsonWebToken
 {
     public class TokenValidationPolicyBuilder
     {
-        private readonly List<IValidation> _validations = new List<IValidation>();
+        private readonly List<IValidator> _validators = new List<IValidator>();
         private int _maximumTokenSizeInBytes = TokenValidationPolicy.DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
 
         public TokenValidationPolicyBuilder Clear()
         {
-            _validations.Clear();
+            _validators.Clear();
             return this;
         }
 
-        protected TokenValidationPolicyBuilder RemoveValidation(IValidation validation)
+        protected TokenValidationPolicyBuilder RemoveValidation(IValidator validator)
         {
-            if (validation == null)
+            if (validator == null)
             {
-                throw new ArgumentNullException(nameof(validation));
+                throw new ArgumentNullException(nameof(validator));
             }
 
-            _validations.Remove(validation);
+            _validators.Remove(validator);
             return this;
         }
 
-        protected TokenValidationPolicyBuilder RemoveValidation<TValidation>() where TValidation : IValidation
+        protected TokenValidationPolicyBuilder RemoveValidator<TValidator>() where TValidator : IValidator
         {
-            _validations.RemoveAll(v => v.GetType() == typeof(TValidation));
+            _validators.RemoveAll(v => v.GetType() == typeof(TValidator));
             return this;
         }
 
-        public TokenValidationPolicyBuilder AddValidation(IValidation validation)
+        public TokenValidationPolicyBuilder AddValidator(IValidator validator)
         {
-            if (validation == null)
+            if (validator == null)
             {
-                throw new ArgumentNullException(nameof(validation));
+                throw new ArgumentNullException(nameof(validator));
             }
 
-            _validations.Add(validation);
+            _validators.Add(validator);
             return this;
         }
 
@@ -63,13 +63,13 @@ namespace JsonWebToken
         public TokenValidationPolicyBuilder IgnoreSignature()
         {
             _hasSignatureValidation = true;
-            return RemoveValidation<SignatureValidation>();
+            return RemoveValidator<SignatureValidator>();
         }
 
         public TokenValidationPolicyBuilder AcceptUnsecureToken()
         {
             _hasSignatureValidation = true;
-            _validations.Add(new SignatureValidation(new EmptyKeyProvider(), supportUnsecure: true, SignatureAlgorithm.None));
+            _validators.Add(new SignatureValidator(new EmptyKeyProvider(), supportUnsecure: true, SignatureAlgorithm.None));
             return this;
         }
 
@@ -78,7 +78,7 @@ namespace JsonWebToken
         public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider, SignatureAlgorithm algorithm)
         {
             _hasSignatureValidation = true;
-            _validations.Add(new SignatureValidation(keyProvider, supportUnsecure: false, algorithm ?? SignatureAlgorithm.Empty));
+            _validators.Add(new SignatureValidator(keyProvider, supportUnsecure: false, algorithm ?? SignatureAlgorithm.Empty));
             return this;
         }
 
@@ -129,7 +129,7 @@ namespace JsonWebToken
 
         public TokenValidationPolicyBuilder RequireClaim(string requiredClaim)
         {
-            return AddValidation(new RequiredClaimValidation<JObject>(requiredClaim));
+            return AddValidator(new RequiredClaimValidator<JObject>(requiredClaim));
         }
         
         public TokenValidationPolicyBuilder AddLifetimeValidation(bool requireExpirationTime = true, int clockSkew = 300)
@@ -139,7 +139,7 @@ namespace JsonWebToken
                 Errors.ThrowMustBeGreaterThanTimeSpanZero(nameof(clockSkew), clockSkew);
             }
 
-            _validations.Add(new LifetimeValidation(requireExpirationTime, clockSkew));
+            _validators.Add(new LifetimeValidator(requireExpirationTime, clockSkew));
             return this;
         }
 
@@ -150,7 +150,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(audience));
             }
 
-            _validations.Add(new AudienceValidation(new[] { audience }));
+            _validators.Add(new AudienceValidator(new[] { audience }));
             return this;
         }
 
@@ -161,7 +161,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(audiences));
             }
 
-            _validations.Add(new AudienceValidation(audiences));
+            _validators.Add(new AudienceValidator(audiences));
             return this;
         }
 
@@ -172,7 +172,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(issuer));
             }
 
-            _validations.Add(new IssuerValidation(issuer));
+            _validators.Add(new IssuerValidation(issuer));
             return this;
         }
 
@@ -183,7 +183,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(tokenReplayCache));
             }
 
-            _validations.Add(new TokenReplayValidation(tokenReplayCache));
+            _validators.Add(new TokenReplayValidator(tokenReplayCache));
             return this;
         }
 
@@ -199,7 +199,7 @@ namespace JsonWebToken
         {
             Validate();
 
-            var policy = new TokenValidationPolicy(_validations)
+            var policy = new TokenValidationPolicy(_validators)
             {
                 MaximumTokenSizeInBytes = _maximumTokenSizeInBytes
             };

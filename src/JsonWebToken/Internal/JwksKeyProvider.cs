@@ -16,6 +16,7 @@ namespace JsonWebToken.Internal
         {
             _jwksAddress = jwksAddress ?? throw new System.ArgumentNullException(nameof(jwksAddress));
         }
+
         public JwksKeyProvider(string jwksAddress, HttpMessageHandler handler)
             : base(new HttpDocumentRetriever(handler))
         {
@@ -27,11 +28,13 @@ namespace JsonWebToken.Internal
         {
         }
 
+        /// <inheritsdoc />
         public override IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header)
         {
             return GetKeys(header, _jwksAddress);
         }
 
+        /// <inheritsdoc />
         protected override JsonWebKeySet DeserializeKeySet(string value)
         {
             return JsonConvert.DeserializeObject<JsonWebKeySet>(value);

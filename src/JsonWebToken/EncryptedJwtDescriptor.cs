@@ -41,6 +41,9 @@ namespace JsonWebToken
             set => Header[HeaderParameters.Zip] = (string)value;
         }
 
+        /// <summary>
+        /// Encrypt the token.
+        /// </summary>
         protected string EncryptToken(EncodingContext context, string payload)
         {
             if (payload == null)
@@ -72,6 +75,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Encrypt the token.
+        /// </summary>
         protected string EncryptToken(EncodingContext context, Span<byte> payload)
         {
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;

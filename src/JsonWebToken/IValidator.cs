@@ -6,8 +6,11 @@ namespace JsonWebToken
     /// <summary>
     /// Represents a validation to apply to a <see cref="TokenValidationContext"/>.
     /// </summary>
-    public interface IValidation
+    public interface IValidator
     {
+        /// <summary>
+        /// Tries to validate a token.
+        /// </summary>
         TokenValidationResult TryValidate(in TokenValidationContext context);
     }
 }

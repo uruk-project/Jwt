@@ -11,6 +11,13 @@ namespace JsonWebToken.Internal
         private readonly CryptographicStore<Signer> _validationSigners = new CryptographicStore<Signer>();
         private bool _disposed;
 
+        /// <summary>
+        /// Creates a <see cref="Signer"/>.
+        /// </summary>
+        /// <param name="key">The key used for signature.</param>
+        /// <param name="algorithm">The signature algorithm.</param>
+        /// <param name="willCreateSignatures">Defines whether the <see cref="Signer"/> will be used for signature of for validation.</param>
+        /// <returns></returns>
         public virtual Signer Create(JsonWebKey key, SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (_disposed)

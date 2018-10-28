@@ -1,0 +1,1994 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>JsonWebToken</name>
+    </assembly>
+    <members>
+        <member name="T:JsonWebToken.AsymmetricJwk">
+            <summary>
+            Represents an asymmetric JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.AsymmetricJwk.D">
+            <summary>
+            Gets or sets the 'd' (ECC - Private Key OR RSA - Private Exponent).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.AsymmetricJwk.HasPrivateKey">
+            <summary>
+            Gets a bool indicating if a private key exists.
+            </summary>
+            <return>true if it has a private key; otherwise, false.</return>
+        </member>
+        <member name="M:JsonWebToken.AsymmetricJwk.CreateAuthenticatedEncryptor(JsonWebToken.EncryptionAlgorithm)">
+            <inheritsdoc/>
+        </member>
+        <member name="T:JsonWebToken.AuthenticatedEncryptor">
+            <summary>
+            Provides authenticated encryption and decryption.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.AuthenticatedEncryptor.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.AuthenticatedEncryptor.Encrypt(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Span{System.Byte})">
+            <summary>
+            Encrypts the <paramref name="plaintext"/>.
+            </summary>
+            <param name="plaintext">The plaintext to encrypt.</param>
+            <param name="nonce">An arbitrary value to be used only once.</param>
+            <param name="associatedData">The associated data.</param>
+            <param name="ciphertext">The resulting ciphertext.</param>
+            <param name="authenticationTag">The resulting authentication tag.</param>
+        </member>
+        <member name="M:JsonWebToken.AuthenticatedEncryptor.GetCiphertextSize(System.Int32)">
+            <summary>
+            Gets the size of the resulting ciphertext.
+            </summary>
+            <param name="plaintextSize">The plaintext size.</param>
+        </member>
+        <member name="M:JsonWebToken.AuthenticatedEncryptor.GetNonceSize">
+            <summary>
+            Gets the required size of the nonce.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.AuthenticatedEncryptor.GetTagSize">
+            <summary>
+            Gets the size of the resulting authentication tag.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.AuthenticatedEncryptor.TryDecrypt(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Int32@)">
+            <summary>
+            Try to decrypt the <paramref name="ciphertext"/>. 
+            </summary>
+            <param name="ciphertext">The ciphertext to decrypt.</param>
+            <param name="associatedData">The associated data used to encrypt.</param>
+            <param name="nonce">The nonce used to encrypt.</param>
+            <param name="authenticationTag">The authentication tag</param>
+            <param name="plaintext">The resulting plaintext.</param>
+            <param name="bytesWritten">The bytes written in the <paramref name="plaintext"/>.</param>
+            <returns></returns>
+        </member>
+        <member name="T:JsonWebToken.Base64Url">
+            <summary>
+            Encodes and Decodes strings as Base64Url.
+            </summary>
+            <remarks>Issued from https://github.com/aspnet/.</remarks>
+        </member>
+        <member name="M:JsonWebToken.Base64Url.Base64UrlDecode(System.String)">
+            <summary>
+            Decodes a string of UTF-8 base64url-encoded text.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Base64Url.Base64UrlDecode(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Decodes a span of UTF-8 base64url-encoded text.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Base64Url.Base64UrlDecode(System.ReadOnlySpan{System.Char},System.Span{System.Byte})">
+            <summary>
+            Decodes a span of UTF-8 base64url-encoded text into a span of bytes.
+            </summary>
+            <returns>The number of the bytes written to <paramref name="data"/>.</returns>
+        </member>
+        <member name="M:JsonWebToken.Base64Url.Base64UrlDecode(System.ReadOnlySpan{System.Byte},System.Span{System.Byte})">
+            <summary>
+            Decodes the span of UTF-8 base64url-encoded text into a span of bytes.
+            </summary>
+            <returns>The number of the bytes written to <paramref name="data"/>.</returns>
+        </member>
+        <member name="M:JsonWebToken.Base64Url.Base64UrlDecode(System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Int32@,System.Int32@)">
+            <summary>
+            Decodes the span of UTF-8 base64url-encoded text into binary data.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Base64Url.Base64UrlEncode(System.ReadOnlySpan{System.Byte},System.Span{System.Byte})">
+            <summary>
+            Encodes a span of UTF-8 text into a span of bytes.
+            </summary>
+            <returns>The number of the bytes written to <paramref name="base64Url"/>.</returns>
+        </member>
+        <member name="M:JsonWebToken.Base64Url.Base64UrlEncode(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Encodes a span of UTF-8 text.
+            </summary>
+            <returns>The base64-url encoded string.</returns>
+        </member>
+        <member name="M:JsonWebToken.Base64Url.Base64UrlEncode(System.ReadOnlySpan{System.Char})">
+            <summary>
+            Encodes a string of UTF-8 text.
+            </summary>
+            <returns>The base64-url encoded string.</returns>
+        </member>
+        <member name="M:JsonWebToken.Base64Url.GetArraySizeRequiredToDecode(System.Int32)">
+            <summary>
+            Gets the minimum buffer size required for decoding of <paramref name="count"/> characters.
+            </summary>
+            <param name="count">The number of characters to decode.</param>
+            <returns>
+            The minimum buffer size required for decoding  of <paramref name="count"/> characters.
+            </returns>
+        </member>
+        <member name="M:JsonWebToken.Base64Url.GetArraySizeRequiredToEncode(System.Int32)">
+            <summary>
+            Gets the minimum output buffer size required for encoding <paramref name="count"/> bytes.
+            </summary>
+            <param name="count">The number of characters to encode.</param>
+            <returns>
+            The minimum output buffer size required for encoding <paramref name="count"/> <see cref="T:System.Byte"/>s.
+            </returns>
+        </member>
+        <member name="T:JsonWebToken.BinaryJweDescriptor">
+            <summary>
+            Defines an encrypted JWT with a binary payload.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.BinaryJweDescriptor.Encode(JsonWebToken.EncodingContext)">
+            <inheritdoc />
+        </member>
+        <member name="T:JsonWebToken.CompressionAlgorithm">
+            <summary>
+            Defines compression algorithm.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.CompressionAlgorithm.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.CompressionAlgorithm.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="T:JsonWebToken.Compressor">
+            <summary>
+            Provides compression and decompression services.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Compressor.Compress(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Compresses the data.
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:JsonWebToken.Compressor.Decompress(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Decompresses the compressed data.
+            </summary>
+            <param name="compressedData">The compressed data.</param>
+            <returns></returns>
+        </member>
+        <member name="T:JsonWebToken.Compressor`1">
+            <summary>
+            Provides compression and decompression services, based on <typeparamref name="TStream"/>.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Compressor`1.CreateDecompressionStream(System.IO.Stream)">
+            <summary>
+            Creates a decompression <see cref="T:System.IO.Stream"/>.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Compressor`1.CreateCompressionStream(System.IO.Stream)">
+            <summary>
+            Creates a compression <see cref="T:System.IO.Stream"/>.
+            </summary> 
+        </member>
+        <member name="M:JsonWebToken.Compressor`1.Compress(System.ReadOnlySpan{System.Byte})">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.Compressor`1.Decompress(System.ReadOnlySpan{System.Byte})">
+            <inheritdoc />
+        </member>
+        <member name="T:JsonWebToken.ECJwk">
+            <summary>
+            Represents an Elliptic Curve JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.ECJwk.Crv">
+            <summary>
+            Gets or sets the 'crv' (Curve).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.ECJwk.X">
+            <summary>
+            Gets or sets the 'x' (X Coordinate).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.ECJwk.RawX">
+            <summary>
+            Gets the 'x' represented in array of bytes.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.ECJwk.Y">
+            <summary>
+            Gets or sets the 'y' (Y Coordinate).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.ECJwk.RawY">
+            <summary>
+            Gets the 'y' represented in array of bytes.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.ECJwk.HasPrivateKey">
+            <inheritdoc />
+        </member>
+        <member name="P:JsonWebToken.ECJwk.KeySizeInBits">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.ECJwk.CreateECDsa(JsonWebToken.SignatureAlgorithm,System.Boolean)">
+            <summary>
+            Creates an <see cref="T:System.Security.Cryptography.ECDsa"/> algorithm.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.ECJwk.IsSupported(JsonWebToken.SignatureAlgorithm)">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.ECJwk.IsSupported(JsonWebToken.KeyManagementAlgorithm)">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.ECJwk.IsSupported(JsonWebToken.EncryptionAlgorithm)">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.ECJwk.CreateSigner(JsonWebToken.SignatureAlgorithm,System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.ECJwk.CreateKeyWrapper(JsonWebToken.EncryptionAlgorithm,JsonWebToken.KeyManagementAlgorithm)">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.ECJwk.ExportParameters">
+            <summary>
+            Exports the key parameters.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.ECJwk.ExportParameters(System.Boolean)">
+            <summary>
+            Exports the key parameters.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.ECJwk.GenerateKey(System.String,System.Boolean)">
+            <summary>
+            Generates a <see cref="T:JsonWebToken.ECJwk"/>.
+            </summary>
+            <param name="curveId"></param>
+            <param name="withPrivateKey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:JsonWebToken.ECJwk.Normalize">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.ECJwk.FromParameters(System.Security.Cryptography.ECParameters,System.Boolean)">
+            <summary>
+            Returns a new instance of <see cref="T:JsonWebToken.ECJwk"/>.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.ECJwk.FromParameters(System.Security.Cryptography.ECParameters)">
+            <summary>
+            Returns a new instance of <see cref="T:JsonWebToken.ECJwk"/>.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.ECJwk.ToByteArray">
+            <inheritdoc />
+        </member>
+        <member name="T:JsonWebToken.EncodingContext">
+            <summary>
+            Encapsulate the context required for a JWT encoding.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.EncryptedJwtDescriptor`1">
+            <summary>
+            Defines an encrypted JWT with a <typeparamref name="TPayload"/> payload.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.EncryptedJwtDescriptor`1.EncryptToken(JsonWebToken.EncodingContext,System.String)">
+            <summary>
+            Encrypt the token.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.EncryptedJwtDescriptor`1.EncryptToken(JsonWebToken.EncodingContext,System.Span{System.Byte})">
+            <summary>
+            Encrypt the token.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.EncryptionAlgorithm">
+            <summary>
+            Defines encryption algorithm.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.EncryptionType">
+            <summary>
+            Defines the algorithm encryption types.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.Errors">
+            <summary>
+            Error messages.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.HttpDocumentRetriever">
+            <summary>
+            Retrieves metadata information using <see cref="T:System.Net.Http.HttpClient"/>.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.HttpDocumentRetriever.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:JsonWebToken.HttpDocumentRetriever"/> class.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.HttpDocumentRetriever.#ctor(System.Net.Http.HttpMessageHandler)">
+            <summary>
+            Initializes a new instance of the <see cref="T:JsonWebToken.HttpDocumentRetriever"/> class with a specified httpClient.
+            </summary>
+            <param name="handler"><see cref="T:System.Net.Http.HttpMessageHandler"/></param>
+        </member>
+        <member name="P:JsonWebToken.HttpDocumentRetriever.RequireHttps">
+            <summary>
+            Requires Https secure channel for sending requests.. This is turned ON by default for security reasons. It is RECOMMENDED that you do not allow retrieval from http addresses by default.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.HttpDocumentRetriever.GetDocument(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Returns a task which contains a string converted from remote document when completed, by using the provided address.
+            </summary>
+            <param name="address">Location of document</param>
+            <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation. <see cref="T:System.Threading.CancellationToken"/></param>
+            <returns>Document as a string</returns>
+        </member>
+        <member name="T:JsonWebToken.IAuthenticatedEncryptorFactory">
+            <summary>
+            Represents a factory used to creates <see cref="T:JsonWebToken.AuthenticatedEncryptor"/>.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.IAuthenticatedEncryptorFactory.Create(JsonWebToken.JsonWebKey,JsonWebToken.EncryptionAlgorithm)">
+            <summary>
+            Creates an <see cref="T:JsonWebToken.AuthenticatedEncryptor"/>.
+            </summary>
+            <param name="key">The key used for encryption.</param>
+            <param name="encryptionAlgorithm">The encryption algorithm.</param>
+        </member>
+        <member name="T:JsonWebToken.IJwtPayloadDescriptor">
+            <summary>
+            Represent a standard JWT payload.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.IKeyProvider">
+            <summary>
+            Represents a provider of <see cref="T:JsonWebToken.JsonWebKey"/>.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.IKeyProvider.GetKeys(JsonWebToken.JwtHeader)">
+            <summary>
+            Gets a list of <see cref="T:JsonWebToken.JsonWebKey"/>.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.IKeyWrapperFactory">
+            <summary>
+            Represents a <see cref="T:JsonWebToken.KeyWrapper"/> factory.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.IKeyWrapperFactory.Create(JsonWebToken.JsonWebKey,JsonWebToken.EncryptionAlgorithm,JsonWebToken.KeyManagementAlgorithm)">
+            <summary>
+            Creates a <see cref="T:JsonWebToken.KeyWrapper"/>.
+            </summary>
+            <param name="key">The key used for key wrapping.</param>
+            <param name="encryptionAlgorithm">The encryption algorithm.</param>
+            <param name="contentEncryptionAlgorithm">The content encryption algorithm.</param>
+        </member>
+        <member name="T:JsonWebToken.Internal.AesCbcHmacEncryptor">
+            <summary>
+            Provides authenticated encryption and decryption for AES CBC HMAC algorithm.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Internal.AesCbcHmacEncryptor.GetCiphertextSize(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.AesCbcHmacEncryptor.GetTagSize">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.AesCbcHmacEncryptor.GetNonceSize">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.AesCbcHmacEncryptor.Encrypt(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Span{System.Byte})">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.AesCbcHmacEncryptor.TryDecrypt(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Int32@)">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.AesCbcHmacEncryptor.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="T:JsonWebToken.Internal.AesGcmEncryptor">
+            <summary>
+            Provides authenticated encryption and decryption for AES GCM algorithm.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Internal.AesGcmEncryptor.Encrypt(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Span{System.Byte})">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.AesGcmEncryptor.GetCiphertextSize(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.AesGcmEncryptor.GetNonceSize">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.AesGcmEncryptor.GetTagSize">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.AesGcmEncryptor.TryDecrypt(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Int32@)">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.AesGcmEncryptor.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.AesGcmKeyWrapper.GetKeyUnwrapSize(System.Int32)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.AesGcmKeyWrapper.GetKeyWrapSize">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.AesGcmKeyWrapper.TryUnwrapKey(System.ReadOnlySpan{System.Byte},System.Span{System.Byte},JsonWebToken.JwtHeader,System.Int32@)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.AesGcmKeyWrapper.TryWrapKey(JsonWebToken.JsonWebKey,Newtonsoft.Json.Linq.JObject,System.Span{System.Byte},JsonWebToken.JsonWebKey@,System.Int32@)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.AesGcmKeyWrapper.Dispose(System.Boolean)">
+            <inheritsdoc />
+        </member>
+        <member name="T:JsonWebToken.Internal.AesKeyWrapper">
+            <summary>
+            Provides Wrap key and Unwrap key services.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Internal.AesKeyWrapper.TryWrapKey(JsonWebToken.JsonWebKey,Newtonsoft.Json.Linq.JObject,System.Span{System.Byte},JsonWebToken.JsonWebKey@,System.Int32@)">
+            <summary>
+            Wrap a key using AES encryption.
+            </summary>
+            <param name="keyBytes">the key to be wrapped</param>
+            <returns>A wrapped key</returns>
+        </member>
+        <member name="M:JsonWebToken.Internal.AudienceValidator.TryValidate(JsonWebToken.TokenValidationContext@)">
+            <inheritsdoc />
+        </member>
+        <member name="T:JsonWebToken.Internal.Claims">
+            <summary>
+            List of registered claims from different sources
+            http://tools.ietf.org/html/rfc7519#section-4
+            http://openid.net/specs/openid-connect-core-1_0.html#IDToken
+            http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+            http://openid.net/specs/openid-connect-frontchannel-1_0.html#OPLogout
+            https://tools.ietf.org/html/draft-ietf-secevent-token-13#section-2.2
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Aud">
+            <summary>
+            http://tools.ietf.org/html/rfc7519#section-4
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Exp">
+            <summary>
+            http://tools.ietf.org/html/rfc7519#section-4
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Iat">
+            <summary>
+            http://tools.ietf.org/html/rfc7519#section-4
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Iss">
+            <summary>
+            http://tools.ietf.org/html/rfc7519#section-4
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Jti">
+            <summary>
+            http://tools.ietf.org/html/rfc7519#section-4
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Nbf">
+            <summary>
+            http://tools.ietf.org/html/rfc7519#section-4
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Sub">
+            <summary>
+            http://tools.ietf.org/html/rfc7519#section-4
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Acr">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#IDToken
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Amr">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#IDToken
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.AuthTime">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#IDToken
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Azp">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#IDToken
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Birthdate">
+            <summary>
+            http://tools.ietf.org/html/rfc7519#section-4
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.CHash">
+            <summary>
+            http://tools.ietf.org/html/rfc7519#section-4
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.AtHash">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Email">
+            <summary>
+            http://tools.ietf.org/html/rfc7519#section-4
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Gender">
+            <summary>
+            http://tools.ietf.org/html/rfc7519#section-4
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.FamilyName">
+            <summary>
+            http://tools.ietf.org/html/rfc7519#section-4
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.GivenName">
+            <summary>
+            http://tools.ietf.org/html/rfc7519#section-4
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Nonce">
+            <summary>
+            http://tools.ietf.org/html/rfc7519#section-4
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Sid">
+            <summary>
+            http://openid.net/specs/openid-connect-frontchannel-1_0.html#OPLogout
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.MiddleName">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Nickname">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.PreferredUsername">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Profile">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Picture">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Website">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.EmailVerified">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Zoneinfo">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Locale">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.PhoneNumber">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.PhoneNumberVerified">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Address">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.UpdatedAt">
+            <summary>
+            http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Events">
+            <summary>
+            https://tools.ietf.org/html/draft-ietf-secevent-token-13#section-2.2
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Txn">
+            <summary>
+            https://tools.ietf.org/html/draft-ietf-secevent-token-13#section-2.2
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Toe">
+            <summary>
+            https://tools.ietf.org/html/draft-ietf-secevent-token-13#section-2.2
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.SoftwareId">
+            <summary>
+            https://tools.ietf.org/html/rfc7591#section-2
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Vot">
+            <summary>
+            https://tools.ietf.org/html/draft-richer-vectors-of-trust-11
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Vtm">
+            <summary>
+            https://tools.ietf.org/html/draft-richer-vectors-of-trust-11
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Act">
+            <summary>
+            https://tools.ietf.org/html/draft-ietf-oauth-token-exchange-14
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.Scope">
+            <summary>   
+            https://tools.ietf.org/html/draft-ietf-oauth-token-exchange-14
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.ClientId">
+            <summary>
+            https://tools.ietf.org/html/draft-ietf-oauth-token-exchange-14
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.Claims.MayAct">
+            <summary>
+            https://tools.ietf.org/html/draft-ietf-oauth-token-exchange-14
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.ContentTypeValues.Jwt">
+            <summary>
+            JWT content type for 'cty' header parameter.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Internal.DefaultAuthenticatedEncryptorFactory.Create(JsonWebToken.JsonWebKey,JsonWebToken.EncryptionAlgorithm)">
+            <summary>
+            Creates an <see cref="T:JsonWebToken.AuthenticatedEncryptor"/>.
+            </summary>
+            <param name="key">The key used for encryption.</param>
+            <param name="encryptionAlgorithm">then encryption algorithm/</param>
+        </member>
+        <member name="M:JsonWebToken.Internal.DefaultKeyWrapperFactory.Create(JsonWebToken.JsonWebKey,JsonWebToken.EncryptionAlgorithm,JsonWebToken.KeyManagementAlgorithm)">
+            <summary>
+            Creates a <see cref="T:JsonWebToken.KeyWrapper"/>.
+            </summary>
+            <param name="key">the key used for key wrapping.</param>
+            <param name="encryptionAlgorithm">The encryption algorithm.</param>
+            <param name="contentEncryptionAlgorithm">The content encryption algorithm.</param>
+        </member>
+        <member name="M:JsonWebToken.Internal.DefaultSignerFactory.Create(JsonWebToken.JsonWebKey,JsonWebToken.SignatureAlgorithm,System.Boolean)">
+            <summary>
+            Creates a <see cref="T:JsonWebToken.Signer"/>.
+            </summary>
+            <param name="key">The key used for signature.</param>
+            <param name="algorithm">The signature algorithm.</param>
+            <param name="willCreateSignatures">Defines whether the <see cref="T:JsonWebToken.Signer"/> will be used for signature of for validation.</param>
+            <returns></returns>
+        </member>
+        <member name="M:JsonWebToken.Internal.EcdhKeyWrapper.GetKeyUnwrapSize(System.Int32)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.EcdhKeyWrapper.GetKeyWrapSize">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.EcdhKeyWrapper.TryUnwrapKey(System.ReadOnlySpan{System.Byte},System.Span{System.Byte},JsonWebToken.JwtHeader,System.Int32@)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.EcdhKeyWrapper.TryWrapKey(JsonWebToken.JsonWebKey,Newtonsoft.Json.Linq.JObject,System.Span{System.Byte},JsonWebToken.JsonWebKey@,System.Int32@)">
+            <inheritsdoc />
+        </member>
+        <member name="P:JsonWebToken.Internal.EcdsaSigner.HashSizeInBytes">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.EcdsaSigner.TrySign(System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Int32@)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.EcdsaSigner.Verify(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte})">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.EcdsaSigner.Dispose(System.Boolean)">
+            <inheritsdoc />
+        </member>
+        <member name="T:JsonWebToken.Internal.EllipticalCurves">
+            <summary>
+            Constants for JsonWebKey Elliptical Curve Types
+            https://tools.ietf.org/html/rfc7518#section-6.2.1.1
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Internal.EpochTime.ToEpochTime(System.Nullable{System.DateTime})">
+            <summary>
+            Per JWT spec:
+            Gets the number of seconds from 1970-01-01T0:0:0Z as measured in UTC until the desired date/time.
+            </summary>
+            <param name="datetime">The DateTime to convert to seconds.</param>
+            <remarks>if dateTimeUtc less than UnixEpoch, return 0</remarks>
+            <returns>the number of seconds since Unix Epoch.</returns>
+        </member>
+        <member name="M:JsonWebToken.Internal.EpochTime.ToEpochTime(System.DateTime)">
+            <summary>
+            Per JWT spec:
+            Gets the number of seconds from 1970-01-01T0:0:0Z as measured in UTC until the desired date/time.
+            </summary>
+            <param name="datetime">The DateTime to convert to seconds.</param>
+            <remarks>if dateTimeUtc less than UnixEpoch, return 0</remarks>
+            <returns>the number of seconds since Unix Epoch.</returns>
+        </member>
+        <member name="M:JsonWebToken.Internal.EpochTime.ToDateTime(System.Int64)">
+            <summary>
+            Creates a DateTime from epoch time.
+            </summary>
+            <param name="secondsSinceUnixEpoch">Number of seconds.</param>
+            <returns>The DateTime in UTC.</returns>
+        </member>
+        <member name="M:JsonWebToken.Internal.EpochTime.ToDateTime(System.Nullable{System.Int64})">
+            <summary>
+            Creates a DateTime from epoch time.
+            </summary>
+            <param name="secondsSinceUnixEpoch">Number of seconds.</param>
+            <returns>The DateTime in UTC.</returns>
+        </member>
+        <member name="T:JsonWebToken.Internal.HeaderParameters">
+            <summary>
+            List of header parameter names see: http://tools.ietf.org/html/rfc7519#section-5.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.Alg">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7515#section-4.1.1
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.Cty">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7515#section-4.1.10
+            also:https://tools.ietf.org/html/rfc7519#section-5.2
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.Enc">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7516#section-4.1.2
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.Jku">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7515#section-4.1.2
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.Jwk">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7515#section-4.1.3
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.Kid">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7515#section-4.1.4
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.Typ">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7515#section-4.1.9
+            also:https://tools.ietf.org/html/rfc7519#section-5.1
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.X5c">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7515#section-4.1.6
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.X5t">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7515#page-12
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.X5u">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7515#section-4.1.5
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.Crit">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7515#section-4.1.5
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.Zip">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7516#section-4.1.3
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.Epk">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7518#section-4.6.1
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.Apu">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7518#section-4.6.1
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.Apv">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7518#section-4.6.1
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.IV">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7518#section-4.7
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.Tag">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7518#section-4.7
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.P2s">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7518#section-4.8
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HeaderParameters.P2c">
+            <summary>
+            see:https://tools.ietf.org/html/rfc7518#section-4.8
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HttpKeyProvider.DefaultAutomaticRefreshInterval">
+            <summary>
+            1 day is the default time interval that afterwards, <see cref="!:GetConfigurationAsync()"/> will obtain new configuration.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HttpKeyProvider.DefaultRefreshInterval">
+            <summary>
+            30 seconds is the default time interval that must pass for <see cref="!:RequestRefresh"/> to obtain a new configuration.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HttpKeyProvider.MinimumAutomaticRefreshInterval">
+            <summary>
+            5 minutes is the minimum value for automatic refresh. <see cref="!:AutomaticRefreshInterval"/> can not be set less than this value.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.HttpKeyProvider.MinimumRefreshInterval">
+            <summary>
+            1 second is the minimum time interval that must pass for <see cref="!:RequestRefresh"/> to obtain new configuration.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Internal.JkuKeyProvider.GetKeys(JsonWebToken.JwtHeader)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.JkuKeyProvider.DeserializeKeySet(System.String)">
+            <inheritsdoc />
+        </member>
+        <member name="T:JsonWebToken.Internal.JsonWebKeyParameterNames">
+            <summary>
+            Names for Json Web Key Values
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.Internal.JsonWebKeySetParameterNames">
+            <summary>
+            Names for Json Web Key Set Values
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.Internal.JsonWebKeyTypeNames">
+            <summary>
+            Constants for JsonWebAlgorithms  "kty" Key Type (sec 6.1)
+            http://tools.ietf.org/html/rfc7518#section-6.1
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.Internal.JsonWebKeyUseNames">
+            <summary>
+            Constants for JsonWebKeyUse (sec 4.2)
+            http://tools.ietf.org/html/rfc7517#section-4
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Internal.JwksKeyProvider.GetKeys(JsonWebToken.JwtHeader)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.JwksKeyProvider.DeserializeKeySet(System.String)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.LifetimeValidator.TryValidate(JsonWebToken.TokenValidationContext@)">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.RequiredClaimListValidator`1.TryValidate(JsonWebToken.TokenValidationContext@)">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.RequiredClaimValidator`1.TryValidate(JsonWebToken.TokenValidationContext@)">
+            <inheritdoc />
+        </member>
+        <member name="T:JsonWebToken.Internal.RsaKeyWrapper">
+            <summary>
+            Provides RSA key wrapping and key unwrapping services.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Internal.RsaKeyWrapper.TryUnwrapKey(System.ReadOnlySpan{System.Byte},System.Span{System.Byte},JsonWebToken.JwtHeader,System.Int32@)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.RsaKeyWrapper.TryWrapKey(JsonWebToken.JsonWebKey,Newtonsoft.Json.Linq.JObject,System.Span{System.Byte},JsonWebToken.JsonWebKey@,System.Int32@)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.RsaKeyWrapper.GetKeyUnwrapSize(System.Int32)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.RsaKeyWrapper.GetKeyWrapSize">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.RsaKeyWrapper.Dispose(System.Boolean)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.SignatureValidator.TryValidate(JsonWebToken.TokenValidationContext@)">
+            <inheritdoc />
+        </member>
+        <member name="T:JsonWebToken.Internal.SymmetricSigner">
+            <summary>
+            Provides signing and verifying operations using a <see cref="T:JsonWebToken.SymmetricJwk"/> and specifying an algorithm.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.SymmetricSigner.DefaultMinimumSymmetricKeySizeInBits">
+            <summary>
+            This is the minimum <see cref="T:JsonWebToken.SymmetricJwk"/>.KeySize when creating and verifying signatures.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.Internal.SymmetricSigner.HashSizeInBytes">
+            <inheritsdoc />
+        </member>
+        <member name="P:JsonWebToken.Internal.SymmetricSigner.MinimumKeySizeInBits">
+            <summary>
+            Gets or sets the minimum <see cref="T:JsonWebToken.SymmetricJwk"/>.KeySize. />.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Internal.SymmetricSigner.TrySign(System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Int32@)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.SymmetricSigner.Verify(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte})">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.SymmetricSigner.Dispose(System.Boolean)">
+            <inheritsdoc />
+        </member>
+        <member name="F:JsonWebToken.Internal.ThrowHelper.MalformedInput">
+            <summary>
+            Malformed input: {0} is an invalid input length.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.ThrowHelper.InvalidInput">
+            <summary>
+            Invalid input, that doesn't conform a base64url string.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.Internal.ThrowHelper.DestinationTooSmall">
+            <summary>
+            Destination buffer is too small.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Internal.ThrowHelper.FormatMalformedInput(System.Int32)">
+            <summary>
+            Malformed input: {0} is an invalid input length.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Internal.TokenReplayValidator.TryValidate(JsonWebToken.TokenValidationContext@)">
+            <inheritdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.X5uKeyProvider.GetKeys(JsonWebToken.JwtHeader)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.Internal.X5uKeyProvider.DeserializeKeySet(System.String)">
+            <inheritsdoc />
+        </member>
+        <member name="T:JsonWebToken.ISignerFactory">
+            <summary>
+            Represents a <see cref="T:JsonWebToken.Signer"/> factory.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.ISignerFactory.Create(JsonWebToken.JsonWebKey,JsonWebToken.SignatureAlgorithm,System.Boolean)">
+            <summary>
+            Creates a <see cref="T:JsonWebToken.Signer"/>.
+            </summary>
+            <param name="key">The key used for signature.</param>
+            <param name="algorithm">The signature algorithm.</param>
+            <param name="willCreateSignatures"><c>true</c> if the <see cref="T:JsonWebToken.Signer"/> is used for creating signatures. <c>false</c> if the <see cref="T:JsonWebToken.Signer"/> is used for validating signatures.</param>
+            <returns></returns>
+        </member>
+        <member name="T:JsonWebToken.ITokenReplayCache">
+            <summary>
+            Interface that defines a simple cache for tacking replaying of tokens.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.ITokenReplayCache.TryAdd(JsonWebToken.JsonWebToken,System.DateTime)">
+            <summary>
+            Try to add a token.
+            </summary>
+            <param name="jwtToken">the token to add.</param>
+            <param name="expiresOn">the time when token expires.</param>
+            <returns>true if the token was successfully added.</returns>
+        </member>
+        <member name="T:JsonWebToken.IValidator">
+            <summary>
+            Represents a validation to apply to a <see cref="T:JsonWebToken.TokenValidationContext"/>.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.IValidator.TryValidate(JsonWebToken.TokenValidationContext@)">
+            <summary>
+            Tries to validate a token.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.JsonWebKey">
+            <summary>
+            Represents a JSON Web Key as defined in http://tools.ietf.org/html/rfc7517.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebKey.AdditionalData">
+            <summary>
+            When deserializing from JSON any properties that are not defined will be placed here.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebKey.Alg">
+            <summary>
+            Gets or sets the 'alg' (KeyType).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebKey.KeyOps">
+            <summary>
+            Gets the 'key_ops' (Key Operations).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebKey.Kid">
+            <summary>
+            Gets or sets the 'kid' (Key ID).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebKey.Kty">
+            <summary>
+            Gets or sets the 'kty' (Key Type).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebKey.Use">
+            <summary>
+            Gets or sets the 'use' (Public Key Use).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebKey.X5c">
+            <summary>
+            Gets the 'x5c' collection (X.509 Certificate Chain).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebKey.X5t">
+            <summary>
+            Gets or sets the 'x5t' (X.509 Certificate SHA-1 thumbprint).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebKey.X5tS256">
+            <summary>
+            Gets or sets the 'x5t#S256' (X.509 Certificate SHA-1 thumbprint).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebKey.X5u">
+            <summary>
+            Gets or sets the 'x5u' (X.509 URL).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebKey.KeySizeInBits">
+            <summary>
+            Gets the key size of <see cref="T:JsonWebToken.JsonWebKey"/>.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebKey.X509CertificateChain">
+            <summary>
+            Gets the X.509 certificate chain.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.ShouldSerializeKeyOps">
+            <summary>
+            Gets a bool that determines if the 'key_ops' (Key Operations) property should be serialized.
+            This is used by Json.NET in order to conditionally serialize properties.
+            </summary>
+            <return>true if 'key_ops' (Key Operations) is not empty; otherwise, false.</return>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.ShouldSerializeX5c">
+             <summary>
+             Gets a bool that determines if the 'x5c' collection (X.509 Certificate Chain) property should be serialized.
+             This is used by Json.NET in order to conditionally serialize properties.
+            </summary>
+             <return>true if 'x5c' collection (X.509 Certificate Chain) is not empty; otherwise, false.</return>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.IsSupported(JsonWebToken.SignatureAlgorithm)">
+            <summary>
+            Determines if the <see cref="T:JsonWebToken.JsonWebKey"/> supports the <paramref name="algorithm"/>.
+            </summary>
+            <param name="algorithm">The <see cref="T:JsonWebToken.SignatureAlgorithm"/> to verify.</param>
+            <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.IsSupported(JsonWebToken.KeyManagementAlgorithm)">
+            <summary>
+            Determines if the <see cref="T:JsonWebToken.JsonWebKey"/> supports the <paramref name="algorithm"/>.
+            </summary>
+            <param name="algorithm">The <see cref="T:JsonWebToken.KeyManagementAlgorithm"/> to verify.</param>
+            <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.IsSupported(JsonWebToken.EncryptionAlgorithm)">
+            <summary>
+            Determines if the <see cref="T:JsonWebToken.JsonWebKey"/> supports the <paramref name="algorithm"/>.
+            </summary>
+            <param name="algorithm">The <see cref="T:JsonWebToken.EncryptionAlgorithm"/> to verify.</param>
+            <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.ToString">
+            <summary>
+            Returns a string that represents the <see cref="T:JsonWebToken.JsonWebKey"/> in JSON.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.ToString(Newtonsoft.Json.Formatting)">
+            <summary>
+            Returns a string that represents the <see cref="T:JsonWebToken.JsonWebKey"/> in JSON.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.ToByteArray">
+            <summary>
+            Provides the binary representation of the key.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.CreateSigner(JsonWebToken.SignatureAlgorithm,System.Boolean)">
+            <summary>
+            Creates a <see cref="T:JsonWebToken.Signer"/> with the current <see cref="T:JsonWebToken.JsonWebKey"/> as key.
+            </summary>
+            <param name="algorithm">The <see cref="T:JsonWebToken.SignatureAlgorithm"/> used for the signatures.</param>
+            <param name="willCreateSignatures">Determines if the <see cref="T:JsonWebToken.Signer"/> will create or only verify signatures.</param>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.CreateKeyWrapper(JsonWebToken.EncryptionAlgorithm,JsonWebToken.KeyManagementAlgorithm)">
+            <summary>
+            Creates a <see cref="T:JsonWebToken.KeyWrapper"/> with the current <see cref="T:JsonWebToken.JsonWebKey"/> as key.
+            </summary>
+            <param name="encryptionAlgorithm">The <see cref="T:JsonWebToken.EncryptionAlgorithm"/> used for key wrapping.</param>
+            <param name="algorithm">The <see cref="T:JsonWebToken.KeyManagementAlgorithm"/> used for key wrapping.</param>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.CreateAuthenticatedEncryptor(JsonWebToken.EncryptionAlgorithm)">
+            <summary>
+            Creates a <see cref="T:JsonWebToken.AuthenticatedEncryptor"/> with the current <see cref="T:JsonWebToken.JsonWebKey"/> as key.
+            </summary>
+            <param name="encryptionAlgorithm">The <see cref="T:JsonWebToken.EncryptionAlgorithm"/> used for encryption.</param>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.Normalize">
+            <summary>
+            Returns a new <see cref="T:JsonWebToken.JsonWebKey"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.ComputeThumbprint(System.Boolean)">
+            <summary>
+            Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.ComputeThumbprint">
+            <summary>
+            Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.FromX509Certificate(System.Security.Cryptography.X509Certificates.X509Certificate2,System.Boolean)">
+            <summary>
+            Returns a new instance of <see cref="!:TKey"/>.
+            </summary>
+            <param name="certificate">A <see cref="T:System.Security.Cryptography.X509Certificates.X509Certificate2"/> that contains JSON Web Key parameters.</param>
+            <param name="withPrivateKey">Determines if the private key must be extracted from the certificate.</param>
+            <returns><see cref="!:TKey"/></returns>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.FromJson``1(System.String)">
+            <summary>
+            Returns a new instance of <see cref="!:TKey"/>.
+            </summary>
+            <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
+            <returns><see cref="!:TKey"/></returns>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.FromJson``1(Newtonsoft.Json.Linq.JToken)">
+            <summary>
+            Returns a new instance of <see cref="!:TKey"/>.
+            </summary>
+            <param name="jObject">A string that contains JSON Web Key parameters in JSON format.</param>
+            <returns><see cref="!:TKey"/></returns>
+            <typeparam name="TKey">The type of key.</typeparam>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKey.FromJson(System.String)">
+            <summary>
+            Returns a new instance of <see cref="T:JsonWebToken.JsonWebKey"/>.
+            </summary>
+            <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
+            <returns><see cref="T:JsonWebToken.JsonWebKey"/></returns>
+        </member>
+        <member name="T:JsonWebToken.JsonWebKeySet">
+            <summary>
+            Contains a collection of <see cref="T:JsonWebToken.JsonWebKey"/>.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKeySet.#ctor">
+            <summary>
+            Initializes an new instance of <see cref="T:JsonWebToken.JsonWebKeySet"/>.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKeySet.#ctor(System.Collections.Generic.ICollection{JsonWebToken.JsonWebKey})">
+            <summary>
+            Initializes an new instance of <see cref="T:JsonWebToken.JsonWebKeySet"/>.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKeySet.#ctor(System.String)">
+            <summary>
+            Initializes an new instance of <see cref="T:JsonWebToken.JsonWebKeySet"/> from a json string.
+            </summary>
+            <param name="json">a json string containing values.</param>
+        </member>
+        <member name="P:JsonWebToken.JsonWebKeySet.AdditionalData">
+            <summary>
+            When deserializing from JSON any properties that are not defined will be placed here.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebKeySet.Keys">
+            <summary>
+            Gets the <see cref="T:System.Collections.Generic.IList`1"/>.
+            </summary>       
+        </member>
+        <member name="P:JsonWebToken.JsonWebKeySet.Item(System.String)">
+            <summary>
+            Gets or sets the first <see cref="T:JsonWebToken.JsonWebKey"/> with its 'kid'.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKeySet.FromJson(System.String)">
+            <summary>
+            Returns a new instance of <see cref="T:JsonWebToken.JsonWebKeySet"/>.
+            </summary>
+            <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
+            <returns><see cref="T:JsonWebToken.JsonWebKeySet"/></returns>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKeySet.Add(JsonWebToken.JsonWebKey)">
+            <summary>
+            Adds the <paramref name="key"/> to the JWKS.
+            </summary>
+            <param name="key"></param>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKeySet.Remove(JsonWebToken.JsonWebKey)">
+            <summary>
+            Removes the <paramref name="key"/> from the JWKS.
+            </summary>
+            <param name="key"></param>
+        </member>
+        <member name="M:JsonWebToken.JsonWebKeySet.GetKeys(System.String)">
+            <summary>
+            Gets the list of <see cref="T:JsonWebToken.JsonWebKey"/> identified by the 'kid'.
+            </summary>
+            <param name="kid"></param>
+            <returns></returns>
+        </member>
+        <member name="T:JsonWebToken.JsonWebToken">
+            <summary>
+            A JSON Web Token (JWT).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebToken.Audiences">
+            <summary>
+            Gets the list of 'aud' claim.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebToken.Header">
+            <summary>
+            Gets the <see cref="T:JsonWebToken.JwtHeader"/> associated with this instance if the token is signed.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebToken.Id">
+            <summary>
+            Gets the value of the 'jti' claim.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebToken.Issuer">
+            <summary>
+            Gets the value of the 'iss' claim.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebToken.Payload">
+            <summary>
+            Gets the <see cref="T:JsonWebToken.JwtPayload"/> associated with this instance.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebToken.NestedToken">
+            <summary>
+            Gets the nested <see cref="T:JsonWebToken.JsonWebToken"/> associated with this instance.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebToken.SignatureAlgorithm">
+            <summary>
+            Gets the signature algorithm associated with this instance.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebToken.SigningKey">
+            <summary>
+            Gets the <see cref="T:JsonWebToken.JsonWebKey"/> used for the signature of this token.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebToken.EncryptionKey">
+            <summary>
+            Gets the <see cref="T:JsonWebToken.JsonWebKey"/> used for the encryption of this token.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebToken.Subject">
+            <summary>
+            Gets the value of the 'sub'.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebToken.NotBefore">
+            <summary>
+            Gets the'value of the 'nbf'.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebToken.ExpirationTime">
+            <summary>
+            Gets the value of the 'exp' claim.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebToken.IssuedAt">
+            <summary>
+            Gets the value of the 'iat' claim.
+            </summary>
+            <remarks>If the 'expiration' claim is not found, then <see cref="F:System.DateTime.MinValue"/> is returned.</remarks>
+        </member>
+        <member name="P:JsonWebToken.JsonWebToken.Plaintext">
+            <summary>
+            Gets the plaintext of the JWE.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebToken.Binary">
+            <summary>
+            Gets the binary data of the JWE.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.JsonWebTokenReader">
+            <summary>
+            Reads and validates a JWT.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebTokenReader.EnableHeaderCaching">
+            <summary>
+            Defines whether the header will be cached. Default is <c>true</c>.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.JsonWebTokenReader.TryReadToken(System.ReadOnlySpan{System.Char},JsonWebToken.TokenValidationPolicy)">
+            <summary>
+            Reads and validates a JWT encoded as a JWS or JWE in compact serialized format.
+            </summary>
+            <param name="token">the JWT encoded as JWE or JWS</param>
+            <param name="policy">The validation policy.</param>
+        </member>
+        <member name="T:JsonWebToken.JsonWebTokenWriter">
+            <summary>
+            Writes a JWT.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.JsonWebTokenWriter.DefaultTokenLifetimeInMinutes">
+            <summary>
+            Default lifetime of tokens created. 
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebTokenWriter.TokenLifetimeInMinutes">
+            <summary>
+            Gets or sets the token lifetime in minutes.
+            </summary>
+            <remarks>Used by <see cref="M:JsonWebToken.JsonWebTokenWriter.WriteToken(JsonWebToken.JwtDescriptor)"/> to set the default expiration ('exp'). <see cref="F:JsonWebToken.JsonWebTokenWriter.DefaultTokenLifetimeInMinutes"/> for the default.</remarks>
+            <exception cref="T:System.ArgumentOutOfRangeException">'value' less than 1.</exception>
+        </member>
+        <member name="P:JsonWebToken.JsonWebTokenWriter.SetDefaultTimesOnTokenCreation">
+            <summary>
+            Gets or sets whether token creation will set default 'exp', 'nbf' and 'iat' if not specified. Default value is <c>false</c>.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebTokenWriter.IgnoreTokenValidation">
+            <summary>
+            Gets or sets whether the <see cref="T:JsonWebToken.JwtDescriptor"/> has to be validated. Default value is <c>false</c>.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JsonWebTokenWriter.EnableHeaderCaching">
+            <summary>
+            Gets or sets whether the JWT header will be cached. Default value is <c>true</c>.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.JsonWebTokenWriter.WriteToken(JsonWebToken.JwtDescriptor)">
+            <summary>
+            Writes a JWT in its compact serialization format.
+            </summary>
+            <param name="descriptor">The descriptor of the JWT.</param>
+            <returns></returns>
+        </member>
+        <member name="T:JsonWebToken.JweDescriptor">
+            <summary>
+            Defines an encrypted JWT with a <see cref="T:JsonWebToken.JwsDescriptor"/> payload.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.JweDescriptor`1">
+            <summary>
+            Defines an encrypted JWT with a <typeparamref name="TDescriptor"/> as payload.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.JwsDescriptor">
+            <summary>
+            Defines a signed JWT with a JSON payload.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwsDescriptor.Subject">
+            <summary>
+            Gets or sets the value of the 'sub' claim.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwsDescriptor.JwtId">
+            <summary>
+            Gets or sets the value of the 'jti' claim.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwsDescriptor.Audience">
+            <summary>
+            Gets or sets the value of the 'aud' claim.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwsDescriptor.Audiences">
+            <summary>
+            Gets or sets the value of the 'aud' claim.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwsDescriptor.ExpirationTime">
+            <summary>
+            Gets or sets the value of the 'exp' claim.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwsDescriptor.Issuer">
+            <summary>
+            Gets or sets the issuer of this <see cref="!:JsonWebTokenDescriptor"/>.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwsDescriptor.IssuedAt">
+            <summary>
+            Gets or sets the time the security token was issued.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwsDescriptor.NotBefore">
+            <summary>
+            Gets or sets the notbefore time for the security token.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.JwtDescriptor">
+            <summary>
+            Defines an abstract class for representing a JWT.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.JwtDescriptorBuilder">
+            <summary>
+            A builder of <see cref="T:JsonWebToken.JwtDescriptor"/>. 
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.JwtDescriptor`1">
+            <summary>
+            Defines an JWT with a <typeparamref name="TPayload"/> payload.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.JwtHeader">
+            <summary>
+            Represents the cryptographic operations applied to the JWT and optionally 
+            any additional properties of the JWT. 
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtHeader.Alg">
+            <summary>
+            Gets the signature algorithm that was used to create the signature.
+            </summary>
+            <remarks>If the signature algorithm is not found, null is returned.</remarks>
+        </member>
+        <member name="P:JsonWebToken.JwtHeader.Cty">
+            <summary>
+            Gets the content type (Cty) of the token.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtHeader.Enc">
+            <summary>
+            Gets the encryption algorithm (Enc) of the token.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtHeader.Kid">
+            <summary>
+            Gets the key identifier for the key used to sign the token.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtHeader.Typ">
+            <summary>
+            Gets the mime type (Typ) of the token.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtHeader.X5t">
+            <summary>
+            Gets the thumbprint of the certificate used to sign the token.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtHeader.Jku">
+            <summary>
+            Gets the URL of the JWK used to sign the token.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtHeader.X5u">
+            <summary>
+            Gets the URL of the certificate used to sign the token
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtHeader.Zip">
+            <summary>
+            Gets the algorithm used to compress the token.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtHeader.IV">
+            <summary>
+            Gets the Initialization Vector used for AES GCM encryption.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtHeader.Tag">
+            <summary>
+            Gets the Authentication Tag used for AES GCM encryption.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtHeader.Epk">
+            <summary>
+            Gets the ephemeral key used for ECDH key agreement.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtHeader.Apu">
+            <summary>
+            Gets the Agreement PartyUInfo used for ECDH key agreement.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtHeader.Apv">
+            <summary>
+            Gets the Agreement PartyVInfo used for ECDH key agreement.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.JwtPayload">
+            <summary>
+            Represents the claims contained in the JWT.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtPayload.Aud">
+            <summary>
+            Gets the 'audience' claim as a list of strings.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtPayload.Exp">
+            <summary>
+            Gets the 'expiration time' claim.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtPayload.Jti">
+            <summary>
+            Gets the 'JWT ID' claim.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtPayload.Iat">
+            <summary>
+            Gets the 'issued at' claim.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtPayload.Iss">
+            <summary>
+            Gets the 'issuer' claim.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtPayload.Nbf">
+            <summary>
+            Gets the 'not before' claim.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.JwtPayload.Sub">
+            <summary>
+            Gets the 'subject' claim.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.KeyManagementAlgorithm">
+            <summary>
+            Defines key management algorithm.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.KeyWrapper">
+            <summary>
+            Provides key wrapping and key unwrapping services.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.KeyWrapper.Key">
+            <summary>
+            Gets the <see cref="T:JsonWebToken.JsonWebKey"/> that is being used.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.KeyWrapper.Algorithm">
+            <summary>
+            Gets the <see cref="T:JsonWebToken.KeyManagementAlgorithm"/> that is being used.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.KeyWrapper.EncryptionAlgorithm">
+            <summary>
+            Gets the <see cref="P:JsonWebToken.KeyWrapper.EncryptionAlgorithm"/> that is being used.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.KeyWrapper.Dispose">
+            <summary>
+            Calls <see cref="M:JsonWebToken.KeyWrapper.Dispose(System.Boolean)"/> and <see cref="M:System.GC.SuppressFinalize(System.Object)"/>
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.KeyWrapper.Dispose(System.Boolean)">
+            <summary>
+            Can be over written in descendants to dispose of internal components.
+            </summary>
+            <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer</param>     
+        </member>
+        <member name="M:JsonWebToken.KeyWrapper.TryUnwrapKey(System.ReadOnlySpan{System.Byte},System.Span{System.Byte},JsonWebToken.JwtHeader,System.Int32@)">
+            <summary>
+            Unwrap a key.
+            </summary>
+            <param name="keyBytes">key to unwrap.</param>
+            <returns>Unwrapped key.</returns>
+        </member>
+        <member name="M:JsonWebToken.KeyWrapper.TryWrapKey(JsonWebToken.JsonWebKey,Newtonsoft.Json.Linq.JObject,System.Span{System.Byte},JsonWebToken.JsonWebKey@,System.Int32@)">
+            <summary>
+            Wrap a key.
+            </summary>
+            <param name="staticKey">The key to be wrapped. If <c>null</c>, the key will be ephemeral and generated within this method.</param>
+            <param name="header">The key-values representing the JWT header.</param>
+            <param name="destination">The destination span.</param>
+            <param name="contentEncryptionKey">The generated content encryption key.</param>
+            <param name="bytesWritten">The count of bytes written.</param>
+            <returns>True .</returns>
+        </member>
+        <member name="M:JsonWebToken.KeyWrapper.GetKeyUnwrapSize(System.Int32)">
+            <summary>
+            Gets the size of the unwrapped key.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.KeyWrapper.GetKeyWrapSize">
+            <summary>
+            Gets the size of the wrapped key.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.PlaintextJweDescriptor">
+            <summary>
+            Defines an encrypted JWT with a <see cref="T:System.String"/> payload.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.RsaJwk">
+            <summary>
+            Represents a RSA JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.RsaJwk.IsSupported(JsonWebToken.SignatureAlgorithm)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.RsaJwk.IsSupported(JsonWebToken.KeyManagementAlgorithm)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.RsaJwk.IsSupported(JsonWebToken.EncryptionAlgorithm)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.RsaJwk.CreateSigner(JsonWebToken.SignatureAlgorithm,System.Boolean)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.RsaJwk.CreateKeyWrapper(JsonWebToken.EncryptionAlgorithm,JsonWebToken.KeyManagementAlgorithm)">
+            <inheritsdoc />
+        </member>
+        <member name="P:JsonWebToken.RsaJwk.HasPrivateKey">
+            <inheritsdoc />
+        </member>
+        <member name="P:JsonWebToken.RsaJwk.KeySizeInBits">
+            <inheritsdoc />
+        </member>
+        <member name="P:JsonWebToken.RsaJwk.DP">
+            <summary>
+            Gets or sets the 'dp' (First Factor CRT Exponent).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.RsaJwk.DQ">
+            <summary>
+            Gets or sets the 'dq' (Second Factor CRT Exponent).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.RsaJwk.E">
+            <summary>
+            Gets or sets the 'e' ( Exponent).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.RsaJwk.N">
+            <summary>
+            Gets or sets the 'n' (Modulus).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.RsaJwk.Oth">
+            <summary>
+            Gets or sets the 'oth' (Other Primes Info).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.RsaJwk.P">
+            <summary>
+            Gets or sets the 'p' (First Prime Factor).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.RsaJwk.Q">
+            <summary>
+            Gets or sets the 'q' (Second  Prime Factor).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.RsaJwk.QI">
+            <summary>
+            Gets or sets the 'qi' (First CRT Coefficient).
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.RsaJwk.GenerateKey(System.Int32,System.Boolean)">
+            <summary>
+            Generates a new RSA key.
+            </summary>
+            <param name="sizeInBits">The key size in bits.</param>
+            <param name="withPrivateKey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:JsonWebToken.RsaJwk.FromParameters(System.Security.Cryptography.RSAParameters,System.Boolean)">
+            <summary>
+            Returns a new instance of <see cref="T:JsonWebToken.RsaJwk"/>.
+            </summary>
+            <param name="parameters">A <see cref="T:System.Byte"/> that contains the key parameters.</param>
+            <param name="computeThumbprint">Defines whether the thumbprint of the key should be computed </param>
+        </member>
+        <member name="M:JsonWebToken.RsaJwk.FromParameters(System.Security.Cryptography.RSAParameters)">
+            <summary>
+            Returns a new instance of <see cref="T:JsonWebToken.RsaJwk"/>.
+            </summary>
+            <param name="parameters">A <see cref="T:System.Byte"/> that contains the key parameters.</param>
+        </member>
+        <member name="M:JsonWebToken.RsaJwk.Normalize">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.RsaJwk.ToByteArray">
+            <inheritsdoc />
+        </member>
+        <member name="T:JsonWebToken.SignatureAlgorithm">
+            <summary>
+            Defines signature algorithm.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.Signer">
+            <summary>
+            Provides signature services, signing and verifying.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Signer.#ctor(JsonWebToken.JsonWebKey,JsonWebToken.SignatureAlgorithm)">
+            <summary>
+            Initializes a new instance of the <see cref="T:JsonWebToken.Signer"/> class used to create and verify signatures.
+            </summary>
+            <param name="key">The <see cref="T:JsonWebToken.JsonWebKey"/> that will be used for signature operations.</param>
+            <param name="algorithm">The signature algorithm to apply.</param>
+        </member>
+        <member name="P:JsonWebToken.Signer.Key">
+            <summary>
+            Gets the <see cref="T:JsonWebToken.JsonWebKey"/>.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.Signer.Algorithm">
+            <summary>
+            Gets the signature algorithm.
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Signer.TrySign(System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Int32@)">
+            <summary>
+            This must be overridden to produce a signature over the 'input'.
+            </summary>
+            <param name="input">bytes to sign.</param>
+            <returns>signed bytes</returns>
+        </member>
+        <member name="M:JsonWebToken.Signer.Verify(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte})">
+            <summary>
+            This must be overridden to verify a signature created over the 'input'.
+            </summary>
+            <param name="input">bytes to verify.</param>
+            <param name="signature">signature to compare against.</param>
+            <returns>true if the computed signature matches the signature parameter, false otherwise.</returns>
+        </member>
+        <member name="M:JsonWebToken.Signer.Dispose">
+            <summary>
+            Calls <see cref="M:JsonWebToken.Signer.Dispose(System.Boolean)"/> and <see cref="M:System.GC.SuppressFinalize(System.Object)"/>
+            </summary>
+        </member>
+        <member name="M:JsonWebToken.Signer.Dispose(System.Boolean)">
+            <summary>
+            Can be over written in descendants to dispose of internal components.
+            </summary>
+            <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer</param>     
+        </member>
+        <member name="T:JsonWebToken.StaticKeyProvider">
+            <summary>
+            Represents a static provider of keys.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.SymmetricJwk">
+            <summary>
+            Represents a symmetric JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.SymmetricJwk.K">
+            <summary>
+            Gets or sets the 'k' (Key Value).
+            </summary>
+        </member>
+        <member name="P:JsonWebToken.SymmetricJwk.KeySizeInBits">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.SymmetricJwk.FromByteArray(System.Byte[],System.Boolean)">
+            <summary>
+            Returns a new instance of <see cref="T:JsonWebToken.SymmetricJwk"/>.
+            </summary>
+            <param name="bytes">An array of <see cref="T:System.Byte"/> that contains the key in binary.</param>
+        </member>
+        <member name="M:JsonWebToken.SymmetricJwk.IsSupported(JsonWebToken.KeyManagementAlgorithm)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.SymmetricJwk.IsSupported(JsonWebToken.SignatureAlgorithm)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.SymmetricJwk.IsSupported(JsonWebToken.EncryptionAlgorithm)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.SymmetricJwk.CreateSigner(JsonWebToken.SignatureAlgorithm,System.Boolean)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.SymmetricJwk.CreateKeyWrapper(JsonWebToken.EncryptionAlgorithm,JsonWebToken.KeyManagementAlgorithm)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.SymmetricJwk.CreateAuthenticatedEncryptor(JsonWebToken.EncryptionAlgorithm)">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.SymmetricJwk.Normalize">
+            <inheritsdoc />
+        </member>
+        <member name="M:JsonWebToken.SymmetricJwk.ToByteArray">
+            <inheritsdoc />
+        </member>
+        <member name="T:JsonWebToken.TokenValidationPolicy">
+            <summary>
+            Defines the validations to apply to a JWT.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationPolicy.NoValidation">
+            <summary>
+            Represents an policy without any validation.
+            </summary>
+        </member>
+        <member name="T:JsonWebToken.TokenValidationResult">
+            <summary>
+            Represents the result of a token validation.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.MalformedToken">
+            <summary>
+            The token is not a JWT in compact representation, is not base64url encoded, and is not a JSON UTF-8 encoded.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.InvalidSignature">
+            <summary>
+            The signature is invalid.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.SignatureKeyNotFound">
+            <summary>
+            The signature key is not found.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.MalformedSignature">
+            <summary>
+            The signature is not base64url encoded.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.MissingSignature">
+            <summary>
+            The signature is not present.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.TokenReplayed">
+            <summary>
+            The token was already validated previously.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.Expired">
+            <summary>
+            The token has expired, according to the 'nbf' claim.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.MissingEncryptionAlgorithm">
+            <summary>
+            The 'enc' header parameter is missing.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.DecryptionFailed">
+            <summary>
+            The token decryption has failed.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.NotYetValid">
+            <summary>
+            The token is not yeet valid, according to the 'nbf' claim.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.InvalidClaim">
+            <summary>
+            The token has an invalid claim.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.MissingClaim">
+            <summary>
+            The token has a missing claim.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.InvalidHeader">
+            <summary>
+            The token has an invalid header. 
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.MissingHeader">
+            <summary>
+            The token has a missing header.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.DecompressionFailed">
+            <summary>
+            The token decompression has failed.
+            </summary>
+        </member>
+        <member name="F:JsonWebToken.TokenValidationStatus.EncryptionKeyNotFound">
+            <summary>
+            The encrption key was not found.
+            </summary>
+        </member>
+    </members>
+</doc>

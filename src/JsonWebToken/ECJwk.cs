@@ -92,6 +92,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Gets the 'x' represented in array of bytes.
+        /// </summary>
         [JsonIgnore]
         public byte[] RawX { get; private set; }
 
@@ -127,11 +130,16 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Gets the 'y' represented in array of bytes.
+        /// </summary>
         [JsonIgnore]
         public byte[] RawY { get; private set; }
 
+        /// <inheritdoc />
         public override bool HasPrivateKey => RawD != null;
-
+        
+        /// <inheritdoc />
         public override int KeySizeInBits
         {
             get
@@ -151,6 +159,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Creates an <see cref="ECDsa"/> algorithm.
+        /// </summary>
         public ECDsa CreateECDsa(SignatureAlgorithm algorithm, bool usePrivateKey)
         {
             int validKeySize = ValidKeySize(algorithm);
@@ -166,22 +177,26 @@ namespace JsonWebToken
         {
             return algorithm.RequiredKeySizeInBits;
         }
-
+   
+        /// <inheritdoc />
         public override bool IsSupported(SignatureAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.EllipticCurve;
         }
 
+        /// <inheritdoc />
         public override bool IsSupported(KeyManagementAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.EllipticCurve;
         }
 
+        /// <inheritdoc />
         public override bool IsSupported(EncryptionAlgorithm algorithm)
         {
             return algorithm.Category == EncryptionType.AesHmac || algorithm.Category == EncryptionType.AesGcm;
         }
 
+        /// <inheritdoc />
         public override Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (algorithm == null)
@@ -197,6 +212,7 @@ namespace JsonWebToken
             return null;
         }
 
+        /// <inheritdoc />
         public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
 #if NETCOREAPP2_1
@@ -206,8 +222,14 @@ namespace JsonWebToken
 #endif
         }
 
+        /// <summary>
+        /// Exports the key parameters.
+        /// </summary>
         public ECParameters ExportParameters() => ExportParameters(false);
 
+        /// <summary>
+        /// Exports the key parameters.
+        /// </summary>
         public ECParameters ExportParameters(bool includePrivateParameters)
         {
             var parameters = new ECParameters
@@ -242,6 +264,12 @@ namespace JsonWebToken
             return parameters;
         }
 
+        /// <summary>
+        /// Generates a <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curveId"></param>
+        /// <param name="withPrivateKey"></param>
+        /// <returns></returns>
         public static ECJwk GenerateKey(string curveId, bool withPrivateKey)
         {
             if (string.IsNullOrEmpty(curveId))
@@ -274,6 +302,7 @@ namespace JsonWebToken
             }
         }
 
+        /// <inheritdoc />
         public override JsonWebKey Normalize()
         {
             return new ECJwk(Crv, RawD, RawX, RawY);
@@ -282,7 +311,6 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        /// <param name="parameters">A <see cref="byte"/> that contains the key parameters.</param>
         public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint)
         {
             var key = new ECJwk(parameters);
@@ -294,8 +322,12 @@ namespace JsonWebToken
             return key;
         }
 
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
         public static ECJwk FromParameters(ECParameters parameters) => FromParameters(parameters, false);
 
+        /// <inheritdoc />
         public override byte[] ToByteArray()
         {
 #if NETCOREAPP2_1

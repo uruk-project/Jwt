@@ -63,6 +63,7 @@ namespace JsonWebToken
         [JsonIgnore]
         public byte[] RawK { get; private set; }
 
+        /// <inheritsdoc />
         public override int KeySizeInBits => RawK?.Length != 0 ? RawK.Length << 3 : 0;
 
         public static SymmetricJwk FromByteArray(byte[] bytes) => FromByteArray(bytes, computeThumbprint: false);
@@ -105,21 +106,25 @@ namespace JsonWebToken
             return key;
         }
 
+        /// <inheritsdoc />
         public override bool IsSupported(KeyManagementAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.Symmetric && algorithm.RequiredKeySizeInBits == KeySizeInBits;
         }
 
+        /// <inheritsdoc />
         public override bool IsSupported(SignatureAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.Symmetric;
         }
 
+        /// <inheritsdoc />
         public override bool IsSupported(EncryptionAlgorithm algorithm)
         {
             return algorithm.Category == EncryptionType.AesHmac;
         }
 
+        /// <inheritsdoc />
         public override Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (algorithm == null)
@@ -135,6 +140,7 @@ namespace JsonWebToken
             return null;
         }
 
+        /// <inheritsdoc />
         public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
             if (contentEncryptionAlgorithm == null)
@@ -158,6 +164,7 @@ namespace JsonWebToken
             return null;
         }
 
+        /// <inheritsdoc />
         public override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
             if (IsSupported(encryptionAlgorithm))
@@ -220,15 +227,13 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        ///  Creates a minimal representation of the current key.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritsdoc />
         public override JsonWebKey Normalize()
         {
             return new SymmetricJwk(RawK);
         }
 
+        /// <inheritsdoc />
         public override byte[] ToByteArray()
         {
             return RawK;

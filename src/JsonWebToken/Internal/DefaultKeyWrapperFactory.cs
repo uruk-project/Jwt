@@ -10,6 +10,12 @@ namespace JsonWebToken.Internal
         private readonly CryptographicStore< KeyWrapper> _keyWrappers = new CryptographicStore<KeyWrapper>();
         private bool _disposed;
 
+        /// <summary>
+        /// Creates a <see cref="KeyWrapper"/>.
+        /// </summary>
+        /// <param name="key">the key used for key wrapping.</param>
+        /// <param name="encryptionAlgorithm">The encryption algorithm.</param>
+        /// <param name="contentEncryptionAlgorithm">The content encryption algorithm.</param>
         public virtual KeyWrapper Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
             if (_disposed)

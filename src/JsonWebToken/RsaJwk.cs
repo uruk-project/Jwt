@@ -69,21 +69,25 @@ namespace JsonWebToken
             return parameters;
         }
 
+        /// <inheritsdoc />
         public override bool IsSupported(SignatureAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.Rsa;
         }
 
+        /// <inheritsdoc />
         public override bool IsSupported(KeyManagementAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.Rsa;
         }
 
+        /// <inheritsdoc />
         public override bool IsSupported(EncryptionAlgorithm algorithm)
         {
             return false;
         }
 
+        /// <inheritsdoc />
         public override Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (algorithm == null)
@@ -99,6 +103,7 @@ namespace JsonWebToken
             return null;
         }
 
+        /// <inheritsdoc />
         public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
             if (IsSupported(contentEncryptionAlgorithm))
@@ -109,8 +114,10 @@ namespace JsonWebToken
             return null;
         }
 
+        /// <inheritsdoc />
         public override bool HasPrivateKey => RawD != null && RawDP != null && RawDQ != null && RawP != null && RawQ != null && RawQI != null;
 
+        /// <inheritsdoc />
         public override int KeySizeInBits => RawN?.Length != 0 ? RawN.Length << 3 : 0;
 
         /// <summary>
@@ -371,6 +378,12 @@ namespace JsonWebToken
         [JsonIgnore]
         public byte[] RawQI { get; private set; }
 
+        /// <summary>
+        /// Generates a new RSA key.
+        /// </summary>
+        /// <param name="sizeInBits">The key size in bits.</param>
+        /// <param name="withPrivateKey"></param>
+        /// <returns></returns>
         public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey) => GenerateKey(sizeInBits, withPrivateKey, null);
 
         public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, string algorithm)
@@ -389,6 +402,7 @@ namespace JsonWebToken
         /// Returns a new instance of <see cref="RsaJwk"/>.
         /// </summary>
         /// <param name="parameters">A <see cref="byte"/> that contains the key parameters.</param>
+        /// <param name="computeThumbprint">Defines whether the thumbprint of the key should be computed </param>
         public static RsaJwk FromParameters(RSAParameters parameters, bool computeThumbprint)
         {
             var key = new RsaJwk(parameters);
@@ -400,13 +414,19 @@ namespace JsonWebToken
             return key;
         }
 
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="parameters">A <see cref="byte"/> that contains the key parameters.</param>
         public static RsaJwk FromParameters(RSAParameters parameters) => FromParameters(parameters, false);
 
+        /// <inheritsdoc />
         public override JsonWebKey Normalize()
         {
             return new RsaJwk(RawE, RawN);
         }
 
+        /// <inheritsdoc />
         public override byte[] ToByteArray()
         {
             throw new NotImplementedException();
