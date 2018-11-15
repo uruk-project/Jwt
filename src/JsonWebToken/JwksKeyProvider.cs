@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Net.Http;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     public sealed class JwksKeyProvider : HttpKeyProvider
     {

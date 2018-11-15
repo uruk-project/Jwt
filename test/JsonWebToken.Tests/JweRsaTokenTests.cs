@@ -23,7 +23,7 @@ namespace JsonWebToken.Tests
             E = "AQAB",
         };
 
-        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256.Name);
+        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256);
 
         [Theory]
         [MemberData(nameof(GetSupportedAlgorithm))]

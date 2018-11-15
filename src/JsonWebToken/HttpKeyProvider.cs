@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     public abstract class HttpKeyProvider : IKeyProvider, IDisposable
     {

@@ -209,10 +209,14 @@ namespace JsonWebToken
 
         public static SymmetricJwk GenerateKey(int sizeInBits) => GenerateKey(sizeInBits, algorithm: null);
 
-        public static SymmetricJwk GenerateKey(int sizeInBits, string algorithm)
+        public static SymmetricJwk GenerateKey(int sizeInBits, IAlgorithm algorithm)
         {
             var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
-            key.Alg = algorithm;
+            if (algorithm != null)
+            {
+                key.Alg = algorithm.Name;
+            }
+
             return key;
         }
 

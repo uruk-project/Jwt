@@ -11,7 +11,7 @@ namespace JsonWebToken.Tests
             var builder = new JwtDescriptorBuilder();
 
             builder
-                .SignWith(RsaJwk.GenerateKey(2048, true, SignatureAlgorithm.RsaSsaPssSha256.Name))
+                .SignWith(RsaJwk.GenerateKey(2048, true, SignatureAlgorithm.RsaSsaPssSha256))
                 .EncryptWith(SymmetricJwk.GenerateKey(128))
                 .IssuedBy("https://issuer.example.com")
                 .Expires(DateTime.UtcNow);
@@ -27,7 +27,7 @@ namespace JsonWebToken.Tests
             var builder = new JwtDescriptorBuilder();
 
             builder
-                .SignWith(RsaJwk.GenerateKey(2048, true, SignatureAlgorithm.RsaSsaPssSha256.Name))
+                .SignWith(RsaJwk.GenerateKey(2048, true, SignatureAlgorithm.RsaSsaPssSha256))
                 .IssuedBy("https://issuer.example.com")
                 .Expires(DateTime.UtcNow);
 

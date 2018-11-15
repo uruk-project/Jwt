@@ -38,7 +38,7 @@ namespace JwtCreator
 
             foreach (var key in jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Sig))
             {
-                var jwsDescriptor = new JwsDescriptor(json);
+                var jwsDescriptor = new JwsDescriptor(new JObject(), json);
                 jwsDescriptor.Key = key;
                 var jwt = writer.WriteToken(jwsDescriptor);
                 result.Add(jwt);
@@ -184,7 +184,7 @@ namespace JwtCreator
                 payload.Add(kvp.Key, kvp.Value);
             }
 
-            return new JwsDescriptor(payload);
+            return new JwsDescriptor(new JObject(), payload);
         }
 
         private static JObject CreateToken(TokenValidationStatus status, JwtDescriptor descriptor, string claim = null)
@@ -417,7 +417,7 @@ namespace JwtCreator
                 },
             };
 
-            var signingKey = SymmetricJwk.GenerateKey(128, SignatureAlgorithm.HmacSha256.Name);
+            var signingKey = SymmetricJwk.GenerateKey(128, SignatureAlgorithm.HmacSha256);
             var descriptors = new Dictionary<string, JwtDescriptor>();
             foreach (var payload in payloads)
             {
@@ -444,7 +444,7 @@ namespace JwtCreator
                 descriptors.Add(payload.Key, descriptor);
             }
 
-            var encryptionKey = SymmetricJwk.GenerateKey(128, KeyManagementAlgorithm.Aes128KW.Name);
+            var encryptionKey = SymmetricJwk.GenerateKey(128, KeyManagementAlgorithm.Aes128KW);
             foreach (var payload in payloads)
             {
                 var descriptor = new JwsDescriptor()

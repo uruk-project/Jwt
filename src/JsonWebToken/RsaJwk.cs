@@ -386,14 +386,18 @@ namespace JsonWebToken
         /// <returns></returns>
         public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey) => GenerateKey(sizeInBits, withPrivateKey, null);
 
-        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, string algorithm)
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, IAlgorithm algorithm)
         {
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(sizeInBits))
             {
                 RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
 
                 var key = FromParameters(rsaParameters, false);
-                key.Alg = algorithm;
+                if (algorithm != null)
+                {
+                    key.Alg = algorithm.Name;
+                }
+
                 return key;
             }
         }

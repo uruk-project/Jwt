@@ -25,7 +25,7 @@ namespace JsonWebToken
         }
 
         public SecurityEventTokenDescriptor(JObject payload)
-            : base(payload)
+            : base(new JObject(), payload)
         {
         }
 

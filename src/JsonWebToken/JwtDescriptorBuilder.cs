@@ -66,7 +66,7 @@ namespace JsonWebToken
                 }
                 else
                 {
-                    var jws = new JwsDescriptor(_jsonPayload);
+                    var jws = new JwsDescriptor(new JObject(), _jsonPayload);
                     if (_signingKey != null)
                     {
                         jws.Key = _signingKey;

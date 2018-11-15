@@ -138,7 +138,7 @@ namespace JsonWebToken
 
         /// <inheritdoc />
         public override bool HasPrivateKey => RawD != null;
-        
+
         /// <inheritdoc />
         public override int KeySizeInBits
         {
@@ -177,7 +177,7 @@ namespace JsonWebToken
         {
             return algorithm.RequiredKeySizeInBits;
         }
-   
+
         /// <inheritdoc />
         public override bool IsSupported(SignatureAlgorithm algorithm)
         {
@@ -270,7 +270,16 @@ namespace JsonWebToken
         /// <param name="curveId"></param>
         /// <param name="withPrivateKey"></param>
         /// <returns></returns>
-        public static ECJwk GenerateKey(string curveId, bool withPrivateKey)
+        public static ECJwk GenerateKey(string curveId, bool withPrivateKey) => GenerateKey(curveId, withPrivateKey, algorithm: null);
+
+        /// <summary>
+        /// Generates a <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curveId"></param>
+        /// <param name="withPrivateKey"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static ECJwk GenerateKey(string curveId, bool withPrivateKey, IAlgorithm algorithm)
         {
             if (string.IsNullOrEmpty(curveId))
             {
@@ -298,7 +307,7 @@ namespace JsonWebToken
             {
                 ecdsa.GenerateKey(curve);
                 var parameters = ecdsa.ExportParameters(withPrivateKey);
-                return FromParameters(parameters);
+                return FromParameters(parameters, algorithm);
             }
         }
 
@@ -311,12 +320,17 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint)
+        public static ECJwk FromParameters(ECParameters parameters, IAlgorithm algorithm, bool computeThumbprint)
         {
             var key = new ECJwk(parameters);
             if (computeThumbprint)
             {
                 key.Kid = key.ComputeThumbprint(false);
+            }
+
+            if (algorithm != null)
+            {
+                key.Alg = algorithm.Name;
             }
 
             return key;
@@ -325,7 +339,17 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public static ECJwk FromParameters(ECParameters parameters) => FromParameters(parameters, false);
+        public static ECJwk FromParameters(ECParameters parameters) => FromParameters(parameters, null, false);
+
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
+        public static ECJwk FromParameters(ECParameters parameters, IAlgorithm algorithm) => FromParameters(parameters, algorithm, false);
+
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
+        public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint) => FromParameters(parameters, null, computeThumbprint);
 
         /// <inheritdoc />
         public override byte[] ToByteArray()

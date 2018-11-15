@@ -18,7 +18,7 @@ namespace Performance
             K = "GdaXeVyiJwKmz5LFhcbcng",
             Alg = SignatureAlgorithm.HmacSha256.Name
         };
-        private static readonly JsonWebKey EncryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithm.Aes256KW.Name);
+        private static readonly JsonWebKey EncryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithm.Aes256KW);
         private static readonly JsonWebTokenReader _reader = new JsonWebTokenReader(SharedKey, EncryptionKey);
         private static readonly JsonWebTokenWriter _writer = new JsonWebTokenWriter();
         private static readonly TokenValidationPolicy policy = new TokenValidationPolicyBuilder()
