@@ -57,6 +57,8 @@ namespace JsonWebToken.Tests
 
             var reader = new JsonWebTokenReader(RsaKey);
             var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
+            Assert.Equal(TokenValidationStatus.Success, result.Status);
+
             var jwt = result.Token;
 
             Assert.Equal(plaintext, jwt.Plaintext);
@@ -111,6 +113,8 @@ namespace JsonWebToken.Tests
 
             var reader = new JsonWebTokenReader(RsaKey);
             var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
+            Assert.Equal(TokenValidationStatus.Success, result.Status);
+
             var jwt = result.Token;
 
             Assert.Equal(plaintext, jwt.Plaintext);

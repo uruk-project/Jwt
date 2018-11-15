@@ -3,6 +3,7 @@
 
 using Newtonsoft.Json.Linq;
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
@@ -69,14 +70,20 @@ namespace JsonWebToken.Internal
 
             try
             {
-#if NETCOREAPP2_1
-                return _rsa.TryDecrypt(keyBytes, destination, _padding, out bytesWritten);
-#else
+//#if NETCOREAPP2_1
+//                return _rsa.TryDecrypt(keyBytes, destination, _padding, out bytesWritten);
+//#else
                 var result = _rsa.Decrypt(keyBytes.ToArray(), _padding);
                 bytesWritten = result.Length;
+                Debug.Assert(result.Length == destination.Length);
+                if (result.Length != destination.Length)
+                {
+                    throw new Exception($" {result.Length} != {destination.Length}");
+                }
                 result.CopyTo(destination);
+
                 return true;
-#endif
+//#endif
             }
             catch
             {
