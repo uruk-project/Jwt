@@ -69,18 +69,17 @@ namespace JsonWebToken.Internal
 
             try
             {
-#if NETCOREAPP2_1
-                return _rsa.TryDecrypt(keyBytes, destination, _padding, out bytesWritten);
-#else
+//#if NETCOREAPP2_1
+//                return _rsa.TryDecrypt(keyBytes, destination, _padding, out bytesWritten);
+//#else
                 var result = _rsa.Decrypt(keyBytes.ToArray(), _padding);
                 bytesWritten = result.Length;
                 result.CopyTo(destination);
                 return true;
-#endif
+//#endif
             }
             catch
             {
-                throw;
                 return Errors.TryWriteError(out bytesWritten);
             }
         }
@@ -112,6 +111,7 @@ namespace JsonWebToken.Internal
             }
             catch
             {
+                throw;
                 contentEncryptionKey = null;
                 return Errors.TryWriteError(out bytesWritten);
             }
