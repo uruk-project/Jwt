@@ -435,7 +435,7 @@ namespace JsonWebToken
             Span<byte> encryptedKey = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length)];
             var operationResult = Base64Url.Base64UrlDecode(rawEncryptedKey, encryptedKey, out int bytesConsumed, out int bytesWritten);
             Debug.Assert(operationResult == OperationStatus.Done);
-            throw new Exception(keys.Count.ToString());
+            
             var unwrappedKeys = new List<JsonWebKey>(1);
             for (int i = 0; i < keys.Count; i++)
             {

@@ -80,6 +80,7 @@ namespace JsonWebToken.Internal
             }
             catch
             {
+                throw;
                 return Errors.TryWriteError(out bytesWritten);
             }
         }
