@@ -86,11 +86,13 @@ namespace JsonWebToken.Tests
 
             JsonWebTokenWriter writer = new JsonWebTokenWriter();
             var value = writer.WriteToken(descriptor);
+            Assert.NotNull(value);
 
             var reader = new JsonWebTokenReader(key);
             var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
-            var jwt = result.Token;
+            Assert.Equal(TokenValidationStatus.Success, result.Status);
 
+            var jwt = result.Token;
             Assert.Equal(data, jwt.Binary);
         }
 
