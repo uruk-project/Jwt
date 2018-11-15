@@ -147,8 +147,9 @@ namespace JsonWebToken.Internal
             }
             catch
             {
-                contentEncryptionKey = null;
-                return Errors.TryWriteError(out bytesWritten);
+                throw;
+                //contentEncryptionKey = null;
+                //return Errors.TryWriteError(out bytesWritten);
             }
         }
 
