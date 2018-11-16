@@ -443,11 +443,10 @@ namespace JsonWebToken
                 KeyWrapper kwp = _keyWrapFactory.Create(key, enc, alg);
                 if (kwp != null)
                 {
-                    // HACK : *2
-                    Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length*2)];
+                    Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length)];
                     if (kwp.TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyWrappedBytesWritten))
                     {
-                        //Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
+                        Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
                         unwrappedKeys.Add(SymmetricJwk.FromSpan(unwrappedKey));
                     }
                 }
