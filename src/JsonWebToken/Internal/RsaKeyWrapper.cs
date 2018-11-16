@@ -68,23 +68,16 @@ namespace JsonWebToken.Internal
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-            try
-            {
 #if NETCOREAPP2_1
-                return _rsa.TryDecrypt(keyBytes, destination, _padding, out bytesWritten);
+            return _rsa.TryDecrypt(keyBytes, destination, _padding, out bytesWritten);
 #else
-                var result = _rsa.Decrypt(keyBytes.ToArray(), _padding);
-                bytesWritten = result.Length;
-                Debug.Assert(result.Length == destination.Length);
-                result.CopyTo(destination);
+            var result = _rsa.Decrypt(keyBytes.ToArray(), _padding);
+            bytesWritten = result.Length;
+            Debug.Assert(result.Length == destination.Length);
+            result.CopyTo(destination);
 
-                return true;
+            return true;
 #endif
-            }
-            catch
-            {
-                return Errors.TryWriteError(out bytesWritten);
-            }
         }
 
         /// <inheritsdoc />
