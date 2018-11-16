@@ -72,8 +72,8 @@ namespace JsonWebToken.Internal
             return _rsa.TryDecrypt(keyBytes, destination, _padding, out bytesWritten);
 #else
             var result = _rsa.Decrypt(keyBytes.ToArray(), _padding);
+            Debug.Assert(result.Length == destination.Length);
             bytesWritten = result.Length;
-            //Debug.Assert(result.Length == destination.Length);
             result.CopyTo(destination);
 
             return true;
@@ -93,24 +93,16 @@ namespace JsonWebToken.Internal
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-            try
-            {
-                contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
+            contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
 #if NETCOREAPP2_1
-                return _rsa.TryEncrypt(contentEncryptionKey.ToByteArray(), destination, _padding, out bytesWritten);
+            return _rsa.TryEncrypt(contentEncryptionKey.ToByteArray(), destination, _padding, out bytesWritten);
 #else
-                var result = _rsa.Encrypt(contentEncryptionKey.ToByteArray(), _padding);
-                result.CopyTo(destination);
-                bytesWritten = result.Length;
-                return true;
+            var result = _rsa.Encrypt(contentEncryptionKey.ToByteArray(), _padding);
+            Debug.Assert(result.Length == destination.Length);
+            result.CopyTo(destination);
+            bytesWritten = result.Length;
+            return true;
 #endif
-            }
-            catch
-            {
-                throw;
-                contentEncryptionKey = null;
-                return Errors.TryWriteError(out bytesWritten);
-            }
         }
 
         /// <inheritsdoc />
