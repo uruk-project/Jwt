@@ -73,7 +73,7 @@ namespace JsonWebToken.Internal
 #else
             var result = _rsa.Decrypt(keyBytes.ToArray(), _padding);
             bytesWritten = result.Length;
-            Debug.Assert(result.Length == destination.Length);
+            //Debug.Assert(result.Length == destination.Length);
             result.CopyTo(destination);
 
             return true;

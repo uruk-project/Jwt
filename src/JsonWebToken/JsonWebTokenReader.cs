@@ -447,7 +447,7 @@ namespace JsonWebToken
                     Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length*2)];
                     if (kwp.TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyWrappedBytesWritten))
                     {
-                        Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
+                        //Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
                         unwrappedKeys.Add(SymmetricJwk.FromSpan(unwrappedKey));
                     }
                 }
