@@ -108,7 +108,9 @@ namespace JsonWebToken.Internal
         /// <inheritsdoc />
         public override int GetKeyUnwrapSize(int wrappedKeySize)
         {
-            return EncryptionAlgorithm.RequiredKeySizeInBytes;
+            return Key.KeySizeInBits >> 3 > EncryptionAlgorithm.RequiredKeySizeInBytes 
+                ? Key.KeySizeInBits >> 3 
+                : EncryptionAlgorithm.RequiredKeySizeInBytes;
         }
 
         /// <inheritsdoc />
