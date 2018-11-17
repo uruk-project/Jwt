@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 
 namespace JsonWebToken.Internal
 {
-
     public static class SymmetricKeyHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
