@@ -33,5 +33,6 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'pack'
-    configuration: 'release'
+    configuration: $(buildConfiguration)
     packagesToPack: '**/*.csproj'
+    nobuild: false
