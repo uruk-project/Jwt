@@ -447,7 +447,7 @@ namespace JsonWebToken
                     if (kwp.TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyWrappedBytesWritten))
                     {
                         Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
-                        unwrappedKeys.Add(SymmetricJwk.FromSpan(unwrappedKey));
+                        unwrappedKeys.Add(SymmetricJwk.FromSpan(unwrappedKey.Slice(0, keyWrappedBytesWritten)));
                     }
                 }
             }
