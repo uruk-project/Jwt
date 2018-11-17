@@ -18,8 +18,9 @@ namespace JsonWebToken.Tests
                 rsa.KeySize = 2048;
                 var encryptedData = rsa.Encrypt(data, paddingMode);
 
-                var destination = new byte[128];
-                rsa.TryEncrypt(data, destination, paddingMode, out int written);
+                var destination = new byte[256];
+                var encrypted = rsa.TryEncrypt(data, destination, paddingMode, out int written);
+                Assert.True(encrypted);
 
                 var decryptedData = rsa.Decrypt(encryptedData, paddingMode);
                 Assert.Equal(data, decryptedData);
