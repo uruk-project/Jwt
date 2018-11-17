@@ -22,7 +22,7 @@ namespace JsonWebToken.Tests
                 Assert.Equal(data, decryptedData);
 
                 var decryptedDataLength = rsa.KeySize << 3 > data.Length ? rsa.KeySize << 3 : data.Length;
-                var tryDecryptedData = new byte[decryptedDataLength];
+                var tryDecryptedData = new byte[decryptedDataLength-1];
                 var decrypted = rsa.TryDecrypt(encryptedData, tryDecryptedData, paddingMode, out int bytesWritten);
                 Assert.True(decrypted);
                 Assert.Equal(data, tryDecryptedData.AsSpan(0, bytesWritten).ToArray());
