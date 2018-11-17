@@ -17,17 +17,21 @@ steps:
     command: 'restore'
     projects: '**/*.csproj'
 
-- script: dotnet build --configuration $(buildConfiguration)
-
+- task: DotNetCoreCLI@2
+  inputs:
+    command: build
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+    
 - task: DotNetCoreCLI@2
   inputs:
     command: test
     projects: '**/*Tests/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
-    
-    
+        
 - task: DotNetCoreCLI@2
   inputs:
     command: 'pack'
-    configuration: 'release'
+    configuration: $(buildConfiguration)
     packagesToPack: '**/*.csproj'
+    nobuild: false
