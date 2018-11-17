@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System;
+using System.Security.Cryptography;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -20,10 +21,11 @@ namespace JsonWebToken.Tests
                 var decryptedData = rsa.Decrypt(encryptedData, paddingMode);
                 Assert.Equal(data, decryptedData);
 
-                var tryDecryptedData = new byte[255];
+                var decryptedDataLength = rsa.KeySize << 3 > data.Length ? rsa.KeySize << 3 : data.Length;
+                var tryDecryptedData = new byte[rsa.KeySize << 3];
                 var decrypted = rsa.TryDecrypt(encryptedData, tryDecryptedData, paddingMode, out int bytesWritten);
                 Assert.True(decrypted);
-                Assert.Equal(data, tryDecryptedData);
+                Assert.Equal(data, tryDecryptedData.AsSpan(0, bytesWritten).ToArray());
                 Assert.Equal(data.Length, bytesWritten);
             }
         }
