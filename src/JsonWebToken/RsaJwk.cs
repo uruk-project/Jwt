@@ -386,7 +386,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey) => GenerateKey(sizeInBits, withPrivateKey, null);
 
-        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, string algorithm)
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, IAlgorithm algorithm)
         {
 #if NETCOREAPP2_1
             using (RSA rsa = RSA.Create())
@@ -398,7 +398,11 @@ namespace JsonWebToken
                 RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
 
                 var key = FromParameters(rsaParameters, false);
-                key.Alg = algorithm;
+                if (algorithm != null)
+                {
+                    key.Alg = algorithm.Name;
+                }
+
                 return key;
             }
         }

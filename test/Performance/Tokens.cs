@@ -296,7 +296,7 @@ namespace JsonWebToken.Performance
                 payload.Add(kvp.Key, kvp.Value);
             }
 
-            return new JwsDescriptor(payload);
+            return new JwsDescriptor(new JObject(), payload);
         }
 
         private static TokenState CreateInvalidToken(TokenValidationStatus status, JwtDescriptor descriptor, string claim = null)

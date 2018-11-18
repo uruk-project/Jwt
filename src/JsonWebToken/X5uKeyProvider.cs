@@ -1,11 +1,12 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     public sealed class X5uKeyProvider : HttpKeyProvider
     {
@@ -34,7 +35,6 @@ namespace JsonWebToken.Internal
             var jsonWebKey = new RsaJwk
             {
                 Kty = JsonWebKeyTypeNames.Rsa,
-                Use = JsonWebKeyUseNames.Sig,
                 Kid = certificate.Thumbprint,
                 X5t = Base64Url.Base64UrlEncode(certificate.GetCertHash())
             };

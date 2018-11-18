@@ -18,7 +18,7 @@ namespace JsonWebToken
         };
 
         public SoftwareStatementDescriptor(JObject payload)
-            : base(payload)
+            : base(new JObject(), payload)
         {
         }
 

@@ -17,7 +17,7 @@ namespace JsonWebToken
     {
         private static readonly IBase64Url _base64 = new SoftwareBase64Url();
 
-        private static readonly byte[] EmptyBytes = new byte[0];
+        private static readonly byte[] EmptyBytes = Array.Empty<byte>();
 
         /// <summary>
         /// Decodes a string of UTF-8 base64url-encoded text.

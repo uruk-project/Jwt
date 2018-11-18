@@ -36,11 +36,6 @@ namespace JsonWebToken
         {
         }
 
-        public JwsDescriptor(JObject payload)
-            : base(new JObject(), payload)
-        {
-        }
-
         protected virtual IReadOnlyDictionary<string, JTokenType[]> RequiredClaims => DefaultRequiredClaims;
 
         protected virtual IReadOnlyList<string> ProhibitedClaims => DefaultProhibitedClaims;

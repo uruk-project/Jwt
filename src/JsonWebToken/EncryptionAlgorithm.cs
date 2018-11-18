@@ -9,7 +9,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines encryption algorithm.
     /// </summary>
-    public class EncryptionAlgorithm : IEquatable<EncryptionAlgorithm>
+    public class EncryptionAlgorithm : IEquatable<EncryptionAlgorithm>, IAlgorithm
     {
         public static readonly EncryptionAlgorithm Empty = new EncryptionAlgorithm(0, string.Empty, 0, SignatureAlgorithm.Empty, 0, EncryptionType.None);
 

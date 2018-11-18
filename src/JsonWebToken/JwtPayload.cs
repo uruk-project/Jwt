@@ -97,5 +97,15 @@ namespace JsonWebToken
                     return AdditionalData.TryGetValue(key, out value);
             }
         }
+
+        public T GetValue<T>(string key)
+        {
+            if (TryGetValue(key, out var value) && value is T tValue)
+            {
+                return tValue;
+            }
+
+            return default;
+        }
     }
 }

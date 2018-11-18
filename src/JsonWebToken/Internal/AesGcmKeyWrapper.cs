@@ -81,8 +81,8 @@ namespace JsonWebToken.Internal
                     aesGcm.Encrypt(nonce, contentEncryptionKey.ToByteArray(), destination, tag);
                     bytesWritten = destination.Length;
 
-                    header.Add(HeaderParameters.IV, Base64Url.Base64UrlEncode(nonce));
-                    header.Add(HeaderParameters.Tag, Base64Url.Base64UrlEncode(tag));
+                    header[HeaderParameters.IV] = Base64Url.Base64UrlEncode(nonce);
+                    header[HeaderParameters.Tag] = Base64Url.Base64UrlEncode(tag);
 
                     return true;
                 }

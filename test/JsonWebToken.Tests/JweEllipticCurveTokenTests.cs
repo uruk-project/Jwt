@@ -13,7 +13,7 @@ namespace JsonWebToken.Tests
             Y = "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck",
             D = "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw",
         };
-        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256.Name);
+        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256);
 
         [Theory]
         [MemberData(nameof(GetSupportedAlgorithm))]
