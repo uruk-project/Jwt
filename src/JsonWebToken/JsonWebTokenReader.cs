@@ -435,7 +435,7 @@ namespace JsonWebToken
             Span<byte> encryptedKey = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length)];
             var operationResult = Base64Url.Base64UrlDecode(rawEncryptedKey, encryptedKey, out int bytesConsumed, out int bytesWritten);
             Debug.Assert(operationResult == OperationStatus.Done);
-
+            
             var unwrappedKeys = new List<JsonWebKey>(1);
             for (int i = 0; i < keys.Count; i++)
             {
@@ -446,8 +446,7 @@ namespace JsonWebToken
                     Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length)];
                     if (kwp.TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyWrappedBytesWritten))
                     {
-                        Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
-                        unwrappedKeys.Add(SymmetricJwk.FromSpan(unwrappedKey));
+                        unwrappedKeys.Add(SymmetricJwk.FromSpan(unwrappedKey.Slice(0, keyWrappedBytesWritten)));
                     }
                 }
             }

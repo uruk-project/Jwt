@@ -4,9 +4,6 @@
 # Add steps that publish symbols, save build artifacts, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
 
-pool:
-  vmImage: 'VS2017-Win2016'
-
 variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
@@ -20,19 +17,21 @@ steps:
     command: 'restore'
     projects: '**/*.csproj'
 
-- task: VSBuild@1
+- task: DotNetCoreCLI@2
   inputs:
-    solution: '$(solution)'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    command: build
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
     
 - task: DotNetCoreCLI@2
   inputs:
+    command: test
+    projects: '**/*Tests/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+        
+- task: DotNetCoreCLI@2
+  inputs:
     command: 'pack'
-    configuration: 'release'
+    configuration: $(buildConfiguration)
     packagesToPack: '**/*.csproj'
+    nobuild: false

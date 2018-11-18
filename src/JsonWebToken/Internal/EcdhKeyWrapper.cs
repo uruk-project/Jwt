@@ -115,40 +115,31 @@ namespace JsonWebToken.Internal
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-            try
+            var partyUInfo = GetPartyInfo(header, HeaderParameters.Apu);
+            var partyVInfo = GetPartyInfo(header, HeaderParameters.Apv);
+            var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
+            byte[] exchangeHash;
+            using (var ephemeralKey = (staticKey == null) ? ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256) : ECDiffieHellman.Create(((ECJwk)staticKey).ExportParameters(true)))
+            using (var otherPartyKey = ECDiffieHellman.Create(((ECJwk)Key).ExportParameters()))
             {
-                var partyUInfo = GetPartyInfo(header, HeaderParameters.Apu);
-                var partyVInfo = GetPartyInfo(header, HeaderParameters.Apv);
-                var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
-                byte[] exchangeHash;
-                using (var ephemeralKey = (staticKey == null) ? ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256) : ECDiffieHellman.Create(((ECJwk)staticKey).ExportParameters(true)))
-                using (var otherPartyKey = ECDiffieHellman.Create(((ECJwk)Key).ExportParameters()))
-                {
-                    exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
+                exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
+                var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
+                header[HeaderParameters.Epk] = JToken.FromObject(epk);
+            }
 
-                    var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
-                    header[HeaderParameters.Epk] = JToken.FromObject(epk);
-                }
-
-                if (Algorithm.ProduceEncryptedKey)
+            if (Algorithm.ProduceEncryptedKey)
+            {
+                var kek = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keySizeInBytes), false);
+                using (KeyWrapper aesKeyWrapProvider = kek.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
                 {
-                    var kek = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keySizeInBytes), false);
-                    using (KeyWrapper aesKeyWrapProvider = kek.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
-                    {
-                        return aesKeyWrapProvider.TryWrapKey(null, header, destination, out contentEncryptionKey, out bytesWritten);
-                    }
-                }
-                else
-                {
-                    contentEncryptionKey = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keySizeInBytes), false);
-                    bytesWritten = 0;
-                    return true;
+                    return aesKeyWrapProvider.TryWrapKey(null, header, destination, out contentEncryptionKey, out bytesWritten);
                 }
             }
-            catch
+            else
             {
-                contentEncryptionKey = null;
-                return Errors.TryWriteError(out bytesWritten);
+                contentEncryptionKey = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keySizeInBytes), false);
+                bytesWritten = 0;
+                return true;
             }
         }
 

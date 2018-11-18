@@ -27,12 +27,15 @@ namespace JsonWebToken
             switch (parameters.Curve.Oid.FriendlyName)
             {
                 case "nistP256":
+                case "ECDSA_P256":
                     Crv = EllipticalCurves.P256;
                     break;
                 case "nistP384":
+                case "ECDSA_P384":
                     Crv = EllipticalCurves.P384;
                     break;
                 case "nistP521":
+                case "ECDSA_P521":
                     Crv = EllipticalCurves.P521;
                     break;
                 default:
