@@ -31,9 +31,19 @@ namespace JsonWebToken
             throw new ArgumentException($"The address specified '{address}' is not valid as per HTTPS scheme.", nameof(address));
         }
 
-        internal static void ThrowUnexpectedTokenParsingDate(JsonToken tokenType)
+        internal static void ThrowUnexpectedTokenParsingDate(JTokenType tokenType)
         {
-            throw new JsonSerializationException($"Unexpected token parsing date. Expected {nameof(JsonToken.Integer)}, got {tokenType}");
+            throw new JsonSerializationException($"Unexpected token parsing date. Expected {nameof(JTokenType.Integer)}, got {tokenType}");
+        }
+
+        internal static void ThrowUnexpectedToken(JTokenType tokenType, JTokenType expected)
+        {
+            throw new JsonSerializationException($"Unexpected token. Expected {expected}, got {tokenType}");
+        }
+
+        internal static void ThrowUnexpectedTokenIssuer(JTokenType tokenType)
+        {
+            throw new JsonSerializationException($"Unexpected token. Expected {nameof(JTokenType.String)} or array of {nameof(JTokenType.String)}, got {tokenType}");
         }
 
         internal static void ThrowPolicyBuilderRequireSignature()
@@ -187,7 +197,7 @@ namespace JsonWebToken
         {
             throw new ArgumentException($"The length of the key to unwrap must be a multiple of 64 bits. The size is: '{keyBytes.Length << 3}' bits.", nameof(keyBytes));
         }
-        
+
         internal static void ThrowNotSupportedKeyedHashAlgorithm(SignatureAlgorithm algorithm)
         {
             throw new NotSupportedException($"Unable to create hash algorithm for algorithm '{algorithm}'.");

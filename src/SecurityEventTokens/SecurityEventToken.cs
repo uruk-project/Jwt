@@ -33,12 +33,12 @@ namespace JsonWebToken
                         return new Dictionary<string, JObject>();
                     }
 
-                    if(!Payload.TryGetValue(Claims.Events, out var events))
+                    if (!Payload.TryGetValue(Claims.Events, out var events))
                     {
                         return new Dictionary<string, JObject>();
                     }
 
-                    _events = events.ToObject<Dictionary<string, JObject>>();
+                    _events = JToken.FromObject(events).ToObject<Dictionary<string, JObject>>();
                     return _events;
                 }
 
@@ -50,17 +50,7 @@ namespace JsonWebToken
         {
             get
             {
-                if (Payload.TryGetValue(Claims.Toe, out var toe))
-                {
-                    if (toe == null || toe.Type == JTokenType.Null)
-                    {
-                        return default;
-                    }
-
-                    return EpochTime.ToDateTime(toe.Value<long>());
-                }
-
-                return null;
+                return EpochTime.ToDateTime(Payload.GetValue<long?>(Claims.Toe));
             }
         }
 
@@ -68,12 +58,7 @@ namespace JsonWebToken
         {
             get
             {
-                if (Payload.TryGetValue(Claims.Txn, out var txn))
-                {
-                    return txn.Value<string>();
-                }
-
-                return null;
+                return Payload.GetValue<string>(Claims.Txn);
             }
         }
     }

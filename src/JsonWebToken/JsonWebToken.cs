@@ -21,16 +21,18 @@ namespace JsonWebToken
         {
         }
 
-        public JsonWebToken(JwtHeader header, JsonWebToken nestedToken)
+        public JsonWebToken(JwtHeader header, JsonWebToken nestedToken, JsonWebKey encryptionKey)
         {
             Header = header ?? throw new ArgumentNullException(nameof(header));
             NestedToken = nestedToken ?? throw new ArgumentNullException(nameof(nestedToken));
+            EncryptionKey = encryptionKey ?? throw new ArgumentNullException(nameof(encryptionKey));
         }
 
-        public JsonWebToken(JwtHeader header, byte[] binary)
+        public JsonWebToken(JwtHeader header, byte[] binary, JsonWebKey encryptionKey)
         {
             Header = header ?? throw new ArgumentNullException(nameof(header));
             Binary = binary ?? throw new ArgumentNullException(nameof(binary));
+            EncryptionKey = encryptionKey ?? throw new ArgumentNullException(nameof(encryptionKey));
         }
 
         public JsonWebToken(JwtHeader header, JwtPayload payload)
@@ -38,7 +40,7 @@ namespace JsonWebToken
             Header = header ?? throw new ArgumentNullException(nameof(header));
             _payload = payload ?? throw new ArgumentNullException(nameof(payload));
         }
-        
+
         /// <summary>
         /// Gets the list of 'aud' claim.
         /// </summary>
@@ -47,7 +49,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the <see cref="JwtHeader"/> associated with this instance if the token is signed.
         /// </summary>
-        public virtual JwtHeader Header { get; private set; }
+        public virtual JwtHeader Header { get; }
 
         /// <summary>
         /// Gets the value of the 'jti' claim.
@@ -67,7 +69,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the nested <see cref="JsonWebToken"/> associated with this instance.
         /// </summary>
-        public JsonWebToken NestedToken { get; set; }
+        public JsonWebToken NestedToken { get; }
 
         /// <summary>
         /// Gets the signature algorithm associated with this instance.
@@ -82,7 +84,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the <see cref="JsonWebKey"/> used for the encryption of this token.
         /// </summary>
-        public JsonWebKey EncryptionKey { get; set; }
+        public JsonWebKey EncryptionKey { get; }
 
         /// <summary>
         /// Gets the value of the 'sub'.
@@ -92,18 +94,18 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the'value of the 'nbf'.
         /// </summary>
-        public DateTime? NotBefore => Payload?.Nbf;
+        public DateTime? NotBefore => EpochTime.ToDateTime(Payload?.Nbf);
 
         /// <summary>
         /// Gets the value of the 'exp' claim.
         /// </summary>
-        public DateTime? ExpirationTime => Payload?.Exp;
+        public DateTime? ExpirationTime => EpochTime.ToDateTime(Payload?.Exp);
 
         /// <summary>
         /// Gets the value of the 'iat' claim.
         /// </summary>
         /// <remarks>If the 'expiration' claim is not found, then <see cref="DateTime.MinValue"/> is returned.</remarks>
-        public DateTime? IssuedAt => Payload?.Iat;
+        public DateTime? IssuedAt => EpochTime.ToDateTime(Payload?.Iat);
 
         /// <summary>
         /// Gets the plaintext of the JWE.
@@ -113,7 +115,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the binary data of the JWE.
         /// </summary>
-        public byte[] Binary { get; set; }
+        public byte[] Binary { get; }
 
         public override string ToString()
         {

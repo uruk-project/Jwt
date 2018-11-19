@@ -15,29 +15,29 @@ namespace JsonWebToken
         private readonly HttpDocumentRetriever _documentRetriever;
         private readonly long _refreshInterval = DefaultRefreshInterval;
         private readonly long _automaticRefreshInterval = DefaultAutomaticRefreshInterval;
-        private DateTimeOffset _syncAfter;
+        private long _syncAfter;
         private JsonWebKeySet _currentKeys;
         private bool _disposed;
 
         /// <summary>
         /// 1 day is the default time interval that afterwards, <see cref="GetConfigurationAsync()"/> will obtain new configuration.
         /// </summary>
-        public static readonly long DefaultAutomaticRefreshInterval = TimeSpan.TicksPerDay;
+        public static readonly long DefaultAutomaticRefreshInterval = 60 * 60 * 24;
 
         /// <summary>
         /// 30 seconds is the default time interval that must pass for <see cref="RequestRefresh"/> to obtain a new configuration.
         /// </summary>
-        public static readonly long DefaultRefreshInterval = 30 * TimeSpan.TicksPerSecond;
+        public static readonly long DefaultRefreshInterval = 30;
 
         /// <summary>
         /// 5 minutes is the minimum value for automatic refresh. <see cref="AutomaticRefreshInterval"/> can not be set less than this value.
         /// </summary>
-        public static readonly long MinimumAutomaticRefreshInterval = 5 * TimeSpan.TicksPerMinute;
+        public static readonly long MinimumAutomaticRefreshInterval = 5 * 60;
 
         /// <summary>
         /// 1 second is the minimum time interval that must pass for <see cref="RequestRefresh"/> to obtain new configuration.
         /// </summary>
-        public static readonly long MinimumRefreshInterval = TimeSpan.TicksPerSecond;
+        public static readonly long MinimumRefreshInterval = 1;
 
         protected HttpKeyProvider(HttpDocumentRetriever documentRetriever)
         {
@@ -61,7 +61,7 @@ namespace JsonWebToken
             }
 
             var kid = header.Kid;
-            DateTimeOffset now = DateTimeOffset.UtcNow;
+            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             if (_currentKeys != null && _syncAfter > now)
             {
                 return _currentKeys.GetKeys(kid);
@@ -74,11 +74,11 @@ namespace JsonWebToken
                 {
                     var value = _documentRetriever.GetDocument(metadataAddress, CancellationToken.None);
                     _currentKeys = JsonConvert.DeserializeObject<JsonWebKeySet>(value);
-                    _syncAfter = now.UtcDateTime.AddSafe(_automaticRefreshInterval);
+                    _syncAfter = now + _automaticRefreshInterval;
                 }
                 catch
                 {
-                    _syncAfter = now.UtcDateTime.AddSafe(_automaticRefreshInterval < _refreshInterval ? _automaticRefreshInterval : _refreshInterval);
+                    _syncAfter = now + (_automaticRefreshInterval < _refreshInterval ? _automaticRefreshInterval : _refreshInterval);
                     throw;
                 }
                 finally
