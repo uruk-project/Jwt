@@ -11,7 +11,6 @@
       Provides Json Web Token primitives.
     </Description>
     <sumary>High-performance JWT library.</sumary>
-    <!--<PackageLicenseFile>$(ProjectDir)LICENSE</PackageLicenseFile>-->
     <PackageLicense>MIT</PackageLicense>
   </PropertyGroup>
 </Project>
