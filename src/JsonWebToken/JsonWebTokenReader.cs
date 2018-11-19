@@ -265,10 +265,7 @@ namespace JsonWebToken
             if (!string.Equals(header.Cty, ContentTypeValues.Jwt, StringComparison.Ordinal))
             {
                 // The decrypted payload is not a nested JWT
-                jwe = new JsonWebToken(header, decryptedBytes.ToArray())
-                {
-                    EncryptionKey = decryptionKey
-                };
+                jwe = new JsonWebToken(header, decryptedBytes.ToArray(), decryptionKey);
                 return TokenValidationResult.Success(jwe);
             }
 
@@ -279,10 +276,7 @@ namespace JsonWebToken
             }
 
             var decryptedJwt = decryptionResult.Token;
-            jwe = new JsonWebToken(header, decryptedJwt)
-            {
-                EncryptionKey = decryptionKey
-            };
+            jwe = new JsonWebToken(header, decryptedJwt, decryptionKey);
             return TokenValidationResult.Success(jwe);
         }
 

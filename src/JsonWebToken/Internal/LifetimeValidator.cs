@@ -9,13 +9,11 @@ namespace JsonWebToken.Internal
     {
         private readonly bool _requireExpirationTime;
         private readonly long _clockSkewTicks;
-        private readonly long _negativeClockSkewTicks;
 
         public LifetimeValidator(bool requireExpirationTime, int clockSkewInSeconds)
         {
             _requireExpirationTime = requireExpirationTime;
-            _clockSkewTicks = clockSkewInSeconds * TimeSpan.TicksPerSecond;
-            _negativeClockSkewTicks = -_clockSkewTicks;
+            _clockSkewTicks = clockSkewInSeconds;
         }
 
         /// <inheritdoc />
@@ -28,18 +26,18 @@ namespace JsonWebToken.Internal
                 return TokenValidationResult.MissingClaim(jwt, Claims.Exp);
             }
 
-            var utcNow = DateTime.UtcNow;
-            if (expires.HasValue && (expires.Value < utcNow.AddSafe(_negativeClockSkewTicks)))
+            var utcNow = DateTime.UtcNow.ToEpochTime();
+            if (expires.HasValue && (expires.Value < utcNow - _clockSkewTicks))
             {
                 return TokenValidationResult.Expired(jwt);
             }
 
             var notBefore = jwt.Payload.Nbf;
-            if (notBefore.HasValue && (notBefore.Value > utcNow.AddSafe(_clockSkewTicks)))
+            if (notBefore.HasValue && (notBefore.Value > utcNow + _clockSkewTicks))
             {
                 return TokenValidationResult.NotYetValid(jwt);
             }
-            
+
             return TokenValidationResult.Success(jwt);
         }
     }

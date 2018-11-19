@@ -2,9 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
 
 namespace JsonWebToken
@@ -12,15 +10,30 @@ namespace JsonWebToken
     /// <summary>
     /// Represents the claims contained in the JWT.
     /// </summary>
-    public sealed class JwtPayload
+    public sealed class JwtPayload : Dictionary<string, object>
     {
-        public JToken this[string key]
+        public new JToken this[string key] => TryGetValue(key, out var value) ? JToken.FromObject(value) : null;
+
+        /// <summary>
+        /// Gets the 'audience' claim as a list of strings.
+        /// </summary>
+        public IList<string> Aud
         {
             get
             {
-                if (TryGetValue(key, out var value))
+                if (!TryGetValue(Claims.Aud, out var token))
                 {
-                    return value;
+                    return null;
+                }
+
+                if (token is string sValue)
+                {
+                    return new[] { sValue };
+                }
+
+                if (token is IList<string> lValue)
+                {
+                    return lValue;
                 }
 
                 return null;
@@ -28,75 +41,40 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Gets the 'audience' claim as a list of strings.
-        /// </summary>
-        [JsonConverter(typeof(AudienceConverter))]
-        public IList<string> Aud { get; set; }
-
-        /// <summary>
         /// Gets the 'expiration time' claim.
         /// </summary>
-        [JsonConverter(typeof(EpochTimeConverter))]
-        public DateTime? Exp { get; set; }
+        public long? Exp => GetValue<long?>(Claims.Exp);
 
         /// <summary>
         /// Gets the 'JWT ID' claim.
         /// </summary>
-        public string Jti { get; set; }
+        public string Jti => GetValue<string>(Claims.Jti);
 
         /// <summary>
         /// Gets the 'issued at' claim.
         /// </summary>
-        [JsonProperty]
-        [JsonConverter(typeof(EpochTimeConverter))]
-        public DateTime? Iat { get; set; }
+        public long? Iat => GetValue<long?>(Claims.Iat);
 
         /// <summary>
         /// Gets the 'issuer' claim.
         /// </summary>
-        public string Iss { get; set; }
+        public string Iss => GetValue<string>(Claims.Iss);
 
         /// <summary>
         /// Gets the 'not before' claim.
         /// </summary>
-        [JsonProperty]
-        [JsonConverter(typeof(EpochTimeConverter))]
-        public DateTime? Nbf { get; set; }
+        public long? Nbf
+        {
+            get
+            {
+                return GetValue<long?>(Claims.Nbf);
+            }
+        }
 
         /// <summary>
         /// Gets the 'subject' claim.
         /// </summary>
-        public string Sub { get; set; }
-
-        [JsonExtensionData]
-        public IDictionary<string, JToken> AdditionalData { get; set; } = new Dictionary<string, JToken>();
-
-        public bool TryGetValue(string key, out JToken value)
-        {
-            switch (key)
-            {
-                case Claims.Aud:
-                    value = Aud == null ? null : new JValue(Aud);
-                    return true;
-                case Claims.Exp:
-                    value = Exp.HasValue ? new JValue(Exp.Value) : null;
-                    return true;
-                case Claims.Iat:
-                    value = Iat.HasValue ? new JValue(Iat.Value) : null;
-                    return true;
-                case Claims.Iss:
-                    value = Iss == null ? null : new JValue(Iss);
-                    return true;
-                case Claims.Nbf:
-                    value = Nbf.HasValue ? new JValue(Nbf.HasValue) : null;
-                    return true;
-                case Claims.Sub:
-                    value = Sub == null ? null : new JValue(Sub);
-                    return true;
-                default:
-                    return AdditionalData.TryGetValue(key, out value);
-            }
-        }
+        public string Sub => GetValue<string>(Claims.Sub);
 
         public T GetValue<T>(string key)
         {
