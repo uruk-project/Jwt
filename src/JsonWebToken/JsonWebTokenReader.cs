@@ -183,10 +183,16 @@ namespace JsonWebToken
                 return TokenValidationResult.MalformedToken(readerException);
             }
 
+            var headerValidationResult = policy.TryValidate(new CriticalHeaderValidationContext(header));
+            if (!headerValidationResult.Succedeed)
+            {
+                return headerValidationResult;
+            }
+
             switch (segmentCount)
             {
                 case Constants.JwsSegmentCount:
-                   return TryReadJws(utf8Buffer, policy, segments, headerSegment, header);
+                    return TryReadJws(utf8Buffer, policy, segments, headerSegment, header);
                 case Constants.JweSegmentCount:
                     return TryReadJwe(utf8Buffer, policy, segments, header, rawHeader);
                 default:
@@ -195,10 +201,10 @@ namespace JsonWebToken
         }
 
         private TokenValidationResult TryReadJwe(
-            ReadOnlySpan<byte> utf8Buffer, 
-            TokenValidationPolicy policy, 
-            Span<TokenSegment> segments, 
-            JwtHeader header, 
+            ReadOnlySpan<byte> utf8Buffer,
+            TokenValidationPolicy policy,
+            Span<TokenSegment> segments,
+            JwtHeader header,
             ReadOnlySpan<byte> rawHeader)
         {
             var enc = (EncryptionAlgorithm)header.Enc;
@@ -248,7 +254,7 @@ namespace JsonWebToken
                 Compressor compressionProvider = zip.Compressor;
                 if (compressionProvider == null)
                 {
-                    return TokenValidationResult.InvalidHeader(null, HeaderParameters.Zip);
+                    return TokenValidationResult.InvalidHeader(HeaderParameters.Zip);
                 }
 
                 try
@@ -429,7 +435,7 @@ namespace JsonWebToken
             Span<byte> encryptedKey = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length)];
             var operationResult = Base64Url.Base64UrlDecode(rawEncryptedKey, encryptedKey, out int bytesConsumed, out int bytesWritten);
             Debug.Assert(operationResult == OperationStatus.Done);
-            
+
             var unwrappedKeys = new List<JsonWebKey>(1);
             for (int i = 0; i < keys.Count; i++)
             {

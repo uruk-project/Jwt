@@ -3,6 +3,7 @@
 
 using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace JsonWebToken
 {
@@ -17,14 +18,14 @@ namespace JsonWebToken
             Header[HeaderParameters.Cty] = ContentTypeValues.Jwt;
         }
 
-        public JweDescriptor(JObject header, JwsDescriptor payload)
+        public JweDescriptor(IDictionary<string, object> header, JwsDescriptor payload)
             : base(header, payload)
         {
             Header[HeaderParameters.Cty] = ContentTypeValues.Jwt;
         }
 
         public JweDescriptor(JwsDescriptor payload)
-            : base(new JObject(), payload)
+            : base(new Dictionary<string, object>(), payload)
         {
             Header[HeaderParameters.Cty] = ContentTypeValues.Jwt;
         }

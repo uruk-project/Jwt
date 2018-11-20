@@ -11,13 +11,15 @@ namespace JsonWebToken
 {
     public class TokenValidationPolicyBuilder
     {
+        private readonly IDictionary<string, ICriticalHeaderHandler> _criticalHeaderHandlers = new Dictionary<string, ICriticalHeaderHandler>();
         private readonly List<IValidator> _validators = new List<IValidator>();
         private int _maximumTokenSizeInBytes = TokenValidationPolicy.DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
-
+        
         public TokenValidationPolicyBuilder Clear()
         {
             _validators.Clear();
+            _criticalHeaderHandlers.Clear();
             return this;
         }
 
@@ -131,7 +133,7 @@ namespace JsonWebToken
         {
             return AddValidator(new RequiredClaimValidator<JObject>(requiredClaim));
         }
-        
+
         public TokenValidationPolicyBuilder AddLifetimeValidation(bool requireExpirationTime = true, int clockSkew = 300)
         {
             if (clockSkew <= 0)
@@ -187,6 +189,12 @@ namespace JsonWebToken
             return this;
         }
 
+        public TokenValidationPolicyBuilder AddCriticalHeaderHandler(string header, ICriticalHeaderHandler handler)
+        {
+            _criticalHeaderHandlers.Add(header, handler);
+            return this;
+        }
+
         protected virtual void Validate()
         {
             if (!_hasSignatureValidation)
@@ -199,7 +207,7 @@ namespace JsonWebToken
         {
             Validate();
 
-            var policy = new TokenValidationPolicy(_validators)
+            var policy = new TokenValidationPolicy(_validators, _criticalHeaderHandlers)
             {
                 MaximumTokenSizeInBytes = _maximumTokenSizeInBytes
             };

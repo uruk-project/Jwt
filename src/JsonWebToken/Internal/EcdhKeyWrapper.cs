@@ -6,6 +6,7 @@ using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers.Binary;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -70,45 +71,39 @@ namespace JsonWebToken.Internal
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-            try
-            {
-                if (header.Epk == null)
-                {
-                    return Errors.TryWriteError(out bytesWritten);
-                }
-
-                byte[] secretAppend = BuildSecretAppend(header.Apu, header.Apv);
-                var ephemeralJwk = header.Epk;
-                byte[] exchangeHash;
-                using (var ephemeralKey = ECDiffieHellman.Create(ephemeralJwk.ExportParameters()))
-                using (var privateKey = ECDiffieHellman.Create(((ECJwk)Key).ExportParameters(true)))
-                {
-                    exchangeHash = privateKey.DeriveKeyFromHash(ephemeralKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
-                }
-
-                if (Algorithm.ProduceEncryptedKey)
-                {
-                    var key = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keySizeInBytes), false);
-                    using (KeyWrapper aesKeyWrapProvider = key.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
-                    {
-                        return aesKeyWrapProvider.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
-                    }
-                }
-                else
-                {
-                    exchangeHash.AsSpan(0, _keySizeInBytes).CopyTo(destination);
-                    bytesWritten = destination.Length;
-                    return true;
-                }
-            }
-            catch
+            var epk = header.Epk;
+            if (header.Epk == null)
             {
                 return Errors.TryWriteError(out bytesWritten);
+            }
+
+            byte[] secretAppend = BuildSecretAppend(header.Apu, header.Apv);
+            var ephemeralJwk = epk;
+            byte[] exchangeHash;
+            using (var ephemeralKey = ECDiffieHellman.Create(ephemeralJwk.ExportParameters()))
+            using (var privateKey = ECDiffieHellman.Create(((ECJwk)Key).ExportParameters(true)))
+            {
+                exchangeHash = privateKey.DeriveKeyFromHash(ephemeralKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
+            }
+
+            if (Algorithm.ProduceEncryptedKey)
+            {
+                var key = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keySizeInBytes), false);
+                using (KeyWrapper aesKeyWrapProvider = key.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
+                {
+                    return aesKeyWrapProvider.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
+                }
+            }
+            else
+            {
+                exchangeHash.AsSpan(0, _keySizeInBytes).CopyTo(destination);
+                bytesWritten = destination.Length;
+                return true;
             }
         }
 
         /// <inheritsdoc />
-        public override bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
+        public override bool TryWrapKey(JsonWebKey staticKey, IDictionary<string, object> header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
             {
@@ -124,7 +119,7 @@ namespace JsonWebToken.Internal
             {
                 exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
                 var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
-                header[HeaderParameters.Epk] = JToken.FromObject(epk);
+                header[HeaderParameters.Epk] = epk;
             }
 
             if (Algorithm.ProduceEncryptedKey)
@@ -159,11 +154,11 @@ namespace JsonWebToken.Internal
             return hashAlgorithm;
         }
 
-        private static string GetPartyInfo(JObject header, string headerName)
+        private static string GetPartyInfo(IDictionary<string, object> header, string headerName)
         {
             if (header.TryGetValue(headerName, out var token))
             {
-                return token.Value<string>();
+                return (string)token;
             }
 
             return null;

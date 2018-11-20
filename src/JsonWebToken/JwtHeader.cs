@@ -5,6 +5,7 @@ using JsonWebToken.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace JsonWebToken
 {
@@ -12,96 +13,97 @@ namespace JsonWebToken
     /// Represents the cryptographic operations applied to the JWT and optionally 
     /// any additional properties of the JWT. 
     /// </summary>
-    public sealed class JwtHeader
+    public sealed class JwtHeader : Dictionary<string, object>
     {
+        //public new JToken this[string key] => TryGetValue(key, out var value) ? JToken.FromObject(value) : null;
+
         /// <summary>
         /// Gets the signature algorithm that was used to create the signature.
         /// </summary>
-        /// <remarks>If the signature algorithm is not found, null is returned.</remarks>
-        [JsonProperty(PropertyName = HeaderParameters.Alg, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string Alg { get; set; }
+        public string Alg => GetValue<string>(HeaderParameters.Alg);
 
         /// <summary>
         /// Gets the content type (Cty) of the token.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderParameters.Cty, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string Cty { get; set; }
+        public string Cty => GetValue<string>(HeaderParameters.Cty);
 
         /// <summary>
         /// Gets the encryption algorithm (Enc) of the token.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderParameters.Enc, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string Enc { get; set; }
+        public string Enc => GetValue<string>(HeaderParameters.Enc);
 
         /// <summary>
         /// Gets the key identifier for the key used to sign the token.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderParameters.Kid, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string Kid { get; set; }
+        public string Kid => GetValue<string>(HeaderParameters.Kid);
 
         /// <summary>
         /// Gets the mime type (Typ) of the token.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderParameters.Typ, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string Typ { get; set; }
+        public string Typ => GetValue<string>(HeaderParameters.Typ);
 
         /// <summary>
         /// Gets the thumbprint of the certificate used to sign the token.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderParameters.X5t, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string X5t { get; set; }
-        
+        public string X5t => GetValue<string>(HeaderParameters.X5t);
+
         /// <summary>
         /// Gets the URL of the JWK used to sign the token.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderParameters.Jku, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string Jku { get; set; }
+        public string Jku => GetValue<string>(HeaderParameters.Jku);
 
         /// <summary>
         /// Gets the URL of the certificate used to sign the token
         /// </summary>
-        [JsonProperty(PropertyName = HeaderParameters.X5u, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string X5u { get; set; }
-        
+        public string X5u => GetValue<string>(HeaderParameters.X5u);
+
         /// <summary>
         /// Gets the algorithm used to compress the token.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderParameters.Zip, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string Zip { get; set; }
-        
+        public string Zip => GetValue<string>(HeaderParameters.Zip);
+
         /// <summary>
         /// Gets the Initialization Vector used for AES GCM encryption.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderParameters.IV, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string IV { get; set; }
+        public string IV => GetValue<string>(HeaderParameters.IV);
 
         /// <summary>
         /// Gets the Authentication Tag used for AES GCM encryption.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderParameters.Tag, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string Tag { get; set; }
+        public string Tag => GetValue<string>(HeaderParameters.Typ);
+
+        /// <summary>
+        /// Gets the Crit header.
+        /// </summary>
+        public IList<string> Crit => GetValue<JArray>(HeaderParameters.Crit)?.Values<string>().ToList();
 
 #if NETCOREAPP2_1
         /// <summary>
         /// Gets the ephemeral key used for ECDH key agreement.
         /// </summary>
         [JsonProperty(PropertyName = HeaderParameters.Epk, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public ECJwk Epk { get; set; }
+        //public ECJwk Epk => GetValue<ECJwk>(HeaderParameters.Epk);
+        public ECJwk Epk => ECJwk.FromJObject(GetValue<JObject>(HeaderParameters.Epk));
 
         /// <summary>
         /// Gets the Agreement PartyUInfo used for ECDH key agreement.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderParameters.Apu, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string Apu { get; set; }
+        public string Apu => GetValue<string>(HeaderParameters.Apu);
 
         /// <summary>
         /// Gets the Agreement PartyVInfo used for ECDH key agreement.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderParameters.Apv, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string Apv { get; set; }
+        public string Apv => GetValue<string>(HeaderParameters.Apv);
 #endif
 
-        [JsonExtensionData]
-        public IDictionary<string, JToken> AdditionalData { get; set; }
+        public T GetValue<T>(string key)
+        {
+            if (TryGetValue(key, out var value) && value is T tValue)
+            {
+                return tValue;
+            }
+
+            return default;
+        }
     }
 }

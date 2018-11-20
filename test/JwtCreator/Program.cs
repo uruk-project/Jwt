@@ -38,7 +38,7 @@ namespace JwtCreator
 
             foreach (var key in jwks.Keys.Where(k => k.Use == JsonWebKeyUseNames.Sig))
             {
-                var jwsDescriptor = new JwsDescriptor(new JObject(), json);
+                var jwsDescriptor = new JwsDescriptor(new Dictionary<string, object>(), json);
                 jwsDescriptor.Key = key;
                 var jwt = writer.WriteToken(jwsDescriptor);
                 result.Add(jwt);
@@ -184,7 +184,7 @@ namespace JwtCreator
                 payload.Add(kvp.Key, kvp.Value);
             }
 
-            return new JwsDescriptor(new JObject(), payload);
+            return new JwsDescriptor(new Dictionary<string, object>(), payload);
         }
 
         private static JObject CreateToken(TokenValidationStatus status, JwtDescriptor descriptor, string claim = null)

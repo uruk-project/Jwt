@@ -32,7 +32,7 @@ namespace JsonWebToken
         private Bucket _head = null;
         private Bucket _tail = null;
 
-        public bool TryGetHeader(JObject header, SignatureAlgorithm alg, out byte[] base64UrlHeader)
+        public bool TryGetHeader(IDictionary<string, object> header, SignatureAlgorithm alg, out byte[] base64UrlHeader)
         {
             if (!IsSimpleHeader(header, alg))
             {
@@ -74,16 +74,17 @@ namespace JsonWebToken
             return false;
         }
 
-        private static long ComputeHeaderKey(JObject header, SignatureAlgorithm alg)
+        private static long ComputeHeaderKey(IDictionary<string, object> header, SignatureAlgorithm alg)
         {
-            header.TryGetValue(HeaderParameters.Cty, out JToken cty);
+            header.TryGetValue(HeaderParameters.Cty, out object cty);
 
             if (alg == SignatureAlgorithm.Empty)
             {
                 return -1;
             }
 
-            if (cty != null && !string.Equals(cty.Value<string>(), ContentTypeValues.Jwt, StringComparison.Ordinal))
+            var ctyValue = cty as string;
+            if (ctyValue != null && !string.Equals(ctyValue, ContentTypeValues.Jwt, StringComparison.Ordinal))
             {
                 // only support 'cty': 'JWT' or not cty
                 return -1;
@@ -92,7 +93,7 @@ namespace JsonWebToken
             return alg;
         }
 
-        public void AddHeader(JObject header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
+        public void AddHeader(IDictionary<string, object> header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
         {
             if (!header.TryGetValue(HeaderParameters.Kid, out var kid))
             {
@@ -172,7 +173,7 @@ namespace JsonWebToken
             }
         }
 
-        private static bool IsSimpleHeader(JObject header, SignatureAlgorithm alg)
+        private static bool IsSimpleHeader(IDictionary<string, object> header, SignatureAlgorithm alg)
         {
             if (!header.ContainsKey(HeaderParameters.Kid))
             {
@@ -187,7 +188,8 @@ namespace JsonWebToken
 
             if (header.TryGetValue(HeaderParameters.Cty, out var cty))
             {
-                if (cty.Type != JTokenType.Null && string.Equals(cty.Value<string>(), ContentTypeValues.Jwt, StringComparison.Ordinal))
+                var value = cty as string;
+                if (cty != null && string.Equals(value, ContentTypeValues.Jwt, StringComparison.Ordinal))
                 {
                     return false;
                 }

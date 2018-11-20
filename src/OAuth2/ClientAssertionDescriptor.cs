@@ -1,9 +1,10 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 
 namespace JsonWebToken
 {
@@ -12,7 +13,7 @@ namespace JsonWebToken
     /// </summary>
     public class ClientAssertionDescriptor : JwsDescriptor
     {
-        private static readonly IReadOnlyDictionary<string, JTokenType[]> ClientAssertionRequiredClaims = new Dictionary<string, JTokenType[]>
+        private static readonly IReadOnlyDictionary<string, JTokenType[]> ClientAssertionRequiredClaims = new Dictionary<string, JTokenType[]>           
         {
             { Claims.Iss, new [] { JTokenType.String } },
             { Claims.Sub, new [] { JTokenType.String } },
@@ -26,11 +27,11 @@ namespace JsonWebToken
         }
 
         public ClientAssertionDescriptor(JObject payload)
-            : base(new JObject(), payload)
+            : base(new Dictionary<string, object>(), payload)
         {
         }
 
-        public ClientAssertionDescriptor(JObject header, JObject payload)
+        public ClientAssertionDescriptor(IDictionary<string, object> header, JObject payload)
             : base(header, payload)
         {
         }

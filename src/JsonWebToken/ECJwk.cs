@@ -3,6 +3,7 @@
 
 using JsonWebToken.Internal;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Security.Cryptography;
 
@@ -100,7 +101,7 @@ namespace JsonWebToken
         /// </summary>
         [JsonIgnore]
         public byte[] RawX { get; private set; }
-
+        
         /// <summary>
         /// Gets or sets the 'y' (Y Coordinate).
         /// </summary>
@@ -318,6 +319,24 @@ namespace JsonWebToken
         public override JsonWebKey Normalize()
         {
             return new ECJwk(Crv, RawD, RawX, RawY);
+        }
+
+        internal static ECJwk FromJObject(JObject jObject)
+        {
+            if (jObject == null)
+            {
+                return null;
+            }
+
+            var key = new ECJwk
+            {
+                Crv = jObject["crv"].Value<string>(),
+                X = jObject["x"]?.Value<string>(),
+                Y = jObject["y"]?.Value<string>(),
+                D = jObject["d"]?.Value<string>()
+            };
+
+            return key;
         }
 
         /// <summary>

@@ -15,16 +15,16 @@ namespace JsonWebToken
         private static readonly string[] DefaultRequiredClaims = Array.Empty<string>();
 
         public JweDescriptor()
-            : base(new JObject(), new TDescriptor())
+            : base(new Dictionary<string, object>(), new TDescriptor())
         {
         }
         
         public JweDescriptor(TDescriptor payload)
-            : base(new JObject(), payload)
+            : base(new Dictionary<string, object>(), payload)
         {
         }
 
-        public JweDescriptor(JObject header, TDescriptor payload)
+        public JweDescriptor(IDictionary<string, object> header, TDescriptor payload)
             : base(header, payload)
         {
         }

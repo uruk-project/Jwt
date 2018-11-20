@@ -4,6 +4,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace JsonWebToken
@@ -14,7 +15,7 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class JwtDescriptor<TPayload> : JwtDescriptor where TPayload : class
     {
-        public JwtDescriptor(JObject header, TPayload payload)
+        public JwtDescriptor(IDictionary<string, object> header, TPayload payload)
             : base(header)
         {
             Payload = payload ?? throw new ArgumentNullException(nameof(payload));

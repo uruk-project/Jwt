@@ -67,7 +67,7 @@ namespace JsonWebToken
             throw new JwtDescriptorException($"The claim '{claim.Key}' must be of type[{claimTypes}].");
         }
 
-        internal static void ThrowHeaderMustBeOfType(KeyValuePair<string, JTokenType[]> header)
+        internal static void ThrowHeaderMustBeOfType(KeyValuePair<string, Type[]> header)
         {
             var claimTypes = string.Join(", ", header.Value.Select(t => t.ToString()));
             throw new JwtDescriptorException($"The header parameter '{header.Key}' must be of type[{claimTypes}].");

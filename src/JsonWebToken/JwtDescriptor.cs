@@ -4,6 +4,7 @@
 using JsonWebToken.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -20,20 +21,20 @@ namespace JsonWebToken
             NullValueHandling = NullValueHandling.Ignore
         };
 
-        private static readonly Dictionary<string, JTokenType[]> DefaultRequiredHeaderParameters = new Dictionary<string, JTokenType[]>();
+        private static readonly Dictionary<string, Type[]> DefaultRequiredHeaderParameters = new Dictionary<string, Type[]>();
         private JsonWebKey _key;
 
         protected JwtDescriptor()
-            : this(new JObject())
+            : this(new Dictionary<string, object>())
         {
         }
 
-        protected JwtDescriptor(JObject header)
+        protected JwtDescriptor(IDictionary<string, object> header)
         {
             Header = header;
         }
 
-        public JObject Header { get; }
+        public IDictionary<string, object> Header { get; }
 
         public JsonWebKey Key
         {
@@ -46,7 +47,7 @@ namespace JsonWebToken
             }
         }
 
-        protected virtual IReadOnlyDictionary<string, JTokenType[]> RequiredHeaderParameters => DefaultRequiredHeaderParameters;
+        protected virtual IReadOnlyDictionary<string, Type[]> RequiredHeaderParameters => DefaultRequiredHeaderParameters;
 
         public string Algorithm
         {
@@ -117,9 +118,9 @@ namespace JsonWebToken
 
         protected string GetHeaderParameter(string headerName)
         {
-            if (Header.TryGetValue(headerName, out JToken value))
+            if (Header.TryGetValue(headerName, out object value))
             {
-                return value.Value<string>();
+                return (string)value;
             }
 
             return null;
@@ -127,16 +128,16 @@ namespace JsonWebToken
 
         protected IList<string> GetHeaderParameters(string claimType)
         {
-            if (Header.TryGetValue(claimType, out JToken value))
+            if (Header.TryGetValue(claimType, out object value))
             {
                 var list = value as IList<string>;
-                if (value.Type == JTokenType.Array)
+                if (list != null)
                 {
-                    return new List<string>(value.Values<string>());
+                    return new List<string>(list);
                 }
                 else
                 {
-                    var strValue = value.Value<string>();
+                    var strValue = value as string;
                     if (strValue != null)
                     {
                         return new List<string>(new[] { strValue });
@@ -156,7 +157,7 @@ namespace JsonWebToken
         {
             foreach (var header in RequiredHeaderParameters)
             {
-                if (!Header.TryGetValue(header.Key, out JToken token) || token.Type == JTokenType.Null)
+                if (!Header.TryGetValue(header.Key, out object token) || token == null)
                 {
                     Errors.ThrowHeaderIsRequired(header.Key);
                 }
@@ -164,7 +165,7 @@ namespace JsonWebToken
                 bool headerFound = false;
                 for (int i = 0; i < header.Value.Length; i++)
                 {
-                    if (token.Type == header.Value[i])
+                    if (token.GetType() == header.Value[i])
                     {
                         headerFound = true;
                         break;

@@ -3,6 +3,7 @@
 
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 
 namespace JsonWebToken
 {
@@ -74,7 +75,7 @@ namespace JsonWebToken
         /// <param name="contentEncryptionKey">The generated content encryption key.</param>
         /// <param name="bytesWritten">The count of bytes written.</param>
         /// <returns>True .</returns>
-        public abstract bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten);
+        public abstract bool TryWrapKey(JsonWebKey staticKey, IDictionary<string, object> header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten);
 
         /// <summary>
         /// Gets the size of the unwrapped key.

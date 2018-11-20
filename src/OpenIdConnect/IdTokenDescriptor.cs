@@ -18,6 +18,7 @@ namespace JsonWebToken
             { Claims.Exp, new [] { JTokenType.Integer } },
             { Claims.Iat, new [] { JTokenType.Integer } }
         };
+
         private static readonly IReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredClaimsImplicit = new Dictionary<string, JTokenType[]>
         {
             { Claims.Iss, new [] { JTokenType.String} },
@@ -28,6 +29,7 @@ namespace JsonWebToken
             { Claims.Nonce, new [] { JTokenType.String} },
             { Claims.AtHash, new [] { JTokenType.String } }
         };
+
         private static readonly IReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredClaimsHybrid = new Dictionary<string, JTokenType[]>
         {
             { Claims.Iss, new [] { JTokenType.String } },
@@ -41,17 +43,17 @@ namespace JsonWebToken
         };
 
         public IdTokenDescriptor()
-            :base()
+                    : base()
         {
         }
 
-        public IdTokenDescriptor(JObject  header, JObject payload)
+        public IdTokenDescriptor(IDictionary<string, object> header, JObject payload)
             : base(header, payload)
         {
         }
 
         public IdTokenDescriptor(JObject payload)
-            : base(new JObject(), payload)
+            : base(new Dictionary<string, object>(), payload)
         {
         }
 

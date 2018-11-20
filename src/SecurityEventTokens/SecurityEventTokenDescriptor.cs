@@ -12,12 +12,12 @@ namespace JsonWebToken
     {
         public const string SecurityEventTokenType = "secevent+jwt";
 
-        private static readonly Dictionary<string, JTokenType[]> SetRequiredClaims = new Dictionary<string, JTokenType[]>
-        {
-            { Claims.Iss, new[] { JTokenType.String } },
-            { Claims.Iat, new[] { JTokenType.Integer} },
-            { Claims.Jti, new[] { JTokenType.String } },
-            { Claims.Events, new[] { JTokenType.Object } }
+        private static readonly Dictionary<string, JTokenType[]> SetRequiredClaims = new Dictionary<string, JTokenType[]>          
+        {           
+            { Claims.Iss, new[] { JTokenType.String } },               
+            { Claims.Iat, new[] { JTokenType.Integer} },               
+            { Claims.Jti, new[] { JTokenType.String } },               
+            { Claims.Events, new[] { JTokenType.Object } }             
         };
 
         public SecurityEventTokenDescriptor()
@@ -25,7 +25,7 @@ namespace JsonWebToken
         }
 
         public SecurityEventTokenDescriptor(JObject payload)
-            : base(new JObject(), payload)
+            : base(new Dictionary<string, object>(), payload)
         {
         }
 
