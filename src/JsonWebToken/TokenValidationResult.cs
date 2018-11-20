@@ -31,6 +31,15 @@ namespace JsonWebToken
             };
         }
 
+        public static TokenValidationResult CriticalHeaderMissing(string criticalHeader, JsonWebToken token)
+        {
+            return new TokenValidationResult
+            {
+                Status = TokenValidationStatus.CriticalHeaderMissing,
+                Token = token
+            };
+        }
+
         public static TokenValidationResult TokenReplayed(JsonWebToken token)
         {
             return new TokenValidationResult

@@ -3,6 +3,7 @@
 
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 
 namespace JsonWebToken.Internal
 {
@@ -63,7 +64,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
+        public override bool TryWrapKey(JsonWebKey staticKey, IDictionary<string, object> header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
             {

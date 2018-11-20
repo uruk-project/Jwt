@@ -83,6 +83,21 @@ namespace JsonWebToken.Tests
             Assert.Equal(TokenValidationStatus.MalformedToken, result.Status);
         }
 
+
+        [Theory]
+        [InlineData("eyJhbGciOiJub25lIiwNCiAiY3JpdCI6WyJodHRwOi8vZXhhbXBsZS5jb20vVU5ERUZJTkVEIl0sDQogImh0dHA6Ly9leGFtcGxlLmNvbS9VTkRFRklORUQiOnRydWUNCn0.RkFJTA.")]
+        public void ReadJwt_MissingCriticHeader(string jwt)
+        {
+            var reader = new JsonWebTokenReader();
+            var policy = new TokenValidationPolicyBuilder()
+                    .AddCriticalHeaderValidation()
+                    .AcceptUnsecureToken()
+                    .Build();
+
+            var result = reader.TryReadToken(jwt, policy);
+            Assert.Equal(TokenValidationStatus.CriticalHeaderMissing, result.Status);
+        }
+
         public static IEnumerable<object[]> GetValidTokens()
         {
             foreach (var item in Tokens.ValidTokens.Where(t => !t.Key.EndsWith("empty")))

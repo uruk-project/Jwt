@@ -83,8 +83,13 @@ namespace JsonWebToken
         DecompressionFailed,
 
         /// <summary>
-        /// The encrption key was not found.
+        /// The encryption key was not found.
         /// </summary>
-        EncryptionKeyNotFound
+        EncryptionKeyNotFound,
+
+        /// <summary>
+        /// The 'crit' header define a missing critical header.
+        /// </summary>
+        CriticalHeaderMissing
     }
 }

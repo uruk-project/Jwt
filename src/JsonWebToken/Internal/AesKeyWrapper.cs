@@ -3,6 +3,7 @@
 
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -173,7 +174,7 @@ namespace JsonWebToken.Internal
         /// </summary>
         /// <param name="keyBytes">the key to be wrapped</param>
         /// <returns>A wrapped key</returns>
-        public override bool TryWrapKey(JsonWebKey staticKey, JObject header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
+        public override bool TryWrapKey(JsonWebKey staticKey, IDictionary<string, object> header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
             {

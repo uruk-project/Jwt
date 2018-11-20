@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
@@ -19,7 +20,7 @@ namespace JsonWebToken
     {
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 
-        public EncryptedJwtDescriptor(JObject header, TPayload payload)
+        public EncryptedJwtDescriptor(IDictionary<string, object> header, TPayload payload)
             : base(header, payload)
         {
         }

@@ -16,7 +16,9 @@ namespace JsonWebToken.Tests
             {
                 rawHeaders[i] = new byte[32];
                 RandomNumberGenerator.Fill(rawHeaders[i]);
-                cache.AddHeader(rawHeaders[i], new JwtHeader() { Kid = i.ToString() });
+                JwtHeader header = new JwtHeader();
+                header["kid"] = i.ToString();
+                cache.AddHeader(rawHeaders[i], header);
             }
 
             Assert.Equal("9", cache.Head.Kid);
@@ -38,7 +40,8 @@ namespace JsonWebToken.Tests
             {
                 rawHeaders[i] = new byte[32];
                 RandomNumberGenerator.Fill(rawHeaders[i]);
-                var header = new JwtHeader() { Kid = i.ToString() };
+                var header = new JwtHeader();
+                header["kid"] = i.ToString();
                 cache.AddHeader(rawHeaders[i], header);
                 Assert.Equal(header, cache.Head);
             }
@@ -65,7 +68,9 @@ namespace JsonWebToken.Tests
             {
                 rawHeaders[i] = new byte[32];
                 RandomNumberGenerator.Fill(rawHeaders[i]);
-                cache.AddHeader(rawHeaders[i], new JwtHeader());
+                var header = new JwtHeader();
+                header["kid"] = i.ToString();
+                cache.AddHeader(rawHeaders[i], header);
             }
 
             for (int i = 0; i < 10; i++)

@@ -187,6 +187,12 @@ namespace JsonWebToken
             return this;
         }
 
+        public TokenValidationPolicyBuilder AddCriticalHeaderValidation()
+        {
+            _validators.Add(new CriticalHeaderValidator());
+            return this;
+        }
+
         protected virtual void Validate()
         {
             if (!_hasSignatureValidation)
