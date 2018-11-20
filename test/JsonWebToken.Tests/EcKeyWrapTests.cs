@@ -59,7 +59,7 @@ namespace JsonWebToken.Tests
             var jwtHeader = new JwtHeader();
             jwtHeader["apu"] = Base64Url.Base64UrlEncode("Alice");
             jwtHeader["apv"] = Base64Url.Base64UrlEncode("Bob");
-            jwtHeader["epk"] = header[HeaderParameters.Epk];
+            jwtHeader["epk"] = JObject.FromObject(header[HeaderParameters.Epk]);
 
             byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
             var unwrapped = kwp2.TryUnwrapKey(wrappedKey, unwrappedKey, jwtHeader, out bytesWritten);
@@ -84,7 +84,7 @@ namespace JsonWebToken.Tests
             var jwtHeader = new JwtHeader();
             jwtHeader["apu"] = Base64Url.Base64UrlEncode("Alice");
             jwtHeader["apv"] = Base64Url.Base64UrlEncode("Bob");
-            jwtHeader["epk"] = header[HeaderParameters.Epk];
+            jwtHeader["epk"] = JObject.FromObject(header[HeaderParameters.Epk]);
 
             byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
             var unwrapped = kwp2.TryUnwrapKey(wrappedKey, unwrappedKey, jwtHeader, out bytesWritten);

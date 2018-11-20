@@ -1,10 +1,10 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 
 namespace JsonWebToken
 {
@@ -13,12 +13,12 @@ namespace JsonWebToken
     /// </summary>
     public class ClientAssertionDescriptor : JwsDescriptor
     {
-        private static readonly IReadOnlyDictionary<string, Type[]> ClientAssertionRequiredClaims = new Dictionary<string, Type[]>
+        private static readonly IReadOnlyDictionary<string, JTokenType[]> ClientAssertionRequiredClaims = new Dictionary<string, JTokenType[]>           
         {
-            { Claims.Iss, new [] { typeof(string) } },
-            { Claims.Sub, new [] { typeof(string) } },
-            { Claims.Aud, new [] { typeof(string), typeof(IList<string>) } },
-            { Claims.Exp, new [] { typeof(long) } }
+            { Claims.Iss, new [] { JTokenType.String } },
+            { Claims.Sub, new [] { JTokenType.String } },
+            { Claims.Aud, new [] { JTokenType.String, JTokenType.Array } },
+            { Claims.Exp, new [] { JTokenType.Integer } }
         };
 
         public ClientAssertionDescriptor()
@@ -46,6 +46,6 @@ namespace JsonWebToken
             base.Validate();
         }
 
-        protected override IReadOnlyDictionary<string, Type[]> RequiredClaims => ClientAssertionRequiredClaims;
+        protected override IReadOnlyDictionary<string, JTokenType[]> RequiredClaims => ClientAssertionRequiredClaims;
     }
 }

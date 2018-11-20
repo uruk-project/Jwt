@@ -88,8 +88,13 @@ namespace JsonWebToken
         EncryptionKeyNotFound,
 
         /// <summary>
-        /// The 'crit' header define a missing critical header.
+        /// The 'crit' header defines a missing critical header.
         /// </summary>
-        CriticalHeaderMissing
+        CriticalHeaderMissing,
+
+        /// <summary>
+        /// The 'crit' header defines an unsupported header.
+        /// </summary>
+        CriticalHeaderUnsupported
     }
 }

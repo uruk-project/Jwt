@@ -119,7 +119,7 @@ namespace JsonWebToken.Internal
             {
                 exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
                 var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
-                header[HeaderParameters.Epk] = new JValue(epk);
+                header[HeaderParameters.Epk] = epk;
             }
 
             if (Algorithm.ProduceEncryptedKey)

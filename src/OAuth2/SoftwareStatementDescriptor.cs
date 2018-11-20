@@ -13,9 +13,9 @@ namespace JsonWebToken
     /// </summary>
     public class SoftwareStatementDescriptor : JwsDescriptor
     {
-        private static readonly IReadOnlyDictionary<string, Type[]> SoftwareStatementRequiredClaims = new Dictionary<string, Type[]>
+        private static readonly IReadOnlyDictionary<string, JTokenType[]> SoftwareStatementRequiredClaims = new Dictionary<string, JTokenType[]>
         {
-            { Claims.Iss, new [] { typeof(string) } }
+            { Claims.Iss, new [] { JTokenType.String} }
         };
 
         public SoftwareStatementDescriptor(JObject payload)
@@ -32,6 +32,6 @@ namespace JsonWebToken
             set { AddClaim(Claims.SoftwareId, value); }
         }
 
-        protected override IReadOnlyDictionary<string, Type[]> RequiredClaims => SoftwareStatementRequiredClaims;
+        protected override IReadOnlyDictionary<string, JTokenType[]> RequiredClaims => SoftwareStatementRequiredClaims;
     }
 }

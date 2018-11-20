@@ -5,6 +5,7 @@ using JsonWebToken.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace JsonWebToken
 {
@@ -74,15 +75,15 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the Crit header.
         /// </summary>
-        public IList<string> Crit => GetValue<IList<string>>(HeaderParameters.Crit);
+        public IList<string> Crit => GetValue<JArray>(HeaderParameters.Crit)?.Values<string>().ToList();
 
 #if NETCOREAPP2_1
         /// <summary>
         /// Gets the ephemeral key used for ECDH key agreement.
         /// </summary>
         [JsonProperty(PropertyName = HeaderParameters.Epk, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public ECJwk Epk => GetValue<ECJwk>(HeaderParameters.Epk);
-        //public ECJwk Epk => ECJwk.FromJObject(GetValue<JObject>(HeaderParameters.Epk));
+        //public ECJwk Epk => GetValue<ECJwk>(HeaderParameters.Epk);
+        public ECJwk Epk => ECJwk.FromJObject(GetValue<JObject>(HeaderParameters.Epk));
 
         /// <summary>
         /// Gets the Agreement PartyUInfo used for ECDH key agreement.

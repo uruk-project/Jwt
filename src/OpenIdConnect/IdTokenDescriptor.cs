@@ -10,42 +10,44 @@ namespace JsonWebToken
 {
     public class IdTokenDescriptor : JwsDescriptor
     {
-        private static readonly IReadOnlyDictionary<string, Type[]> IdTokenRequiredClaims = new Dictionary<string, Type[]>
+        private static readonly IReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredClaims = new Dictionary<string, JTokenType[]>
         {
-            { Claims.Iss, new [] { typeof(string)} },
-            { Claims.Sub, new [] { typeof(string)} },
-            { Claims.Aud, new [] { typeof(string), typeof(IList<string>)} },
-            { Claims.Exp, new [] { typeof(long) } },
-            { Claims.Iat, new [] { typeof(long) } }
+            { Claims.Iss, new [] { JTokenType.String} },
+            { Claims.Sub, new [] { JTokenType.String} },
+            { Claims.Aud, new [] { JTokenType.String, JTokenType.Array} },
+            { Claims.Exp, new [] { JTokenType.Integer } },
+            { Claims.Iat, new [] { JTokenType.Integer } }
         };
-        private static readonly IReadOnlyDictionary<string, Type[]> IdTokenRequiredClaimsImplicit = new Dictionary<string, Type[]>
+
+        private static readonly IReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredClaimsImplicit = new Dictionary<string, JTokenType[]>
         {
-            { Claims.Iss, new [] { typeof(string)} },
-            { Claims.Sub, new [] { typeof(string)} },
-            { Claims.Aud, new [] { typeof(string), typeof(IList<string>)} },
-            { Claims.Exp, new [] { typeof(long) } },
-            { Claims.Iat, new [] { typeof(long) } },
-            { Claims.Nonce, new [] { typeof(string)} },
-            { Claims.AtHash, new [] { typeof(string) } }
+            { Claims.Iss, new [] { JTokenType.String} },
+            { Claims.Sub, new [] { JTokenType.String} },
+            { Claims.Aud, new [] { JTokenType.String, JTokenType.Array} },
+            { Claims.Exp, new [] { JTokenType.Integer } },
+            { Claims.Iat, new [] { JTokenType.Integer } },
+            { Claims.Nonce, new [] { JTokenType.String} },
+            { Claims.AtHash, new [] { JTokenType.String } }
         };
-        private static readonly IReadOnlyDictionary<string, Type[]> IdTokenRequiredClaimsHybrid = new Dictionary<string, Type[]>
+
+        private static readonly IReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredClaimsHybrid = new Dictionary<string, JTokenType[]>
         {
-            { Claims.Iss, new [] { typeof(string) } },
-            { Claims.Sub, new [] { typeof(string) } },
-            { Claims.Aud, new [] { typeof(string), typeof(IList<string>)} },
-            { Claims.Exp, new [] { typeof(long) } },
-            { Claims.Iat, new [] { typeof(long) } },
-            { Claims.Nonce, new [] { typeof(string) } },
-            { Claims.AtHash, new [] { typeof(string) } },
-            { Claims.CHash, new [] { typeof(string) } }
+            { Claims.Iss, new [] { JTokenType.String } },
+            { Claims.Sub, new [] { JTokenType.String } },
+            { Claims.Aud, new [] { JTokenType.String, JTokenType.Array} },
+            { Claims.Exp, new [] { JTokenType.Integer } },
+            { Claims.Iat, new [] { JTokenType.Integer } },
+            { Claims.Nonce, new [] { JTokenType.String } },
+            { Claims.AtHash, new [] { JTokenType.String } },
+            { Claims.CHash, new [] { JTokenType.String } }
         };
 
         public IdTokenDescriptor()
-            :base()
+                    : base()
         {
         }
 
-        public IdTokenDescriptor(IDictionary<string, object>  header, JObject payload)
+        public IdTokenDescriptor(IDictionary<string, object> header, JObject payload)
             : base(header, payload)
         {
         }
@@ -121,7 +123,7 @@ namespace JsonWebToken
             set => AddClaim(Claims.CHash, value);
         }
 
-        protected override IReadOnlyDictionary<string, Type[]> RequiredClaims
+        protected override IReadOnlyDictionary<string, JTokenType[]> RequiredClaims
         {
             get
             {

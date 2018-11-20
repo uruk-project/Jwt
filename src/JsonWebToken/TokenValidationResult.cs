@@ -31,12 +31,12 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult CriticalHeaderMissing(string criticalHeader, JsonWebToken token)
+        public static TokenValidationResult CriticalHeaderMissing(string criticalHeader)
         {
             return new TokenValidationResult
             {
-                Status = TokenValidationStatus.CriticalHeaderMissing,
-                Token = token
+                Status = TokenValidationStatus.CriticalHeaderMissing, 
+                ErrorHeader = criticalHeader
             };
         }
 
@@ -46,6 +46,15 @@ namespace JsonWebToken
             {
                 Status = TokenValidationStatus.TokenReplayed,
                 Token = token
+            };
+        }
+
+        public static TokenValidationResult CriticalHeaderUnsupported(string criticalHeader)
+        {
+            return new TokenValidationResult
+            {
+                Status = TokenValidationStatus.CriticalHeaderUnsupported,
+                ErrorHeader = criticalHeader
             };
         }
 
@@ -100,7 +109,7 @@ namespace JsonWebToken
                 Exception = e
             };
         }
-        
+
         public static TokenValidationResult MissingEncryptionAlgorithm()
         {
             return new TokenValidationResult
@@ -118,7 +127,7 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult Success(JsonWebToken jwtToken)
+        public static TokenValidationResult Success(JsonWebToken jwtToken = null)
         {
             return new TokenValidationResult
             {
@@ -153,7 +162,7 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult InvalidHeader(JsonWebToken jwt, string header)
+        public static TokenValidationResult InvalidHeader(string header)
         {
             return new TokenValidationResult
             {
@@ -162,7 +171,7 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult MissingHeader(JsonWebToken jwt, string header)
+        public static TokenValidationResult MissingHeader(string header)
         {
             return new TokenValidationResult
             {

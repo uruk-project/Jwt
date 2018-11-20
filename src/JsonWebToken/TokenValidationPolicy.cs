@@ -12,7 +12,7 @@ namespace JsonWebToken
     public sealed class TokenValidationPolicy
     {
         public const int DefaultMaximumTokenSizeInBytes = 1024 * 1024 * 2;
-   
+
         /// <summary>
         /// Represents an policy without any validation.
         /// </summary>
@@ -21,10 +21,12 @@ namespace JsonWebToken
                                                             .Build();
 
         private readonly IList<IValidator> _validators;
+        private readonly IDictionary<string, ICriticalHeaderHandler> _criticalHandlers;
 
-        public TokenValidationPolicy(IList<IValidator> validators)
+        public TokenValidationPolicy(IList<IValidator> validators, IDictionary<string, ICriticalHeaderHandler> criticalHandlers) 
         {
             _validators = validators ?? throw new ArgumentNullException(nameof(validators));
+            _criticalHandlers = criticalHandlers ?? throw new ArgumentNullException(nameof(criticalHandlers));
         }
 
         public int MaximumTokenSizeInBytes { get; set; } = DefaultMaximumTokenSizeInBytes;
@@ -41,6 +43,41 @@ namespace JsonWebToken
             }
 
             return TokenValidationResult.Success(context.Jwt);
+        }
+
+        public TokenValidationResult TryValidate(CriticalHeaderValidationContext context)
+        {
+            var header = context.Header;
+            var crit = header.Crit;
+            if (crit == null || crit.Count == 0)
+            {
+                return TokenValidationResult.Success();
+            }
+
+            for (int i = 0; i < crit.Count; i++)
+            {
+                var criticalHeader = crit[i];
+                if (!header.ContainsKey(criticalHeader))
+                {
+                    return TokenValidationResult.CriticalHeaderMissing(criticalHeader);
+                }
+                else
+                {
+                    if (_criticalHandlers.TryGetValue(criticalHeader, out ICriticalHeaderHandler handler))
+                    {
+                        if (!handler.TryHandle(context, criticalHeader))
+                        {
+                            return TokenValidationResult.InvalidHeader(criticalHeader);
+                        }
+                    }
+                    else
+                    {
+                        return TokenValidationResult.CriticalHeaderUnsupported(criticalHeader);
+                    }
+                }
+            }
+
+            return TokenValidationResult.Success();
         }
     }
 }

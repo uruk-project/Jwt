@@ -85,17 +85,22 @@ namespace JsonWebToken.Tests
 
 
         [Theory]
-        [InlineData("eyJhbGciOiJub25lIiwNCiAiY3JpdCI6WyJodHRwOi8vZXhhbXBsZS5jb20vVU5ERUZJTkVEIl0sDQogImh0dHA6Ly9leGFtcGxlLmNvbS9VTkRFRklORUQiOnRydWUNCn0.RkFJTA.")]
-        public void ReadJwt_MissingCriticHeader(string jwt)
+        [InlineData("eyJhbGciOiAibm9uZSIsImNyaXQiOlsidW5kZWZpbmVkIl0sInVuZGVmaW5lZCI6IHRydWV9.RkFJTA.", TokenValidationStatus.CriticalHeaderUnsupported)]
+        [InlineData("eyJhbGciOiAibm9uZSIsImNyaXQiOlsidW5kZWZpbmVkIl19.RkFJTA.", TokenValidationStatus.CriticalHeaderMissing)]
+        [InlineData("eyJhbGciOiAibm9uZSIsImNyaXQiOlsiaW52YWxpZCJdLCJpbnZhbGlkIjogdHJ1ZX0.RkFJTA.", TokenValidationStatus.InvalidHeader)]
+        [InlineData("eyJhbGciOiAibm9uZSIsImNyaXQiOlsiZXhwIl0sImV4cCI6IDEyMzR9.RkFJTA.", TokenValidationStatus.MalformedToken)]
+        [InlineData("eyJhbGciOiAibm9uZSIsImNyaXQiOlsiZXhwIl0sImV4cCI6IDEyMzR9.e30.", TokenValidationStatus.Success)]
+        public void ReadJwt_CriticalHeader(string jwt, TokenValidationStatus expected)
         {
             var reader = new JsonWebTokenReader();
             var policy = new TokenValidationPolicyBuilder()
-                    .AddCriticalHeaderValidation()
                     .AcceptUnsecureToken()
+                    .AddCriticalHeaderHandler("exp", new TestCriticalHeaderHandler(true))
+                    .AddCriticalHeaderHandler("invalid", new TestCriticalHeaderHandler(false))
                     .Build();
 
             var result = reader.TryReadToken(jwt, policy);
-            Assert.Equal(TokenValidationStatus.CriticalHeaderMissing, result.Status);
+            Assert.Equal(expected, result.Status);
         }
 
         public static IEnumerable<object[]> GetValidTokens()
@@ -141,6 +146,21 @@ namespace JsonWebToken.Tests
             }
 
             return Task.FromResult<HttpResponseMessage>(null);
+        }
+    }
+
+    public class TestCriticalHeaderHandler : ICriticalHeaderHandler
+    {
+        private readonly bool value;
+
+        public TestCriticalHeaderHandler(bool value)
+        {
+            this.value = value;
+        }
+
+        public bool TryHandle(CriticalHeaderValidationContext context, string headerName)
+        {
+            return value;
         }
     }
 }

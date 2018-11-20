@@ -6,30 +6,6 @@ using System.Collections.Generic;
 
 namespace JsonWebToken.Internal
 {
-    public class CriticalHeaderValidator : IValidator
-    {
-        public TokenValidationResult TryValidate(in TokenValidationContext context)
-        {
-            var jwt = context.Jwt;
-            var crit = jwt.Header.Crit;
-            if (crit == null || crit.Count == 0)
-            {
-                return TokenValidationResult.Success(jwt);
-            }
-
-            for (int i = 0; i < crit.Count; i++)
-            {
-                var criticalHeader = crit[i];
-                if (!jwt.Header.ContainsKey(criticalHeader))
-                {
-                    return TokenValidationResult.CriticalHeaderMissing(criticalHeader, jwt);
-                }
-            }
-
-            return TokenValidationResult.Success(jwt);
-        }
-    }
-
     public class AudienceValidator : IValidator
     {
         private readonly IEnumerable<string> _audiences;

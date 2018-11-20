@@ -19,7 +19,7 @@ namespace JsonWebToken
     public class JwsDescriptor : JwtDescriptor<JObject>, IJwtPayloadDescriptor
     {
         private static readonly byte dot = Convert.ToByte('.');
-        private static readonly Dictionary<string, Type[]> DefaultRequiredClaims = new Dictionary<string, Type[]>();
+        private static readonly Dictionary<string, JTokenType[]> DefaultRequiredClaims = new Dictionary<string, JTokenType[]>();
         private static readonly string[] DefaultProhibitedClaims = Array.Empty<string>();
         private static readonly Dictionary<string, Type[]> JwsRequiredHeaderParameters = new Dictionary<string, Type[]>
         {
@@ -36,7 +36,7 @@ namespace JsonWebToken
         {
         }
 
-        protected virtual IReadOnlyDictionary<string, Type[]> RequiredClaims => DefaultRequiredClaims;
+        protected virtual IReadOnlyDictionary<string, JTokenType[]> RequiredClaims => DefaultRequiredClaims;
 
         protected virtual IReadOnlyList<string> ProhibitedClaims => DefaultProhibitedClaims;
 
