@@ -15,12 +15,7 @@ namespace JsonWebToken
         private readonly List<IValidator> _validators = new List<IValidator>();
         private int _maximumTokenSizeInBytes = TokenValidationPolicy.DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
-
-        public TokenValidationPolicyBuilder()
-        {
-
-        }
-
+        
         public TokenValidationPolicyBuilder Clear()
         {
             _validators.Clear();
