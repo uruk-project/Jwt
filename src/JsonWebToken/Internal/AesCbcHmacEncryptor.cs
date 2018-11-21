@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
@@ -13,7 +14,7 @@ namespace JsonWebToken.Internal
     /// <summary>
     /// Provides authenticated encryption and decryption for AES CBC HMAC algorithm.
     /// </summary>
-    public sealed class AesCbcHmacEncryptor : AuthenticatedEncryptor
+    internal sealed class AesCbcHmacEncryptor : AuthenticatedEncryptor
     {
         private readonly SymmetricSigner _symmetricSignatureProvider;
         private readonly ObjectPool<Aes> _aesPool;

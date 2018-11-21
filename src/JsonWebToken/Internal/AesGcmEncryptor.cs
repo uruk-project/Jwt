@@ -2,13 +2,14 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 
 namespace JsonWebToken.Internal
 {
     /// <summary>
     /// Provides authenticated encryption and decryption for AES GCM algorithm.
     /// </summary>
-    public sealed class AesGcmEncryptor : AuthenticatedEncryptor
+    internal sealed class AesGcmEncryptor : AuthenticatedEncryptor
     {
         private readonly SymmetricJwk _key;
         private readonly EncryptionAlgorithm _encryptionAlgorithm;

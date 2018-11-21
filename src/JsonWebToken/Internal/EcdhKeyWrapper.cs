@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -14,7 +15,7 @@ using System.Text;
 
 namespace JsonWebToken.Internal
 {
-    public sealed class EcdhKeyWrapper : KeyWrapper
+    internal sealed class EcdhKeyWrapper : KeyWrapper
     {
         private static readonly byte[] _secretPreprend = { 0x0, 0x0, 0x0, 0x1 };
         private static readonly uint OneBigEndian = BitConverter.IsLittleEndian ? 0x1000000u : 1u;

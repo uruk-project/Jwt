@@ -1,10 +1,11 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 
 namespace JsonWebToken.Internal
 {
-    public sealed class DefaultSignerFactory : ISignerFactory
+    internal sealed class DefaultSignerFactory : ISignerFactory
     {
         private readonly CryptographicStore<Signer> _signers = new CryptographicStore<Signer>();
         private readonly CryptographicStore<Signer> _validationSigners = new CryptographicStore<Signer>();

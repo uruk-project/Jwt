@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace JsonWebToken.Internal
 {
-    public sealed class SoftwareBase64Url : IBase64Url
+    internal sealed class SoftwareBase64Url : IBase64Url
     {
         // Force init of map
         static SoftwareBase64Url()

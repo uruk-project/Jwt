@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
-    public sealed class RsaSigner : Signer
+    internal sealed class RsaSigner : Signer
     {
         private readonly ObjectPool<RSA> _hashAlgorithmPool;
         private readonly HashAlgorithmName _hashAlgorithm;

@@ -3,9 +3,11 @@
 
 using Newtonsoft.Json.Linq;
 using System;
+using System.ComponentModel;
 
 namespace JsonWebToken.Internal
 {
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class RequiredClaimValidator<TClaim> : IValidator
     {
         private readonly string _claim;

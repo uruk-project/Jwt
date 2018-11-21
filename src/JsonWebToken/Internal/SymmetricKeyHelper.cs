@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace JsonWebToken.Internal
 {
-    public static class SymmetricKeyHelper
+    internal static class SymmetricKeyHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JsonWebKey CreateSymmetricKey(EncryptionAlgorithm encryptionAlgorithm, JsonWebKey staticKey)

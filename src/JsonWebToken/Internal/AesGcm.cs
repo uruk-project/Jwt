@@ -2,10 +2,11 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 
 namespace JsonWebToken.Internal
 {
-    public class AesGcm : IDisposable
+    internal class AesGcm : IDisposable
     {
         public AesGcm(ReadOnlySpan<byte> key)
         {

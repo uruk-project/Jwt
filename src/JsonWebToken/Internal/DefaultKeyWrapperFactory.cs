@@ -1,10 +1,11 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 
 namespace JsonWebToken.Internal
 {
-    public sealed class DefaultKeyWrapperFactory : IKeyWrapperFactory
+    internal sealed class DefaultKeyWrapperFactory : IKeyWrapperFactory
     {
         private readonly CryptographicStore<KeyWrapper> _keyWrappers = new CryptographicStore<KeyWrapper>();
         private bool _disposed;

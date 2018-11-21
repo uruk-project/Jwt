@@ -5,7 +5,7 @@ using System;
 
 namespace JsonWebToken.Internal
 {
-    public sealed class TokenReplayValidator : IValidator
+    internal sealed class TokenReplayValidator : IValidator
     {
         private readonly ITokenReplayCache _tokenReplayCache;
 

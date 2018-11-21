@@ -2,11 +2,12 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
 {
-    public sealed class EcdsaSigner : Signer
+    internal sealed class EcdsaSigner : Signer
     {
         private readonly ObjectPool<ECDsa> _hashAlgorithmPool;
         private readonly int _hashSize;

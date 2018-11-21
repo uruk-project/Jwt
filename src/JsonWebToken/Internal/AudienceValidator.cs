@@ -3,10 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace JsonWebToken.Internal
 {
-    public sealed class AudienceValidator : IValidator
+    internal sealed class AudienceValidator : IValidator
     {
         private readonly IEnumerable<string> _audiences;
 

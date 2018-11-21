@@ -3,10 +3,12 @@
 
 using System;
 using System.Buffers;
+using System.ComponentModel;
 
 namespace JsonWebToken.Internal
 {
-    public interface IBase64Url
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    internal interface IBase64Url
     {
         int GetMaxEncodedToUtf8Length(int length);
 
