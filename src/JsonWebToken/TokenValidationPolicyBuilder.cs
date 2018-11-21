@@ -9,13 +9,14 @@ using System.Net.Http;
 
 namespace JsonWebToken
 {
-    public class TokenValidationPolicyBuilder
+    public sealed class TokenValidationPolicyBuilder
     {
         private readonly IDictionary<string, ICriticalHeaderHandler> _criticalHeaderHandlers = new Dictionary<string, ICriticalHeaderHandler>();
         private readonly List<IValidator> _validators = new List<IValidator>();
         private int _maximumTokenSizeInBytes = TokenValidationPolicy.DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
-        
+        private bool _ignoreCriticalHeader;
+
         public TokenValidationPolicyBuilder Clear()
         {
             _validators.Clear();
@@ -195,7 +196,13 @@ namespace JsonWebToken
             return this;
         }
 
-        protected virtual void Validate()
+        public TokenValidationPolicyBuilder IgnoreCriticalHeader()
+        {
+            _ignoreCriticalHeader = true;
+            return this;
+        }
+
+        private void Validate()
         {
             if (!_hasSignatureValidation)
             {
@@ -207,7 +214,7 @@ namespace JsonWebToken
         {
             Validate();
 
-            var policy = new TokenValidationPolicy(_validators, _criticalHeaderHandlers)
+            var policy = new TokenValidationPolicy(_validators, _criticalHeaderHandlers, _maximumTokenSizeInBytes, _ignoreCriticalHeader)
             {
                 MaximumTokenSizeInBytes = _maximumTokenSizeInBytes
             };

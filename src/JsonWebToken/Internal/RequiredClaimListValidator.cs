@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace JsonWebToken.Internal
 {
-    public class RequiredClaimListValidator<TClaim> : IValidator
+    public sealed class RequiredClaimListValidator<TClaim> : IValidator
     {
         private readonly string _claim;
         private readonly IList<TClaim> _values;

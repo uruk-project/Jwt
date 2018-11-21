@@ -13,7 +13,7 @@ namespace JsonWebToken.Internal
     /// <summary>
     /// Provides Wrap key and Unwrap key services.
     /// </summary>
-    public class AesKeyWrapper : KeyWrapper
+    public sealed class AesKeyWrapper : KeyWrapper
     {
         private const int BlockSizeInBytes = 8;
 

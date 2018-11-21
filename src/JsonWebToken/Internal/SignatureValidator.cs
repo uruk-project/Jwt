@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace JsonWebToken.Internal
 {
-    public class SignatureValidator : IValidator
+    public sealed class SignatureValidator : IValidator
     {
         private readonly IKeyProvider _keyProvider;
         private readonly bool _supportUnsecure;

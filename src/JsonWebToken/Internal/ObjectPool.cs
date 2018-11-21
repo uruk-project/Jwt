@@ -9,7 +9,7 @@ using System.Threading;
 namespace JsonWebToken.Internal
 {
     // based on https://github.com/aspnet/Common/tree/master/src/Microsoft.Extensions.ObjectPool
-    public class ObjectPool<T> : IDisposable
+    public sealed class ObjectPool<T> : IDisposable
         where T : class, IDisposable
     {
         private readonly ObjectWrapper[] _items;

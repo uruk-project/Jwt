@@ -8,7 +8,7 @@ namespace JsonWebToken
     /// <summary>
     /// Encapsulate the context required for a JWT encoding.
     /// </summary>
-    public class EncodingContext
+    public sealed class EncodingContext
     {
         public EncodingContext(ISignerFactory signatureFactory, IKeyWrapperFactory keyWrapFactory, IAuthenticatedEncryptorFactory authenticatedEncryptionFactory, JsonHeaderCache headerCache)
         {
