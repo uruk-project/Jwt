@@ -12,7 +12,7 @@ namespace JsonWebToken.Internal
     /// <summary>
     /// Provides RSA key wrapping and key unwrapping services.
     /// </summary>
-    public sealed class RsaKeyWrapper : KeyWrapper
+    internal sealed class RsaKeyWrapper : KeyWrapper
     {
         private readonly RSA _rsa;
         private readonly RSAEncryptionPadding _padding;

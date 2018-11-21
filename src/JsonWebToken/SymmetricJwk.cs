@@ -11,7 +11,7 @@ namespace JsonWebToken
     /// <summary>
     /// Represents a symmetric JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
     /// </summary>
-    public class SymmetricJwk : JsonWebKey
+    public sealed class SymmetricJwk : JsonWebKey
     {
         private string _k;
 

@@ -2,9 +2,11 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 
 namespace JsonWebToken.Internal
 {
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static class EpochTime
     {
         public static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);

@@ -18,15 +18,19 @@ namespace JsonWebToken
         /// </summary>
         public static readonly TokenValidationPolicy NoValidation = new TokenValidationPolicyBuilder()
                                                             .IgnoreSignature()
+                                                            .IgnoreCriticalHeader()     
                                                             .Build();
 
         private readonly IList<IValidator> _validators;
         private readonly IDictionary<string, ICriticalHeaderHandler> _criticalHandlers;
+        private readonly bool _ignoreCriticalHeader;
 
-        public TokenValidationPolicy(IList<IValidator> validators, IDictionary<string, ICriticalHeaderHandler> criticalHandlers) 
+        internal TokenValidationPolicy(IList<IValidator> validators, IDictionary<string, ICriticalHeaderHandler> criticalHandlers, int maximumTokenSizeInBytes, bool ignoreCriticalHeader) 
         {
             _validators = validators ?? throw new ArgumentNullException(nameof(validators));
             _criticalHandlers = criticalHandlers ?? throw new ArgumentNullException(nameof(criticalHandlers));
+            _ignoreCriticalHeader = ignoreCriticalHeader;
+            MaximumTokenSizeInBytes = maximumTokenSizeInBytes;
         }
 
         public int MaximumTokenSizeInBytes { get; set; } = DefaultMaximumTokenSizeInBytes;
@@ -47,6 +51,16 @@ namespace JsonWebToken
 
         public TokenValidationResult TryValidate(CriticalHeaderValidationContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (_ignoreCriticalHeader)
+            {
+                return TokenValidationResult.Success();
+            }
+
             var header = context.Header;
             var crit = header.Crit;
             if (crit == null || crit.Count == 0)

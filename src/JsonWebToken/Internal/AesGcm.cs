@@ -5,7 +5,7 @@ using System;
 
 namespace JsonWebToken.Internal
 {
-    public class AesGcm : IDisposable
+    internal class AesGcm : IDisposable
     {
         public AesGcm(ReadOnlySpan<byte> key)
         {

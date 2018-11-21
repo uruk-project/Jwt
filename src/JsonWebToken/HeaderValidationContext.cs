@@ -3,7 +3,7 @@
 
 namespace JsonWebToken
 {
-    public class CriticalHeaderValidationContext
+    public sealed class CriticalHeaderValidationContext
     {
         public CriticalHeaderValidationContext(JwtHeader header)
         {

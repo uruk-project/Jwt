@@ -4,11 +4,12 @@
 #if !NETCOREAPP2_1
 using System;
 using System.Buffers;
-using System.Runtime.InteropServices;
+using System.ComponentModel;
 using System.Text;
 
 namespace JsonWebToken.Internal
 {
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static class EncodingHelper
     {
         public static unsafe string GetUtf8String(ReadOnlySpan<byte> input)

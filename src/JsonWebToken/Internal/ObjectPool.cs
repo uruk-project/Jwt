@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -9,7 +10,8 @@ using System.Threading;
 namespace JsonWebToken.Internal
 {
     // based on https://github.com/aspnet/Common/tree/master/src/Microsoft.Extensions.ObjectPool
-    public class ObjectPool<T> : IDisposable
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public sealed class ObjectPool<T> : IDisposable
         where T : class, IDisposable
     {
         private readonly ObjectWrapper[] _items;

@@ -8,7 +8,7 @@ namespace JsonWebToken.Internal
     /// <summary>
     /// Provides authenticated encryption and decryption for AES GCM algorithm.
     /// </summary>
-    public sealed class AesGcmEncryptor : AuthenticatedEncryptor
+    internal sealed class AesGcmEncryptor : AuthenticatedEncryptor
     {
         private readonly SymmetricJwk _key;
         private readonly EncryptionAlgorithm _encryptionAlgorithm;

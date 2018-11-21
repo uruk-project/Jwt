@@ -6,7 +6,7 @@ using System.Buffers;
 
 namespace JsonWebToken.Internal
 {
-    public interface IBase64Url
+    internal interface IBase64Url
     {
         int GetMaxEncodedToUtf8Length(int length);
 

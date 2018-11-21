@@ -13,7 +13,7 @@ namespace JsonWebToken.Internal
     /// <summary>
     /// Provides authenticated encryption and decryption for AES CBC HMAC algorithm.
     /// </summary>
-    public sealed class AesCbcHmacEncryptor : AuthenticatedEncryptor
+    internal sealed class AesCbcHmacEncryptor : AuthenticatedEncryptor
     {
         private readonly SymmetricSigner _symmetricSignatureProvider;
         private readonly ObjectPool<Aes> _aesPool;

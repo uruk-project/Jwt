@@ -4,10 +4,12 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace JsonWebToken.Internal
 {
-    public class RequiredClaimListValidator<TClaim> : IValidator
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public sealed class RequiredClaimListValidator<TClaim> : IValidator
     {
         private readonly string _claim;
         private readonly IList<TClaim> _values;

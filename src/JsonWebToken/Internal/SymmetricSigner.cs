@@ -14,7 +14,7 @@ namespace JsonWebToken.Internal
     /// <summary>
     /// Provides signing and verifying operations using a <see cref="SymmetricJwk"/> and specifying an algorithm.
     /// </summary>
-    public sealed class SymmetricSigner : Signer
+    internal sealed class SymmetricSigner : Signer
     {
         private readonly ObjectPool<KeyedHashAlgorithm> _hashAlgorithmPool;
         private bool _disposed;

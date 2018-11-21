@@ -12,7 +12,7 @@ namespace JsonWebToken
     /// <summary>
     /// Represents a RSA JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
     /// </summary>
-    public class RsaJwk : AsymmetricJwk
+    public sealed class RsaJwk : AsymmetricJwk
     {
         private string _dp;
         private string _dq;

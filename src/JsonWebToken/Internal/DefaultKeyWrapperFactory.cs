@@ -1,13 +1,11 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using System;
-
 namespace JsonWebToken.Internal
 {
-    public class DefaultKeyWrapperFactory : IKeyWrapperFactory
+    internal sealed class DefaultKeyWrapperFactory : IKeyWrapperFactory
     {
-        private readonly CryptographicStore< KeyWrapper> _keyWrappers = new CryptographicStore<KeyWrapper>();
+        private readonly CryptographicStore<KeyWrapper> _keyWrappers = new CryptographicStore<KeyWrapper>();
         private bool _disposed;
 
         /// <summary>
@@ -16,7 +14,7 @@ namespace JsonWebToken.Internal
         /// <param name="key">the key used for key wrapping.</param>
         /// <param name="encryptionAlgorithm">The encryption algorithm.</param>
         /// <param name="contentEncryptionAlgorithm">The content encryption algorithm.</param>
-        public virtual KeyWrapper Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public KeyWrapper Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
             if (_disposed)
             {
@@ -44,27 +42,13 @@ namespace JsonWebToken.Internal
             return null;
         }
 
-        protected virtual void Dispose(bool disposing)
+        public void Dispose()
         {
             if (!_disposed)
             {
-                if (disposing)
-                {
-                    _keyWrappers.Dispose();
-                }
-
+                _keyWrappers.Dispose();
                 _disposed = true;
             }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        void IDisposable.Dispose()
-        {
-            Dispose();
         }
     }
 }

@@ -5,7 +5,7 @@ using System;
 
 namespace JsonWebToken.Internal
 {
-    public class LifetimeValidator : IValidator
+    internal sealed class LifetimeValidator : IValidator
     {
         private readonly bool _requireExpirationTime;
         private readonly long _clockSkewTicks;

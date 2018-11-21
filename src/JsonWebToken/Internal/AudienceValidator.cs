@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace JsonWebToken.Internal
 {
-    public class AudienceValidator : IValidator
+    internal sealed class AudienceValidator : IValidator
     {
         private readonly IEnumerable<string> _audiences;
 

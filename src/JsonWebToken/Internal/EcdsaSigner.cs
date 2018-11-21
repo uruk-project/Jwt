@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
 {
-    public sealed class EcdsaSigner : Signer
+    internal sealed class EcdsaSigner : Signer
     {
         private readonly ObjectPool<ECDsa> _hashAlgorithmPool;
         private readonly int _hashSize;

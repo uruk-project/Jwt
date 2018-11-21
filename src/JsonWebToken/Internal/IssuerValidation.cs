@@ -3,10 +3,10 @@
 
 namespace JsonWebToken.Internal
 {
-    public class IssuerValidation : RequiredClaimValidator<string>
+    internal sealed class IssuerValidation : RequiredClaimValidator<string>
     {
         public IssuerValidation(string issuer)
-            :base(Claims.Iss, issuer)
+            : base(Claims.Iss, issuer)
         {
         }
     }

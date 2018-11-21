@@ -10,7 +10,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines signature algorithm.
     /// </summary>
-    public class SignatureAlgorithm : IEquatable<SignatureAlgorithm>, IAlgorithm
+    public sealed class SignatureAlgorithm : IEquatable<SignatureAlgorithm>, IAlgorithm
     {
         public static readonly SignatureAlgorithm Empty = new SignatureAlgorithm(0, string.Empty, AlgorithmCategory.None, 0, new HashAlgorithmName());
 

@@ -13,7 +13,7 @@ namespace JsonWebToken
     /// Contains a collection of <see cref="JsonWebKey"/>.
     /// </summary>
     [JsonObject]
-    public class JsonWebKeySet
+    public sealed class JsonWebKeySet
     {
         public static readonly JsonWebKeySet Empty = new JsonWebKeySet();
         private JsonWebKey[] _unidentifiedKeys;

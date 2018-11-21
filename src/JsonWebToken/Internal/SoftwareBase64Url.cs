@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace JsonWebToken.Internal
 {
-    public class SoftwareBase64Url : IBase64Url
+    internal sealed class SoftwareBase64Url : IBase64Url
     {
         // Force init of map
         static SoftwareBase64Url()
@@ -18,7 +18,7 @@ namespace JsonWebToken.Internal
 
         private const int MaximumEncodeLength = (int.MaxValue / 4) * 3;
 
-        public virtual OperationStatus EncodeToUtf8(ReadOnlySpan<byte> data, Span<byte> encoded, out int bytesConsumed, out int bytesWritten)
+        public OperationStatus EncodeToUtf8(ReadOnlySpan<byte> data, Span<byte> encoded, out int bytesConsumed, out int bytesWritten)
         {
             ref byte srcBytes = ref MemoryMarshal.GetReference(data);
             ref byte destBytes = ref MemoryMarshal.GetReference(encoded);
@@ -26,7 +26,7 @@ namespace JsonWebToken.Internal
             return EncodeToUtf8(ref srcBytes, data.Length, ref destBytes, encoded.Length, out bytesConsumed, out bytesWritten);
         }
 
-        protected OperationStatus EncodeToUtf8(
+        private OperationStatus EncodeToUtf8(
                  ref byte srcBytes,
                  int srcLength,
                  ref byte destBytes,
