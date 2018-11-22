@@ -98,7 +98,7 @@ namespace JsonWebToken
             throw new NotSupportedException($"Encryption failed. No support for: Algorithm: '{algorithm}'.");
         }
 
-        internal static void ThrowEncryptionFailed(EncryptionAlgorithm algorithm, JsonWebKey key, Exception innerException)
+        internal static void ThrowEncryptionFailed(EncryptionAlgorithm algorithm, Jwk key, Exception innerException)
         {
             throw new CryptographicException($"Encryption failed for: Algorithm: '{algorithm}', key: '{key.Kid}'. See inner exception.", innerException);
         }
@@ -118,12 +118,12 @@ namespace JsonWebToken
             throw new NotSupportedException($"Compression algorithm: '{compressionAlgorithm}' is not supported.");
         }
 
-        internal static void ThrowInvalidEcdsaKeySize(JsonWebKey key, SignatureAlgorithm algorithm, int validKeySize, int keySize)
+        internal static void ThrowInvalidEcdsaKeySize(Jwk key, SignatureAlgorithm algorithm, int validKeySize, int keySize)
         {
             throw new ArgumentOutOfRangeException(nameof(algorithm), $"Invalid key size for '{key.Kid}'. Valid key size must be '{validKeySize}' bits for the algorithm {algorithm}. Key size: '{keySize}'.");
         }
 
-        internal static void ThrowAlgorithmRequireMinimumKeySize(JsonWebKey key, string algorithm, int validKeySize, int keySize)
+        internal static void ThrowAlgorithmRequireMinimumKeySize(Jwk key, string algorithm, int validKeySize, int keySize)
         {
             throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), $"The algorithm '{algorithm}' requires the a key size to be greater than '{validKeySize}' bits. Key size is '{keySize}'.");
         }
@@ -133,22 +133,22 @@ namespace JsonWebToken
             throw new ArgumentOutOfRangeException(nameof(value), $"{name} must be at least '{value}'.");
         }
 
-        internal static void ThrowSigningKeyTooSmall(JsonWebKey key, int minimalValue)
+        internal static void ThrowSigningKeyTooSmall(Jwk key, int minimalValue)
         {
             throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), $"The key '{key.Kid}' for signing cannot be smaller than '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'.");
         }
 
-        internal static void ThrowEncryptionKeyTooSmall(JsonWebKey key, EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize)
+        internal static void ThrowEncryptionKeyTooSmall(Jwk key, EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize)
         {
             throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), $"The key '{key.Kid}' for encryption with algorithm '{algorithm}' cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'.");
         }
 
-        internal static void ThrowKeyWrapKeySizeIncorrect(KeyManagementAlgorithm algorithm, int requiredValue, JsonWebKey key, int currentKeySize)
+        internal static void ThrowKeyWrapKeySizeIncorrect(KeyManagementAlgorithm algorithm, int requiredValue, Jwk key, int currentKeySize)
         {
             throw new ArgumentOutOfRangeException(nameof(key), $"The key '{key.Kid}' for key wrapping with algorithm '{algorithm}' must be of '{requiredValue}' bits. Key size: '{currentKeySize}'.");
         }
 
-        internal static void ThrowNotSupportedSignatureAlgorithm(SignatureAlgorithm algorithm, JsonWebKey key)
+        internal static void ThrowNotSupportedSignatureAlgorithm(SignatureAlgorithm algorithm, Jwk key)
         {
             throw new NotSupportedException($"Signature failed. No support for: Algorithm: '{algorithm}', key: '{key.Kid}'.");
         }
@@ -158,7 +158,7 @@ namespace JsonWebToken
             throw new NotSupportedException($"Signature failed. No support for: Algorithm: '{algorithm}'.");
         }
 
-        internal static void ThrowMissingPrivateKey(JsonWebKey key)
+        internal static void ThrowMissingPrivateKey(Jwk key)
         {
             throw new InvalidOperationException($"The key '{key.Kid}' has no private key.");
         }
@@ -178,7 +178,7 @@ namespace JsonWebToken
             throw new NotSupportedException($"The algorithm '{algorithm}' is not supported.");
         }
 
-        internal static void ThrowMalformedKey(JsonWebKey key)
+        internal static void ThrowMalformedKey(Jwk key)
         {
             throw new ArgumentException($"The key '{key.Kid}' is malformed.", nameof(key));
         }
@@ -188,7 +188,7 @@ namespace JsonWebToken
             throw new CryptographicException("Key wrapping failed.");
         }
 
-        internal static void ThrowCreateSymmetricAlgorithmFailed(JsonWebKey key, KeyManagementAlgorithm algorithm, Exception innerException)
+        internal static void ThrowCreateSymmetricAlgorithmFailed(Jwk key, KeyManagementAlgorithm algorithm, Exception innerException)
         {
             throw new CryptographicException($"Failed to create symmetric algorithm for key wrap with key: '{key.Kid}', algorithm: '{algorithm}'.", innerException);
         }
@@ -203,7 +203,7 @@ namespace JsonWebToken
             throw new NotSupportedException($"Unable to create hash algorithm for algorithm '{algorithm}'.");
         }
 
-        internal static void ThrowInvalidRsaKey(JsonWebKey key)
+        internal static void ThrowInvalidRsaKey(Jwk key)
         {
             throw new ArgumentException($"Invalid RSA key: '{key.Kid}'. Both modulus (N) and exponent (E) must be present.", nameof(key));
         }

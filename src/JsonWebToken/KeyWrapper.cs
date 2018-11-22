@@ -13,9 +13,9 @@ namespace JsonWebToken
     public abstract class KeyWrapper : IDisposable
     {
         /// <summary>
-        /// Gets the <see cref="JsonWebKey"/> that is being used.
+        /// Gets the <see cref="Jwk"/> that is being used.
         /// </summary>
-        public JsonWebKey Key { get; }
+        public Jwk Key { get; }
 
         /// <summary>
         /// Gets the <see cref="KeyManagementAlgorithm"/> that is being used.
@@ -27,7 +27,7 @@ namespace JsonWebToken
         /// </summary>
         public EncryptionAlgorithm EncryptionAlgorithm { get; }
 
-        protected KeyWrapper(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        protected KeyWrapper(Jwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
             if (key == null)
             {
@@ -75,7 +75,7 @@ namespace JsonWebToken
         /// <param name="contentEncryptionKey">The generated content encryption key.</param>
         /// <param name="bytesWritten">The count of bytes written.</param>
         /// <returns>True .</returns>
-        public abstract bool TryWrapKey(JsonWebKey staticKey, IDictionary<string, object> header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten);
+        public abstract bool TryWrapKey(Jwk staticKey, IDictionary<string, object> header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten);
 
         /// <summary>
         /// Gets the size of the unwrapped key.

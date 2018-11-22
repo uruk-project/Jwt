@@ -16,7 +16,7 @@ namespace JsonWebToken.Tests
         [MemberData(nameof(GetJsonKeys))]
         public void CreateFromJson(string json, string kid, string alg)
         {
-            var jwk = JsonWebKey.FromJson(json);
+            var jwk = Jwk.FromJson(json);
 
             Assert.Equal(jwk.Kid, kid);
             Assert.Equal(jwk.Alg, alg);
@@ -26,7 +26,7 @@ namespace JsonWebToken.Tests
         [MemberData(nameof(GetCertificates))]
         public void CreateFromCertificate(X509Certificate2 certificate, bool hasPrivateKey, int keySize)
         {
-            var jwk = JsonWebKey.FromX509Certificate(certificate, hasPrivateKey);
+            var jwk = Jwk.FromX509Certificate(certificate, hasPrivateKey);
             Assert.Equal(keySize, jwk.KeySizeInBits);
         }
 

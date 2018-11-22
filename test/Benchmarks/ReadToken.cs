@@ -18,7 +18,7 @@ namespace JsonWebToken.Performance
         public static readonly JwtDecoder JwtDotNetDecoder = new JwtDecoder(serializer, new JwtValidator(serializer, dateTimeProvider), urlEncoder);
 
         private static readonly SymmetricJwk SymmetricKey = Tokens.SigningKey;
-        public static readonly JsonWebTokenReader Reader = new JsonWebTokenReader(Tokens.EncryptionKey);
+        public static readonly JwtReader Reader = new JwtReader(Tokens.EncryptionKey);
         private static readonly TokenValidationPolicy policy = TokenValidationPolicy.NoValidation;
         public static readonly JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler() { MaximumTokenSizeInBytes = 4 * 1024 * 1024 };
 

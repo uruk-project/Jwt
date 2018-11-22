@@ -15,7 +15,7 @@ namespace JsonWebToken
     /// <summary>
     /// Reads and validates a JWT.
     /// </summary>
-    public sealed class JsonWebTokenReader : IDisposable
+    public sealed class JwtReader : IDisposable
     {
         private const byte dot = 0x2E;
 
@@ -28,7 +28,7 @@ namespace JsonWebToken
 
         private bool _disposed;
 
-        public JsonWebTokenReader(
+        public JwtReader(
             ICollection<IKeyProvider> encryptionKeyProviders,
             ISignerFactory signerFactory,
             IKeyWrapperFactory keyWrapperFactory,
@@ -37,7 +37,7 @@ namespace JsonWebToken
         {
         }
 
-        public JsonWebTokenReader(
+        public JwtReader(
                   ICollection<IKeyProvider> encryptionKeyProviders,
                   ISignerFactory signerFactory,
                   IKeyWrapperFactory keyWrapperFactory,
@@ -56,38 +56,38 @@ namespace JsonWebToken
             _headerCache = headerCache ?? new JwtHeaderCache();
         }
 
-        public JsonWebTokenReader(ICollection<IKeyProvider> encryptionKeyProviders)
+        public JwtReader(ICollection<IKeyProvider> encryptionKeyProviders)
             : this(encryptionKeyProviders, new DefaultSignerFactory(), new DefaultKeyWrapperFactory(), new DefaultAuthenticatedEncryptorFactory())
         {
             _disposeFactories = true;
         }
 
-        public JsonWebTokenReader(IList<JsonWebKey> keys)
-           : this(new JsonWebKeySet(keys))
+        public JwtReader(IList<Jwk> keys)
+           : this(new Jwks(keys))
         {
         }
 
-        public JsonWebTokenReader(params JsonWebKey[] keys)
-           : this(new JsonWebKeySet(keys))
+        public JwtReader(params Jwk[] keys)
+           : this(new Jwks(keys))
         {
         }
 
-        public JsonWebTokenReader(IKeyProvider encryptionKeyProvider)
+        public JwtReader(IKeyProvider encryptionKeyProvider)
             : this(new[] { encryptionKeyProvider ?? throw new ArgumentNullException(nameof(encryptionKeyProvider)) })
         {
         }
 
-        public JsonWebTokenReader(JsonWebKeySet encryptionKeys)
+        public JwtReader(Jwks encryptionKeys)
             : this(new StaticKeyProvider(encryptionKeys))
         {
         }
 
-        public JsonWebTokenReader(JsonWebKey encryptionKey)
-            : this(new JsonWebKeySet(encryptionKey))
+        public JwtReader(Jwk encryptionKey)
+            : this(new Jwks(encryptionKey))
         {
         }
 
-        public JsonWebTokenReader()
+        public JwtReader()
             : this(Array.Empty<IKeyProvider>())
         {
         }
@@ -230,7 +230,7 @@ namespace JsonWebToken
             var rawAuthenticationTag = utf8Buffer.Slice(authenticationTagSegment.Start, authenticationTagSegment.Length);
 
             Span<byte> decryptedBytes = new byte[Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length)];
-            JsonWebKey decryptionKey = null;
+            Jwk decryptionKey = null;
             bool decrypted = false;
             for (int i = 0; i < keys.Count; i++)
             {
@@ -267,11 +267,11 @@ namespace JsonWebToken
                 }
             }
 
-            JsonWebToken jwe;
+            Jwt jwe;
             if (!string.Equals(header.Cty, ContentTypeValues.Jwt, StringComparison.Ordinal))
             {
                 // The decrypted payload is not a nested JWT
-                jwe = new JsonWebToken(header, decryptedBytes.ToArray(), decryptionKey);
+                jwe = new Jwt(header, decryptedBytes.ToArray(), decryptionKey);
                 return TokenValidationResult.Success(jwe);
             }
 
@@ -282,7 +282,7 @@ namespace JsonWebToken
             }
 
             var decryptedJwt = decryptionResult.Token;
-            jwe = new JsonWebToken(header, decryptedJwt, decryptionKey);
+            jwe = new Jwt(header, decryptedJwt, decryptionKey);
             return TokenValidationResult.Success(jwe);
         }
 
@@ -309,7 +309,7 @@ namespace JsonWebToken
                 return TokenValidationResult.MalformedToken(readerException);
             }
 
-            JsonWebToken jws = new JsonWebToken(header, payload);
+            Jwt jws = new Jwt(header, payload);
             return policy.TryValidate(new TokenValidationContext(utf8Buffer, jws, _signatureFactory, new TokenSegment(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), segments[2]));
         }
 
@@ -345,7 +345,7 @@ namespace JsonWebToken
             ReadOnlySpan<byte> rawInitializationVector,
             ReadOnlySpan<byte> rawAuthenticationTag,
             EncryptionAlgorithm encryptionAlgorithm,
-            JsonWebKey key,
+            Jwk key,
             Span<byte> decryptedBytes,
             out int bytesWritten)
         {
@@ -423,7 +423,7 @@ namespace JsonWebToken
             return decryptedBytes != null;
         }
 
-        private List<JsonWebKey> GetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc)
+        private List<Jwk> GetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc)
         {
             var alg = (KeyManagementAlgorithm)header.Alg;
             var keys = ResolveDecryptionKey(header);
@@ -436,7 +436,7 @@ namespace JsonWebToken
             var operationResult = Base64Url.Base64UrlDecode(rawEncryptedKey, encryptedKey, out int bytesConsumed, out int bytesWritten);
             Debug.Assert(operationResult == OperationStatus.Done);
 
-            var unwrappedKeys = new List<JsonWebKey>(1);
+            var unwrappedKeys = new List<Jwk>(1);
             for (int i = 0; i < keys.Count; i++)
             {
                 var key = keys[i];
@@ -454,12 +454,12 @@ namespace JsonWebToken
             return unwrappedKeys;
         }
 
-        private List<JsonWebKey> ResolveDecryptionKey(JwtHeader header)
+        private List<Jwk> ResolveDecryptionKey(JwtHeader header)
         {
             var kid = header.Kid;
             var alg = header.Alg;
 
-            var keys = new List<JsonWebKey>(1);
+            var keys = new List<Jwk>(1);
             for (int i = 0; i < _encryptionKeyProviders.Length; i++)
             {
                 var keySet = _encryptionKeyProviders[i].GetKeys(header);

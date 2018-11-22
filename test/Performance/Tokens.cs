@@ -179,11 +179,11 @@ namespace JsonWebToken.Performance
 
         private static IDictionary<string, string> CreateTokens(IDictionary<string, JwtDescriptor> descriptors)
         {
-            var writer = new JsonWebTokenWriter();
+            var writer = new JwtWriter();
             return descriptors.ToDictionary(k => k.Key, k => writer.WriteToken(k.Value));
         }
 
-        private static IList<TokenState> CreateInvalidToken(JsonWebKey key, JObject json)
+        private static IList<TokenState> CreateInvalidToken(Jwk key, JObject json)
         {
             var jwts = new List<TokenState>();
 
@@ -312,7 +312,7 @@ namespace JsonWebToken.Performance
             }
 
             var token = descriptor;
-            var writer = new JsonWebTokenWriter();
+            var writer = new JwtWriter();
             writer.IgnoreTokenValidation = true;
             var jwt = writer.WriteToken(token);
 
@@ -340,14 +340,14 @@ namespace JsonWebToken.Performance
             return new TokenState(jwt, status);
         }
 
-        private static TokenState CreateInvalidToken(JsonWebKey signingKey, TokenValidationStatus status, JwsDescriptor descriptor, string claim = null)
+        private static TokenState CreateInvalidToken(Jwk signingKey, TokenValidationStatus status, JwsDescriptor descriptor, string claim = null)
         {
             descriptor.Key = signingKey;
 
             return CreateInvalidToken(status, descriptor);
         }
 
-        private static TokenState CreateInvalidToken(JsonWebKey signingKey, JsonWebKey encryptionKey, TokenValidationStatus status, JweDescriptor descriptor, string claim = null)
+        private static TokenState CreateInvalidToken(Jwk signingKey, Jwk encryptionKey, TokenValidationStatus status, JweDescriptor descriptor, string claim = null)
         {
             descriptor.Payload.Key = SigningKey;
             descriptor.Key = encryptionKey;

@@ -37,7 +37,7 @@ namespace JsonWebToken.Tests
         [MemberData(nameof(GetNotSupportedAlgorithms))]
         public void Encode_Decode_NotSuppoted(string enc, string alg)
         {
-            var writer = new JsonWebTokenWriter();
+            var writer = new JwtWriter();
             var encryptionKey = SelectKey(enc, alg);
 
             var descriptor = new JweDescriptor
@@ -72,7 +72,7 @@ namespace JsonWebToken.Tests
         [MemberData(nameof(GetSupportedAlgorithms))]
         public void Encode_Decode(string enc, string alg)
         {
-            var writer = new JsonWebTokenWriter();
+            var writer = new JwtWriter();
             var encryptionKey = SelectKey(enc, alg);
 
             var descriptor = new JweDescriptor
@@ -90,7 +90,7 @@ namespace JsonWebToken.Tests
 
             var token = writer.WriteToken(descriptor);
 
-            var reader = new JsonWebTokenReader(encryptionKey);
+            var reader = new JwtReader(encryptionKey);
             var policy = new TokenValidationPolicyBuilder()
                 .RequireSignature(_signingKey)
                 .Build();

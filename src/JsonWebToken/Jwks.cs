@@ -10,47 +10,46 @@ using System.Linq;
 namespace JsonWebToken
 {
     /// <summary>
-    /// Contains a collection of <see cref="JsonWebKey"/>.
+    /// Contains a collection of <see cref="Jwk"/>.
     /// </summary>
     [JsonObject]
-    public sealed class JsonWebKeySet
+    public sealed class Jwks
     {
-        public static readonly JsonWebKeySet Empty = new JsonWebKeySet();
-        private JsonWebKey[] _unidentifiedKeys;
-        private Dictionary<string, List<JsonWebKey>> _identifiedKeys;
+        private Jwk[] _unidentifiedKeys;
+        private Dictionary<string, List<Jwk>> _identifiedKeys;
 
         /// <summary>
-        /// Initializes an new instance of <see cref="JsonWebKeySet"/>.
+        /// Initializes an new instance of <see cref="Jwks"/>.
         /// </summary>
-        public JsonWebKeySet()
+        public Jwks()
         {
         }
 
-        public JsonWebKeySet(JsonWebKey key)
+        public Jwks(Jwk key)
             : this(new[] { key ?? throw new ArgumentNullException(nameof(key)) })
         {
         }
 
         /// <summary>
-        /// Initializes an new instance of <see cref="JsonWebKeySet"/>.
+        /// Initializes an new instance of <see cref="Jwks"/>.
         /// </summary>
-        public JsonWebKeySet(ICollection<JsonWebKey> keys)
+        public Jwks(ICollection<Jwk> keys)
         {
             if (keys == null)
             {
                 throw new ArgumentNullException(nameof(keys));
             }
 
-            var k = new JsonWebKey[keys.Count];
+            var k = new Jwk[keys.Count];
             keys.CopyTo(k, 0);
-            Keys = new List<JsonWebKey>(k);
+            Keys = new List<Jwk>(k);
         }
 
         /// <summary>
-        /// Initializes an new instance of <see cref="JsonWebKeySet"/> from a json string.
+        /// Initializes an new instance of <see cref="Jwks"/> from a json string.
         /// </summary>
         /// <param name="json">a json string containing values.</param>
-        public JsonWebKeySet(string json)
+        public Jwks(string json)
         {
             if (string.IsNullOrEmpty(json))
             {
@@ -67,15 +66,15 @@ namespace JsonWebToken
         public IDictionary<string, object> AdditionalData { get; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// Gets the <see cref="IList{JsonWebKey}"/>.
+        /// Gets the <see cref="IList{Jwk}"/>.
         /// </summary>       
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeySetParameterNames.Keys, Required = Required.Default, ItemConverterType = typeof(JsonWebKey.JwkJsonConverter))]
-        public IList<JsonWebKey> Keys { get; } = new List<JsonWebKey>();
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwksParameterNames.Keys, Required = Required.Default, ItemConverterType = typeof(Jwk.JwkJsonConverter))]
+        public IList<Jwk> Keys { get; } = new List<Jwk>();
 
         /// <summary>
-        /// Gets or sets the first <see cref="JsonWebKey"/> with its 'kid'.
+        /// Gets or sets the first <see cref="Jwk"/> with its 'kid'.
         /// </summary>
-        public JsonWebKey this[string kid]
+        public Jwk this[string kid]
         {
             get
             {
@@ -93,25 +92,25 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Returns a new instance of <see cref="JsonWebKeySet"/>.
+        /// Returns a new instance of <see cref="Jwks"/>.
         /// </summary>
         /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
-        /// <returns><see cref="JsonWebKeySet"/></returns>
-        public static JsonWebKeySet FromJson(string json)
+        /// <returns><see cref="Jwks"/></returns>
+        public static Jwks FromJson(string json)
         {
             if (string.IsNullOrEmpty(json))
             {
                 throw new ArgumentNullException(nameof(json));
             }
 
-            return new JsonWebKeySet(json);
+            return new Jwks(json);
         }
 
         /// <summary>
         /// Adds the <paramref name="key"/> to the JWKS.
         /// </summary>
         /// <param name="key"></param>
-        public void Add(JsonWebKey key)
+        public void Add(Jwk key)
         {
             if (key == null)
             {
@@ -125,7 +124,7 @@ namespace JsonWebToken
         /// Removes the <paramref name="key"/> from the JWKS.
         /// </summary>
         /// <param name="key"></param>
-        public void Remove(JsonWebKey key)
+        public void Remove(Jwk key)
         {
             if (key == null)
             {
@@ -140,7 +139,7 @@ namespace JsonWebToken
             return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
 
-        private IReadOnlyList<JsonWebKey> UnidentifiedKeys
+        private IReadOnlyList<Jwk> UnidentifiedKeys
         {
             get
             {
@@ -155,7 +154,7 @@ namespace JsonWebToken
             }
         }
 
-        private IDictionary<string, List<JsonWebKey>> IdentifiedKeys
+        private IDictionary<string, List<Jwk>> IdentifiedKeys
         {
             get
             {
@@ -172,11 +171,11 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Gets the list of <see cref="JsonWebKey"/> identified by the 'kid'.
+        /// Gets the list of <see cref="Jwk"/> identified by the 'kid'.
         /// </summary>
         /// <param name="kid"></param>
         /// <returns></returns>
-        public IReadOnlyList<JsonWebKey> GetKeys(string kid)
+        public IReadOnlyList<Jwk> GetKeys(string kid)
         {
             if (kid == null)
             {
@@ -191,6 +190,6 @@ namespace JsonWebToken
             return UnidentifiedKeys;
         }
 
-        public static implicit operator JsonWebKeySet(JsonWebKey[] keys) => new JsonWebKeySet(keys);
+        public static implicit operator Jwks(Jwk[] keys) => new Jwks(keys);
     }
 }

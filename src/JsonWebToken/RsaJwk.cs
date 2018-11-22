@@ -24,7 +24,7 @@ namespace JsonWebToken
 
         public RsaJwk()
         {
-            Kty = JsonWebKeyTypeNames.Rsa;
+            Kty = JwkTypeNames.Rsa;
         }
 
         public RsaJwk(RSAParameters rsaParameters)
@@ -123,7 +123,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'dp' (First Factor CRT Exponent).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.DP, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.DP, Required = Required.Default)]
         public string DP
         {
             get
@@ -159,7 +159,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'dq' (Second Factor CRT Exponent).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.DQ, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.DQ, Required = Required.Default)]
         public string DQ
         {
             get
@@ -195,7 +195,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'e' ( Exponent).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.E, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.E, Required = Required.Default)]
         public string E
         {
             get
@@ -231,7 +231,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'n' (Modulus).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.N, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.N, Required = Required.Default)]
         public string N
         {
             get
@@ -267,13 +267,13 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'oth' (Other Primes Info).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Oth, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.Oth, Required = Required.Default)]
         public IList<string> Oth { get; set; }
 
         /// <summary>
         /// Gets or sets the 'p' (First Prime Factor).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.P, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.P, Required = Required.Default)]
         public string P
         {
             get
@@ -309,7 +309,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'q' (Second  Prime Factor).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Q, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.Q, Required = Required.Default)]
         public string Q
         {
             get
@@ -345,7 +345,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'qi' (First CRT Coefficient).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.QI, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.QI, Required = Required.Default)]
         public string QI
         {
             get
@@ -430,7 +430,7 @@ namespace JsonWebToken
         public static RsaJwk FromParameters(RSAParameters parameters) => FromParameters(parameters, false);
 
         /// <inheritsdoc />
-        public override JsonWebKey Normalize()
+        public override Jwk Normalize()
         {
             return new RsaJwk(RawE, RawN);
         }

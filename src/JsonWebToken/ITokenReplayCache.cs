@@ -16,6 +16,6 @@ namespace JsonWebToken
         /// <param name="jwtToken">the token to add.</param>
         /// <param name="expiresOn">the time when token expires.</param>
         /// <returns>true if the token was successfully added.</returns>
-        bool TryAdd(JsonWebToken jwtToken, DateTime expiresOn);
+        bool TryAdd(Jwt jwtToken, DateTime expiresOn);
     }
 }

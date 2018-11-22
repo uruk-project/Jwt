@@ -12,7 +12,7 @@ namespace JsonWebToken
     {
         public bool Succedeed => Status == TokenValidationStatus.Success;
 
-        public JsonWebToken Token { get; private set; }
+        public Jwt Token { get; private set; }
 
         public TokenValidationStatus Status { get; private set; }
 
@@ -22,7 +22,7 @@ namespace JsonWebToken
 
         public Exception Exception { get; private set; }
 
-        public static TokenValidationResult Expired(JsonWebToken token)
+        public static TokenValidationResult Expired(Jwt token)
         {
             return new TokenValidationResult
             {
@@ -40,7 +40,7 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult TokenReplayed(JsonWebToken token)
+        public static TokenValidationResult TokenReplayed(Jwt token)
         {
             return new TokenValidationResult
             {
@@ -58,7 +58,7 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult MissingSignature(JsonWebToken token)
+        public static TokenValidationResult MissingSignature(Jwt token)
         {
             return new TokenValidationResult
             {
@@ -67,7 +67,7 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult MalformedSignature(JsonWebToken token = null)
+        public static TokenValidationResult MalformedSignature(Jwt token = null)
         {
             return new TokenValidationResult
             {
@@ -75,7 +75,7 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult KeyNotFound(JsonWebToken token)
+        public static TokenValidationResult KeyNotFound(Jwt token)
         {
             return new TokenValidationResult
             {
@@ -84,7 +84,7 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult InvalidSignature(JsonWebToken token)
+        public static TokenValidationResult InvalidSignature(Jwt token)
         {
             return new TokenValidationResult
             {
@@ -118,7 +118,7 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult NotYetValid(JsonWebToken jwtToken)
+        public static TokenValidationResult NotYetValid(Jwt jwtToken)
         {
             return new TokenValidationResult
             {
@@ -127,7 +127,7 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult Success(JsonWebToken jwtToken = null)
+        public static TokenValidationResult Success(Jwt jwtToken = null)
         {
             return new TokenValidationResult
             {
@@ -144,7 +144,7 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult InvalidClaim(JsonWebToken jwt, string claim)
+        public static TokenValidationResult InvalidClaim(Jwt jwt, string claim)
         {
             return new TokenValidationResult
             {
@@ -153,7 +153,7 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult MissingClaim(JsonWebToken jwt, string claim)
+        public static TokenValidationResult MissingClaim(Jwt jwt, string claim)
         {
             return new TokenValidationResult
             {

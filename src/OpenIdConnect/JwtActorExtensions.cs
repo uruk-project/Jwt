@@ -9,7 +9,7 @@ namespace JsonWebToken
 {
     public static class JwtActorExtensions
     {
-        public static Actor GetActor(this JsonWebToken token)
+        public static Actor GetActor(this Jwt token)
         {
             if (token == null)
             {

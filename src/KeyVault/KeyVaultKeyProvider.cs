@@ -40,19 +40,19 @@ namespace JsonWebToken.KeyVault
             _client = new KeyVaultClient((authority, resource, scope) => GetTokenFromClientSecret(authority, resource, clientId, clientSecret));
         }
 
-        public IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header)
+        public IReadOnlyList<Jwk> GetKeys(JwtHeader header)
         {
             return GetKeysAsync(header).GetAwaiter().GetResult();
         }
 
-        private async Task<IReadOnlyList<JsonWebKey>> GetKeysAsync(JwtHeader header)
+        private async Task<IReadOnlyList<Jwk>> GetKeysAsync(JwtHeader header)
         {
-            var keys = new List<JsonWebKey>();
+            var keys = new List<Jwk>();
             var keyIdentifiers = await _client.GetKeysAsync(_vaultBaseUrl, MaxResults);
             foreach (var keyIdentifier in keyIdentifiers)
             {
                 var kvKey = await _client.GetKeyAsync(keyIdentifier.Identifier.Identifier);
-                JsonWebKey key = null;
+                Jwk key = null;
 
                 switch (kvKey.Key.Kty)
                 {

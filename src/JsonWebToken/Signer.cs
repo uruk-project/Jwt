@@ -13,18 +13,18 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of the <see cref="Signer"/> class used to create and verify signatures.
         /// </summary>
-        /// <param name="key">The <see cref="JsonWebKey"/> that will be used for signature operations.</param>
+        /// <param name="key">The <see cref="Jwk"/> that will be used for signature operations.</param>
         /// <param name="algorithm">The signature algorithm to apply.</param>
-        protected Signer(JsonWebKey key, SignatureAlgorithm algorithm)
+        protected Signer(Jwk key, SignatureAlgorithm algorithm)
         {
             Key = key ?? throw new ArgumentNullException(nameof(key));
             Algorithm = algorithm;
         }
 
         /// <summary>
-        /// Gets the <see cref="JsonWebKey"/>.
+        /// Gets the <see cref="Jwk"/>.
         /// </summary>
-        public JsonWebKey Key { get; }
+        public Jwk Key { get; }
 
         /// <summary>
         /// Gets the signature algorithm.

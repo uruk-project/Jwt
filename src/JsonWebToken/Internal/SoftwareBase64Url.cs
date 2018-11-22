@@ -16,7 +16,7 @@ namespace JsonWebToken.Internal
         {
         }
 
-        private const int MaximumEncodeLength = (int.MaxValue / 4) * 3;
+        private const int MaximumEncodeLength = (int.MaxValue >> 2) * 3;
 
         public OperationStatus EncodeToUtf8(ReadOnlySpan<byte> data, Span<byte> encoded, out int bytesConsumed, out int bytesWritten)
         {
@@ -34,11 +34,15 @@ namespace JsonWebToken.Internal
                  out int bytesConsumed,
                  out int bytesWritten)
         {
-            int maxSrcLength = 0;
+            int maxSrcLength;
             if (srcLength <= MaximumEncodeLength && destLength >= GetMaxEncodedToUtf8Length(srcLength))
+            {
                 maxSrcLength = srcLength - 2;
+            }
             else
+            {
                 maxSrcLength = ((destLength >> 2) * 3) - 2;
+            }
 
             int sourceIndex = 0;
             int destIndex = 0;
@@ -88,7 +92,7 @@ namespace JsonWebToken.Internal
             if ((uint)length > MaximumEncodeLength)
                 ThrowHelper.ThrowArgumentOutOfRangeException();
 
-            return (((length + 2) / 3) * 4) - GetNumBase64PaddingCharsAddedByEncode(length);
+            return (((length + 2) / 3) << 2) - GetNumBase64PaddingCharsAddedByEncode(length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -187,9 +191,9 @@ namespace JsonWebToken.Internal
 
             // Last bytes could have padding characters, so process them separately and treat them as valid only if isFinalBlock is true.
             // If isFinalBlock is false, padding characters are considered invalid.
-            var skipLastChunk = 4;
+            const int skipLastChunk = 4;
 
-            var maxSrcLength = 0;
+            int maxSrcLength;
             if (destLength >= dataLength)
             {
                 maxSrcLength = srcLength - skipLastChunk;
@@ -198,7 +202,7 @@ namespace JsonWebToken.Internal
             {
                 // This should never overflow since destLength here is less than int.MaxValue / 4 * 3.
                 // Therefore, (destLength / 3) * 4 will always be less than int.MaxValue.
-                maxSrcLength = (destLength / 3) * 4;
+                maxSrcLength = (destLength / 3) << 2;
             }
 
             while (sourceIndex < maxSrcLength)

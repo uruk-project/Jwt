@@ -76,8 +76,6 @@ namespace JsonWebToken
             return this;
         }
 
-        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider) => RequireSignature(keyProvider, null);
-
         public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider, SignatureAlgorithm algorithm)
         {
             _hasSignatureValidation = true;
@@ -85,38 +83,27 @@ namespace JsonWebToken
             return this;
         }
 
-        public TokenValidationPolicyBuilder RequireSignature(string jsonWebKeyUrl) => RequireSignature(jsonWebKeyUrl, null, null);
+        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider) => RequireSignature(keyProvider, null);
 
-        public TokenValidationPolicyBuilder RequireSignature(string jsonWebKeyUrl, SignatureAlgorithm algorithm) => RequireSignature(jsonWebKeyUrl, algorithm, null);
+        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl) => RequireSignature(jwksUrl, null, null);
 
-        public TokenValidationPolicyBuilder RequireSignature(string jsonWebKeyUrl, HttpMessageHandler handler) => RequireSignature(jsonWebKeyUrl, null, handler);
+        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl, SignatureAlgorithm algorithm) => RequireSignature(jwksUrl, algorithm, null);
 
-        public TokenValidationPolicyBuilder RequireSignature(string jsonWebKeyUrl, SignatureAlgorithm algorithm, HttpMessageHandler handler)
-        {
-            RequireSignature(new JwksKeyProvider(jsonWebKeyUrl, handler), algorithm);
-            return this;
-        }
+        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl, HttpMessageHandler handler) => RequireSignature(jwksUrl, null, handler);
 
-        public TokenValidationPolicyBuilder RequireSignature(JsonWebKey key) => RequireSignature(key, null);
+        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl, SignatureAlgorithm algorithm, HttpMessageHandler handler) => RequireSignature(new JwksKeyProvider(jwksUrl, handler), algorithm);
 
-        public TokenValidationPolicyBuilder RequireSignature(JsonWebKey key, SignatureAlgorithm algorithm)
-        {
-            return RequireSignature(new JsonWebKeySet(key), algorithm);
-        }
+        public TokenValidationPolicyBuilder RequireSignature(Jwk key) => RequireSignature(key, null);
 
-        public TokenValidationPolicyBuilder RequireSignature(ICollection<JsonWebKey> keys) => RequireSignature(keys, null);
+        public TokenValidationPolicyBuilder RequireSignature(Jwk key, SignatureAlgorithm algorithm) => RequireSignature(new Jwks(key), algorithm);
 
-        public TokenValidationPolicyBuilder RequireSignature(ICollection<JsonWebKey> keys, SignatureAlgorithm algorithm)
-        {
-            return RequireSignature(new JsonWebKeySet(keys), algorithm);
-        }
+        public TokenValidationPolicyBuilder RequireSignature(ICollection<Jwk> keys) => RequireSignature(keys, null);
 
-        public TokenValidationPolicyBuilder RequireSignature(JsonWebKeySet keySet) => RequireSignature(keySet, null);
+        public TokenValidationPolicyBuilder RequireSignature(ICollection<Jwk> keys, SignatureAlgorithm algorithm) => RequireSignature(new Jwks(keys), algorithm);
 
-        public TokenValidationPolicyBuilder RequireSignature(JsonWebKeySet keySet, SignatureAlgorithm algorithm)
-        {
-            return RequireSignature(new StaticKeyProvider(keySet), algorithm);
-        }
+        public TokenValidationPolicyBuilder RequireSignature(Jwks keySet) => RequireSignature(keySet, null);
+
+        public TokenValidationPolicyBuilder RequireSignature(Jwks keySet, SignatureAlgorithm algorithm) => RequireSignature(new StaticKeyProvider(keySet), algorithm);
 
         public TokenValidationPolicyBuilder RequireSignature(IEnumerable<IKeyProvider> keyProviders) => RequireSignature(keyProviders, null);
 
@@ -228,9 +215,9 @@ namespace JsonWebToken
 
         private sealed class EmptyKeyProvider : IKeyProvider
         {
-            private static readonly JsonWebKey[] Empty = Array.Empty<JsonWebKey>();
+            private static readonly Jwk[] Empty = Array.Empty<Jwk>();
 
-            public IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header)
+            public IReadOnlyList<Jwk> GetKeys(JwtHeader header)
             {
                 return Empty;
             }
