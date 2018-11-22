@@ -9,11 +9,11 @@ using System.Linq;
 
 namespace JsonWebToken
 {
-    public class IdToken : JsonWebToken
+    public class IdToken : Jwt
     {
-        private readonly JsonWebToken _token;
+        private readonly Jwt _token;
 
-        public IdToken(JsonWebToken token)
+        public IdToken(Jwt token)
         {
             _token = token ?? throw new ArgumentNullException(nameof(token));
         }

@@ -22,7 +22,7 @@ namespace JsonWebToken
         };
 
         private static readonly Dictionary<string, Type[]> DefaultRequiredHeaderParameters = new Dictionary<string, Type[]>();
-        private JsonWebKey _key;
+        private Jwk _key;
 
         protected JwtDescriptor()
             : this(new Dictionary<string, object>())
@@ -36,14 +36,24 @@ namespace JsonWebToken
 
         public IDictionary<string, object> Header { get; }
 
-        public JsonWebKey Key
+        public Jwk Key
         {
             get => _key;
             set
             {
                 _key = value;
-                Algorithm = value.Alg;
-                KeyId = value.Kid;
+                if (value != null)
+                {
+                    if (value.Alg != null)
+                    {
+                        Algorithm = value.Alg;
+                    }
+
+                    if (value.Kid != null)
+                    {
+                        KeyId = value.Kid;
+                    }
+                }
             }
         }
 
@@ -51,79 +61,86 @@ namespace JsonWebToken
 
         public string Algorithm
         {
-            get => GetHeaderParameter(HeaderParameters.Alg);
-            set => Header[HeaderParameters.Alg] = value;
+            get => GetHeaderParameter<string>(HeaderParameters.Alg);
+            set => SetHeaderParameter(HeaderParameters.Alg, value);
         }
 
         public string KeyId
         {
-            get => GetHeaderParameter(HeaderParameters.Kid);
-            set => Header[HeaderParameters.Kid] = value;
+            get => GetHeaderParameter<string>(HeaderParameters.Kid);
+            set => SetHeaderParameter(HeaderParameters.Kid, value);
         }
 
         public string JwkSetUrl
         {
-            get => GetHeaderParameter(HeaderParameters.Jku);
-            set => Header[HeaderParameters.Jku] = value;
+            get => GetHeaderParameter<string>(HeaderParameters.Jku);
+            set => SetHeaderParameter(HeaderParameters.Jku, value);
         }
 
-        public JsonWebKey JsonWebKey
+        public Jwk Jwk
         {
-            get
-            {
-                var jwk = GetHeaderParameter(HeaderParameters.Jwk);
-                return string.IsNullOrEmpty(jwk) ? null : JsonWebKey.FromJson(jwk);
-            }
-
-            set => Header[HeaderParameters.Jwk] = value?.ToString();
+            get => GetHeaderParameter<Jwk>(HeaderParameters.Jwk);
+            set => SetHeaderParameter(HeaderParameters.Jwk, value);
         }
 
         public string X509Url
         {
-            get => GetHeaderParameter(HeaderParameters.X5u);
-            set => Header[HeaderParameters.X5u] = value;
+            get => GetHeaderParameter<string>(HeaderParameters.X5u);
+            set => SetHeaderParameter(HeaderParameters.X5u, value);
         }
 
         public IList<string> X509CertificateChain
         {
             get => GetHeaderParameters(HeaderParameters.X5c);
-            set => Header[HeaderParameters.X5c] = JArray.FromObject(value);
+            set => SetHeaderParameter(HeaderParameters.X5c, value);
         }
 
         public string X509CertificateSha1Thumbprint
         {
-            get => GetHeaderParameter(HeaderParameters.X5t);
-            set => Header[HeaderParameters.X5t] = value;
+            get => GetHeaderParameter<string>(HeaderParameters.X5t);
+            set => SetHeaderParameter(HeaderParameters.X5t, value);
         }
 
         public string Type
         {
-            get => GetHeaderParameter(HeaderParameters.Typ);
-            set => Header[HeaderParameters.Typ] = value;
+            get => GetHeaderParameter<string>(HeaderParameters.Typ);
+            set => SetHeaderParameter(HeaderParameters.Typ, value);
         }
 
         public string ContentType
         {
-            get => GetHeaderParameter(HeaderParameters.Cty);
-            set => Header[HeaderParameters.Cty] = value;
+            get => GetHeaderParameter<string>(HeaderParameters.Cty);
+            set => SetHeaderParameter(HeaderParameters.Cty, value);
         }
 
         public IList<string> Critical
         {
             get => GetHeaderParameters(HeaderParameters.Crit);
-            set => Header[HeaderParameters.Crit] = JArray.FromObject(value);
+            set => SetHeaderParameter(HeaderParameters.Crit, value);
         }
 
         public abstract string Encode(EncodingContext context);
 
-        protected string GetHeaderParameter(string headerName)
+        protected T GetHeaderParameter<T>(string headerName)
         {
             if (Header.TryGetValue(headerName, out object value))
             {
-                return (string)value;
+                return (T)value;
             }
 
-            return null;
+            return default;
+        }
+
+        protected void SetHeaderParameter(string headerName, object value)
+        {
+            if (value != null)
+            {
+                Header[headerName] = value;
+            }
+            else
+            {
+                Header.Remove(headerName);
+            }
         }
 
         protected IList<string> GetHeaderParameters(string claimType)

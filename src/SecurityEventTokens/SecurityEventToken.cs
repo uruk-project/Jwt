@@ -8,12 +8,12 @@ using System.Collections.Generic;
 
 namespace JsonWebToken
 {
-    public class SecurityEventToken : JsonWebToken
+    public class SecurityEventToken : Jwt
     {
-        private readonly JsonWebToken _token;
+        private readonly Jwt _token;
         private IReadOnlyDictionary<string, JObject> _events;
 
-        public SecurityEventToken(JsonWebToken token)
+        public SecurityEventToken(Jwt token)
         {
             _token = token ?? throw new ArgumentNullException(nameof(token));
         }

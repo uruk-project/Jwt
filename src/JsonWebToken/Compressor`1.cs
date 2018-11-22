@@ -39,29 +39,32 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
-        public override Span<byte> Decompress(ReadOnlySpan<byte> compressedCiphertext)
+        public override unsafe Span<byte> Decompress(ReadOnlySpan<byte> compressedCiphertext)
         {
-            using (var inputStream = new MemoryStream(compressedCiphertext.ToArray()))
-            using (var compressionStream = CreateDecompressionStream(inputStream))
+            fixed (byte* pinnedCompressedCiphertext = compressedCiphertext)
             {
-                var buffer = new byte[Constants.DecompressionBufferLength];
-                int uncompressedLength = 0;
-                int readData;
-                while ((readData = compressionStream.Read(buffer, uncompressedLength, Constants.DecompressionBufferLength)) != 0)
+                using (var inputStream = new UnmanagedMemoryStream(pinnedCompressedCiphertext, compressedCiphertext.Length, compressedCiphertext.Length, FileAccess.Read))
+                using (var compressionStream = CreateDecompressionStream(inputStream))
                 {
-                    uncompressedLength += readData;
-                    if (readData < Constants.DecompressionBufferLength)
+                    var buffer = new byte[Constants.DecompressionBufferLength];
+                    int uncompressedLength = 0;
+                    int readData;
+                    while ((readData = compressionStream.Read(buffer, uncompressedLength, Constants.DecompressionBufferLength)) != 0)
                     {
-                        break;
+                        uncompressedLength += readData;
+                        if (readData < Constants.DecompressionBufferLength)
+                        {
+                            break;
+                        }
+
+                        if (uncompressedLength == buffer.Length)
+                        {
+                            Array.Resize(ref buffer, buffer.Length * 2);
+                        }
                     }
 
-                    if (uncompressedLength == buffer.Length)
-                    {
-                        Array.Resize(ref buffer, buffer.Length * 2);
-                    }
+                    return new Span<byte>(buffer, 0, uncompressedLength);
                 }
-
-                return new Span<byte>(buffer, 0, uncompressedLength);
             }
         }
     }

@@ -29,7 +29,7 @@ namespace JsonWebToken.Tests
         [MemberData(nameof(GetSupportedAlgorithm))]
         public void Encode_Decode(string enc, string alg)
         {
-            var writer = new JsonWebTokenWriter();
+            var writer = new JwtWriter();
 
             var descriptor = new JweDescriptor
             {
@@ -46,7 +46,7 @@ namespace JsonWebToken.Tests
 
             var token = writer.WriteToken(descriptor);
 
-            var reader = new JsonWebTokenReader(_privateRsa2048Key);
+            var reader = new JwtReader(_privateRsa2048Key);
             var policy = new TokenValidationPolicyBuilder()
                 .RequireSignature(_signingKey)
                     .Build();

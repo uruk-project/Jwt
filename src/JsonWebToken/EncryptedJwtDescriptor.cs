@@ -3,7 +3,6 @@
 
 using JsonWebToken.Internal;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -30,16 +29,17 @@ namespace JsonWebToken
         {
         }
 
+        [JsonConverter(typeof(AlgorithmConverter))]
         public EncryptionAlgorithm EncryptionAlgorithm
         {
-            get => (EncryptionAlgorithm)GetHeaderParameter(HeaderParameters.Enc);
-            set => Header[HeaderParameters.Enc] = (string)value;
+            get => (EncryptionAlgorithm)GetHeaderParameter<string>(HeaderParameters.Enc);
+            set => SetHeaderParameter(HeaderParameters.Enc, (string)value);
         }
 
         public CompressionAlgorithm CompressionAlgorithm
         {
-            get => (CompressionAlgorithm)GetHeaderParameter(HeaderParameters.Zip);
-            set => Header[HeaderParameters.Zip] = (string)value;
+            get => (CompressionAlgorithm)GetHeaderParameter<string>(HeaderParameters.Zip);
+            set => SetHeaderParameter(HeaderParameters.Zip, (string)value);
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace JsonWebToken
                 Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
             }
 
-            if (header[HeaderParameters.Kid] == null && Key.Kid != null)
+            if (header.ContainsKey(HeaderParameters.Kid) && Key.Kid != null)
             {
                 header[HeaderParameters.Kid] = Key.Kid;
             }
@@ -153,7 +153,7 @@ namespace JsonWebToken
                     int bytesWritten = Base64Url.Base64UrlEncode(utf8HeaderBuffer, base64EncodedHeader);
 
                     Compressor compressionProvider = null;
-                    if (CompressionAlgorithm != CompressionAlgorithm.Empty)
+                    if (CompressionAlgorithm != null)
                     {
                         compressionProvider = CompressionAlgorithm.Compressor;
                         if (compressionProvider == null)
@@ -214,7 +214,7 @@ namespace JsonWebToken
 #if NETCOREAPP2_1
                     return Encoding.UTF8.GetString(encryptedToken);
 #else
-                      return EncodingHelper.GetUtf8String(encryptedToken);
+                    return EncodingHelper.GetUtf8String(encryptedToken);
 #endif
                 }
                 finally

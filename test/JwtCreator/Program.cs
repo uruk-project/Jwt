@@ -30,7 +30,7 @@ namespace JwtCreator
             var descriptorsString = File.ReadAllText(descriptorsPath);
             var descriptors = JArray.Parse(descriptorsString);
 
-            var writer = new JsonWebTokenWriter();
+            var writer = new JwtWriter();
             var result = new JArray();
             var invalidJwt = new JArray();
             var json = descriptors.First() as JObject;
@@ -71,7 +71,7 @@ namespace JwtCreator
             File.WriteAllText(payloadsPath, JObject.FromObject(payloads).ToString());
         }
 
-        private static JArray GenerateInvalidJwt(JsonWebKeySet jwks, JObject json)
+        private static JArray GenerateInvalidJwt(Jwks jwks, JObject json)
         {
             var jwts = new JArray();
 
@@ -200,7 +200,7 @@ namespace JwtCreator
             }
 
             var token = descriptor;
-            var writer = new JsonWebTokenWriter();
+            var writer = new JwtWriter();
             var jwt = writer.WriteToken(token);
 
             switch (status)
@@ -234,7 +234,7 @@ namespace JwtCreator
 
             return o;
         }
-        private static JObject CreateToken(JsonWebKeySet jwks, TokenValidationStatus status, JwsDescriptor descriptor, string claim = null)
+        private static JObject CreateToken(Jwks jwks, TokenValidationStatus status, JwsDescriptor descriptor, string claim = null)
         {
             var key = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig && k.Alg == SignatureAlgorithm.HmacSha256.Name);
             var encKey = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Enc && k.Alg == KeyManagementAlgorithm.Direct.Name);
@@ -243,7 +243,7 @@ namespace JwtCreator
             return CreateToken(status, descriptor);
         }
 
-        private static JObject CreateToken(JsonWebKeySet jwks, TokenValidationStatus status, JweDescriptor descriptor, string claim = null)
+        private static JObject CreateToken(Jwks jwks, TokenValidationStatus status, JweDescriptor descriptor, string claim = null)
         {
             var key = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig && k.Alg == SignatureAlgorithm.HmacSha256.Name);
             var encKey = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Enc && k.Alg == KeyManagementAlgorithm.Direct.Name);
@@ -254,9 +254,9 @@ namespace JwtCreator
             return CreateToken(status, descriptor);
         }
 
-        private static JsonWebKeySet GenerateKeys()
+        private static Jwks GenerateKeys()
         {
-            var keys = new JsonWebKeySet();
+            var keys = new Jwks();
             var hsKeySizes = new[] { 256, 384, 512 };
             var kwKeySizes = new[] { 128, 192, 256 };
             foreach (var keySize in hsKeySizes)

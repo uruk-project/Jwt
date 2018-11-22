@@ -22,14 +22,14 @@ namespace JsonWebToken
     /// </summary>
     [JsonObject]
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
-    public abstract class JsonWebKey
+    public abstract class Jwk
     {
         private static readonly JwkJsonConverter jsonConverter = new JwkJsonConverter();
         private static readonly JwkContractResolver contractResolver = new JwkContractResolver();
         private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings { ContractResolver = contractResolver };
 
         private static readonly JsonSerializer jsonSerializer = new JsonSerializer { Converters = { jsonConverter }, ContractResolver = contractResolver };
-        private List<JsonWebKey> _certificateChain;
+        private List<Jwk> _certificateChain;
 
         /// <summary>
         /// When deserializing from JSON any properties that are not defined will be placed here.
@@ -40,59 +40,59 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'alg' (KeyType).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Alg, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.Alg, Required = Required.Default)]
         public string Alg { get; set; }
 
         /// <summary>
         /// Gets the 'key_ops' (Key Operations).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.KeyOps, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.KeyOps, Required = Required.Default)]
         public IList<string> KeyOps { get; private set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the 'kid' (Key ID).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Kid, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.Kid, Required = Required.Default)]
         public string Kid { get; set; }
 
         /// <summary>
         /// Gets or sets the 'kty' (Key Type).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Kty, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.Kty, Required = Required.Default)]
         public string Kty { get; set; }
 
         /// <summary>
         /// Gets or sets the 'use' (Public Key Use).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Use, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.Use, Required = Required.Default)]
         public string Use { get; set; }
 
         /// <summary>
         /// Gets the 'x5c' collection (X.509 Certificate Chain).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.X5c, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.X5c, Required = Required.Default)]
         public List<string> X5c { get; private set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the 'x5t' (X.509 Certificate SHA-1 thumbprint).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.X5t, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.X5t, Required = Required.Default)]
         public string X5t { get; set; }
 
         /// <summary>
         /// Gets or sets the 'x5t#S256' (X.509 Certificate SHA-1 thumbprint).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.X5tS256, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.X5tS256, Required = Required.Default)]
         public string X5tS256 { get; set; }
 
         /// <summary>
         /// Gets or sets the 'x5u' (X.509 URL).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.X5u, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.X5u, Required = Required.Default)]
         public string X5u { get; set; }
 
         /// <summary>
-        /// Gets the key size of <see cref="JsonWebKey"/>.
+        /// Gets the key size of <see cref="Jwk"/>.
         /// </summary>
         [JsonIgnore]
         public abstract int KeySizeInBits { get; }
@@ -101,7 +101,7 @@ namespace JsonWebToken
         /// Gets the X.509 certificate chain.
         /// </summary>
         [JsonIgnore]
-        public IList<JsonWebKey> X509CertificateChain
+        public IList<Jwk> X509CertificateChain
         {
             get
             {
@@ -112,7 +112,7 @@ namespace JsonWebToken
 
                 if (_certificateChain == null)
                 {
-                    _certificateChain = new List<JsonWebKey>(X5c.Count);
+                    _certificateChain = new List<Jwk>(X5c.Count);
                     foreach (var certString in X5c)
                     {
                         using (var certificate = new X509Certificate2(Convert.FromBase64String(certString)))
@@ -149,28 +149,28 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Determines if the <see cref="JsonWebKey"/> supports the <paramref name="algorithm"/>.
+        /// Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.
         /// </summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> to verify.</param>
         /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
         public abstract bool IsSupported(SignatureAlgorithm algorithm);
 
         /// <summary>
-        /// Determines if the <see cref="JsonWebKey"/> supports the <paramref name="algorithm"/>.
+        /// Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.
         /// </summary>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> to verify.</param>
         /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
         public abstract bool IsSupported(KeyManagementAlgorithm algorithm);
 
         /// <summary>
-        /// Determines if the <see cref="JsonWebKey"/> supports the <paramref name="algorithm"/>.
+        /// Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.
         /// </summary>
         /// <param name="algorithm">The <see cref="EncryptionAlgorithm"/> to verify.</param>
         /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
         public abstract bool IsSupported(EncryptionAlgorithm algorithm);
 
         /// <summary>
-        /// Returns a string that represents the <see cref="JsonWebKey"/> in JSON.
+        /// Returns a string that represents the <see cref="Jwk"/> in JSON.
         /// </summary>
         public override string ToString()
         {
@@ -178,7 +178,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Returns a string that represents the <see cref="JsonWebKey"/> in JSON.
+        /// Returns a string that represents the <see cref="Jwk"/> in JSON.
         /// </summary>
         public string ToString(Formatting formatting)
         {
@@ -191,30 +191,30 @@ namespace JsonWebToken
         public abstract byte[] ToByteArray();
 
         /// <summary>
-        /// Creates a <see cref="Signer"/> with the current <see cref="JsonWebKey"/> as key.
+        /// Creates a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
         /// <param name="willCreateSignatures">Determines if the <see cref="Signer"/> will create or only verify signatures.</param>
         public abstract Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures);
 
         /// <summary>
-        /// Creates a <see cref="KeyWrapper"/> with the current <see cref="JsonWebKey"/> as key.
+        /// Creates a <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
         public abstract KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
 
         /// <summary>
-        /// Creates a <see cref="AuthenticatedEncryptor"/> with the current <see cref="JsonWebKey"/> as key.
+        /// Creates a <see cref="AuthenticatedEncryptor"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
         public abstract AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm);
 
         /// <summary>
-        /// Returns a new <see cref="JsonWebKey"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
+        /// Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
         /// </summary>
         /// <returns></returns>
-        public abstract JsonWebKey Normalize();
+        public abstract Jwk Normalize();
 
 #if NETCOREAPP2_1
         /// <summary>
@@ -235,9 +235,9 @@ namespace JsonWebToken
                 Encoding.UTF8.GetBytes(json, buffer);
                 using (var hashAlgorithm = SHA256.Create())
                 {
-                    Span<byte> hash = stackalloc byte[hashAlgorithm.HashSize / 8];
+                    Span<byte> hash = stackalloc byte[hashAlgorithm.HashSize >> 3];
                     hashAlgorithm.TryComputeHash(buffer, hash, out int bytesWritten);
-                    Debug.Assert(bytesWritten == hashAlgorithm.HashSize / 8);
+                    Debug.Assert(bytesWritten == hashAlgorithm.HashSize >> 3);
 
                     return Base64Url.Base64UrlEncode(hash);
                 }
@@ -272,11 +272,10 @@ namespace JsonWebToken
         public string ComputeThumbprint() => ComputeThumbprint(true);
 
         /// <summary>
-        /// Returns a new instance of <see cref="TKey"/>.
+        /// Returns a new instance of <see cref="AsymmetricJwk"/>.
         /// </summary>
         /// <param name="certificate">A <see cref="X509Certificate2"/> that contains JSON Web Key parameters.</param>
         /// <param name="withPrivateKey">Determines if the private key must be extracted from the certificate.</param>
-        /// <returns><see cref="TKey"/></returns>
         public static AsymmetricJwk FromX509Certificate(X509Certificate2 certificate, bool withPrivateKey)
         {
             if (certificate == null)
@@ -350,7 +349,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
         /// <returns><see cref="TKey"/></returns>
-        public static TKey FromJson<TKey>(string json) where TKey : JsonWebKey
+        public static TKey FromJson<TKey>(string json) where TKey : Jwk
         {
             if (string.IsNullOrEmpty(json))
             {
@@ -361,13 +360,13 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Returns a new instance of <see cref="JsonWebKey"/>.
+        /// Returns a new instance of <see cref="Jwk"/>.
         /// </summary>
         /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
-        /// <returns><see cref="JsonWebKey"/></returns>
-        public static JsonWebKey FromJson(string json)
+        /// <returns><see cref="Jwk"/></returns>
+        public static Jwk FromJson(string json)
         {
-            return FromJson<JsonWebKey>(json);
+            return FromJson<Jwk>(json);
         }
 
         internal static byte[] CloneByteArray(byte[] array)
@@ -388,19 +387,19 @@ namespace JsonWebToken
 
             public override bool CanConvert(Type objectType)
             {
-                return typeof(JsonWebKey).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
+                return typeof(Jwk).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
             }
 
             public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
             {
                 var jsonObject = JObject.Load(reader);
-                switch (jsonObject[JsonWebKeyParameterNames.Kty].Value<string>())
+                switch (jsonObject[JwkParameterNames.Kty].Value<string>())
                 {
-                    case JsonWebKeyTypeNames.Rsa:
+                    case JwkTypeNames.Rsa:
                         return jsonObject.ToObject<RsaJwk>();
-                    case JsonWebKeyTypeNames.EllipticCurve:
+                    case JwkTypeNames.EllipticCurve:
                         return jsonObject.ToObject<ECJwk>();
-                    case JsonWebKeyTypeNames.Octet:
+                    case JwkTypeNames.Octet:
                         return jsonObject.ToObject<SymmetricJwk>();
                     default:
                         throw new NotSupportedException();

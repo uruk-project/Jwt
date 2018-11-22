@@ -27,7 +27,7 @@ namespace JsonWebToken.Tests
             descriptor.Email = "janedoe@example.com";
             descriptor.Picture= "http://example.com/janedoe/me.jpg";
 
-            var writer = new JsonWebTokenWriter();
+            var writer = new JwtWriter();
             var jwt = writer.WriteToken(descriptor);
             Assert.Equal("eyJhbGciOiJub25lIn0.eyJpc3MiOiJodHRwOi8vc2VydmVyLmV4YW1wbGUuY29tIiwic3ViIjoiMjQ4Mjg5NzYxMDAxIiwiYXVkIjoiczZCaGRSa3F0MyIsIm5vbmNlIjoibi0wUzZfV3pBMk1qIiwiZXhwIjoxMzExMjgxOTcwLCJpYXQiOjEzMTEyODA5NzAsIm5hbWUiOiJKYW5lIERvZSIsImdpdmVuX25hbWUiOiJKYW5lIiwiZmFtaWx5X25hbWUiOiJEb2UiLCJnZW5kZXIiOiJmZW1hbGUiLCJiaXJ0aGRhdGUiOiIwMDAwLTEwLTMxIiwiZW1haWwiOiJqYW5lZG9lQGV4YW1wbGUuY29tIiwicGljdHVyZSI6Imh0dHA6Ly9leGFtcGxlLmNvbS9qYW5lZG9lL21lLmpwZyJ9.", jwt);
         }
@@ -43,7 +43,7 @@ namespace JsonWebToken.Tests
                 E = "AQAB",
                 Alg = SignatureAlgorithm.RsaSha256.Name
             };
-            var reader = new JsonWebTokenReader();
+            var reader = new JwtReader();
 
             var policy = new TokenValidationPolicyBuilder()
                                 .RequireSignature(key)

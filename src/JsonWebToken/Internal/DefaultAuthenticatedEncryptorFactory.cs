@@ -14,7 +14,7 @@ namespace JsonWebToken.Internal
         /// </summary>
         /// <param name="key">The key used for encryption.</param>
         /// <param name="encryptionAlgorithm">then encryption algorithm/</param>
-        public AuthenticatedEncryptor Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm)
+        public AuthenticatedEncryptor Create(Jwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (_disposed)
             {

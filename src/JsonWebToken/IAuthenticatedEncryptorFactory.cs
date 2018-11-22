@@ -15,6 +15,6 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key">The key used for encryption.</param>
         /// <param name="encryptionAlgorithm">The encryption algorithm.</param>
-        AuthenticatedEncryptor Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm);
+        AuthenticatedEncryptor Create(Jwk key, EncryptionAlgorithm encryptionAlgorithm);
     }
 }

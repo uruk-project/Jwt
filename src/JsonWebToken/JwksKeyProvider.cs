@@ -29,15 +29,15 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header)
+        public override IReadOnlyList<Jwk> GetKeys(JwtHeader header)
         {
             return GetKeys(header, _jwksAddress);
         }
 
         /// <inheritsdoc />
-        protected override JsonWebKeySet DeserializeKeySet(string value)
+        protected override Jwks DeserializeKeySet(string value)
         {
-            return JsonConvert.DeserializeObject<JsonWebKeySet>(value);
+            return JsonConvert.DeserializeObject<Jwks>(value);
         }
     }
 }

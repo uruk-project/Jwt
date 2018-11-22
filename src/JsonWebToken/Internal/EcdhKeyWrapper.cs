@@ -103,7 +103,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override bool TryWrapKey(JsonWebKey staticKey, IDictionary<string, object> header, Span<byte> destination, out JsonWebKey contentEncryptionKey, out int bytesWritten)
+        public override bool TryWrapKey(Jwk staticKey, IDictionary<string, object> header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
             {

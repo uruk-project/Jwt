@@ -16,7 +16,7 @@ namespace JsonWebToken
         private readonly long _refreshInterval = DefaultRefreshInterval;
         private readonly long _automaticRefreshInterval = DefaultAutomaticRefreshInterval;
         private long _syncAfter;
-        private JsonWebKeySet _currentKeys;
+        private Jwks _currentKeys;
         private bool _disposed;
 
         /// <summary>
@@ -49,11 +49,11 @@ namespace JsonWebToken
         {
         }
 
-        public abstract IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header);
+        public abstract IReadOnlyList<Jwk> GetKeys(JwtHeader header);
 
-        protected abstract JsonWebKeySet DeserializeKeySet(string value);
+        protected abstract Jwks DeserializeKeySet(string value);
 
-        protected IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header, string metadataAddress)
+        protected IReadOnlyList<Jwk> GetKeys(JwtHeader header, string metadataAddress)
         {
             if (_disposed)
             {
@@ -73,7 +73,7 @@ namespace JsonWebToken
                 try
                 {
                     var value = _documentRetriever.GetDocument(metadataAddress, CancellationToken.None);
-                    _currentKeys = JsonConvert.DeserializeObject<JsonWebKeySet>(value);
+                    _currentKeys = JsonConvert.DeserializeObject<Jwks>(value);
                     _syncAfter = now + _automaticRefreshInterval;
                 }
                 catch

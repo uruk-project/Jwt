@@ -9,7 +9,7 @@ namespace JsonWebToken
     /// <summary>
     /// Writes a JWT.
     /// </summary>
-    public sealed class JsonWebTokenWriter : IDisposable
+    public sealed class JwtWriter : IDisposable
     {
         private int _defaultTokenLifetimeInMinutes = DefaultTokenLifetimeInMinutes;
 
@@ -25,13 +25,13 @@ namespace JsonWebToken
         private readonly bool _disposeFactories;
         private bool _disposed;
 
-        public JsonWebTokenWriter() :
+        public JwtWriter() :
             this(new DefaultSignerFactory(), new DefaultKeyWrapperFactory(), new DefaultAuthenticatedEncryptorFactory(), new JsonHeaderCache())
         {
             _disposeFactories = true;
         }
 
-        public JsonWebTokenWriter(
+        public JwtWriter(
             ISignerFactory signerFactory,
             IKeyWrapperFactory keyWrapperFactory,
             IAuthenticatedEncryptorFactory authenticatedEncryptorFactory)
@@ -39,7 +39,7 @@ namespace JsonWebToken
         {
         }
 
-        public JsonWebTokenWriter(
+        public JwtWriter(
             ISignerFactory signerFactory,
             IKeyWrapperFactory keyWrapperFactory,
             IAuthenticatedEncryptorFactory authenticatedEncryptorFactory,

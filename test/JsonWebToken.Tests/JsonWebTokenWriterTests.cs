@@ -26,10 +26,10 @@ namespace JsonWebToken.Tests
         public void Write_Valid(string token)
         {
             var descriptor = Tokens.Descriptors[token];
-            JsonWebTokenWriter writer = new JsonWebTokenWriter();
+            JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JsonWebTokenReader(Keys.Jwks);
+            var reader = new JwtReader(Keys.Jwks);
             var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
 
@@ -52,10 +52,10 @@ namespace JsonWebToken.Tests
             descriptor.Key = RsaKey;
             descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
 
-            JsonWebTokenWriter writer = new JsonWebTokenWriter();
+            JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JsonWebTokenReader(RsaKey);
+            var reader = new JwtReader(RsaKey);
             var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
 
@@ -86,11 +86,11 @@ namespace JsonWebToken.Tests
             descriptor.Key = key;
             descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
 
-            JsonWebTokenWriter writer = new JsonWebTokenWriter();
+            JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
             Assert.NotNull(value);
 
-            var reader = new JsonWebTokenReader(key);
+            var reader = new JwtReader(key);
             var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
 
@@ -108,10 +108,10 @@ namespace JsonWebToken.Tests
             descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
             descriptor.CompressionAlgorithm = CompressionAlgorithm.Deflate;
 
-            JsonWebTokenWriter writer = new JsonWebTokenWriter();
+            JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JsonWebTokenReader(RsaKey);
+            var reader = new JwtReader(RsaKey);
             var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
 

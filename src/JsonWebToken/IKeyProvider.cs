@@ -6,13 +6,13 @@ using System.Collections.Generic;
 namespace JsonWebToken
 {
     /// <summary>
-    /// Represents a provider of <see cref="JsonWebKey"/>.
+    /// Represents a provider of <see cref="Jwk"/>.
     /// </summary>
     public interface IKeyProvider
     {
         /// <summary>
-        /// Gets a list of <see cref="JsonWebKey"/>.
+        /// Gets a list of <see cref="Jwk"/>.
         /// </summary>
-        IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header);
+        IReadOnlyList<Jwk> GetKeys(JwtHeader header);
     }
 }

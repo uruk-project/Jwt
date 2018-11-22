@@ -12,30 +12,30 @@ namespace JsonWebToken
     /// <summary>
     /// A JSON Web Token (JWT).
     /// </summary>
-    public class JsonWebToken
+    public class Jwt
     {
         private static readonly string[] EmptyStrings = Array.Empty<string>();
         private readonly JwtPayload _payload;
 
-        protected JsonWebToken()
+        protected Jwt()
         {
         }
 
-        public JsonWebToken(JwtHeader header, JsonWebToken nestedToken, JsonWebKey encryptionKey)
+        public Jwt(JwtHeader header, Jwt nestedToken, Jwk encryptionKey)
         {
             Header = header ?? throw new ArgumentNullException(nameof(header));
             NestedToken = nestedToken ?? throw new ArgumentNullException(nameof(nestedToken));
             EncryptionKey = encryptionKey ?? throw new ArgumentNullException(nameof(encryptionKey));
         }
 
-        public JsonWebToken(JwtHeader header, byte[] binary, JsonWebKey encryptionKey)
+        public Jwt(JwtHeader header, byte[] binary, Jwk encryptionKey)
         {
             Header = header ?? throw new ArgumentNullException(nameof(header));
             Binary = binary ?? throw new ArgumentNullException(nameof(binary));
             EncryptionKey = encryptionKey ?? throw new ArgumentNullException(nameof(encryptionKey));
         }
 
-        public JsonWebToken(JwtHeader header, JwtPayload payload)
+        public Jwt(JwtHeader header, JwtPayload payload)
         {
             Header = header ?? throw new ArgumentNullException(nameof(header));
             _payload = payload ?? throw new ArgumentNullException(nameof(payload));
@@ -67,9 +67,9 @@ namespace JsonWebToken
         public virtual JwtPayload Payload => NestedToken?.Payload ?? _payload;
 
         /// <summary>
-        /// Gets the nested <see cref="JsonWebToken"/> associated with this instance.
+        /// Gets the nested <see cref="Jwt"/> associated with this instance.
         /// </summary>
-        public JsonWebToken NestedToken { get; }
+        public Jwt NestedToken { get; }
 
         /// <summary>
         /// Gets the signature algorithm associated with this instance.
@@ -77,14 +77,14 @@ namespace JsonWebToken
         public SignatureAlgorithm SignatureAlgorithm => Header.Alg;
 
         /// <summary>
-        /// Gets the <see cref="JsonWebKey"/> used for the signature of this token.
+        /// Gets the <see cref="Jwk"/> used for the signature of this token.
         /// </summary>
-        public JsonWebKey SigningKey { get; set; }
+        public Jwk SigningKey { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="JsonWebKey"/> used for the encryption of this token.
+        /// Gets the <see cref="Jwk"/> used for the encryption of this token.
         /// </summary>
-        public JsonWebKey EncryptionKey { get; }
+        public Jwk EncryptionKey { get; }
 
         /// <summary>
         /// Gets the value of the 'sub'.

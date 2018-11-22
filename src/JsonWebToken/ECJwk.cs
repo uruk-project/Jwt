@@ -55,19 +55,19 @@ namespace JsonWebToken
 
         public ECJwk()
         {
-            Kty = JsonWebKeyTypeNames.EllipticCurve;
+            Kty = JwkTypeNames.EllipticCurve;
         }
 
         /// <summary>
         /// Gets or sets the 'crv' (Curve).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Crv, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.Crv, Required = Required.Default)]
         public string Crv { get; set; }
 
         /// <summary>
         /// Gets or sets the 'x' (X Coordinate).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.X, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.X, Required = Required.Default)]
         public string X
         {
             get
@@ -105,7 +105,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'y' (Y Coordinate).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.Y, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.Y, Required = Required.Default)]
         public string Y
         {
             get
@@ -316,7 +316,7 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
-        public override JsonWebKey Normalize()
+        public override Jwk Normalize()
         {
             return new ECJwk(Crv, RawD, RawX, RawY);
         }

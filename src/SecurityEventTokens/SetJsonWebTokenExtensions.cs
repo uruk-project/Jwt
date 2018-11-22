@@ -8,7 +8,7 @@ namespace JsonWebToken
 {
     public static class SetJsonWebTokenExtensions
     {
-        public static SecurityEventToken AsSecurityEventToken(this JsonWebToken token)
+        public static SecurityEventToken AsSecurityEventToken(this Jwt token)
         {
             if (!token.Payload.ContainsKey(Claims.Events))
             {

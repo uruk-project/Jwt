@@ -8,7 +8,7 @@ namespace JsonWebToken.Internal
     internal static class SymmetricKeyHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JsonWebKey CreateSymmetricKey(EncryptionAlgorithm encryptionAlgorithm, JsonWebKey staticKey)
+        public static Jwk CreateSymmetricKey(EncryptionAlgorithm encryptionAlgorithm, Jwk staticKey)
         {
             return staticKey ?? SymmetricJwk.GenerateKey(encryptionAlgorithm.RequiredKeySizeInBytes << 3);
         }

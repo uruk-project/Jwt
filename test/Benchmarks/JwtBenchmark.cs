@@ -15,8 +15,8 @@ namespace JsonWebToken.Performance
 
         private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SigningKey.ToString());
 
-        public static readonly JsonWebTokenWriter Writer = new JsonWebTokenWriter();
-        public static readonly JsonWebTokenReader Reader = new JsonWebTokenReader(Tokens.EncryptionKey);
+        public static readonly JwtWriter Writer = new JwtWriter();
+        public static readonly JwtReader Reader = new JwtReader(Tokens.EncryptionKey);
         private static readonly TokenValidationPolicy policy = new TokenValidationPolicyBuilder().RequireSignature(Tokens.SigningKey).Build();
 
         private static readonly Dictionary<string, JwtDescriptor> JwtPayloads = CreateJwtDescriptors();

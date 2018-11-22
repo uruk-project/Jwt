@@ -18,7 +18,7 @@ namespace JsonWebToken.Tests
         public void ReadJwt_Valid(string token)
         {
             var jwt = Tokens.ValidTokens[token];
-            var reader = new JsonWebTokenReader(Keys.Jwks);
+            var reader = new JwtReader(Keys.Jwks);
             var policy = new TokenValidationPolicyBuilder()
                     .RequireSignature(Keys.Jwks)
                     .AddLifetimeValidation()
@@ -34,7 +34,7 @@ namespace JsonWebToken.Tests
         [MemberData(nameof(GetInvalidTokens))]
         public void ReadJwt_Invalid(string jwt, TokenValidationStatus expectedStatus)
         {
-            var reader = new JsonWebTokenReader(Keys.Jwks);
+            var reader = new JwtReader(Keys.Jwks);
             var policy = new TokenValidationPolicyBuilder()
                     .RequireSignature(Keys.Jwks)
                     .AddLifetimeValidation()
@@ -53,7 +53,7 @@ namespace JsonWebToken.Tests
             {
                 Sender = BackchannelRequestToken
             };
-            var reader = new JsonWebTokenReader(Keys.Jwks);
+            var reader = new JwtReader(Keys.Jwks);
             var policy = new TokenValidationPolicyBuilder()
                     .RequireSignature("https://demo.identityserver.io/.well-known/openid-configuration/jwks", handler: httpHandler)
                     .Build();
@@ -74,7 +74,7 @@ namespace JsonWebToken.Tests
         [InlineData("")]
         public void ReadJwt_Malformed(string jwt)
         {
-            var reader = new JsonWebTokenReader(Keys.Jwks);
+            var reader = new JwtReader(Keys.Jwks);
             var policy = new TokenValidationPolicyBuilder()
                     .AcceptUnsecureToken()
                     .Build();
@@ -92,7 +92,7 @@ namespace JsonWebToken.Tests
         [InlineData("eyJhbGciOiAibm9uZSIsImNyaXQiOlsiZXhwIl0sImV4cCI6IDEyMzR9.e30.", TokenValidationStatus.Success)]
         public void ReadJwt_CriticalHeader(string jwt, TokenValidationStatus expected)
         {
-            var reader = new JsonWebTokenReader();
+            var reader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
                     .AcceptUnsecureToken()
                     .AddCriticalHeaderHandler("exp", new TestCriticalHeaderHandler(true))

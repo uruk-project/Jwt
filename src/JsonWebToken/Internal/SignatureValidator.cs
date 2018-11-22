@@ -67,7 +67,7 @@ namespace JsonWebToken.Internal
             var keys = ResolveSigningKey(jwt);
             for (int i = 0; i < keys.Count; i++)
             {
-                JsonWebKey key = keys[i];
+                Jwk key = keys[i];
                 var alg = _algorithm != SignatureAlgorithm.Empty ? _algorithm : (SignatureAlgorithm)key.Alg;
                 if (TryValidateSignature(context, encodedBytes, signatureBytes, key, alg))
                 {
@@ -86,7 +86,7 @@ namespace JsonWebToken.Internal
             return TokenValidationResult.KeyNotFound(jwt);
         }
 
-        private static bool TryValidateSignature(in TokenValidationContext context, ReadOnlySpan<byte> encodedBytes, ReadOnlySpan<byte> signature, JsonWebKey key, SignatureAlgorithm algorithm)
+        private static bool TryValidateSignature(in TokenValidationContext context, ReadOnlySpan<byte> encodedBytes, ReadOnlySpan<byte> signature, Jwk key, SignatureAlgorithm algorithm)
         {
             var signatureProvider = context.SignatureFactory.Create(key, algorithm, willCreateSignatures: false);
             if (signatureProvider == null)
@@ -97,9 +97,9 @@ namespace JsonWebToken.Internal
             return signatureProvider.Verify(encodedBytes, signature);
         }
 
-        private List<JsonWebKey> ResolveSigningKey(JsonWebToken jwt)
+        private List<Jwk> ResolveSigningKey(Jwt jwt)
         {
-            var keys = new List<JsonWebKey>(1);
+            var keys = new List<Jwk>(1);
             var keySet = _keyProvider.GetKeys(jwt.Header);
             if (keySet != null)
             {

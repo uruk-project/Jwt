@@ -7,11 +7,11 @@ namespace JsonWebToken.Internal
 {
     internal readonly struct CryptographicFactoryKey
     {
-        public readonly JsonWebKey Key;
+        public readonly Jwk Key;
 
         public readonly int Algorithm;
 
-        public CryptographicFactoryKey(JsonWebKey key, int algorithm)
+        public CryptographicFactoryKey(Jwk key, int algorithm)
         {
             Key = key ?? throw new ArgumentNullException(nameof(key));
             Algorithm = algorithm;

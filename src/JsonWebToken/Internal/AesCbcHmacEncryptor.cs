@@ -36,7 +36,7 @@ namespace JsonWebToken.Internal
                 Errors.ThrowEncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
             }
 
-            int keyLength = encryptionAlgorithm.RequiredKeySizeInBytes / 2;
+            int keyLength = encryptionAlgorithm.RequiredKeySizeInBytes >> 1;
 
             var keyBytes = key.RawK.AsSpan();
             var aesKey = keyBytes.Slice(keyLength).ToArray();
@@ -109,7 +109,7 @@ namespace JsonWebToken.Internal
                 associatedData.CopyTo(macBytes);
                 nonce.CopyTo(macBytes.Slice(associatedData.Length));
                 ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
-                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length, sizeof(long)), associatedData.Length * 8);
+                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length, sizeof(long)), associatedData.Length << 3);
 
                 _symmetricSignatureProvider.TrySign(macBytes, authenticationTag, out int writtenBytes);
                 Debug.Assert(writtenBytes == authenticationTag.Length);
@@ -234,7 +234,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private class AesPooledPolicy : PooledObjectPolicy<Aes>
+        private sealed class AesPooledPolicy : PooledObjectPolicy<Aes>
         {
             private readonly byte[] _key;
 
