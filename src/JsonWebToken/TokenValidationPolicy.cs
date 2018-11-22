@@ -33,7 +33,7 @@ namespace JsonWebToken
             MaximumTokenSizeInBytes = maximumTokenSizeInBytes;
         }
 
-        public int MaximumTokenSizeInBytes { get; set; } = DefaultMaximumTokenSizeInBytes;
+        public int MaximumTokenSizeInBytes { get; }
 
         public TokenValidationResult TryValidate(in TokenValidationContext context)
         {

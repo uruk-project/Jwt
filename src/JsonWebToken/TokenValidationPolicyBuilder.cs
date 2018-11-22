@@ -11,7 +11,7 @@ namespace JsonWebToken
 {
     public sealed class TokenValidationPolicyBuilder
     {
-        private readonly IDictionary<string, ICriticalHeaderHandler> _criticalHeaderHandlers = new Dictionary<string, ICriticalHeaderHandler>();
+        private readonly Dictionary<string, ICriticalHeaderHandler> _criticalHeaderHandlers = new Dictionary<string, ICriticalHeaderHandler>();
         private readonly List<IValidator> _validators = new List<IValidator>();
         private int _maximumTokenSizeInBytes = TokenValidationPolicy.DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
@@ -24,7 +24,7 @@ namespace JsonWebToken
             return this;
         }
 
-        protected TokenValidationPolicyBuilder RemoveValidation(IValidator validator)
+        private TokenValidationPolicyBuilder RemoveValidation(IValidator validator)
         {
             if (validator == null)
             {
@@ -35,7 +35,7 @@ namespace JsonWebToken
             return this;
         }
 
-        protected TokenValidationPolicyBuilder RemoveValidator<TValidator>() where TValidator : IValidator
+        private TokenValidationPolicyBuilder RemoveValidator<TValidator>() where TValidator : IValidator
         {
             _validators.RemoveAll(v => v.GetType() == typeof(TValidator));
             return this;
@@ -201,10 +201,7 @@ namespace JsonWebToken
         {
             Validate();
 
-            var policy = new TokenValidationPolicy(_validators, _criticalHeaderHandlers, _maximumTokenSizeInBytes, _ignoreCriticalHeader)
-            {
-                MaximumTokenSizeInBytes = _maximumTokenSizeInBytes
-            };
+            var policy = new TokenValidationPolicy(_validators, _criticalHeaderHandlers, _maximumTokenSizeInBytes, _ignoreCriticalHeader);
             return policy;
         }
 
