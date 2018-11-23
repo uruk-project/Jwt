@@ -5,10 +5,13 @@ Provides support for JWT.
 This library aims to propose performant JWT primitives. 
 
 [![Build status](https://ci.appveyor.com/api/projects/status/7lt4w59vy0v60s1b?svg=true)](https://ci.appveyor.com/project/ycrumeyrolle/jwt)
+
+[![Build Status](https://yanncrumeyrolle.visualstudio.com/ycrumeyrolle/_apis/build/status/ycrumeyrolle.Jwt)](https://yanncrumeyrolle.visualstudio.com/ycrumeyrolle/_build/latest?definitionId=3)
+
  [![CodeFactor](https://www.codefactor.io/repository/github/ycrumeyrolle/jwt/badge)](https://www.codefactor.io/repository/github/ycrumeyrolle/jwt)
 
 ## Versions
-Current version - [0.2.0](https://www.nuget.org/packages/JsonWebToken/)
+Current version - [0.3.1](https://www.nuget.org/packages/JsonWebToken/)
 
 ## Usage
 ### JWT validation
