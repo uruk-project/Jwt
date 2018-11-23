@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Version>0.3.0</Version>
+    <Version>0.3.1</Version>
     <Authors>Yann Crumeyrolle</Authors>
     <Company>Yann Crumeyrolle</Company>
     <PackageProjectUrl>https://github.com/ycrumeyrolle/Jwt</PackageProjectUrl>
