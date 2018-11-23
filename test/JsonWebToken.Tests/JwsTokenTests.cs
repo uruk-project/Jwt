@@ -100,7 +100,7 @@ namespace JsonWebToken.Tests
         public void Encode_Decode(string alg)
         {
             var (signingKey, validationKey) = SelectKeys(alg);
-            var writer = new JsonWebTokenWriter();
+            var writer = new JwtWriter();
             var descriptor = new JwsDescriptor
             {
                 Key = signingKey,
@@ -110,7 +110,7 @@ namespace JsonWebToken.Tests
 
             var token = writer.WriteToken(descriptor);
 
-            var reader = new JsonWebTokenReader();
+            var reader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
                 .RequireSignature(validationKey, alg)
                 .Build();
@@ -136,7 +136,7 @@ namespace JsonWebToken.Tests
             yield return new object[] { (string)SignatureAlgorithm.EcdsaSha512 };
         }
 
-        private (JsonWebKey, JsonWebKey) SelectKeys(string alg)
+        private (Jwk, Jwk) SelectKeys(string alg)
         {
             switch (alg)
             {

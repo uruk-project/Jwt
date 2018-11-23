@@ -6,7 +6,7 @@ namespace JsonWebToken.Internal
     /// <summary>
     /// Names for Json Web Key Values
     /// </summary>
-    public static class JsonWebKeyParameterNames
+    public static class JwkParameterNames
     {
         public const string Alg = "alg";
         public const string Crv = "crv";

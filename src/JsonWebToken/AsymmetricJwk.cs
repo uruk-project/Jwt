@@ -9,7 +9,7 @@ namespace JsonWebToken
     /// <summary>
     /// Represents an asymmetric JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
     /// </summary>
-    public abstract class AsymmetricJwk : JsonWebKey
+    public abstract class AsymmetricJwk : Jwk
     {
         private string _d;
 
@@ -20,7 +20,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'd' (ECC - Private Key OR RSA - Private Exponent).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.D, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.D, Required = Required.Default)]
         public string D
         {
             get

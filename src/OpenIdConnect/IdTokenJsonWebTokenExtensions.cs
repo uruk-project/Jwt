@@ -5,7 +5,7 @@ namespace JsonWebToken
 {
     public static class IdTokenJsonWebTokenExtensions
     {
-        public static IdToken AsIdToken(this JsonWebToken token)
+        public static IdToken AsIdToken(this Jwt token)
         {
             return new IdToken(token);
         }

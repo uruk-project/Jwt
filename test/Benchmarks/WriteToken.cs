@@ -33,7 +33,7 @@ namespace JsonWebToken.Performance
 
         public static readonly SigningCredentials signingCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.Alg);
 
-        public static readonly JsonWebTokenWriter Writer = new JsonWebTokenWriter();
+        public static readonly JwtWriter Writer = new JwtWriter();
 
         private static readonly Dictionary<string, JwtDescriptor> JwtPayloads = CreateJwtDescriptors();
         private static readonly Dictionary<string, Dictionary<string, object>> DictionaryPayloads = CreateDictionaryDescriptors();

@@ -14,7 +14,7 @@ namespace JsonWebToken.Internal
         /// <param name="key">the key used for key wrapping.</param>
         /// <param name="encryptionAlgorithm">The encryption algorithm.</param>
         /// <param name="contentEncryptionAlgorithm">The content encryption algorithm.</param>
-        public KeyWrapper Create(JsonWebKey key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public KeyWrapper Create(Jwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
             if (_disposed)
             {

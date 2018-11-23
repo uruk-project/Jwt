@@ -11,7 +11,7 @@ namespace JsonWebToken
     /// <summary>
     /// Represents a symmetric JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
     /// </summary>
-    public sealed class SymmetricJwk : JsonWebKey
+    public sealed class SymmetricJwk : Jwk
     {
         private string _k;
 
@@ -29,13 +29,13 @@ namespace JsonWebToken
 
         public SymmetricJwk()
         {
-            Kty = JsonWebKeyTypeNames.Octet;
+            Kty = JwkTypeNames.Octet;
         }
 
         /// <summary>
         /// Gets or sets the 'k' (Key Value).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JsonWebKeyParameterNames.K, Required = Required.Default)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.K, Required = Required.Default)]
         public string K
         {
             get
@@ -232,7 +232,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override JsonWebKey Normalize()
+        public override Jwk Normalize()
         {
             return new SymmetricJwk(RawK);
         }

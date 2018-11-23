@@ -16,7 +16,7 @@ namespace JsonWebToken.Internal
         /// <param name="algorithm">The signature algorithm.</param>
         /// <param name="willCreateSignatures">Defines whether the <see cref="Signer"/> will be used for signature of for validation.</param>
         /// <returns></returns>
-        public Signer Create(JsonWebKey key, SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public Signer Create(Jwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (_disposed)
             {

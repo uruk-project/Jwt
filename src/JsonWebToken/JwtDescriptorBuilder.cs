@@ -18,8 +18,8 @@ namespace JsonWebToken
         private byte[] _binaryPayload;
         private string _textPayload;
 
-        private JsonWebKey _signingKey;
-        private JsonWebKey _encryptionKey;
+        private Jwk _signingKey;
+        private Jwk _encryptionKey;
         private bool _noSignature;
         
         public JwtDescriptorBuilder AddHeader(string headerName, JToken headerValue)
@@ -182,7 +182,7 @@ namespace JsonWebToken
             return AddHeader(HeaderParameters.Jku, jku);
         }
 
-        public JwtDescriptorBuilder JsonWebKey(JsonWebKey jwk)
+        public JwtDescriptorBuilder Jwk(Jwk jwk)
         {
             return AddHeader(HeaderParameters.Jwk, jwk.ToString());
         }
@@ -217,13 +217,13 @@ namespace JsonWebToken
             return AddHeader(HeaderParameters.Crit, JArray.FromObject(crit));
         }
 
-        public JwtDescriptorBuilder SignWith(JsonWebKey jwk)
+        public JwtDescriptorBuilder SignWith(Jwk jwk)
         {
             _signingKey = jwk ?? throw new ArgumentNullException(nameof(jwk));
             return this;
         }
 
-        public JwtDescriptorBuilder EncryptWith(JsonWebKey jwk)
+        public JwtDescriptorBuilder EncryptWith(Jwk jwk)
         {
             _encryptionKey = jwk ?? throw new ArgumentNullException(nameof(jwk));
             return this;

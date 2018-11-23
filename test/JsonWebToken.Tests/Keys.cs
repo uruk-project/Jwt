@@ -15,13 +15,13 @@ namespace JsonWebToken.Tests
             var dirPath = Path.GetDirectoryName(location);
             var keysPath = Path.Combine(dirPath, "./resources/jwks.json"); ;
             var jwks = File.ReadAllText(keysPath);
-            Jwks = new JsonWebKeySet(jwks);
+            Jwks = new Jwks(jwks);
 
             Jwks.Keys.Add(Tokens.SigningKey);
             Jwks.Keys.Add(Tokens.EncryptionKey);
         }
 
-        public static JsonWebKeySet Jwks { get; }
+        public static Jwks Jwks { get; }
 
         public static IEnumerable<object[]> Certificates
         {

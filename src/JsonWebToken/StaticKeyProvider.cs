@@ -11,20 +11,20 @@ namespace JsonWebToken
     /// </summary>
     public sealed class StaticKeyProvider : IKeyProvider
     {
-        private readonly JsonWebKeySet _jwks;
+        private readonly Jwks _jwks;
 
-        public StaticKeyProvider(JsonWebKeySet jwks)
+        public StaticKeyProvider(Jwks jwks)
         {
             _jwks = jwks ?? throw new ArgumentNullException(nameof(jwks));
         }
 
-        public IReadOnlyList<JsonWebKey> GetKeys(JwtHeader header)
+        public IReadOnlyList<Jwk> GetKeys(JwtHeader header)
         {
             var kid = header.Kid;
             return _jwks.GetKeys(kid);
         }
 
-        public static implicit operator StaticKeyProvider(JsonWebKeySet keys) => new StaticKeyProvider(keys);
-        public static implicit operator StaticKeyProvider(JsonWebKey key) => new StaticKeyProvider(new JsonWebKeySet(key));
+        public static implicit operator StaticKeyProvider(Jwks keys) => new StaticKeyProvider(keys);
+        public static implicit operator StaticKeyProvider(Jwk key) => new StaticKeyProvider(new Jwks(key));
     }
 }

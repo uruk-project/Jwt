@@ -9,7 +9,7 @@ namespace JsonWebToken
     {
         public TokenValidationContext(
             ReadOnlySpan<byte> token, 
-            JsonWebToken jwt, 
+            Jwt jwt, 
             ISignerFactory signatureFactory,
             TokenSegment contentSegment,
             TokenSegment signatureSegment)
@@ -23,7 +23,7 @@ namespace JsonWebToken
 
         public readonly ReadOnlySpan<byte> Token;
 
-        public readonly JsonWebToken Jwt;
+        public readonly Jwt Jwt;
 
         public readonly ISignerFactory SignatureFactory;
 
