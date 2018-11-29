@@ -15,7 +15,14 @@ namespace JsonWebToken
     /// <remarks>Issued from https://github.com/aspnet/.</remarks>
     public static class Base64Url
     {
-        private static readonly IBase64Url _base64 = new SoftwareBase64Url();
+        private static readonly IBase64Url _softwareBase64 = new SoftwareBase64Url();        
+        private static readonly IBase64Url _simdBase64 = new SimdBase64Url();        
+        private static IBase64Url _base64 = _simdBase64;
+
+        public static bool EnableSimd
+        {
+            set { _base64 = value ? _simdBase64 : _softwareBase64; }
+        }
 
         private static readonly byte[] EmptyBytes = Array.Empty<byte>();
 
