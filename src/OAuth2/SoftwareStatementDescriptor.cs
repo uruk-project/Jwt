@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 
@@ -13,10 +14,11 @@ namespace JsonWebToken
     /// </summary>
     public class SoftwareStatementDescriptor : JwsDescriptor
     {
-        private static readonly IReadOnlyDictionary<string, JTokenType[]> SoftwareStatementRequiredClaims = new Dictionary<string, JTokenType[]>
-        {
-            { Claims.Iss, new [] { JTokenType.String} }
-        };
+        private static readonly ReadOnlyDictionary<string, JTokenType[]> SoftwareStatementRequiredClaims = new ReadOnlyDictionary<string, JTokenType[]>(
+            new Dictionary<string, JTokenType[]>
+            {
+                { Claims.Iss, new [] { JTokenType.String} }
+            });
 
         public SoftwareStatementDescriptor(JObject payload)
             : base(new Dictionary<string, object>(), payload)
@@ -32,6 +34,6 @@ namespace JsonWebToken
             set { AddClaim(Claims.SoftwareId, value); }
         }
 
-        protected override IReadOnlyDictionary<string, JTokenType[]> RequiredClaims => SoftwareStatementRequiredClaims;
+        protected override ReadOnlyDictionary<string, JTokenType[]> RequiredClaims => SoftwareStatementRequiredClaims;
     }
 }

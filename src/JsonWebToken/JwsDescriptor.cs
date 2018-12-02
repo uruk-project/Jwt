@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -19,12 +20,13 @@ namespace JsonWebToken
     public class JwsDescriptor : JwtDescriptor<JObject>, IJwtPayloadDescriptor
     {
         private static readonly byte dot = Convert.ToByte('.');
-        private static readonly Dictionary<string, JTokenType[]> DefaultRequiredClaims = new Dictionary<string, JTokenType[]>();
+        private static readonly ReadOnlyDictionary<string, JTokenType[]> DefaultRequiredClaims = new ReadOnlyDictionary<string, JTokenType[]>(new Dictionary<string, JTokenType[]>());
         private static readonly string[] DefaultProhibitedClaims = Array.Empty<string>();
-        private static readonly Dictionary<string, Type[]> JwsRequiredHeaderParameters = new Dictionary<string, Type[]>
-        {
-            { HeaderParameters.Alg, new [] { typeof(string) } }
-        };
+        private static readonly ReadOnlyDictionary<string, Type[]> JwsRequiredHeaderParameters = new ReadOnlyDictionary<string, Type[]>(
+            new Dictionary<string, Type[]>
+            {
+                { HeaderParameters.Alg, new [] { typeof(string) } }
+            });
 
         public JwsDescriptor()
             : base(new Dictionary<string, object>(), new JObject())
@@ -36,11 +38,11 @@ namespace JsonWebToken
         {
         }
 
-        protected virtual IReadOnlyDictionary<string, JTokenType[]> RequiredClaims => DefaultRequiredClaims;
+        protected virtual ReadOnlyDictionary<string, JTokenType[]> RequiredClaims => DefaultRequiredClaims;
 
         protected virtual IReadOnlyList<string> ProhibitedClaims => DefaultProhibitedClaims;
 
-        protected override IReadOnlyDictionary<string, Type[]> RequiredHeaderParameters => JwsRequiredHeaderParameters;
+        protected override ReadOnlyDictionary<string, Type[]> RequiredHeaderParameters => JwsRequiredHeaderParameters;
 
         /// <summary>
         /// Gets or sets the value of the 'sub' claim.

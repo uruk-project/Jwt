@@ -3,9 +3,9 @@
 
 using System;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
-    internal readonly struct CryptographicFactoryKey
+    public readonly struct CryptographicFactoryKey
     {
         public readonly Jwk Key;
 

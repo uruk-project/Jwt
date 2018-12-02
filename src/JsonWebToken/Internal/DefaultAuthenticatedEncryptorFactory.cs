@@ -3,26 +3,19 @@
 
 namespace JsonWebToken.Internal
 {
-    internal sealed class DefaultAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
+    public class DefaultAuthenticatedEncryptorFactory : AuthenticatedEncryptorFactory
     {
-        private readonly CryptographicStore<AuthenticatedEncryptor> _encryptors = new CryptographicStore<AuthenticatedEncryptor>();
-
-        private bool _disposed;
-
         /// <summary>
         /// Creates an <see cref="AuthenticatedEncryptor"/>.
         /// </summary>
         /// <param name="key">The key used for encryption.</param>
         /// <param name="encryptionAlgorithm">then encryption algorithm/</param>
-        public AuthenticatedEncryptor Create(Jwk key, EncryptionAlgorithm encryptionAlgorithm)
+        public override AuthenticatedEncryptor Create(Jwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (_disposed)
-            {
-                Errors.ThrowObjectDisposed(GetType());
-            }
+            ThrowIfDisposed();
 
             var factoryKey = new CryptographicFactoryKey(key, encryptionAlgorithm.Id);
-            if (_encryptors.TryGetValue(factoryKey, out var cachedEncryptor))
+            if (Encryptors.TryGetValue(factoryKey, out var cachedEncryptor))
             {
                 return cachedEncryptor;
             }
@@ -30,19 +23,10 @@ namespace JsonWebToken.Internal
             if (key.IsSupported(encryptionAlgorithm))
             {
                 var encryptor = key.CreateAuthenticatedEncryptor(encryptionAlgorithm);
-                return _encryptors.AddValue(factoryKey, encryptor);
+                return Encryptors.AddValue(factoryKey, encryptor);
             }
 
             return null;
-        }
-
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                _encryptors.Dispose();
-                _disposed = true;
-            }
         }
     }
 }

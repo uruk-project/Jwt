@@ -22,10 +22,10 @@ namespace JsonWebToken
                                                             .Build();
 
         private readonly IList<IValidator> _validators;
-        private readonly IDictionary<string, ICriticalHeaderHandler> _criticalHandlers;
+        private readonly Dictionary<string, ICriticalHeaderHandler> _criticalHandlers;
         private readonly bool _ignoreCriticalHeader;
 
-        internal TokenValidationPolicy(IList<IValidator> validators, IDictionary<string, ICriticalHeaderHandler> criticalHandlers, int maximumTokenSizeInBytes, bool ignoreCriticalHeader) 
+        internal TokenValidationPolicy(IList<IValidator> validators, Dictionary<string, ICriticalHeaderHandler> criticalHandlers, int maximumTokenSizeInBytes, bool ignoreCriticalHeader) 
         {
             _validators = validators ?? throw new ArgumentNullException(nameof(validators));
             _criticalHandlers = criticalHandlers ?? throw new ArgumentNullException(nameof(criticalHandlers));

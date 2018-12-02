@@ -13,7 +13,7 @@ namespace JsonWebToken
     /// </summary>
     public class VectorOfTrust : IEnumerable<string>
     {
-        private readonly IDictionary<char, IList<char>> _vector = new Dictionary<char, IList<char>>();
+        private readonly Dictionary<char, IList<char>> _vector = new Dictionary<char, IList<char>>();
 
         public VectorOfTrust()
         {

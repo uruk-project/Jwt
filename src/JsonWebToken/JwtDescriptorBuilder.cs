@@ -13,7 +13,7 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtDescriptorBuilder
     {
-        private readonly IDictionary<string, object> _header = new Dictionary<string, object>();
+        private readonly Dictionary<string, object> _header = new Dictionary<string, object>();
         private JObject _jsonPayload;
         private byte[] _binaryPayload;
         private string _textPayload;

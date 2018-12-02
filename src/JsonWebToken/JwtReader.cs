@@ -21,27 +21,27 @@ namespace JsonWebToken
 
         private readonly IKeyProvider[] _encryptionKeyProviders;
         private readonly JwtHeaderCache _headerCache;
-        private readonly IKeyWrapperFactory _keyWrapFactory;
-        private readonly ISignerFactory _signatureFactory;
-        private readonly IAuthenticatedEncryptorFactory _authenticatedEncryptionFactory;
+        private readonly KeyWrapperFactory _keyWrapFactory;
+        private readonly SignerFactory _signatureFactory;
+        private readonly AuthenticatedEncryptorFactory _authenticatedEncryptionFactory;
         private readonly bool _disposeFactories;
 
         private bool _disposed;
 
         public JwtReader(
             ICollection<IKeyProvider> encryptionKeyProviders,
-            ISignerFactory signerFactory,
-            IKeyWrapperFactory keyWrapperFactory,
-            IAuthenticatedEncryptorFactory authenticatedEncryptorFactory)
+            SignerFactory signerFactory,
+            KeyWrapperFactory keyWrapperFactory,
+            AuthenticatedEncryptorFactory authenticatedEncryptorFactory)
             : this(encryptionKeyProviders, signerFactory, keyWrapperFactory, authenticatedEncryptorFactory, null)
         {
         }
 
         public JwtReader(
                   ICollection<IKeyProvider> encryptionKeyProviders,
-                  ISignerFactory signerFactory,
-                  IKeyWrapperFactory keyWrapperFactory,
-                  IAuthenticatedEncryptorFactory authenticatedEncryptorFactory,
+                  SignerFactory signerFactory,
+                  KeyWrapperFactory keyWrapperFactory,
+                  AuthenticatedEncryptorFactory authenticatedEncryptorFactory,
                   JwtHeaderCache headerCache)
         {
             if (encryptionKeyProviders == null)

@@ -3,9 +3,9 @@
 
 using JsonWebToken.Internal;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 
 namespace JsonWebToken
@@ -21,7 +21,7 @@ namespace JsonWebToken
             NullValueHandling = NullValueHandling.Ignore
         };
 
-        private static readonly Dictionary<string, Type[]> DefaultRequiredHeaderParameters = new Dictionary<string, Type[]>();
+        private static readonly ReadOnlyDictionary<string, Type[]> DefaultRequiredHeaderParameters = new ReadOnlyDictionary<string, Type[]>(new Dictionary<string, Type[]>());
         private Jwk _key;
 
         protected JwtDescriptor()
@@ -31,10 +31,10 @@ namespace JsonWebToken
 
         protected JwtDescriptor(IDictionary<string, object> header)
         {
-            Header = header;
+            Header = new Dictionary<string, object>(header);
         }
 
-        public IDictionary<string, object> Header { get; }
+        public Dictionary<string, object> Header { get; }
 
         public Jwk Key
         {
@@ -57,7 +57,7 @@ namespace JsonWebToken
             }
         }
 
-        protected virtual IReadOnlyDictionary<string, Type[]> RequiredHeaderParameters => DefaultRequiredHeaderParameters;
+        protected virtual ReadOnlyDictionary<string, Type[]> RequiredHeaderParameters => DefaultRequiredHeaderParameters;
 
         public string Algorithm
         {

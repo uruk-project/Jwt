@@ -18,9 +18,9 @@ namespace JsonWebToken
         /// </summary>
         public static readonly int DefaultTokenLifetimeInMinutes = 60;
 
-        private readonly ISignerFactory _signatureFactory;
-        private readonly IKeyWrapperFactory _keyWrapFactory;
-        private readonly IAuthenticatedEncryptorFactory _authenticatedEncryptionFactory;
+        private readonly SignerFactory _signatureFactory;
+        private readonly KeyWrapperFactory _keyWrapFactory;
+        private readonly AuthenticatedEncryptorFactory _authenticatedEncryptionFactory;
         private readonly JsonHeaderCache _headerCache;
         private readonly bool _disposeFactories;
         private bool _disposed;
@@ -32,17 +32,17 @@ namespace JsonWebToken
         }
 
         public JwtWriter(
-            ISignerFactory signerFactory,
-            IKeyWrapperFactory keyWrapperFactory,
-            IAuthenticatedEncryptorFactory authenticatedEncryptorFactory)
+            SignerFactory signerFactory,
+            KeyWrapperFactory keyWrapperFactory,
+            AuthenticatedEncryptorFactory authenticatedEncryptorFactory)
             : this(signerFactory, keyWrapperFactory, authenticatedEncryptorFactory, null)
         {
         }
 
         public JwtWriter(
-            ISignerFactory signerFactory,
-            IKeyWrapperFactory keyWrapperFactory,
-            IAuthenticatedEncryptorFactory authenticatedEncryptorFactory,
+            SignerFactory signerFactory,
+            KeyWrapperFactory keyWrapperFactory,
+            AuthenticatedEncryptorFactory authenticatedEncryptorFactory,
             JsonHeaderCache headerCache)
         {
             _signatureFactory = signerFactory ?? throw new ArgumentNullException(nameof(signerFactory));

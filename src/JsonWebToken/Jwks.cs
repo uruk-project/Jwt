@@ -63,7 +63,7 @@ namespace JsonWebToken
         /// When deserializing from JSON any properties that are not defined will be placed here.
         /// </summary>
         [JsonExtensionData]
-        public IDictionary<string, object> AdditionalData { get; } = new Dictionary<string, object>();
+        public Dictionary<string, object> AdditionalData { get; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets the <see cref="IList{Jwk}"/>.
@@ -154,7 +154,7 @@ namespace JsonWebToken
             }
         }
 
-        private IDictionary<string, List<Jwk>> IdentifiedKeys
+        private Dictionary<string, List<Jwk>> IdentifiedKeys
         {
             get
             {
