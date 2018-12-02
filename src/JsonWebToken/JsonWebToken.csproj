@@ -24,7 +24,7 @@
     <None Remove="JsonWebToken.xml" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <DocumentationFile>bin\Release\$(TargetFramework)\gfoidl.Base64.xml</DocumentationFile>
+    
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
