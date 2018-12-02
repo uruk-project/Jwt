@@ -46,9 +46,9 @@ namespace JsonWebToken.Internal
             {
                 signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(context.SignatureSegment.Length);
             }
-            catch (FormatException)
+            catch (FormatException e)
             {
-                return TokenValidationResult.MalformedSignature();
+                return TokenValidationResult.MalformedSignature(jwt, e);
             }
 
             Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
@@ -57,9 +57,9 @@ namespace JsonWebToken.Internal
                 Base64Url.Base64UrlDecode(token.Slice(context.SignatureSegment.Start), signatureBytes, out int byteConsumed, out int bytesWritten);
                 Debug.Assert(bytesWritten == signatureBytes.Length);
             }
-            catch (FormatException)
+            catch (FormatException e)
             {
-                return TokenValidationResult.MalformedSignature();
+                return TokenValidationResult.MalformedSignature(jwt, e);
             }
 
             bool keysTried = false;
@@ -83,7 +83,7 @@ namespace JsonWebToken.Internal
                 return TokenValidationResult.InvalidSignature(jwt);
             }
 
-            return TokenValidationResult.KeyNotFound(jwt);
+            return TokenValidationResult.SignatureKeyNotFound(jwt);
         }
 
         private static bool TryValidateSignature(in TokenValidationContext context, ReadOnlySpan<byte> encodedBytes, ReadOnlySpan<byte> signature, Jwk key, SignatureAlgorithm algorithm)
