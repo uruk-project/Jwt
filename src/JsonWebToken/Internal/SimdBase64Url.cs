@@ -10,7 +10,7 @@ namespace JsonWebToken.Internal
 {
     public sealed class SimdBase64Url : IBase64Url
     {
-        private readonly Base64UrlEncoder _encoder = Base64.Url;
+        private readonly Base64 _encoder = Base64.Url;
 
         public OperationStatus DecodeFromUtf8(ReadOnlySpan<byte> encoded, Span<byte> data, out int bytesConsumed, out int bytesWritten)
         {
