@@ -11,6 +11,7 @@ using System.IdentityModel.Tokens.Jwt;
 namespace JsonWebToken.Performance
 {
     [Config(typeof(DefaultCoreConfig))]
+    [BenchmarkCategory("CI-CD")]
     public class ValidateToken
     {
         private static readonly IJwtAlgorithm algorithm = new HMACSHA256Algorithm();

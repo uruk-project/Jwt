@@ -13,6 +13,7 @@ using System.Security.Claims;
 namespace JsonWebToken.Performance
 {
     [Config(typeof(DefaultCoreConfig))]
+    [BenchmarkCategory("CI-CD")]
     public class WriteToken
     {
         private static readonly SymmetricJwk SigningKey = Tokens.SigningKey;
