@@ -12,7 +12,7 @@
   <PropertyGroup>
     <PackageTags>jwt security jsonwebtoken cryptography</PackageTags>
     <Description>High-performance JWT library. Provides Json Web Token primitives.</Description>
-    <DocumentationFile></DocumentationFile>
+    <DocumentationFile>$(OutputPath)JsonWebToken.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
