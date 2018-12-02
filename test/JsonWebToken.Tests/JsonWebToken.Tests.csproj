@@ -55,7 +55,7 @@
     <ProjectReference Include="..\..\src\OAuth2\JsonWebToken.OAuth2.csproj" />
     <ProjectReference Include="..\..\src\OpenIdConnect\JsonWebToken.OpenIdConnect.csproj" />
     <ProjectReference Include="..\..\src\SecurityEventTokens\JsonWebToken.SecurityEventTokens.csproj" />
-    <ProjectReference Include="..\Performance\Performance.csproj" />
+    <ProjectReference Include="..\..\perf\Performance\Performance.csproj" />
   </ItemGroup>
 
 </Project>
