@@ -388,10 +388,10 @@ namespace JsonWebToken
 
         public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, IAlgorithm algorithm)
         {
-#if NETCOREAPP2_1
-            using (RSA rsa = RSA.Create())
-#else
+#if NETSTANDARD2_0
             using (RSA rsa = new RSACng())
+#else
+            using (RSA rsa = RSA.Create())
 #endif
             {
                 rsa.KeySize = sizeInBits;
