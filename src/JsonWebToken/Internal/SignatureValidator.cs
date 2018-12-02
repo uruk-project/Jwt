@@ -42,9 +42,10 @@ namespace JsonWebToken.Internal
             }
 
             int signatureBytesLength;
+            var signatureSegment = token.Slice(context.SignatureSegment.Start);
             try
             {
-                signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(context.SignatureSegment.Length);
+                signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(signatureSegment);
             }
             catch (FormatException)
             {
@@ -54,7 +55,7 @@ namespace JsonWebToken.Internal
             Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
             try
             {
-                Base64Url.Base64UrlDecode(token.Slice(context.SignatureSegment.Start), signatureBytes, out int byteConsumed, out int bytesWritten);
+                Base64Url.Base64UrlDecode(signatureSegment, signatureBytes, out int byteConsumed, out int bytesWritten);
                 Debug.Assert(bytesWritten == signatureBytes.Length);
             }
             catch (FormatException)

@@ -1,13 +1,9 @@
-﻿using System.Collections.Generic;
-using BenchmarkDotNet.Columns;
+﻿using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Exporters;
-using BenchmarkDotNet.Horology;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
-using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Toolchains.CsProj;
 using BenchmarkDotNet.Toolchains.DotNetCli;
 using BenchmarkDotNet.Validators;
@@ -34,4 +30,22 @@ namespace JsonWebToken.Performance
         }
     }
 
+    public class HardwareIntrinsicsCustomConfig : ManualConfig
+    {
+        private const string EnableAVX2 = "COMPlus_EnableAVX2";
+        private const string EnableSSSE3 = "COMPlus_EnableSSSE3";
+
+        public HardwareIntrinsicsCustomConfig()
+        {
+            this.Add(Job.Core.WithId("AVX2"));
+
+            this.Add(Job.Core
+                .With(new[] { new EnvironmentVariable(EnableAVX2, "0") })
+                .WithId("SSSE3"));
+
+            this.Add(Job.Core
+                .With(new[] { new EnvironmentVariable(EnableAVX2, "0"), new EnvironmentVariable(EnableSSSE3, "0") })
+                .WithId("Scalar"));
+        }
+    }
 }

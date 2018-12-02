@@ -12,7 +12,9 @@ namespace JsonWebToken.Internal
 
         OperationStatus EncodeToUtf8(ReadOnlySpan<byte> data, Span<byte> encoded, out int bytesConsumed, out int bytesWritten);
 
-        int GetMaxDecodedFromUtf8Length(int length);
+        int GetMaxDecodedFromUtf8Length(ReadOnlySpan<byte> encoded);
+
+        int GetMaxDecodedFromUtf8Length(ReadOnlySpan<char> encoded);
 
         OperationStatus DecodeFromUtf8(ReadOnlySpan<byte> encoded, Span<byte> data, out int bytesConsumed, out int bytesWritten);
     }

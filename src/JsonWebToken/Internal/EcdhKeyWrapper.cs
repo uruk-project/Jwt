@@ -211,8 +211,8 @@ namespace JsonWebToken.Internal
 
         private byte[] BuildSecretAppend(string apu, string apv)
         {
-            int apuLength = apu == null ? 0 : Base64Url.GetArraySizeRequiredToDecode(apu.Length);
-            int apvLength = apv == null ? 0 : Base64Url.GetArraySizeRequiredToDecode(apv.Length);
+            int apuLength = apu == null ? 0 : Base64Url.GetArraySizeRequiredToDecode(apu);
+            int apvLength = apv == null ? 0 : Base64Url.GetArraySizeRequiredToDecode(apv);
 
             int algorithmLength = sizeof(int) + _algorithmNameLength;
             int partyUInfoLength = sizeof(int) + apuLength;

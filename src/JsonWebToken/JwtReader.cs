@@ -229,7 +229,7 @@ namespace JsonWebToken
             var authenticationTagSegment = segments[4];
             var rawAuthenticationTag = utf8Buffer.Slice(authenticationTagSegment.Start, authenticationTagSegment.Length);
 
-            Span<byte> decryptedBytes = new byte[Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length)];
+            Span<byte> decryptedBytes = new byte[Base64Url.GetArraySizeRequiredToDecode(rawCiphertext)];
             Jwk decryptionKey = null;
             bool decrypted = false;
             for (int i = 0; i < keys.Count; i++)
@@ -315,7 +315,7 @@ namespace JsonWebToken
 
         private static T GetJsonObject<T>(ReadOnlySpan<byte> data)
         {
-            int base64UrlLength = Base64Url.GetArraySizeRequiredToDecode(data.Length);
+            int base64UrlLength = Base64Url.GetArraySizeRequiredToDecode(data);
             byte[] base64UrlArrayToReturnToPool = null;
             var buffer = base64UrlLength <= Constants.MaxStackallocBytes
               ? stackalloc byte[base64UrlLength]
@@ -355,10 +355,10 @@ namespace JsonWebToken
                 return Errors.TryWriteError(out bytesWritten);
             }
 
-            int ciphertextLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length);
+            int ciphertextLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext);
             int headerLength = rawHeader.Length;
-            int initializationVectorLength = Base64Url.GetArraySizeRequiredToDecode(rawInitializationVector.Length);
-            int authenticationTagLength = Base64Url.GetArraySizeRequiredToDecode(rawAuthenticationTag.Length);
+            int initializationVectorLength = Base64Url.GetArraySizeRequiredToDecode(rawInitializationVector);
+            int authenticationTagLength = Base64Url.GetArraySizeRequiredToDecode(rawAuthenticationTag);
             int bufferLength = ciphertextLength + headerLength + initializationVectorLength + authenticationTagLength;
             byte[] arrayToReturn = null;
             Span<byte> buffer = bufferLength < Constants.MaxStackallocBytes
@@ -432,7 +432,7 @@ namespace JsonWebToken
                 return keys;
             }
 
-            Span<byte> encryptedKey = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length)];
+            Span<byte> encryptedKey = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey)];
             var operationResult = Base64Url.Base64UrlDecode(rawEncryptedKey, encryptedKey, out int bytesConsumed, out int bytesWritten);
             Debug.Assert(operationResult == OperationStatus.Done);
 

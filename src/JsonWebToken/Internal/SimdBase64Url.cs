@@ -22,9 +22,14 @@ namespace JsonWebToken.Internal
             return _encoder.Encode(data, encoded, out bytesConsumed, out bytesWritten);
         }
 
-        public int GetMaxDecodedFromUtf8Length(int length)
+        public int GetMaxDecodedFromUtf8Length(ReadOnlySpan<byte> encoded)
         {
-            return _encoder.GetDecodedLength(length);
+            return _encoder.GetDecodedLength(encoded);
+        }
+
+        public int GetMaxDecodedFromUtf8Length(ReadOnlySpan<char> encoded)
+        {
+            return _encoder.GetDecodedLength(encoded);
         }
 
         public int GetMaxEncodedToUtf8Length(int length)

@@ -6,6 +6,8 @@ using System.Collections.Generic;
 
 namespace JsonWebToken.Performance
 {
+
+    [Config(typeof(HardwareIntrinsicsCustomConfig))]
     public class Base64UrlWriteBenchmark : Base64UrlBenchmark
     {
         [Benchmark(Baseline = true)]
@@ -24,6 +26,8 @@ namespace JsonWebToken.Performance
             var value = Writer.WriteToken(JwtPayloads[token]);
         }
     }
+
+    [Config(typeof(HardwareIntrinsicsCustomConfig))]
     public class Base64UrlReadBenchmark : Base64UrlBenchmark
     {
         [Benchmark(Baseline = true)]
@@ -51,7 +55,6 @@ namespace JsonWebToken.Performance
         }
     }
 
-
     [MemoryDiagnoser]
     public class Base64UrlBenchmark
     {
@@ -64,18 +67,6 @@ namespace JsonWebToken.Performance
         private static readonly TokenValidationPolicy policy = TokenValidationPolicy.NoValidation;
 
         protected static readonly Dictionary<string, JwtDescriptor> JwtPayloads = CreateJwtDescriptors();
-
-
-        //[Benchmark]
-        [ArgumentsSource(nameof(GetTokens))]
-        public void ReadJwt(string token)
-        {
-            var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), policy);
-            if (!result.Succedeed)
-            {
-                throw new Exception(result.Status.ToString());
-            }
-        }
 
         public IEnumerable<string> GetTokens()
         {
@@ -100,7 +91,8 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new JwsDescriptor()
                 {
-                    Key = SigningKey
+                    Algorithm = SignatureAlgorithm.None
+                    //Key = SigningKey
                 };
 
                 foreach (var property in payload.Value.Properties())

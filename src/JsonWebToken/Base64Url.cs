@@ -49,7 +49,7 @@ namespace JsonWebToken
                 return EmptyBytes;
             }
 
-            var dataLength = GetArraySizeRequiredToDecode(base64Url.Length);
+            var dataLength = GetArraySizeRequiredToDecode(base64Url);
             var data = new byte[dataLength];
             Base64UrlDecode(base64Url, data);
             return data;
@@ -241,10 +241,24 @@ namespace JsonWebToken
         /// The minimum buffer size required for decoding  of <paramref name="count"/> characters.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetArraySizeRequiredToDecode(int count)
+        public static int GetArraySizeRequiredToDecode(ReadOnlySpan<byte> encoded)
         {
-            return _base64.GetMaxDecodedFromUtf8Length(count);
+            return _base64.GetMaxDecodedFromUtf8Length(encoded);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetArraySizeRequiredToDecode(ReadOnlySpan<char> encoded)
+        {
+            return _base64.GetMaxDecodedFromUtf8Length(encoded);
+        }
+
+#if NETSTANDARD2_0
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetArraySizeRequiredToDecode(string encoded)
+        {
+            return _base64.GetMaxDecodedFromUtf8Length(encoded.AsSpan());
+        }
+#endif
 
         /// <summary>
         /// Gets the minimum output buffer size required for encoding <paramref name="count"/> bytes.

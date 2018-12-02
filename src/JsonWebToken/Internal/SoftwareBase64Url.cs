@@ -1,8 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using gfoidl.Base64;
-using gfoidl.Base64.Internal;
 using System;
 using System.Buffers;
 using System.Diagnostics;
@@ -147,7 +145,19 @@ namespace JsonWebToken.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetMaxDecodedFromUtf8Length(int length)
+        public int GetMaxDecodedFromUtf8Length(ReadOnlySpan<byte> encoded)
+        {
+            return GetMaxDecodedFromUtf8Length(encoded.Length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetMaxDecodedFromUtf8Length(ReadOnlySpan<char> encoded)
+        {
+            return GetMaxDecodedFromUtf8Length(encoded.Length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int GetMaxDecodedFromUtf8Length(int length)
         {
             var numPaddingChars = GetNumBase64PaddingCharsToAddForDecode(length);
             var base64Len = length + numPaddingChars;

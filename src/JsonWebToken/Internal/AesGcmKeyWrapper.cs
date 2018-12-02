@@ -42,8 +42,8 @@ namespace JsonWebToken.Internal
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-            Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.IV.Length)];
-            Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.Tag.Length)];
+            Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.IV)];
+            Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.Tag)];
             try
             {
                 Base64Url.Base64UrlDecode(header.IV, nonce);
