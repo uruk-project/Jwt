@@ -227,5 +227,21 @@ namespace JsonWebToken.Internal
         /// https://tools.ietf.org/html/draft-ietf-oauth-token-exchange-14
         /// </summary>
         public const string MayAct = "may_act";
+
+        /// <summary>
+        /// https://tools.ietf.org/html/draft-bradley-oauth-jwt-encoded-state-09
+        /// </summary>
+        public const string Rfp = "rfp";
+
+
+        /// <summary>
+        /// https://tools.ietf.org/html/draft-bradley-oauth-jwt-encoded-state-09
+        /// </summary>
+        public const string TargetLinkUri = "target_link_uri";
+
+        /// <summary>
+        /// https://tools.ietf.org/html/draft-bradley-oauth-jwt-encoded-state-09
+        /// </summary>
+        public const string As = "as";
     }
 }
