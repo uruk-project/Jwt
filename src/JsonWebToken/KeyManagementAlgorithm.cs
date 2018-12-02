@@ -47,7 +47,7 @@ namespace JsonWebToken
 
         public bool ProduceEncryptedKey { get; }
 
-        public static IDictionary<string, KeyManagementAlgorithm> Algorithms { get; } = new Dictionary<string, KeyManagementAlgorithm>
+        public static Dictionary<string, KeyManagementAlgorithm> Algorithms { get; } = new Dictionary<string, KeyManagementAlgorithm>
         {
             { EcdhEsAes128KW.Name, EcdhEsAes128KW },
             { EcdhEsAes192KW.Name, EcdhEsAes192KW },

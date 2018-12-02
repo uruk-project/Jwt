@@ -1,12 +1,13 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using JsonWebToken.Internal;
 using System;
 using System.Collections.Concurrent;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
-    internal class CryptographicStore<TCrypto> : IDisposable where TCrypto : IDisposable
+    public sealed class CryptographicStore<TCrypto> : IDisposable where TCrypto : IDisposable
     {
         private readonly ConcurrentDictionary<CryptographicFactoryKey, TCrypto> _store;
         private bool _disposed;

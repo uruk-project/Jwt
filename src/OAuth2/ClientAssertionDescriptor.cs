@@ -3,8 +3,8 @@
 
 using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace JsonWebToken
 {
@@ -13,13 +13,14 @@ namespace JsonWebToken
     /// </summary>
     public class ClientAssertionDescriptor : JwsDescriptor
     {
-        private static readonly IReadOnlyDictionary<string, JTokenType[]> ClientAssertionRequiredClaims = new Dictionary<string, JTokenType[]>           
+        private static readonly ReadOnlyDictionary<string, JTokenType[]> ClientAssertionRequiredClaims = new ReadOnlyDictionary<string, JTokenType[]>(
+            new Dictionary<string, JTokenType[]>           
         {
             { Claims.Iss, new [] { JTokenType.String } },
             { Claims.Sub, new [] { JTokenType.String } },
             { Claims.Aud, new [] { JTokenType.String, JTokenType.Array } },
             { Claims.Exp, new [] { JTokenType.Integer } }
-        };
+        });
 
         public ClientAssertionDescriptor()
             : base()
@@ -31,7 +32,7 @@ namespace JsonWebToken
         {
         }
 
-        public ClientAssertionDescriptor(IDictionary<string, object> header, JObject payload)
+        public ClientAssertionDescriptor(Dictionary<string, object> header, JObject payload)
             : base(header, payload)
         {
         }
@@ -46,6 +47,6 @@ namespace JsonWebToken
             base.Validate();
         }
 
-        protected override IReadOnlyDictionary<string, JTokenType[]> RequiredClaims => ClientAssertionRequiredClaims;
+        protected override ReadOnlyDictionary<string, JTokenType[]> RequiredClaims => ClientAssertionRequiredClaims;
     }
 }

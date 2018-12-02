@@ -33,7 +33,7 @@ namespace JsonWebToken
 
         public string Name { get; }
 
-        public static IDictionary<string, EncryptionAlgorithm> Algorithms { get; } = new Dictionary<string, EncryptionAlgorithm>
+        public static Dictionary<string, EncryptionAlgorithm> Algorithms { get; } = new Dictionary<string, EncryptionAlgorithm>
         {
             { Aes128CbcHmacSha256.Name, Aes128CbcHmacSha256 },
             { Aes192CbcHmacSha384.Name, Aes192CbcHmacSha384 },

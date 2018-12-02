@@ -22,7 +22,7 @@ namespace JsonWebToken
 
         public Compressor Compressor { get; }
 
-        public static IDictionary<string, CompressionAlgorithm> Algorithms { get; } = new Dictionary<string, CompressionAlgorithm>
+        public static Dictionary<string, CompressionAlgorithm> Algorithms { get; } = new Dictionary<string, CompressionAlgorithm>
         {
             { Deflate.Name, Deflate },
             { Empty.Name, Empty }

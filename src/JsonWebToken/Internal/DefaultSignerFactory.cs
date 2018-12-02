@@ -1,14 +1,11 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+
 namespace JsonWebToken.Internal
 {
-    internal sealed class DefaultSignerFactory : ISignerFactory
+    internal sealed class DefaultSignerFactory : SignerFactory
     {
-        private readonly CryptographicStore<Signer> _signers = new CryptographicStore<Signer>();
-        private readonly CryptographicStore<Signer> _validationSigners = new CryptographicStore<Signer>();
-        private bool _disposed;
-
         /// <summary>
         /// Creates a <see cref="Signer"/>.
         /// </summary>
@@ -16,19 +13,16 @@ namespace JsonWebToken.Internal
         /// <param name="algorithm">The signature algorithm.</param>
         /// <param name="willCreateSignatures">Defines whether the <see cref="Signer"/> will be used for signature of for validation.</param>
         /// <returns></returns>
-        public Signer Create(Jwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public override Signer Create(Jwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
-            if (_disposed)
-            {
-                Errors.ThrowObjectDisposed(GetType());
-            }
+            ThrowIfDisposed();
 
             if (algorithm == null)
             {
                 return null;
             }
 
-            var signers = willCreateSignatures ? _validationSigners : _signers;
+            var signers = willCreateSignatures ? ValidationSigners : Signers;
             var factoryKey = new CryptographicFactoryKey(key, algorithm.Id);
             if (signers.TryGetValue(factoryKey, out var cachedSigner))
             {
@@ -42,16 +36,6 @@ namespace JsonWebToken.Internal
             }
 
             return null;
-        }
-
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                _signers.Dispose();
-                _validationSigners.Dispose();
-                _disposed = true;
-            }
         }
     }
 }

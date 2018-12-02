@@ -42,7 +42,7 @@ namespace JsonWebToken
 
         public HashAlgorithmName HashAlgorithm { get; }
 
-        public static IDictionary<string, SignatureAlgorithm> Algorithms { get; } = new Dictionary<string, SignatureAlgorithm>
+        public static Dictionary<string, SignatureAlgorithm> Algorithms { get; } = new Dictionary<string, SignatureAlgorithm>
         {
             { EcdsaSha256.Name, EcdsaSha256 },
             { EcdsaSha384.Name, EcdsaSha384 },

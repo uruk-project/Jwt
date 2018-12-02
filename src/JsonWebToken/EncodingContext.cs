@@ -10,7 +10,7 @@ namespace JsonWebToken
     /// </summary>
     public sealed class EncodingContext
     {
-        public EncodingContext(ISignerFactory signatureFactory, IKeyWrapperFactory keyWrapFactory, IAuthenticatedEncryptorFactory authenticatedEncryptionFactory, JsonHeaderCache headerCache)
+        public EncodingContext(SignerFactory signatureFactory, KeyWrapperFactory keyWrapFactory, AuthenticatedEncryptorFactory authenticatedEncryptionFactory, JsonHeaderCache headerCache)
         {
             SignatureFactory = signatureFactory ?? throw new ArgumentNullException(nameof(signatureFactory));
             KeyWrapFactory = keyWrapFactory ?? throw new ArgumentNullException(nameof(keyWrapFactory));
@@ -20,10 +20,10 @@ namespace JsonWebToken
 
         public JsonHeaderCache HeaderCache { get; }
 
-        public ISignerFactory SignatureFactory { get;  }
+        public SignerFactory SignatureFactory { get;  }
 
-        public IKeyWrapperFactory KeyWrapFactory { get;  }
+        public KeyWrapperFactory KeyWrapFactory { get;  }
 
-        public IAuthenticatedEncryptorFactory AuthenticatedEncryptionFactory { get; }
+        public AuthenticatedEncryptorFactory AuthenticatedEncryptionFactory { get; }
     }
 }

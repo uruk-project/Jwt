@@ -103,7 +103,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override bool TryWrapKey(Jwk staticKey, IDictionary<string, object> header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override bool TryWrapKey(Jwk staticKey, Dictionary<string, object> header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
             {
@@ -154,7 +154,7 @@ namespace JsonWebToken.Internal
             return hashAlgorithm;
         }
 
-        private static string GetPartyInfo(IDictionary<string, object> header, string headerName)
+        private static string GetPartyInfo(Dictionary<string, object> header, string headerName)
         {
             if (header.TryGetValue(headerName, out var token))
             {

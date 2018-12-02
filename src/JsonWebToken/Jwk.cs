@@ -35,7 +35,7 @@ namespace JsonWebToken
         /// When deserializing from JSON any properties that are not defined will be placed here.
         /// </summary>
         [JsonExtensionData]
-        public IDictionary<string, object> AdditionalData { get; } = new Dictionary<string, object>();
+        public Dictionary<string, object> AdditionalData { get; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets or sets the 'alg' (KeyType).

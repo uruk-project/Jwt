@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -32,7 +31,7 @@ namespace JsonWebToken
         private Bucket _head = null;
         private Bucket _tail = null;
 
-        public bool TryGetHeader(IDictionary<string, object> header, SignatureAlgorithm alg, out byte[] base64UrlHeader)
+        public bool TryGetHeader(Dictionary<string, object> header, SignatureAlgorithm alg, out byte[] base64UrlHeader)
         {
             if (!IsSimpleHeader(header, alg))
             {
@@ -74,7 +73,7 @@ namespace JsonWebToken
             return false;
         }
 
-        private static long ComputeHeaderKey(IDictionary<string, object> header, SignatureAlgorithm alg)
+        private static long ComputeHeaderKey(Dictionary<string, object> header, SignatureAlgorithm alg)
         {
             header.TryGetValue(HeaderParameters.Cty, out object cty);
 
@@ -93,7 +92,7 @@ namespace JsonWebToken
             return alg;
         }
 
-        public void AddHeader(IDictionary<string, object> header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
+        public void AddHeader(Dictionary<string, object> header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
         {
             if (!header.TryGetValue(HeaderParameters.Kid, out var kid))
             {
@@ -173,7 +172,7 @@ namespace JsonWebToken
             }
         }
 
-        private static bool IsSimpleHeader(IDictionary<string, object> header, SignatureAlgorithm alg)
+        private static bool IsSimpleHeader(Dictionary<string, object> header, SignatureAlgorithm alg)
         {
             if (!header.ContainsKey(HeaderParameters.Kid))
             {

@@ -5,6 +5,7 @@ using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace JsonWebToken
 {
@@ -12,13 +13,14 @@ namespace JsonWebToken
     {
         public const string SecurityEventTokenType = "secevent+jwt";
 
-        private static readonly Dictionary<string, JTokenType[]> SetRequiredClaims = new Dictionary<string, JTokenType[]>          
+        private static readonly ReadOnlyDictionary<string, JTokenType[]> SetRequiredClaims = new ReadOnlyDictionary<string, JTokenType[]>(
+            new Dictionary<string, JTokenType[]>          
         {           
             { Claims.Iss, new[] { JTokenType.String } },               
             { Claims.Iat, new[] { JTokenType.Integer} },               
             { Claims.Jti, new[] { JTokenType.String } },               
             { Claims.Events, new[] { JTokenType.Object } }             
-        };
+        });
 
         public SecurityEventTokenDescriptor()
         {
@@ -63,6 +65,6 @@ namespace JsonWebToken
             set => AddClaim(Claims.Toe, value);
         }
 
-        protected override IReadOnlyDictionary<string, JTokenType[]> RequiredClaims => SetRequiredClaims;
+        protected override ReadOnlyDictionary<string, JTokenType[]> RequiredClaims => SetRequiredClaims;
     }
 }
