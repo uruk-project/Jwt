@@ -10,6 +10,11 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
+- task: DotNetCoreInstaller@0
+  inputs:
+    packageType: 'sdk' 
+    version: '3.0.100-preview-009765' 
+
 - task: NuGetToolInstaller@0
 
 - task: DotNetCoreCLI@2
