@@ -67,15 +67,16 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult MalformedSignature(Jwt token = null)
+        public static TokenValidationResult MalformedSignature(Jwt token, Exception e = null)
         {
             return new TokenValidationResult
             {
-                Status = TokenValidationStatus.MalformedSignature
+                Status = TokenValidationStatus.MalformedSignature, 
+                Exception = e
             };
         }
 
-        public static TokenValidationResult KeyNotFound(Jwt token)
+        public static TokenValidationResult SignatureKeyNotFound(Jwt token)
         {
             return new TokenValidationResult
             {
@@ -180,7 +181,7 @@ namespace JsonWebToken
             };
         }
 
-        public static TokenValidationResult DecompressionFailed(Exception exception)
+        public static TokenValidationResult DecompressionFailed(Exception exception = null)
         {
             return new TokenValidationResult
             {
