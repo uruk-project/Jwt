@@ -15,7 +15,6 @@ steps:
     packageType: 'sdk' 
     version: '2.1.300'
 
-steps:
 - task: DotNetCoreInstaller@0
   inputs:
     packageType: 'sdk' 
