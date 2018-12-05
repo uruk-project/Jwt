@@ -70,7 +70,7 @@ namespace JsonWebToken.Internal
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
             return _ecdsa.TrySignData(input, destination, _hashAlgorithm, out bytesWritten);
 #else
             var result = _ecdsa.SignData(input.ToArray(), _hashAlgorithm);
@@ -98,7 +98,7 @@ namespace JsonWebToken.Internal
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
             return _ecdsa.VerifyData(input, signature, _hashAlgorithm);
 #else
             return _ecdsa.VerifyData(input.ToArray(), signature.ToArray(), _hashAlgorithm);

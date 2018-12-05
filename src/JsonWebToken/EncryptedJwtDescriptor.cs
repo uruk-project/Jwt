@@ -60,7 +60,7 @@ namespace JsonWebToken
 
             try
             {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 Encoding.UTF8.GetBytes(payload, encodedPayload);
 #else
                 EncodingHelper.GetUtf8Bytes(payload.AsSpan(), encodedPayload);
@@ -145,7 +145,7 @@ namespace JsonWebToken
 
                 try
                 {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                     Encoding.UTF8.GetBytes(headerJson, utf8HeaderBuffer);
 #else
                     EncodingHelper.GetUtf8Bytes(headerJson, utf8HeaderBuffer);
@@ -172,7 +172,7 @@ namespace JsonWebToken
                     Span<byte> ciphertext = ciphertextLength > Constants.MaxStackallocBytes
                                                 ? (arrayCiphertextToReturnToPool = ArrayPool<byte>.Shared.Rent(ciphertextLength)).AsSpan(0, ciphertextLength)
                                                 : stackalloc byte[ciphertextLength];
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                     Span<byte> nonce = stackalloc byte[encryptionProvider.GetNonceSize()];
                     RandomNumberGenerator.Fill(nonce);
 #else
@@ -211,7 +211,7 @@ namespace JsonWebToken
                     bytesWritten += Base64Url.Base64UrlEncode(tag, encryptedToken.Slice(bytesWritten));
                     Debug.Assert(encryptedToken.Length == bytesWritten);
 
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                     return Encoding.UTF8.GetString(encryptedToken);
 #else
                     return EncodingHelper.GetUtf8String(encryptedToken);

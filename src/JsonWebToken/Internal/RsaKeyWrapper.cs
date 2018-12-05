@@ -21,7 +21,7 @@ namespace JsonWebToken.Internal
         public RsaKeyWrapper(RsaJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
             : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
             _rsa = RSA.Create(key.ExportParameters());
 #else
             _rsa = RSA.Create();
@@ -69,7 +69,7 @@ namespace JsonWebToken.Internal
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
             return _rsa.TryDecrypt(keyBytes, destination, _padding, out bytesWritten);
 #else
             var result = _rsa.Decrypt(keyBytes.ToArray(), _padding);
@@ -90,7 +90,7 @@ namespace JsonWebToken.Internal
             }
 
             contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
             return _rsa.TryEncrypt(contentEncryptionKey.ToByteArray(), destination, _padding, out bytesWritten);
 #else
             var result = _rsa.Encrypt(contentEncryptionKey.ToByteArray(), _padding);

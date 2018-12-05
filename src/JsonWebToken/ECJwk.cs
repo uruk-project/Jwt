@@ -219,7 +219,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
             return new EcdhKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
 #else
             return null;
@@ -376,7 +376,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override byte[] ToByteArray()
         {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
             using (var ecdh = ECDiffieHellman.Create(ExportParameters()))
             {
                 return ecdh.PublicKey.ToByteArray();

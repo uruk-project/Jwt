@@ -216,7 +216,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public abstract Jwk Normalize();
 
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
         /// <summary>
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
@@ -293,7 +293,7 @@ namespace JsonWebToken
                         var rsaParameters = rsa.ExportParameters(false);
                         key = new RsaJwk(rsaParameters);
                     }
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                     else
                     {
                         using (var ecdsa = certificate.GetECDsaPrivateKey())
@@ -317,7 +317,7 @@ namespace JsonWebToken
                         var rsaParameters = rsa.ExportParameters(false);
                         key = new RsaJwk(rsaParameters);
                     }
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                     else
                     {
                         using (var ecdsa = certificate.GetECDsaPublicKey())
