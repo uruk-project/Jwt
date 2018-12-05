@@ -77,7 +77,7 @@ namespace JsonWebToken
         /// </summary>
         public IList<string> Crit => GetValue<JArray>(HeaderParameters.Crit)?.Values<string>().ToList();
 
-#if NETCOREAPP2_1
+#if !NETSTANDARD
         /// <summary>
         /// Gets the ephemeral key used for ECDH key agreement.
         /// </summary>
