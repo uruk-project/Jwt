@@ -131,7 +131,7 @@ namespace JsonWebToken
                   : (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
             try
             {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 Encoding.UTF8.GetBytes(token, utf8Buffer);
 #else
                 EncodingHelper.GetUtf8Bytes(token, utf8Buffer);
@@ -323,7 +323,7 @@ namespace JsonWebToken
             try
             {
                 Base64Url.Base64UrlDecode(data, buffer);
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 var json = Encoding.UTF8.GetString(buffer);
 #else
                 var json = Encoding.UTF8.GetString(buffer.ToArray());
@@ -374,7 +374,7 @@ namespace JsonWebToken
                 Base64Url.Base64UrlDecode(rawCiphertext, ciphertext, out int ciphertextBytesConsumed, out int ciphertextBytesWritten);
                 Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
 
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 char[] headerArrayToReturn = null;
                 try
                 {

@@ -348,7 +348,7 @@ namespace JsonWebToken
                     bytesWritten = Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)));
                 }
 
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 return Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten));
 #else
                 return EncodingHelper.GetUtf8String(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten));
@@ -371,7 +371,7 @@ namespace JsonWebToken
                   : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(input.Length)).AsSpan(0, input.Length);
             try
             {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 Encoding.UTF8.GetBytes(input, encodedBytes);
 #else
                 EncodingHelper.GetUtf8Bytes(input, encodedBytes);

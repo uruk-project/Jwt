@@ -6,7 +6,7 @@
 
 //namespace JsonWebToken.Internal
 //{
-//#if NETCOREAPP2_1
+//#if !NETSTANDARD2_0
 //    public sealed class BrotliCompressor : Compressor<BrotliStream>
 //    {
 //        public override BrotliStream CreateCompressionStream(Stream outputStream)

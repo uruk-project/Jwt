@@ -48,7 +48,7 @@ namespace JsonWebToken
             return data;
         }
 
-#if !NETCOREAPP2_1
+#if NETSTANDARD2_0
         /// <summary>
         /// Decodes a string of UTF-8 base64url-encoded text into a span of bytes.
         /// </summary>
@@ -81,7 +81,7 @@ namespace JsonWebToken
                 : stackalloc byte[base64Url.Length];
             try
             {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 Encoding.UTF8.GetBytes(base64Url, buffer);
 #else
                 EncodingHelper.GetUtf8Bytes(base64Url, buffer);
@@ -170,7 +170,7 @@ namespace JsonWebToken
                     : stackalloc byte[base64UrlLength];
 
                 Base64UrlEncode(utf8Data, utf8Encoded);
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 return Encoding.UTF8.GetString(utf8Encoded);
 #else
                 return EncodingHelper.GetUtf8String(utf8Encoded);
@@ -185,7 +185,7 @@ namespace JsonWebToken
             }
         }
 
-#if !NETCOREAPP2_1
+#if NETSTANDARD2_0
         /// <summary>
         /// Encodes a string of UTF-8 text.
         /// </summary>
@@ -252,7 +252,7 @@ namespace JsonWebToken
             return _base64.GetMaxEncodedToUtf8Length(count);
         }
 
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
         private static int GetUtf8Bytes(ReadOnlySpan<char> input, Span<byte> output)
         {
             return Encoding.UTF8.GetBytes(input, output);
