@@ -10,18 +10,41 @@ namespace JsonWebToken
     /// </summary>
     public sealed class TokenValidationResult
     {
+        /// <summary>
+        /// Gets whether the token validation is successful.
+        /// </summary>
         public bool Succedeed => Status == TokenValidationStatus.Success;
 
+        /// <summary>
+        /// Gets of set the <see cref="Jwt"/>.
+        /// </summary>
         public Jwt Token { get; private set; }
 
+        /// <summary>
+        /// Gets the status of the validation.
+        /// </summary>
         public TokenValidationStatus Status { get; private set; }
 
+        /// <summary>
+        /// Gets the claim that caused the error.
+        /// </summary>
         public string ErrorClaim { get; private set; }
 
+        /// <summary>
+        /// Gets the header parameter that cause the error.
+        /// </summary>
         public string ErrorHeader { get; private set; }
 
+        /// <summary>
+        /// Gets the <see cref="Exception"/> that caused the error.
+        /// </summary>
         public Exception Exception { get; private set; }
 
+        /// <summary>
+        /// The token has expired, according to the 'nbf' claim.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public static TokenValidationResult Expired(Jwt token)
         {
             return new TokenValidationResult
@@ -31,6 +54,11 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The 'crit' header defines a missing critical header.
+        /// </summary>
+        /// <param name="criticalHeader"></param>
+        /// <returns></returns>
         public static TokenValidationResult CriticalHeaderMissing(string criticalHeader)
         {
             return new TokenValidationResult
@@ -40,6 +68,11 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The token was already validated previously.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public static TokenValidationResult TokenReplayed(Jwt token)
         {
             return new TokenValidationResult
@@ -49,6 +82,11 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The 'crit' header defines an unsupported header.
+        /// </summary>
+        /// <param name="criticalHeader"></param>
+        /// <returns></returns>
         public static TokenValidationResult CriticalHeaderUnsupported(string criticalHeader)
         {
             return new TokenValidationResult
@@ -58,6 +96,11 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The signature is not present.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public static TokenValidationResult MissingSignature(Jwt token)
         {
             return new TokenValidationResult
@@ -67,6 +110,12 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The signature is not base64url encoded.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="e"></param>
+        /// <returns></returns>
         public static TokenValidationResult MalformedSignature(Jwt token, Exception e = null)
         {
             return new TokenValidationResult
@@ -76,6 +125,11 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The signature key is not found.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public static TokenValidationResult SignatureKeyNotFound(Jwt token)
         {
             return new TokenValidationResult
@@ -85,6 +139,11 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The signature is invalid.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public static TokenValidationResult InvalidSignature(Jwt token)
         {
             return new TokenValidationResult
@@ -94,6 +153,10 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The encryption key was not found.
+        /// </summary>
+        /// <returns></returns>
         public static TokenValidationResult EncryptionKeyNotFound()
         {
             return new TokenValidationResult
@@ -102,6 +165,11 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The token is not a JWT in compact representation, is not base64url encoded, and is not a JSON UTF-8 encoded.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
         public static TokenValidationResult MalformedToken(Exception e = null)
         {
             return new TokenValidationResult
@@ -111,6 +179,10 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The 'enc' header parameter is missing.
+        /// </summary>
+        /// <returns></returns>
         public static TokenValidationResult MissingEncryptionAlgorithm()
         {
             return new TokenValidationResult
@@ -119,6 +191,11 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The token is not yet valid, according to the 'nbf' claim.
+        /// </summary>
+        /// <param name="jwtToken"></param>
+        /// <returns></returns>
         public static TokenValidationResult NotYetValid(Jwt jwtToken)
         {
             return new TokenValidationResult
@@ -128,6 +205,11 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The token is valid.
+        /// </summary>
+        /// <param name="jwtToken"></param>
+        /// <returns></returns>
         public static TokenValidationResult Success(Jwt jwtToken = null)
         {
             return new TokenValidationResult
@@ -137,6 +219,10 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The token decryption has failed.
+        /// </summary>
+        /// <returns></returns>
         public static TokenValidationResult DecryptionFailed()
         {
             return new TokenValidationResult
@@ -145,6 +231,12 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The token has an invalid claim.
+        /// </summary>
+        /// <param name="jwt"></param>
+        /// <param name="claim"></param>
+        /// <returns></returns>
         public static TokenValidationResult InvalidClaim(Jwt jwt, string claim)
         {
             return new TokenValidationResult
@@ -154,6 +246,12 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The token has a missing claim.
+        /// </summary>
+        /// <param name="jwt"></param>
+        /// <param name="claim"></param>
+        /// <returns></returns>
         public static TokenValidationResult MissingClaim(Jwt jwt, string claim)
         {
             return new TokenValidationResult
@@ -163,6 +261,11 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The token has an invalid header. 
+        /// </summary>
+        /// <param name="header"></param>
+        /// <returns></returns>
         public static TokenValidationResult InvalidHeader(string header)
         {
             return new TokenValidationResult
@@ -172,6 +275,11 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The token has a missing header.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <returns></returns>
         public static TokenValidationResult MissingHeader(string header)
         {
             return new TokenValidationResult
@@ -181,6 +289,11 @@ namespace JsonWebToken
             };
         }
 
+        /// <summary>
+        /// The token decompression has failed.
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <returns></returns>
         public static TokenValidationResult DecompressionFailed(Exception exception = null)
         {
             return new TokenValidationResult

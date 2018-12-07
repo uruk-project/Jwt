@@ -28,20 +28,35 @@ namespace JsonWebToken
                 { HeaderParameters.Alg, new [] { typeof(string) } }
             });
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwsDescriptor"/>.
+        /// </summary>
         public JwsDescriptor()
             : base(new Dictionary<string, object>(), new JObject())
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwsDescriptor"/>.
+        /// </summary>
         public JwsDescriptor(IDictionary<string, object> header, JObject payload)
             : base(header, payload)
         {
         }
 
+        /// <summary>
+        /// Gets the required claims of the <see cref="JwsDescriptor"/>.
+        /// </summary>
         protected virtual ReadOnlyDictionary<string, JTokenType[]> RequiredClaims => DefaultRequiredClaims;
 
+        /// <summary>
+        /// gets the prohibited claims of the <see cref="JwsDescriptor"/>.
+        /// </summary>
         protected virtual IReadOnlyList<string> ProhibitedClaims => DefaultProhibitedClaims;
 
+        /// <summary>
+        /// Gets the required header parameters of the <see cref="JwsDescriptor"/>. 
+        /// </summary>
         protected override ReadOnlyDictionary<string, Type[]> RequiredHeaderParameters => JwsRequiredHeaderParameters;
 
         /// <summary>
@@ -90,7 +105,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Gets or sets the issuer of this <see cref="JsonWebTokenDescriptor"/>.
+        /// Gets or sets the value of the 'iss' claim.
         /// </summary>
         public string Issuer
         {
@@ -99,7 +114,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Gets or sets the time the security token was issued.
+        /// Gets or sets the value of the 'iat' claim.
         /// </summary>
         public DateTime? IssuedAt
         {
@@ -108,7 +123,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Gets or sets the notbefore time for the security token.
+        ///Gets or sets the value of the 'nbf' claim.
         /// </summary>
         public DateTime? NotBefore
         {
@@ -116,32 +131,62 @@ namespace JsonWebToken
             set { SetClaim(Claims.Nbf, value); }
         }
 
+        /// <summary>
+        /// Adds a claim;
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         public void AddClaim(string name, string value)
         {
             // TODO: allow to add a value into an array
             Payload[name] = value;
         }
 
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         public void AddClaim(string name, bool? value)
         {
             Payload[name] = value;
         }
 
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         public void AddClaim(string name, DateTime? value)
         {
             SetClaim(name, value);
         }
 
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         public void AddClaim(string name, int value)
         {
             Payload[name] = value;
         }
 
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         public void AddClaim(string name, bool value)
         {
             Payload[name] = value;
         }
 
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         public void AddClaim(string name, JObject value)
         {
             if (Payload.TryGetValue(name, out JToken jToken))
@@ -162,7 +207,12 @@ namespace JsonWebToken
             }
         }
 
-        public void AddClaim(string name, JProperty property)
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void AddClaim(string name, JProperty value)
         {
             JObject jObject;
             if (Payload.TryGetValue(name, out JToken jToken) && jToken.Type == JTokenType.Object)
@@ -174,20 +224,35 @@ namespace JsonWebToken
                 jObject = new JObject();
             }
 
-            jObject.Add(property.Name, property.Value);
+            jObject.Add(value.Name, value.Value);
             Payload[name] = jObject;
         }
 
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         public void AddClaim(string name, JValue value)
         {
             Payload[name] = value;
         }
 
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         public void AddClaim(string name, JArray value)
         {
             Payload[name] = value;
         }
 
+        /// <summary>
+        /// Gets a claim as <see cref="string"/>.
+        /// </summary>
+        /// <param name="claimType"></param>
+        /// <returns></returns>
         protected string GetStringClaim(string claimType)
         {
             if (Payload.TryGetValue(claimType, out JToken value))
@@ -198,6 +263,11 @@ namespace JsonWebToken
             return null;
         }
 
+        /// <summary>
+        /// Gets a claim as <see cref="int"/>.
+        /// </summary>
+        /// <param name="claimType"></param>
+        /// <returns></returns>
         protected int? GetIntClaim(string claimType)
         {
             if (Payload.TryGetValue(claimType, out JToken value))
@@ -207,6 +277,12 @@ namespace JsonWebToken
 
             return null;
         }
+
+        /// <summary>
+        /// Gets a claim as <typeparamref name="TClaim"/>.
+        /// </summary>
+        /// <param name="claimType"></param>
+        /// <returns></returns>
         protected TClaim? GetClaim<TClaim>(string claimType) where TClaim : struct
         {
             if (Payload.TryGetValue(claimType, out JToken value))
@@ -217,6 +293,11 @@ namespace JsonWebToken
             return null;
         }
 
+        /// <summary>
+        /// Gets a claim as <see cref="bool"/>.
+        /// </summary>
+        /// <param name="claimType"></param>
+        /// <returns></returns>
         protected bool? GetBoolClaim(string claimType)
         {
             if (Payload.TryGetValue(claimType, out JToken value))
@@ -227,6 +308,11 @@ namespace JsonWebToken
             return null;
         }
 
+        /// <summary>
+        /// Gets a claim as a list of <see cref="string"/>.
+        /// </summary>
+        /// <param name="claimType"></param>
+        /// <returns></returns>
         protected IReadOnlyList<string> GetListClaims(string claimType)
         {
             if (Payload.TryGetValue(claimType, out JToken value))
@@ -242,6 +328,11 @@ namespace JsonWebToken
             return null;
         }
 
+        /// <summary>
+        /// Gets a claim as <see cref="JObject"/>.
+        /// </summary>
+        /// <param name="claimType"></param>
+        /// <returns></returns>
         protected JObject GetClaim(string claimType)
         {
             if (Payload.TryGetValue(claimType, out JToken value) && value.Type == JTokenType.Object)
@@ -252,19 +343,36 @@ namespace JsonWebToken
             return null;
         }
 
+        /// <summary>
+        /// Sets a claim as <see cref="string"/>.
+        /// </summary>
+        /// <param name="claimType"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         protected void SetClaim(string claimType, string value)
         {
             Payload[claimType] = value;
         }
 
+        /// <summary>
+        /// Gets a claim as a list of <see cref="string"/>.
+        /// </summary>
+        /// <param name="claimType"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         protected void SetClaim(string claimType, IReadOnlyList<string> value)
         {
             Payload[claimType] = JArray.FromObject(value);
         }
 
-        protected DateTime? GetDateTime(string key)
+        /// <summary>
+        /// Gets a claim as <see cref="DateTime"/>.
+        /// </summary>
+        /// <param name="claimType"></param>
+        /// <returns></returns>
+        protected DateTime? GetDateTime(string claimType)
         {
-            if (!Payload.TryGetValue(key, out JToken dateValue) || dateValue.Type == JTokenType.Null)
+            if (!Payload.TryGetValue(claimType, out JToken dateValue) || dateValue.Type == JTokenType.Null)
             {
                 return null;
             }
@@ -272,6 +380,12 @@ namespace JsonWebToken
             return EpochTime.ToDateTime(dateValue.Value<long>());
         }
 
+        /// <summary>
+        /// Sets a claim as <see cref="DateTime"/>.
+        /// </summary>
+        /// <param name="claimType"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         protected void SetClaim(string claimType, DateTime? value)
         {
             if (value.HasValue)
@@ -284,6 +398,7 @@ namespace JsonWebToken
             }
         }
 
+        /// <inheritsdoc />
         public override string Encode(EncodingContext context)
         {
             Signer signatureProvider = null;
@@ -363,7 +478,7 @@ namespace JsonWebToken
             }
         }
 
-        public static bool TryEncodeUtf8ToBase64Url(string input, Span<byte> destination, out int bytesWritten)
+        private static bool TryEncodeUtf8ToBase64Url(string input, Span<byte> destination, out int bytesWritten)
         {
             byte[] arrayToReturnToPool = null;
             var encodedBytes = input.Length <= Constants.MaxStackallocBytes
@@ -387,12 +502,8 @@ namespace JsonWebToken
                 }
             }
         }
-
-        protected bool HasMandatoryClaim(string claim)
-        {
-            return Payload.TryGetValue(claim, out var value) && value.Type != JTokenType.Null;
-        }
-
+        
+        /// <inheritsdoc />
         public override void Validate()
         {
             for (int i = 0; i < ProhibitedClaims.Count; i++)

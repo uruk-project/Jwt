@@ -107,7 +107,7 @@ namespace JsonWebToken.Internal
 
         private static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm)
         {
-            return encryptionAlgorithm.RequiredKeyWrappedSizeInBytes;
+            return encryptionAlgorithm.KeyWrappedSizeInBytes;
         }
     }
 }

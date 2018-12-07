@@ -5,8 +5,19 @@ using System;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represents the context for validating a token.
+    /// </summary>
     public readonly ref struct TokenValidationContext
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="TokenValidationContext"/>.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="jwt"></param>
+        /// <param name="signatureFactory"></param>
+        /// <param name="contentSegment"></param>
+        /// <param name="signatureSegment"></param>
         public TokenValidationContext(
             ReadOnlySpan<byte> token, 
             Jwt jwt, 
@@ -21,14 +32,29 @@ namespace JsonWebToken
             SignatureSegment = signatureSegment;
         }
 
+        /// <summary>
+        /// The token in its binary form.
+        /// </summary>
         public readonly ReadOnlySpan<byte> Token;
 
+        /// <summary>
+        /// The decoded JWT.
+        /// </summary>
         public readonly Jwt Jwt;
 
+        /// <summary>
+        /// The <see cref="SignerFactory"/>.
+        /// </summary>
         public readonly SignerFactory SignatureFactory;
 
+        /// <summary>
+        /// The <see cref="TokenSegment"/> containing the header and the payload
+        /// </summary>
         public readonly TokenSegment ContentSegment;
 
+        /// <summary>
+        /// The <see cref="TokenSegment"/> containing the signature.
+        /// </summary>
         public readonly TokenSegment SignatureSegment;
     }
 }

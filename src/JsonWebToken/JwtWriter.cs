@@ -25,12 +25,21 @@ namespace JsonWebToken
         private readonly bool _disposeFactories;
         private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtWriter"/>.
+        /// </summary>
         public JwtWriter() :
             this(new DefaultSignerFactory(), new DefaultKeyWrapperFactory(), new DefaultAuthenticatedEncryptorFactory(), new JsonHeaderCache())
         {
             _disposeFactories = true;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtWriter"/>.
+        /// </summary>
+        /// <param name="signerFactory"></param>
+        /// <param name="keyWrapperFactory"></param>
+        /// <param name="authenticatedEncryptorFactory"></param>
         public JwtWriter(
             SignerFactory signerFactory,
             KeyWrapperFactory keyWrapperFactory,
@@ -39,6 +48,13 @@ namespace JsonWebToken
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtWriter"/>.
+        /// </summary>
+        /// <param name="signerFactory"></param>
+        /// <param name="keyWrapperFactory"></param>
+        /// <param name="authenticatedEncryptorFactory"></param>
+        /// <param name="headerCache"></param>
         public JwtWriter(
             SignerFactory signerFactory,
             KeyWrapperFactory keyWrapperFactory,
@@ -137,6 +153,9 @@ namespace JsonWebToken
             return descriptor.Encode(encodingContext);
         }
 
+        /// <summary>
+        /// Release the managed resources.
+        /// </summary>
         public void Dispose()
         {
             if (!_disposed && _disposeFactories)

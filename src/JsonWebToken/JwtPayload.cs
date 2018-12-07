@@ -12,6 +12,11 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtPayload : Dictionary<string, object>
     {
+        /// <summary>
+        ///  Gets the claim for a specified key in the current <see cref="JwtPayload"/>.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public new JToken this[string key] => TryGetValue(key, out var value) ? JToken.FromObject(value) : null;
 
         /// <summary>
@@ -76,6 +81,12 @@ namespace JsonWebToken
         /// </summary>
         public string Sub => GetValue<string>(Claims.Sub);
 
+        /// <summary>
+        /// Gets the claim for a specified key in the current <see cref="JwtPayload"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public T GetValue<T>(string key)
         {
             if (TryGetValue(key, out var value) && value is T tValue)

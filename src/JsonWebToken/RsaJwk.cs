@@ -22,11 +22,17 @@ namespace JsonWebToken
         private string _q;
         private string _qi;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
         public RsaJwk()
         {
             Kty = JwkTypeNames.Rsa;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
         public RsaJwk(RSAParameters rsaParameters)
             : this()
         {
@@ -47,6 +53,10 @@ namespace JsonWebToken
             RawN = CloneByteArray(n);
         }
 
+        /// <summary>
+        /// Exports the RSA parameters from the <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <returns></returns>
         public RSAParameters ExportParameters()
         {
             if (N == null || E == null)
@@ -153,6 +163,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Gets the 'dp' in its binary form.
+        /// </summary>
         [JsonIgnore]
         public byte[] RawDP { get; private set; }
 
@@ -189,6 +202,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Gets the 'dq' in its binary form.
+        /// </summary>
         [JsonIgnore]
         public byte[] RawDQ { get; private set; }
 
@@ -225,6 +241,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Gets the 'e' in its binary form.
+        /// </summary>
         [JsonIgnore]
         public byte[] RawE { get; private set; }
 
@@ -261,6 +280,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Gets the 'n' in its binary form.
+        /// </summary>
         [JsonIgnore]
         public byte[] RawN { get; private set; }
 
@@ -303,6 +325,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Gets the 'p' in its binary form.
+        /// </summary>
         [JsonIgnore]
         public byte[] RawP { get; private set; }
 
@@ -339,6 +364,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Gets the 'q' in its binary form.
+        /// </summary>
         [JsonIgnore]
         public byte[] RawQ { get; private set; }
 
@@ -375,6 +403,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Gets the 'qi' in its binary form.
+        /// </summary>
         [JsonIgnore]
         public byte[] RawQI { get; private set; }
 
@@ -386,6 +417,13 @@ namespace JsonWebToken
         /// <returns></returns>
         public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey) => GenerateKey(sizeInBits, withPrivateKey, null);
 
+        /// <summary>
+        /// Generates a new random <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="withPrivateKey"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
         public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, IAlgorithm algorithm)
         {
 #if NETSTANDARD2_0
@@ -430,7 +468,7 @@ namespace JsonWebToken
         public static RsaJwk FromParameters(RSAParameters parameters) => FromParameters(parameters, false);
 
         /// <inheritsdoc />
-        public override Jwk Normalize()
+        public override Jwk Canonicalize()
         {
             return new RsaJwk(RawE, RawN);
         }

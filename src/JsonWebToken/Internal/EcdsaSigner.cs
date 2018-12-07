@@ -120,7 +120,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class ECDsaObjectPoolPolicy : PooledObjectPolicy<ECDsa>
+        private sealed class ECDsaObjectPoolPolicy : PooledObjectFactory<ECDsa>
         {
             private readonly ECJwk _key;
             private readonly SignatureAlgorithm _algorithm;

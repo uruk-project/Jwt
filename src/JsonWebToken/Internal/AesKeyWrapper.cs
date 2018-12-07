@@ -171,7 +171,11 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// Wrap a key using AES encryption.
         /// </summary>
-        /// <param name="keyBytes">the key to be wrapped</param>
+        /// <param name="staticKey">the key to be wrapped. If <c>null</c>, a new <see cref="SymmetricJwk"/> will be generated.</param>
+        /// <param name="header"></param>
+        /// <param name="destination"></param>
+        /// <param name="contentEncryptionKey"></param>
+        /// <param name="bytesWritten"></param>
         /// <returns>A wrapped key</returns>
         public override bool TryWrapKey(Jwk staticKey, Dictionary<string, object> header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
         {
@@ -262,10 +266,10 @@ namespace JsonWebToken.Internal
 
         public static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm)
         {
-            return encryptionAlgorithm.RequiredKeyWrappedSizeInBytes;
+            return encryptionAlgorithm.KeyWrappedSizeInBytes;
         }
 
-        private class PooledEncryptorPolicy : PooledObjectPolicy<ICryptoTransform>
+        private class PooledEncryptorPolicy : PooledObjectFactory<ICryptoTransform>
         {
             private readonly Aes _aes;
 
@@ -280,7 +284,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private class PooledDecryptorPolicy : PooledObjectPolicy<ICryptoTransform>
+        private class PooledDecryptorPolicy : PooledObjectFactory<ICryptoTransform>
         {
             private readonly Aes _aes;
 

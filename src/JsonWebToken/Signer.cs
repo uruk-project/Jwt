@@ -31,12 +31,17 @@ namespace JsonWebToken
         /// </summary>
         public SignatureAlgorithm Algorithm { get; }
 
+        /// <summary>
+        /// Gets the hash size in bits of the key.
+        /// </summary>
         public abstract int HashSizeInBytes { get; }
 
         /// <summary>
         /// This must be overridden to produce a signature over the 'input'.
         /// </summary>
         /// <param name="input">bytes to sign.</param>
+        /// <param name="destination"></param>
+        /// <param name="bytesWritten"></param>
         /// <returns>signed bytes</returns>
         public abstract bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten);
 

@@ -19,16 +19,28 @@ namespace JsonWebToken
     {
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="EncryptedJwtDescriptor{TPayload}"/>.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="payload"></param>
         public EncryptedJwtDescriptor(IDictionary<string, object> header, TPayload payload)
             : base(header, payload)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="EncryptedJwtDescriptor{TPayload}"/>.
+        /// </summary>
+        /// <param name="payload"></param>
         public EncryptedJwtDescriptor(TPayload payload)
             : base(payload)
         {
         }
 
+        /// <summary>
+        /// Gets or sets the encryption algorithm.
+        /// </summary>
         [JsonConverter(typeof(AlgorithmConverter))]
         public EncryptionAlgorithm EncryptionAlgorithm
         {
@@ -36,6 +48,9 @@ namespace JsonWebToken
             set => SetHeaderParameter(HeaderParameters.Enc, (string)value);
         }
 
+        /// <summary>
+        /// Gets or sets the compression algorithm.
+        /// </summary>
         public CompressionAlgorithm CompressionAlgorithm
         {
             get => (CompressionAlgorithm)GetHeaderParameter<string>(HeaderParameters.Zip);
@@ -101,7 +116,7 @@ namespace JsonWebToken
             }
 
             var header = Header;
-            Span<byte> wrappedKey = contentEncryptionAlgorithm.ProduceEncryptedKey
+            Span<byte> wrappedKey = contentEncryptionAlgorithm.ProduceEncryptionKey
                                         ? stackalloc byte[kwProvider.GetKeyWrapSize()]
                                         : null;
             if (!isDirectEncryption)

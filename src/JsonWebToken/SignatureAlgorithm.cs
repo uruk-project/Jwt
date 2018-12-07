@@ -12,36 +12,105 @@ namespace JsonWebToken
     /// </summary>
     public sealed class SignatureAlgorithm : IEquatable<SignatureAlgorithm>, IAlgorithm
     {
+        /// <summary>
+        /// Empty
+        /// </summary>
         public static readonly SignatureAlgorithm Empty = new SignatureAlgorithm(0, string.Empty, AlgorithmCategory.None, 0, new HashAlgorithmName());
 
+        /// <summary>
+        /// 'none'
+        /// </summary>
         public static readonly SignatureAlgorithm None = new SignatureAlgorithm(id: -1, "none", AlgorithmCategory.None, requiredKeySizeInBits: 0, new HashAlgorithmName());
 
+        /// <summary>
+        /// 'HS256'
+        /// </summary>
         public static readonly SignatureAlgorithm HmacSha256 = new SignatureAlgorithm(id: 11, "HS256", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 128/*?*/, HashAlgorithmName.SHA256);
+
+        /// <summary>
+        /// 'HS384'
+        /// </summary>
         public static readonly SignatureAlgorithm HmacSha384 = new SignatureAlgorithm(id: 12, "HS384", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 192/*?*/, HashAlgorithmName.SHA384);
+
+        /// <summary>
+        /// 'HS512'
+        /// </summary>
         public static readonly SignatureAlgorithm HmacSha512 = new SignatureAlgorithm(id: 13, "HS512", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 256/*?*/, HashAlgorithmName.SHA512);
 
+        /// <summary>
+        /// 'RS256'
+        /// </summary>
         public static readonly SignatureAlgorithm RsaSha256 = new SignatureAlgorithm(id: 21, "RS256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA256);
+
+        /// <summary>
+        /// 'RS384'
+        /// </summary>
         public static readonly SignatureAlgorithm RsaSha384 = new SignatureAlgorithm(id: 22, "RS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA384);
+
+        /// <summary>
+        /// 'RS512'
+        /// </summary>
         public static readonly SignatureAlgorithm RsaSha512 = new SignatureAlgorithm(id: 23, "RS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA512);
 
+        /// <summary>
+        /// 'ES256'
+        /// </summary>
         public static readonly SignatureAlgorithm EcdsaSha256 = new SignatureAlgorithm(id: 31, "ES256", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 256, HashAlgorithmName.SHA256);
+
+        /// <summary>
+        /// 'ES384'
+        /// </summary>
         public static readonly SignatureAlgorithm EcdsaSha384 = new SignatureAlgorithm(id: 32, "ES384", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 384, HashAlgorithmName.SHA384);
+
+        /// <summary>
+        /// 'ES512'
+        /// </summary>
         public static readonly SignatureAlgorithm EcdsaSha512 = new SignatureAlgorithm(id: 33, "ES512", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 521, HashAlgorithmName.SHA512);
 
+        /// <summary>
+        /// 'PS256'
+        /// </summary>
         public static readonly SignatureAlgorithm RsaSsaPssSha256 = new SignatureAlgorithm(id: 40, "PS256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA256);
+
+        /// <summary>
+        /// 'PS384'
+        /// </summary>
         public static readonly SignatureAlgorithm RsaSsaPssSha384 = new SignatureAlgorithm(id: 41, "PS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA384);
+
+        /// <summary>
+        /// 'PS512'
+        /// </summary>
         public static readonly SignatureAlgorithm RsaSsaPssSha512 = new SignatureAlgorithm(id: 42, "PS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA512);
 
+        // TODO : Verify the pertinence
+        /// <summary>
+        /// Gets the algorithm identifier. 
+        /// </summary>
         public sbyte Id { get; }
 
+        /// <summary>
+        /// Gets the name of the signature algorithm.
+        /// </summary>
         public string Name { get; }
 
+        /// <summary>
+        /// Gets the algorithm category.
+        /// </summary>
         public AlgorithmCategory Category { get; }
 
+        /// <summary>
+        /// Gets the required key size, in bits.
+        /// </summary>
         public ushort RequiredKeySizeInBits { get; }
 
+        /// <summary>
+        /// Gets the hash algorithm. 
+        /// </summary>
         public HashAlgorithmName HashAlgorithm { get; }
 
+        /// <summary>
+        /// Gets the <see cref="SignatureAlgorithm"/> list. 
+        /// </summary>
         public static Dictionary<string, SignatureAlgorithm> Algorithms { get; } = new Dictionary<string, SignatureAlgorithm>
         {
             { EcdsaSha256.Name, EcdsaSha256 },
@@ -60,6 +129,14 @@ namespace JsonWebToken
             { Empty.Name, Empty}
         };
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="SignatureAlgorithm"/>. 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="name"></param>
+        /// <param name="category"></param>
+        /// <param name="requiredKeySizeInBits"></param>
+        /// <param name="hashAlgorithm"></param>
         public SignatureAlgorithm(sbyte id, string name, AlgorithmCategory category, ushort requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
         {
             Id = id;
@@ -69,6 +146,12 @@ namespace JsonWebToken
             HashAlgorithm = hashAlgorithm;
         }
 
+        /// <summary>
+        /// Determines whether this instance and a specified object, which must also be a
+        /// <see cref="SignatureAlgorithm"/> object, have the same value.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public override bool Equals(object obj)
         {
             if (obj is SignatureAlgorithm alg)
@@ -79,21 +162,36 @@ namespace JsonWebToken
             return false;
         }
 
+        /// <summary>
+        /// Determines whether two specified <see cref="SignatureAlgorithm"/> objects have the same value.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool Equals(SignatureAlgorithm other)
         {
             if (other is null)
             {
                 return false;
             }
-
+            
             return Id == other.Id;
         }
 
+        /// <summary>
+        /// Returns the hash code for this <see cref="SignatureAlgorithm"/>.
+        /// </summary>
+        /// <returns></returns>
         public override int GetHashCode()
         {
             return Id.GetHashCode();
         }
 
+        /// <summary>
+        /// Determines whether two specified <see cref="SignatureAlgorithm"/> have the same value.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         public static bool operator ==(SignatureAlgorithm x, SignatureAlgorithm y)
         {
             if (x is null && y is null)
@@ -114,6 +212,12 @@ namespace JsonWebToken
             return x.Id == y.Id;
         }
 
+        /// <summary>
+        /// Determines whether two specified <see cref="SignatureAlgorithm"/> have different values.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         public static bool operator !=(SignatureAlgorithm x, SignatureAlgorithm y)
         {
             if (x is null && y is null)
@@ -133,12 +237,20 @@ namespace JsonWebToken
 
             return x.Id != y.Id;
         }
-
+        
+        /// <summary>
+        /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="string"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
         public static implicit operator string(SignatureAlgorithm value)
         {
             return value?.Name;
         }
 
+        /// <summary>
+        /// Cast the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
         public static implicit operator SignatureAlgorithm(string value)
         {
             if (value == null)
@@ -154,11 +266,16 @@ namespace JsonWebToken
             return algorithm;
         }
 
+        /// <summary>
+        /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="long"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
         public static implicit operator long(SignatureAlgorithm value)
         {
             return value.Id;
         }
 
+        /// <inheritsddoc />
         public override string ToString()
         {
             return Name;
