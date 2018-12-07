@@ -106,6 +106,5 @@ namespace JsonWebToken.Internal
         /// http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
         /// </summary>
         public const string AtHash = "at_hash";
-
     }
 }

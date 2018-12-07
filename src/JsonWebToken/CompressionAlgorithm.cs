@@ -15,7 +15,7 @@ namespace JsonWebToken
         /// <summary>
         /// Empty
         /// </summary>
-        public static readonly CompressionAlgorithm Empty = new CompressionAlgorithm(id: 0, string.Empty, null);
+        public static readonly CompressionAlgorithm Empty = new CompressionAlgorithm(id: 0, string.Empty, Compressor.Null);
 
         /// <summary>
         /// Deflate

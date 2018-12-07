@@ -15,7 +15,7 @@ namespace JsonWebToken
         /// Represents an policy without any validation.
         /// </summary>
         public static readonly TokenValidationPolicy NoValidation = new TokenValidationPolicyBuilder()
-                                                            .AcceptUnsecureToken()
+                                                            .IgnoreSignature()
                                                             .IgnoreCriticalHeader()     
                                                             .Build();
 

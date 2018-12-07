@@ -10,6 +10,8 @@ namespace JsonWebToken
     /// </summary>
     public abstract class Compressor
     {
+        internal static readonly Compressor Null = new NullCompressor();
+
         /// <summary>
         /// Compresses the data.
         /// </summary>
