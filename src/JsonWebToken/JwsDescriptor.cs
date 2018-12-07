@@ -17,7 +17,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines a signed JWT with a JSON payload.
     /// </summary>
-    public class JwsDescriptor : JwtDescriptor<JObject>, IJwtPayloadDescriptor
+    public class JwsDescriptor : JwtDescriptor<JObject>
     {
         private static readonly byte dot = Convert.ToByte('.');
         private static readonly ReadOnlyDictionary<string, JTokenType[]> DefaultRequiredClaims = new ReadOnlyDictionary<string, JTokenType[]>(new Dictionary<string, JTokenType[]>());
@@ -410,6 +410,20 @@ namespace JsonWebToken
                 if (signatureProvider == null)
                 {
                     Errors.ThrowNotSupportedSignatureAlgorithm(alg, key);
+                }
+            }
+
+            if (context.TokenLifetimeInMinutes != 0 || context.GenerateIssuedTime)
+            {
+                DateTime now = DateTime.UtcNow;
+                if (context.GenerateIssuedTime && !Payload.ContainsKey(Claims.Iat))
+                {
+                    AddClaim(Claims.Iat, now);
+                }
+
+                if (context.TokenLifetimeInMinutes != 0 && !Payload.ContainsKey(Claims.Exp))
+                {
+                    AddClaim(Claims.Exp, now + TimeSpan.FromMinutes(context.TokenLifetimeInMinutes));
                 }
             }
 

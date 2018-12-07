@@ -17,32 +17,46 @@ namespace JsonWebToken
         /// <param name="keyWrapFactory"></param>
         /// <param name="authenticatedEncryptionFactory"></param>
         /// <param name="headerCache"></param>
-        public EncodingContext(SignerFactory signatureFactory, KeyWrapperFactory keyWrapFactory, AuthenticatedEncryptorFactory authenticatedEncryptionFactory, JsonHeaderCache headerCache)
+        /// <param name="tokenLifetimeInMinutes"></param>
+        /// <param name="generateIssuedTime"></param>
+        public EncodingContext(SignerFactory signatureFactory, KeyWrapperFactory keyWrapFactory, AuthenticatedEncryptorFactory authenticatedEncryptionFactory, JsonHeaderCache headerCache, int tokenLifetimeInMinutes, bool generateIssuedTime)
         {
             SignatureFactory = signatureFactory ?? throw new ArgumentNullException(nameof(signatureFactory));
             KeyWrapFactory = keyWrapFactory ?? throw new ArgumentNullException(nameof(keyWrapFactory));
             AuthenticatedEncryptionFactory = authenticatedEncryptionFactory ?? throw new ArgumentNullException(nameof(authenticatedEncryptionFactory));
             HeaderCache = headerCache;
+            TokenLifetimeInMinutes = tokenLifetimeInMinutes;
+            GenerateIssuedTime = generateIssuedTime;
         }
-        
+
         /// <summary>
-        /// The JSON header cache.
+        /// Gets the JSON header cache.
         /// </summary>
         public JsonHeaderCache HeaderCache { get; }
 
         /// <summary>
         /// The <see cref="SignatureFactory"/>.
         /// </summary>
-        public SignerFactory SignatureFactory { get;  }
+        public SignerFactory SignatureFactory { get; }
 
         /// <summary>
         /// The <see cref="KeyWrapperFactory"/>.
         /// </summary>
-        public KeyWrapperFactory KeyWrapFactory { get;  }
+        public KeyWrapperFactory KeyWrapFactory { get; }
 
         /// <summary>
         /// The <see cref="AuthenticatedEncryptorFactory"/>.
         /// </summary>
         public AuthenticatedEncryptorFactory AuthenticatedEncryptionFactory { get; }
+
+        /// <summary>
+        /// Gets the token lifetime, in minutes.
+        /// </summary>
+        public int TokenLifetimeInMinutes { get; }
+
+        /// <summary>
+        /// Gets whether the issuance time must be generated.
+        /// </summary>
+        public bool GenerateIssuedTime { get; }
     }
 }

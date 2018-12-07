@@ -21,7 +21,7 @@ namespace JsonWebToken
         private Jwk _signingKey;
         private Jwk _encryptionKey;
         private bool _noSignature;
-        
+
         /// <summary>
         /// Adds a header parameter.
         /// </summary>
@@ -130,7 +130,7 @@ namespace JsonWebToken
                 };
                 return jwe;
             }
-            else
+            else if (_jsonPayload != null)
             {
                 var jws = new JwsDescriptor(new Dictionary<string, object>(), _jsonPayload);
                 if (_signingKey != null)
@@ -149,6 +149,10 @@ namespace JsonWebToken
 
                 return jwe;
             }
+            else
+            {
+                throw new InvalidOperationException("Not JSON, plaintext or binary payload is defined.");
+            }
         }
 
         /// <summary>
@@ -163,7 +167,7 @@ namespace JsonWebToken
             _textPayload = text;
             return this;
         }
-        
+
         /// <summary>
         /// Defines the binary data as payload.
         /// </summary>
