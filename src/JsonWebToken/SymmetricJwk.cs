@@ -15,18 +15,29 @@ namespace JsonWebToken
     {
         private string _k;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="bytes"></param>
         public SymmetricJwk(byte[] bytes)
             : this()
         {
             RawK = CloneByteArray(bytes);
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="bytes"></param>
         public SymmetricJwk(Span<byte> bytes)
             : this()
         {
             RawK = bytes.ToArray();
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
         public SymmetricJwk()
         {
             Kty = JwkTypeNames.Octet;
@@ -60,18 +71,27 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Gets the 'k' in its binary form. 
+        /// </summary>
         [JsonIgnore]
         public byte[] RawK { get; private set; }
 
         /// <inheritsdoc />
         public override int KeySizeInBits => RawK?.Length != 0 ? RawK.Length << 3 : 0;
 
+        /// <summary>
+        /// Creates a new <see cref="SymmetricJwk"/> from the <paramref name="bytes"/>.
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
         public static SymmetricJwk FromByteArray(byte[] bytes) => FromByteArray(bytes, computeThumbprint: false);
 
         /// <summary>
         /// Returns a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         /// <param name="bytes">An array of <see cref="byte"/> that contains the key in binary.</param>
+        /// <param name="computeThumbprint"></param>
         public static SymmetricJwk FromByteArray(byte[] bytes, bool computeThumbprint)
         {
             if (bytes == null)
@@ -88,8 +108,19 @@ namespace JsonWebToken
             return key;
         }
 
+        /// <summary>
+        /// Returns a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
         public static SymmetricJwk FromSpan(Span<byte> bytes) => FromSpan(bytes, computeThumbprint: false);
 
+        /// <summary>
+        /// Returns a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="computeThumbprint"></param>
+        /// <returns></returns>
         public static SymmetricJwk FromSpan(Span<byte> bytes, bool computeThumbprint)
         {
             if (bytes == null)
@@ -185,8 +216,19 @@ namespace JsonWebToken
             return null;
         }
 
+        /// <summary>
+        /// Returns a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="k"></param>
+        /// <returns></returns>
         public static SymmetricJwk FromBase64Url(string k) => FromBase64Url(k, computeThumbprint: false);
 
+        /// <summary>
+        /// Returns a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="k"></param>
+        /// <param name="computeThumbprint"></param>
+        /// <returns></returns>
         public static SymmetricJwk FromBase64Url(string k, bool computeThumbprint)
         {
             if (k == null)
@@ -207,8 +249,19 @@ namespace JsonWebToken
             return key;
         }
 
+        /// <summary>
+        /// Generates a new <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <returns></returns>
         public static SymmetricJwk GenerateKey(int sizeInBits) => GenerateKey(sizeInBits, algorithm: null);
 
+        /// <summary>
+        /// Generates a new <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
         public static SymmetricJwk GenerateKey(int sizeInBits, IAlgorithm algorithm)
         {
             var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
@@ -232,7 +285,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override Jwk Normalize()
+        public override Jwk Canonicalize()
         {
             return new SymmetricJwk(RawK);
         }

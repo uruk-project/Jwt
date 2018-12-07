@@ -148,7 +148,7 @@ namespace JsonWebToken
             }
         }
 
-        private sealed class RsaObjectPoolPolicy : PooledObjectPolicy<RSA>
+        private sealed class RsaObjectPoolPolicy : PooledObjectFactory<RSA>
         {
             private readonly RSAParameters _parameters;
 

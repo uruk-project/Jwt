@@ -7,16 +7,30 @@ using System.ComponentModel;
 
 namespace JsonWebToken.Internal
 {
+    /// <summary>
+    /// Represents a <see cref="IValidator"/> verifying the JWT has a required claim.
+    /// </summary>
+    /// <typeparam name="TClaim"></typeparam>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class RequiredClaimValidator<TClaim> : IValidator
     {
         private readonly string _claim;
         private readonly TClaim _value;
 
-        public RequiredClaimValidator(string claim) : this(claim, default)
+        /// <summary>
+        /// Initializes an instance of <see cref="RequiredClaimValidator{TClaim}"/>.
+        /// </summary>
+        /// <param name="claim"></param>
+        public RequiredClaimValidator(string claim)
+            : this(claim, default)
         {
         }
 
+        /// <summary>
+        /// Initializes an instance of <see cref="RequiredClaimValidator{TClaim}"/>.
+        /// </summary>
+        /// <param name="claim"></param>
+        /// <param name="value"></param>
         public RequiredClaimValidator(string claim, TClaim value)
         {
             _claim = claim ?? throw new ArgumentNullException(nameof(claim));

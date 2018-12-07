@@ -13,6 +13,9 @@ namespace JsonWebToken
     {
         private string _d;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AsymmetricJwk"/> class.
+        /// </summary>
         protected AsymmetricJwk()
         {
         }
@@ -46,6 +49,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Gets or sets the 'd' parameters in its binary representation.
+        /// </summary>
         [JsonIgnore]
         public byte[] RawD { get; protected set; }
 

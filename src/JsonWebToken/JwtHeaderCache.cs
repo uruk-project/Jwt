@@ -6,6 +6,9 @@ using System.Threading;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represents a cache for <see cref="JwtHeader"/>.
+    /// </summary>
     public sealed class JwtHeaderCache
     {
         private sealed class Node
@@ -24,15 +27,30 @@ namespace JsonWebToken
 
         private int _count = 0;
 
+        /// <summary>
+        /// The maximum size of the cache. 
+        /// </summary>
         public int MaxSize { get; set; } = 10;
 
         private Node _head = null;
         private Node _tail = null;
 
+        /// <summary>
+        /// The heade of the cache.
+        /// </summary>
         public JwtHeader Head => _head.Header;
 
+        /// <summary>
+        /// The tail of the cache.
+        /// </summary>
         public JwtHeader Tail => _tail.Header;
 
+        /// <summary>
+        /// Try to get the <see cref="JwtHeader"/>.
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="header"></param>
+        /// <returns></returns>
         public bool TryGetHeader(ReadOnlySpan<byte> buffer, out JwtHeader header)
         {
             var node = _head;
@@ -52,6 +70,11 @@ namespace JsonWebToken
             return false;
         }
 
+        /// <summary>
+        /// Adds the <see cref="JwtHeader"/> to the cache.
+        /// </summary>
+        /// <param name="rawHeader"></param>
+        /// <param name="header"></param>
         public void AddHeader(ReadOnlySpan<byte> rawHeader, JwtHeader header)
         {
             var node = new Node
@@ -144,6 +167,10 @@ namespace JsonWebToken
             _tail = node.Previous;
         }
 
+        /// <summary>
+        /// Validate the integrity of the cache.
+        /// </summary>
+        /// <returns></returns>
         public bool Validate()
         {
             var node = _head;

@@ -6,18 +6,19 @@ using System.ComponentModel;
 
 namespace JsonWebToken.Internal
 {
+    /// <summary>
+    /// Provides helper methods for UNIX-like time.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class EpochTime
     {
-        public static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-        public static readonly long MaxValue = TimeSpan.MaxValue.Ticks;
-        public static readonly long MinValue = UnixEpoch.Ticks;
+        internal static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 
         /// <summary>
         /// Per JWT spec:
         /// Gets the number of seconds from 1970-01-01T0:0:0Z as measured in UTC until the desired date/time.
         /// </summary>
-        /// <param name="datetime">The DateTime to convert to seconds.</param>
+        /// <param name="dateTime">The DateTime to convert to seconds.</param>
         /// <remarks>if dateTimeUtc less than UnixEpoch, return 0</remarks>
         /// <returns>the number of seconds since Unix Epoch.</returns>
         public static long ToEpochTime(this DateTime? dateTime)

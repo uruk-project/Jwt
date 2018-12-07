@@ -8,6 +8,9 @@ using System.Threading;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represents a cache for JWT Header in JSON.
+    /// </summary>
     public sealed class JsonHeaderCache
     {
         private sealed class Bucket
@@ -26,11 +29,21 @@ namespace JsonWebToken
 
         private int _count = 0;
 
+        /// <summary>
+        /// The maximum size of the cache.
+        /// </summary>
         public static int MaxSize { get; set; } = 10;
 
         private Bucket _head = null;
         private Bucket _tail = null;
 
+        /// <summary>
+        ///  Try to get the header.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="alg"></param>
+        /// <param name="base64UrlHeader"></param>
+        /// <returns></returns>
         public bool TryGetHeader(Dictionary<string, object> header, SignatureAlgorithm alg, out byte[] base64UrlHeader)
         {
             if (!IsSimpleHeader(header, alg))
@@ -92,6 +105,12 @@ namespace JsonWebToken
             return alg;
         }
 
+        /// <summary>
+        /// Adds a base64url encoded header to the cache.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="alg"></param>
+        /// <param name="base6UrlHeader"></param>
         public void AddHeader(Dictionary<string, object> header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
         {
             if (!header.TryGetValue(HeaderParameters.Kid, out var kid))

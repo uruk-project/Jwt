@@ -22,22 +22,44 @@ namespace JsonWebToken
         private Jwk _encryptionKey;
         private bool _noSignature;
         
+        /// <summary>
+        /// Adds a header parameter.
+        /// </summary>
+        /// <param name="headerName"></param>
+        /// <param name="headerValue"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder AddHeader(string headerName, JToken headerValue)
         {
             _header[headerName] = headerValue;
             return this;
         }
 
+        /// <summary>
+        /// Defines the issuer.
+        /// </summary>
+        /// <param name="iss"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder IssuedBy(string iss)
         {
             return AddClaim(Claims.Iss, iss);
         }
 
+        /// <summary>
+        /// Defines the expiration time.
+        /// </summary>
+        /// <param name="exp"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder Expires(DateTime exp)
         {
             return AddClaim(Claims.Exp, exp);
         }
 
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="claimName"></param>
+        /// <param name="claimValue"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder AddClaim(string claimName, JToken claimValue)
         {
             if (_jsonPayload == null)
@@ -49,6 +71,10 @@ namespace JsonWebToken
             return this;
         }
 
+        /// <summary>
+        /// Build the <see cref="JwtDescriptor"/>.
+        /// </summary>
+        /// <returns></returns>
         public JwtDescriptor Build()
         {
             if (_encryptionKey != null)
@@ -125,6 +151,11 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Defines the plaintext as payload. 
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder Plaintext(string text)
         {
             EnsureNotDefined("plaintext");
@@ -132,7 +163,12 @@ namespace JsonWebToken
             _textPayload = text;
             return this;
         }
-
+        
+        /// <summary>
+        /// Defines the binary data as payload.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder Binary(byte[] data)
         {
             EnsureNotDefined("binary");
@@ -141,6 +177,11 @@ namespace JsonWebToken
             return this;
         }
 
+        /// <summary>
+        /// Defines the JSON as payload.
+        /// </summary>
+        /// <param name="payload"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder Json(JObject payload)
         {
             EnsureNotDefined("JSON");
@@ -167,68 +208,132 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Defines the algorithm 'alg'.
+        /// </summary>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder Algorithm(string algorithm)
         {
             return AddHeader(HeaderParameters.Alg, algorithm);
         }
 
+        /// <summary>
+        /// Defines the key identifier.
+        /// </summary>
+        /// <param name="kid"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder KeyId(string kid)
         {
             return AddHeader(HeaderParameters.Kid, kid);
         }
 
+        /// <summary>
+        /// Defines the JWKS URL.
+        /// </summary>
+        /// <param name="jku"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder JwkSetUrl(string jku)
         {
             return AddHeader(HeaderParameters.Jku, jku);
         }
 
+        /// <summary>
+        /// Defines the JWK.
+        /// </summary>
+        /// <param name="jwk"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder Jwk(Jwk jwk)
         {
             return AddHeader(HeaderParameters.Jwk, jwk.ToString());
         }
 
+        /// <summary>
+        /// Defines the X509 URL.
+        /// </summary>
+        /// <param name="x5u"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder X509Url(string x5u)
         {
             return AddHeader(HeaderParameters.X5u, x5u);
         }
 
+        /// <summary>
+        /// Defines the 509 certificate chain.
+        /// </summary>
+        /// <param name="x5c"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder X509CertificateChain(IList<string> x5c)
         {
             return AddHeader(HeaderParameters.X5c, JArray.FromObject(x5c));
         }
 
+        /// <summary>
+        /// Defines the X509 certificate SHA-1 thumbprint.
+        /// </summary>
+        /// <param name="x5t"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder X509CertificateSha1Thumbprint(string x5t)
         {
             return AddHeader(HeaderParameters.X5t, x5t);
         }
 
+        /// <summary>
+        /// Defines the JWT type 'typ'.
+        /// </summary>
+        /// <param name="typ"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder Type(string typ)
         {
             return AddHeader(HeaderParameters.Typ, typ);
         }
 
+        /// <summary>
+        /// Defines the content type 'cty'.
+        /// </summary>
+        /// <param name="cty"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder ContentType(string cty)
         {
             return AddHeader(HeaderParameters.Cty, cty);
         }
 
+        /// <summary>
+        /// Defines the critical headers.
+        /// </summary>
+        /// <param name="crit"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder Critical(IList<string> crit)
         {
             return AddHeader(HeaderParameters.Crit, JArray.FromObject(crit));
         }
 
+        /// <summary>
+        /// Defines the <see cref="Jwk"/> used as key for signature.
+        /// </summary>
+        /// <param name="jwk"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder SignWith(Jwk jwk)
         {
             _signingKey = jwk ?? throw new ArgumentNullException(nameof(jwk));
             return this;
         }
 
+        /// <summary>
+        /// Defines the <see cref="Jwk"/> used as key for encryption.
+        /// </summary>
+        /// <param name="jwk"></param>
+        /// <returns></returns>
         public JwtDescriptorBuilder EncryptWith(Jwk jwk)
         {
             _encryptionKey = jwk ?? throw new ArgumentNullException(nameof(jwk));
             return this;
         }
 
+        /// <summary>
+        /// Ignore the signature requirement.
+        /// </summary>
+        /// <returns></returns>
         public JwtDescriptorBuilder IgnoreSignature()
         {
             _noSignature = true;

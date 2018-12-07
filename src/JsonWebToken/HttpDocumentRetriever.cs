@@ -66,6 +66,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Release managed resources.
+        /// </summary>
         public void Dispose()
         {
             if (!_disposed)

@@ -8,8 +8,19 @@ namespace JsonWebToken
     /// </summary>
     public enum EncryptionType
     {
+        /// <summary>
+        /// No encryption.
+        /// </summary>
         None = 0,
+
+        /// <summary>
+        /// AES-HMAC encryption.
+        /// </summary>
         AesHmac,
+
+        /// <summary>
+        /// AES-GCM encryption.
+        /// </summary>
         AesGcm
     }
 }

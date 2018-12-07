@@ -27,6 +27,12 @@ namespace JsonWebToken
         /// </summary>
         public EncryptionAlgorithm EncryptionAlgorithm { get; }
 
+        /// <summary>
+        /// Initializes a new instances of <see cref="KeyWrapper"/>.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="encryptionAlgorithm"></param>
+        /// <param name="algorithm"></param>
         protected KeyWrapper(Jwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
             if (key == null)
@@ -63,6 +69,9 @@ namespace JsonWebToken
         /// Unwrap a key.
         /// </summary>
         /// <param name="keyBytes">key to unwrap.</param>
+        /// <param name="destination"></param>
+        /// <param name="header"></param>
+        /// <param name="bytesWritten"></param>
         /// <returns>Unwrapped key.</returns>
         public abstract bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten);
 

@@ -3,12 +3,29 @@
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// The categories of algorithm.
+    /// </summary>
     public enum AlgorithmCategory : sbyte
     {
+        /// <summary>
+        /// No category.
+        /// </summary>
         None = 0,
+
+        /// <summary>
+        /// Elliptic curve algorithm.
+        /// </summary>
         EllipticCurve,
+
+        /// <summary>
+        /// Symmetric algorithm
+        /// </summary>
         Symmetric,
-        Rsa,
-        Unknown
+
+        /// <summary>
+        /// RSA algorithm.
+        /// </summary>
+        Rsa
     }
 }

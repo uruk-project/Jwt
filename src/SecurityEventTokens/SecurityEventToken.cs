@@ -33,7 +33,7 @@ namespace JsonWebToken
                         return new Dictionary<string, JObject>();
                     }
 
-                    if (!Payload.TryGetValue(Claims.Events, out var events))
+                    if (!Payload.TryGetValue(SetClaims.Events, out var events))
                     {
                         return new Dictionary<string, JObject>();
                     }
@@ -50,7 +50,7 @@ namespace JsonWebToken
         {
             get
             {
-                return EpochTime.ToDateTime(Payload.GetValue<long?>(Claims.Toe));
+                return EpochTime.ToDateTime(Payload.GetValue<long?>(SetClaims.Toe));
             }
         }
 
@@ -58,7 +58,7 @@ namespace JsonWebToken
         {
             get
             {
-                return Payload.GetValue<string>(Claims.Txn);
+                return Payload.GetValue<string>(SetClaims.Txn);
             }
         }
     }

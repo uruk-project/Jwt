@@ -223,7 +223,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class HmacSha256ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
+        private sealed class HmacSha256ObjectPoolPolicy : PooledObjectFactory<KeyedHashAlgorithm>
         {
             private readonly byte[] _keyBytes;
 
@@ -238,7 +238,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class HmacSha384ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
+        private sealed class HmacSha384ObjectPoolPolicy : PooledObjectFactory<KeyedHashAlgorithm>
         {
             private readonly byte[] _keyBytes;
 
@@ -253,7 +253,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class HmacSha512ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
+        private sealed class HmacSha512ObjectPoolPolicy : PooledObjectFactory<KeyedHashAlgorithm>
         {
             private readonly byte[] _keyBytes;
 

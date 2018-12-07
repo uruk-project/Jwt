@@ -10,11 +10,20 @@ namespace JsonWebToken
     /// </summary>
     public sealed class BinaryJweDescriptor : EncryptedJwtDescriptor<byte[]>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BinaryJweDescriptor"/> class.
+        /// </summary>
+        /// <param name="payload"></param>
         public BinaryJweDescriptor(byte[] payload)
             : base(payload)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BinaryJweDescriptor"/> class.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="payload"></param>
         public BinaryJweDescriptor(IDictionary<string, object> header, byte[] payload)
             : base(header, payload)
         {

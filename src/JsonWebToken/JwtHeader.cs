@@ -96,6 +96,12 @@ namespace JsonWebToken
         public string Apv => GetValue<string>(HeaderParameters.Apv);
 #endif
 
+        /// <summary>
+        /// Gets the header parameter for a specified key.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public T GetValue<T>(string key)
         {
             if (TryGetValue(key, out var value) && value is T tValue)

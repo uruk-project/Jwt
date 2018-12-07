@@ -13,18 +13,36 @@ namespace JsonWebToken
     {
         private readonly Jwks _jwks;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="StaticKeyProvider"/>.
+        /// </summary>
+        /// <param name="jwks"></param>
         public StaticKeyProvider(Jwks jwks)
         {
             _jwks = jwks ?? throw new ArgumentNullException(nameof(jwks));
         }
 
+        /// <summary>
+        /// Gets the list of <see cref="Jwk"/>.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <returns></returns>
         public IReadOnlyList<Jwk> GetKeys(JwtHeader header)
         {
             var kid = header.Kid;
             return _jwks.GetKeys(kid);
         }
 
+        /// <summary>
+        /// Converts a <see cref="Jwks"/> to <see cref="StaticKeyProvider"/>.
+        /// </summary>
+        /// <param name="keys"></param>
         public static implicit operator StaticKeyProvider(Jwks keys) => new StaticKeyProvider(keys);
+
+        /// <summary>
+        /// Converts a <see cref="Jwk"/> to <see cref="StaticKeyProvider"/>.
+        /// </summary>
+        /// <param name="key"></param>
         public static implicit operator StaticKeyProvider(Jwk key) => new StaticKeyProvider(new Jwks(key));
     }
 }

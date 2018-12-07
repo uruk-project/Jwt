@@ -10,20 +10,33 @@ using System.Threading;
 namespace JsonWebToken.Internal
 {
     // based on https://github.com/aspnet/Common/tree/master/src/Microsoft.Extensions.ObjectPool
+    /// <summary>
+    /// Represent a poolable <typeparamref name="T"/>.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public sealed class ObjectPool<T> : IDisposable
         where T : class, IDisposable
     {
         private readonly ObjectWrapper[] _items;
-        private readonly PooledObjectPolicy<T> _policy;
+        private readonly PooledObjectFactory<T> _policy;
         private T _firstItem;
 
-        public ObjectPool(PooledObjectPolicy<T> policy)
+        /// <summary>
+        /// Initializes a new instance of <see cref="ObjectPool{T}"/>.
+        /// </summary>
+        /// <param name="policy"></param>
+        public ObjectPool(PooledObjectFactory<T> policy)
             : this(policy, Environment.ProcessorCount * 2)
         {
         }
 
-        public ObjectPool(PooledObjectPolicy<T> policy, int maximumRetained)
+        /// <summary>
+        /// Initializes a new instance of <see cref="ObjectPool{T}"/>.
+        /// </summary>
+        /// <param name="policy"></param>
+        /// <param name="maximumRetained"></param>
+        public ObjectPool(PooledObjectFactory<T> policy, int maximumRetained)
         {
             _policy = policy ?? throw new ArgumentNullException(nameof(policy));
 
@@ -31,6 +44,10 @@ namespace JsonWebToken.Internal
             _items = new ObjectWrapper[maximumRetained - 1];
         }
 
+        /// <summary>
+        /// Gets a <typeparamref name="T"/> from the pool.
+        /// </summary>
+        /// <returns></returns>
         public T Get()
         {
             var item = _firstItem;
@@ -61,7 +78,10 @@ namespace JsonWebToken.Internal
             return _policy.Create();
         }
 
-        // PERF: the struct wrapper avoids array-covariance-checks from the runtime when assigning to elements of the array.
+        /// <summary>
+        /// Returns a <typeparamref name="T"/> to the pool.
+        /// </summary>
+        /// <param name="pooledObject"></param>
         public void Return(T pooledObject)
         {
             if (_firstItem != null || Interlocked.CompareExchange(ref _firstItem, pooledObject, null) != null)
@@ -80,6 +100,9 @@ namespace JsonWebToken.Internal
             }
         }
 
+        /// <summary>
+        /// Dispose the managed resources.
+        /// </summary>
         public void Dispose()
         {
             var items = _items;

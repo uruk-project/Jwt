@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace JsonWebToken.Internal
 {
+    // TODO : replace by method within CryptographicFactoryKey.
     internal sealed class JwkEqualityComparer : IEqualityComparer<CryptographicFactoryKey>
     {
         public static JwkEqualityComparer Default { get; } = new JwkEqualityComparer();

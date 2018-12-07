@@ -214,7 +214,7 @@ namespace JsonWebToken
         /// Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
         /// </summary>
         /// <returns></returns>
-        public abstract Jwk Normalize();
+        public abstract Jwk Canonicalize();
 
 #if !NETSTANDARD2_0
         /// <summary>
@@ -223,7 +223,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public string ComputeThumbprint(bool normalize)
         {
-            var key = normalize ? Normalize() : this;
+            var key = normalize ? Canonicalize() : this;
             var json = key.ToString();
             int jsonLength = json.Length;
             byte[] arrayToReturnToPool = null;
@@ -256,7 +256,7 @@ namespace JsonWebToken
         /// </summary>
         public string ComputeThumbprint(bool normalize)
         {
-            var json = normalize ? Normalize().ToString() : ToString();
+            var json = normalize ? Canonicalize().ToString() : ToString();
             var buffer = Encoding.UTF8.GetBytes(json);
             using (var hashAlgorithm = SHA256.Create())
             {
@@ -345,10 +345,10 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Returns a new instance of <see cref="TKey"/>.
+        /// Returns a new instance of <typeparamref name="TKey"/>.
         /// </summary>
         /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
-        /// <returns><see cref="TKey"/></returns>
+        /// <returns><typeparamref name="TKey"/></returns>
         public static TKey FromJson<TKey>(string json) where TKey : Jwk
         {
             if (string.IsNullOrEmpty(json))

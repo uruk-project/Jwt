@@ -234,7 +234,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class AesPooledPolicy : PooledObjectPolicy<Aes>
+        private sealed class AesPooledPolicy : PooledObjectFactory<Aes>
         {
             private readonly byte[] _key;
 

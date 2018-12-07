@@ -11,7 +11,7 @@ namespace JsonWebToken
 {
     public class IdTokenDescriptor : JwsDescriptor
     {
-        private static readonly ReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredClaims = new ReadOnlyDictionary<string, JTokenType[]>(
+        private static readonly ReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredOidcClaims = new ReadOnlyDictionary<string, JTokenType[]>(
             new Dictionary<string, JTokenType[]>
             {
                 { Claims.Iss, new [] { JTokenType.String} },
@@ -21,7 +21,7 @@ namespace JsonWebToken
                 { Claims.Iat, new [] { JTokenType.Integer } }
             });
 
-        private static readonly ReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredClaimsImplicit = new ReadOnlyDictionary<string, JTokenType[]>(
+        private static readonly ReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredOidcClaimsImplicit = new ReadOnlyDictionary<string, JTokenType[]>(
             new Dictionary<string, JTokenType[]>
             {
                 { Claims.Iss, new [] { JTokenType.String} },
@@ -29,11 +29,11 @@ namespace JsonWebToken
                 { Claims.Aud, new [] { JTokenType.String, JTokenType.Array} },
                 { Claims.Exp, new [] { JTokenType.Integer } },
                 { Claims.Iat, new [] { JTokenType.Integer } },
-                { Claims.Nonce, new [] { JTokenType.String} },
-                { Claims.AtHash, new [] { JTokenType.String } }
+                { OidcClaims.Nonce, new [] { JTokenType.String} },
+                { OidcClaims.AtHash, new [] { JTokenType.String } }
             });
 
-        private static readonly ReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredClaimsHybrid = new ReadOnlyDictionary<string, JTokenType[]>(
+        private static readonly ReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredOidcClaimsHybrid = new ReadOnlyDictionary<string, JTokenType[]>(
             new Dictionary<string, JTokenType[]>
             {
                 { Claims.Iss, new [] { JTokenType.String } },
@@ -41,9 +41,9 @@ namespace JsonWebToken
                 { Claims.Aud, new [] { JTokenType.String, JTokenType.Array} },
                 { Claims.Exp, new [] { JTokenType.Integer } },
                 { Claims.Iat, new [] { JTokenType.Integer } },
-                { Claims.Nonce, new [] { JTokenType.String } },
-                { Claims.AtHash, new [] { JTokenType.String } },
-                { Claims.CHash, new [] { JTokenType.String } }
+                { OidcClaims.Nonce, new [] { JTokenType.String } },
+                { OidcClaims.AtHash, new [] { JTokenType.String } },
+                { OidcClaims.CHash, new [] { JTokenType.String } }
             });
 
         public IdTokenDescriptor()
@@ -68,8 +68,8 @@ namespace JsonWebToken
         /// </summary>
         public DateTime? AuthenticationTime
         {
-            get => GetDateTime(Claims.AuthTime);
-            set => AddClaim(Claims.AuthTime, value);
+            get => GetDateTime(OidcClaims.AuthTime);
+            set => AddClaim(OidcClaims.AuthTime, value);
         }
 
         /// <summary>
@@ -77,8 +77,8 @@ namespace JsonWebToken
         /// </summary>
         public string Nonce
         {
-            get => GetStringClaim(Claims.Nonce);
-            set => AddClaim(Claims.Nonce, value);
+            get => GetStringClaim(OidcClaims.Nonce);
+            set => AddClaim(OidcClaims.Nonce, value);
         }
 
         /// <summary>
@@ -86,18 +86,18 @@ namespace JsonWebToken
         /// </summary>
         public string AuthenticationContextClassReference
         {
-            get => GetStringClaim(Claims.Acr);
-            set => AddClaim(Claims.Acr, value);
+            get => GetStringClaim(OidcClaims.Acr);
+            set => AddClaim(OidcClaims.Acr, value);
         }
 
         /// <summary>
         /// Gets or sets the Authentication Methods References used in the authentication.
         /// </summary>
-        public IReadOnlyList<string> AuthenticationMethodsReferences => GetListClaims(Claims.Amr);
+        public IReadOnlyList<string> AuthenticationMethodsReferences => GetListClaims(OidcClaims.Amr);
 
         public void AddAuthenticationMethodsReferences(string acr)
         {
-            AddClaim(Claims.Acr, acr);
+            AddClaim(OidcClaims.Acr, acr);
         }
 
         /// <summary>
@@ -105,8 +105,8 @@ namespace JsonWebToken
         /// </summary>
         public string AuthorizedParty
         {
-            get => GetStringClaim(Claims.Azp);
-            set => AddClaim(Claims.Azp, value);
+            get => GetStringClaim(OidcClaims.Azp);
+            set => AddClaim(OidcClaims.Azp, value);
         }
 
         /// <summary>
@@ -114,8 +114,8 @@ namespace JsonWebToken
         /// </summary>
         public string AccessTokenHash
         {
-            get => GetStringClaim(Claims.AtHash);
-            set => AddClaim(Claims.AtHash, value);
+            get => GetStringClaim(OidcClaims.AtHash);
+            set => AddClaim(OidcClaims.AtHash, value);
         }
 
         /// <summary>
@@ -123,8 +123,8 @@ namespace JsonWebToken
         /// </summary>
         public string CodeHash
         {
-            get => GetStringClaim(Claims.CHash);
-            set => AddClaim(Claims.CHash, value);
+            get => GetStringClaim(OidcClaims.CHash);
+            set => AddClaim(OidcClaims.CHash, value);
         }
 
         protected override ReadOnlyDictionary<string, JTokenType[]> RequiredClaims
@@ -134,11 +134,11 @@ namespace JsonWebToken
                 switch (Flow)
                 {
                     case OpenIdConnectFlow.AuthorizationCode:
-                        return IdTokenRequiredClaims;
+                        return IdTokenRequiredOidcClaims;
                     case OpenIdConnectFlow.Implicit:
-                        return IdTokenRequiredClaimsImplicit;
+                        return IdTokenRequiredOidcClaimsImplicit;
                     case OpenIdConnectFlow.Hybrid:
-                        return IdTokenRequiredClaimsHybrid;
+                        return IdTokenRequiredOidcClaimsHybrid;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(Flow));
                 }
@@ -150,8 +150,8 @@ namespace JsonWebToken
         /// </summary>
         public string GivenName
         {
-            get => GetStringClaim(Claims.GivenName);
-            set => AddClaim(Claims.GivenName, value);
+            get => GetStringClaim(OidcClaims.GivenName);
+            set => AddClaim(OidcClaims.GivenName, value);
         }
 
         /// <summary>
@@ -159,8 +159,8 @@ namespace JsonWebToken
         /// </summary>
         public string FamilyName
         {
-            get => GetStringClaim(Claims.FamilyName);
-            set => AddClaim(Claims.FamilyName, value);
+            get => GetStringClaim(OidcClaims.FamilyName);
+            set => AddClaim(OidcClaims.FamilyName, value);
         }
 
         /// <summary>
@@ -168,8 +168,8 @@ namespace JsonWebToken
         /// </summary>
         public string MiddleName
         {
-            get => GetStringClaim(Claims.MiddleName);
-            set => AddClaim(Claims.MiddleName, value);
+            get => GetStringClaim(OidcClaims.MiddleName);
+            set => AddClaim(OidcClaims.MiddleName, value);
         }
 
         /// <summary>
@@ -177,8 +177,8 @@ namespace JsonWebToken
         /// </summary>
         public string Nickname
         {
-            get => GetStringClaim(Claims.Nickname);
-            set => AddClaim(Claims.Nickname, value);
+            get => GetStringClaim(OidcClaims.Nickname);
+            set => AddClaim(OidcClaims.Nickname, value);
         }
 
         /// <summary>
@@ -186,8 +186,8 @@ namespace JsonWebToken
         /// </summary>
         public string PreferredUsername
         {
-            get => GetStringClaim(Claims.PreferredUsername);
-            set => AddClaim(Claims.PreferredUsername, value);
+            get => GetStringClaim(OidcClaims.PreferredUsername);
+            set => AddClaim(OidcClaims.PreferredUsername, value);
         }
 
         /// <summary>
@@ -195,8 +195,8 @@ namespace JsonWebToken
         /// </summary>
         public string Profile
         {
-            get => GetStringClaim(Claims.Profile);
-            set => AddClaim(Claims.Profile, value);
+            get => GetStringClaim(OidcClaims.Profile);
+            set => AddClaim(OidcClaims.Profile, value);
         }
 
         /// <summary>
@@ -204,8 +204,8 @@ namespace JsonWebToken
         /// </summary>
         public string Picture
         {
-            get => GetStringClaim(Claims.Picture);
-            set => AddClaim(Claims.Picture, value);
+            get => GetStringClaim(OidcClaims.Picture);
+            set => AddClaim(OidcClaims.Picture, value);
         }
 
         /// <summary>
@@ -213,8 +213,8 @@ namespace JsonWebToken
         /// </summary>
         public string Website
         {
-            get => GetStringClaim(Claims.Website);
-            set => AddClaim(Claims.Website, value);
+            get => GetStringClaim(OidcClaims.Website);
+            set => AddClaim(OidcClaims.Website, value);
         }
 
         /// <summary>
@@ -222,8 +222,8 @@ namespace JsonWebToken
         /// </summary>
         public string Email
         {
-            get => GetStringClaim(Claims.Email);
-            set => AddClaim(Claims.Email, value);
+            get => GetStringClaim(OidcClaims.Email);
+            set => AddClaim(OidcClaims.Email, value);
         }
 
         /// <summary>
@@ -231,8 +231,8 @@ namespace JsonWebToken
         /// </summary>
         public bool? EmailVerified
         {
-            get => GetBoolClaim(Claims.EmailVerified);
-            set => AddClaim(Claims.EmailVerified, value);
+            get => GetBoolClaim(OidcClaims.EmailVerified);
+            set => AddClaim(OidcClaims.EmailVerified, value);
         }
 
         /// <summary>
@@ -240,8 +240,8 @@ namespace JsonWebToken
         /// </summary>
         public string Gender
         {
-            get => GetStringClaim(Claims.Gender);
-            set => AddClaim(Claims.Gender, value);
+            get => GetStringClaim(OidcClaims.Gender);
+            set => AddClaim(OidcClaims.Gender, value);
         }
 
         /// <summary>
@@ -249,8 +249,8 @@ namespace JsonWebToken
         /// </summary>
         public string Birthdate
         {
-            get => GetStringClaim(Claims.Birthdate);
-            set => AddClaim(Claims.Birthdate, value);
+            get => GetStringClaim(OidcClaims.Birthdate);
+            set => AddClaim(OidcClaims.Birthdate, value);
         }
 
         /// <summary>
@@ -258,8 +258,8 @@ namespace JsonWebToken
         /// </summary>
         public string Zoneinfo
         {
-            get => GetStringClaim(Claims.Zoneinfo);
-            set => AddClaim(Claims.Zoneinfo, value);
+            get => GetStringClaim(OidcClaims.Zoneinfo);
+            set => AddClaim(OidcClaims.Zoneinfo, value);
         }
 
         /// <summary>
@@ -267,8 +267,8 @@ namespace JsonWebToken
         /// </summary>
         public string Locale
         {
-            get => GetStringClaim(Claims.Locale);
-            set => AddClaim(Claims.Locale, value);
+            get => GetStringClaim(OidcClaims.Locale);
+            set => AddClaim(OidcClaims.Locale, value);
         }
 
         /// <summary>
@@ -276,8 +276,8 @@ namespace JsonWebToken
         /// </summary>
         public string PhoneNumber
         {
-            get => GetStringClaim(Claims.PhoneNumber);
-            set => AddClaim(Claims.PhoneNumber, value);
+            get => GetStringClaim(OidcClaims.PhoneNumber);
+            set => AddClaim(OidcClaims.PhoneNumber, value);
         }
 
         /// <summary>
@@ -285,8 +285,8 @@ namespace JsonWebToken
         /// </summary>
         public bool? PhoneNumberVerified
         {
-            get => GetBoolClaim(Claims.PhoneNumberVerified);
-            set => AddClaim(Claims.PhoneNumberVerified, value);
+            get => GetBoolClaim(OidcClaims.PhoneNumberVerified);
+            set => AddClaim(OidcClaims.PhoneNumberVerified, value);
         }
 
         /// <summary>
@@ -296,11 +296,11 @@ namespace JsonWebToken
         {
             get
             {
-                var address = GetStringClaim(HeaderParameters.Address);
+                var address = GetStringClaim(OidcClaims.Address);
                 return string.IsNullOrEmpty(address) ? null : Address.FromJson(address);
             }
 
-            set => Payload[HeaderParameters.Address] = value?.ToString();
+            set => Payload[OidcClaims.Address] = value?.ToString();
         }
 
         /// <summary>
@@ -308,8 +308,8 @@ namespace JsonWebToken
         /// </summary>
         public DateTime? UpdatedAt
         {
-            get => GetDateTime(Claims.UpdatedAt);
-            set => AddClaim(Claims.UpdatedAt, value);
+            get => GetDateTime(OidcClaims.UpdatedAt);
+            set => AddClaim(OidcClaims.UpdatedAt, value);
         }
     }
 }
