@@ -16,7 +16,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(token));
             }
 
-            var json = token.Payload[Claims.Act]?.Value<string>();
+            var json = token.Payload[OAuth2Claims.Act]?.Value<string>();
             return json == null ? null : Actor.FromJson(json);
         }
     }

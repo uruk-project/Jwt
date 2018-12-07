@@ -9,8 +9,19 @@ namespace JsonWebToken.Internal
     /// </summary>
     public static class JwkTypeNames
     {
+        /// <summary>
+        /// Elliptic curve 'EC'.
+        /// </summary>
         public const string EllipticCurve = "EC";
+
+        /// <summary>
+        /// RSA 'RSA'.
+        /// </summary>
         public const string Rsa = "RSA";
+
+        /// <summary>
+        /// Octet 'oct';
+        /// </summary>
         public const string Octet = "oct";
     }
 }

@@ -113,7 +113,7 @@ namespace JsonWebToken
         public AlgorithmCategory Category { get; }
 
         /// <summary>
-        /// Gets the wrapped algo
+        /// Gets the wrapped algorithm.
         /// </summary>
         public KeyManagementAlgorithm WrappedAlgorithm { get; }
     

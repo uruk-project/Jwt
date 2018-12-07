@@ -29,8 +29,8 @@ namespace JsonWebToken
         /// </summary>
         public string SoftwareId
         {
-            get { return GetStringClaim(Claims.SoftwareId); }
-            set { AddClaim(Claims.SoftwareId, value); }
+            get { return GetStringClaim(OAuth2Claims.SoftwareId); }
+            set { AddClaim(OAuth2Claims.SoftwareId, value); }
         }
 
         protected override ReadOnlyDictionary<string, JTokenType[]> RequiredClaims => SoftwareStatementRequiredClaims;

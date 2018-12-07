@@ -41,7 +41,6 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the encryption algorithm.
         /// </summary>
-        [JsonConverter(typeof(AlgorithmConverter))]
         public EncryptionAlgorithm EncryptionAlgorithm
         {
             get => (EncryptionAlgorithm)GetHeaderParameter<string>(HeaderParameters.Enc);

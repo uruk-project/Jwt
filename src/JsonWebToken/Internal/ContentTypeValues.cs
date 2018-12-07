@@ -3,6 +3,9 @@
 
 namespace JsonWebToken.Internal
 {
+    /// <summary>
+    /// Content types values.
+    /// </summary>
     public static class ContentTypeValues
     {
         /// <summary>

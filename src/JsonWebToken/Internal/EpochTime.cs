@@ -6,6 +6,9 @@ using System.ComponentModel;
 
 namespace JsonWebToken.Internal
 {
+    /// <summary>
+    /// Provides helper methods for UNIX-like time.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class EpochTime
     {

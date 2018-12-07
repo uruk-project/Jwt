@@ -6,7 +6,7 @@ namespace JsonWebToken.Internal
     /// <summary>
     /// Names for Json Web Key Set Values
     /// </summary>
-    public static class JwksParameterNames
+    internal static class JwksParameterNames
     {
         public const string Keys = "keys";
     }

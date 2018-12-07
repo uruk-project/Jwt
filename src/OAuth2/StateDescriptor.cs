@@ -13,7 +13,7 @@ namespace JsonWebToken
         private static readonly ReadOnlyDictionary<string, JTokenType[]> StateRequiredClaims = new ReadOnlyDictionary<string, JTokenType[]>(
               new Dictionary<string, JTokenType[]>
               {
-                { Claims.Rfp, new [] { JTokenType.String} }
+                { OAuth2Claims.Rfp, new [] { JTokenType.String} }
               });
 
         public StateDescriptor()
@@ -32,8 +32,8 @@ namespace JsonWebToken
         /// </summary>
         public string RequestForgeryProtection
         {
-            get { return GetStringClaim(Claims.Rfp); }
-            set { AddClaim(Claims.Rfp, value); }
+            get { return GetStringClaim(OAuth2Claims.Rfp); }
+            set { AddClaim(OAuth2Claims.Rfp, value); }
         }
 
         /// <summary>
@@ -41,8 +41,8 @@ namespace JsonWebToken
         /// </summary>
         public string TargetLinkUri
         {
-            get { return GetStringClaim(Claims.TargetLinkUri); }
-            set { AddClaim(Claims.TargetLinkUri, value); }
+            get { return GetStringClaim(OAuth2Claims.TargetLinkUri); }
+            set { AddClaim(OAuth2Claims.TargetLinkUri, value); }
         }
 
         /// <summary>
@@ -50,8 +50,8 @@ namespace JsonWebToken
         /// </summary>
         public string AuthorizationServer
         {
-            get { return GetStringClaim(Claims.As); }
-            set { AddClaim(Claims.As, value); }
+            get { return GetStringClaim(OAuth2Claims.As); }
+            set { AddClaim(OAuth2Claims.As, value); }
         }
 
         /// <summary>
@@ -59,8 +59,8 @@ namespace JsonWebToken
         /// </summary>
         public string AccessTokenHash
         {
-            get => GetStringClaim(Claims.AtHash);
-            set => AddClaim(Claims.AtHash, value);
+            get => GetStringClaim(OAuth2Claims.AtHash);
+            set => AddClaim(OAuth2Claims.AtHash, value);
         }
 
         /// <summary>     
@@ -68,8 +68,8 @@ namespace JsonWebToken
         /// </summary>
         public string CodeHash
         {
-            get => GetStringClaim(Claims.CHash);
-            set => AddClaim(Claims.CHash, value);
+            get => GetStringClaim(OAuth2Claims.CHash);
+            set => AddClaim(OAuth2Claims.CHash, value);
         }
     }
 }
