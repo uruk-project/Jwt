@@ -83,6 +83,11 @@ namespace JsonWebToken
             throw new JwtDescriptorException($"The header parameter '{header}' is required.");
         }
 
+        internal static void ThrowMustBeGreaterOrEqualToZero(string name, int value)
+        {
+            throw new ArgumentOutOfRangeException(name, $"{nameof(value)} must be greater equal or zero. value: '{value}'.");
+        }
+
         internal static void ThrowMustBeGreaterThanZero(string name, int value)
         {
             throw new ArgumentOutOfRangeException(name, $"{nameof(value)} must be greater than zero. value: '{value}'.");

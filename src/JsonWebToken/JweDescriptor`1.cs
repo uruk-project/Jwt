@@ -9,7 +9,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines an encrypted JWT with a <typeparamref name="TDescriptor"/> as payload.
     /// </summary>
-    public class JweDescriptor<TDescriptor> : EncryptedJwtDescriptor<TDescriptor>, IJwtPayloadDescriptor where TDescriptor : JwsDescriptor, new()
+    public class JweDescriptor<TDescriptor> : EncryptedJwtDescriptor<TDescriptor> where TDescriptor : JwsDescriptor, new()
     {
         private static readonly string[] DefaultRequiredClaims = Array.Empty<string>();
 
