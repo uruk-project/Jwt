@@ -24,6 +24,10 @@
     <None Remove="JsonWebToken.xml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="gfoidl.Base64" Version="1.0.0-preview-2" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="System.Memory" Version="4.5.1" />
