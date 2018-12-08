@@ -25,6 +25,10 @@ namespace JsonWebToken
         {
         }
 
+        /// <summary>
+        /// Initializes an new instance of <see cref="Jwks"/>.
+        /// </summary>
+        /// <param name="key"></param>
         public Jwks(Jwk key)
             : this(new[] { key ?? throw new ArgumentNullException(nameof(key)) })
         {
@@ -134,6 +138,7 @@ namespace JsonWebToken
             Keys.Remove(key);
         }
 
+        /// <inheritsdoc />
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this, Formatting.Indented);
@@ -190,6 +195,10 @@ namespace JsonWebToken
             return UnidentifiedKeys;
         }
 
+        /// <summary>
+        /// Cast the array of <see cref="Jwk"/> into a <see cref="Jwks"/>.
+        /// </summary>
+        /// <param name="keys"></param>
         public static implicit operator Jwks(Jwk[] keys) => new Jwks(keys);
     }
 }

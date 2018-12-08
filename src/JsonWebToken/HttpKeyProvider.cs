@@ -9,50 +9,65 @@ using System.Threading;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines a <see cref="IKeyProvider"/> that gets the keys from and HTTP endpoint.
+    /// </summary>
     public abstract class HttpKeyProvider : IKeyProvider, IDisposable
     {
         private readonly SemaphoreSlim _refreshLock = new SemaphoreSlim(1);
         private readonly HttpDocumentRetriever _documentRetriever;
-        private readonly long _refreshInterval = DefaultRefreshInterval;
-        private readonly long _automaticRefreshInterval = DefaultAutomaticRefreshInterval;
         private long _syncAfter;
         private Jwks _currentKeys;
         private bool _disposed;
 
         /// <summary>
-        /// 1 day is the default time interval that afterwards, <see cref="GetConfigurationAsync()"/> will obtain new configuration.
+        /// 1 day is the default time interval that afterwards, <see cref="GetKeys(JwtHeader, string)"/> will obtain new configuration.
         /// </summary>
         public static readonly long DefaultAutomaticRefreshInterval = 60 * 60 * 24;
 
         /// <summary>
-        /// 30 seconds is the default time interval that must pass for <see cref="RequestRefresh"/> to obtain a new configuration.
+        /// 30 seconds is the default time interval to obtain a new key set.
         /// </summary>
         public static readonly long DefaultRefreshInterval = 30;
 
         /// <summary>
-        /// 5 minutes is the minimum value for automatic refresh. <see cref="AutomaticRefreshInterval"/> can not be set less than this value.
-        /// </summary>
-        public static readonly long MinimumAutomaticRefreshInterval = 5 * 60;
+        /// Time interval to obtain a new key set.
+        /// </summary>  
+        public long RefreshInterval { get; set; } = DefaultRefreshInterval;
 
         /// <summary>
-        /// 1 second is the minimum time interval that must pass for <see cref="RequestRefresh"/> to obtain new configuration.
+        /// Time interval that afterwards, <see cref="GetKeys(JwtHeader, string)"/> will obtain new configuration.
         /// </summary>
-        public static readonly long MinimumRefreshInterval = 1;
+        public long AutomaticRefreshInterval { get; set; } = DefaultAutomaticRefreshInterval;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="HttpKeyProvider"/>.
+        /// </summary>
+        /// <param name="documentRetriever"></param>
         protected HttpKeyProvider(HttpDocumentRetriever documentRetriever)
         {
             _documentRetriever = documentRetriever ?? throw new ArgumentNullException(nameof(documentRetriever));
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="HttpKeyProvider"/>.
+        /// </summary>
         protected HttpKeyProvider()
             : this(new HttpDocumentRetriever())
         {
         }
 
+        /// <inheritsdoc />
         public abstract IReadOnlyList<Jwk> GetKeys(JwtHeader header);
 
+        /// <summary>
+        /// Deserializes a JSON string representing a JWKS.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         protected abstract Jwks DeserializeKeySet(string value);
 
+        /// <inheritsdoc />
         protected IReadOnlyList<Jwk> GetKeys(JwtHeader header, string metadataAddress)
         {
             if (_disposed)
@@ -74,11 +89,11 @@ namespace JsonWebToken
                 {
                     var value = _documentRetriever.GetDocument(metadataAddress, CancellationToken.None);
                     _currentKeys = JsonConvert.DeserializeObject<Jwks>(value);
-                    _syncAfter = now + _automaticRefreshInterval;
+                    _syncAfter = now + AutomaticRefreshInterval;
                 }
                 catch
                 {
-                    _syncAfter = now + (_automaticRefreshInterval < _refreshInterval ? _automaticRefreshInterval : _refreshInterval);
+                    _syncAfter = now + (AutomaticRefreshInterval < RefreshInterval ? AutomaticRefreshInterval : RefreshInterval);
                     throw;
                 }
                 finally
@@ -95,6 +110,10 @@ namespace JsonWebToken
             return _currentKeys.GetKeys(kid);
         }
 
+        /// <summary>
+        /// Disposes the managed resources.
+        /// </summary>
+        /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -109,6 +128,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Disposes the managed resources.
+        /// </summary>
         public void Dispose()
         {
             GC.SuppressFinalize(this);

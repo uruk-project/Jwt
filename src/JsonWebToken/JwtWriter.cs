@@ -11,26 +11,30 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtWriter : IDisposable
     {
-        private int _defaultTokenLifetimeInMinutes = DefaultTokenLifetimeInMinutes;
-
-        /// <summary>
-        /// Default lifetime of tokens created. 
-        /// </summary>
-        public static readonly int DefaultTokenLifetimeInMinutes = 60;
-
         private readonly SignerFactory _signatureFactory;
         private readonly KeyWrapperFactory _keyWrapFactory;
         private readonly AuthenticatedEncryptorFactory _authenticatedEncryptionFactory;
         private readonly JsonHeaderCache _headerCache;
         private readonly bool _disposeFactories;
+
+        private int _tokenLifetimeInMinutes;
         private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtWriter"/>.
+        /// </summary>
         public JwtWriter() :
             this(new DefaultSignerFactory(), new DefaultKeyWrapperFactory(), new DefaultAuthenticatedEncryptorFactory(), new JsonHeaderCache())
         {
             _disposeFactories = true;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtWriter"/>.
+        /// </summary>
+        /// <param name="signerFactory"></param>
+        /// <param name="keyWrapperFactory"></param>
+        /// <param name="authenticatedEncryptorFactory"></param>
         public JwtWriter(
             SignerFactory signerFactory,
             KeyWrapperFactory keyWrapperFactory,
@@ -39,6 +43,13 @@ namespace JsonWebToken
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtWriter"/>.
+        /// </summary>
+        /// <param name="signerFactory"></param>
+        /// <param name="keyWrapperFactory"></param>
+        /// <param name="authenticatedEncryptorFactory"></param>
+        /// <param name="headerCache"></param>
         public JwtWriter(
             SignerFactory signerFactory,
             KeyWrapperFactory keyWrapperFactory,
@@ -54,30 +65,25 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the token lifetime in minutes.
         /// </summary>
-        /// <remarks>Used by <see cref="WriteToken(JwtDescriptor)"/> to set the default expiration ('exp'). <see cref="DefaultTokenLifetimeInMinutes"/> for the default.</remarks>
-        /// <exception cref="ArgumentOutOfRangeException">'value' less than 1.</exception>
+        /// <remarks>Used by <see cref="WriteToken(JwtDescriptor)"/> to set the default expiration ('exp').</remarks>
+        /// <exception cref="ArgumentOutOfRangeException">'value' less than 0.</exception>
         public int TokenLifetimeInMinutes
         {
             get
             {
-                return _defaultTokenLifetimeInMinutes;
+                return _tokenLifetimeInMinutes;
             }
 
             set
             {
-                if (value < 1)
+                if (value < 0)
                 {
-                    Errors.ThrowMustBeGreaterThanZero(nameof(value), value);
+                    Errors.ThrowMustBeGreaterOrEqualToZero(nameof(value), value);
                 }
 
-                _defaultTokenLifetimeInMinutes = value;
+                _tokenLifetimeInMinutes = value;
             }
         }
-
-        /// <summary>
-        /// Gets or sets whether token creation will set default 'exp', 'nbf' and 'iat' if not specified. Default value is <c>false</c>.
-        /// </summary>
-        public bool SetDefaultTimesOnTokenCreation { get; set; } = false;
 
         /// <summary>
         /// Gets or sets whether the <see cref="JwtDescriptor"/> has to be validated. Default value is <c>false</c>.
@@ -88,6 +94,11 @@ namespace JsonWebToken
         /// Gets or sets whether the JWT header will be cached. Default value is <c>true</c>.
         /// </summary>
         public bool EnableHeaderCaching { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets whether the issued time must be generated.
+        /// </summary>
+        public bool GenerateIssuedTime { get; set; }
 
         /// <summary>
         /// Writes a JWT in its compact serialization format.
@@ -106,23 +117,6 @@ namespace JsonWebToken
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-            if (descriptor is IJwtPayloadDescriptor claimsDescriptor)
-            {
-                if (SetDefaultTimesOnTokenCreation && (!claimsDescriptor.ExpirationTime.HasValue || !claimsDescriptor.IssuedAt.HasValue || !claimsDescriptor.NotBefore.HasValue))
-                {
-                    DateTime now = DateTime.UtcNow;
-                    if (!claimsDescriptor.ExpirationTime.HasValue)
-                    {
-                        claimsDescriptor.ExpirationTime = now + TimeSpan.FromMinutes(TokenLifetimeInMinutes);
-                    }
-
-                    if (!claimsDescriptor.IssuedAt.HasValue)
-                    {
-                        claimsDescriptor.IssuedAt = now;
-                    }
-                }
-            }
-
             if (descriptor.Algorithm == null)
             {
                 descriptor.Algorithm = SignatureAlgorithm.None.Name;
@@ -133,10 +127,13 @@ namespace JsonWebToken
                 descriptor.Validate();
             }
 
-            var encodingContext = new EncodingContext(_signatureFactory, _keyWrapFactory, _authenticatedEncryptionFactory, EnableHeaderCaching ? _headerCache : null);
+            var encodingContext = new EncodingContext(_signatureFactory, _keyWrapFactory, _authenticatedEncryptionFactory, EnableHeaderCaching ? _headerCache : null, TokenLifetimeInMinutes, GenerateIssuedTime);
             return descriptor.Encode(encodingContext);
         }
 
+        /// <summary>
+        /// Release the managed resources.
+        /// </summary>
         public void Dispose()
         {
             if (!_disposed && _disposeFactories)

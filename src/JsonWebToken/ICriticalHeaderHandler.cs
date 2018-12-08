@@ -3,8 +3,17 @@
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represents an extension point for handling the critical header parameter.
+    /// </summary>
     public interface ICriticalHeaderHandler
     {
+        /// <summary>
+        /// Tries to handle a 'crit' header parameter.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="headerName"></param>
+        /// <returns></returns>
         bool TryHandle(CriticalHeaderValidationContext context, string headerName);
     }
 }

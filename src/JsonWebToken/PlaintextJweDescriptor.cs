@@ -10,16 +10,26 @@ namespace JsonWebToken
     /// </summary>
     public sealed class PlaintextJweDescriptor : EncryptedJwtDescriptor<string>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="PlaintextJweDescriptor"/>.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="payload"></param>
         public PlaintextJweDescriptor(IDictionary<string, object> header, string payload)
             : base(header, payload)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="PlaintextJweDescriptor"/>.
+        /// </summary>
+        /// <param name="payload"></param>
         public PlaintextJweDescriptor(string payload)
             : base(payload)
         {
         }
 
+        /// <inheritsdoc />
         public override string Encode(EncodingContext context)
         {
             return EncryptToken(context, Payload);

@@ -3,8 +3,14 @@
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Defines the valitation status of a JWT.
+    /// </summary>
     public enum TokenValidationStatus
-    {
+    { 
+        /// <summary>
+        /// The token is valid.
+        /// </summary>
         Success,
 
         /// <summary>
@@ -53,7 +59,7 @@ namespace JsonWebToken
         DecryptionFailed,
 
         /// <summary>
-        /// The token is not yeet valid, according to the 'nbf' claim.
+        /// The token is not yet valid, according to the 'nbf' claim.
         /// </summary>
         NotYetValid,
 

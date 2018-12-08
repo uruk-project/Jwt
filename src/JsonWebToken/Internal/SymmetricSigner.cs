@@ -102,7 +102,7 @@ namespace JsonWebToken.Internal
             var keyedHash = _hashAlgorithmPool.Get();
             try
             {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 return keyedHash.TryComputeHash(input, destination, out bytesWritten);
 #else
                 try
@@ -135,7 +135,7 @@ namespace JsonWebToken.Internal
             var keyedHash = _hashAlgorithmPool.Get();
             try
             {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 Span<byte> hash = stackalloc byte[_hashSizeInBytes];
                 bool result = keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash);
                 Debug.Assert(hash.Length == bytesWritten);
@@ -223,7 +223,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class HmacSha256ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
+        private sealed class HmacSha256ObjectPoolPolicy : PooledObjectFactory<KeyedHashAlgorithm>
         {
             private readonly byte[] _keyBytes;
 
@@ -238,7 +238,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class HmacSha384ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
+        private sealed class HmacSha384ObjectPoolPolicy : PooledObjectFactory<KeyedHashAlgorithm>
         {
             private readonly byte[] _keyBytes;
 
@@ -253,7 +253,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class HmacSha512ObjectPoolPolicy : PooledObjectPolicy<KeyedHashAlgorithm>
+        private sealed class HmacSha512ObjectPoolPolicy : PooledObjectFactory<KeyedHashAlgorithm>
         {
             private readonly byte[] _keyBytes;
 

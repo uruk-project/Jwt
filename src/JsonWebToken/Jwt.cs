@@ -17,10 +17,19 @@ namespace JsonWebToken
         private static readonly string[] EmptyStrings = Array.Empty<string>();
         private readonly JwtPayload _payload;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="Jwt"/>.
+        /// </summary>
         protected Jwt()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="Jwt"/>.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="nestedToken"></param>
+        /// <param name="encryptionKey"></param>
         public Jwt(JwtHeader header, Jwt nestedToken, Jwk encryptionKey)
         {
             Header = header ?? throw new ArgumentNullException(nameof(header));
@@ -28,6 +37,12 @@ namespace JsonWebToken
             EncryptionKey = encryptionKey ?? throw new ArgumentNullException(nameof(encryptionKey));
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="Jwt"/>.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="binary"></param>
+        /// <param name="encryptionKey"></param>
         public Jwt(JwtHeader header, byte[] binary, Jwk encryptionKey)
         {
             Header = header ?? throw new ArgumentNullException(nameof(header));
@@ -35,6 +50,11 @@ namespace JsonWebToken
             EncryptionKey = encryptionKey ?? throw new ArgumentNullException(nameof(encryptionKey));
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="Jwt"/>.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="payload"></param>
         public Jwt(JwtHeader header, JwtPayload payload)
         {
             Header = header ?? throw new ArgumentNullException(nameof(header));
@@ -117,6 +137,7 @@ namespace JsonWebToken
         /// </summary>
         public byte[] Binary { get; }
 
+        /// <inheritsdoc />
         public override string ToString()
         {
             if (Payload != null)

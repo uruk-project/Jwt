@@ -223,7 +223,7 @@ namespace JsonWebToken.Internal
                 using (var messageStream = new UnmanagedMemoryStream(buffer, output.Length, output.Length, FileAccess.Write))
                 using (CryptoStream cryptoStream = new CryptoStream(messageStream, transform, CryptoStreamMode.Write))
                 {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                     cryptoStream.Write(input.Slice(inputOffset, inputLength));
 #else
                     cryptoStream.Write(input.ToArray(), inputOffset, inputLength);
@@ -234,7 +234,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class AesPooledPolicy : PooledObjectPolicy<Aes>
+        private sealed class AesPooledPolicy : PooledObjectFactory<Aes>
         {
             private readonly byte[] _key;
 

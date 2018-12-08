@@ -10,7 +10,7 @@ namespace JsonWebToken
     {
         public static SecurityEventToken AsSecurityEventToken(this Jwt token)
         {
-            if (!token.Payload.ContainsKey(Claims.Events))
+            if (!token.Payload.ContainsKey(SetClaims.Events))
             {
                 throw new InvalidOperationException();
             }

@@ -35,12 +35,24 @@ namespace JsonWebToken.Tests
 
             var jwt = result.Token;
 
-            var payload = descriptor as IJwtPayloadDescriptor;
-            Assert.Equal(payload.IssuedAt, jwt.IssuedAt);
-            Assert.Equal(payload.ExpirationTime, jwt.ExpirationTime);
-            Assert.Equal(payload.Issuer, jwt.Issuer);
-            Assert.Equal(payload.Audiences?.FirstOrDefault(), jwt.Audiences?.FirstOrDefault());
-            Assert.Equal(payload.JwtId, jwt.Id);
+            var jwsPayload = descriptor as JwsDescriptor;
+            if (jwsPayload != null)
+            {
+                Assert.Equal(jwsPayload.IssuedAt, jwt.IssuedAt);
+                Assert.Equal(jwsPayload.ExpirationTime, jwt.ExpirationTime);
+                Assert.Equal(jwsPayload.Issuer, jwt.Issuer);
+                Assert.Equal(jwsPayload.Audiences?.FirstOrDefault(), jwt.Audiences?.FirstOrDefault());
+                Assert.Equal(jwsPayload.JwtId, jwt.Id);
+            }
+            else
+            {
+                var jwePayload = descriptor as JweDescriptor;
+                Assert.Equal(jwePayload.IssuedAt, jwt.IssuedAt);
+                Assert.Equal(jwePayload.ExpirationTime, jwt.ExpirationTime);
+                Assert.Equal(jwePayload.Issuer, jwt.Issuer);
+                Assert.Equal(jwePayload.Audiences?.FirstOrDefault(), jwt.Audiences?.FirstOrDefault());
+                Assert.Equal(jwePayload.JwtId, jwt.Id);
+            }
         }
 
         [Fact]

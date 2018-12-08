@@ -25,7 +25,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return builder.AddValidator(new RequiredClaimValidator<int>(Claims.AuthTime));
+            return builder.AddValidator(new RequiredClaimValidator<int>(OidcClaims.AuthTime));
         }
 
         public static TokenValidationPolicyBuilder RequireNonce(this TokenValidationPolicyBuilder builder)
@@ -35,7 +35,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return builder.AddValidator(new RequiredClaimValidator<string>(Claims.Nonce));
+            return builder.AddValidator(new RequiredClaimValidator<string>(OidcClaims.Nonce));
         }
     }
 }

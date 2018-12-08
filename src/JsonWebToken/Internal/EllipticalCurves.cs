@@ -9,8 +9,19 @@ namespace JsonWebToken.Internal
     /// </summary>
     public static class EllipticalCurves
     {
+        /// <summary>
+        /// 'P-256'.
+        /// </summary>
         public const string P256 = "P-256";
+
+        /// <summary>
+        /// 'P-384'.
+        /// </summary>
         public const string P384 = "P-384";
+
+        /// <summary>
+        /// 'P-521'.
+        /// </summary>
         public const string P521 = "P-521";
     }
 }

@@ -11,8 +11,6 @@ namespace JsonWebToken
     /// </summary>
     public sealed class TokenValidationPolicy
     {
-        public const int DefaultMaximumTokenSizeInBytes = 1024 * 1024 * 2;
-
         /// <summary>
         /// Represents an policy without any validation.
         /// </summary>
@@ -33,8 +31,16 @@ namespace JsonWebToken
             MaximumTokenSizeInBytes = maximumTokenSizeInBytes;
         }
 
+        /// <summary>
+        /// Gets the maximum token size in bytes.
+        /// </summary>
         public int MaximumTokenSizeInBytes { get; }
 
+        /// <summary>
+        /// Try to validate the token, according to the <paramref name="context"/>.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
             for (int i = 0; i < _validators.Count; i++)
@@ -49,6 +55,11 @@ namespace JsonWebToken
             return TokenValidationResult.Success(context.Jwt);
         }
 
+        /// <summary>
+        /// Try to validate the token, according to the <paramref name="context"/>.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         public TokenValidationResult TryValidate(CriticalHeaderValidationContext context)
         {
             if (context == null)

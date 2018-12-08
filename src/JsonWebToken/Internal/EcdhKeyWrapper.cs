@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
 using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 using System;
@@ -59,7 +59,7 @@ namespace JsonWebToken.Internal
             }
             else
             {
-                return EncryptionAlgorithm.RequiredKeyWrappedSizeInBytes;
+                return EncryptionAlgorithm.KeyWrappedSizeInBytes;
             }
         }
 
@@ -86,7 +86,7 @@ namespace JsonWebToken.Internal
                 exchangeHash = privateKey.DeriveKeyFromHash(ephemeralKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
             }
 
-            if (Algorithm.ProduceEncryptedKey)
+            if (Algorithm.ProduceEncryptionKey)
             {
                 var key = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keySizeInBytes), false);
                 using (KeyWrapper aesKeyWrapProvider = key.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
@@ -122,7 +122,7 @@ namespace JsonWebToken.Internal
                 header[HeaderParameters.Epk] = epk;
             }
 
-            if (Algorithm.ProduceEncryptedKey)
+            if (Algorithm.ProduceEncryptionKey)
             {
                 var kek = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keySizeInBytes), false);
                 using (KeyWrapper aesKeyWrapProvider = kek.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))

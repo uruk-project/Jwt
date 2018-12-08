@@ -22,7 +22,7 @@ namespace JsonWebToken.Internal
                 return null;
             }
 
-            var signers = willCreateSignatures ? ValidationSigners : Signers;
+            var signers = willCreateSignatures ? VerificationSigners : CreationSigners;
             var factoryKey = new CryptographicFactoryKey(key, algorithm.Id);
             if (signers.TryGetValue(factoryKey, out var cachedSigner))
             {

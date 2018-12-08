@@ -17,6 +17,10 @@ namespace JsonWebToken
         private string _x;
         private string _y;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="parameters"></param>
         public ECJwk(ECParameters parameters)
             : this()
         {
@@ -53,6 +57,9 @@ namespace JsonWebToken
             RawY = CloneByteArray(y);
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ECJwk"/>.
+        /// </summary>
         public ECJwk()
         {
             Kty = JwkTypeNames.EllipticCurve;
@@ -219,7 +226,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
             return new EcdhKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
 #else
             return null;
@@ -316,7 +323,7 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
-        public override Jwk Normalize()
+        public override Jwk Canonicalize()
         {
             return new ECJwk(Crv, RawD, RawX, RawY);
         }
@@ -376,7 +383,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override byte[] ToByteArray()
         {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
             using (var ecdh = ECDiffieHellman.Create(ExportParameters()))
             {
                 return ecdh.PublicKey.ToByteArray();

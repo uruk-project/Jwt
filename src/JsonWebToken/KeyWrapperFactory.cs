@@ -5,12 +5,22 @@ using System;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represents a factory of <see cref="KeyWrapper"/>.
+    /// </summary>
     public abstract class KeyWrapperFactory : IDisposable
     {
         private bool _disposed;
 
+        /// <summary>
+        /// Gets the store of <see cref="KeyWrapper"/> used for key wrapping. 
+        /// </summary>
         protected CryptographicStore<KeyWrapper> KeyWrappers { get; } = new CryptographicStore<KeyWrapper>();
 
+        /// <summary>
+        /// Dispose the managed resources.
+        /// </summary>
+        /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -24,11 +34,17 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Dispose the managed resources.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
         }
 
+        /// <summary>
+        /// Throw if the current <see cref="KeyWrapperFactory"/> is already disposed.
+        /// </summary>
         protected void ThrowIfDisposed()
         {
             if (_disposed)

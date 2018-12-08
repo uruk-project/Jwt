@@ -28,6 +28,13 @@ namespace JsonWebToken
 
         private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtReader"/>.
+        /// </summary>
+        /// <param name="encryptionKeyProviders"></param>
+        /// <param name="signerFactory"></param>
+        /// <param name="keyWrapperFactory"></param>
+        /// <param name="authenticatedEncryptorFactory"></param>
         public JwtReader(
             ICollection<IKeyProvider> encryptionKeyProviders,
             SignerFactory signerFactory,
@@ -37,6 +44,14 @@ namespace JsonWebToken
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtReader"/>.
+        /// </summary>
+        /// <param name="encryptionKeyProviders"></param>
+        /// <param name="signerFactory"></param>
+        /// <param name="keyWrapperFactory"></param>
+        /// <param name="authenticatedEncryptorFactory"></param>
+        /// <param name="headerCache"></param>
         public JwtReader(
                   ICollection<IKeyProvider> encryptionKeyProviders,
                   SignerFactory signerFactory,
@@ -56,37 +71,64 @@ namespace JsonWebToken
             _headerCache = headerCache ?? new JwtHeaderCache();
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtReader"/>.
+        /// </summary>
+        /// <param name="encryptionKeyProviders"></param>
         public JwtReader(ICollection<IKeyProvider> encryptionKeyProviders)
             : this(encryptionKeyProviders, new DefaultSignerFactory(), new DefaultKeyWrapperFactory(), new DefaultAuthenticatedEncryptorFactory())
         {
             _disposeFactories = true;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtReader"/>.
+        /// </summary>
+        /// <param name="keys"></param>
         public JwtReader(IList<Jwk> keys)
            : this(new Jwks(keys))
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtReader"/>.
+        /// </summary>
+        /// <param name="keys"></param>
         public JwtReader(params Jwk[] keys)
            : this(new Jwks(keys))
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtReader"/>.
+        /// </summary>
+        /// <param name="encryptionKeyProvider"></param>
         public JwtReader(IKeyProvider encryptionKeyProvider)
             : this(new[] { encryptionKeyProvider ?? throw new ArgumentNullException(nameof(encryptionKeyProvider)) })
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtReader"/>.
+        /// </summary>
+        /// <param name="encryptionKeys"></param>
         public JwtReader(Jwks encryptionKeys)
             : this(new StaticKeyProvider(encryptionKeys))
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtReader"/>.
+        /// </summary>
+        /// <param name="encryptionKey"></param>
         public JwtReader(Jwk encryptionKey)
             : this(new Jwks(encryptionKey))
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtReader"/>.
+        /// </summary>
         public JwtReader()
             : this(Array.Empty<IKeyProvider>())
         {
@@ -131,7 +173,7 @@ namespace JsonWebToken
                   : (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
             try
             {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 Encoding.UTF8.GetBytes(token, utf8Buffer);
 #else
                 EncodingHelper.GetUtf8Bytes(token, utf8Buffer);
@@ -323,7 +365,7 @@ namespace JsonWebToken
             try
             {
                 Base64Url.Base64UrlDecode(data, buffer);
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 var json = Encoding.UTF8.GetString(buffer);
 #else
                 var json = Encoding.UTF8.GetString(buffer.ToArray());
@@ -374,7 +416,7 @@ namespace JsonWebToken
                 Base64Url.Base64UrlDecode(rawCiphertext, ciphertext, out int ciphertextBytesConsumed, out int ciphertextBytesWritten);
                 Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
 
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 char[] headerArrayToReturn = null;
                 try
                 {
@@ -478,6 +520,9 @@ namespace JsonWebToken
             return keys;
         }
 
+        /// <summary>
+        /// Releases managed reources.
+        /// </summary>
         public void Dispose()
         {
             if (!_disposed && _disposeFactories)

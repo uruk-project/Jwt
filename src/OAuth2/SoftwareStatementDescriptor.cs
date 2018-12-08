@@ -1,11 +1,10 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace JsonWebToken
 {
@@ -30,8 +29,8 @@ namespace JsonWebToken
         /// </summary>
         public string SoftwareId
         {
-            get { return GetStringClaim(Claims.SoftwareId); }
-            set { AddClaim(Claims.SoftwareId, value); }
+            get { return GetStringClaim(OAuth2Claims.SoftwareId); }
+            set { AddClaim(OAuth2Claims.SoftwareId, value); }
         }
 
         protected override ReadOnlyDictionary<string, JTokenType[]> RequiredClaims => SoftwareStatementRequiredClaims;

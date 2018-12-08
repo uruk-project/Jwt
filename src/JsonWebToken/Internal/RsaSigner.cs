@@ -81,7 +81,7 @@ namespace JsonWebToken
             var rsa = _hashAlgorithmPool.Get();
             try
             {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 return rsa.TrySignData(input, destination, _hashAlgorithm, _signaturePadding, out bytesWritten);
 #else
                 try
@@ -123,7 +123,7 @@ namespace JsonWebToken
             var rsa = _hashAlgorithmPool.Get();
             try
             {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 return rsa.VerifyData(input, signature, _hashAlgorithm, _signaturePadding);
 #else
                 return rsa.VerifyData(input.ToArray(), signature.ToArray(), _hashAlgorithm, _signaturePadding);
@@ -148,7 +148,7 @@ namespace JsonWebToken
             }
         }
 
-        private sealed class RsaObjectPoolPolicy : PooledObjectPolicy<RSA>
+        private sealed class RsaObjectPoolPolicy : PooledObjectFactory<RSA>
         {
             private readonly RSAParameters _parameters;
 
@@ -159,7 +159,7 @@ namespace JsonWebToken
 
             public override RSA Create()
             {
-#if NETCOREAPP2_1
+#if !NETSTANDARD2_0
                 return RSA.Create(_parameters);
 #else
                 var rsa = RSA.Create();

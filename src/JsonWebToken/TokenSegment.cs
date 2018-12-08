@@ -5,37 +5,50 @@ using System;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represents a segment of token.
+    /// </summary>
     public readonly struct TokenSegment : IEquatable<TokenSegment>
     {
+        /// <summary>
+        /// The start of the segment.
+        /// </summary>
         public readonly int Start;
+
+        /// <summary>
+        /// The end of the segment.
+        /// </summary>
         public readonly int Length;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="TokenSegment"/>.
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="length"></param>
         public TokenSegment(int start, int length)
         {
             Start = start;
             Length = length;
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is TokenSegment segment ? Equals(segment) : false;
-        }
+        /// <inheritsdoc />
+        public override bool Equals(object obj) => obj is TokenSegment segment ? Equals(segment) : false;
 
-        public bool Equals(TokenSegment other)
-        {
-            return Start == other.Start && Length == other.Length;
-        }
+        /// <inheritsdoc />
+        public bool Equals(TokenSegment other) => Start == other.Start && Length == other.Length;
 
+        /// <inheritsdoc />
         public override int GetHashCode()
         {
             return Start;
         }
 
-        public override string ToString()
-        {
-            return $"Segment({Start}:{Length})";
-        }
+        /// <inheritsdoc />
+        public override string ToString() => $"Segment({Start}:{Length})";
 
+        /// <summary>
+        /// Gets wether the segment is empty.
+        /// </summary>
         public bool IsEmpty => Length == 0;
     }
 }
