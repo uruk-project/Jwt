@@ -101,24 +101,25 @@ namespace JsonWebToken.Performance
                 throw new Exception();
             }
         }
-        public IEnumerable<object[]> GetTokens()
+
+        public IEnumerable<string> GetTokens()
         {
-            yield return new[] { "JWS-empty" };
-            yield return new[] { "JWS-small" };
-            yield return new[] { "JWS-medium" };
-            yield return new[] { "JWS-big" };
-            yield return new[] { "JWE-empty" };
-            yield return new[] { "JWE-small" };
-            yield return new[] { "JWE-medium" };
-            yield return new[] { "JWE-big" };
+            yield return "JWS-empty";
+            yield return "JWS-small";
+            yield return "JWS-medium";
+            yield return "JWS-big";
+            yield return "JWE-empty";
+            yield return "JWE-small";
+            yield return "JWE-medium";
+            yield return "JWE-big";
         }
 
-        public IEnumerable<object[]> GetNotEncryptedTokens()
+        public IEnumerable<string> GetNotEncryptedTokens()
         {
-            yield return new[] { "JWS-empty" };
-            yield return new[] { "JWS-small" };
-            yield return new[] { "JWS-medium" };
-            yield return new[] { "JWS-big" };
+            yield return "JWS-empty";
+            yield return "JWS-small";
+            yield return "JWS-medium";
+            yield return "JWS-big";
         }
     }
 }

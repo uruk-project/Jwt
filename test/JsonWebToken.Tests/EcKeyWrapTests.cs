@@ -28,14 +28,13 @@ namespace JsonWebToken.Tests
         public void Wrap_Rfc7518_Appendix_C()
         {
             var kwp = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.EcdhEs);
-            byte[] wrappedKey = null;
             var header = new Dictionary<string, object>
             {
                 { HeaderParameters.Apu, Base64Url.Base64UrlEncode("Alice") },
                 { HeaderParameters.Apv, Base64Url.Base64UrlEncode("Bob") }
             };
 
-            var wrapped = kwp.TryWrapKey(_aliceKey, header, wrappedKey, out var cek, out var bytesWritten);
+            var wrapped = kwp.TryWrapKey(_aliceKey, header, null, out var cek, out var bytesWritten);
             Assert.True(wrapped);
 
             var expected = new byte[] { 86, 170, 141, 234, 248, 35, 109, 32, 92, 34, 40, 205, 113, 167, 16, 26 };
@@ -59,7 +58,7 @@ namespace JsonWebToken.Tests
             var jwtHeader = new JwtHeader();
             jwtHeader["apu"] = Base64Url.Base64UrlEncode("Alice");
             jwtHeader["apv"] = Base64Url.Base64UrlEncode("Bob");
-            jwtHeader["epk"] = JObject.FromObject(header[HeaderParameters.Epk]);
+            jwtHeader["epk"] = JObject.FromObject(header[HeaderParameters.Epk]).ToObject<Dictionary<string, object>>();
 
             byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
             var unwrapped = kwp2.TryUnwrapKey(wrappedKey, unwrappedKey, jwtHeader, out bytesWritten);
@@ -84,7 +83,7 @@ namespace JsonWebToken.Tests
             var jwtHeader = new JwtHeader();
             jwtHeader["apu"] = Base64Url.Base64UrlEncode("Alice");
             jwtHeader["apv"] = Base64Url.Base64UrlEncode("Bob");
-            jwtHeader["epk"] = JObject.FromObject(header[HeaderParameters.Epk]);
+            jwtHeader["epk"] = JObject.FromObject(header[HeaderParameters.Epk]).ToObject<Dictionary<string, object>>();
 
             byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
             var unwrapped = kwp2.TryUnwrapKey(wrappedKey, unwrappedKey, jwtHeader, out bytesWritten);

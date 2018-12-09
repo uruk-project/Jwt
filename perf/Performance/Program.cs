@@ -1,7 +1,6 @@
 ﻿using JsonWebToken;
 using System;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Performance
 {
@@ -41,14 +40,12 @@ namespace Performance
             //}
             var expires = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc);
             var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
-            var issuer = "https://idp.example.com/";
-            var audience = "636C69656E745F6964";
             var jws = new JwsDescriptor()
             {
                 IssuedAt = issuedAt,
                 ExpirationTime = expires,
-                Issuer = issuer,
-                Audience = audience,
+                Issuer = "https://idp.example.com/",
+                Audience = "636C69656E745F6964",
                 Key = SharedKey
             };
             var jwe = new JweDescriptor
@@ -59,16 +56,13 @@ namespace Performance
             };
             var jwX = new PlaintextJweDescriptor("Hello world !");
             var jwB = new BinaryJweDescriptor(Encoding.UTF8.GetBytes("Hello world !"));
-            var jwt = _writer.WriteToken(jwe);
+            var jwt = _writer.WriteToken(jws);
 
-            Parallel.For(0, 10, _ =>
+            while (true)
             {
-                for (int i = 0; i < 1000000; i++)
-                {
-                    var result = _reader.TryReadToken(jwt.AsSpan(), policy);
-                }
-                _writer.EnableHeaderCaching = false;
-            });
+                var result = _reader.TryReadToken(jwt.AsSpan(), policy);
+            }
+
             //while (true)
             //{
             //    var jwt = _writer.WriteToken(jws);
