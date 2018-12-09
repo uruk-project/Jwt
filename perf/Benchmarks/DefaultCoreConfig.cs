@@ -29,7 +29,13 @@ namespace JsonWebToken.Performance
             Add(BenchmarkLogicalGroupRule.ByCategory);
 
             Add(Job.Core
+                .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp20))
+                .With(new GcMode { Server = true }));
+            Add(Job.Core
                 .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
+                .With(new GcMode { Server = true }));
+            Add(Job.Core
+                .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp30))
                 .With(new GcMode { Server = true }));
         }
     }

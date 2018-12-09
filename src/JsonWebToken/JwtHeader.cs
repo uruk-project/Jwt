@@ -15,7 +15,22 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtHeader : Dictionary<string, object>
     {
-        //public new JToken this[string key] => TryGetValue(key, out var value) ? JToken.FromObject(value) : null;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtHeader"/> class.
+        /// </summary>
+        /// <param name="inner"></param>
+        public JwtHeader(Dictionary<string, object> inner)
+            : base(inner)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtHeader"/> class.
+        /// </summary>
+        public JwtHeader()
+            : base()
+        {
+        }
 
         /// <summary>
         /// Gets the signature algorithm that was used to create the signature.
@@ -75,15 +90,22 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the Crit header.
         /// </summary>
+#if NETCOREAPP3_0
+        public IList<string> Crit => GetValue<List<object>>(HeaderParameters.Crit)?.Cast<string>().ToList();
+#else
         public IList<string> Crit => GetValue<JArray>(HeaderParameters.Crit)?.Values<string>().ToList();
+#endif
 
 #if !NETSTANDARD
         /// <summary>
         /// Gets the ephemeral key used for ECDH key agreement.
         /// </summary>
         [JsonProperty(PropertyName = HeaderParameters.Epk, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        //public ECJwk Epk => GetValue<ECJwk>(HeaderParameters.Epk);
+#if NETCOREAPP3_0
+        public ECJwk Epk => ECJwk.FromDictionary(GetValue<Dictionary<string, object>>(HeaderParameters.Epk));
+#else
         public ECJwk Epk => ECJwk.FromJObject(GetValue<JObject>(HeaderParameters.Epk));
+#endif
 
         /// <summary>
         /// Gets the Agreement PartyUInfo used for ECDH key agreement.
