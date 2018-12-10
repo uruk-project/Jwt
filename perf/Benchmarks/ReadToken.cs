@@ -68,7 +68,7 @@ namespace JsonWebToken.Performance
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public void JoseDotNet(string token)
         {
@@ -91,7 +91,7 @@ namespace JsonWebToken.Performance
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         [ArgumentsSource(nameof(GetNotEncryptedTokens))]
         public void JwtDotNet(string token)
         {

@@ -16,7 +16,25 @@ namespace JsonWebToken.Performance
         {
             Add(ConsoleLogger.Default);
             Add(MarkdownExporter.GitHub);
+            Add(MemoryDiagnoser.Default);
             Add(StatisticColumn.OperationsPerSecond);
+            Add(DefaultColumnProviders.Instance);
+
+            Add(JitOptimizationsValidator.FailOnError);
+            Add(BenchmarkLogicalGroupRule.ByCategory);
+
+            Add(Job.Core
+                .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp30))
+                .With(new GcMode { Server = true }));
+        }
+    }
+
+    internal class AllTfmCoreConfig : ManualConfig
+    {
+        public AllTfmCoreConfig()
+        {
+            Add(ConsoleLogger.Default);
+            Add(MarkdownExporter.GitHub);
             Add(MemoryDiagnoser.Default);
             Add(StatisticColumn.OperationsPerSecond);
             Add(DefaultColumnProviders.Instance);
@@ -32,6 +50,10 @@ namespace JsonWebToken.Performance
                 .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
                 .With(new GcMode { Server = true }));	         
             
+            Add(Job.Core
+                .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp30))
+                .With(new GcMode { Server = true }));
+
             Add(Job.Core
                 .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp30))
                 .With(new GcMode { Server = true }));

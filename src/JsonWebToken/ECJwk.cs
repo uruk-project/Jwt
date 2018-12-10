@@ -205,7 +205,11 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override bool IsSupported(EncryptionAlgorithm algorithm)
         {
+#if NETCOREAPP3_0
             return algorithm.Category == EncryptionType.AesHmac || algorithm.Category == EncryptionType.AesGcm;
+#else
+            return algorithm.Category == EncryptionType.AesHmac;
+#endif
         }
 
         /// <inheritdoc />

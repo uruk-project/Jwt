@@ -120,6 +120,32 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new JwsDescriptor()
                 {
+                   Algorithm = SignatureAlgorithm.None
+                };
+
+                foreach (var property in payload.Value.Properties())
+                {
+                    switch (property.Name)
+                    {
+                        case "iat":
+                        case "nbf":
+                        case "exp":
+                            descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
+                            break;
+                        default:
+                            descriptor.AddClaim(property.Name, (string)property.Value);
+                            break;
+                    }
+                }
+
+                descriptors.Add("JWT-" + payload.Key, descriptor);
+            }
+
+
+            foreach (var payload in payloads)
+            {
+                var descriptor = new JwsDescriptor()
+                {
                     Key = signingKey
                 };
 

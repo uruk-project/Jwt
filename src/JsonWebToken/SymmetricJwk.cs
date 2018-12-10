@@ -185,8 +185,10 @@ namespace JsonWebToken
                 {
                     case EncryptionType.AesHmac:
                         return new AesKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+#if NETCOREAPP3_0
                     case EncryptionType.AesGcm:
                         return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+#endif
                     default:
                         return null;
                 }
@@ -206,8 +208,10 @@ namespace JsonWebToken
                         break;
                     case EncryptionType.AesHmac:
                         return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+#if NETCOREAPP3_0
                     case EncryptionType.AesGcm:
                         return new AesGcmEncryptor(this, encryptionAlgorithm);
+#endif
                     default:
                         return null;
                 }
