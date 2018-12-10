@@ -15,18 +15,24 @@ namespace JsonWebToken.Tests
     {
         [Theory]
         [MemberData(nameof(GetValidTokens))]
-        public void ReadJwt_Valid(string token)
+        public void ReadJwt_Valid(string token, bool signed)
         {
             var jwt = Tokens.ValidTokens[token];
             var reader = new JwtReader(Keys.Jwks);
-            var policy = new TokenValidationPolicyBuilder()
-                    .RequireSignature(Keys.Jwks)
+            var builder = new TokenValidationPolicyBuilder()
                     .AddLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
-                    .RequireIssuer("https://idp.example.com/")
-                    .Build();
+                    .RequireIssuer("https://idp.example.com/");
+            if (signed)
+            {
+                builder.RequireSignature(Keys.Jwks);
+            }
+            else
+            {
+                builder.AcceptUnsecureToken();
+            }
 
-            var result = reader.TryReadToken(jwt, policy);
+            var result = reader.TryReadToken(jwt, builder);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
         }
 
@@ -107,10 +113,10 @@ namespace JsonWebToken.Tests
         {
             foreach (var item in Tokens.ValidTokens.Where(t => !t.Key.EndsWith("empty")))
             {
-                yield return new object[] { item.Key };
+                yield return new object[] { item.Key, !item.Key.StartsWith("JWT") };
             }
         }
-
+        
         public static IEnumerable<object[]> GetInvalidTokens()
         {
             foreach (var item in Tokens.InvalidTokens)

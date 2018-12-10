@@ -36,12 +36,14 @@ namespace JsonWebToken.Performance
             AreEqual_Minus(ref MemoryMarshal.GetReference(first.AsSpan()), ref MemoryMarshal.GetReference(second.AsSpan()), first.Length);
         }
 
+#if !NETCOREAPP2_0
         [Benchmark]
         [ArgumentsSource(nameof(GetData))]
         public void Equals_FixedTime(byte[] first, byte[] second)
         {
             CryptographicOperations.FixedTimeEquals(first, second);
         }
+#endif
 
         public static IEnumerable<object[]> GetData()
         {
