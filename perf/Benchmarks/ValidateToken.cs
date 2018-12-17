@@ -49,10 +49,10 @@ namespace JsonWebToken.Performance
 
         public IEnumerable<string> GetTokens()
         {
-            yield return "JWT-empty";
+            //yield return "JWT-empty";
             yield return "JWT-small";
-            yield return "JWT-medium";
-            yield return "JWT-big";
+            //yield return "JWT-medium";
+            //yield return "JWT-big";
         }
     }
 
@@ -60,36 +60,47 @@ namespace JsonWebToken.Performance
     [BenchmarkCategory("CI-CD")]
     public class ValidateSignedToken : ValidateToken
     {
-        [Benchmark(Baseline = true)]
+        private const int OperationPerInvoke = 100;
+
+        [Benchmark(Baseline = true, OperationsPerInvoke = OperationPerInvoke)]
         [ArgumentsSource(nameof(GetTokens))]
         public void Jwt(string token)
         {
-            var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), policyWithSignatureValidation);
-            if (!result.Succedeed)
+            for (int i = 0; i < OperationPerInvoke; i++)
             {
-                throw new Exception(result.Status.ToString());
+                var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), policyWithSignatureValidation);
+                if (!result.Succedeed)
+                {
+                    throw new Exception(result.Status.ToString());
+                }
             }
         }
 
-        [Benchmark]
+        [Benchmark(OperationsPerInvoke = OperationPerInvoke)]
         [ArgumentsSource(nameof(GetTokens))]
         public void Wilson(string token)
         {
-            var result = Handler.ValidateToken(Tokens.ValidTokens[token], wilsonParameters, out var securityToken);
-            if (result == null)
+            for (int i = 0; i < OperationPerInvoke; i++)
             {
-                throw new Exception();
+                var result = Handler.ValidateToken(Tokens.ValidTokens[token], wilsonParameters, out var securityToken);
+                if (result == null)
+                {
+                    throw new Exception();
+                }
             }
         }
 
-        [Benchmark]
+        [Benchmark(OperationsPerInvoke = OperationPerInvoke)]
         [ArgumentsSource(nameof(GetTokens))]
-        public void Wilson2(string token)
+        public void WilsonJwt(string token)
         {
-            var result = Handler2.ValidateToken(Tokens.ValidTokens[token], wilsonParameters);
-            if (result.SecurityToken == null)
+            for (int i = 0; i < OperationPerInvoke; i++)
             {
-                throw new Exception();
+                var result = Handler2.ValidateToken(Tokens.ValidTokens[token], wilsonParameters);
+                if (result.SecurityToken == null)
+                {
+                    throw new Exception();
+                }
             }
         }
 
@@ -130,7 +141,7 @@ namespace JsonWebToken.Performance
 
         [Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
-        public void Wilson2(string token)
+        public void WilsonJwt(string token)
         {
             var result = Handler2.ValidateToken(Tokens.ValidTokens[token], wilsonParameters);
             if (result.SecurityToken == null)
@@ -141,10 +152,10 @@ namespace JsonWebToken.Performance
 
         public IEnumerable<string> GetTokens()
         {
-            yield return "JWE-empty";
+            //yield return "JWE-empty";
             yield return "JWE-small";
-            yield return "JWE-medium";
-            yield return "JWE-big";
+            //yield return "JWE-medium";
+            //yield return "JWE-big";
         }
     }
 
@@ -168,7 +179,7 @@ namespace JsonWebToken.Performance
         private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SymmetricKey.ToString());
 
         protected static readonly Microsoft.IdentityModel.Tokens.TokenValidationParameters wilsonParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters() { IssuerSigningKey = WilsonSharedKey, ValidateAudience = false, ValidateIssuer = false, ValidateLifetime = false, TokenDecryptionKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(Tokens.EncryptionKey.ToString()) };
-        protected static readonly Microsoft.IdentityModel.Tokens.TokenValidationParameters wilsonParametersWithouSignature = new Microsoft.IdentityModel.Tokens.TokenValidationParameters() {  ValidateAudience = false, ValidateIssuer = false, ValidateLifetime = false };
+        protected static readonly Microsoft.IdentityModel.Tokens.TokenValidationParameters wilsonParametersWithouSignature = new Microsoft.IdentityModel.Tokens.TokenValidationParameters() { ValidateAudience = false, ValidateIssuer = false, ValidateLifetime = false, RequireSignedTokens = false };
 
         //[Benchmark]
         //[ArgumentsSource(nameof(GetTokens))]
@@ -202,7 +213,7 @@ namespace JsonWebToken.Performance
                 throw new Exception();
             }
         }
-        
+
         public IEnumerable<string> GetNotEncryptedTokens()
         {
             yield return "JWS-empty";
