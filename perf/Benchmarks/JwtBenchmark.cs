@@ -15,18 +15,24 @@ namespace JsonWebToken.Performance
             yield return "JWS-big";
         }
 
-        [Benchmark]
+        [Benchmark(OperationsPerInvoke = OperationPerInvoke)]
         [ArgumentsSource(nameof(GetTokens))]
         public override void ValidateJwt(string token)
         {
-            ValidateJwtCore(token, policyWithSignatureValidation);
+            for (int i = 0; i < OperationPerInvoke; i++)
+            {
+                ValidateJwtCore(token, policyWithSignatureValidation);
+            }
         }
 
-        [Benchmark]
+        [Benchmark(OperationsPerInvoke = OperationPerInvoke)]
         [ArgumentsSource(nameof(GetTokens))]
         public override void WriteJwt(string token)
         {
-            WriteJwtCore(token);
+            for (int i = 0; i < OperationPerInvoke; i++)
+            {
+                WriteJwtCore(token);
+            }
         }
     }
 
@@ -40,18 +46,24 @@ namespace JsonWebToken.Performance
             yield return "JWT-big";
         }
 
-        [Benchmark]
+        [Benchmark(OperationsPerInvoke = OperationPerInvoke)]
         [ArgumentsSource(nameof(GetTokens))]
         public override void ValidateJwt(string token)
         {
-            ValidateJwtCore(token, TokenValidationPolicy.NoValidation);
+            for (int i = 0; i < OperationPerInvoke; i++)
+            {
+                ValidateJwtCore(token, TokenValidationPolicy.NoValidation);
+            }
         }
 
-        [Benchmark]
+        [Benchmark(OperationsPerInvoke = OperationPerInvoke)]
         [ArgumentsSource(nameof(GetTokens))]
         public override void WriteJwt(string token)
         {
-            WriteJwtCore(token);
+            for (int i = 0; i < OperationPerInvoke; i++)
+            {
+                WriteJwtCore(token);
+            }
         }
     }
 
@@ -65,18 +77,24 @@ namespace JsonWebToken.Performance
             yield return "JWE-big";
         }
 
-        [Benchmark]
+        [Benchmark(OperationsPerInvoke = OperationPerInvoke)]
         [ArgumentsSource(nameof(GetTokens))]
         public override void ValidateJwt(string token)
         {
-            ValidateJwtCore(token, policyWithSignatureValidation);
+            for (int i = 0; i < OperationPerInvoke; i++)
+            {
+                ValidateJwtCore(token, policyWithSignatureValidation);
+            }
         }
 
-        [Benchmark]
+        [Benchmark(OperationsPerInvoke = OperationPerInvoke)]
         [ArgumentsSource(nameof(GetTokens))]
         public override void WriteJwt(string token)
         {
-            WriteJwtCore(token);
+            for (int i = 0; i < OperationPerInvoke; i++)
+            {
+                WriteJwtCore(token);
+            }
         }
     }
 
@@ -108,6 +126,8 @@ namespace JsonWebToken.Performance
     [Config(typeof(AllTfmCoreConfig))]
     public abstract class JwtBenchmarkBase
     {
+        protected const int OperationPerInvoke = 500;
+
         private static readonly SymmetricJwk SigningKey = Tokens.SigningKey;
 
         private static readonly SymmetricJwk EncryptionKey = Tokens.EncryptionKey;
