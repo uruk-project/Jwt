@@ -211,13 +211,13 @@ namespace JsonWebToken
                 {
                     if (!_headerCache.TryGetHeader(rawHeader, out header))
                     {
-                        header = new JwtHeader(GetJsonObject(rawHeader));
+                        header = GetJsonHeader(rawHeader);
                         _headerCache.AddHeader(rawHeader, header);
                     }
                 }
                 else
                 {
-                    header = new JwtHeader(GetJsonObject(rawHeader));
+                    header = GetJsonHeader(rawHeader);
                 }
             }
             catch (FormatException formatException)
@@ -344,7 +344,7 @@ namespace JsonWebToken
             JwtPayload payload;
             try
             {
-                payload = new JwtPayload(GetJsonObject(rawPayload));
+                payload = GetJsonPayload(rawPayload);
             }
             catch (FormatException formatException)
             {
@@ -359,7 +359,7 @@ namespace JsonWebToken
             return policy.TryValidate(new TokenValidationContext(utf8Buffer, jws, _signatureFactory, new TokenSegment(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), segments[2]));
         }
 
-        private static Dictionary<string, object> GetJsonObject(ReadOnlySpan<byte> data)
+        private static JwtPayload GetJsonPayload(ReadOnlySpan<byte> data)
         {
             int base64UrlLength = Base64Url.GetArraySizeRequiredToDecode(data.Length);
             byte[] base64UrlArrayToReturnToPool = null;
@@ -369,16 +369,7 @@ namespace JsonWebToken
             try
             {
                 Base64Url.Base64UrlDecode(data, buffer);
-#if NETCOREAPP3_0
-                return ReadJson(buffer);
-#else
-#if !NETSTANDARD2_0
-                var json = Encoding.UTF8.GetString(buffer);
-#else
-                var json = Encoding.UTF8.GetString(buffer.ToArray());
-#endif
-                return JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
-#endif
+                return JsonParser.ParsePayload(buffer);
             }
             finally
             {
@@ -389,122 +380,26 @@ namespace JsonWebToken
             }
         }
 
-#if NETCOREAPP3_0
-        private static Dictionary<string, object> ReadJson(Span<byte> buffer)
+        private static JwtHeader GetJsonHeader(ReadOnlySpan<byte> data)
         {
-            Utf8JsonReader reader = new Utf8JsonReader(buffer, true, default);
-
-            Stack<Dictionary<string, object>> stack = new Stack<Dictionary<string, object>>();
-            stack.Push(new Dictionary<string, object>());
-            while (reader.Read())
+            int base64UrlLength = Base64Url.GetArraySizeRequiredToDecode(data.Length);
+            byte[] base64UrlArrayToReturnToPool = null;
+            var buffer = base64UrlLength <= Constants.MaxStackallocBytes
+              ? stackalloc byte[base64UrlLength]
+              : (base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64UrlLength)).AsSpan(0, base64UrlLength);
+            try
             {
-                switch (reader.TokenType)
-                {
-                    case JsonTokenType.EndObject:
-                        if (stack.Count != 1)
-                        {
-                            stack.Pop();
-                        }
-                        break;
-                    case JsonTokenType.PropertyName:
-                        string name = reader.GetStringValue();
-                        reader.Read();
-                        var type = reader.TokenType;
-                        var current = stack.Peek();
-                        switch (type)
-                        {
-                            case JsonTokenType.String:
-                                current[name] = reader.GetStringValue();
-                                break;
-                            case JsonTokenType.StartObject:
-                                var newObj = new Dictionary<string, object>();
-                                current[name] = newObj;
-                                stack.Push(newObj);
-                                break;
-                            case JsonTokenType.True:
-                                current[name] = true;
-                                break;
-                            case JsonTokenType.False:
-                                current[name] = false;
-                                break;
-                            case JsonTokenType.Null:
-                                current[name] = null;
-                                break;
-                            case JsonTokenType.Number:
-                                if (reader.TryGetInt64Value(out long longValue))
-                                {
-                                    current[name] = longValue;
-                                }
-                                else
-                                {
-                                    if (reader.TryGetDoubleValue(out double doubleValue))
-                                    {
-                                        current[name] = doubleValue;
-                                    }
-                                    else
-                                    {
-                                        throw new FormatException();
-                                    }
-                                }
-                                break;
-                            case JsonTokenType.StartArray:
-                                var array = new List<object>();
-                                ReadJsonArray(ref reader, array);
-                                current.Add(name, array);
-                                break;
-                            default:
-                                throw new FormatException();
-                        }
-                        break;
-                    case JsonTokenType.StartObject:
-                        break;
-                    default:
-                        throw new FormatException();
-                }
+                Base64Url.Base64UrlDecode(data, buffer);
+                return JsonParser.ParseHeader(buffer);
             }
-            return stack.Peek();
-        }
-        private static void ReadJsonArray(ref Utf8JsonReader reader, List<object> array)
-        {
-            while (reader.Read())
+            finally
             {
-                switch (reader.TokenType)
+                if (base64UrlArrayToReturnToPool != null)
                 {
-                    case JsonTokenType.EndArray:
-                        return;
-                    case JsonTokenType.Null:
-                        array.Add(null);
-                        break;
-                    case JsonTokenType.Number:
-                        if (!reader.TryGetInt64Value(out long valueInteger))
-                        {
-                            throw new FormatException();
-                        }
-                        array.Add(valueInteger);
-                        break;
-                    case JsonTokenType.String:
-                        string valueString = reader.GetStringValue();
-                        array.Add(valueString);
-                        break;
-                    case JsonTokenType.True:
-                        array.Add(true);
-                        break;
-                    case JsonTokenType.False:
-                        array.Add(false);
-                        break;
-                    case JsonTokenType.StartArray:
-                        var innerArray = new List<object>();
-                        ReadJsonArray(ref reader, innerArray);
-                        break;
-                    case JsonTokenType.EndObject:
-                    case JsonTokenType.PropertyName:
-                    case JsonTokenType.StartObject:
-                    default:
-                        break;
+                    ArrayPool<byte>.Shared.Return(base64UrlArrayToReturnToPool);
                 }
             }
         }
-#endif
 
         private bool TryDecryptToken(
             ReadOnlySpan<byte> rawHeader,

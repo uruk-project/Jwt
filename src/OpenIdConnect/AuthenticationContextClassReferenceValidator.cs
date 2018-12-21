@@ -20,12 +20,12 @@ namespace JsonWebToken
         {
             var jwt = context.Jwt;
             var act = jwt.Payload[OidcClaims.Acr];
-            if (act == null || act.Type == JTokenType.Null)
+            if (act == null)
             {
                 return TokenValidationResult.MissingClaim(jwt, OidcClaims.Acr);
             }
 
-            if (string.Equals(_requiredAcr, act.Value<string>(), StringComparison.Ordinal))
+            if (string.Equals(_requiredAcr, (string)act, StringComparison.Ordinal))
             {
                 return TokenValidationResult.InvalidClaim(jwt, OidcClaims.Acr);
             }

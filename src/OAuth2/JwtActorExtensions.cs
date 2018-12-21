@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json.Linq;
 using System;
 
 namespace JsonWebToken
@@ -16,7 +15,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(token));
             }
 
-            var json = token.Payload[OAuth2Claims.Act]?.Value<string>();
+            var json = (string)token.Payload[OAuth2Claims.Act];
             return json == null ? null : Actor.FromJson(json);
         }
     }
