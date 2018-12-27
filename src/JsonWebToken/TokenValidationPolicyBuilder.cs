@@ -98,7 +98,8 @@ namespace JsonWebToken
         public TokenValidationPolicyBuilder AcceptUnsecureToken()
         {
             _hasSignatureValidation = true;
-            _validators.Add(new SignatureValidator(new EmptyKeyProvider(), supportUnsecure: true, SignatureAlgorithm.None));
+            RemoveValidator<SignatureValidator>();
+            AddValidator(new SignatureValidator(new EmptyKeyProvider(), supportUnsecure: true, SignatureAlgorithm.None));
             return this;
         }
 
@@ -111,7 +112,8 @@ namespace JsonWebToken
         public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider, SignatureAlgorithm algorithm)
         {
             _hasSignatureValidation = true;
-            _validators.Add(new SignatureValidator(keyProvider, supportUnsecure: false, algorithm ?? SignatureAlgorithm.Empty));
+            RemoveValidator<SignatureValidator>();
+            AddValidator(new SignatureValidator(keyProvider, supportUnsecure: false, algorithm ?? SignatureAlgorithm.Empty));
             return this;
         }
 
@@ -245,7 +247,8 @@ namespace JsonWebToken
                 Errors.ThrowMustBeGreaterThanTimeSpanZero(nameof(clockSkew), clockSkew);
             }
 
-            _validators.Add(new LifetimeValidator(requireExpirationTime, clockSkew));
+            RemoveValidator<LifetimeValidator>();
+            AddValidator(new LifetimeValidator(requireExpirationTime, clockSkew));
             return this;
         }
 
@@ -261,7 +264,8 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(audience));
             }
 
-            _validators.Add(new AudienceValidator(new[] { audience }));
+            RemoveValidator<AudienceValidator>();
+            AddValidator(new AudienceValidator(new[] { audience }));
             return this;
         }
 
@@ -277,7 +281,8 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(audiences));
             }
 
-            _validators.Add(new AudienceValidator(audiences));
+            RemoveValidator<AudienceValidator>();
+            AddValidator(new AudienceValidator(audiences));
             return this;
         }
 
@@ -293,7 +298,8 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(issuer));
             }
 
-            _validators.Add(new IssuerValidation(issuer));
+            RemoveValidator<IssuerValidation>();
+            AddValidator(new IssuerValidation(issuer));
             return this;
         }
 
@@ -309,7 +315,8 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(tokenReplayCache));
             }
 
-            _validators.Add(new TokenReplayValidator(tokenReplayCache));
+            RemoveValidator<TokenReplayValidator>();
+            AddValidator(new TokenReplayValidator(tokenReplayCache));
             return this;
         }
 

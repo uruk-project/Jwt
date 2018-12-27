@@ -31,6 +31,7 @@ namespace JsonWebToken
         /// </summary>
         public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(id: 13, "A256CBC-HS512", requiredKeySizeInBytes: 64, SignatureAlgorithm.HmacSha512, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesHmac);
 
+#if NETCOREAPP3_0
         /// <summary>
         /// 'A128GCM'
         /// </summary>
@@ -45,6 +46,7 @@ namespace JsonWebToken
         /// 'A256GCM'
         /// </summary>
         public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, "A256GCM", requiredKeySizeInBytes: 32, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesGcm);
+#endif  
 
         // TODO : Verify the pertinence
         /// <summary>
@@ -85,9 +87,11 @@ namespace JsonWebToken
             { Aes128CbcHmacSha256.Name, Aes128CbcHmacSha256 },
             { Aes192CbcHmacSha384.Name, Aes192CbcHmacSha384 },
             { Aes256CbcHmacSha512.Name, Aes256CbcHmacSha512 },
+#if NETCOREAPP3_0
             { Aes128Gcm.Name, Aes128Gcm },
             { Aes192Gcm.Name, Aes192Gcm },
             { Aes256Gcm.Name , Aes256Gcm },
+#endif
             { Empty.Name, Empty }
         };
 
@@ -221,7 +225,7 @@ namespace JsonWebToken
             {
                 return Empty;
             }
-     
+
             if (!Algorithms.TryGetValue(value, out var algorithm))
             {
                 Errors.ThrowNotSupportedAlgorithm(value);

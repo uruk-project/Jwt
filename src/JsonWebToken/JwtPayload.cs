@@ -13,6 +13,15 @@ namespace JsonWebToken
     public sealed class JwtPayload : Dictionary<string, object>
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="JwtPayload"/> class.
+        /// </summary>
+        /// <param name="inner"></param>
+        public JwtPayload(Dictionary<string, object> inner)
+            : base(inner)
+        {
+        }
+
+        /// <summary>
         ///  Gets the claim for a specified key in the current <see cref="JwtPayload"/>.
         /// </summary>
         /// <param name="key"></param>

@@ -5,6 +5,7 @@ using JsonWebToken.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 
 namespace JsonWebToken
@@ -204,7 +205,11 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override bool IsSupported(EncryptionAlgorithm algorithm)
         {
+#if NETCOREAPP3_0
             return algorithm.Category == EncryptionType.AesHmac || algorithm.Category == EncryptionType.AesGcm;
+#else
+            return algorithm.Category == EncryptionType.AesHmac;
+#endif
         }
 
         /// <inheritdoc />
@@ -343,6 +348,32 @@ namespace JsonWebToken
                 D = jObject["d"]?.Value<string>()
             };
 
+            return key;
+        }
+
+        internal static ECJwk FromDictionary(Dictionary<string, object> jObject)
+        {
+            if (jObject == null)
+            {
+                return null;
+            }
+            var key = new ECJwk();
+            if (jObject.TryGetValue("crv", out object crv))
+            {
+                key.Crv = (string)crv;
+            }
+            if (jObject.TryGetValue("x", out object x))
+            {
+                key.X = (string)x;
+            }
+            if (jObject.TryGetValue("y", out object y))
+            {
+                key.Y = (string)y;
+            }
+            if (jObject.TryGetValue("d", out object d))
+            {
+                key.D = (string)d;
+            }
             return key;
         }
 
