@@ -140,13 +140,13 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override bool IsSupported(KeyManagementAlgorithm algorithm)
         {
-            return algorithm.Category == AlgorithmCategory.Symmetric && algorithm.RequiredKeySizeInBits == KeySizeInBits;
+            return algorithm.Category == AlgorithmCategory.Aes && algorithm.RequiredKeySizeInBits == KeySizeInBits;
         }
 
         /// <inheritsdoc />
         public override bool IsSupported(SignatureAlgorithm algorithm)
         {
-            return algorithm.Category == AlgorithmCategory.Symmetric;
+            return algorithm.Category == AlgorithmCategory.Hmac;
         }
 
         /// <inheritsdoc />

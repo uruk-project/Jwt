@@ -44,7 +44,7 @@ namespace JsonWebToken.Internal
                 Errors.ThrowAlgorithmRequireMinimumKeySize(key, algorithm.Name, MinimumKeySizeInBits, key.KeySizeInBits);
             }
 
-            if (algorithm.Category != AlgorithmCategory.Symmetric)
+            if (algorithm.Category != AlgorithmCategory.Hmac)
             {
                 Errors.ThrowNotSupportedSignatureAlgorithm(algorithm);
             }

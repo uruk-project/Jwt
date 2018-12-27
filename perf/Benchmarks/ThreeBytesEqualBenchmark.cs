@@ -94,7 +94,7 @@ namespace JsonWebToken.Performance
                 goto NotEqual;
             }
 
-            if (!first != second)
+            if (first != second)
             {
                 goto NotEqual;
             }

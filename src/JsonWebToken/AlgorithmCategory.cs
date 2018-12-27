@@ -19,13 +19,19 @@ namespace JsonWebToken
         EllipticCurve,
 
         /// <summary>
-        /// Symmetric algorithm
-        /// </summary>
-        Symmetric,
-
-        /// <summary>
         /// RSA algorithm.
         /// </summary>
-        Rsa
+        Rsa,
+
+        /// <summary>
+        /// AES algorithm
+        /// </summary>
+        Aes,
+
+        /// <summary>
+        /// HMAC algorithm
+        /// </summary>
+        Hmac
+
     }
 }
