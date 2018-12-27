@@ -22,13 +22,13 @@ namespace JsonWebToken.Tests
             Assert.Equal(jwk.Alg, alg);
         }
 
-        //[Theory]
-        //[MemberData(nameof(GetCertificates))]
-        //public void CreateFromCertificate(X509Certificate2 certificate, bool hasPrivateKey, int keySize)
-        //{
-        //    var jwk = Jwk.FromX509Certificate(certificate, hasPrivateKey);
-        //    Assert.Equal(keySize, jwk.KeySizeInBits);
-        //}
+        [Theory]
+        [MemberData(nameof(GetCertificates))]
+        public void CreateFromCertificate(X509Certificate2 certificate, bool hasPrivateKey, int keySize)
+        {
+            var jwk = Jwk.FromX509Certificate(certificate, hasPrivateKey);
+            Assert.Equal(keySize, jwk.KeySizeInBits);
+        }
 
         public static IEnumerable<object[]> GetJsonKeys()
         {
