@@ -2,12 +2,13 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 #if NETCOREAPP3_0
-using System.Text.Json;
-using System.Collections.Generic;
 using JsonWebToken.Internal;
-using System;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -24,7 +25,7 @@ namespace JsonWebToken
         private static readonly byte[] Zip = { 122, 105, 112 };
         private static readonly byte[] Crit = { 99, 114, 105, 116 };
 
-        // claims
+        // Claims
         private static readonly byte[] Exp = { 101, 120, 112 };
         private static readonly byte[] Jti = { 106, 116, 105 };
         private static readonly byte[] Nbf = { 110, 98, 102 };
@@ -35,7 +36,6 @@ namespace JsonWebToken
 
         private static JwtHeader ReadJsonHeader(ReadOnlySpan<byte> buffer)
         {
-
             Utf8JsonReader reader = new Utf8JsonReader(buffer, true, default);
             if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
             {
@@ -50,7 +50,7 @@ namespace JsonWebToken
                 {
                     case JsonTokenType.PropertyName:
                         ReadOnlySpan<byte> valueSpan = reader.ValueSpan;
-                        if (valueSpan.SequenceEqual(Alg))
+                        if (ThreeBytesEqual(ref MemoryMarshal.GetReference(valueSpan), ref Alg[0], valueSpan.Length))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
@@ -61,7 +61,7 @@ namespace JsonWebToken
                                 ThrowHelper.FormatMalformedJson(HeaderParameters.Alg, JsonTokenType.String);
                             }
                         }
-                        else if (valueSpan.SequenceEqual(Enc))
+                        else if (ThreeBytesEqual(ref MemoryMarshal.GetReference(valueSpan), ref Enc[0], valueSpan.Length))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
@@ -72,7 +72,7 @@ namespace JsonWebToken
                                 ThrowHelper.FormatMalformedJson(HeaderParameters.Enc, JsonTokenType.String);
                             }
                         }
-                        else if (valueSpan.SequenceEqual(Kid))
+                        else if (ThreeBytesEqual(ref MemoryMarshal.GetReference(valueSpan), ref Kid[0], valueSpan.Length))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
@@ -83,7 +83,7 @@ namespace JsonWebToken
                                 ThrowHelper.FormatMalformedJson(HeaderParameters.Kid, JsonTokenType.String);
                             }
                         }
-                        else if (valueSpan.SequenceEqual(Cty))
+                        else if (ThreeBytesEqual(ref MemoryMarshal.GetReference(valueSpan), ref Cty[0], valueSpan.Length))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
@@ -94,7 +94,7 @@ namespace JsonWebToken
                                 ThrowHelper.FormatMalformedJson(HeaderParameters.Cty, JsonTokenType.String);
                             }
                         }
-                        else if (valueSpan.SequenceEqual(Zip))
+                        else if (ThreeBytesEqual(ref MemoryMarshal.GetReference(valueSpan), ref Zip[0], valueSpan.Length))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
@@ -105,7 +105,7 @@ namespace JsonWebToken
                                 ThrowHelper.FormatMalformedJson(HeaderParameters.Zip, JsonTokenType.String);
                             }
                         }
-                        else if (valueSpan.SequenceEqual(Crit))
+                        else if (FourBytesEqual(ref MemoryMarshal.GetReference(valueSpan), ref Crit[0], valueSpan.Length))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.StartArray)
                             {
@@ -199,7 +199,8 @@ namespace JsonWebToken
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        if (reader.ValueSpan.SequenceEqual(Iss))
+                        var valueSpan = reader.ValueSpan;
+                        if (ThreeBytesEqual(ref MemoryMarshal.GetReference(valueSpan), ref Iss[0], valueSpan.Length))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
@@ -210,7 +211,7 @@ namespace JsonWebToken
                                 ThrowHelper.FormatMalformedJson(Claims.Iss, JsonTokenType.String);
                             }
                         }
-                        else if (reader.ValueSpan.SequenceEqual(Aud))
+                        else if (ThreeBytesEqual(ref MemoryMarshal.GetReference(valueSpan), ref Aud[0], valueSpan.Length))
                         {
                             if (reader.Read())
                             {
@@ -243,7 +244,7 @@ namespace JsonWebToken
                                 ThrowHelper.FormatMalformedJson();
                             }
                         }
-                        else if (reader.ValueSpan.SequenceEqual(Exp))
+                        else if (ThreeBytesEqual(ref MemoryMarshal.GetReference(valueSpan), ref Exp[0], valueSpan.Length))
                         {
                             if (reader.Read() && reader.TryGetInt64Value(out long expValue))
                             {
@@ -254,7 +255,7 @@ namespace JsonWebToken
                                 ThrowHelper.FormatMalformedJson(Claims.Exp, JsonTokenType.Number);
                             }
                         }
-                        else if (reader.ValueSpan.SequenceEqual(Sub))
+                        else if (ThreeBytesEqual(ref MemoryMarshal.GetReference(valueSpan), ref Sub[0], valueSpan.Length))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
@@ -265,7 +266,7 @@ namespace JsonWebToken
                                 ThrowHelper.FormatMalformedJson(Claims.Sub, JsonTokenType.String);
                             }
                         }
-                        else if (reader.ValueSpan.SequenceEqual(Jti))
+                        else if (ThreeBytesEqual(ref MemoryMarshal.GetReference(valueSpan), ref Jti[0], valueSpan.Length))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
@@ -276,7 +277,7 @@ namespace JsonWebToken
                                 ThrowHelper.FormatMalformedJson(Claims.Jti, JsonTokenType.String);
                             }
                         }
-                        else if (reader.ValueSpan.SequenceEqual(Nbf))
+                        else if (ThreeBytesEqual(ref MemoryMarshal.GetReference(valueSpan), ref Nbf[0], valueSpan.Length))
                         {
                             if (reader.Read() && reader.TryGetInt64Value(out long nbfValue))
                             {
@@ -287,7 +288,7 @@ namespace JsonWebToken
                                 ThrowHelper.FormatMalformedJson(Claims.Nbf, JsonTokenType.Number);
                             }
                         }
-                        else if (reader.ValueSpan.SequenceEqual(Iat))
+                        else if (ThreeBytesEqual(ref MemoryMarshal.GetReference(valueSpan), ref Iat[0], valueSpan.Length))
                         {
                             if (reader.Read() && reader.TryGetInt64Value(out long iatValue))
                             {
@@ -306,8 +307,7 @@ namespace JsonWebToken
                         break;
 
                     case JsonTokenType.String:
-                        string stringValue = reader.GetStringValue();
-                        payload[name] = stringValue;
+                        payload[name] = reader.GetStringValue();
                         break;
                     case JsonTokenType.True:
                         payload[name] = true;
@@ -362,7 +362,6 @@ namespace JsonWebToken
             return ReadJson(ref reader);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Dictionary<string, object> ReadJson(ref Utf8JsonReader reader)
         {
             Stack<Dictionary<string, object>> stack = new Stack<Dictionary<string, object>>();
@@ -497,6 +496,69 @@ namespace JsonWebToken
             }
 
             return array;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public static bool ThreeBytesEqual(ref byte first, ref byte second, int length)
+        {
+            if (length != 3)
+            {
+                goto NotEqual;
+            }
+
+            if (first != second)
+            {
+                goto NotEqual;
+            }
+
+            if (Unsafe.Add(ref first, 1) != (Unsafe.Add(ref second, 1)))
+            {
+                goto NotEqual;
+            }
+
+            if (Unsafe.Add(ref first, 2) != (Unsafe.Add(ref second, 2)))
+            {
+                goto NotEqual;
+            }
+
+            return true;
+
+            NotEqual: // Workaround for https://github.com/dotnet/coreclr/issues/13549
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public static bool FourBytesEqual(ref byte first, ref byte second, int length)
+        {
+            if (length != 4)
+            {
+                goto NotEqual;
+            }
+
+            if (first != second)
+            {
+                goto NotEqual;
+            }
+
+            if (Unsafe.Add(ref first, 1) != (Unsafe.Add(ref second, 1)))
+            {
+                goto NotEqual;
+            }
+
+            if (Unsafe.Add(ref first, 2) != (Unsafe.Add(ref second, 2)))
+            {
+                goto NotEqual;
+            }
+
+            if (Unsafe.Add(ref first, 3) != (Unsafe.Add(ref second, 3)))
+            {
+                goto NotEqual;
+            }
+
+            return true;
+
+            NotEqual: // Workaround for https://github.com/dotnet/coreclr/issues/13549
+            return false;
         }
     }
 }
