@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System;
+using Xunit;
 
 namespace JsonWebToken.Tests
 {
@@ -7,6 +8,13 @@ namespace JsonWebToken.Tests
         [Fact]
         public void OK()
         {
+            Assert.True(true);
+        }
+
+        [Fact]
+        public void Stackalloc()
+        {
+            Span<byte> data = stackalloc byte[1024 * 1024];
             Assert.True(true);
         }
     }
