@@ -49,14 +49,13 @@ namespace JsonWebToken.Tests
                                 .AcceptUnsecureToken()
                                 .RequireSecurityEventToken()
                                 .Build();
-            var result = reader.TryReadToken("eyJ0eXAiOiJzZWNldmVudCtqd3QiLCJhbGciOiJub25lIn0.eyJqdGkiOiI0ZDM1NTllYzY3NTA0YWFiYTY1ZDQwYjAzNjNmYWFkOCIsImlhdCI6MTQ1ODQ5NjQwNCwiaXNzIjoiaHR0cHM6Ly9zY2ltLmV4YW1wbGUuY29tIiwiYXVkIjoiaHR0cHM6Ly9zY2ltLmV4YW1wbGUuY29tL0ZlZWRzLzk4ZDUyNDYxZmE1YmJjODc5NTkzYjc3NTQiLCJldmVudHMiOiJPSyJ9.", policy);
-            //var result = reader.TryReadToken("eyJ0eXAiOiJzZWNldmVudCtqd3QiLCJhbGciOiJub25lIn0.eyJqdGkiOiI0ZDM1NTllYzY3NTA0YWFiYTY1ZDQwYjAzNjNmYWFkOCIsImlhdCI6MTQ1ODQ5NjQwNCwiaXNzIjoiaHR0cHM6Ly9zY2ltLmV4YW1wbGUuY29tIiwiYXVkIjpbImh0dHBzOi8vc2NpbS5leGFtcGxlLmNvbS9GZWVkcy85OGQ1MjQ2MWZhNWJiYzg3OTU5M2I3NzU0IiwiaHR0cHM6Ly9zY2ltLmV4YW1wbGUuY29tL0ZlZWRzLzVkNzYwNDUxNmIxZDA4NjQxZDc2NzZlZTciXSwiZXZlbnRzIjp7InVybjppZXRmOnBhcmFtczpzY2ltOmV2ZW50OmNyZWF0ZSI6eyJyZWYiOiJodHRwczovL3NjaW0uZXhhbXBsZS5jb20vVXNlcnMvNDRmNjE0MmRmOTZiZDZhYjYxZTc1MjFkOSIsImF0dHJpYnV0ZXMiOlsiaWQiLCJuYW1lIiwidXNlck5hbWUiLCJwYXNzd29yZCIsImVtYWlscyJdfX19.", policy);
-            //var token = result.Token.AsSecurityEventToken();
-            //var events = token.Events;
+            var result = reader.TryReadToken("eyJ0eXAiOiJzZWNldmVudCtqd3QiLCJhbGciOiJub25lIn0.eyJqdGkiOiI0ZDM1NTllYzY3NTA0YWFiYTY1ZDQwYjAzNjNmYWFkOCIsImlhdCI6MTQ1ODQ5NjQwNCwiaXNzIjoiaHR0cHM6Ly9zY2ltLmV4YW1wbGUuY29tIiwiYXVkIjpbImh0dHBzOi8vc2NpbS5leGFtcGxlLmNvbS9GZWVkcy85OGQ1MjQ2MWZhNWJiYzg3OTU5M2I3NzU0IiwiaHR0cHM6Ly9zY2ltLmV4YW1wbGUuY29tL0ZlZWRzLzVkNzYwNDUxNmIxZDA4NjQxZDc2NzZlZTciXSwiZXZlbnRzIjp7InVybjppZXRmOnBhcmFtczpzY2ltOmV2ZW50OmNyZWF0ZSI6eyJyZWYiOiJodHRwczovL3NjaW0uZXhhbXBsZS5jb20vVXNlcnMvNDRmNjE0MmRmOTZiZDZhYjYxZTc1MjFkOSIsImF0dHJpYnV0ZXMiOlsiaWQiLCJuYW1lIiwidXNlck5hbWUiLCJwYXNzd29yZCIsImVtYWlscyJdfX19.", policy);
+            var token = result.Token.AsSecurityEventToken();
+            var events = token.Events;
 
-            //Assert.True(events.ContainsKey("urn:ietf:params:scim:event:create"));
-            //Assert.True(events["urn:ietf:params:scim:event:create"].ContainsKey("ref"));
-            //Assert.Equal("https://scim.example.com/Users/44f6142df96bd6ab61e7521d9", events["urn:ietf:params:scim:event:create"]["ref"]);
+            Assert.True(events.ContainsKey("urn:ietf:params:scim:event:create"));
+            Assert.True(events["urn:ietf:params:scim:event:create"].ContainsKey("ref"));
+            Assert.Equal("https://scim.example.com/Users/44f6142df96bd6ab61e7521d9", events["urn:ietf:params:scim:event:create"]["ref"]);
         }
     }
 }
