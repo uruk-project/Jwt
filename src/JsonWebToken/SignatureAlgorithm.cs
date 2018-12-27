@@ -25,17 +25,17 @@ namespace JsonWebToken
         /// <summary>
         /// 'HS256'
         /// </summary>
-        public static readonly SignatureAlgorithm HmacSha256 = new SignatureAlgorithm(id: 11, "HS256", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 128/*?*/, HashAlgorithmName.SHA256);
+        public static readonly SignatureAlgorithm HmacSha256 = new SignatureAlgorithm(id: 11, "HS256", AlgorithmCategory.Hmac, requiredKeySizeInBits: 128/*?*/, HashAlgorithmName.SHA256);
 
         /// <summary>
         /// 'HS384'
         /// </summary>
-        public static readonly SignatureAlgorithm HmacSha384 = new SignatureAlgorithm(id: 12, "HS384", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 192/*?*/, HashAlgorithmName.SHA384);
+        public static readonly SignatureAlgorithm HmacSha384 = new SignatureAlgorithm(id: 12, "HS384", AlgorithmCategory.Hmac, requiredKeySizeInBits: 192/*?*/, HashAlgorithmName.SHA384);
 
         /// <summary>
         /// 'HS512'
         /// </summary>
-        public static readonly SignatureAlgorithm HmacSha512 = new SignatureAlgorithm(id: 13, "HS512", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 256/*?*/, HashAlgorithmName.SHA512);
+        public static readonly SignatureAlgorithm HmacSha512 = new SignatureAlgorithm(id: 13, "HS512", AlgorithmCategory.Hmac, requiredKeySizeInBits: 256/*?*/, HashAlgorithmName.SHA512);
 
         /// <summary>
         /// 'RS256'

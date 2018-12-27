@@ -19,37 +19,37 @@ namespace JsonWebToken
         /// <summary>
         /// 'dir'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, "dir", AlgorithmCategory.Symmetric, produceEncryptedKey: false);
+        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, "dir", AlgorithmCategory.Aes, produceEncryptedKey: false);
 
         /// <summary>
         /// 'A128KW'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Aes128KW = new KeyManagementAlgorithm(id: 11, "A128KW", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 128);
+        public static readonly KeyManagementAlgorithm Aes128KW = new KeyManagementAlgorithm(id: 11, "A128KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 128);
 
         /// <summary>
         /// 'A192KW'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Aes192KW = new KeyManagementAlgorithm(id: 12, "A192KW", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 192);
+        public static readonly KeyManagementAlgorithm Aes192KW = new KeyManagementAlgorithm(id: 12, "A192KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 192);
 
         /// <summary>
         /// 'A256KW'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Aes256KW = new KeyManagementAlgorithm(id: 13, "A256KW", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 256);
+        public static readonly KeyManagementAlgorithm Aes256KW = new KeyManagementAlgorithm(id: 13, "A256KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 256);
 
         /// <summary>
         /// 'A128GCMKW'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Aes128GcmKW = new KeyManagementAlgorithm(id: 21, "A128GCMKW", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 128);
+        public static readonly KeyManagementAlgorithm Aes128GcmKW = new KeyManagementAlgorithm(id: 21, "A128GCMKW", AlgorithmCategory.Aes, requiredKeySizeInBits: 128);
 
         /// <summary>
         /// 'A192GCMKW'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Aes192GcmKW = new KeyManagementAlgorithm(id: 22, "A192GCMKW", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 192);
+        public static readonly KeyManagementAlgorithm Aes192GcmKW = new KeyManagementAlgorithm(id: 22, "A192GCMKW", AlgorithmCategory.Aes, requiredKeySizeInBits: 192);
 
         /// <summary>
         /// 'A256GCMKW'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Aes256GcmKW = new KeyManagementAlgorithm(id: 23, "A256GCMKW", AlgorithmCategory.Symmetric, requiredKeySizeInBits: 256);
+        public static readonly KeyManagementAlgorithm Aes256GcmKW = new KeyManagementAlgorithm(id: 23, "A256GCMKW", AlgorithmCategory.Aes, requiredKeySizeInBits: 256);
 
         /// <summary>
         /// 'RSA1_5'
