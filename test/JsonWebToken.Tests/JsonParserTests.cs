@@ -7,18 +7,10 @@ namespace JsonWebToken.Tests
     public class JsonParserTests
     {
         [Theory]
-        //[InlineData("{}")]
-        //[InlineData("{\"hello\": \"world\"}")]
-        //[InlineData("{\"string\":\"string\",\"number\":5,\"decimal\":3516512.13512,\"long\":9.22337203685478E+18,\"notLong\":922854776000.12,\"boolean\":false,\"object\":{},\"array\":[],\"null\":null,\"emptyArray\":[],\"emptyObject\":{},\"arrayString\":[\"alpha\",\"beta\"],\"arrayNum\":[1,212512.01,3],\"arrayBool\":[false,true,true],\"arrayNull\":[null,null],\"arrayObject\":[{\"firstName\":\"name1\",\"lastName\":\"name\"},{\"firstName\":\"name1\",\"lastName\":\"name\"},{\"firstName\":\"name2\",\"lastName\":\"name\"},{\"firstName\":\"name3\",\"lastName\":\"name1\"}],\"arrayArray\":[[null,false,5,\" - 0215.512501\",9.22337203685478E+18],[{},true,null,125651,\"simple\"],[{\"field\":null},\"hi\"]]}")]
-        //[InlineData("{\"arrayString\":[\"alpha\",\"beta\"],\"arrayNum\":[1,212512.01,3],\"arrayBool\":[false,true,true],\"arrayNull\":[null,null]}")]
-        //[InlineData("{\"arrayObject\":[{\"firstName\":\"name1\",\"lastName\":\"name\"},{\"firstName\":\"name1\",\"lastName\":\"name\"},{\"firstName\":\"name2\",\"lastName\":\"name\"},{\"firstName\":\"name3\",\"lastName\":\"name1\"}]}")]
-        //[InlineData("{\"arrayArray\":[[null,false,5,\" - 0215.512501\",9.22337203685478E+18],[{},true,null,125651,\"simple\"],[{\"field\":null},\"hi\"]]}")]
-        //[InlineData("{\"arrayArray\":[[{\"field\":null},\"hi\"]]}")]
         [MemberData(nameof(GetJsonObjects))]
         public void Parse_Valid(byte[] json, Dictionary<string, object> expected)
         {
             var value = JsonParser.Parse(json);
-
             AssertDictionaryEqual(expected, value);
         }
 
@@ -91,6 +83,61 @@ namespace JsonWebToken.Tests
         public static IEnumerable<object[]> GetJsonObjects()
         {
             yield return new object[] {
+            Encoding.UTF8.GetBytes("{\"arrayString\":[\"alpha\",\"beta\"],\"arrayNum\":[1,212512.01,3],\"arrayBool\":[false,true,true],\"arrayNull\":[null,null]}"),
+                new Dictionary<string, object>
+                {
+                    {
+                        "arrayString",
+                        new List<object> { "alpha" , "beta" }
+                    },
+                    {
+                        "arrayNum",
+                        new List<object> { 1L, 212512.01D, 3L }
+                    },
+                    {
+                        "arrayBool",
+                        new List<object> { false, true, true }
+                    },
+                    {
+                        "arrayNull",
+                        new List<object> { null, null }
+                    },
+                }
+            };
+
+            yield return new object[] {
+            Encoding.UTF8.GetBytes("{\"arrayObject\":[{\"firstName\":\"name1\",\"lastName\":\"name\"},{\"firstName\":\"name1\",\"lastName\":\"name\"},{\"firstName\":\"name2\",\"lastName\":\"name\"},{\"firstName\":\"name3\",\"lastName\":\"name1\"}]}"),
+                new Dictionary<string, object>
+                {
+                    {  "arrayObject",
+                        new List<object>
+                        {
+                            new Dictionary<string, object>
+                            {
+                                { "firstName", "name1" },
+                                { "lastName", "name"}
+                            },
+                            new Dictionary<string, object>
+                            {
+                                { "firstName", "name1" },
+                                { "lastName", "name"}
+                            },
+                            new Dictionary<string, object>
+                            {
+                                { "firstName", "name2" },
+                                { "lastName", "name"}
+                            },
+                            new Dictionary<string, object>
+                            {
+                                { "firstName", "name3" },
+                                { "lastName", "name1"}
+                            },
+                        }
+                    }
+                }
+            };
+
+            yield return new object[] {
             Encoding.UTF8.GetBytes("{\"arrayArray\":[{\"field\":null}]}"),
                 new Dictionary<string, object>
                 {
@@ -102,21 +149,54 @@ namespace JsonWebToken.Tests
                 }
             };
 
-            //yield return new object[] {
-            //    Encoding.UTF8.GetBytes("{\"arrayArray\":[[{\"field\":null},\"hi\"]]}"),
-            //    new Dictionary<string, object>
-            //    {
-            //        {  "arrayArray", new List<object>
-            //            {
-            //                new List<object>
-            //                {
-            //                    new Dictionary<string, object> { { "field", null } },
-            //                    "hi"
-            //                }
-            //            }
-            //        }
-            //    }
-            //};
+            yield return new object[] {
+                Encoding.UTF8.GetBytes("{\"arrayArray\":[[{\"field\":null},\"hi\"]]}"),
+                new Dictionary<string, object>
+                {
+                    {  "arrayArray", new List<object>
+                        {
+                            new List<object>
+                            {
+                                new Dictionary<string, object> { { "field", null } },
+                                "hi"
+                            }
+                        }
+                    }
+                }
+            };
+
+            yield return new object[] {
+                Encoding.UTF8.GetBytes("{\"arrayArray\":[[null,false,5,\" - 0215.512501\",9.22337203685478E+18],[{},true,null,125651,\"simple\"],[{\"field\":null},\"hi\"]]}"),
+                new Dictionary<string, object>
+                {
+                    {
+                        "arrayArray", new List<object>
+                        {
+                            new List<object>
+                            {
+                                null,
+                                false,
+                                5L,
+                                " - 0215.512501",
+                                9.22337203685478E+18
+                            },
+                            new List<object>
+                            {
+                                new Dictionary<string, object>(),
+                                true,
+                                null,
+                                125651L,
+                                "simple"
+                            },
+                            new List<object>
+                            {
+                                new Dictionary<string, object> { { "field", null } },
+                                "hi"
+                            }
+                        }
+                    }
+                }
+            };
         }
     }
 }

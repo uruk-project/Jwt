@@ -3,43 +3,20 @@
 
 #if NETCOREAPP3_0
 using System.Text.Json;
-#else
-using Newtonsoft.Json;
-using System.Text;
-#endif
-using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using JsonWebToken.Internal;
+using System;
 using Newtonsoft.Json.Linq;
+using System.Runtime.CompilerServices;
 
 namespace JsonWebToken
 {
     /// <summary>
     /// Provides methods for converting Base64Url JSON data into a <see cref="Dictionary{TKey, TValue}"/>
     /// </summary>
-    public static class JsonParser
+    public static partial class JsonParser
     {
-        /// <summary>
-        /// Parses the <paramref name="buffer"/> as JSON.
-        /// </summary>
-        /// <param name="buffer"></param>
-        /// <returns></returns>
-        public static Dictionary<string, object> Parse(ReadOnlySpan<byte> buffer)
-        {
-            return ReadJson(buffer);
-        }
-
-        public static JwtHeader ParseHeader(ReadOnlySpan<byte> buffer)
-        {
-            return ReadJsonHeader(buffer);
-        }
-
-        public static JwtPayload ParsePayload(ReadOnlySpan<byte> buffer)
-        {
-            return ReadJsonPayload(buffer);
-        }
-
-#if NETCOREAPP3_0
+        // Headers
         private static readonly byte[] Alg = { 97, 108, 103 };
         private static readonly byte[] Enc = { 101, 110, 99 };
         private static readonly byte[] Kid = { 107, 105, 100 };
@@ -47,13 +24,22 @@ namespace JsonWebToken
         private static readonly byte[] Zip = { 122, 105, 112 };
         private static readonly byte[] Crit = { 99, 114, 105, 116 };
 
+        // claims
+        private static readonly byte[] Exp = { 101, 120, 112 };
+        private static readonly byte[] Jti = { 106, 116, 105 };
+        private static readonly byte[] Nbf = { 110, 98, 102 };
+        private static readonly byte[] Iss = { 105, 115, 115 };
+        private static readonly byte[] Iat = { 105, 97, 116 };
+        private static readonly byte[] Aud = { 97, 117, 100 };
+        private static readonly byte[] Sub = { 115, 117, 98 };
+
         private static JwtHeader ReadJsonHeader(ReadOnlySpan<byte> buffer)
         {
 
             Utf8JsonReader reader = new Utf8JsonReader(buffer, true, default);
             if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
             {
-                throw new FormatException("Expect '{'.");
+                ThrowHelper.FormatNotJson();
             }
 
             JwtHeader header = new JwtHeader();
@@ -63,7 +49,8 @@ namespace JsonWebToken
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        if (reader.ValueSpan.SequenceEqual(Alg))
+                        ReadOnlySpan<byte> valueSpan = reader.ValueSpan;
+                        if (valueSpan.SequenceEqual(Alg))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
@@ -71,10 +58,10 @@ namespace JsonWebToken
                             }
                             else if (reader.TokenType != JsonTokenType.Null)
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatMalformedJson(HeaderParameters.Alg, JsonTokenType.String);
                             }
                         }
-                        else if (reader.ValueSpan.SequenceEqual(Enc))
+                        else if (valueSpan.SequenceEqual(Enc))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
@@ -82,10 +69,10 @@ namespace JsonWebToken
                             }
                             else if (reader.TokenType != JsonTokenType.Null)
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatMalformedJson(HeaderParameters.Enc, JsonTokenType.String);
                             }
                         }
-                        else if (reader.ValueSpan.SequenceEqual(Kid))
+                        else if (valueSpan.SequenceEqual(Kid))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
@@ -93,10 +80,10 @@ namespace JsonWebToken
                             }
                             else if (reader.TokenType != JsonTokenType.Null)
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatMalformedJson(HeaderParameters.Kid, JsonTokenType.String);
                             }
                         }
-                        else if (reader.ValueSpan.SequenceEqual(Cty))
+                        else if (valueSpan.SequenceEqual(Cty))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
@@ -104,10 +91,10 @@ namespace JsonWebToken
                             }
                             else if (reader.TokenType != JsonTokenType.Null)
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatMalformedJson(HeaderParameters.Cty, JsonTokenType.String);
                             }
                         }
-                        else if (reader.ValueSpan.SequenceEqual(Zip))
+                        else if (valueSpan.SequenceEqual(Zip))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
@@ -115,10 +102,10 @@ namespace JsonWebToken
                             }
                             else if (reader.TokenType != JsonTokenType.Null)
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatMalformedJson(HeaderParameters.Zip, JsonTokenType.String);
                             }
                         }
-                        else if (reader.ValueSpan.SequenceEqual(Crit))
+                        else if (valueSpan.SequenceEqual(Crit))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.StartArray)
                             {
@@ -130,14 +117,14 @@ namespace JsonWebToken
 
                                 if (reader.TokenType != JsonTokenType.EndArray)
                                 {
-                                    throw new FormatException("The 'crit' header parameter must contain string only.");
+                                    ThrowHelper.FormatMalformedJson(HeaderParameters.Crit, JsonTokenType.String);
                                 }
 
                                 header.Crit = crit;
                             }
                             else
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatMalformedJson(HeaderParameters.Crit, JsonTokenType.StartObject);
                             }
                         }
                         else
@@ -173,7 +160,7 @@ namespace JsonWebToken
                             }
                             else
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatNotSupportedNumber(name);
                             }
                         }
                         break;
@@ -189,29 +176,20 @@ namespace JsonWebToken
                     case JsonTokenType.EndObject:
                         break;
                     default:
-                        throw new FormatException();
+                        ThrowHelper.FormatMalformedJson();
+                        break;
                 }
             }
 
             return header;
         }
 
-
-        private static readonly byte[] Exp = { 101, 120, 112 };
-        private static readonly byte[] Jti = { 106, 116, 105 };
-        private static readonly byte[] Nbf = { 110, 98, 102 };
-        private static readonly byte[] Iss = { 105, 115, 115 };
-        private static readonly byte[] Iat = { 105, 97, 116 };
-        private static readonly byte[] Aud = { 97, 117, 100 };
-        private static readonly byte[] Sub = { 115, 117, 98 };
-
         private static JwtPayload ReadJsonPayload(ReadOnlySpan<byte> buffer)
         {
-
             Utf8JsonReader reader = new Utf8JsonReader(buffer, true, default);
             if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
             {
-                throw new FormatException("Expect a JSON object.");
+                ThrowHelper.FormatNotJson();
             }
 
             JwtPayload payload = new JwtPayload();
@@ -229,7 +207,7 @@ namespace JsonWebToken
                             }
                             else if (reader.TokenType != JsonTokenType.Null)
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatMalformedJson(Claims.Iss, JsonTokenType.String);
                             }
                         }
                         else if (reader.ValueSpan.SequenceEqual(Aud))
@@ -242,7 +220,7 @@ namespace JsonWebToken
                                 }
                                 else if (reader.TokenType == JsonTokenType.StartArray)
                                 {
-                                    var aud = new List<string>();
+                                    var aud = new List<string>(2);
                                     while (reader.Read() && reader.TokenType == JsonTokenType.String)
                                     {
                                         aud.Add(reader.GetStringValue());
@@ -250,19 +228,19 @@ namespace JsonWebToken
 
                                     if (reader.TokenType != JsonTokenType.EndArray)
                                     {
-                                        throw new FormatException("The 'aud' claim must contain string only.");
+                                        ThrowHelper.FormatMalformedJson(Claims.Aud, JsonTokenType.String);
                                     }
 
                                     payload.Aud = aud;
                                 }
                                 else if (reader.TokenType != JsonTokenType.Null)
                                 {
-                                    throw new FormatException();
+                                    ThrowHelper.FormatMalformedJson(Claims.Aud, JsonTokenType.String);
                                 }
                             }
                             else
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatMalformedJson();
                             }
                         }
                         else if (reader.ValueSpan.SequenceEqual(Exp))
@@ -273,7 +251,7 @@ namespace JsonWebToken
                             }
                             else if (reader.TokenType != JsonTokenType.Null)
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatMalformedJson(Claims.Exp, JsonTokenType.Number);
                             }
                         }
                         else if (reader.ValueSpan.SequenceEqual(Sub))
@@ -284,7 +262,7 @@ namespace JsonWebToken
                             }
                             else if (reader.TokenType != JsonTokenType.Null)
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatMalformedJson(Claims.Sub, JsonTokenType.String);
                             }
                         }
                         else if (reader.ValueSpan.SequenceEqual(Jti))
@@ -295,7 +273,7 @@ namespace JsonWebToken
                             }
                             else if (reader.TokenType != JsonTokenType.Null)
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatMalformedJson(Claims.Jti, JsonTokenType.String);
                             }
                         }
                         else if (reader.ValueSpan.SequenceEqual(Nbf))
@@ -306,7 +284,7 @@ namespace JsonWebToken
                             }
                             else if (reader.TokenType != JsonTokenType.Null)
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatMalformedJson(Claims.Nbf, JsonTokenType.Number);
                             }
                         }
                         else if (reader.ValueSpan.SequenceEqual(Iat))
@@ -317,7 +295,7 @@ namespace JsonWebToken
                             }
                             else if (reader.TokenType != JsonTokenType.Null)
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatMalformedJson(Claims.Iat, JsonTokenType.Number);
                             }
                         }
                         else
@@ -353,7 +331,7 @@ namespace JsonWebToken
                             }
                             else
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatNotSupportedNumber(name);
                             }
                         }
                         break;
@@ -369,7 +347,8 @@ namespace JsonWebToken
                     case JsonTokenType.EndObject:
                         break;
                     default:
-                        throw new FormatException();
+                        ThrowHelper.FormatMalformedJson();
+                        break;
                 }
             }
 
@@ -413,7 +392,7 @@ namespace JsonWebToken
                                 current[name] = reader.GetStringValue();
                                 break;
                             case JsonTokenType.StartObject:
-                                var newObj = new Dictionary<string, object>();
+                                var newObj = new Dictionary<string, object>(2);
                                 current[name] = newObj;
                                 stack.Push(newObj);
                                 break;
@@ -439,7 +418,7 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        throw new FormatException();
+                                        ThrowHelper.FormatNotSupportedNumber(name);
                                     }
                                 }
                                 break;
@@ -448,13 +427,15 @@ namespace JsonWebToken
                                 current.Add(name, array);
                                 break;
                             default:
-                                throw new FormatException();
+                                ThrowHelper.FormatMalformedJson();
+                                break;
                         }
                         break;
                     case JsonTokenType.StartObject:
                         break;
                     default:
-                        throw new FormatException();
+                        ThrowHelper.FormatMalformedJson();
+                        break;
                 }
             }
 
@@ -463,7 +444,7 @@ namespace JsonWebToken
 
         private static List<object> ReadJsonArray(ref Utf8JsonReader reader)
         {
-            List<object> array = new List<object>();
+            List<object> array = new List<object>(2);
             while (reader.Read())
             {
                 switch (reader.TokenType)
@@ -486,7 +467,7 @@ namespace JsonWebToken
                             }
                             else
                             {
-                                throw new FormatException();
+                                ThrowHelper.FormatMalformedJson();
                             }
                         }
 
@@ -501,13 +482,15 @@ namespace JsonWebToken
                     case JsonTokenType.False:
                         array.Add(false);
                         break;
+                    case JsonTokenType.StartObject:
+                        array.Add(ReadJson(ref reader));
+                        break;
                     case JsonTokenType.StartArray:
                         var innerArray = ReadJsonArray(ref reader);
                         array.Add(innerArray);
                         break;
                     case JsonTokenType.EndObject:
                     case JsonTokenType.PropertyName:
-                    case JsonTokenType.StartObject:
                     default:
                         break;
                 }
@@ -515,28 +498,6 @@ namespace JsonWebToken
 
             return array;
         }
-
-#else
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Dictionary<string, object> ReadJson(ReadOnlySpan<byte> buffer)
-        {
-#if !NETSTANDARD2_0
-                var json = Encoding.UTF8.GetString(buffer);
-#else
-            var json = Encoding.UTF8.GetString(buffer.ToArray());
-#endif
-            return JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
-        }
-
-        public static JwtHeader ReadJsonHeader(ReadOnlySpan<byte> buffer)
-        {
-            return new JwtHeader(ReadJson(buffer));
-        }
-
-        public static JwtPayload ReadJsonPayload(ReadOnlySpan<byte> buffer)
-        {
-            return new JwtPayload(ReadJson(buffer));
-        }
-#endif
     }
 }
+#endif
