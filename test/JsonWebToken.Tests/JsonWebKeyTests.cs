@@ -12,15 +12,15 @@ namespace JsonWebToken.Tests
 {
     public class JsonWebKeyTests
     {
-        //[Theory]
-        //[MemberData(nameof(GetJsonKeys))]
-        //public void CreateFromJson(string json, string kid, string alg)
-        //{
-        //    var jwk = Jwk.FromJson(json);
+        [Theory]
+        [MemberData(nameof(GetJsonKeys))]
+        public void CreateFromJson(string json, string kid, string alg)
+        {
+            var jwk = Jwk.FromJson(json);
 
-        //    Assert.Equal(jwk.Kid, kid);
-        //    Assert.Equal(jwk.Alg, alg);
-        //}
+            Assert.Equal(jwk.Kid, kid);
+            Assert.Equal(jwk.Alg, alg);
+        }
 
         //[Theory]
         //[MemberData(nameof(GetCertificates))]
