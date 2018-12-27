@@ -14,7 +14,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Stackalloc()
         {
-            Span<byte> data = stackalloc byte[1024 * 1024 /2];
+            Span<byte> data = stackalloc byte[1024 * 1024 / 128];
             Assert.True(true);
         }
     }
