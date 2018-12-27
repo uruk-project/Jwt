@@ -32,6 +32,5 @@ namespace JsonWebToken
         /// HMAC algorithm
         /// </summary>
         Hmac
-
     }
 }
