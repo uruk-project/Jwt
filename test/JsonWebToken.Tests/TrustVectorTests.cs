@@ -69,7 +69,7 @@ namespace JsonWebToken.Tests
         //[InlineData("P1.Cb.Cc.Ab", new[] { "P1", "Cb", "Cc", "Ab" })]
         //[InlineData("Ce.Ab", new[] { "Ce", "Ab" })]
         //public void Loop(string vector, IEnumerable<string> expected)
-{
+        //{
         //    var trustVector = new VectorOfTrust(vector);
 
         //    Assert.Equal(trustVector, expected);
