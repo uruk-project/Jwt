@@ -10,6 +10,18 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken.Performance
 {
+    //[MemoryDiagnoser]
+    //public class JsonParserBenchmark
+    //{
+
+    //    [Benchmark(Baseline = true)]
+    //    [ArgumentsSource(nameof(GetData))]
+    //    public unsafe void Specialized(byte[] first, byte[] second)
+    //    {
+    //        AreEqual_Current(ref MemoryMarshal.GetReference(first.AsSpan()), ref MemoryMarshal.GetReference(second.AsSpan()), first.Length);
+    //    }
+    //}
+
     [MemoryDiagnoser]
     public class SequanceEquals
     {

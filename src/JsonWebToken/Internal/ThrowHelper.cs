@@ -4,6 +4,9 @@
 using System;
 using System.Buffers;
 using System.Globalization;
+#if NETCOREAPP3_0
+using System.Text.Json;
+#endif
 
 namespace JsonWebToken.Internal
 {
@@ -28,7 +31,7 @@ namespace JsonWebToken.Internal
         {
             return new ArgumentOutOfRangeException("length");
         }
-        
+
         private static Exception GetOperationNotDoneException(OperationStatus status)
         {
             switch (status)
@@ -69,5 +72,39 @@ namespace JsonWebToken.Internal
         {
             return string.Format(CultureInfo.CurrentCulture, MalformedInput, p0);
         }
+
+#if NETCOREAPP3_0
+        /// <summary>
+        /// The claim '{claim}' must be of type {type}.
+        /// </summary>
+        internal static string FormatMalformedJson(string claim, JsonTokenType type)
+        {
+            throw new FormatException($"The claim '{claim}' must be of type {type}.");
+        }
+
+        /// <summary>
+        /// The claim '{name}' is not a supported Number value.
+        /// </summary>
+        internal static string FormatNotSupportedNumber(string name)
+        {
+            throw new FormatException($"The claim '{name}' is not a supported Number value.");
+        }
+
+        /// <summary>
+        /// The JSON is malformed.
+        /// </summary>
+        internal static string FormatMalformedJson()
+        {
+            throw new FormatException("The JSON is malformed.");
+        }
+
+        /// <summary>
+        /// Expect a JSON object.
+        /// </summary>
+        internal static string FormatNotJson()
+        {
+            throw new FormatException("Expect a JSON object.");
+        }
+#endif
     }
 }

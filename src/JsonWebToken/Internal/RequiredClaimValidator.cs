@@ -42,12 +42,12 @@ namespace JsonWebToken.Internal
         {
             var jwt = context.Jwt;
             var claim = jwt.Payload[_claim];
-            if (claim == null || claim.Type == JTokenType.Null)
+            if (claim == null)
             {
                 return TokenValidationResult.MissingClaim(jwt, _claim);
             }
 
-            if (_value != default && !_value.Equals(claim.Value<TClaim>()))
+            if (_value != default && !_value.Equals((TClaim)claim))
             {
                 return TokenValidationResult.InvalidClaim(jwt, _claim);
             }

@@ -34,14 +34,14 @@ namespace JsonWebToken.Internal
         {
             var jwt = context.Jwt;
             var claim = jwt.Payload[_claim];
-            if (claim == null || claim.Type == JTokenType.Null)
+            if (claim == null)
             {
                 return TokenValidationResult.MissingClaim(jwt, _claim);
             }
 
             for (int i = 0; i < _values.Count; i++)
             {                
-                if (_values[i].Equals(claim.Value<TClaim>()))
+                if (_values[i].Equals((TClaim)claim))
                 {
                     return TokenValidationResult.Success(jwt);
                 }

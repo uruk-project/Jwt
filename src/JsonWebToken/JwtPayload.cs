@@ -15,6 +15,14 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtPayload"/> class.
         /// </summary>
+        public JwtPayload()
+            : base()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtPayload"/> class.
+        /// </summary>
         /// <param name="inner"></param>
         public JwtPayload(Dictionary<string, object> inner)
             : base(inner)
@@ -26,12 +34,41 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public new JToken this[string key] => TryGetValue(key, out var value) ? JToken.FromObject(value) : null;
+        public new object this[string key]
+        {
+            get
+            {
+                switch (key)
+                {
+                    case "iss":
+                        return Iss;
+                    case "exp":
+                        return Exp;
+                    case "aud":
+                        return Aud;
+                    case "jti":
+                        return Jti;
+                    case "sub":
+                        return Sub;
+                    case "nbf":
+                        return Nbf;
+                    case "iat":
+                        return Iat;
+                    default:
+                        return TryGetValue(key, out var value) ? value : null;
+                }
+            }
+
+            set => base[key] = value;
+        }
 
         /// <summary>
         /// Gets the 'audience' claim as a list of strings.
         /// </summary>
-        public IList<string> Aud
+#if NETCOREAPP3_0
+        public IList<string> Aud { get; set; }
+#else
+        public IList<string> Aud 
         {
             get
             {
@@ -53,42 +90,61 @@ namespace JsonWebToken
                 return null;
             }
         }
+#endif
 
         /// <summary>
         /// Gets the 'expiration time' claim.
         /// </summary>
+#if NETCOREAPP3_0
+        public long? Exp { get; set; }
+#else
         public long? Exp => GetValue<long?>(Claims.Exp);
+#endif
 
         /// <summary>
         /// Gets the 'JWT ID' claim.
         /// </summary>
+#if NETCOREAPP3_0
+        public string Jti { get; set; }
+#else
         public string Jti => GetValue<string>(Claims.Jti);
+#endif
 
         /// <summary>
         /// Gets the 'issued at' claim.
         /// </summary>
+#if NETCOREAPP3_0
+        public long? Iat { get; set; }
+#else
         public long? Iat => GetValue<long?>(Claims.Iat);
+#endif
 
         /// <summary>
         /// Gets the 'issuer' claim.
         /// </summary>
+#if NETCOREAPP3_0
+        public string Iss { get; set; }
+#else
         public string Iss => GetValue<string>(Claims.Iss);
+#endif
 
         /// <summary>
         /// Gets the 'not before' claim.
         /// </summary>
-        public long? Nbf
-        {
-            get
-            {
-                return GetValue<long?>(Claims.Nbf);
-            }
-        }
+#if NETCOREAPP3_0
+        public long? Nbf { get; set; }
+#else
+        public long? Nbf => GetValue<long?>(Claims.Nbf);
+#endif
 
         /// <summary>
         /// Gets the 'subject' claim.
         /// </summary>
+#if NETCOREAPP3_0
+        public string Sub { get; set; }
+#else
         public string Sub => GetValue<string>(Claims.Sub);
+#endif
 
         /// <summary>
         /// Gets the claim for a specified key in the current <see cref="JwtPayload"/>.

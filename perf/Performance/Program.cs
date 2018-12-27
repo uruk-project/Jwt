@@ -57,9 +57,10 @@ namespace Performance
             var jwX = new PlaintextJweDescriptor("Hello world !");
             var jwB = new BinaryJweDescriptor(Encoding.UTF8.GetBytes("Hello world !"));
             var jwt = _writer.WriteToken(jws);
-
+            _reader.EnableHeaderCaching = false;
             while (true)
             {
+                // jwt = _writer.WriteToken(jws);
                 var result = _reader.TryReadToken(jwt.AsSpan(), policy);
             }
 
