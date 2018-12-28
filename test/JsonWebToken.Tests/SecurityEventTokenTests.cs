@@ -8,7 +8,7 @@ namespace JsonWebToken.Tests
     public class SecurityEventTokenTests
     {
         [Fact]
-        public void Create()
+        public void Write()
         {
             var descriptor = new SecurityEventTokenDescriptor();
             descriptor.Type = "secevent+jwt";

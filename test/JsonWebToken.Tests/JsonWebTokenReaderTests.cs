@@ -116,7 +116,7 @@ namespace JsonWebToken.Tests
                 yield return new object[] { item.Key, !item.Key.StartsWith("JWT") };
             }
         }
-        
+
         public static IEnumerable<object[]> GetInvalidTokens()
         {
             foreach (var item in Tokens.InvalidTokens)
