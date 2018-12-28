@@ -9,7 +9,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines encryption algorithm.
     /// </summary>
-    public sealed class EncryptionAlgorithm : IEquatable<EncryptionAlgorithm>, IAlgorithm
+    public sealed class EncryptionAlgorithm : IEquatable<EncryptionAlgorithm>
     {
         /// <summary>
         /// Empty

@@ -26,7 +26,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokens))]
         public void Jwt(string token)
         {
-            var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), policy);
+            var result = Reader.TryReadToken(Tokens.ValidBinaryTokens[token], policy);
             if (!result.Succedeed)
             {
                 throw new Exception(result.Status.ToString());

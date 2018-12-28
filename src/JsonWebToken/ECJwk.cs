@@ -295,7 +295,7 @@ namespace JsonWebToken
         /// <param name="withPrivateKey"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static ECJwk GenerateKey(string curveId, bool withPrivateKey, IAlgorithm algorithm)
+        public static ECJwk GenerateKey(string curveId, bool withPrivateKey, string algorithm)
         {
             if (string.IsNullOrEmpty(curveId))
             {
@@ -339,13 +339,13 @@ namespace JsonWebToken
             {
                 return null;
             }
-
+            
             var key = new ECJwk
             {
-                Crv = jObject["crv"].Value<string>(),
-                X = jObject["x"]?.Value<string>(),
-                Y = jObject["y"]?.Value<string>(),
-                D = jObject["d"]?.Value<string>()
+                Crv = jObject[JwkParameterNames.Crv].Value<string>(),
+                X = jObject[JwkParameterNames.X]?.Value<string>(),
+                Y = jObject[JwkParameterNames.Y]?.Value<string>(),
+                D = jObject[JwkParameterNames.D]?.Value<string>()
             };
 
             return key;
@@ -380,7 +380,7 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public static ECJwk FromParameters(ECParameters parameters, IAlgorithm algorithm, bool computeThumbprint)
+        public static ECJwk FromParameters(ECParameters parameters, string algorithm, bool computeThumbprint)
         {
             var key = new ECJwk(parameters);
             if (computeThumbprint)
@@ -390,7 +390,7 @@ namespace JsonWebToken
 
             if (algorithm != null)
             {
-                key.Alg = algorithm.Name;
+                key.Alg = algorithm;
             }
 
             return key;
@@ -404,7 +404,7 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public static ECJwk FromParameters(ECParameters parameters, IAlgorithm algorithm) => FromParameters(parameters, algorithm, false);
+        public static ECJwk FromParameters(ECParameters parameters, string algorithm) => FromParameters(parameters, algorithm, false);
 
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.

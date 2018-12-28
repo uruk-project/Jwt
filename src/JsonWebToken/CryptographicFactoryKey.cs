@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 
 namespace JsonWebToken
 {
@@ -29,6 +30,28 @@ namespace JsonWebToken
         {
             Key = key ?? throw new ArgumentNullException(nameof(key));
             Algorithm = algorithm;
+        }
+
+        /// <inheritsdoc />
+        public override bool Equals(object obj)
+        {
+            if (!(obj is CryptographicFactoryKey))
+            {
+                return false;
+            }
+
+            var key = (CryptographicFactoryKey)obj;
+            return EqualityComparer<Jwk>.Default.Equals(Key, key.Key) &&
+                   Algorithm == key.Algorithm;
+        }
+
+        /// <inheritsdoc />
+        public override int GetHashCode()
+        {
+            var hashCode = -733196298;
+            hashCode = hashCode * -1521134295 + EqualityComparer<Jwk>.Default.GetHashCode(Key);
+            hashCode = hashCode * -1521134295 + Algorithm.GetHashCode();
+            return hashCode;
         }
     }
 }

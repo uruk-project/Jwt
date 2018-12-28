@@ -424,7 +424,7 @@ namespace JsonWebToken
         /// <param name="withPrivateKey"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, IAlgorithm algorithm)
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, string algorithm)
         {
 #if NETSTANDARD2_0
             using (RSA rsa = new RSACng())
@@ -438,7 +438,7 @@ namespace JsonWebToken
                 var key = FromParameters(rsaParameters, false);
                 if (algorithm != null)
                 {
-                    key.Alg = algorithm.Name;
+                    key.Alg = algorithm;
                 }
 
                 return key;

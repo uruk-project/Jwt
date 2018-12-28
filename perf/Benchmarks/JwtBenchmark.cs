@@ -141,6 +141,7 @@ namespace JsonWebToken.Performance
         private static readonly Dictionary<string, JwtDescriptor> JwtPayloads = CreateJwtDescriptors();
 
         public abstract void WriteJwt(string token);
+
         public abstract void ValidateJwt(string token);
 
         //[Benchmark]
@@ -154,7 +155,7 @@ namespace JsonWebToken.Performance
         //[ArgumentsSource(nameof(GetTokens))]
         protected void ValidateJwtCore(string token, TokenValidationPolicy policy)
         {
-            var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), policy);
+            var result = Reader.TryReadToken(Tokens.ValidBinaryTokens[token], policy);
             if (!result.Succedeed)
             {
                 throw new Exception(result.Status.ToString());

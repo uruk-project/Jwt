@@ -11,8 +11,6 @@ namespace JsonWebToken
     /// </summary>
     public class JweDescriptor<TDescriptor> : EncryptedJwtDescriptor<TDescriptor> where TDescriptor : JwsDescriptor, new()
     {
-        private static readonly string[] DefaultRequiredClaims = Array.Empty<string>();
-
         /// <summary>
         /// Initializes an new instance of <see cref="JweDescriptor"/>.
         /// </summary>

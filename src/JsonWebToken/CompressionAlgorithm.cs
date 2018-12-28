@@ -10,7 +10,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines compression algorithm.
     /// </summary>
-    public sealed class CompressionAlgorithm : IEquatable<CompressionAlgorithm>, IAlgorithm
+    public sealed class CompressionAlgorithm : IEquatable<CompressionAlgorithm>
     {
         /// <summary>
         /// Empty

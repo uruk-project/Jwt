@@ -501,7 +501,7 @@ namespace JsonWebToken
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static bool ThreeBytesEqual(ref byte first, ref byte second, int length)
+        private static bool ThreeBytesEqual(ref byte first, ref byte second, int length)
         {
             if (length != 3)
             {
@@ -530,7 +530,7 @@ namespace JsonWebToken
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static bool FourBytesEqual(ref byte first, ref byte second, int length)
+        private static bool FourBytesEqual(ref byte first, ref byte second, int length)
         {
             if (length != 4)
             {

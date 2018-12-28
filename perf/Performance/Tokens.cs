@@ -4,13 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace JsonWebToken.Performance
 {
     public static class Tokens
     {
         public static IDictionary<string, string> ValidTokens { get; }
-
+        public static IDictionary<string, byte[]> ValidBinaryTokens { get; }
         public static IEnumerable<TokenState> InvalidTokens { get; }
 
         public static SymmetricJwk SigningKey { get; }
@@ -29,10 +30,22 @@ namespace JsonWebToken.Performance
             var descriptors = CreateDescriptors(payloads, signingKey, encryptionKey);
             Descriptors = descriptors;
             ValidTokens = CreateTokens(descriptors);
+            ValidBinaryTokens = CreateBinaryTokens(ValidTokens);
             InvalidTokens = CreateInvalidToken(signingKey, payloads["small"]);
             Payloads = payloads;
             SigningKey = signingKey;
             EncryptionKey = encryptionKey;
+        }
+
+        private static IDictionary<string, byte[]> CreateBinaryTokens(IDictionary<string, string> validTokens)
+        {
+            var result = new Dictionary<string, byte[]>();
+            foreach (var item in validTokens)
+            {
+                result.Add(item.Key, Encoding.UTF8.GetBytes(item.Value));
+            }
+
+            return result;
         }
 
         private static SymmetricJwk CreateSigningKey()

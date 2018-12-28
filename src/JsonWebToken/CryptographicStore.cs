@@ -21,7 +21,7 @@ namespace JsonWebToken
         /// </summary>
         public CryptographicStore()
         {
-            _store = new ConcurrentDictionary<CryptographicFactoryKey, TCrypto>(JwkEqualityComparer.Default);
+            _store = new ConcurrentDictionary<CryptographicFactoryKey, TCrypto>();
         }
 
         /// <summary>

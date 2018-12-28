@@ -22,18 +22,9 @@ namespace JsonWebToken.Internal
         {
             ref byte srcBytes = ref MemoryMarshal.GetReference(data);
             ref byte destBytes = ref MemoryMarshal.GetReference(encoded);
-
-            return EncodeToUtf8(ref srcBytes, data.Length, ref destBytes, encoded.Length, out bytesConsumed, out bytesWritten);
-        }
-
-        private OperationStatus EncodeToUtf8(
-                 ref byte srcBytes,
-                 int srcLength,
-                 ref byte destBytes,
-                 int destLength,
-                 out int bytesConsumed,
-                 out int bytesWritten)
-        {
+            int srcLength = data.Length;
+            int destLength = encoded.Length;
+  
             int maxSrcLength;
             if (srcLength <= MaximumEncodeLength && destLength >= GetMaxEncodedToUtf8Length(srcLength))
             {

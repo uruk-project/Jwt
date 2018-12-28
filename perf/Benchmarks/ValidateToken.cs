@@ -18,7 +18,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokens))]
         public void Jwt(string token)
         {
-            var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), TokenValidationPolicy.NoValidation);
+            var result = Reader.TryReadToken(Tokens.ValidBinaryTokens[token], TokenValidationPolicy.NoValidation);
             if (!result.Succedeed)
             {
                 throw new Exception(result.Status.ToString());
@@ -68,7 +68,7 @@ namespace JsonWebToken.Performance
         {
             for (int i = 0; i < OperationPerInvoke; i++)
             {
-                var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), policyWithSignatureValidation);
+                var result = Reader.TryReadToken(Tokens.ValidBinaryTokens[token], policyWithSignatureValidation);
                 if (!result.Succedeed)
                 {
                     throw new Exception(result.Status.ToString());
@@ -121,7 +121,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokens))]
         public void Jwt(string token)
         {
-            var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), policyWithSignatureValidation);
+            var result = Reader.TryReadToken(Tokens.ValidBinaryTokens[token], policyWithSignatureValidation);
             if (!result.Succedeed)
             {
                 throw new Exception(result.Status.ToString());

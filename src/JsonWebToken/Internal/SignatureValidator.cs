@@ -106,7 +106,7 @@ namespace JsonWebToken.Internal
                 for (int j = 0; j < keySet.Count; j++)
                 {
                     var key = keySet[j];
-                    if ((string.IsNullOrEmpty(key.Use) || string.Equals(key.Use, JsonWebKeyUseNames.Sig, StringComparison.Ordinal)) &&
+                    if ((string.IsNullOrEmpty(key.Use) || string.Equals(key.Use, JwkUseNames.Sig, StringComparison.Ordinal)) &&
                         (string.IsNullOrEmpty(key.Alg) || string.Equals(key.Alg, jwt.Header.Alg, StringComparison.Ordinal)))
                     {
                         keys.Add(key);

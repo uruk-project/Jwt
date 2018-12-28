@@ -554,7 +554,7 @@ namespace JsonWebToken
                 for (int j = 0; j < keySet.Count; j++)
                 {
                     var key = keySet[j];
-                    if ((string.IsNullOrEmpty(key.Use) || string.Equals(key.Use, JsonWebKeyUseNames.Enc, StringComparison.Ordinal)) &&
+                    if ((string.IsNullOrEmpty(key.Use) || string.Equals(key.Use, JwkUseNames.Enc, StringComparison.Ordinal)) &&
                         (string.IsNullOrEmpty(key.Alg) || string.Equals(key.Alg, alg, StringComparison.Ordinal)))
                     {
                         keys.Add(key);

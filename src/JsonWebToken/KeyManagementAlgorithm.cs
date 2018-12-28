@@ -9,7 +9,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines key management algorithm.
     /// </summary>
-    public class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>, IAlgorithm
+    public sealed class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>
     {
         /// <summary>
         /// Empty.
