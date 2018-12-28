@@ -29,9 +29,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.KeyVault", "src\KeyVault\JsonWebToken.KeyVault.csproj", "{3183725E-25D2-4596-A29D-4578C4E1DD5C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{81504C49-6E6B-499F-B2EE-10C5E5B69614}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{40741FC5-7061-45D8-B484-2EE2D647258F}"
 EndProject
