@@ -24,7 +24,6 @@ namespace JsonWebToken
             public string Kid;
         }
 
-        private readonly object _syncLock = new object();
         private SpinLock _spinLock = new SpinLock();
 
         private int _count = 0;
@@ -70,7 +69,11 @@ namespace JsonWebToken
                         if (node.Entries.TryGetValue(key, out var entry))
                         {
                             base64UrlHeader = entry;
-                            MoveToHead(node);
+                            if (node != _head)
+                            {
+                                MoveToHead(node);
+                            }
+
                             return true;
                         }
 
@@ -220,20 +223,17 @@ namespace JsonWebToken
 
         private void MoveToHead(Bucket node)
         {
-            if (node != _head)
+            bool lockTaken = false;
+            try
             {
-                bool lockTaken = false;
-                try
+                _spinLock.Enter(ref lockTaken);
+                MoveToHeadLocked(node);
+            }
+            finally
+            {
+                if (lockTaken)
                 {
-                    _spinLock.Enter(ref lockTaken);
-                    MoveToHeadLocked(node);
-                }
-                finally
-                {
-                    if (lockTaken)
-                    {
-                        _spinLock.Exit();
-                    }
+                    _spinLock.Exit();
                 }
             }
         }
