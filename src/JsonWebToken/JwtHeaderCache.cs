@@ -59,7 +59,11 @@ namespace JsonWebToken
                 if (buffer.SequenceEqual(node.Key))
                 {
                     header = node.Header;
-                    MoveToHead(node);
+                    if (node != _head)
+                    {
+                        MoveToHead(node);
+                    }
+
                     return true;
                 }
 
@@ -119,43 +123,40 @@ namespace JsonWebToken
 
         private void MoveToHead(Node node)
         {
-            if (node != _head)
+            bool lockTaken = false;
+            try
             {
-                bool lockTaken = false;
-                try
+                _spinLock.Enter(ref lockTaken);
+                if (node != _head)
                 {
-                    _spinLock.Enter(ref lockTaken);
-                    if (node != _head)
+                    if (_head != null)
                     {
-                        if (_head != null)
-                        {
-                            _head.Previous = node;
-                        }
-
-                        if (node == _tail)
-                        {
-                            _tail = node.Previous;
-                        }
-                        else
-                        {
-                            if (node.Next != null)
-                            {
-                                node.Next.Previous = node.Previous;
-                            }
-                        }
-
-                        node.Previous.Next = node.Next;
-                        node.Next = _head;
-                        node.Previous = null;
-                        _head = node;
+                        _head.Previous = node;
                     }
+
+                    if (node == _tail)
+                    {
+                        _tail = node.Previous;
+                    }
+                    else
+                    {
+                        if (node.Next != null)
+                        {
+                            node.Next.Previous = node.Previous;
+                        }
+                    }
+
+                    node.Previous.Next = node.Next;
+                    node.Next = _head;
+                    node.Previous = null;
+                    _head = node;
                 }
-                finally
+            }
+            finally
+            {
+                if (lockTaken)
                 {
-                    if (lockTaken)
-                    {
-                        _spinLock.Exit();
-                    }
+                    _spinLock.Exit();
                 }
             }
         }

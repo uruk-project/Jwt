@@ -146,7 +146,7 @@ namespace JsonWebToken
         /// <summary>
         /// Reads and validates a JWT encoded as a JWS or JWE in compact serialized format.
         /// </summary>
-        /// <param name="token">the JWT encoded as JWE or JWS</param>
+        /// <param name="token">The JWT encoded as JWE or JWS</param>
         /// <param name="policy">The validation policy.</param>
         public TokenValidationResult TryReadToken(ReadOnlySpan<char> token, TokenValidationPolicy policy)
         {
@@ -165,24 +165,24 @@ namespace JsonWebToken
                 return TokenValidationResult.MalformedToken();
             }
 
-            if (token.Length > policy.MaximumTokenSizeInBytes)
+            int length = token.Length;
+            if (length > policy.MaximumTokenSizeInBytes)
             {
                 return TokenValidationResult.MalformedToken();
             }
 
-            int length = token.Length;
             byte[] utf8ArrayToReturnToPool = null;
-            var utf8Buffer = length <= Constants.MaxStackallocBytes
+            var utf8Token = length <= Constants.MaxStackallocBytes
                   ? stackalloc byte[length]
                   : (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
             try
             {
 #if !NETSTANDARD2_0
-                Encoding.UTF8.GetBytes(token, utf8Buffer);
+                Encoding.UTF8.GetBytes(token, utf8Token);
 #else
-                EncodingHelper.GetUtf8Bytes(token, utf8Buffer);
+                EncodingHelper.GetUtf8Bytes(token, utf8Token);
 #endif             
-                return TryReadToken(utf8Buffer, policy);
+                return TryReadToken(utf8Token, policy);
             }
             finally
             {
@@ -193,10 +193,35 @@ namespace JsonWebToken
             }
         }
 
-        private TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Buffer, TokenValidationPolicy policy)
+        /// <summary>
+        /// Reads and validates a JWT encoded as a JWS or JWE in compact serialized format.
+        /// </summary>
+        /// <param name="utf8Token">The JWT encoded as JWE or JWS.</param>
+        /// <param name="policy">The validation policy.</param>
+        public TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Token, TokenValidationPolicy policy)
         {
+            if (policy == null)
+            {
+                throw new ArgumentNullException(nameof(policy));
+            }
+
+            if (_disposed)
+            {
+                Errors.ThrowObjectDisposed(GetType());
+            }
+
+            if (utf8Token.IsEmpty)
+            {
+                return TokenValidationResult.MalformedToken();
+            }
+
+            if (utf8Token.Length > policy.MaximumTokenSizeInBytes)
+            {
+                return TokenValidationResult.MalformedToken();
+            }
+
             Span<TokenSegment> segments = stackalloc TokenSegment[Constants.JweSegmentCount];
-            var segmentCount = Tokenizer.Tokenize(utf8Buffer, segments, Constants.JweSegmentCount);
+            var segmentCount = Tokenizer.Tokenize(utf8Token, segments, Constants.JweSegmentCount);
             var headerSegment = segments[0];
             if (headerSegment.IsEmpty)
             {
@@ -204,7 +229,7 @@ namespace JsonWebToken
             }
 
             JwtHeader header;
-            var rawHeader = utf8Buffer.Slice(headerSegment.Start, headerSegment.Length);
+            var rawHeader = utf8Token.Slice(headerSegment.Start, headerSegment.Length);
             try
             {
                 if (EnableHeaderCaching)
@@ -238,9 +263,9 @@ namespace JsonWebToken
             switch (segmentCount)
             {
                 case Constants.JwsSegmentCount:
-                    return TryReadJws(utf8Buffer, policy, segments, headerSegment, header);
+                    return TryReadJws(utf8Token, policy, segments, headerSegment, header);
                 case Constants.JweSegmentCount:
-                    return TryReadJwe(utf8Buffer, policy, segments, header, rawHeader);
+                    return TryReadJwe(utf8Token, policy, segments, header, rawHeader);
                 default:
                     return TokenValidationResult.MalformedToken();
             }
@@ -275,7 +300,7 @@ namespace JsonWebToken
             var authenticationTagSegment = segments[4];
             var rawAuthenticationTag = utf8Buffer.Slice(authenticationTagSegment.Start, authenticationTagSegment.Length);
 
-            Span<byte> decryptedBytes = new byte[Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length)];
+            Span<byte> decryptedBytes = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length)];
             Jwk decryptionKey = null;
             bool decrypted = false;
             for (int i = 0; i < keys.Count; i++)
