@@ -394,7 +394,7 @@ namespace JsonWebToken
             try
             {
                 Base64Url.Base64UrlDecode(data, buffer);
-                return JsonParser.ParsePayload(buffer);
+                return JsonPayloadParser.ParsePayload(buffer);
             }
             finally
             {
@@ -415,7 +415,7 @@ namespace JsonWebToken
             try
             {
                 Base64Url.Base64UrlDecode(data, buffer);
-                return JsonParser.ParseHeader(buffer);
+                return JsonHeaderParser.ParseHeader(buffer);
             }
             finally
             {

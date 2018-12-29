@@ -19,23 +19,5 @@ namespace JsonWebToken
         {
             return ReadJson(buffer);
         }
-
-        /// <summary>
-        /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtHeader"/>.
-        /// </summary>
-        /// <param name="buffer"></param>
-        public static JwtHeader ParseHeader(ReadOnlySpan<byte> buffer)
-        {
-            return ReadJsonHeader(buffer);
-        }
-
-        /// <summary>
-        /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtPayload"/>.
-        /// </summary>
-        /// <param name="buffer"></param>
-        public static JwtPayload ParsePayload(ReadOnlySpan<byte> buffer)
-        {
-            return ReadJsonPayload(buffer);
-        }
     }
 }

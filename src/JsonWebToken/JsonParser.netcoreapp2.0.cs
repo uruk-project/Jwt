@@ -10,23 +10,10 @@ using System.Text;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Provides methods for converting Base64Url JSON data into a <see cref="Dictionary{TKey, TValue}"/>
-    /// </summary>
     public static partial class JsonParser
     {
-        private static JwtHeader ReadJsonHeader(ReadOnlySpan<byte> buffer)
-        {
-            return new JwtHeader(ReadJson(buffer));
-        }
-
-        private static JwtPayload ReadJsonPayload(ReadOnlySpan<byte> buffer)
-        {
-            return new JwtPayload(ReadJson(buffer));
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Dictionary<string, object> ReadJson(ReadOnlySpan<byte> buffer)
+        internal static Dictionary<string, object> ReadJson(ReadOnlySpan<byte> buffer)
         {
 #if !NETSTANDARD2_0
             var json = Encoding.UTF8.GetString(buffer);
