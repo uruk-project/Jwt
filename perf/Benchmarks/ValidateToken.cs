@@ -76,7 +76,7 @@ namespace JsonWebToken.Performance
             }
         }
 
-        [Benchmark(OperationsPerInvoke = OperationPerInvoke)]
+        [Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public void Wilson(string token)
         {
@@ -90,7 +90,7 @@ namespace JsonWebToken.Performance
             }
         }
 
-        [Benchmark(OperationsPerInvoke = OperationPerInvoke)]
+        [Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public void WilsonJwt(string token)
         {

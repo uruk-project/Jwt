@@ -3,21 +3,21 @@ using System.Collections.Generic;
 
 namespace JsonWebToken.Performance
 {
-    public class JwtBenchmark : JwtBenchmarkBase
+    public class JweBenchmark : JwtBenchmarkBase
     {
         public IEnumerable<string> GetTokens()
         {
-            yield return "JWT-empty";
-            yield return "JWT-small";
-            yield return "JWT-medium";
-            yield return "JWT-big";
+            yield return "JWE-empty";
+            yield return "JWE-small";
+            yield return "JWE-medium";
+            yield return "JWE-big";
         }
 
         [Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public override void ValidateJwt(string token)
         {
-            ValidateJwtCore(token, TokenValidationPolicy.NoValidation);
+            ValidateJwtCore(token, policyWithSignatureValidation);
         }
 
         [Benchmark]
