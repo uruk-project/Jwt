@@ -213,6 +213,40 @@ namespace JsonWebToken.Performance
                 descriptors.Add("JWE-" + payload.Key, jwe);
             }
 
+            foreach (var payload in payloads)
+            {
+                var descriptor = new JwsDescriptor()
+                {
+                    Key = signingKey
+                };
+
+                foreach (var property in payload.Value.Properties())
+                {
+                    switch (property.Name)
+                    {
+                        case "iat":
+                        case "nbf":
+                        case "exp":
+                            descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
+                            break;
+                        default:
+                            descriptor.AddClaim(property.Name, (string)property.Value);
+                            break;
+                    }
+                }
+
+                var jwe = new JweDescriptor
+                {
+                    Payload = descriptor,
+                    Key = encryptionKey,
+                    EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
+                    ContentType = "JWT", 
+                    CompressionAlgorithm = CompressionAlgorithm.Deflate
+                };
+
+                descriptors.Add("JWE-DEF-" + payload.Key, jwe);
+            }
+
             return descriptors;
         }
 

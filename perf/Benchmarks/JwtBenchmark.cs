@@ -13,14 +13,14 @@ namespace JsonWebToken.Performance
             yield return "JWT-big";
         }
 
-        [Benchmark]
+        [Benchmark(OperationsPerInvoke = IterationCount)]
         [ArgumentsSource(nameof(GetTokens))]
         public override void ValidateJwt(string token)
         {
             ValidateJwtCore(token, TokenValidationPolicy.NoValidation);
         }
 
-        [Benchmark]
+        [Benchmark(OperationsPerInvoke = IterationCount)]
         [ArgumentsSource(nameof(GetTokens))]
         public override void WriteJwt(string token)
         {

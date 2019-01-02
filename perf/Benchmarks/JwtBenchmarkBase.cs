@@ -2,12 +2,16 @@
 using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace JsonWebToken.Performance
 {
     [Config(typeof(AllTfmCoreConfig))]
     public abstract class JwtBenchmarkBase
     {
+        public const int IterationCount = 50;
+
         private static readonly SymmetricJwk SigningKey = Tokens.SigningKey;
 
         private static readonly SymmetricJwk EncryptionKey = Tokens.EncryptionKey;
@@ -19,56 +23,37 @@ namespace JsonWebToken.Performance
         protected static readonly TokenValidationPolicy policyWithSignatureValidation = new TokenValidationPolicyBuilder().RequireSignature(Tokens.SigningKey).Build();
 
         private static readonly Dictionary<string, JwtDescriptor> JwtPayloads = CreateJwtDescriptors();
+        private static readonly Dictionary<string, byte[]> JwtTokens = CreateJwtTokens();
 
         public abstract void WriteJwt(string token);
 
         public abstract void ValidateJwt(string token);
 
-        //[Benchmark]
-        //[ArgumentsSource(nameof(GetTokens))]
         protected void WriteJwtCore(string token)
         {
-            var value = Writer.WriteToken(JwtPayloads[token]);
+            for (int i = 0; i < IterationCount; i++)
+            {
+                var value = Writer.WriteToken(JwtPayloads[token]);
+            }
         }
 
-        //[Benchmark]
-        //[ArgumentsSource(nameof(GetTokens))]
         protected void ValidateJwtCore(string token, TokenValidationPolicy policy)
         {
-            var result = Reader.TryReadToken(Tokens.ValidBinaryTokens[token], policy);
+            for (int i = 0; i < IterationCount; i++)
+            {
+                var result = Reader.TryReadToken(JwtTokens[token], policy);
+                EnsureResult(result);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void EnsureResult(TokenValidationResult result)
+        {
             if (!result.Succedeed)
             {
                 throw new Exception(result.Status.ToString());
             }
         }
-
-        //[Benchmark(Baseline = true)]
-        //[ArgumentsSource(nameof(GetTokens))]
-        //public void ValidateJwt_Cache(string token)
-        //{
-        //    Reader.EnableHeaderCaching = true;
-        //    var result = Reader.TryReadToken(Tokens.ValidTokens[token].AsSpan(), policy);
-        //    if (!result.Succedeed)
-        //    {
-        //        throw new Exception(result.Status.ToString());
-        //    }
-        //}
-
-        //public IEnumerable<object[]> GetTokens()
-        //{
-        //    yield return new[] { "JWS-empty" };
-        //    //yield return new[] { "JWS-small" };
-        //    //yield return new[] { "JWS-medium" };
-        //    //yield return new[] { "JWS-big" };
-        //    //yield return new[] { "JWE-empty" };
-        //    //yield return new[] { "JWE-small" };
-        //    //yield return new[] { "JWE-medium" };
-        //    //yield return new[] { "JWE-big" };
-        //    //yield return new[] { "JWE-DEF-empty" };
-        //    //yield return new[] { "JWE-DEF-small" };
-        //    //yield return new[] { "JWE-DEF-medium" };
-        //    //yield return new[] { "JWE-DEF-big" };
-        //}
 
         private static Dictionary<string, JwtDescriptor> CreateJwtDescriptors()
         {
@@ -77,7 +62,7 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new JwsDescriptor()
                 {
-                   Algorithm = SignatureAlgorithm.None
+                    Algorithm = SignatureAlgorithm.None
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -167,6 +152,17 @@ namespace JsonWebToken.Performance
             }
 
             return descriptors;
+        }
+
+        private static Dictionary<string, byte[]> CreateJwtTokens()
+        {
+            var tokens = new Dictionary<string, byte[]>();
+            foreach (var item in JwtPayloads)
+            {
+                tokens.Add(item.Key, Encoding.UTF8.GetBytes(Writer.WriteToken(item.Value)));
+            }
+
+            return tokens;
         }
     }
 }
