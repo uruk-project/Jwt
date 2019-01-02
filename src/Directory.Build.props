@@ -7,7 +7,7 @@
     
     <Version>$(VersionMajor).$(VersionMinor).$(VersionPatch)</Version>
     <!--<VersionSuffix>-preview-1</VersionSuffix>-->
-    <VersionSuffix Condition="'$(VersionSuffix)' == ''">-$(VersionSuffix)</VersionSuffix>
+    <VersionSuffix Condition="'$(VersionSuffix)' != ''">-$(VersionSuffix)</VersionSuffix>
     <PackageVersion>$(VersionMajor).$(VersionMinor).$(VersionPatch)$(VersionSuffix)</PackageVersion>
     <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(VersionMajor).$(VersionMinor).$(BuildNumber)</AssemblyVersion>
     
