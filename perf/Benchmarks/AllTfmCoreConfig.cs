@@ -26,21 +26,14 @@ namespace JsonWebToken.Performance
             Add(Job.Core
                 .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp20))
                 .With(new GcMode { Server = true }));
-            //.WithMinIterationTime(TimeInterval.FromSeconds(1))
-            //.WithMinInvokeCount(5));
 
             Add(Job.Core
                 .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
                 .With(new GcMode { Server = true }));
-            //.WithMinIterationTime(TimeInterval.FromSeconds(1))
-            //.WithMinInvokeCount(5));	         
 
             Add(Job.Core
                 .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp30))
                 .With(new GcMode { Server = true }));
-                //.WithMinIterationTime(TimeInterval.FromSeconds(1))
-                //.WithMinInvokeCount(5));
         }
     }
-
 }
