@@ -7,7 +7,7 @@ namespace JsonWebToken.Internal
 {
     internal static class Tokenizer
     {
-        private const byte dot = 0x2E;
+        private const byte dot = (byte)'.';
              
         public static int Tokenize(ReadOnlySpan<byte> token, Span<TokenSegment> segments, int maxCount)
         {

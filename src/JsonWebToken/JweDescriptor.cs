@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
 
 namespace JsonWebToken
 {
@@ -26,7 +24,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public JweDescriptor(IDictionary<string, object> header, JwsDescriptor payload)
+        public JweDescriptor(HeaderDescriptor header, JwsDescriptor payload)
             : base(header, payload)
         {
             Header[HeaderParameters.Cty] = ContentTypeValues.Jwt;
@@ -37,7 +35,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="payload"></param>
         public JweDescriptor(JwsDescriptor payload)
-            : base(new Dictionary<string, object>(), payload)
+            : base(new HeaderDescriptor(), payload)
         {
             Header[HeaderParameters.Cty] = ContentTypeValues.Jwt;
         }

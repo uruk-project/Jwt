@@ -28,11 +28,11 @@ namespace JsonWebToken
         }
 
         public ClientAssertionDescriptor(JObject payload)
-            : base(new Dictionary<string, object>(), payload)
+            : base(new HeaderDescriptor(), payload)
         {
         }
 
-        public ClientAssertionDescriptor(Dictionary<string, object> header, JObject payload)
+        public ClientAssertionDescriptor(HeaderDescriptor header, JObject payload)
             : base(header, payload)
         {
         }

@@ -20,7 +20,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public JwtDescriptor(IDictionary<string, object> header, TPayload payload)
+        public JwtDescriptor(HeaderDescriptor header, TPayload payload)
             : base(header)
         {
             Payload = payload ?? throw new ArgumentNullException(nameof(payload));

@@ -104,8 +104,8 @@ namespace JsonWebToken
         /// Writes a JWT in its compact serialization format.
         /// </summary>
         /// <param name="descriptor">The descriptor of the JWT.</param>
-        /// <returns></returns>
-        public string WriteToken(JwtDescriptor descriptor)
+        /// <returns>The array of <see cref="byte"/> representation of the JWT.</returns>
+        public byte[] WriteToken(JwtDescriptor descriptor)
         {
             if (descriptor == null)
             {

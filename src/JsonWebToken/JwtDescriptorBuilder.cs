@@ -13,7 +13,7 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtDescriptorBuilder
     {
-        private readonly Dictionary<string, object> _header = new Dictionary<string, object>();
+        private readonly HeaderDescriptor _header = new HeaderDescriptor();
         private JObject _jsonPayload;
         private byte[] _binaryPayload;
         private string _textPayload;
@@ -132,7 +132,7 @@ namespace JsonWebToken
             }
             else if (_jsonPayload != null)
             {
-                var jws = new JwsDescriptor(new Dictionary<string, object>(), _jsonPayload);
+                var jws = new JwsDescriptor(new HeaderDescriptor(), _jsonPayload);
                 if (_signingKey != null)
                 {
                     jws.Key = _signingKey;
