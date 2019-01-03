@@ -20,9 +20,9 @@ This library aims to propose performant JWT primitives.
 				   .RequireIssuer("<valid_issuer>")
 				   .Build()
 
-    using (var reader = new JsonWebTokenReader())
+    using (var reader = new JwtReader())
     {
-      var result = _reader.TryReadToken("eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiaWF0IjoxNTA4MTg0ODQ1LCJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJleHAiOjE2MjgxODQ4NDV9.2U33urP5-MPw1ipbwEP4nqvEqlZiyUG9Hxi8YS_RQVk");
+      var result = reader.TryReadToken("eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiaWF0IjoxNTA4MTg0ODQ1LCJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJleHAiOjE2MjgxODQ4NDV9.2U33urP5-MPw1ipbwEP4nqvEqlZiyUG9Hxi8YS_RQVk");
       if (result.Success)
       {
         Console.WriteLine("The token is " + result.Token);
@@ -45,9 +45,9 @@ This library aims to propose performant JWT primitives.
       Audience = "636C69656E745F6964"
     };
 
-    using (var writer = new JsonWebTokenWriter())
+    using (var writer = new JwtWriter())
     {
-      string token = writer.WriteToken(descriptor);
+      byte[] token = writer.WriteToken(descriptor);
     }
 ````
 ## Performances
@@ -87,9 +87,9 @@ The main reason of the speed of this library is the usage of the new API provide
 | A128CBC-HS256 | AES_128_CBC_HMAC_SHA_256 authenticated encryption algorithm | netstandard2.0
 | A192CBC-HS384 | AES_192_CBC_HMAC_SHA_384 authenticated encryption algorithm | netstandard2.0
 | A256CBC-HS512 | AES_256_CBC_HMAC_SHA_512 authenticated encryption algorithm | netstandard2.0
-| A128GCM       | AES GCM using 128-bit key                                   | netcoreapp2.2 (not ready)
-| A192GCM       | AES GCM using 192-bit key                                   | netcoreapp2.2 (not ready)
-| A256GCM       | AES GCM using 256-bit key                                   | netcoreapp2.2 (not ready)
+| A128GCM       | AES GCM using 128-bit key                                   | netcoreapp3.0
+| A192GCM       | AES GCM using 192-bit key                                   | netcoreapp3.0
+| A256GCM       | AES GCM using 256-bit key                                   | netcoreapp3.0
 
 ### JWE content encryption key algorithm
 | "alg" Param Value  | Key Management Algorithm                                                      | Target Framework
@@ -105,6 +105,6 @@ The main reason of the speed of this library is the usage of the new API provide
 | ECDH-ES+A128KW     | ECDH-ES using Concat KDF and CEK wrapped with "A128KW"                        | netcoreapp2.1
 | ECDH-ES+A192KW     | ECDH-ES using Concat KDF and CEK wrapped with "A192KW"                        | netcoreapp2.1
 | ECDH-ES+A256KW     | ECDH-ES using Concat KDF and CEK wrapped with "A256KW"                        | netcoreapp2.1
-| A128GCMKW          | Key wrapping with AES GCM using 128-bit key                                   | netcoreapp2.2 (not ready)
-| A192GCMKW          | Key wrapping with AES GCM using 192-bit key                                   | netcoreapp2.2 (not ready)
-| A256GCMKW          | Key wrapping with AES GCM using 256-bit key                                   | netcoreapp2.2 (not ready)
+| A128GCMKW          | Key wrapping with AES GCM using 128-bit key                                   | netcoreapp3.0
+| A192GCMKW          | Key wrapping with AES GCM using 192-bit key                                   | netcoreapp3.0
+| A256GCMKW          | Key wrapping with AES GCM using 256-bit key                                   | netcoreapp3.0
