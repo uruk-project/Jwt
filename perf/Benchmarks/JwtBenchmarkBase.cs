@@ -30,19 +30,20 @@ namespace JsonWebToken.Performance
         private static readonly Dictionary<string, JwtDescriptor> JwtPayloads = CreateJwtDescriptors();
         private static readonly Dictionary<string, byte[]> JwtTokens = CreateJwtTokens();
 
-        public abstract void WriteJwt(string token);
+        public abstract byte[] WriteJwt(string token);
 
-        public abstract void ValidateJwt(string token);
+        public abstract TokenValidationResult ValidateJwt(string token);
 
-        protected void WriteJwtCore(string token)
+        protected byte[] WriteJwtCore(string token)
         {
-            var value = Writer.WriteToken(JwtPayloads[token]);
+            return Writer.WriteToken(JwtPayloads[token]);
         }
 
-        protected void ValidateJwtCore(string token, TokenValidationPolicy policy)
+        protected TokenValidationResult ValidateJwtCore(string token, TokenValidationPolicy policy)
         {
             var result = Reader.TryReadToken(JwtTokens[token], policy);
             EnsureResult(result);
+            return result;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

@@ -15,16 +15,16 @@ namespace JsonWebToken.Performance
 
         [Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
-        public override void ValidateJwt(string token)
+        public override TokenValidationResult ValidateJwt(string token)
         {
-            ValidateJwtCore(token, TokenValidationPolicy.NoValidation);
+            return ValidateJwtCore(token, TokenValidationPolicy.NoValidation);
         }
 
         [Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
-        public override void WriteJwt(string token)
+        public override byte[] WriteJwt(string token)
         {
-            WriteJwtCore(token);
+            return WriteJwtCore(token);
         }
     }
 }
