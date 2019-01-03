@@ -23,9 +23,9 @@ namespace JsonWebToken.Performance
             Add(JitOptimizationsValidator.FailOnError);
             Add(BenchmarkLogicalGroupRule.ByCategory);
 
-            Add(Job.Core
-                .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp20))
-                .With(new GcMode { Server = true }));
+            //Add(Job.Core
+            //    .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp20))
+            //    .With(new GcMode { Server = true }));
 
             Add(Job.Core
                 .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
