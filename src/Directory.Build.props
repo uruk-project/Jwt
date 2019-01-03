@@ -1,16 +1,32 @@
 <Project>
   <PropertyGroup>
-    <Version>1.0.0-preview-1</Version>
+    <VersionMajor Condition="'$(VersionMajor)' == ''">1</VersionMajor>
+    <VersionMinor Condition="'$(VersionMinor)' == ''">0</VersionMinor>
+    <VersionPatch Condition="'$(VersionPatch)' == ''">0</VersionPatch>
+    <BuildNumber Condition="'$(BuildNumber)' == ''">0</BuildNumber>
+    
+    <Version>$(VersionMajor).$(VersionMinor).$(VersionPatch)</Version>
+    <!--<VersionSuffix>-preview-1</VersionSuffix>-->
+    <VersionSuffix Condition="'$(VersionSuffix)' != ''">-$(VersionSuffix)</VersionSuffix>
+    <PackageVersion>$(VersionMajor).$(VersionMinor).$(VersionPatch)$(VersionSuffix)</PackageVersion>
+    <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(VersionMajor).$(VersionMinor).$(BuildNumber)</AssemblyVersion>
+    
     <Authors>Yann Crumeyrolle</Authors>
     <Company>Yann Crumeyrolle</Company>
+    <Copyright>Copyright © Yann Crumeyrolle 2019</Copyright>
     <PackageProjectUrl>https://github.com/ycrumeyrolle/Jwt</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ycrumeyrolle/Jwt</RepositoryUrl>
     <PackageTags>jwt security</PackageTags>
     <Description>
-      High-performance JWT library.
-      Provides Json Web Token primitives.
+High-performan Web Tonce JWT library.
+Provides Jsoken primitives.
     </Description>
     <sumary>High-performance JWT library.</sumary>
     <PackageLicense>MIT</PackageLicense>
   </PropertyGroup>
+
+  <Target Name="VersionInfo" BeforeTargets="BeforeBuild">
+    <Message Importance="high" Text="$(MSBuildProjectName) BuildNumber: $(BuildNumber) --> Version: $(Version), AssemblyVersion: $(AssemblyVersion)" />
+    <Message Importance="high" Text=" " Condition="'$(Configuration)' == 'Debug'" />
+  </Target>
 </Project>
