@@ -399,7 +399,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override string Encode(EncodingContext context)
+        public override byte[] Encode(EncodingContext context)
         {
             Signer signatureProvider = null;
             var alg = (SignatureAlgorithm)(Algorithm ?? Key?.Alg);
@@ -477,11 +477,8 @@ namespace JsonWebToken
                     bytesWritten = Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)));
                 }
 
-#if !NETSTANDARD2_0
-                return Encoding.UTF8.GetString(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten));
-#else
-                return EncodingHelper.GetUtf8String(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten));
-#endif
+                Debug.Assert(buffer.Length == payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten);
+                return buffer.Slice(0, payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten).ToArray();
             }
             finally
             {

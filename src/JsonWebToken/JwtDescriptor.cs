@@ -170,7 +170,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public abstract string Encode(EncodingContext context);
+        public abstract byte[] Encode(EncodingContext context);
 
         /// <summary>
         /// Gets the header parameter for a specified header name.

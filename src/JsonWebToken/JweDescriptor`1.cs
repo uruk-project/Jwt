@@ -74,12 +74,10 @@ namespace JsonWebToken
         public DateTime? NotBefore { get => Payload.NotBefore; set => Payload.NotBefore = value; }
 
         /// <inheritsdoc />
-        public override string Encode(EncodingContext context)
+        public override byte[] Encode(EncodingContext context)
         {
             var payload = Payload.Encode(context);
-            var rawData = EncryptToken(context, payload);
-
-            return rawData;
+            return EncryptToken(context, payload);
         }
 
         /// <inheritsdoc />

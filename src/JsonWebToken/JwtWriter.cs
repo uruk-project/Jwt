@@ -3,9 +3,23 @@
 
 using JsonWebToken.Internal;
 using System;
+using System.Text;
 
 namespace JsonWebToken
 {
+    public static class JwtWriterExtensions
+    {
+        public static string WriteTokenString(this JwtWriter writer, JwtDescriptor descriptor)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            return Encoding.UTF8.GetString(writer.WriteToken(descriptor));
+        }
+    }
+
     /// <summary>
     /// Writes a JWT.
     /// </summary>
@@ -105,7 +119,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="descriptor">The descriptor of the JWT.</param>
         /// <returns></returns>
-        public string WriteToken(JwtDescriptor descriptor)
+        public byte[] WriteToken(JwtDescriptor descriptor)
         {
             if (descriptor == null)
             {

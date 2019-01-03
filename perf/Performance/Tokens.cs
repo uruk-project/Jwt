@@ -253,7 +253,7 @@ namespace JsonWebToken.Performance
         private static IDictionary<string, string> CreateTokens(IDictionary<string, JwtDescriptor> descriptors)
         {
             var writer = new JwtWriter();
-            return descriptors.ToDictionary(k => k.Key, k => writer.WriteToken(k.Value));
+            return descriptors.ToDictionary(k => k.Key, k => writer.WriteTokenString(k.Value));
         }
 
         private static IList<TokenState> CreateInvalidToken(Jwk key, JObject json)
@@ -387,7 +387,7 @@ namespace JsonWebToken.Performance
             var token = descriptor;
             var writer = new JwtWriter();
             writer.IgnoreTokenValidation = true;
-            var jwt = writer.WriteToken(token);
+            var jwt = writer.WriteTokenString(token);
 
             switch (status)
             {

@@ -30,7 +30,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override string Encode(EncodingContext context)
+        public override byte[] Encode(EncodingContext context)
         {
             return EncryptToken(context, Payload);
         }

@@ -201,7 +201,7 @@ namespace JwtCreator
 
             var token = descriptor;
             var writer = new JwtWriter();
-            var jwt = writer.WriteToken(token);
+            var jwt = writer.WriteTokenString(token);
 
             switch (status)
             {

@@ -59,7 +59,7 @@ namespace JsonWebToken
         /// <summary>
         /// Encrypt the token.
         /// </summary>
-        protected string EncryptToken(EncodingContext context, string payload)
+        protected byte[] EncryptToken(EncodingContext context, string payload)
         {
             if (payload == null)
             {
@@ -93,7 +93,7 @@ namespace JsonWebToken
         /// <summary>
         /// Encrypt the token.
         /// </summary>
-        protected string EncryptToken(EncodingContext context, Span<byte> payload)
+        protected byte[] EncryptToken(EncodingContext context, Span<byte> payload)
         {
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
             KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)Algorithm;
@@ -225,11 +225,7 @@ namespace JsonWebToken
                     bytesWritten += Base64Url.Base64UrlEncode(tag, encryptedToken.Slice(bytesWritten));
                     Debug.Assert(encryptedToken.Length == bytesWritten);
 
-#if !NETSTANDARD2_0
-                    return Encoding.UTF8.GetString(encryptedToken);
-#else
-                    return EncodingHelper.GetUtf8String(encryptedToken);
-#endif
+                    return encryptedToken.ToArray();
                 }
                 finally
                 {
