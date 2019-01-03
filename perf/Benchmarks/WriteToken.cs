@@ -1,5 +1,4 @@
-﻿using BenchmarkDotNet.Attributes;
-using Jose;
+﻿using Jose;
 using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;
@@ -12,108 +11,6 @@ using System.Security.Claims;
 
 namespace JsonWebToken.Performance
 {
-    [Config(typeof(DefaultCoreConfig))]
-    [BenchmarkCategory("CI-CD")]
-    public class WriteSignedToken : WriteToken
-    {
-        [Benchmark(Baseline = true)]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public void Jwt(string payload)
-        {
-            var value = Writer.WriteToken(JwtPayloads[payload]);
-        }
-
-        [Benchmark]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public void Wilson(string payload)
-        {
-            var token = Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-        }
-
-        [Benchmark]
-        [ArgumentsSource(nameof(GetNotEncryptedPayloads))]
-        public void WilsonJwt(string payload)
-        {
-            var token = Handler2.CreateToken(Tokens.Payloads[payload.Substring(4)].ToString(), signingCredentials);
-        }
-
-        public IEnumerable<string> GetPayloads()
-        {
-            yield return "JWS-empty";
-            yield return "JWS-small";
-            yield return "JWS-medium";
-            yield return "JWS-big";
-        }
-    }
-
-    [Config(typeof(DefaultCoreConfig))]
-    [BenchmarkCategory("CI-CD")]
-    public class WriteUnsignedToken : WriteToken
-    {
-        [Benchmark(Baseline = true)]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public void Jwt(string payload)
-        {
-            var value = Writer.WriteToken(JwtPayloads[payload]);
-        }
-
-        [Benchmark]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public void Wilson(string payload)
-        {
-            var token = Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-        }
-
-        [Benchmark]
-        [ArgumentsSource(nameof(GetNotEncryptedPayloads))]
-        public void WilsonJwt(string payload)
-        {
-            var token = Handler2.CreateToken(Tokens.Payloads[payload.Substring(4)].ToString(), signingCredentials);
-        }
-
-        public IEnumerable<string> GetPayloads()
-        {
-            yield return "JWT-empty";
-            yield return "JWT-small";
-            yield return "JWT-medium";
-            yield return "JWT-big";
-        }
-    }
-
-    [Config(typeof(DefaultCoreConfig))]
-    [BenchmarkCategory("CI-CD")]
-    public class WriteEncryptedToken : WriteToken
-    {
-        [Benchmark(Baseline = true)]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public void Jwt(string payload)
-        {
-            var value = Writer.WriteToken(JwtPayloads[payload]);
-        }
-
-        [Benchmark]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public void Wilson(string payload)
-        {
-            var token = Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-        }
-
-        [Benchmark]
-        [ArgumentsSource(nameof(GetNotEncryptedPayloads))]
-        public void WilsonJwt(string payload)
-        {
-            var token = Handler2.CreateToken(Tokens.Payloads[payload.Substring(4)].ToString(), signingCredentials);
-        }
-
-        public IEnumerable<string> GetPayloads()
-        {
-            yield return "JWE-empty";
-            yield return "JWE-small";
-            yield return "JWE-medium";
-            yield return "JWE-big";
-        }
-    }
-
     public abstract class WriteToken
     {
         private static readonly SymmetricJwk SigningKey = Tokens.SigningKey;
@@ -145,6 +42,34 @@ namespace JsonWebToken.Performance
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
         }
 
+        public WriteToken()
+        {
+            JwtCore("JWT-empty");
+            WilsonCore("JWT-empty");
+            WilsonJwtCore("JWT-empty");
+        }
+
+        public abstract byte[] Jwt(string payload);
+
+        protected byte[] JwtCore(string payload)
+        {
+            return Writer.WriteToken(JwtPayloads[payload]);
+        }
+
+        public abstract string Wilson(string payload);
+
+        protected string WilsonCore(string payload)
+        {
+            return Handler.CreateEncodedJwt(WilsonPayloads[payload]);
+        }
+
+        public abstract string WilsonJwt(string payload);
+
+        protected string WilsonJwtCore(string payload)
+        {
+            return Handler2.CreateToken(Tokens.Payloads[payload.Substring(4)].ToString(), signingCredentials);
+        }
+
         //[Benchmark]
         //[ArgumentsSource(nameof(GetPayloads))]
         public void JoseDotNet(string payload)
@@ -162,27 +87,12 @@ namespace JsonWebToken.Performance
         }
 
         //[Benchmark]
-        [ArgumentsSource(nameof(GetNotEncryptedPayloads))]
+        //[ArgumentsSource(nameof(GetNotEncryptedPayloads))]
         public void JwtDotNet(string payload)
         {
             var value = JwtDotNetEncoder.Encode(DictionaryPayloads[payload], SigningKey.RawK);
         }
 
-        public IEnumerable<string> GetNotEncryptedPayloads()
-        {
-            yield return "JWS-empty";
-            yield return "JWS-small";
-            yield return "JWS-medium";
-            yield return "JWS-big";
-        }
-
-        //public IEnumerable<object[]> GetJsonPayloads()
-        //{
-        //    yield return new[] { "empty" };
-        //    yield return new[] { "small" };
-        //    yield return new[] { "medium" };
-        //    yield return new[] { "big" };
-        //}
         private static Dictionary<string, JwtDescriptor> CreateJwtDescriptors()
         {
             var descriptors = new Dictionary<string, JwtDescriptor>();
