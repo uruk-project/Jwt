@@ -10,7 +10,7 @@ namespace JsonWebToken.Performance
             yield return "JWE-DEF-empty";
             yield return "JWE-DEF-small";
             yield return "JWE-DEF-medium";
-            yield return "JWE-DEF-big";
+            //yield return "JWE-DEF-big";
         }
 
         [Benchmark]

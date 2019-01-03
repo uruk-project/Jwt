@@ -10,7 +10,7 @@ namespace JsonWebToken.Performance
             yield return "JWS-empty";
             yield return "JWS-small";
             yield return "JWS-medium";
-            yield return "JWS-big";
+            //yield return "JWS-big";
         }
 
         [Benchmark]

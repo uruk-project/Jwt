@@ -10,7 +10,7 @@ namespace JsonWebToken.Performance
             yield return "JWT-empty";
             yield return "JWT-small";
             yield return "JWT-medium";
-            yield return "JWT-big";
+            //yield return "JWT-big";
         }
 
         [Benchmark]
