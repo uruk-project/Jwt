@@ -40,6 +40,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E98F10A4
 		azure-pipelines.yml = azure-pipelines.yml
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure", ".azure", "{1BDCDCC0-A83B-4C8B-BFA6-D2F56FF22AB2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipelines", "pipelines", "{D1E671F5-6543-4B77-91A5-7E24139493F8}"
+	ProjectSection(SolutionItems) = preProject
+		.azure\pipelines\ci.yml = .azure\pipelines\ci.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "jobs", "jobs", "{97DF99D2-A50C-4170-A363-BE39B7F27FB8}"
+	ProjectSection(SolutionItems) = preProject
+		.azure\pipelines\jobs\benchmarks.yml = .azure\pipelines\jobs\benchmarks.yml
+		.azure\pipelines\jobs\build.yml = .azure\pipelines\jobs\build.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -96,6 +109,8 @@ Global
 		{C796FD70-DA69-4F3C-872D-87842C30149A} = {BD2706C5-6C57-484D-89C8-A0CF5F8E3D19}
 		{D5994756-CD32-410D-9430-EA0EB7C2DEFA} = {BD2706C5-6C57-484D-89C8-A0CF5F8E3D19}
 		{3183725E-25D2-4596-A29D-4578C4E1DD5C} = {BD2706C5-6C57-484D-89C8-A0CF5F8E3D19}
+		{D1E671F5-6543-4B77-91A5-7E24139493F8} = {1BDCDCC0-A83B-4C8B-BFA6-D2F56FF22AB2}
+		{97DF99D2-A50C-4170-A363-BE39B7F27FB8} = {D1E671F5-6543-4B77-91A5-7E24139493F8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2F681326-7ED4-45F6-BD1D-1119EA388F42}

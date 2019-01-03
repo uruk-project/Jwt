@@ -2,7 +2,6 @@
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Exporters;
-using BenchmarkDotNet.Horology;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Toolchains.CsProj;
@@ -26,12 +25,11 @@ namespace JsonWebToken.Performance
 
             Add(Job.Core
                 .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp30))
-                .With(new GcMode { Server = true })
-                .WithMinIterationTime(TimeInterval.FromSeconds(1)));
+                .With(new GcMode { Server = true }));
+
             Add(Job.Core
                 .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
-                .With(new GcMode { Server = true })
-                .WithMinIterationTime(TimeInterval.FromSeconds(1)));
+                .With(new GcMode { Server = true }));
         }
     }
 }
