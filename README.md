@@ -52,9 +52,9 @@ This library aims to propose performant JWT primitives.
 ````
 ## Performances
 See [benchmarks](Benchmark.md) for details. 
-This library is about **3x** faster than the Microsoft.IdentityModel.Tokens.Jwt when decoding and validating the token, and **2.25x** faster when writing a JWS of common size, with only 1/4 of memory allocation.
+This library is about **6.5x** faster than the Microsoft.IdentityModel.Tokens.Jwt when decoding and validating the token, and **2x** faster when writing a JWS of common size, with only 1/4 of memory allocation. (values on netcoreapp3.0)
 
-The main reason of the speed of this library is the usage of the new API provided in .NET Core 2.0 and .NET Core 2.1.
+The main reason of the speed of this library is the usage of the new API provided in .NET Core 2.0, 2.1 & 3.0, like the new Span API and the new JSON API.
 
 ## Supported JWT
 * [JWS](https://tools.ietf.org/html/rfc7515) 
