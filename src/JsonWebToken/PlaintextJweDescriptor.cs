@@ -1,7 +1,11 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using JsonWebToken.Internal;
+using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -15,7 +19,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public PlaintextJweDescriptor(IDictionary<string, object> header, string payload)
+        public PlaintextJweDescriptor(HeaderDescriptor header, string payload)
             : base(header, payload)
         {
         }
@@ -32,7 +36,28 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override byte[] Encode(EncodingContext context)
         {
-            return EncryptToken(context, Payload);
+            int payloadLength = Payload.Length;
+            byte[] payloadToReturnToPool = null;
+            Span<byte> encodedPayload = payloadLength > Constants.MaxStackallocBytes
+                             ? (payloadToReturnToPool = ArrayPool<byte>.Shared.Rent(payloadLength)).AsSpan(0, payloadLength)
+                             : stackalloc byte[payloadLength];
+
+            try
+            {
+#if !NETSTANDARD2_0
+                Encoding.UTF8.GetBytes(Payload, encodedPayload);
+#else
+                EncodingHelper.GetUtf8Bytes(Payload.AsSpan(), encodedPayload);
+#endif
+                return EncryptToken(context, encodedPayload);
+            }
+            finally
+            {
+                if (payloadToReturnToPool != null)
+                {
+                    ArrayPool<byte>.Shared.Return(payloadToReturnToPool);
+                }
+            }
         }
     }
 }

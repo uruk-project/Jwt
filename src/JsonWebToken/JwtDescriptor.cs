@@ -28,7 +28,7 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="JwtDescriptor"/>.
         /// </summary>
         protected JwtDescriptor()
-            : this(new Dictionary<string, object>())
+            : this(new HeaderDescriptor())
         {
         }
 
@@ -36,15 +36,15 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="JwtDescriptor"/>.
         /// </summary>
         /// <param name="header"></param>
-        protected JwtDescriptor(IDictionary<string, object> header)
+        protected JwtDescriptor(HeaderDescriptor header)
         {
-            Header = new Dictionary<string, object>(header);
+            Header = header;
         }
 
         /// <summary>
         /// Gets the parameters header.
         /// </summary>
-        public Dictionary<string, object> Header { get; }
+        public HeaderDescriptor Header { get; }
 
         /// <summary>
         /// Gets the <see cref="Jwt"/> used.
@@ -231,7 +231,7 @@ namespace JsonWebToken
 
             return null;
         }
-        
+
         /// <summary>
         /// Validates the current <see cref="JwtDescriptor"/>.
         /// </summary>

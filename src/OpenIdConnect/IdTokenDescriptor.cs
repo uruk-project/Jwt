@@ -51,13 +51,13 @@ namespace JsonWebToken
         {
         }
 
-        public IdTokenDescriptor(Dictionary<string, object> header, JObject payload)
+        public IdTokenDescriptor(HeaderDescriptor header, JObject payload)
             : base(header, payload)
         {
         }
 
         public IdTokenDescriptor(JObject payload)
-            : base(new Dictionary<string, object>(), payload)
+            : base(new HeaderDescriptor(), payload)
         {
         }
 

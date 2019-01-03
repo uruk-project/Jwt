@@ -21,7 +21,7 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtReader : IDisposable
     {
-        private const byte dot = 0x2E;
+        private const byte dot = (byte)'.';
 
         private readonly IKeyProvider[] _encryptionKeyProviders;
         private readonly JwtHeaderCache _headerCache;

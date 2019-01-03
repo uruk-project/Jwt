@@ -20,7 +20,7 @@ namespace JsonWebToken
         {
         }
 
-        public StateDescriptor(IDictionary<string, object> header, JObject payload)
+        public StateDescriptor(HeaderDescriptor header, JObject payload)
             : base(header, payload)
         {
         }

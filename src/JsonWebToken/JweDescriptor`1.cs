@@ -15,7 +15,7 @@ namespace JsonWebToken
         /// Initializes an new instance of <see cref="JweDescriptor"/>.
         /// </summary>
         public JweDescriptor()
-            : base(new Dictionary<string, object>(), new TDescriptor())
+            : base(new HeaderDescriptor(), new TDescriptor())
         {
         }
 
@@ -24,7 +24,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="payload"></param>
         public JweDescriptor(TDescriptor payload)
-            : base(new Dictionary<string, object>(), payload)
+            : base(new HeaderDescriptor(), payload)
         {
         }
 
@@ -33,7 +33,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public JweDescriptor(IDictionary<string, object> header, TDescriptor payload)
+        public JweDescriptor(HeaderDescriptor header, TDescriptor payload)
             : base(header, payload)
         {
         }

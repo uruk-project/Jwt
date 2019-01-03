@@ -19,7 +19,7 @@ namespace JsonWebToken
     /// </summary>
     public class JwsDescriptor : JwtDescriptor<JObject>
     {
-        private static readonly byte dot = Convert.ToByte('.');
+        private const byte dot = (byte)'.';
         private static readonly ReadOnlyDictionary<string, JTokenType[]> DefaultRequiredClaims = new ReadOnlyDictionary<string, JTokenType[]>(new Dictionary<string, JTokenType[]>());
         private static readonly string[] DefaultProhibitedClaims = Array.Empty<string>();
         private static readonly ReadOnlyDictionary<string, Type[]> JwsRequiredHeaderParameters = new ReadOnlyDictionary<string, Type[]>(
@@ -32,14 +32,14 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="JwsDescriptor"/>.
         /// </summary>
         public JwsDescriptor()
-            : base(new Dictionary<string, object>(), new JObject())
+            : base(new HeaderDescriptor(), new JObject())
         {
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwsDescriptor"/>.
         /// </summary>
-        public JwsDescriptor(IDictionary<string, object> header, JObject payload)
+        public JwsDescriptor(HeaderDescriptor header, JObject payload)
             : base(header, payload)
         {
         }
@@ -390,7 +390,7 @@ namespace JsonWebToken
         {
             if (value.HasValue)
             {
-                Payload[claimType] = value.ToEpochTime();
+                Payload[claimType] = value.Value.ToEpochTime();
             }
             else
             {
@@ -405,11 +405,10 @@ namespace JsonWebToken
             var alg = (SignatureAlgorithm)(Algorithm ?? Key?.Alg);
             if (Key != null)
             {
-                var key = Key;
-                signatureProvider = context.SignatureFactory.Create(key, alg, willCreateSignatures: true);
+                signatureProvider = context.SignatureFactory.Create(Key, alg, willCreateSignatures: true);
                 if (signatureProvider == null)
                 {
-                    Errors.ThrowNotSupportedSignatureAlgorithm(alg, key);
+                    Errors.ThrowNotSupportedSignatureAlgorithm(alg, Key);
                 }
             }
 
@@ -445,48 +444,36 @@ namespace JsonWebToken
                 length += Base64Url.GetArraySizeRequiredToEncode(headerJson.Length);
             }
 
-            byte[] arrayToReturnToPool = null;
-            var buffer = length <= Constants.MaxStackallocBytes
-                  ? stackalloc byte[length]
-                  : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
-            try
+            byte[] bufferToReturn = new byte[length];
+            var buffer = bufferToReturn.AsSpan();
+            int headerBytesWritten;
+            if (base64UrlHeader != null)
             {
-                int headerBytesWritten;
-                if (base64UrlHeader != null)
-                {
-                    base64UrlHeader.CopyTo(buffer);
-                    headerBytesWritten = base64UrlHeader.Length;
-                }
-                else
-                {
-                    TryEncodeUtf8ToBase64Url(headerJson, buffer, out headerBytesWritten);
-                    headerCache?.AddHeader(Header, alg, buffer.Slice(0, headerBytesWritten));
-                }
-
-                buffer[headerBytesWritten] = dot;
-                TryEncodeUtf8ToBase64Url(payloadJson, buffer.Slice(headerBytesWritten + 1), out int payloadBytesWritten);
-                buffer[payloadBytesWritten + headerBytesWritten + 1] = dot;
-                int bytesWritten = 0;
-                if (signatureProvider != null)
-                {
-                    Span<byte> signature = stackalloc byte[signatureProvider.HashSizeInBytes];
-                    bool success = signatureProvider.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signatureBytesWritten);
-                    Debug.Assert(success);
-                    Debug.Assert(signature.Length == signatureBytesWritten);
-
-                    bytesWritten = Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)));
-                }
-
-                Debug.Assert(buffer.Length == payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten);
-                return buffer.Slice(0, payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten).ToArray();
+                base64UrlHeader.CopyTo(buffer);
+                headerBytesWritten = base64UrlHeader.Length;
             }
-            finally
+            else
             {
-                if (arrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
-                }
+                TryEncodeUtf8ToBase64Url(headerJson, buffer, out headerBytesWritten);
+                headerCache?.AddHeader(Header, alg, buffer.Slice(0, headerBytesWritten));
             }
+
+            buffer[headerBytesWritten] = dot;
+            TryEncodeUtf8ToBase64Url(payloadJson, buffer.Slice(headerBytesWritten + 1), out int payloadBytesWritten);
+            buffer[payloadBytesWritten + headerBytesWritten + 1] = dot;
+            int bytesWritten = 0;
+            if (signatureProvider != null)
+            {
+                Span<byte> signature = stackalloc byte[signatureProvider.HashSizeInBytes];
+                bool success = signatureProvider.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signatureBytesWritten);
+                Debug.Assert(success);
+                Debug.Assert(signature.Length == signatureBytesWritten);
+
+                bytesWritten = Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)));
+            }
+
+            Debug.Assert(buffer.Length == payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten);
+            return bufferToReturn;
         }
 
         private static bool TryEncodeUtf8ToBase64Url(string input, Span<byte> destination, out int bytesWritten)
@@ -513,7 +500,7 @@ namespace JsonWebToken
                 }
             }
         }
-        
+
         /// <inheritsdoc />
         public override void Validate()
         {
