@@ -10,7 +10,12 @@ namespace JsonWebToken.Performance
     [Config(typeof(AllTfmCoreConfig))]
     public abstract class JwtBenchmarkBase
     {
-        public const int IterationCount = 50;
+        public JwtBenchmarkBase()
+        {
+            // Workaround for https://github.com/dotnet/BenchmarkDotNet/issues/837
+            WriteJwtCore("JWT-empty");
+            ValidateJwtCore("JWT-empty", TokenValidationPolicy.NoValidation);
+        }
 
         private static readonly SymmetricJwk SigningKey = Tokens.SigningKey;
 
@@ -31,19 +36,13 @@ namespace JsonWebToken.Performance
 
         protected void WriteJwtCore(string token)
         {
-            for (int i = 0; i < IterationCount; i++)
-            {
-                var value = Writer.WriteToken(JwtPayloads[token]);
-            }
+            var value = Writer.WriteToken(JwtPayloads[token]);
         }
 
         protected void ValidateJwtCore(string token, TokenValidationPolicy policy)
         {
-            for (int i = 0; i < IterationCount; i++)
-            {
-                var result = Reader.TryReadToken(JwtTokens[token], policy);
-                EnsureResult(result);
-            }
+            var result = Reader.TryReadToken(JwtTokens[token], policy);
+            EnsureResult(result);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
