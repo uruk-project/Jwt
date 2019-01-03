@@ -158,7 +158,7 @@ namespace JsonWebToken.Performance
             var tokens = new Dictionary<string, byte[]>();
             foreach (var item in JwtPayloads)
             {
-                tokens.Add(item.Key, Encoding.UTF8.GetBytes(Writer.WriteToken(item.Value)));
+                tokens.Add(item.Key, Writer.WriteToken(item.Value));
             }
 
             return tokens;

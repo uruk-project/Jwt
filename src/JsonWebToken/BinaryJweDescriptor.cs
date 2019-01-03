@@ -24,13 +24,13 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public BinaryJweDescriptor(IDictionary<string, object> header, byte[] payload)
+        public BinaryJweDescriptor(HeaderDescriptor header, byte[] payload)
             : base(header, payload)
         {
         }
 
         /// <inheritdoc />
-        public override string Encode(EncodingContext context)
+        public override byte[] Encode(EncodingContext context)
         {
             return EncryptToken(context, Payload);
         }
