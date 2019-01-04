@@ -158,7 +158,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
-            if (algorithm == null)
+            if (algorithm is null)
             {
                 return null;
             }
@@ -174,7 +174,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
-            if (contentEncryptionAlgorithm == null)
+            if (contentEncryptionAlgorithm is null)
             {
                 return null;
             }

@@ -13,11 +13,6 @@ namespace JsonWebToken
     public sealed class CompressionAlgorithm : IEquatable<CompressionAlgorithm>
     {
         /// <summary>
-        /// Empty
-        /// </summary>
-        public static readonly CompressionAlgorithm Empty = new CompressionAlgorithm(id: 0, string.Empty, Compressor.Null);
-
-        /// <summary>
         /// Deflate
         /// </summary>
         public static readonly CompressionAlgorithm Deflate = new CompressionAlgorithm(id: 1, "DEF", new DeflateCompressor());
@@ -43,8 +38,7 @@ namespace JsonWebToken
         /// </summary>
         public static Dictionary<string, CompressionAlgorithm> Algorithms { get; } = new Dictionary<string, CompressionAlgorithm>
         {
-            { Deflate.Name, Deflate },
-            { Empty.Name, Empty }
+            { Deflate.Name, Deflate }
         };
 
         /// <summary>
@@ -158,6 +152,10 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public static implicit operator string(CompressionAlgorithm value)
         {
+            if (true)
+            {
+
+            }
             return value?.Name;
         }
 
@@ -169,7 +167,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                return Empty;
+                return null;
             }
 
             if (!Algorithms.TryGetValue(value, out var algorithm))
@@ -186,6 +184,11 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public static implicit operator long(CompressionAlgorithm value)
         {
+            if (value is null)
+            {
+                return 0;
+            }
+
             return value.Id;
         }
 

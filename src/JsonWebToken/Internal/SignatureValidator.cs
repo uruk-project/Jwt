@@ -30,8 +30,7 @@ namespace JsonWebToken.Internal
                 return TokenValidationResult.Success(jwt);
             }
 
-            var token = context.Token;
-            if (token.Length <= context.ContentSegment.Length + 1)
+            if (context.SignatureSegment.IsEmpty)
             {
                 if (_supportUnsecure && jwt.SignatureAlgorithm == SignatureAlgorithm.None)
                 {
@@ -54,7 +53,7 @@ namespace JsonWebToken.Internal
             Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
             try
             {
-                Base64Url.Base64UrlDecode(token.Slice(context.SignatureSegment.Start), signatureBytes, out int byteConsumed, out int bytesWritten);
+                Base64Url.Base64UrlDecode(context.SignatureSegment, signatureBytes, out int byteConsumed, out int bytesWritten);
                 Debug.Assert(bytesWritten == signatureBytes.Length);
             }
             catch (FormatException e)
@@ -63,12 +62,12 @@ namespace JsonWebToken.Internal
             }
 
             bool keysTried = false;
-            var encodedBytes = token.Slice(context.ContentSegment.Start, context.ContentSegment.Length);
+            var encodedBytes = context.ContentSegment;
             var keys = ResolveSigningKey(jwt);
             for (int i = 0; i < keys.Count; i++)
             {
                 Jwk key = keys[i];
-                var alg = _algorithm != SignatureAlgorithm.Empty ? _algorithm : (SignatureAlgorithm)key.Alg;
+                var alg = _algorithm ?? (SignatureAlgorithm)key.Alg;
                 if (TryValidateSignature(context, encodedBytes, signatureBytes, key, alg))
                 {
                     jwt.SigningKey = key;

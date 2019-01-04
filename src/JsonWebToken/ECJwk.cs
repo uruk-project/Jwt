@@ -215,7 +215,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
-            if (algorithm == null)
+            if (algorithm is null)
             {
                 return null;
             }

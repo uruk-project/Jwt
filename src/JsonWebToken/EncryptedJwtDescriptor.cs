@@ -133,7 +133,7 @@ namespace JsonWebToken
                     int bytesWritten = Base64Url.Base64UrlEncode(utf8HeaderBuffer, base64EncodedHeader);
 
                     Compressor compressionProvider = null;
-                    if (CompressionAlgorithm != null)
+                    if (!(CompressionAlgorithm is null))
                     {
                         compressionProvider = CompressionAlgorithm.Compressor;
                         if (compressionProvider == null)

@@ -121,6 +121,7 @@ namespace JsonWebToken
             return new TokenValidationResult
             {
                 Status = TokenValidationStatus.MalformedSignature, 
+                Token = token,
                 Exception = e
             };
         }

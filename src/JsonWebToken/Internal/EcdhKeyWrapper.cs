@@ -145,6 +145,11 @@ namespace JsonWebToken.Internal
 
         private static HashAlgorithmName GetHashAlgorithm(EncryptionAlgorithm encryptionAlgorithm)
         {
+            if (encryptionAlgorithm.SignatureAlgorithm is null)
+            {
+                return HashAlgorithmName.SHA256;
+            }
+
             var hashAlgorithm = encryptionAlgorithm.SignatureAlgorithm.HashAlgorithm;
             if (hashAlgorithm == default)
             {

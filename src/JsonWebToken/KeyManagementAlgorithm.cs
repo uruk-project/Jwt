@@ -12,11 +12,6 @@ namespace JsonWebToken
     public sealed class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>
     {
         /// <summary>
-        /// Empty.
-        /// </summary>
-        public static readonly KeyManagementAlgorithm Empty = new KeyManagementAlgorithm(0, string.Empty, AlgorithmCategory.None, produceEncryptedKey: false);
-
-        /// <summary>
         /// 'dir'
         /// </summary>
         public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, "dir", AlgorithmCategory.Aes, produceEncryptedKey: false);
@@ -147,8 +142,7 @@ namespace JsonWebToken
             { RsaOaep256.Name, RsaOaep256},
             { RsaOaep384.Name, RsaOaep384},
             { RsaOaep512.Name, RsaOaep512},
-            { RsaPkcs1.Name, RsaPkcs1 },
-            { Empty.Name, Empty }
+            { RsaPkcs1.Name, RsaPkcs1 }
         };
 
         /// <summary>
@@ -326,7 +320,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                return Empty;
+                return null;
             }
 
             if (!Algorithms.TryGetValue(value, out var algorithm))

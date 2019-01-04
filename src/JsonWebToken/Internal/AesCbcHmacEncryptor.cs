@@ -26,6 +26,11 @@ namespace JsonWebToken.Internal
                 throw new ArgumentNullException(nameof(key));
             }
 
+            if (encryptionAlgorithm is null)
+            {
+                throw new ArgumentNullException(nameof(encryptionAlgorithm));
+            }
+
             if (encryptionAlgorithm.Category != EncryptionType.AesHmac)
             {
                 Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
