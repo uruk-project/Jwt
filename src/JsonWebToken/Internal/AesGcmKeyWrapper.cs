@@ -26,13 +26,13 @@ namespace JsonWebToken.Internal
         /// <inheritsdoc />
         public override int GetKeyUnwrapSize(int wrappedKeySize)
         {
-            return GetKeyUnwrappedSize(wrappedKeySize, Algorithm);
+            return wrappedKeySize - 8;
         }
 
         /// <inheritsdoc />
         public override int GetKeyWrapSize()
         {
-            return GetKeyWrappedSize(EncryptionAlgorithm);
+            return EncryptionAlgorithm.KeyWrappedSizeInBytes;
         }
 
         /// <inheritsdoc />
@@ -99,16 +99,6 @@ namespace JsonWebToken.Internal
         protected override void Dispose(bool disposing)
         {
             _disposed = true;
-        }
-
-        private static int GetKeyUnwrappedSize(int wrappedKeySize, KeyManagementAlgorithm algorithm)
-        {
-            return wrappedKeySize - 8;
-        }
-
-        private static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm)
-        {
-            return encryptionAlgorithm.KeyWrappedSizeInBytes;
         }
     }
 }

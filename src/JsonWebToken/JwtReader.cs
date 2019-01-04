@@ -322,15 +322,15 @@ namespace JsonWebToken
             var zip = (CompressionAlgorithm)header.Zip;
             if (!(zip is null))
             {
-                Compressor compressionProvider = zip.Compressor;
-                if (compressionProvider == null)
+                Compressor compressor = zip.Compressor;
+                if (compressor == null)
                 {
                     return TokenValidationResult.InvalidHeader(HeaderParameters.Zip);
                 }
 
                 try
                 {
-                    decryptedBytes = compressionProvider.Decompress(decryptedBytes);
+                    decryptedBytes = compressor.Decompress(decryptedBytes);
                 }
                 catch (Exception e)
                 {
