@@ -152,10 +152,6 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public static implicit operator string(CompressionAlgorithm value)
         {
-            if (true)
-            {
-
-            }
             return value?.Name;
         }
 

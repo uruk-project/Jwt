@@ -63,18 +63,25 @@ namespace JsonWebToken.Internal
 
             bool keysTried = false;
             var encodedBytes = context.ContentSegment;
-            var keys = ResolveSigningKey(jwt);
-            for (int i = 0; i < keys.Count; i++)
+            var keySet = _keyProvider.GetKeys(jwt.Header);
+            if (keySet != null)
             {
-                Jwk key = keys[i];
-                var alg = _algorithm ?? (SignatureAlgorithm)key.Alg;
-                if (TryValidateSignature(context, encodedBytes, signatureBytes, key, alg))
+                for (int j = 0; j < keySet.Count; j++)
                 {
-                    jwt.SigningKey = key;
-                    return TokenValidationResult.Success(jwt);
-                }
+                    var key = keySet[j];
+                    if ((string.IsNullOrEmpty(key.Use) || string.Equals(key.Use, JwkUseNames.Sig, StringComparison.Ordinal)) &&
+                        (string.IsNullOrEmpty(key.Alg) || string.Equals(key.Alg, jwt.Header.Alg, StringComparison.Ordinal)))
+                    {
+                        var alg = _algorithm ?? key.Alg;
+                        if (TryValidateSignature(context, encodedBytes, signatureBytes, key, alg))
+                        {
+                            jwt.SigningKey = key;
+                            return TokenValidationResult.Success(jwt);
+                        }
 
-                keysTried = true;
+                        keysTried = true;
+                    }
+                }
             }
 
             if (keysTried)
@@ -94,26 +101,6 @@ namespace JsonWebToken.Internal
             }
 
             return signatureProvider.Verify(encodedBytes, signature);
-        }
-
-        private List<Jwk> ResolveSigningKey(Jwt jwt)
-        {
-            var keys = new List<Jwk>(1);
-            var keySet = _keyProvider.GetKeys(jwt.Header);
-            if (keySet != null)
-            {
-                for (int j = 0; j < keySet.Count; j++)
-                {
-                    var key = keySet[j];
-                    if ((string.IsNullOrEmpty(key.Use) || string.Equals(key.Use, JwkUseNames.Sig, StringComparison.Ordinal)) &&
-                        (string.IsNullOrEmpty(key.Alg) || string.Equals(key.Alg, jwt.Header.Alg, StringComparison.Ordinal)))
-                    {
-                        keys.Add(key);
-                    }
-                }
-            }
-
-            return keys;
         }
     }
 }

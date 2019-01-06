@@ -19,7 +19,7 @@ namespace JsonWebToken
         private static readonly byte[] Cty = { 99, 116, 121 };
         private static readonly byte[] Zip = { 122, 105, 112 };
         private static readonly byte[] Crit = { 99, 114, 105, 116 };
-
+        
         private static JwtHeader ReadJsonHeader(ReadOnlySpan<byte> buffer)
         {
             Utf8JsonReader reader = new Utf8JsonReader(buffer, true, default);
@@ -37,62 +37,69 @@ namespace JsonWebToken
                     case JsonTokenType.PropertyName:
                         ReadOnlySpan<byte> valueSpan = reader.ValueSpan;
                         ref byte refValueSpan = ref MemoryMarshal.GetReference(valueSpan);
-                        if (JsonParser.ThreeBytesEqual(ref refValueSpan, ref Alg[0], valueSpan.Length))
+                        if (valueSpan.Length == 3)
                         {
-                            if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                            if (JsonParser.ThreeBytesEqual(ref refValueSpan, ref Alg[0], valueSpan.Length))
                             {
-                                header.Alg = reader.GetStringValue();
+                                if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                {
+                                    header.Alg = reader.GetStringValue();
+                                }
+                                else if (reader.TokenType != JsonTokenType.Null)
+                                {
+                                    ThrowHelper.FormatMalformedJson(HeaderParameters.Alg, JsonTokenType.String);
+                                }
                             }
-                            else if (reader.TokenType != JsonTokenType.Null)
+                            else if (JsonParser.ThreeBytesEqual(ref refValueSpan, ref Enc[0], valueSpan.Length))
                             {
-                                ThrowHelper.FormatMalformedJson(HeaderParameters.Alg, JsonTokenType.String);
+                                if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                {
+                                    header.Enc = reader.GetStringValue();
+                                }
+                                else if (reader.TokenType != JsonTokenType.Null)
+                                {
+                                    ThrowHelper.FormatMalformedJson(HeaderParameters.Enc, JsonTokenType.String);
+                                }
                             }
-                        }
-                        else if (JsonParser.ThreeBytesEqual(ref refValueSpan, ref Enc[0], valueSpan.Length))
-                        {
-                            if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                            else if (JsonParser.ThreeBytesEqual(ref refValueSpan, ref Kid[0], valueSpan.Length))
                             {
-                                header.Enc = reader.GetStringValue();
+                                if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                {
+                                    header.Kid = reader.GetStringValue();
+                                }
+                                else if (reader.TokenType != JsonTokenType.Null)
+                                {
+                                    ThrowHelper.FormatMalformedJson(HeaderParameters.Kid, JsonTokenType.String);
+                                }
                             }
-                            else if (reader.TokenType != JsonTokenType.Null)
+                            else if (JsonParser.ThreeBytesEqual(ref refValueSpan, ref Cty[0], valueSpan.Length))
                             {
-                                ThrowHelper.FormatMalformedJson(HeaderParameters.Enc, JsonTokenType.String);
+                                if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                {
+                                    header.Cty = reader.GetStringValue();
+                                }
+                                else if (reader.TokenType != JsonTokenType.Null)
+                                {
+                                    ThrowHelper.FormatMalformedJson(HeaderParameters.Cty, JsonTokenType.String);
+                                }
                             }
-                        }
-                        else if (JsonParser.ThreeBytesEqual(ref refValueSpan, ref Kid[0], valueSpan.Length))
-                        {
-                            if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                            else if (JsonParser.ThreeBytesEqual(ref refValueSpan, ref Zip[0], valueSpan.Length))
                             {
-                                header.Kid = reader.GetStringValue();
+                                if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                {
+                                    header.Zip = reader.GetStringValue();
+                                }
+                                else if (reader.TokenType != JsonTokenType.Null)
+                                {
+                                    ThrowHelper.FormatMalformedJson(HeaderParameters.Zip, JsonTokenType.String);
+                                }
                             }
-                            else if (reader.TokenType != JsonTokenType.Null)
+                            else
                             {
-                                ThrowHelper.FormatMalformedJson(HeaderParameters.Kid, JsonTokenType.String);
+                                name = reader.GetStringValue();
                             }
-                        }
-                        else if (JsonParser.ThreeBytesEqual(ref refValueSpan, ref Cty[0], valueSpan.Length))
-                        {
-                            if (reader.Read() && reader.TokenType == JsonTokenType.String)
-                            {
-                                header.Cty = reader.GetStringValue();
-                            }
-                            else if (reader.TokenType != JsonTokenType.Null)
-                            {
-                                ThrowHelper.FormatMalformedJson(HeaderParameters.Cty, JsonTokenType.String);
-                            }
-                        }
-                        else if (JsonParser.ThreeBytesEqual(ref refValueSpan, ref Zip[0], valueSpan.Length))
-                        {
-                            if (reader.Read() && reader.TokenType == JsonTokenType.String)
-                            {
-                                header.Zip = reader.GetStringValue();
-                            }
-                            else if (reader.TokenType != JsonTokenType.Null)
-                            {
-                                ThrowHelper.FormatMalformedJson(HeaderParameters.Zip, JsonTokenType.String);
-                            }
-                        }
-                        else if (JsonParser.FourBytesEqual(ref refValueSpan, ref Crit[0], valueSpan.Length))
+                        }                     
+                        else if (valueSpan.Length == 4 && JsonParser.FourBytesEqual(ref refValueSpan, ref Crit[0], valueSpan.Length))
                         {
                             if (reader.Read() && reader.TokenType == JsonTokenType.StartArray)
                             {
