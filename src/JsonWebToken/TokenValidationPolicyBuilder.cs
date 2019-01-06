@@ -113,7 +113,7 @@ namespace JsonWebToken
         {
             _hasSignatureValidation = true;
             RemoveValidator<SignatureValidator>();
-            AddValidator(new SignatureValidator(keyProvider, supportUnsecure: false, algorithm ?? SignatureAlgorithm.Empty));
+            AddValidator(new SignatureValidator(keyProvider, supportUnsecure: false, algorithm));
             return this;
         }
 

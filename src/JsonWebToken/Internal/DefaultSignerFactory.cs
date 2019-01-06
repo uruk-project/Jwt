@@ -17,7 +17,7 @@ namespace JsonWebToken.Internal
         {
             ThrowIfDisposed();
 
-            if (algorithm == null)
+            if (algorithm is null)
             {
                 return null;
             }

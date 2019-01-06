@@ -132,19 +132,20 @@ namespace JsonWebToken
 #endif                  
                     int bytesWritten = Base64Url.Base64UrlEncode(utf8HeaderBuffer, base64EncodedHeader);
 
-                    Compressor compressionProvider = null;
-                    if (CompressionAlgorithm != null)
+                    Compressor compressor = null;
+                    var compressionAlgorithm = CompressionAlgorithm;
+                    if (!(compressionAlgorithm is null))
                     {
-                        compressionProvider = CompressionAlgorithm.Compressor;
-                        if (compressionProvider == null)
+                        compressor = compressionAlgorithm.Compressor;
+                        if (compressor == null)
                         {
-                            Errors.ThrowNotSupportedCompressionAlgorithm(CompressionAlgorithm);
+                            Errors.ThrowNotSupportedCompressionAlgorithm(compressionAlgorithm);
                         }
                     }
 
-                    if (compressionProvider != null)
+                    if (compressor != null)
                     {
-                        payload = compressionProvider.Compress(payload);
+                        payload = compressor.Compress(payload);
                     }
 
                     int ciphertextLength = encryptionProvider.GetCiphertextSize(payload.Length);

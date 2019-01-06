@@ -322,7 +322,7 @@ namespace JsonWebToken
                     return new List<string>(value.Values<string>());
                 }
 
-                return new List<string>(new[] { value.Value<string>() });
+                return new List<string> { value.Value<string>() };
             }
 
             return null;

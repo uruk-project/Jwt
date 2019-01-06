@@ -12,11 +12,6 @@ namespace JsonWebToken
     public sealed class EncryptionAlgorithm : IEquatable<EncryptionAlgorithm>
     {
         /// <summary>
-        /// Empty
-        /// </summary>
-        public static readonly EncryptionAlgorithm Empty = new EncryptionAlgorithm(0, string.Empty, 0, SignatureAlgorithm.Empty, 0, EncryptionType.None);
-
-        /// <summary>
         /// 'A128CBC-HS256'
         /// </summary>
         public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: 11, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesHmac);
@@ -35,17 +30,17 @@ namespace JsonWebToken
         /// <summary>
         /// 'A128GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 21, "A128GCM", requiredKeySizeInBytes: 16, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 21, "A128GCM", requiredKeySizeInBytes: 16, null, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
 
         /// <summary>
         /// 'A192GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 22, "A192GCM", requiredKeySizeInBytes: 24, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 56, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 22, "A192GCM", requiredKeySizeInBytes: 24, null, requiredKeyWrappedSizeInBytes: 56, EncryptionType.AesGcm);
 
         /// <summary>
         /// 'A256GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, "A256GCM", requiredKeySizeInBytes: 32, SignatureAlgorithm.Empty, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, "A256GCM", requiredKeySizeInBytes: 32, null, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesGcm);
 #endif  
 
         // TODO : Verify the pertinence
@@ -92,7 +87,6 @@ namespace JsonWebToken
             { Aes192Gcm.Name, Aes192Gcm },
             { Aes256Gcm.Name , Aes256Gcm },
 #endif
-            { Empty.Name, Empty }
         };
 
         /// <summary>
@@ -223,7 +217,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                return Empty;
+                return null;
             }
 
             if (!Algorithms.TryGetValue(value, out var algorithm))

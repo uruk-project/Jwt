@@ -263,7 +263,7 @@ namespace JsonWebToken
             switch (segmentCount)
             {
                 case Constants.JwsSegmentCount:
-                    return TryReadJws(utf8Token, policy, segments, headerSegment, header);
+                    return TryReadJws(utf8Token, policy, segments, header);
                 case Constants.JweSegmentCount:
                     return TryReadJwe(utf8Token, policy, segments, header, rawHeader);
                 default:
@@ -279,7 +279,7 @@ namespace JsonWebToken
             ReadOnlySpan<byte> rawHeader)
         {
             var enc = (EncryptionAlgorithm)header.Enc;
-            if (enc == EncryptionAlgorithm.Empty)
+            if (enc is null)
             {
                 return TokenValidationResult.MissingEncryptionAlgorithm();
             }
@@ -320,17 +320,17 @@ namespace JsonWebToken
             }
 
             var zip = (CompressionAlgorithm)header.Zip;
-            if (zip != CompressionAlgorithm.Empty)
+            if (!(zip is null))
             {
-                Compressor compressionProvider = zip.Compressor;
-                if (compressionProvider == null)
+                Compressor compressor = zip.Compressor;
+                if (compressor == null)
                 {
                     return TokenValidationResult.InvalidHeader(HeaderParameters.Zip);
                 }
 
                 try
                 {
-                    decryptedBytes = compressionProvider.Decompress(decryptedBytes);
+                    decryptedBytes = compressor.Decompress(decryptedBytes);
                 }
                 catch (Exception e)
                 {
@@ -361,7 +361,6 @@ namespace JsonWebToken
             ReadOnlySpan<byte> utf8Buffer,
             TokenValidationPolicy policy,
             Span<TokenSegment> segments,
-            TokenSegment headerSegment,
             JwtHeader header)
         {
             var payloadSegment = segments[1];
@@ -381,7 +380,9 @@ namespace JsonWebToken
             }
 
             Jwt jws = new Jwt(header, payload);
-            return policy.TryValidate(new TokenValidationContext(utf8Buffer, jws, _signatureFactory, new TokenSegment(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), segments[2]));
+            var signatureSegment = segments[2];
+            TokenSegment headerSegment = segments[0];
+            return policy.TryValidate(new TokenValidationContext(jws, _signatureFactory, utf8Buffer.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), utf8Buffer.Slice(signatureSegment.Start, signatureSegment.Length)));
         }
 
         private static JwtPayload GetJsonPayload(ReadOnlySpan<byte> data)

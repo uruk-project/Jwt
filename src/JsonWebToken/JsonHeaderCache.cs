@@ -93,13 +93,12 @@ namespace JsonWebToken
         {
             header.TryGetValue(HeaderParameters.Cty, out object cty);
 
-            if (alg == SignatureAlgorithm.Empty)
+            if (alg is null)
             {
                 return -1;
             }
 
-            var ctyValue = cty as string;
-            if (ctyValue != null && !string.Equals(ctyValue, ContentTypeValues.Jwt, StringComparison.Ordinal))
+            if (cty is string ctyValue && !string.Equals(ctyValue, ContentTypeValues.Jwt, StringComparison.Ordinal))
             {
                 // only support 'cty': 'JWT' or not cty
                 return -1;
@@ -202,15 +201,14 @@ namespace JsonWebToken
             }
 
             int simpleHeaders = 1;
-            if (alg != SignatureAlgorithm.Empty)
+            if (!(alg is null))
             {
                 simpleHeaders++;
             }
 
             if (header.TryGetValue(HeaderParameters.Cty, out var cty))
             {
-                var value = cty as string;
-                if (cty != null && string.Equals(value, ContentTypeValues.Jwt, StringComparison.Ordinal))
+                if (cty is string value && string.Equals(value, ContentTypeValues.Jwt, StringComparison.Ordinal))
                 {
                     return false;
                 }

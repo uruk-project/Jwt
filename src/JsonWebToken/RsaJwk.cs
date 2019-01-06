@@ -59,7 +59,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public RSAParameters ExportParameters()
         {
-            if (N == null || E == null)
+            if (RawN == null || RawE == null)
             {
                 Errors.ThrowInvalidRsaKey(this);
             }
@@ -100,7 +100,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
-            if (algorithm == null)
+            if (algorithm is null)
             {
                 return null;
             }

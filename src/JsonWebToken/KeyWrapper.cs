@@ -45,8 +45,8 @@ namespace JsonWebToken
                 Errors.ThrowNotSupportedAlgorithmForKeyWrap(algorithm);
             }
 
-            Algorithm = algorithm;
-            EncryptionAlgorithm = encryptionAlgorithm;
+            Algorithm = algorithm ?? throw new ArgumentNullException(nameof(algorithm));
+            EncryptionAlgorithm = encryptionAlgorithm ?? throw new ArgumentNullException(nameof(encryptionAlgorithm));
             Key = key;
         }
 

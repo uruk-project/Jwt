@@ -34,7 +34,7 @@ namespace JsonWebToken.Internal
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (algorithm == null)
+            if (algorithm is null)
             {
                 throw new ArgumentNullException(nameof(algorithm));
             }

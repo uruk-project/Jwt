@@ -214,17 +214,15 @@ namespace JsonWebToken
         {
             if (Header.TryGetValue(headerName, out object value))
             {
-                var list = value as IList<string>;
-                if (list != null)
+                if (value is List<string> list)
                 {
-                    return new List<string>(list);
+                    return list;
                 }
                 else
                 {
-                    var strValue = value as string;
-                    if (strValue != null)
+                    if (value is string strValue)
                     {
-                        return new List<string>(new[] { strValue });
+                        return new List<string> { strValue };
                     }
                 }
             }

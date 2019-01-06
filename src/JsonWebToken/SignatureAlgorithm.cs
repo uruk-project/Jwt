@@ -13,11 +13,6 @@ namespace JsonWebToken
     public sealed class SignatureAlgorithm : IEquatable<SignatureAlgorithm>
     {
         /// <summary>
-        /// Empty
-        /// </summary>
-        public static readonly SignatureAlgorithm Empty = new SignatureAlgorithm(0, string.Empty, AlgorithmCategory.None, 0, new HashAlgorithmName());
-
-        /// <summary>
         /// 'none'
         /// </summary>
         public static readonly SignatureAlgorithm None = new SignatureAlgorithm(id: -1, "none", AlgorithmCategory.None, requiredKeySizeInBits: 0, new HashAlgorithmName());
@@ -125,8 +120,7 @@ namespace JsonWebToken
             { RsaSsaPssSha256.Name, RsaSsaPssSha256},
             { RsaSsaPssSha384.Name, RsaSsaPssSha384},
             { RsaSsaPssSha512.Name, RsaSsaPssSha512},
-            { None.Name, None },
-            { Empty.Name, Empty}
+            { None.Name, None }
         };
 
         /// <summary>
@@ -173,7 +167,7 @@ namespace JsonWebToken
             {
                 return false;
             }
-            
+
             return Id == other.Id;
         }
 
@@ -237,7 +231,7 @@ namespace JsonWebToken
 
             return x.Id != y.Id;
         }
-        
+
         /// <summary>
         /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="string"/> representation.
         /// </summary>
@@ -255,7 +249,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                return Empty;
+                return null;
             }
 
             if (!Algorithms.TryGetValue(value, out var algorithm))
@@ -272,6 +266,11 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public static implicit operator long(SignatureAlgorithm value)
         {
+            if (value is null)
+            {
+                return 0;
+            }
+
             return value.Id;
         }
 

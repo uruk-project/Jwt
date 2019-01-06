@@ -30,8 +30,7 @@ namespace JsonWebToken.Internal
                 return TokenValidationResult.Success(jwt);
             }
 
-            var token = context.Token;
-            if (token.Length <= context.ContentSegment.Length + 1)
+            if (context.SignatureSegment.IsEmpty)
             {
                 if (_supportUnsecure && jwt.SignatureAlgorithm == SignatureAlgorithm.None)
                 {
@@ -54,7 +53,7 @@ namespace JsonWebToken.Internal
             Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
             try
             {
-                Base64Url.Base64UrlDecode(token.Slice(context.SignatureSegment.Start), signatureBytes, out int byteConsumed, out int bytesWritten);
+                Base64Url.Base64UrlDecode(context.SignatureSegment, signatureBytes, out int byteConsumed, out int bytesWritten);
                 Debug.Assert(bytesWritten == signatureBytes.Length);
             }
             catch (FormatException e)
@@ -63,19 +62,26 @@ namespace JsonWebToken.Internal
             }
 
             bool keysTried = false;
-            var encodedBytes = token.Slice(context.ContentSegment.Start, context.ContentSegment.Length);
-            var keys = ResolveSigningKey(jwt);
-            for (int i = 0; i < keys.Count; i++)
+            var encodedBytes = context.ContentSegment;
+            var keySet = _keyProvider.GetKeys(jwt.Header);
+            if (keySet != null)
             {
-                Jwk key = keys[i];
-                var alg = _algorithm != SignatureAlgorithm.Empty ? _algorithm : (SignatureAlgorithm)key.Alg;
-                if (TryValidateSignature(context, encodedBytes, signatureBytes, key, alg))
+                for (int j = 0; j < keySet.Count; j++)
                 {
-                    jwt.SigningKey = key;
-                    return TokenValidationResult.Success(jwt);
-                }
+                    var key = keySet[j];
+                    if ((string.IsNullOrEmpty(key.Use) || string.Equals(key.Use, JwkUseNames.Sig, StringComparison.Ordinal)) &&
+                        (string.IsNullOrEmpty(key.Alg) || string.Equals(key.Alg, jwt.Header.Alg, StringComparison.Ordinal)))
+                    {
+                        var alg = _algorithm ?? key.Alg;
+                        if (TryValidateSignature(context, encodedBytes, signatureBytes, key, alg))
+                        {
+                            jwt.SigningKey = key;
+                            return TokenValidationResult.Success(jwt);
+                        }
 
-                keysTried = true;
+                        keysTried = true;
+                    }
+                }
             }
 
             if (keysTried)
@@ -95,26 +101,6 @@ namespace JsonWebToken.Internal
             }
 
             return signatureProvider.Verify(encodedBytes, signature);
-        }
-
-        private List<Jwk> ResolveSigningKey(Jwt jwt)
-        {
-            var keys = new List<Jwk>(1);
-            var keySet = _keyProvider.GetKeys(jwt.Header);
-            if (keySet != null)
-            {
-                for (int j = 0; j < keySet.Count; j++)
-                {
-                    var key = keySet[j];
-                    if ((string.IsNullOrEmpty(key.Use) || string.Equals(key.Use, JwkUseNames.Sig, StringComparison.Ordinal)) &&
-                        (string.IsNullOrEmpty(key.Alg) || string.Equals(key.Alg, jwt.Header.Alg, StringComparison.Ordinal)))
-                    {
-                        keys.Add(key);
-                    }
-                }
-            }
-
-            return keys;
         }
     }
 }
