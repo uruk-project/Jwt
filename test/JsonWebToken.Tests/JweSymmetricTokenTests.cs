@@ -33,6 +33,7 @@ namespace JsonWebToken.Tests
 
         private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256);
 
+#if NETCOREAPP3_0
         [Theory]
         [MemberData(nameof(GetNotSupportedAlgorithms))]
         public void Encode_Decode_NotSuppoted(string enc, string alg)
@@ -67,6 +68,7 @@ namespace JsonWebToken.Tests
             //Assert.Equal(TokenValidationStatus.Success, result.Status);
             //Assert.Equal("Alice", result.Token.Subject);
         }
+#endif
 
         [Theory]
         [MemberData(nameof(GetSupportedAlgorithms))]
@@ -161,10 +163,12 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetNotSupportedAlgorithms()
         {
+#if NETCOREAPP3_0
             yield return new object[] { EncryptionAlgorithm.Aes128Gcm.Name, KeyManagementAlgorithm.Direct.Name };
             yield return new object[] { EncryptionAlgorithm.Aes192Gcm.Name, KeyManagementAlgorithm.Direct.Name };
             yield return new object[] { EncryptionAlgorithm.Aes256Gcm.Name, KeyManagementAlgorithm.Direct.Name };
+#endif
+            yield break;
         }
-
     }
 }

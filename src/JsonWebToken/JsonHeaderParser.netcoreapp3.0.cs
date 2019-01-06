@@ -17,7 +17,11 @@ namespace JsonWebToken
         private static readonly byte[] Enc = { 101, 110, 99 };
         private static readonly byte[] Kid = { 107, 105, 100 };
         private static readonly byte[] Cty = { 99, 116, 121 };
+        private static readonly byte[] Typ = { 116, 121, 112 };
         private static readonly byte[] Zip = { 122, 105, 112 };
+        private static readonly byte[] Epk = { 101, 112, 107 };
+        private static readonly byte[] Apu = { 97, 112, 117 };
+        private static readonly byte[] Apv = { 97, 112, 118 };
         private static readonly byte[] Crit = { 99, 114, 105, 116 };
         
         private static JwtHeader ReadJsonHeader(ReadOnlySpan<byte> buffer)

@@ -143,6 +143,28 @@ namespace JsonWebToken
         /// </summary>
         public bool EnableHeaderCaching { get; set; } = true;
 
+#if NETSTANDARD2_0
+        /// <summary>
+        /// Reads and validates a JWT encoded as a JWS or JWE in compact serialized format.
+        /// </summary>
+        /// <param name="token">The JWT encoded as JWE or JWS</param>
+        /// <param name="policy">The validation policy.</param>
+        public TokenValidationResult TryReadToken(string token, TokenValidationPolicy policy)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            if (policy == null)
+            {
+                throw new ArgumentNullException(nameof(policy));
+            }
+
+            return TryReadToken(token.AsSpan(), policy);
+        }
+#endif
+
         /// <summary>
         /// Reads and validates a JWT encoded as a JWS or JWE in compact serialized format.
         /// </summary>

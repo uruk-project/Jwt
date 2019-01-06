@@ -3,9 +3,7 @@
 
 using JsonWebToken.Internal;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace JsonWebToken
 {
@@ -13,66 +11,52 @@ namespace JsonWebToken
     /// Represents the cryptographic operations applied to the JWT and optionally 
     /// any additional properties of the JWT. 
     /// </summary>
-    public sealed class JwtHeader : Dictionary<string, object>
+    public sealed class JwtHeader
     {
+        private readonly Dictionary<string, object> _inner;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtHeader"/> class.
         /// </summary>
         /// <param name="inner"></param>
         public JwtHeader(Dictionary<string, object> inner)
-            : base(inner)
         {
+            _inner = inner;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtHeader"/> class.
         /// </summary>
         public JwtHeader()
-            : base()
         {
+            _inner = new Dictionary<string, object>();
         }
 
         /// <summary>
         /// Gets the signature algorithm that was used to create the signature.
         /// </summary>
-#if NETCOREAPP3_0
         public string Alg { get; set; }
-#else
-        public string Alg => GetValue<string>(HeaderParameters.Alg);
-#endif
+     
         /// <summary>
         /// Gets the content type (Cty) of the token.
         /// </summary>
-#if NETCOREAPP3_0
         public string Cty { get; set; }
-#else
-        public string Cty => GetValue<string>(HeaderParameters.Cty);
-#endif
 
         /// <summary>
         /// Gets the encryption algorithm (Enc) of the token.
         /// </summary>
-#if NETCOREAPP3_0
         public string Enc { get; set; }
-#else
-        public string Enc => GetValue<string>(HeaderParameters.Enc);
-#endif
+        
         /// <summary>
         /// Gets the key identifier for the key used to sign the token.
         /// </summary>
-#if NETCOREAPP3_0
         public string Kid { get; set; }
-#else
-        public string Kid => GetValue<string>(HeaderParameters.Kid);
-#endif
+     
         /// <summary>
         /// Gets the mime type (Typ) of the token.
         /// </summary>
-#if NETCOREAPP3_0
         public string Typ { get; set; }
-#else
-        public string Typ => GetValue<string>(HeaderParameters.Typ);
-#endif
+
         /// <summary>
         /// Gets the thumbprint of the certificate used to sign the token.
         /// </summary>
@@ -91,11 +75,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the algorithm used to compress the token.
         /// </summary>
-#if NETCOREAPP3_0
         public string Zip { get; set; }
-#else
-        public string Zip => GetValue<string>(HeaderParameters.Zip);
-#endif
         /// <summary>
         /// Gets the Initialization Vector used for AES GCM encryption.
         /// </summary>
@@ -109,22 +89,15 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the Crit header.
         /// </summary>
-#if NETCOREAPP3_0
         public IList<string> Crit { get; set; }
-#else
-        public IList<string> Crit => GetValue<JArray>(HeaderParameters.Crit)?.Values<string>().ToList();
-#endif
 
 #if !NETSTANDARD
         /// <summary>
         /// Gets the ephemeral key used for ECDH key agreement.
         /// </summary>
         [JsonProperty(PropertyName = HeaderParameters.Epk, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-#if NETCOREAPP3_0
         public ECJwk Epk => ECJwk.FromDictionary(GetValue<Dictionary<string, object>>(HeaderParameters.Epk));
-#else
-        public ECJwk Epk => ECJwk.FromJObject(GetValue<JObject>(HeaderParameters.Epk));
-#endif
+
         /// <summary>
         /// Gets the Agreement PartyUInfo used for ECDH key agreement.
         /// </summary>
@@ -144,12 +117,84 @@ namespace JsonWebToken
         /// <returns></returns>
         public T GetValue<T>(string key)
         {
-            if (TryGetValue(key, out var value) && value is T tValue)
+            if (_inner.TryGetValue(key, out var value) && value is T tValue)
             {
                 return tValue;
             }
 
             return default;
+        }
+
+        /// <summary>
+        ///  Gets the claim for a specified key in the current <see cref="JwtPayload"/>.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public object this[string key]
+        {
+            get
+            {
+                switch (key)
+                {
+                    case HeaderParameters.Alg:
+                        return Alg;
+                    case HeaderParameters.Enc:
+                        return Enc;
+                    case HeaderParameters.Kid:
+                        return Kid;
+                    case HeaderParameters.Cty:
+                        return Cty;
+                    case HeaderParameters.Typ:
+                        return Typ;
+                    case HeaderParameters.Zip:
+                        return Zip;
+                    case HeaderParameters.Crit:
+                        return Crit;
+                    default:
+                        return _inner.TryGetValue(key, out var value) ? value : null;
+                }
+            }
+
+            set
+            {
+                switch (key)
+                {
+                    case HeaderParameters.Alg:
+                        Alg = (string)value;
+                        break;
+                    case HeaderParameters.Enc:
+                        Enc = (string)value;
+                        break;
+                    case HeaderParameters.Kid:
+                        Kid = (string)value;
+                        break;
+                    case HeaderParameters.Cty:
+                        Cty = (string)value;
+                        break;
+                    case HeaderParameters.Typ:
+                        Typ = (string)value;
+                        break;
+                    case HeaderParameters.Zip:
+                        Zip = (string)value;
+                        break;
+                    case HeaderParameters.Crit:
+                        Crit = (IList<string>)value;
+                        break;
+                    default:
+                        _inner[key] = value;
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the <see cref="JwtHeader"/> contains the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool ContainsKey(string key)
+        {
+            return _inner.ContainsKey(key);
         }
     }
 }
