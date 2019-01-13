@@ -169,37 +169,16 @@ namespace JsonWebToken.Internal
             return null;
         }
 
-        private static byte[] GetPartyInfo(string header)
-        {
-            byte[] partyInfo = null;
-            if (header != null)
-            {
-                partyInfo = Base64Url.Base64UrlDecode(header);
-            }
-
-            return partyInfo ?? Array.Empty<byte>();
-        }
-
-        private static void WriteRoundNumber(Span<byte> destination)
-        {
-            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), OneBigEndian);
-        }
-
         private void WriteSuppInfo(Span<byte> destination)
         {
             BinaryPrimitives.WriteInt32BigEndian(destination, _keySizeInBytes << 3);
         }
-
-        private static void WriteZero(Span<byte> destination)
-        {
-            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), 0);
-        }
-
+        
         private static void WritePartyInfo(string partyInfo, int partyInfoLength, Span<byte> destination)
         {
             if (partyInfoLength == 0)
             {
-                WriteZero(destination);
+                BinaryPrimitives.WriteInt32BigEndian(destination, 0);
             }
             else
             {
@@ -230,7 +209,7 @@ namespace JsonWebToken.Internal
             WriteAlgorithmId(secretAppend);
             WritePartyInfo(apu, apuLength, secretAppendSpan.Slice(algorithmLength));
             WritePartyInfo(apv, apvLength, secretAppendSpan.Slice(algorithmLength + partyUInfoLength));
-            WriteSuppInfo(secretAppendSpan.Slice(algorithmLength + partyUInfoLength + partyVInfoLength));
+            BinaryPrimitives.WriteInt32BigEndian(secretAppendSpan.Slice(algorithmLength + partyUInfoLength + partyVInfoLength), _keySizeInBytes << 3);
 
             return secretAppend;
         }
