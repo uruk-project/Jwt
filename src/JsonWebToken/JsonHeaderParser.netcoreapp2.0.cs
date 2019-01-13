@@ -20,6 +20,9 @@ namespace JsonWebToken
         private static readonly string Kid = HeaderParameters.Kid;
         private static readonly string Cty = HeaderParameters.Cty;
         private static readonly string Typ = HeaderParameters.Typ;
+        private static readonly string Epk = HeaderParameters.Epk;
+        private static readonly string Apu = HeaderParameters.Apu;
+        private static readonly string Apv = HeaderParameters.Apv;
         private static readonly string Zip = HeaderParameters.Zip;
         private static readonly string Crit = HeaderParameters.Crit;
 
@@ -97,9 +100,44 @@ namespace JsonWebToken
                                 }
                                 else if (reader.TokenType != JsonToken.Null)
                                 {
+                                    ThrowHelper.FormatMalformedJson(HeaderParameters.Typ, JsonToken.String);
+                                }
+                            }
+#if !NETSTANDARD
+                            else if (string.Equals(Epk, propertyName, StringComparison.Ordinal))
+                            {
+                                if (reader.Read() && reader.TokenType == JsonToken.String)
+                                {
+                                    header.Epk = ECJwk.FromDictionary(JsonParser.ReadJson(reader));
+                                }
+                                else if (reader.TokenType != JsonToken.Null)
+                                {
                                     ThrowHelper.FormatMalformedJson(HeaderParameters.Cty, JsonToken.String);
                                 }
                             }
+                            else if (string.Equals(Apu, propertyName, StringComparison.Ordinal))
+                            {
+                                if (reader.Read() && reader.TokenType == JsonToken.String)
+                                {
+                                    header.Apu = (string)reader.Value;
+                                }
+                                else if (reader.TokenType != JsonToken.Null)
+                                {
+                                    ThrowHelper.FormatMalformedJson(HeaderParameters.Apu, JsonToken.String);
+                                }
+                            }
+                            else if (string.Equals(Apv, propertyName, StringComparison.Ordinal))
+                            {
+                                if (reader.Read() && reader.TokenType == JsonToken.String)
+                                {
+                                    header.Apv = (string)reader.Value;
+                                }
+                                else if (reader.TokenType != JsonToken.Null)
+                                {
+                                    ThrowHelper.FormatMalformedJson(HeaderParameters.Apv, JsonToken.String);
+                                }
+                            }
+#endif
                             else if (string.Equals(Zip, propertyName, StringComparison.Ordinal))
                             {
                                 if (reader.Read() && reader.TokenType == JsonToken.String)

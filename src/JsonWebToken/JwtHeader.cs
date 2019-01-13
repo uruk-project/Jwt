@@ -95,18 +95,17 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the ephemeral key used for ECDH key agreement.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderParameters.Epk, DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public ECJwk Epk => ECJwk.FromDictionary(GetValue<Dictionary<string, object>>(HeaderParameters.Epk));
+       public ECJwk Epk { get; set; }
 
         /// <summary>
         /// Gets the Agreement PartyUInfo used for ECDH key agreement.
         /// </summary>
-        public string Apu => GetValue<string>(HeaderParameters.Apu);
+        public string Apu { get; set; }
 
         /// <summary>
         /// Gets the Agreement PartyVInfo used for ECDH key agreement.
         /// </summary>
-        public string Apv => GetValue<string>(HeaderParameters.Apv);
+        public string Apv { get; set; }
 #endif
 
         /// <summary>

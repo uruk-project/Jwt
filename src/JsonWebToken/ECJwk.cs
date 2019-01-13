@@ -6,7 +6,11 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+#if NETCOREAPP3_0
+using System.Text.Json;
+#endif
 
 namespace JsonWebToken
 {
@@ -109,7 +113,7 @@ namespace JsonWebToken
         /// </summary>
         [JsonIgnore]
         public byte[] RawX { get; private set; }
-        
+
         /// <summary>
         /// Gets or sets the 'y' (Y Coordinate).
         /// </summary>
@@ -339,7 +343,7 @@ namespace JsonWebToken
             {
                 return null;
             }
-            
+
             var key = new ECJwk
             {
                 Crv = jObject[JwkParameterNames.Crv].Value<string>(),
@@ -357,25 +361,121 @@ namespace JsonWebToken
             {
                 return null;
             }
+
             var key = new ECJwk();
             if (jObject.TryGetValue("crv", out object crv))
             {
                 key.Crv = (string)crv;
             }
+
             if (jObject.TryGetValue("x", out object x))
             {
                 key.X = (string)x;
             }
+
             if (jObject.TryGetValue("y", out object y))
             {
                 key.Y = (string)y;
             }
+
             if (jObject.TryGetValue("d", out object d))
             {
                 key.D = (string)d;
             }
+
             return key;
         }
+
+#if NETCOREAPP3_0
+        private static readonly byte[] CrvRawName = { 99, 114, 118 };
+
+        internal unsafe static ECJwk FromJsonReader(Utf8JsonReader reader)
+        {
+            var key = new ECJwk();
+
+            while (reader.Read())
+            {
+                switch (reader.TokenType)
+                {
+                    case JsonTokenType.PropertyName:
+                        ReadOnlySpan<byte> valueSpan = reader.ValueSpan;
+                        if (valueSpan.Length == 1)
+                        {
+                            byte value = valueSpan[0];
+                            if (value == 120 /* "x" */)
+                            {
+                                if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                {
+                                    key.RawX = Base64Url.Base64UrlDecode(reader.ValueSpan);
+                                }
+                                else if (reader.TokenType != JsonTokenType.Null)
+                                {
+                                    ThrowHelper.FormatMalformedJson(JwkParameterNames.X, JsonTokenType.String);
+                                }
+                            }
+                            else if (value == 121 /* "y" */)
+                            {
+                                if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                {
+                                    key.RawY = Base64Url.Base64UrlDecode(reader.ValueSpan);
+                                }
+                                else if (reader.TokenType != JsonTokenType.Null)
+                                {
+                                    ThrowHelper.FormatMalformedJson(JwkParameterNames.Y, JsonTokenType.String);
+                                }
+                            }
+                            else if (value == 100 /* "d" */)
+                            {
+                                if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                {
+                                    key.RawD = Base64Url.Base64UrlDecode(reader.ValueSpan);
+                                }
+                                else if (reader.TokenType != JsonTokenType.Null)
+                                {
+                                    ThrowHelper.FormatMalformedJson(JwkParameterNames.D, JsonTokenType.String);
+                                }
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        else if (valueSpan.Length == 3)
+                        {
+                            fixed (byte* pValueSpan = valueSpan)
+                            {
+                                if (JsonParser.ThreeBytesEqual(pValueSpan, CrvRawName))
+                                {
+                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                    {
+                                        key.Crv = reader.GetStringValue();
+                                    }
+                                    else if (reader.TokenType != JsonTokenType.Null)
+                                    {
+                                        ThrowHelper.FormatMalformedJson(JwkParameterNames.Crv, JsonTokenType.String);
+                                    }
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
+            return key;
+        }
+#endif
 
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.

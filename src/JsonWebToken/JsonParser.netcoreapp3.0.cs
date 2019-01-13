@@ -158,26 +158,24 @@ namespace JsonWebToken
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        internal static bool ThreeBytesEqual(ref byte first, ref byte second, int length)
+        internal static unsafe bool ThreeBytesEqual(byte* first, byte[] second)
         {
-            if (length != 3)
+            fixed (byte* pSecond = second)
             {
-                goto NotEqual;
-            }
+                if (*first != *pSecond)
+                {
+                    goto NotEqual;
+                }
 
-            if (first != second)
-            {
-                goto NotEqual;
-            }
+                if (*(first + 1) != *(pSecond + 1))
+                {
+                    goto NotEqual;
+                }
 
-            if (Unsafe.Add(ref first, 1) != (Unsafe.Add(ref second, 1)))
-            {
-                goto NotEqual;
-            }
-
-            if (Unsafe.Add(ref first, 2) != (Unsafe.Add(ref second, 2)))
-            {
-                goto NotEqual;
+                if (*(first + 2) != *(pSecond + 2))
+                {
+                    goto NotEqual;
+                }
             }
 
             return true;
@@ -187,31 +185,29 @@ namespace JsonWebToken
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        internal static bool FourBytesEqual(ref byte first, ref byte second, int length)
+        internal static unsafe bool FourBytesEqual(byte* first, byte[] second)
         {
-            if (length != 4)
+            fixed (byte* pSecond = second)
             {
-                goto NotEqual;
-            }
+                if (*first != *pSecond)
+                {
+                    goto NotEqual;
+                }
 
-            if (first != second)
-            {
-                goto NotEqual;
-            }
+                if (*(first + 1) != *(pSecond + 1))
+                {
+                    goto NotEqual;
+                }
 
-            if (Unsafe.Add(ref first, 1) != (Unsafe.Add(ref second, 1)))
-            {
-                goto NotEqual;
-            }
+                if (*(first + 2) != *(pSecond + 2))
+                {
+                    goto NotEqual;
+                }
 
-            if (Unsafe.Add(ref first, 2) != (Unsafe.Add(ref second, 2)))
-            {
-                goto NotEqual;
-            }
-
-            if (Unsafe.Add(ref first, 3) != (Unsafe.Add(ref second, 3)))
-            {
-                goto NotEqual;
+                if (*(first + 3) != *(pSecond + 3))
+                {
+                    goto NotEqual;
+                }
             }
 
             return true;
