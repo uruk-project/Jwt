@@ -156,65 +156,6 @@ namespace JsonWebToken
 
             return array;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        internal static unsafe bool ThreeBytesEqual(byte* first, byte[] second)
-        {
-            fixed (byte* pSecond = second)
-            {
-                if (*first != *pSecond)
-                {
-                    goto NotEqual;
-                }
-
-                if (*(first + 1) != *(pSecond + 1))
-                {
-                    goto NotEqual;
-                }
-
-                if (*(first + 2) != *(pSecond + 2))
-                {
-                    goto NotEqual;
-                }
-            }
-
-            return true;
-
-            NotEqual: // Workaround for https://github.com/dotnet/coreclr/issues/13549
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        internal static unsafe bool FourBytesEqual(byte* first, byte[] second)
-        {
-            fixed (byte* pSecond = second)
-            {
-                if (*first != *pSecond)
-                {
-                    goto NotEqual;
-                }
-
-                if (*(first + 1) != *(pSecond + 1))
-                {
-                    goto NotEqual;
-                }
-
-                if (*(first + 2) != *(pSecond + 2))
-                {
-                    goto NotEqual;
-                }
-
-                if (*(first + 3) != *(pSecond + 3))
-                {
-                    goto NotEqual;
-                }
-            }
-
-            return true;
-
-            NotEqual: // Workaround for https://github.com/dotnet/coreclr/issues/13549
-            return false;
-        }
     }
 }
 #endif

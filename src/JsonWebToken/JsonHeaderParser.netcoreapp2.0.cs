@@ -20,11 +20,13 @@ namespace JsonWebToken
         private static readonly string Kid = HeaderParameters.Kid;
         private static readonly string Cty = HeaderParameters.Cty;
         private static readonly string Typ = HeaderParameters.Typ;
+        private static readonly string Zip = HeaderParameters.Zip;
+        private static readonly string Crit = HeaderParameters.Crit;
+#if !NETSTANDARD2_0
         private static readonly string Epk = HeaderParameters.Epk;
         private static readonly string Apu = HeaderParameters.Apu;
         private static readonly string Apv = HeaderParameters.Apv;
-        private static readonly string Zip = HeaderParameters.Zip;
-        private static readonly string Crit = HeaderParameters.Crit;
+#endif
 
         private static JwtHeader ReadJsonHeader(ReadOnlySpan<byte> buffer)
         {

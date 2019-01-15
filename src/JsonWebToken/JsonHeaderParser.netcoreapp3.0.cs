@@ -5,25 +5,12 @@
 using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace JsonWebToken
 {
     public static unsafe partial class JsonHeaderParser
     {
-        // Headers
-        private static readonly byte[] Alg = { 97, 108, 103 };
-        private static readonly byte[] Enc = { 101, 110, 99 };
-        private static readonly byte[] Kid = { 107, 105, 100 };
-        private static readonly byte[] Cty = { 99, 116, 121 };
-        private static readonly byte[] Typ = { 116, 121, 112 };
-        private static readonly byte[] Zip = { 122, 105, 112 };
-        private static readonly byte[] Epk = { 101, 112, 107 };
-        private static readonly byte[] Apu = { 97, 112, 117 };
-        private static readonly byte[] Apv = { 97, 112, 118 };
-        private static readonly byte[] Crit = { 99, 114, 105, 116 };
-
         private static unsafe JwtHeader ReadJsonHeader(ReadOnlySpan<byte> buffer)
         {
             Utf8JsonReader reader = new Utf8JsonReader(buffer, true, default);
@@ -39,140 +26,162 @@ namespace JsonWebToken
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        ReadOnlySpan<byte> valueSpan = reader.ValueSpan;
-                        fixed (byte* pValueSpan = valueSpan)
+                        ReadOnlySpan<byte> propertyName = reader.ValueSpan;
+                        fixed (byte* pPropertyByte = propertyName)
                         {
-                            if (valueSpan.Length == 3)
+                            switch (propertyName.Length)
                             {
-                                if (JsonParser.ThreeBytesEqual(pValueSpan, Alg))
-                                {
-                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                case 3:
+                                    uint property = (uint)(((*(ushort*)pPropertyByte) << 8) | *(pPropertyByte + 2));
+
+                                    // 'alg' = { 97, 108, 103 }
+                                    if (property == 7102823u)
                                     {
-                                        header.Alg = reader.GetStringValue();
+                                        if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                        {
+                                            header.Alg = reader.GetStringValue();
+                                        }
+                                        else if (reader.TokenType != JsonTokenType.Null)
+                                        {
+                                            ThrowHelper.FormatMalformedJson(HeaderParameters.Alg, JsonTokenType.String);
+                                        }
                                     }
-                                    else if (reader.TokenType != JsonTokenType.Null)
+                                    // 'enc' = { 101, 110, 99 };
+                                    else if (property == 7234915u)
                                     {
-                                        ThrowHelper.FormatMalformedJson(HeaderParameters.Alg, JsonTokenType.String);
+                                        if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                        {
+                                            header.Enc = reader.GetStringValue();
+                                        }
+                                        else if (reader.TokenType != JsonTokenType.Null)
+                                        {
+                                            ThrowHelper.FormatMalformedJson(HeaderParameters.Enc, JsonTokenType.String);
+                                        }
                                     }
-                                }
-                                else if (JsonParser.ThreeBytesEqual(pValueSpan, Enc))
-                                {
-                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                    // 'kid' = { 107, 105, 100 };
+                                    else if (property == 6908772u)
                                     {
-                                        header.Enc = reader.GetStringValue();
+                                        if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                        {
+                                            header.Kid = reader.GetStringValue();
+                                        }
+                                        else if (reader.TokenType != JsonTokenType.Null)
+                                        {
+                                            ThrowHelper.FormatMalformedJson(HeaderParameters.Kid, JsonTokenType.String);
+                                        }
                                     }
-                                    else if (reader.TokenType != JsonTokenType.Null)
+                                    // 'cty' = { 99, 116, 121 };
+                                    else if (property == 7627641u)
                                     {
-                                        ThrowHelper.FormatMalformedJson(HeaderParameters.Enc, JsonTokenType.String);
+                                        if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                        {
+                                            header.Cty = reader.GetStringValue();
+                                        }
+                                        else if (reader.TokenType != JsonTokenType.Null)
+                                        {
+                                            ThrowHelper.FormatMalformedJson(HeaderParameters.Cty, JsonTokenType.String);
+                                        }
                                     }
-                                }
-                                else if (JsonParser.ThreeBytesEqual(pValueSpan, Kid))
-                                {
-                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                    // 'typ' = { 116, 121, 112 };
+                                    else if (property == 7959664u)
                                     {
-                                        header.Kid = reader.GetStringValue();
+                                        if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                        {
+                                            header.Typ = reader.GetStringValue();
+                                        }
+                                        else if (reader.TokenType != JsonTokenType.Null)
+                                        {
+                                            ThrowHelper.FormatMalformedJson(HeaderParameters.Typ, JsonTokenType.String);
+                                        }
                                     }
-                                    else if (reader.TokenType != JsonTokenType.Null)
+                                    // 'epk' = { 101, 112, 107 };     
+                                    else if (property == 7365995u)
                                     {
-                                        ThrowHelper.FormatMalformedJson(HeaderParameters.Kid, JsonTokenType.String);
+                                        if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
+                                        {
+                                            header.Epk = ECJwk.FromDictionary(JsonParser.ReadJson(ref reader));
+                                        }
+                                        else if (reader.TokenType != JsonTokenType.Null)
+                                        {
+                                            ThrowHelper.FormatMalformedJson(HeaderParameters.Epk, JsonTokenType.String);
+                                        }
                                     }
-                                }
-                                else if (JsonParser.ThreeBytesEqual(pValueSpan, Cty))
-                                {
-                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                    // 'apu' = { 97, 112, 117 };
+                                    else if (property == 7364981u)
                                     {
-                                        header.Cty = reader.GetStringValue();
+                                        if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                        {
+                                            header.Apu = reader.GetStringValue();
+                                        }
+                                        else if (reader.TokenType != JsonTokenType.Null)
+                                        {
+                                            ThrowHelper.FormatMalformedJson(HeaderParameters.Apu, JsonTokenType.String);
+                                        }
                                     }
-                                    else if (reader.TokenType != JsonTokenType.Null)
+                                    // 'apv' = { 97, 112, 118 };
+                                    else if (property == 7364982u)
                                     {
-                                        ThrowHelper.FormatMalformedJson(HeaderParameters.Cty, JsonTokenType.String);
+                                        if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                        {
+                                            header.Apv = reader.GetStringValue();
+                                        }
+                                        else if (reader.TokenType != JsonTokenType.Null)
+                                        {
+                                            ThrowHelper.FormatMalformedJson(HeaderParameters.Apv, JsonTokenType.String);
+                                        }
                                     }
-                                }
-                                else if (JsonParser.ThreeBytesEqual(pValueSpan, Typ))
-                                {
-                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                    // 'zip' = { 122, 105, 112 };
+                                    else if (property == 6912624u)
                                     {
-                                        header.Typ = reader.GetStringValue();
+                                        if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                        {
+                                            header.Zip = reader.GetStringValue();
+                                        }
+                                        else if (reader.TokenType != JsonTokenType.Null)
+                                        {
+                                            ThrowHelper.FormatMalformedJson(HeaderParameters.Zip, JsonTokenType.String);
+                                        }
                                     }
-                                    else if (reader.TokenType != JsonTokenType.Null)
+                                    else
                                     {
-                                        ThrowHelper.FormatMalformedJson(HeaderParameters.Typ, JsonTokenType.String);
+                                        name = reader.GetStringValue();
                                     }
-                                }
-                                else if (JsonParser.ThreeBytesEqual(pValueSpan, Epk))
-                                {
-                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                    break;
+                                case 4:
+                                    property = *(uint*)pPropertyByte;
+
+                                    // 'crit' = { 99, 114, 105, 116 }; 
+                                    if (property == 1953067619u)
                                     {
-                                        header.Epk = ECJwk.FromDictionary(JsonParser.ReadJson(ref reader));
+                                        if (reader.Read() && reader.TokenType == JsonTokenType.StartArray)
+                                        {
+                                            var crit = new List<string>();
+                                            while (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                            {
+                                                crit.Add(reader.GetStringValue());
+                                            }
+
+                                            if (reader.TokenType != JsonTokenType.EndArray)
+                                            {
+                                                ThrowHelper.FormatMalformedJson(HeaderParameters.Crit, JsonTokenType.String);
+                                            }
+
+                                            header.Crit = crit;
+                                        }
+                                        else
+                                        {
+                                            ThrowHelper.FormatMalformedJson(HeaderParameters.Crit, JsonTokenType.StartObject);
+                                        }
                                     }
-                                    else if (reader.TokenType != JsonTokenType.Null)
+                                    else
                                     {
-                                        ThrowHelper.FormatMalformedJson(HeaderParameters.Epk, JsonTokenType.String);
+                                        name = reader.GetStringValue();
                                     }
-                                }
-                                else if (JsonParser.ThreeBytesEqual(pValueSpan, Apu))
-                                {
-                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
-                                    {
-                                        header.Apu = reader.GetStringValue();
-                                    }
-                                    else if (reader.TokenType != JsonTokenType.Null)
-                                    {
-                                        ThrowHelper.FormatMalformedJson(HeaderParameters.Apu, JsonTokenType.String);
-                                    }
-                                }
-                                else if (JsonParser.ThreeBytesEqual(pValueSpan, Apv))
-                                {
-                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
-                                    {
-                                        header.Apv = reader.GetStringValue();
-                                    }
-                                    else if (reader.TokenType != JsonTokenType.Null)
-                                    {
-                                        ThrowHelper.FormatMalformedJson(HeaderParameters.Apv, JsonTokenType.String);
-                                    }
-                                }
-                                else if (JsonParser.ThreeBytesEqual(pValueSpan, Zip))
-                                {
-                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
-                                    {
-                                        header.Zip = reader.GetStringValue();
-                                    }
-                                    else if (reader.TokenType != JsonTokenType.Null)
-                                    {
-                                        ThrowHelper.FormatMalformedJson(HeaderParameters.Zip, JsonTokenType.String);
-                                    }
-                                }
-                                else
-                                {
+
+                                    break;
+                                default:
                                     name = reader.GetStringValue();
-                                }
-                            }
-                            else if (valueSpan.Length == 4 && JsonParser.FourBytesEqual(pValueSpan, Crit))
-                            {
-                                if (reader.Read() && reader.TokenType == JsonTokenType.StartArray)
-                                {
-                                    var crit = new List<string>();
-                                    while (reader.Read() && reader.TokenType == JsonTokenType.String)
-                                    {
-                                        crit.Add(reader.GetStringValue());
-                                    }
-
-                                    if (reader.TokenType != JsonTokenType.EndArray)
-                                    {
-                                        ThrowHelper.FormatMalformedJson(HeaderParameters.Crit, JsonTokenType.String);
-                                    }
-
-                                    header.Crit = crit;
-                                }
-                                else
-                                {
-                                    ThrowHelper.FormatMalformedJson(HeaderParameters.Crit, JsonTokenType.StartObject);
-                                }
-                            }
-                            else
-                            {
-                                name = reader.GetStringValue();
+                                    break;
                             }
                         }
 

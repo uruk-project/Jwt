@@ -35,7 +35,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public new object this[string key]
+        public object this[string key]
         {
             get
             {

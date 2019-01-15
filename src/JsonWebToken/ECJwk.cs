@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 #if NETCOREAPP3_0
 using System.Text.Json;
@@ -387,9 +386,7 @@ namespace JsonWebToken
         }
 
 #if NETCOREAPP3_0
-        private static readonly byte[] CrvRawName = { 99, 114, 118 };
-
-        internal unsafe static ECJwk FromJsonReader(Utf8JsonReader reader)
+        internal static unsafe ECJwk FromJsonReader(Utf8JsonReader reader)
         {
             var key = new ECJwk();
 
@@ -399,71 +396,73 @@ namespace JsonWebToken
                 {
                     case JsonTokenType.PropertyName:
                         ReadOnlySpan<byte> valueSpan = reader.ValueSpan;
-                        if (valueSpan.Length == 1)
+                        switch (valueSpan.Length)
                         {
-                            byte value = valueSpan[0];
-                            if (value == 120 /* "x" */)
-                            {
-                                if (reader.Read() && reader.TokenType == JsonTokenType.String)
-                                {
-                                    key.RawX = Base64Url.Base64UrlDecode(reader.ValueSpan);
-                                }
-                                else if (reader.TokenType != JsonTokenType.Null)
-                                {
-                                    ThrowHelper.FormatMalformedJson(JwkParameterNames.X, JsonTokenType.String);
-                                }
-                            }
-                            else if (value == 121 /* "y" */)
-                            {
-                                if (reader.Read() && reader.TokenType == JsonTokenType.String)
-                                {
-                                    key.RawY = Base64Url.Base64UrlDecode(reader.ValueSpan);
-                                }
-                                else if (reader.TokenType != JsonTokenType.Null)
-                                {
-                                    ThrowHelper.FormatMalformedJson(JwkParameterNames.Y, JsonTokenType.String);
-                                }
-                            }
-                            else if (value == 100 /* "d" */)
-                            {
-                                if (reader.Read() && reader.TokenType == JsonTokenType.String)
-                                {
-                                    key.RawD = Base64Url.Base64UrlDecode(reader.ValueSpan);
-                                }
-                                else if (reader.TokenType != JsonTokenType.Null)
-                                {
-                                    ThrowHelper.FormatMalformedJson(JwkParameterNames.D, JsonTokenType.String);
-                                }
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-                        else if (valueSpan.Length == 3)
-                        {
-                            fixed (byte* pValueSpan = valueSpan)
-                            {
-                                if (JsonParser.ThreeBytesEqual(pValueSpan, CrvRawName))
+                            case 1:
+                                byte value = valueSpan[0];
+                                if (value == 120 /* "x" */)
                                 {
                                     if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                     {
-                                        key.Crv = reader.GetStringValue();
+                                        key.RawX = Base64Url.Base64UrlDecode(reader.ValueSpan);
                                     }
                                     else if (reader.TokenType != JsonTokenType.Null)
                                     {
-                                        ThrowHelper.FormatMalformedJson(JwkParameterNames.Crv, JsonTokenType.String);
+                                        ThrowHelper.FormatMalformedJson(JwkParameterNames.X, JsonTokenType.String);
+                                    }
+                                }
+                                else if (value == 121 /* "y" */)
+                                {
+                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                    {
+                                        key.RawY = Base64Url.Base64UrlDecode(reader.ValueSpan);
+                                    }
+                                    else if (reader.TokenType != JsonTokenType.Null)
+                                    {
+                                        ThrowHelper.FormatMalformedJson(JwkParameterNames.Y, JsonTokenType.String);
+                                    }
+                                }
+                                else if (value == 100 /* "d" */)
+                                {
+                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                    {
+                                        key.RawD = Base64Url.Base64UrlDecode(reader.ValueSpan);
+                                    }
+                                    else if (reader.TokenType != JsonTokenType.Null)
+                                    {
+                                        ThrowHelper.FormatMalformedJson(JwkParameterNames.D, JsonTokenType.String);
                                     }
                                 }
                                 else
                                 {
                                     break;
                                 }
-                            }
-                        }
-                        else
-                        {
-                            break;
+                                break;
+                            case 3:
+                                fixed (byte* pPropertyByte = valueSpan)
+                                {
+                                    uint property = (uint)(((*(ushort*)pPropertyByte) << 8) | *(pPropertyByte + 2));
+
+                                    // 'crv' = { 99, 114, 118 };
+                                    if (property == 7496566u)
+                                    {
+                                        if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                        {
+                                            key.Crv = reader.GetStringValue();
+                                        }
+                                        else if (reader.TokenType != JsonTokenType.Null)
+                                        {
+                                            ThrowHelper.FormatMalformedJson(JwkParameterNames.Crv, JsonTokenType.String);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                                break;
+                            default:
+                                break;
                         }
 
                         break;

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace JsonWebToken
@@ -36,7 +35,7 @@ namespace JsonWebToken
         /// Gets the signature algorithm that was used to create the signature.
         /// </summary>
         public string Alg { get; set; }
-     
+
         /// <summary>
         /// Gets the content type (Cty) of the token.
         /// </summary>
@@ -46,12 +45,12 @@ namespace JsonWebToken
         /// Gets the encryption algorithm (Enc) of the token.
         /// </summary>
         public string Enc { get; set; }
-        
+
         /// <summary>
         /// Gets the key identifier for the key used to sign the token.
         /// </summary>
         public string Kid { get; set; }
-     
+
         /// <summary>
         /// Gets the mime type (Typ) of the token.
         /// </summary>
@@ -95,7 +94,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the ephemeral key used for ECDH key agreement.
         /// </summary>
-       public ECJwk Epk { get; set; }
+        public ECJwk Epk { get; set; }
 
         /// <summary>
         /// Gets the Agreement PartyUInfo used for ECDH key agreement.
@@ -149,6 +148,14 @@ namespace JsonWebToken
                         return Zip;
                     case HeaderParameters.Crit:
                         return Crit;
+#if !NETSTANDARD
+                    case HeaderParameters.Epk:
+                        return Epk;
+                    case HeaderParameters.Apu:
+                        return Apu;
+                    case HeaderParameters.Apv:
+                        return Apv;
+#endif  
                     default:
                         return _inner.TryGetValue(key, out var value) ? value : null;
                 }
@@ -179,6 +186,17 @@ namespace JsonWebToken
                     case HeaderParameters.Crit:
                         Crit = (IList<string>)value;
                         break;
+#if !NETSTANDARD
+                    case HeaderParameters.Epk:
+                        Epk = ECJwk.FromDictionary((Dictionary<string, object>)value);
+                        break;
+                    case HeaderParameters.Apu:
+                        Apu = (string)value;
+                        break;
+                    case HeaderParameters.Apv:
+                        Apv = (string)value;
+                        break;
+#endif
                     default:
                         _inner[key] = value;
                         break;
