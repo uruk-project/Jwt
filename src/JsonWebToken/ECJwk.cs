@@ -386,7 +386,7 @@ namespace JsonWebToken
         }
 
 #if NETCOREAPP3_0
-        internal static unsafe ECJwk FromJsonReader(Utf8JsonReader reader)
+        internal static unsafe ECJwk FromJsonReader(ref Utf8JsonReader reader)
         {
             var key = new ECJwk();
 
@@ -400,7 +400,7 @@ namespace JsonWebToken
                         {
                             case 1:
                                 byte value = valueSpan[0];
-                                if (value == 120 /* "x" */)
+                                if (value == 120 /* 'x' */)
                                 {
                                     if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                     {
@@ -411,7 +411,7 @@ namespace JsonWebToken
                                         ThrowHelper.FormatMalformedJson(JwkParameterNames.X, JsonTokenType.String);
                                     }
                                 }
-                                else if (value == 121 /* "y" */)
+                                else if (value == 121 /* 'y' */)
                                 {
                                     if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                     {
@@ -422,7 +422,7 @@ namespace JsonWebToken
                                         ThrowHelper.FormatMalformedJson(JwkParameterNames.Y, JsonTokenType.String);
                                     }
                                 }
-                                else if (value == 100 /* "d" */)
+                                else if (value == 100 /* 'd' */)
                                 {
                                     if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                     {
@@ -443,8 +443,7 @@ namespace JsonWebToken
                                 {
                                     uint property = (uint)(((*(ushort*)pPropertyByte) << 8) | *(pPropertyByte + 2));
 
-                                    // 'crv' = { 99, 114, 118 };
-                                    if (property == 7496566u)
+                                    if (property == 7496566u /* 'crv' */)
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {

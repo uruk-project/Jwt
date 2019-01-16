@@ -33,9 +33,8 @@ namespace JsonWebToken
                             {
                                 case 3:
                                     uint property = (uint)(((*(ushort*)pPropertyByte) << 8) | *(pPropertyByte + 2));
-
-                                    // 'alg' = { 97, 108, 103 }
-                                    if (property == 7102823u)
+                                    
+                                    if (property == 7102823u /* 'alg' */)
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
@@ -46,8 +45,7 @@ namespace JsonWebToken
                                             ThrowHelper.FormatMalformedJson(HeaderParameters.Alg, JsonTokenType.String);
                                         }
                                     }
-                                    // 'enc' = { 101, 110, 99 };
-                                    else if (property == 7234915u)
+                                    else if (property == 7234915u /* 'enc' */)
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
@@ -58,8 +56,7 @@ namespace JsonWebToken
                                             ThrowHelper.FormatMalformedJson(HeaderParameters.Enc, JsonTokenType.String);
                                         }
                                     }
-                                    // 'kid' = { 107, 105, 100 };
-                                    else if (property == 6908772u)
+                                    else if (property == 6908772u /* 'kid' */)
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
@@ -70,8 +67,7 @@ namespace JsonWebToken
                                             ThrowHelper.FormatMalformedJson(HeaderParameters.Kid, JsonTokenType.String);
                                         }
                                     }
-                                    // 'cty' = { 99, 116, 121 };
-                                    else if (property == 7627641u)
+                                    else if (property == 7627641u /* 'cty' */)
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
@@ -82,8 +78,7 @@ namespace JsonWebToken
                                             ThrowHelper.FormatMalformedJson(HeaderParameters.Cty, JsonTokenType.String);
                                         }
                                     }
-                                    // 'typ' = { 116, 121, 112 };
-                                    else if (property == 7959664u)
+                                    else if (property == 7959664u /* 'typ' */)
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
@@ -94,20 +89,18 @@ namespace JsonWebToken
                                             ThrowHelper.FormatMalformedJson(HeaderParameters.Typ, JsonTokenType.String);
                                         }
                                     }
-                                    // 'epk' = { 101, 112, 107 };     
-                                    else if (property == 7365995u)
+                                    else if (property == 7365995u /* 'epk' */)
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
                                         {
-                                            header.Epk = ECJwk.FromDictionary(JsonParser.ReadJson(ref reader));
+                                            header.Epk = ECJwk.FromJsonReader(ref reader);
                                         }
                                         else if (reader.TokenType != JsonTokenType.Null)
                                         {
-                                            ThrowHelper.FormatMalformedJson(HeaderParameters.Epk, JsonTokenType.String);
+                                            ThrowHelper.FormatMalformedJson(HeaderParameters.Epk, JsonTokenType.StartObject);
                                         }
                                     }
-                                    // 'apu' = { 97, 112, 117 };
-                                    else if (property == 7364981u)
+                                    else if (property == 7364981u /* 'apu' */)
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
@@ -118,8 +111,7 @@ namespace JsonWebToken
                                             ThrowHelper.FormatMalformedJson(HeaderParameters.Apu, JsonTokenType.String);
                                         }
                                     }
-                                    // 'apv' = { 97, 112, 118 };
-                                    else if (property == 7364982u)
+                                    else if (property == 7364982u /* 'apv' */)
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
@@ -130,8 +122,7 @@ namespace JsonWebToken
                                             ThrowHelper.FormatMalformedJson(HeaderParameters.Apv, JsonTokenType.String);
                                         }
                                     }
-                                    // 'zip' = { 122, 105, 112 };
-                                    else if (property == 6912624u)
+                                    else if (property == 6912624u /* 'zip' */)
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
@@ -149,9 +140,7 @@ namespace JsonWebToken
                                     break;
                                 case 4:
                                     property = *(uint*)pPropertyByte;
-
-                                    // 'crit' = { 99, 114, 105, 116 }; 
-                                    if (property == 1953067619u)
+                                    if (property == 1953067619u /* 'crit' */)
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.StartArray)
                                         {

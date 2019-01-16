@@ -34,9 +34,8 @@ namespace JsonWebToken
                             {
                                 case 3:
                                     uint property = (uint)(((*(ushort*)pPropertyByte) << 8) | *(pPropertyByte + 2));
-
-                                    // 'iss' = { 105, 115, 115 };
-                                    if (property == 7563635u)
+                                    
+                                    if (property == 7563635u /* 'iss' */) 
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
@@ -47,8 +46,7 @@ namespace JsonWebToken
                                             ThrowHelper.FormatMalformedJson(Claims.Iss, JsonTokenType.String);
                                         }
                                     }
-                                    // 'aud' = { 97, 117, 100 };
-                                    else if (property == 7692644u)
+                                    else if (property == 7692644u /* 'aud' */)
                                     {
                                         if (reader.Read())
                                         {
@@ -81,8 +79,7 @@ namespace JsonWebToken
                                             ThrowHelper.FormatMalformedJson();
                                         }
                                     }
-                                    // 'exp' = { 101, 120, 112 };
-                                    else if (property == 7890288)
+                                    else if (property == 7890288 /* 'exp' */)
                                     {
                                         if (reader.Read() && reader.TryGetInt64Value(out long expValue))
                                         {
@@ -93,8 +90,7 @@ namespace JsonWebToken
                                             ThrowHelper.FormatMalformedJson(Claims.Exp, JsonTokenType.Number);
                                         }
                                     }
-                                    // 'sub' = { 115, 117, 98 };
-                                    else if (property == 7697250u)
+                                    else if (property == 7697250u /* 'sub' */)
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
@@ -105,8 +101,7 @@ namespace JsonWebToken
                                             ThrowHelper.FormatMalformedJson(Claims.Sub, JsonTokenType.String);
                                         }
                                     }
-                                    // 'jti' = { 106, 116, 105 };
-                                    else if (property == 7629417)
+                                    else if (property == 7629417 /* 'jti' */)
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
@@ -117,8 +112,7 @@ namespace JsonWebToken
                                             ThrowHelper.FormatMalformedJson(Claims.Jti, JsonTokenType.String);
                                         }
                                     }
-                                    // 'nbf' = { 110, 98, 102 };
-                                    else if (property == 6450790u)
+                                    else if (property == 6450790u /* 'nbf' */)
                                     {
                                         if (reader.Read() && reader.TryGetInt64Value(out long nbfValue))
                                         {
