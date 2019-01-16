@@ -1,4 +1,5 @@
-﻿using JsonWebToken.Internal;
+﻿#if NETCOREAPP3_0
+using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using Xunit;
@@ -92,3 +93,4 @@ namespace JsonWebToken.Tests
         }
     }
 }
+#endif

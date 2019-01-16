@@ -19,6 +19,11 @@ namespace JsonWebToken
         {
         }
 
+        public VectorOfTrust(string vector)
+            : this((vector ?? throw new ArgumentNullException(nameof(vector))).AsSpan())
+        {
+        }
+
         public VectorOfTrust(ReadOnlySpan<char> vector)
         {
             if (vector == null || vector.IsEmpty)

@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿#if NETCOREAPP3_0
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -113,3 +114,4 @@ namespace JsonWebToken.Tests
         }
     }
 }
+#endif

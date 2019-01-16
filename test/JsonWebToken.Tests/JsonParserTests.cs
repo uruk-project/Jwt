@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Text;
 using Xunit;
 
@@ -35,12 +36,20 @@ namespace JsonWebToken.Tests
                 }
                 else if (expectedItem.Value is List<object> expectedList)
                 {
+//#if NETCOREAPP3_0
                     if (!(valueItem is List<object> valueList))
                     {
                         throw new Xunit.Sdk.AssertActualExpectedException(expected, value, $"Expected the type '{typeof(List<object>)}', got {valueItem?.GetType()}.");
                     }
 
                     AssertListEqual(expectedList, valueList);
+//#else
+//                    if (!(valueItem is JArray valueList))
+//                    {
+//                        throw new Xunit.Sdk.AssertActualExpectedException(expected, value, $"Expected the type '{typeof(List<object>)}', got {valueItem?.GetType()}.");
+//                    }
+
+//#endif
                 }
                 else
                 {

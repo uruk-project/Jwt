@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if NETCOREAPP2_1 || NETCOREAPP3_0
+using System.Collections.Generic;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -51,9 +52,13 @@ namespace JsonWebToken.Tests
             yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEs };
             yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.EcdhEs };
             yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs };
+#if NETCOREAPP3_0
             yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW };
             yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes192KW };
             yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes256KW };
+#endif
+            yield break;
         }
     }
 }
+#endif

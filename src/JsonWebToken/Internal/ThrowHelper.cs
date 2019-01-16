@@ -6,6 +6,8 @@ using System.Buffers;
 using System.Globalization;
 #if NETCOREAPP3_0
 using System.Text.Json;
+#else
+using Newtonsoft.Json;
 #endif
 
 namespace JsonWebToken.Internal
@@ -81,6 +83,15 @@ namespace JsonWebToken.Internal
         {
             throw new FormatException($"The claim '{claim}' must be of type {type}.");
         }
+#else
+        /// <summary>
+        /// The claim '{claim}' must be of type {type}.
+        /// </summary>
+        internal static string FormatMalformedJson(string claim, JsonToken type)
+        {
+            throw new FormatException($"The claim '{claim}' must be of type {type}.");
+        }
+#endif
 
         /// <summary>
         /// The claim '{name}' is not a supported Number value.
@@ -105,6 +116,6 @@ namespace JsonWebToken.Internal
         {
             throw new FormatException("Expect a JSON object.");
         }
-#endif
+//#endif
     }
 }
