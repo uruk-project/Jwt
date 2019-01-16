@@ -27,14 +27,12 @@ namespace JsonWebToken
         /// </summary>
         public RsaJwk()
         {
-            Kty = JwkTypeNames.Rsa;
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
         /// </summary>
         public RsaJwk(RSAParameters rsaParameters)
-            : this()
         {
             RawD = rsaParameters.D;
             RawDP = rsaParameters.DP;
@@ -52,6 +50,9 @@ namespace JsonWebToken
             RawE = CloneByteArray(e);
             RawN = CloneByteArray(n);
         }
+
+        /// <inheritsdoc />
+        public override string Kty => JwkTypeNames.Rsa;
 
         /// <summary>
         /// Exports the RSA parameters from the <see cref="RsaJwk"/>.

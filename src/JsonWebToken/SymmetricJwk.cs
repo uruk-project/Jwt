@@ -20,7 +20,6 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="bytes"></param>
         public SymmetricJwk(byte[] bytes)
-            : this()
         {
             RawK = CloneByteArray(bytes);
         }
@@ -30,7 +29,6 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="bytes"></param>
         public SymmetricJwk(Span<byte> bytes)
-            : this()
         {
             RawK = bytes.ToArray();
         }
@@ -40,8 +38,10 @@ namespace JsonWebToken
         /// </summary>
         public SymmetricJwk()
         {
-            Kty = JwkTypeNames.Octet;
         }
+
+        /// <inheritsdoc />
+        public override string Kty => JwkTypeNames.Octet;
 
         /// <summary>
         /// Gets or sets the 'k' (Key Value).

@@ -59,7 +59,7 @@ namespace JsonWebToken
         /// Gets or sets the 'kty' (Key Type).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.Kty, Required = Required.Default)]
-        public string Kty { get; set; }
+        public abstract string Kty { get; }
 
         /// <summary>
         /// Gets or sets the 'use' (Public Key Use).

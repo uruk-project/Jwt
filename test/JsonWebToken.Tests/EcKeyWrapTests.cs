@@ -10,7 +10,6 @@ namespace JsonWebToken.Tests
     {
         private readonly ECJwk _aliceKey = new ECJwk
         {
-            Kty = "EC",
             Crv = "P-256",
             X = "gI0GAILBdu7T53akrFmMyGcsF3n5dO7MmwNBHKW5SV0",
             Y = "SLW_xSffzlPWrHEVI30DHM_4egVwt3NQqeUD7nMFpps",
@@ -18,7 +17,6 @@ namespace JsonWebToken.Tests
         };
         private readonly ECJwk _bobKey = new ECJwk
         {
-            Kty = "EC",
             Crv = "P-256",
             X = "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
             Y = "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck",

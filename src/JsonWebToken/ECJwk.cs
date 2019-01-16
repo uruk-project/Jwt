@@ -26,7 +26,6 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="parameters"></param>
         public ECJwk(ECParameters parameters)
-            : this()
         {
             parameters.Validate();
 
@@ -66,8 +65,10 @@ namespace JsonWebToken
         /// </summary>
         public ECJwk()
         {
-            Kty = JwkTypeNames.EllipticCurve;
         }
+
+        /// <inheritsdoc />
+        public override string Kty => JwkTypeNames.EllipticCurve;
 
         /// <summary>
         /// Gets or sets the 'crv' (Curve).

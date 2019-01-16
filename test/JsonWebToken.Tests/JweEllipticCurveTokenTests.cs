@@ -8,7 +8,6 @@ namespace JsonWebToken.Tests
     {
         private readonly ECJwk _bobKey = new ECJwk
         {
-            Kty = "EC",
             Crv = "P-256",
             X = "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
             Y = "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck",
