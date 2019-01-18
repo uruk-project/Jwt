@@ -5,6 +5,9 @@ using JsonWebToken.Internal;
 using Newtonsoft.Json;
 using System;
 using System.Security.Cryptography;
+#if NETCOREAPP3_0
+using System.Text.Json;
+#endif
 
 namespace JsonWebToken
 {
@@ -54,10 +57,19 @@ namespace JsonWebToken
         {
         }
 
-        //internal SymmetricJwk(JwkInfo info)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        internal SymmetricJwk(JwkInfo info)
+        {
+            for (int i = 0; i < info.Properties.Count; i++)
+            {
+                var property = info[i];
+                switch (property.Key)
+                {
+                    case 107u:
+                        K = (byte[])property.Value;
+                        break;
+                }
+            }
+        }
 
         /// <inheritsdoc />
         public override string Kty => JwkTypeNames.Octet;
@@ -287,5 +299,43 @@ namespace JsonWebToken
         {
             return K;
         }
+
+#if NETCOREAPP3_0
+        internal static unsafe void ReadJson(ref Utf8JsonReader reader, ref JwkInfo properties)
+        {
+            while (reader.Read())
+            {
+                switch (reader.TokenType)
+                {
+                    case JsonTokenType.PropertyName:
+                        ReadOnlySpan<byte> valueSpan = reader.ValueSpan;
+                        if (valueSpan.Length == 1)
+                        {
+                            byte value = valueSpan[0];
+                            if (value == 107 /* 'k' */)
+                            {
+                                if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                {
+                                    properties.Add(value, Base64Url.Base64UrlDecode(reader.ValueSpan));
+                                }
+                                else if (reader.TokenType != JsonTokenType.Null)
+                                {
+                                    ThrowHelper.FormatMalformedJson(JwkParameterNames.X, JsonTokenType.String);
+                                }
+                            }
+                        }
+
+                        break;
+                    case JsonTokenType.StartObject:
+                        JsonParser.ReadJson(ref reader);
+                        break;
+                    case JsonTokenType.EndObject:
+                        return;
+                    default:
+                        break;
+                }
+            }
+        }
+#endif
     }
 }
