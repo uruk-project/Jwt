@@ -58,7 +58,7 @@ namespace JsonWebToken.Internal
                 Errors.ThrowKeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, key, key.KeySizeInBits);
             }
 
-            byte[] keyBytes = key.RawK;
+            byte[] keyBytes = key.K;
             Aes aes = null;
             try
             {

@@ -9,18 +9,185 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
+    //internal static class JwkFactory
+    //{
+    //    public static Jwk Create(JwkInfo info)
+    //    {
+    //        switch (info.Kty)
+    //        {
+    //            case 1:
+    //                return new SymmetricJwk(info);
+    //            case 2:
+    //                return new RsaJwk(info);
+    //            case 3:
+    //                return new ECJwk(info);
+    //            default:
+    //                ThrowHelper.NotSupportedKey();
+    //                return null;
+    //        }
+    //    }
+    //}
+    ///// <summary>
+    ///// Represents a JWK in its JSON form.
+    ///// </summary>
+    //internal ref struct JwkInfo
+    //{
+    //    // TODO : Add all the JWK fields.
+    //    public Kty Kty { get; set; }
+
+    //    public ReadOnlySpan<byte> MyProperty { get; set; }
+    //}
+
+    //internal enum Kty
+    //{
+    //    None,
+    //    Octet,
+    //    EC,
+    //    Rsa
+    //}
+
     /// <summary>
     /// Represents a RSA JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
     /// </summary>
     public sealed class RsaJwk : AsymmetricJwk
     {
-        private string _dp;
-        private string _dq;
-        private string _e;
-        private string _n;
-        private string _p;
-        private string _q;
-        private string _qi;
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(
+            byte[] n,
+            byte[] e,
+            byte[] d,
+            byte[] p,
+            byte[] q,
+            byte[] dp,
+            byte[] dq,
+            byte[] qi)
+        {
+            D = d ?? throw new ArgumentNullException(nameof(d)); ;
+            DP = dp ?? throw new ArgumentNullException(nameof(dp));
+            DQ = dq ?? throw new ArgumentNullException(nameof(dq));
+            QI = qi ?? throw new ArgumentNullException(nameof(qi));
+            P = p ?? throw new ArgumentNullException(nameof(p));
+            Q = q ?? throw new ArgumentNullException(nameof(q));
+            E = e ?? throw new ArgumentNullException(nameof(e));
+            N = n ?? throw new ArgumentNullException(nameof(n));
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(
+            string d,
+            string p,
+            string q,
+            string dp,
+            string dq,
+            string qi,
+            string e,
+            string n)
+        {
+            if (d == null)
+            {
+                throw new ArgumentNullException(nameof(d));
+            }
+
+            if (p == null)
+            {
+                throw new ArgumentNullException(nameof(p));
+            }
+
+            if (q == null)
+            {
+                throw new ArgumentNullException(nameof(q));
+            }
+
+            if (dp == null)
+            {
+                throw new ArgumentNullException(nameof(dp));
+            }
+
+            if (dq == null)
+            {
+                throw new ArgumentNullException(nameof(dq));
+            }
+
+            if (qi == null)
+            {
+                throw new ArgumentNullException(nameof(qi));
+            }
+
+            if (e == null)
+            {
+                throw new ArgumentNullException(nameof(e));
+            }
+
+            if (n == null)
+            {
+                throw new ArgumentNullException(nameof(n));
+            }
+
+            D = Base64Url.Base64UrlDecode(d);
+            DP = Base64Url.Base64UrlDecode(dp);
+            DQ = Base64Url.Base64UrlDecode(dq);
+            QI = Base64Url.Base64UrlDecode(qi);
+            P = Base64Url.Base64UrlDecode(p);
+            Q = Base64Url.Base64UrlDecode(q);
+            E = Base64Url.Base64UrlDecode(e);
+            N = Base64Url.Base64UrlDecode(n);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(RSAParameters rsaParameters)
+        {
+            D = rsaParameters.D;
+            DP = rsaParameters.DP;
+            DQ = rsaParameters.DQ;
+            QI = rsaParameters.InverseQ;
+            P = rsaParameters.P;
+            Q = rsaParameters.Q;
+            E = rsaParameters.Exponent;
+            N = rsaParameters.Modulus;
+        }
+
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(byte[] e, byte[] n)
+        {
+            if (e == null)
+            {
+                throw new ArgumentNullException(nameof(e));
+            }
+
+            if (n == null)
+            {
+                throw new ArgumentNullException(nameof(n));
+            }
+
+            E = CloneByteArray(e);
+            N = CloneByteArray(n);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(string e, string n)
+        {
+            if (e == null)
+            {
+                throw new ArgumentNullException(nameof(e));
+            }
+
+            if (n == null)
+            {
+                throw new ArgumentNullException(nameof(n));
+            }
+
+            E = Base64Url.Base64UrlDecode(e);
+            N = Base64Url.Base64UrlDecode(n);
+        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
@@ -29,27 +196,10 @@ namespace JsonWebToken
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        public RsaJwk(RSAParameters rsaParameters)
-        {
-            RawD = rsaParameters.D;
-            RawDP = rsaParameters.DP;
-            RawDQ = rsaParameters.DQ;
-            RawQI = rsaParameters.InverseQ;
-            RawP = rsaParameters.P;
-            RawQ = rsaParameters.Q;
-            RawE = rsaParameters.Exponent;
-            RawN = rsaParameters.Modulus;
-        }
-
-        private RsaJwk(byte[] e, byte[] n)
-            : this()
-        {
-            RawE = CloneByteArray(e);
-            RawN = CloneByteArray(n);
-        }
+        //internal RsaJwk(JwkInfo info)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
         /// <inheritsdoc />
         public override string Kty => JwkTypeNames.Rsa;
@@ -60,21 +210,21 @@ namespace JsonWebToken
         /// <returns></returns>
         public RSAParameters ExportParameters()
         {
-            if (RawN == null || RawE == null)
+            if (N == null || E == null)
             {
                 Errors.ThrowInvalidRsaKey(this);
             }
 
             RSAParameters parameters = new RSAParameters
             {
-                D = RawD,
-                DP = RawDP,
-                DQ = RawDQ,
-                InverseQ = RawQI,
-                P = RawP,
-                Q = RawQ,
-                Exponent = RawE,
-                Modulus = RawN
+                D = D,
+                DP = DP,
+                DQ = DQ,
+                InverseQ = QI,
+                P = P,
+                Q = Q,
+                Exponent = E,
+                Modulus = N
             };
 
             return parameters;
@@ -126,289 +276,66 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override bool HasPrivateKey => RawD != null && RawDP != null && RawDQ != null && RawP != null && RawQ != null && RawQI != null;
+        public override bool HasPrivateKey => D != null && DP != null && DQ != null && P != null && Q != null && QI != null;
 
         /// <inheritsdoc />
-        public override int KeySizeInBits => RawN?.Length != 0 ? RawN.Length << 3 : 0;
+        public override int KeySizeInBits => N?.Length != 0 ? N.Length << 3 : 0;
 
         /// <summary>
         /// Gets or sets the 'dp' (First Factor CRT Exponent).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.DP, Required = Required.Default)]
-        public string DP
-        {
-            get
-            {
-                if (_dp == null)
-                {
-                    if (RawDP != null && RawDP.Length != 0)
-                    {
-                        _dp = Base64Url.Base64UrlEncode(RawDP);
-                    }
-                }
-
-                return _dp;
-            }
-
-            set
-            {
-                _dp = value;
-                if (value != null)
-                {
-                    RawDP = Base64Url.Base64UrlDecode(value);
-                }
-                else
-                {
-                    RawDP = null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the 'dp' in its binary form.
-        /// </summary>
-        [JsonIgnore]
-        public byte[] RawDP { get; private set; }
+        [JsonConverter(typeof(Base64UrlConverter))]
+        public byte[] DP { get; set; }
 
         /// <summary>
         /// Gets or sets the 'dq' (Second Factor CRT Exponent).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.DQ, Required = Required.Default)]
-        public string DQ
-        {
-            get
-            {
-                if (_dq == null)
-                {
-                    if (RawDQ != null && RawDQ.Length != 0)
-                    {
-                        _dq = Base64Url.Base64UrlEncode(RawDQ);
-                    }
-                }
-
-                return _dq;
-            }
-
-            set
-            {
-                _dq = value;
-                if (value != null)
-                {
-                    RawDQ = Base64Url.Base64UrlDecode(value);
-                }
-                else
-                {
-                    RawDQ = null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the 'dq' in its binary form.
-        /// </summary>
-        [JsonIgnore]
-        public byte[] RawDQ { get; private set; }
+        [JsonConverter(typeof(Base64UrlConverter))]
+        public byte[] DQ { get; set; }
 
         /// <summary>
         /// Gets or sets the 'e' ( Exponent).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.E, Required = Required.Default)]
-        public string E
-        {
-            get
-            {
-                if (_e == null)
-                {
-                    if (RawE != null && RawE.Length != 0)
-                    {
-                        _e = Base64Url.Base64UrlEncode(RawE);
-                    }
-                }
-
-                return _e;
-            }
-
-            set
-            {
-                _e = value;
-                if (value != null)
-                {
-                    RawE = Base64Url.Base64UrlDecode(value);
-                }
-                else
-                {
-                    RawE = null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the 'e' in its binary form.
-        /// </summary>
-        [JsonIgnore]
-        public byte[] RawE { get; private set; }
+        [JsonConverter(typeof(Base64UrlConverter))]
+        public byte[] E { get; set; }
 
         /// <summary>
         /// Gets or sets the 'n' (Modulus).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.N, Required = Required.Default)]
-        public string N
-        {
-            get
-            {
-                if (_n == null)
-                {
-                    if (RawN != null && RawN.Length != 0)
-                    {
-                        _n = Base64Url.Base64UrlEncode(RawN);
-                    }
-                }
-
-                return _n;
-            }
-
-            set
-            {
-                _n = value;
-                if (value != null)
-                {
-                    RawN = Base64Url.Base64UrlDecode(value);
-                }
-                else
-                {
-                    RawN = null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the 'n' in its binary form.
-        /// </summary>
-        [JsonIgnore]
-        public byte[] RawN { get; private set; }
+        [JsonConverter(typeof(Base64UrlConverter))]
+        public byte[] N { get; set; }
 
         /// <summary>
         /// Gets or sets the 'oth' (Other Primes Info).
         /// </summary>
+        /// <remarks>Not supported.</remarks>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.Oth, Required = Required.Default)]
-        public IList<string> Oth { get; set; }
+        public IList<PrimeInfo> Oth { get; set; }
 
         /// <summary>
         /// Gets or sets the 'p' (First Prime Factor).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.P, Required = Required.Default)]
-        public string P
-        {
-            get
-            {
-                if (_p == null)
-                {
-                    if (RawP != null && RawP.Length != 0)
-                    {
-                        _p = Base64Url.Base64UrlEncode(RawP);
-                    }
-                }
-
-                return _p;
-            }
-
-            set
-            {
-                _p = value;
-                if (value != null)
-                {
-                    RawP = Base64Url.Base64UrlDecode(value);
-                }
-                else
-                {
-                    RawP = null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the 'p' in its binary form.
-        /// </summary>
-        [JsonIgnore]
-        public byte[] RawP { get; private set; }
+        [JsonConverter(typeof(Base64UrlConverter))]
+        public byte[] P { get; set; }
 
         /// <summary>
         /// Gets or sets the 'q' (Second  Prime Factor).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.Q, Required = Required.Default)]
-        public string Q
-        {
-            get
-            {
-                if (_q == null)
-                {
-                    if (RawQ != null && RawQ.Length != 0)
-                    {
-                        _q = Base64Url.Base64UrlEncode(RawQ);
-                    }
-                }
-
-                return _q;
-            }
-
-            set
-            {
-                _q = value;
-                if (value != null)
-                {
-                    RawQ = Base64Url.Base64UrlDecode(value);
-                }
-                else
-                {
-                    RawQ = null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the 'q' in its binary form.
-        /// </summary>
-        [JsonIgnore]
-        public byte[] RawQ { get; private set; }
+        [JsonConverter(typeof(Base64UrlConverter))]
+        public byte[] Q { get; set; }
 
         /// <summary>
         /// Gets or sets the 'qi' (First CRT Coefficient).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.QI, Required = Required.Default)]
-        public string QI
-        {
-            get
-            {
-                if (_qi == null)
-                {
-                    if (RawQI != null && RawQI.Length != 0)
-                    {
-                        _qi = Base64Url.Base64UrlEncode(RawQI);
-                    }
-                }
-
-                return _qi;
-            }
-
-            set
-            {
-                _qi = value;
-                if (value != null)
-                {
-                    RawQI = Base64Url.Base64UrlDecode(value);
-                }
-                else
-                {
-                    RawQI = null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the 'qi' in its binary form.
-        /// </summary>
-        [JsonIgnore]
-        public byte[] RawQI { get; private set; }
+        [JsonConverter(typeof(Base64UrlConverter))]
+        public byte[] QI { get; set; }
 
         /// <summary>
         /// Generates a new RSA key.
@@ -449,7 +376,7 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="RsaJwk"/>.
         /// </summary>
-        /// <param name="parameters">A <see cref="byte"/> that contains the key parameters.</param>
+        /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
         /// <param name="computeThumbprint">Defines whether the thumbprint of the key should be computed </param>
         public static RsaJwk FromParameters(RSAParameters parameters, bool computeThumbprint)
         {
@@ -465,19 +392,46 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="RsaJwk"/>.
         /// </summary>
-        /// <param name="parameters">A <see cref="byte"/> that contains the key parameters.</param>
+        /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
         public static RsaJwk FromParameters(RSAParameters parameters) => FromParameters(parameters, false);
 
         /// <inheritsdoc />
         public override Jwk Canonicalize()
         {
-            return new RsaJwk(RawE, RawN);
+            return new RsaJwk(E, N);
         }
 
         /// <inheritsdoc />
         public override byte[] ToByteArray()
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Represents the Other Prime Info as defined in  in https://tools.ietf.org/html/rfc7518#section-6.3.2.7.
+        /// </summary>
+        public sealed class PrimeInfo
+        {
+            /// <summary>
+            /// Gets or sets the 'r' (Prime Factor).
+            /// </summary>
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.R, Required = Required.Default)]
+            [JsonConverter(typeof(Base64UrlConverter))]
+            public byte[] R { get; set; }
+
+            /// <summary>
+            /// Gets or sets the 'd' (Factor CRT Exponent).
+            /// </summary>
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.D, Required = Required.Default)]
+            [JsonConverter(typeof(Base64UrlConverter))]
+            public byte[] D { get; set; }
+
+            /// <summary>
+            /// Gets or sets the 't' (Factor CRT Coefficient).
+            /// </summary>
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.T, Required = Required.Default)]
+            [JsonConverter(typeof(Base64UrlConverter))]
+            public byte[] T { get; set; }
         }
     }
 }

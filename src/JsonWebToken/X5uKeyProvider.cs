@@ -33,23 +33,8 @@ namespace JsonWebToken
         {
             using (var certificate = new X509Certificate2(Convert.FromBase64String(value)))
             {
-                return new Jwks(new[] { ConvertFromX509(certificate) });
+                return new Jwks(new[] { Jwk.FromX509Certificate(certificate, false) });
             }
-        }
-
-        private static RsaJwk ConvertFromX509(X509Certificate2 certificate)
-        {
-            var key = new RsaJwk
-            {
-                Kid = certificate.Thumbprint,
-                X5t = Base64Url.Base64UrlEncode(certificate.GetCertHash())
-            };
-            if (certificate.RawData != null)
-            {
-                key.X5c.Add(Convert.ToBase64String(certificate.RawData));
-            }
-
-            return key;
         }
     }
 }

@@ -40,7 +40,7 @@ namespace JsonWebToken.Internal
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-            using (var aes = new AesGcm(_key.RawK))
+            using (var aes = new AesGcm(_key.K))
             {
                 aes.Encrypt(plaintext, nonce, ciphertext, authenticationTag, associatedData);
             }

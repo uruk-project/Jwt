@@ -29,6 +29,16 @@ namespace JsonWebToken.Internal
             throw GetOperationNotDoneException(status);
         }
 
+        public static void NotSupportedKey(string keyType)
+        {
+            throw new NotSupportedException("The key type '{keyType}' is not supported.");
+        }
+
+        public static void NotSupportedKey()
+        {
+            throw new NotSupportedException("The key is not supported.");
+        }
+
         private static ArgumentOutOfRangeException GetArgumentOutOfRangeException()
         {
             return new ArgumentOutOfRangeException("length");

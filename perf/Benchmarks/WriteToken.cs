@@ -77,12 +77,12 @@ namespace JsonWebToken.Performance
             if (payload.StartsWith("JWE-"))
             {
                 payload = payload.Substring(4, payload.Length - 4);
-                var value = Jose.JWT.Encode(DictionaryPayloads[payload], SigningKey.RawK, JwsAlgorithm.HS256);
-                value = Jose.JWT.Encode(value, EncryptionKey.RawK, JweAlgorithm.A128KW, JweEncryption.A128CBC_HS256);
+                var value = Jose.JWT.Encode(DictionaryPayloads[payload], SigningKey.K, JwsAlgorithm.HS256);
+                value = Jose.JWT.Encode(value, EncryptionKey.K, JweAlgorithm.A128KW, JweEncryption.A128CBC_HS256);
             }
             else
             {
-                var value = Jose.JWT.Encode(DictionaryPayloads[payload], SigningKey.RawK, JwsAlgorithm.HS256);
+                var value = Jose.JWT.Encode(DictionaryPayloads[payload], SigningKey.K, JwsAlgorithm.HS256);
             }
         }
 
@@ -90,7 +90,7 @@ namespace JsonWebToken.Performance
         //[ArgumentsSource(nameof(GetNotEncryptedPayloads))]
         public void JwtDotNet(string payload)
         {
-            var value = JwtDotNetEncoder.Encode(DictionaryPayloads[payload], SigningKey.RawK);
+            var value = JwtDotNetEncoder.Encode(DictionaryPayloads[payload], SigningKey.K);
         }
 
         private static Dictionary<string, JwtDescriptor> CreateJwtDescriptors()
@@ -243,7 +243,7 @@ namespace JsonWebToken.Performance
                 var descriptor = new SecurityTokenDescriptor()
                 {
                     SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.Alg),
-                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.RawK), KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256),
+                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K), KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256),
                     Subject = new ClaimsIdentity(),
                     Expires = payload.Value.ContainsKey("exp") ? Microsoft.IdentityModel.Tokens.EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
                     IssuedAt = payload.Value.ContainsKey("iat") ? Microsoft.IdentityModel.Tokens.EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),

@@ -10,11 +10,10 @@ namespace Performance
         private static readonly SymmetricJwk _keyToWrap = SymmetricJwk.FromBase64Url("gXoKEcss-xFuZceE6B3VkEMLw-f0h9tGfyaheF5jqP8");
 
         private const string Token1 = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiaWF0IjoxNTA4MTg0ODQ1LCJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJleHAiOjE2MjgxODQ4NDV9.i2JGGP64mggd3WqUj7oX8_FyYh9e_m1MNWI9Q-f-W3g";
-        private static readonly Jwk SharedKey = new SymmetricJwk
+        private static readonly Jwk SharedKey = new SymmetricJwk("GdaXeVyiJwKmz5LFhcbcng")
         {
             Use = "sig",
             Kid = "kid-hs256",
-            K = "GdaXeVyiJwKmz5LFhcbcng",
             Alg = SignatureAlgorithm.HmacSha256.Name
         };
         private static readonly Jwk EncryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithm.Aes256KW);

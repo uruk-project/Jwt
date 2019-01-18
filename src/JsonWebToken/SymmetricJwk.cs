@@ -13,24 +13,38 @@ namespace JsonWebToken
     /// </summary>
     public sealed class SymmetricJwk : Jwk
     {
-        private string _k;
-
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
-        /// <param name="bytes"></param>
-        public SymmetricJwk(byte[] bytes)
+        public SymmetricJwk(byte[] k)
         {
-            RawK = CloneByteArray(bytes);
+            if (k == null)
+            {
+                throw new ArgumentNullException(nameof(k));
+            }
+
+            K = CloneByteArray(k);
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
-        /// <param name="bytes"></param>
-        public SymmetricJwk(Span<byte> bytes)
+        public SymmetricJwk(Span<byte> k)
         {
-            RawK = bytes.ToArray();
+            K = k.ToArray();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
+        public SymmetricJwk(string k)
+        {
+            if (k == null)
+            {
+                throw new ArgumentNullException(nameof(k));
+            }
+
+            K = Base64Url.Base64UrlDecode(k);
         }
 
         /// <summary>
@@ -40,6 +54,11 @@ namespace JsonWebToken
         {
         }
 
+        //internal SymmetricJwk(JwkInfo info)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
         /// <inheritsdoc />
         public override string Kty => JwkTypeNames.Octet;
 
@@ -47,38 +66,11 @@ namespace JsonWebToken
         /// Gets or sets the 'k' (Key Value).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.K, Required = Required.Default)]
-        public string K
-        {
-            get
-            {
-                if (_k == null)
-                {
-                    if (RawK != null && RawK.Length != 0)
-                    {
-                        _k = Base64Url.Base64UrlEncode(RawK);
-                    }
-                }
-
-                return _k;
-            }
-            set
-            {
-                _k = value;
-                if (value != null)
-                {
-                    RawK = Base64Url.Base64UrlDecode(value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the 'k' in its binary form. 
-        /// </summary>
-        [JsonIgnore]
-        public byte[] RawK { get; private set; }
+        [JsonConverter(typeof(Base64UrlConverter))]
+        public byte[] K { get; set; }
 
         /// <inheritsdoc />
-        public override int KeySizeInBits => RawK?.Length != 0 ? RawK.Length << 3 : 0;
+        public override int KeySizeInBits => K?.Length != 0 ? K.Length << 3 : 0;
 
         /// <summary>
         /// Creates a new <see cref="SymmetricJwk"/> from the <paramref name="bytes"/>.
@@ -240,11 +232,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(k));
             }
 
-            var key = new SymmetricJwk
-            {
-                K = k
-            };
-
+            var key = new SymmetricJwk(k);
             if (computeThumbprint)
             {
                 key.Kid = key.ComputeThumbprint(false);
@@ -291,13 +279,13 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override Jwk Canonicalize()
         {
-            return new SymmetricJwk(RawK);
+            return new SymmetricJwk(K);
         }
 
         /// <inheritsdoc />
         public override byte[] ToByteArray()
         {
-            return RawK;
+            return K;
         }
     }
 }
