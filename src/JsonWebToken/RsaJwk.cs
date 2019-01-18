@@ -5,40 +5,46 @@ using JsonWebToken.Internal;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using System.Text;
-#if NETCOREAPP3_0
-using System.Text.Json;
-#endif
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents a JWK in its JSON form.
-    /// </summary>
-    internal ref struct JwkInfo
-    {
-        public uint Kty;
+    //internal static class JwkFactory
+    //{
+    //    public static Jwk Create(JwkInfo info)
+    //    {
+    //        switch (info.Kty)
+    //        {
+    //            case 1:
+    //                return new SymmetricJwk(info);
+    //            case 2:
+    //                return new RsaJwk(info);
+    //            case 3:
+    //                return new ECJwk(info);
+    //            default:
+    //                ThrowHelper.NotSupportedKey();
+    //                return null;
+    //        }
+    //    }
+    //}
+    ///// <summary>
+    ///// Represents a JWK in its JSON form.
+    ///// </summary>
+    //internal ref struct JwkInfo
+    //{
+    //    // TODO : Add all the JWK fields.
+    //    public Kty Kty { get; set; }
 
-        public List<KeyValuePair<ulong, object>> Properties;
+    //    public ReadOnlySpan<byte> MyProperty { get; set; }
+    //}
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(ulong key, object value)
-        {
-            Properties.Add(new KeyValuePair<ulong, object>(key, value));
-        }
-
-        public KeyValuePair<ulong, object> this[int index] => Properties[index];
-    }
-
-    internal enum Kty
-    {
-        None,
-        Octet,
-        EC,
-        Rsa
-    }
+    //internal enum Kty
+    //{
+    //    None,
+    //    Octet,
+    //    EC,
+    //    Rsa
+    //}
 
     /// <summary>
     /// Represents a RSA JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
@@ -190,10 +196,10 @@ namespace JsonWebToken
         {
         }
 
-        internal RsaJwk(JwkInfo info)
-        {
-            throw new NotImplementedException();
-        }
+        //internal RsaJwk(JwkInfo info)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
         /// <inheritsdoc />
         public override string Kty => JwkTypeNames.Rsa;
@@ -304,6 +310,13 @@ namespace JsonWebToken
         public byte[] N { get; set; }
 
         /// <summary>
+        /// Gets or sets the 'oth' (Other Primes Info).
+        /// </summary>
+        /// <remarks>Not supported.</remarks>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.Oth, Required = Required.Default)]
+        public IList<PrimeInfo> Oth { get; set; }
+
+        /// <summary>
         /// Gets or sets the 'p' (First Prime Factor).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.P, Required = Required.Default)]
@@ -394,75 +407,31 @@ namespace JsonWebToken
             throw new NotImplementedException();
         }
 
-#if NETCOREAPP3_0
-        internal static unsafe void ReadJson(ref Utf8JsonReader reader, ref JwkInfo properties)
+        /// <summary>
+        /// Represents the Other Prime Info as defined in  in https://tools.ietf.org/html/rfc7518#section-6.3.2.7.
+        /// </summary>
+        public sealed class PrimeInfo
         {
-            while (reader.Read())
-            {
-                switch (reader.TokenType)
-                {
-                    case JsonTokenType.PropertyName:
-                        ReadOnlySpan<byte> valueSpan = reader.ValueSpan;
-                        if (valueSpan.Length == 1)
-                        {
-                            byte value = valueSpan[0];
-                            switch (value)
-                            {
-                                case 100 /* 'd' */:
-                                case 112 /* 'p' */:
-                                case 113 /* 'q' */:
-                                case 101 /* 'e' */:
-                                case 110 /* 'n' */:
-                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
-                                    {
-                                        properties.Add(value, reader.ValueSpan.ToArray());
-                                    }
-                                    else if (reader.TokenType != JsonTokenType.Null)
-                                    {
-                                        ThrowHelper.FormatMalformedJson(((char)value).ToString(), JsonTokenType.String);
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                        else if (valueSpan.Length == 2)
-                        {
-                            fixed (byte* pValue = valueSpan)
-                            {
-                                ushort value = *(ushort*)pValue;
-                                switch (value)
-                                {
-                                    case 28772 /* 'dp' */:
-                                    case 29028 /* 'dq' */:
-                                    case 26993 /* 'qi' */:
-                                        if (reader.Read() && reader.TokenType == JsonTokenType.String)
-                                        {
-                                            properties.Add(value, reader.ValueSpan.ToArray());
-                                        }
-                                        else if (reader.TokenType != JsonTokenType.Null)
-                                        {
-                                            ThrowHelper.FormatMalformedJson(Encoding.UTF8.GetString(BitConverter.GetBytes(value)), JsonTokenType.String);
-                                        }
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-                        }
+            /// <summary>
+            /// Gets or sets the 'r' (Prime Factor).
+            /// </summary>
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.R, Required = Required.Default)]
+            [JsonConverter(typeof(Base64UrlConverter))]
+            public byte[] R { get; set; }
 
-                        break;
-                    case JsonTokenType.StartObject:
-                        // Ignore object
-                        JsonParser.ReadJson(ref reader);
-                        break;
-                    case JsonTokenType.EndObject:
-                        return;
-                    default:
-                        break;
-                }
-            }
+            /// <summary>
+            /// Gets or sets the 'd' (Factor CRT Exponent).
+            /// </summary>
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.D, Required = Required.Default)]
+            [JsonConverter(typeof(Base64UrlConverter))]
+            public byte[] D { get; set; }
+
+            /// <summary>
+            /// Gets or sets the 't' (Factor CRT Coefficient).
+            /// </summary>
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.T, Required = Required.Default)]
+            [JsonConverter(typeof(Base64UrlConverter))]
+            public byte[] T { get; set; }
         }
-#endif
     }
 }

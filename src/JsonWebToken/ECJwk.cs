@@ -3,6 +3,7 @@
 
 using JsonWebToken.Internal;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -147,28 +148,10 @@ namespace JsonWebToken
         {
         }
 
-        internal ECJwk(JwkInfo info)
-        {
-            for (int i = 0; i < info.Properties.Count; i++)
-            {
-                var property = info[i];
-                switch (property.Key)
-                {
-                    case 120u:
-                        X = (byte[])property.Value;
-                        break;
-                    case 121u:
-                        Y = (byte[])property.Value;
-                        break;
-                    case 100u:
-                        D = (byte[])property.Value;
-                        break;
-                    case 7496566u:
-                        Crv = (string)property.Value;
-                        break;
-                }
-            }
-        }
+        //internal ECJwk(JwkInfo info)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
         /// <inheritsdoc />
         public override string Kty => JwkTypeNames.EllipticCurve;
@@ -496,94 +479,6 @@ namespace JsonWebToken
             }
 
             return key;
-        }
-
-        internal static unsafe void ReadJson(ref Utf8JsonReader reader, ref JwkInfo properties)
-        {
-            while (reader.Read())
-            {
-                switch (reader.TokenType)
-                {
-                    case JsonTokenType.PropertyName:
-                        ReadOnlySpan<byte> valueSpan = reader.ValueSpan;
-                        switch (valueSpan.Length)
-                        {
-                            case 1:
-                                byte value = valueSpan[0];
-                                if (value == 120 /* 'x' */)
-                                {
-                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
-                                    {
-                                        properties.Add(value, Base64Url.Base64UrlDecode(reader.ValueSpan));
-                                    }
-                                    else if (reader.TokenType != JsonTokenType.Null)
-                                    {
-                                        ThrowHelper.FormatMalformedJson(JwkParameterNames.X, JsonTokenType.String);
-                                    }
-                                }
-                                else if (value == 121 /* 'y' */)
-                                {
-                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
-                                    {
-                                        properties.Add(value, Base64Url.Base64UrlDecode(reader.ValueSpan));
-                                    }
-                                    else if (reader.TokenType != JsonTokenType.Null)
-                                    {
-                                        ThrowHelper.FormatMalformedJson(JwkParameterNames.Y, JsonTokenType.String);
-                                    }
-                                }
-                                else if (value == 100 /* 'd' */)
-                                {
-                                    if (reader.Read() && reader.TokenType == JsonTokenType.String)
-                                    {
-                                        properties.Add(value, Base64Url.Base64UrlDecode(reader.ValueSpan));
-                                    }
-                                    else if (reader.TokenType != JsonTokenType.Null)
-                                    {
-                                        ThrowHelper.FormatMalformedJson(JwkParameterNames.D, JsonTokenType.String);
-                                    }
-                                }
-                                else
-                                {
-                                    break;
-                                }
-                                break;
-                            case 3:
-                                fixed (byte* pPropertyByte = valueSpan)
-                                {
-                                    uint property = (uint)(((*(ushort*)pPropertyByte) << 8) | *(pPropertyByte + 2));
-
-                                    if (property == 7496566u /* 'crv' */)
-                                    {
-                                        if (reader.Read() && reader.TokenType == JsonTokenType.String)
-                                        {
-                                            properties.Add(property, reader.GetStringValue());
-                                        }
-                                        else if (reader.TokenType != JsonTokenType.Null)
-                                        {
-                                            ThrowHelper.FormatMalformedJson(JwkParameterNames.Crv, JsonTokenType.String);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-
-                        break;
-                    case JsonTokenType.StartObject:
-                        JsonParser.ReadJson(ref reader);
-                        break;
-                    case JsonTokenType.EndObject:
-                        return;
-                    default:
-                        break;
-                }
-            }
         }
 #endif
 
