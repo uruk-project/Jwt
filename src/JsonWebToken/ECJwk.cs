@@ -18,21 +18,17 @@ namespace JsonWebToken
     /// </summary>
     public sealed class ECJwk : AsymmetricJwk
     {
-        private string _x;
-        private string _y;
-
         /// <summary>
         /// Initializes a new instance of <see cref="ECJwk"/>.
         /// </summary>
         /// <param name="parameters"></param>
         public ECJwk(ECParameters parameters)
-            : this()
         {
             parameters.Validate();
 
-            RawD = parameters.D;
-            RawX = parameters.Q.X;
-            RawY = parameters.Q.Y;
+            D = parameters.D;
+            X = parameters.Q.X;
+            Y = parameters.Q.Y;
             switch (parameters.Curve.Oid.FriendlyName)
             {
                 case "nistP256":
@@ -53,21 +49,112 @@ namespace JsonWebToken
             }
         }
 
-        private ECJwk(string crv, byte[] d, byte[] x, byte[] y)
+        /// <summary>
+        /// Initializes a new instance of <see cref="ECJwk"/>.
+        /// </summary>
+        public ECJwk(string crv, byte[] d, byte[] x, byte[] y)
         {
-            Crv = crv;
-            RawD = CloneByteArray(d);
-            RawX = CloneByteArray(x);
-            RawY = CloneByteArray(y);
+            if (d == null)
+            {
+                throw new ArgumentNullException(nameof(d));
+            }
+
+            if (x == null)
+            {
+                throw new ArgumentNullException(nameof(x));
+            }
+
+            if (y == null)
+            {
+                throw new ArgumentNullException(nameof(y));
+            }
+
+            Crv = crv ?? throw new ArgumentNullException(nameof(crv));
+            D = CloneByteArray(d);
+            X = CloneByteArray(x);
+            Y = CloneByteArray(y);
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public ECJwk()
+        public ECJwk(string crv, string d, string x, string y)
         {
-            Kty = JwkTypeNames.EllipticCurve;
+            if (d == null)
+            {
+                throw new ArgumentNullException(nameof(d));
+            }
+
+            if (x == null)
+            {
+                throw new ArgumentNullException(nameof(x));
+            }
+
+            if (y == null)
+            {
+                throw new ArgumentNullException(nameof(y));
+            }
+
+            Crv = crv ?? throw new ArgumentNullException(nameof(crv));
+            D = Base64Url.Base64UrlDecode(d);
+            X = Base64Url.Base64UrlDecode(x);
+            Y = Base64Url.Base64UrlDecode(y);
         }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.
+        /// </summary>
+        public ECJwk(string crv, byte[] x, byte[] y)
+        {
+            if (x == null)
+            {
+                throw new ArgumentNullException(nameof(x));
+            }
+
+            if (y == null)
+            {
+                throw new ArgumentNullException(nameof(y));
+            }
+
+            Crv = crv ?? throw new ArgumentNullException(nameof(crv));
+            X = CloneByteArray(x);
+            Y = CloneByteArray(y);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.
+        /// </summary>
+        public ECJwk(string crv, string x, string y)
+        {
+            if (x == null)
+            {
+                throw new ArgumentNullException(nameof(x));
+            }
+
+            if (y == null)
+            {
+                throw new ArgumentNullException(nameof(y));
+            }
+
+            Crv = crv ?? throw new ArgumentNullException(nameof(crv));
+            X = Base64Url.Base64UrlDecode(x);
+            Y = Base64Url.Base64UrlDecode(y);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="ECJwk"/>.
+        /// </summary>
+        private ECJwk()
+        {
+        }
+
+        //internal ECJwk(JwkInfo info)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        /// <inheritsdoc />
+        public override string Kty => JwkTypeNames.EllipticCurve;
 
         /// <summary>
         /// Gets or sets the 'crv' (Curve).
@@ -79,80 +166,18 @@ namespace JsonWebToken
         /// Gets or sets the 'x' (X Coordinate).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.X, Required = Required.Default)]
-        public string X
-        {
-            get
-            {
-                if (_x == null)
-                {
-                    if (RawX != null && RawX.Length != 0)
-                    {
-                        _x = Base64Url.Base64UrlEncode(RawX);
-                    }
-                }
-
-                return _x;
-            }
-            set
-            {
-                _x = value;
-                if (value != null)
-                {
-                    RawX = Base64Url.Base64UrlDecode(value);
-                }
-                else
-                {
-                    RawX = null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the 'x' represented in array of bytes.
-        /// </summary>
-        [JsonIgnore]
-        public byte[] RawX { get; private set; }
+        [JsonConverter(typeof(Base64UrlConverter))]
+        public byte[] X { get; set; }
 
         /// <summary>
         /// Gets or sets the 'y' (Y Coordinate).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.Y, Required = Required.Default)]
-        public string Y
-        {
-            get
-            {
-                if (_y == null)
-                {
-                    if (RawY != null && RawY.Length != 0)
-                    {
-                        _y = Base64Url.Base64UrlEncode(RawY);
-                    }
-                }
-
-                return _y;
-            }
-            set
-            {
-                _y = value;
-                if (value != null)
-                {
-                    RawY = Base64Url.Base64UrlDecode(value);
-                }
-                else
-                {
-                    RawY = null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the 'y' represented in array of bytes.
-        /// </summary>
-        [JsonIgnore]
-        public byte[] RawY { get; private set; }
+        [JsonConverter(typeof(Base64UrlConverter))]
+        public byte[] Y { get; set; }
 
         /// <inheritdoc />
-        public override bool HasPrivateKey => RawD != null;
+        public override bool HasPrivateKey => D != null;
 
         /// <inheritdoc />
         public override int KeySizeInBits
@@ -255,13 +280,13 @@ namespace JsonWebToken
             {
                 Q = new ECPoint
                 {
-                    X = RawX,
-                    Y = RawY
+                    X = X,
+                    Y = Y
                 }
             };
             if (includePrivateParameters)
             {
-                parameters.D = RawD;
+                parameters.D = D;
             }
 
             switch (Crv)
@@ -333,25 +358,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override Jwk Canonicalize()
         {
-            return new ECJwk(Crv, RawD, RawX, RawY);
-        }
-
-        internal static ECJwk FromJObject(JObject jObject)
-        {
-            if (jObject == null)
-            {
-                return null;
-            }
-
-            var key = new ECJwk
-            {
-                Crv = jObject[JwkParameterNames.Crv].Value<string>(),
-                X = jObject[JwkParameterNames.X]?.Value<string>(),
-                Y = jObject[JwkParameterNames.Y]?.Value<string>(),
-                D = jObject[JwkParameterNames.D]?.Value<string>()
-            };
-
-            return key;
+            return new ECJwk(Crv, D, X, Y);
         }
 
         internal static ECJwk FromDictionary(Dictionary<string, object> jObject)
@@ -369,17 +376,17 @@ namespace JsonWebToken
 
             if (jObject.TryGetValue("x", out object x))
             {
-                key.X = (string)x;
+                key.X = (byte[])x;
             }
 
             if (jObject.TryGetValue("y", out object y))
             {
-                key.Y = (string)y;
+                key.Y = (byte[])y;
             }
 
             if (jObject.TryGetValue("d", out object d))
             {
-                key.D = (string)d;
+                key.D = (byte[])d;
             }
 
             return key;
@@ -404,7 +411,7 @@ namespace JsonWebToken
                                 {
                                     if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                     {
-                                        key.RawX = Base64Url.Base64UrlDecode(reader.ValueSpan);
+                                        key.X = Base64Url.Base64UrlDecode(reader.ValueSpan);
                                     }
                                     else if (reader.TokenType != JsonTokenType.Null)
                                     {
@@ -415,7 +422,7 @@ namespace JsonWebToken
                                 {
                                     if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                     {
-                                        key.RawY = Base64Url.Base64UrlDecode(reader.ValueSpan);
+                                        key.Y = Base64Url.Base64UrlDecode(reader.ValueSpan);
                                     }
                                     else if (reader.TokenType != JsonTokenType.Null)
                                     {
@@ -426,7 +433,7 @@ namespace JsonWebToken
                                 {
                                     if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                     {
-                                        key.RawD = Base64Url.Base64UrlDecode(reader.ValueSpan);
+                                        key.D = Base64Url.Base64UrlDecode(reader.ValueSpan);
                                     }
                                     else if (reader.TokenType != JsonTokenType.Null)
                                     {

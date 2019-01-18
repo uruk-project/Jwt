@@ -11,8 +11,6 @@ namespace JsonWebToken
     /// </summary>
     public abstract class AsymmetricJwk : Jwk
     {
-        private string _d;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="AsymmetricJwk"/> class.
         /// </summary>
@@ -24,36 +22,8 @@ namespace JsonWebToken
         /// Gets or sets the 'd' (ECC - Private Key OR RSA - Private Exponent).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.D, Required = Required.Default)]
-        public string D
-        {
-            get
-            {
-                if (_d == null)
-                {
-                    if (RawD != null && RawD.Length != 0)
-                    {
-                        _d = Base64Url.Base64UrlEncode(RawD);
-                    }
-                }
-
-                return _d;
-            }
-
-            set
-            {
-                _d = value;
-                if (value != null)
-                {
-                    RawD = Base64Url.Base64UrlDecode(value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the 'd' parameters in its binary representation.
-        /// </summary>
-        [JsonIgnore]
-        public byte[] RawD { get; protected set; }
+        [JsonConverter(typeof(Base64UrlConverter))]
+        public byte[] D { get; set; }
 
         /// <summary>
         /// Gets a bool indicating if a private key exists.

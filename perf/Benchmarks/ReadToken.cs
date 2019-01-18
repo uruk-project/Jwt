@@ -74,8 +74,8 @@ namespace JsonWebToken.Performance
         {
             if (token.StartsWith("JWE-"))
             {
-                var jwt = Jose.JWT.Decode(Tokens.ValidTokens[token], key: Tokens.EncryptionKey.RawK, enc: JweEncryption.A128CBC_HS256, alg: JweAlgorithm.A128KW);
-                var value = Jose.JWT.Decode<Dictionary<string, object>>(jwt, key: Tokens.SigningKey.RawK, alg: JwsAlgorithm.HS256);
+                var jwt = Jose.JWT.Decode(Tokens.ValidTokens[token], key: Tokens.EncryptionKey.K, enc: JweEncryption.A128CBC_HS256, alg: JweAlgorithm.A128KW);
+                var value = Jose.JWT.Decode<Dictionary<string, object>>(jwt, key: Tokens.SigningKey.K, alg: JwsAlgorithm.HS256);
                 if (value == null)
                 {
                     throw new Exception();
@@ -83,7 +83,7 @@ namespace JsonWebToken.Performance
             }
             else
             {
-                var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: Tokens.SigningKey.RawK, alg: JwsAlgorithm.HS256);
+                var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: Tokens.SigningKey.K, alg: JwsAlgorithm.HS256);
                 if (value == null)
                 {
                     throw new Exception();

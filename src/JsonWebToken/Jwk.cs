@@ -28,7 +28,7 @@ namespace JsonWebToken
         private static readonly JwkContractResolver contractResolver = new JwkContractResolver();
         private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings { ContractResolver = contractResolver };
 
-        private static readonly JsonSerializer jsonSerializer = new JsonSerializer { Converters = { jsonConverter }, ContractResolver = contractResolver };
+        internal static readonly JsonSerializer Serializer = new JsonSerializer { Converters = { jsonConverter }, ContractResolver = contractResolver };
         private List<Jwk> _certificateChain;
 
         /// <summary>
@@ -59,8 +59,9 @@ namespace JsonWebToken
         /// Gets or sets the 'kty' (Key Type).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.Kty, Required = Required.Default)]
-        public string Kty { get; set; }
+        public abstract string Kty { get; }
 
+        // TODO : Replace string by another type faster to compare (4 comparisons).
         /// <summary>
         /// Gets or sets the 'use' (Public Key Use).
         /// </summary>
@@ -70,20 +71,22 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the 'x5c' collection (X.509 Certificate Chain).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.X5c, Required = Required.Default)]
-        public List<string> X5c { get; private set; } = new List<string>();
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.X5c, Required = Required.Default, ItemConverterType = typeof(Base64Converter))]
+        public List<byte[]> X5c { get; private set; } = new List<byte[]>();
 
         /// <summary>
         /// Gets or sets the 'x5t' (X.509 Certificate SHA-1 thumbprint).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.X5t, Required = Required.Default)]
-        public string X5t { get; set; }
+        [JsonConverter(typeof(Base64UrlConverter))]
+        public byte[] X5t { get; set; }
 
         /// <summary>
-        /// Gets or sets the 'x5t#S256' (X.509 Certificate SHA-1 thumbprint).
+        /// Gets or sets the 'x5t#S256' (X.509 Certificate SHA-256 thumbprint).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.X5tS256, Required = Required.Default)]
-        public string X5tS256 { get; set; }
+        [JsonConverter(typeof(Base64UrlConverter))]
+        public byte[] X5tS256 { get; set; }
 
         /// <summary>
         /// Gets or sets the 'x5u' (X.509 URL).
@@ -115,7 +118,7 @@ namespace JsonWebToken
                     _certificateChain = new List<Jwk>(X5c.Count);
                     foreach (var certString in X5c)
                     {
-                        using (var certificate = new X509Certificate2(Convert.FromBase64String(certString)))
+                        using (var certificate = new X509Certificate2(certString))
                         {
                             var key = FromX509Certificate(certificate, false);
                             key.Kid = Kid;
@@ -335,7 +338,7 @@ namespace JsonWebToken
 
             if (key != null)
             {
-                key.X5t = Base64Url.Base64UrlEncode(certificate.GetCertHash());
+                key.X5t = certificate.GetCertHash();
                 key.Kid = key.ComputeThumbprint();
                 return key;
             }

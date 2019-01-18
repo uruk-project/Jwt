@@ -7,13 +7,12 @@ namespace JsonWebToken.Tests
     public class JweEllipticCurveTokenTests
     {
         private readonly ECJwk _bobKey = new ECJwk
-        {
-            Kty = "EC",
-            Crv = "P-256",
-            X = "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
-            Y = "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck",
-            D = "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw",
-        };
+        (
+            crv : "P-256",
+            x : "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
+            y : "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck",
+            d : "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
+        );
         private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256);
 
         [Theory]
