@@ -64,7 +64,7 @@ namespace JsonWebToken
             byte[] dq,
             byte[] qi)
         {
-            D = d ?? throw new ArgumentNullException(nameof(d)); ;
+            D = d ?? throw new ArgumentNullException(nameof(d));
             DP = dp ?? throw new ArgumentNullException(nameof(dp));
             DQ = dq ?? throw new ArgumentNullException(nameof(dq));
             QI = qi ?? throw new ArgumentNullException(nameof(qi));
