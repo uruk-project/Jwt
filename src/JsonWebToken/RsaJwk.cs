@@ -152,6 +152,7 @@ namespace JsonWebToken
             N = rsaParameters.Modulus;
         }
 
+        /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
         /// </summary>
         public RsaJwk(byte[] e, byte[] n)
