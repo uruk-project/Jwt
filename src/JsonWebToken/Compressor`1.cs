@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Buffers;
 using System.IO;
 
 namespace JsonWebToken
@@ -38,8 +39,24 @@ namespace JsonWebToken
             }
         }
 
+        private class DecompressionSegment : ReadOnlySequenceSegment<byte>
+        {
+            public DecompressionSegment(ReadOnlyMemory<byte> memory)
+            {
+                Memory = memory;
+            }
+
+            public DecompressionSegment Add(ReadOnlyMemory<byte> memory)
+            {
+                var segment = new DecompressionSegment(memory);
+                segment.RunningIndex = RunningIndex + Memory.Length;
+                Next = segment;
+                return segment;
+            }
+        }
+
         /// <inheritdoc />
-        public override unsafe Span<byte> Decompress(ReadOnlySpan<byte> compressedCiphertext)
+        public override unsafe ReadOnlySequence<byte> Decompress(ReadOnlySpan<byte> compressedCiphertext)
         {
             fixed (byte* pinnedCompressedCiphertext = compressedCiphertext)
             {
@@ -47,23 +64,38 @@ namespace JsonWebToken
                 using (var compressionStream = CreateDecompressionStream(inputStream))
                 {
                     var buffer = new byte[Constants.DecompressionBufferLength];
+                    DecompressionSegment firstSegment = null;
+                    DecompressionSegment segment = null;
                     int uncompressedLength = 0;
                     int readData;
-                    while ((readData = compressionStream.Read(buffer, uncompressedLength, Constants.DecompressionBufferLength)) != 0)
+                    while ((readData = compressionStream.Read(buffer, 0, Constants.DecompressionBufferLength)) != 0)
                     {
                         uncompressedLength += readData;
+                        if (firstSegment == null)
+                        {
+                            firstSegment = new DecompressionSegment(buffer.AsMemory(0, readData));
+                        }
+                        else
+                        {
+                            segment = (segment ?? firstSegment).Add(buffer.AsMemory(0, readData));
+                        }
+
                         if (readData < Constants.DecompressionBufferLength)
                         {
                             break;
                         }
 
-                        if (uncompressedLength == buffer.Length)
-                        {
-                            Array.Resize(ref buffer, buffer.Length * 2);
-                        }
+                        buffer = new byte[Constants.DecompressionBufferLength];
                     }
 
-                    return new Span<byte>(buffer, 0, uncompressedLength);
+                    if (segment == null)
+                    {
+                        return new ReadOnlySequence<byte>(buffer.AsMemory(0, readData));
+                    }
+                    else
+                    {
+                        return new ReadOnlySequence<byte>(firstSegment, 0, segment, readData);
+                    }
                 }
             }
         }
