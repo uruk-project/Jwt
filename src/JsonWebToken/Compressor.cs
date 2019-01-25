@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Buffers;
 
 namespace JsonWebToken
 {
@@ -10,8 +11,6 @@ namespace JsonWebToken
     /// </summary>
     public abstract class Compressor
     {
-        internal static readonly Compressor Null = new NullCompressor();
-
         /// <summary>
         /// Compresses the data.
         /// </summary>
@@ -24,19 +23,6 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="compressedData">The compressed data.</param>
         /// <returns></returns>
-        public abstract Span<byte> Decompress(ReadOnlySpan<byte> compressedData);
-
-        private class NullCompressor : Compressor
-        {
-            public override Span<byte> Compress(ReadOnlySpan<byte> data)
-            {
-                return data.ToArray();
-            }
-
-            public override Span<byte> Decompress(ReadOnlySpan<byte> compressedData)
-            {
-                  return compressedData.ToArray();
-            }
-        }
+        public abstract ReadOnlySequence<byte> Decompress(ReadOnlySpan<byte> compressedData);
     }
 }

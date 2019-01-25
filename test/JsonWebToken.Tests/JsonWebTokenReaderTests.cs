@@ -1,5 +1,6 @@
 using JsonWebToken.Performance;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -13,6 +14,77 @@ namespace JsonWebToken.Tests
 {
     public class JsonWebTokenReaderTests
     {
+        private class TokenSegment<T> : ReadOnlySequenceSegment<T>
+        {
+            public TokenSegment(ReadOnlyMemory<T> memory) => Memory = memory;
+
+            public TokenSegment<T> Add(ReadOnlyMemory<T> mem)
+            {
+                var segment = new TokenSegment<T>(mem);
+                segment.RunningIndex = RunningIndex +
+                            Memory.Length;
+                Next = segment;
+                return segment;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(GetValidTokens))]
+        public void ReadJwt_ValidMultipleSequence(string token, bool signed)
+        {
+            var jwt = Tokens.ValidTokens[token];
+            var utf8Jwt = Encoding.UTF8.GetBytes(jwt);
+
+            TokenSegment<byte> firstSegment = new TokenSegment<byte>(utf8Jwt.AsMemory(0, 10));
+            var secondSegment = firstSegment.Add(utf8Jwt.AsMemory(10, 10));
+            var thirdSegment = secondSegment.Add(utf8Jwt.AsMemory(20));
+            ReadOnlySequence<byte> sequence = new ReadOnlySequence<byte>(firstSegment, 0, thirdSegment, thirdSegment.Memory.Length);
+
+            var reader = new JwtReader(Keys.Jwks);
+            var builder = new TokenValidationPolicyBuilder()
+                    .AddLifetimeValidation()
+                    .RequireAudience("636C69656E745F6964")
+                    .RequireIssuer("https://idp.example.com/");
+            if (signed)
+            {
+                builder.RequireSignature(Keys.Jwks);
+            }
+            else
+            {
+                builder.AcceptUnsecureToken();
+            }
+
+            var result = reader.TryReadToken(sequence, builder);
+            Assert.Equal(TokenValidationStatus.Success, result.Status);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetValidTokens))]
+        public void ReadJwt_ValidSingleSequence(string token, bool signed)
+        {
+            var jwt = Tokens.ValidTokens[token];
+            var utf8Jwt = Encoding.UTF8.GetBytes(jwt);
+
+            ReadOnlySequence<byte> sequence = new ReadOnlySequence<byte>(utf8Jwt);
+
+            var reader = new JwtReader(Keys.Jwks);
+            var builder = new TokenValidationPolicyBuilder()
+                    .AddLifetimeValidation()
+                    .RequireAudience("636C69656E745F6964")
+                    .RequireIssuer("https://idp.example.com/");
+            if (signed)
+            {
+                builder.RequireSignature(Keys.Jwks);
+            }
+            else
+            {
+                builder.AcceptUnsecureToken();
+            }
+
+            var result = reader.TryReadToken(sequence, builder);
+            Assert.Equal(TokenValidationStatus.Success, result.Status);
+        }
+
         [Theory]
         [MemberData(nameof(GetValidTokens))]
         public void ReadJwt_Valid(string token, bool signed)
