@@ -29,7 +29,7 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
-        public SymmetricJwk(Span<byte> k)
+        public SymmetricJwk(ReadOnlySpan<byte> k)
         {
             K = k.ToArray();
         }
@@ -105,7 +105,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="bytes"></param>
         /// <returns></returns>
-        public static SymmetricJwk FromSpan(Span<byte> bytes) => FromSpan(bytes, computeThumbprint: false);
+        public static SymmetricJwk FromSpan(ReadOnlySpan<byte> bytes) => FromSpan(bytes, computeThumbprint: false);
 
         /// <summary>
         /// Returns a new instance of <see cref="SymmetricJwk"/>.
@@ -113,7 +113,7 @@ namespace JsonWebToken
         /// <param name="bytes"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static SymmetricJwk FromSpan(Span<byte> bytes, bool computeThumbprint)
+        public static SymmetricJwk FromSpan(ReadOnlySpan<byte> bytes, bool computeThumbprint)
         {
             if (bytes == null)
             {
