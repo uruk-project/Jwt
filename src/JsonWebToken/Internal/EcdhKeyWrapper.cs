@@ -88,7 +88,7 @@ namespace JsonWebToken.Internal
 
             if (Algorithm.ProduceEncryptionKey)
             {
-                var key = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keySizeInBytes), false);
+                var key = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
                 using (KeyWrapper aesKeyWrapProvider = key.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
                 {
                     return aesKeyWrapProvider.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
@@ -96,7 +96,7 @@ namespace JsonWebToken.Internal
             }
             else
             {
-                exchangeHash.AsSpan(0, _keySizeInBytes).CopyTo(destination);
+                new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes).CopyTo(destination);
                 bytesWritten = destination.Length;
                 return true;
             }
@@ -124,7 +124,7 @@ namespace JsonWebToken.Internal
 
             if (Algorithm.ProduceEncryptionKey)
             {
-                var kek = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keySizeInBytes), false);
+                var kek = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
                 using (KeyWrapper aesKeyWrapProvider = kek.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
                 {
                     return aesKeyWrapProvider.TryWrapKey(null, header, destination, out contentEncryptionKey, out bytesWritten);
@@ -132,7 +132,7 @@ namespace JsonWebToken.Internal
             }
             else
             {
-                contentEncryptionKey = SymmetricJwk.FromSpan(exchangeHash.AsSpan(0, _keySizeInBytes), false);
+                contentEncryptionKey = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
                 bytesWritten = 0;
                 return true;
             }
@@ -206,7 +206,7 @@ namespace JsonWebToken.Internal
             int secretAppendLength = algorithmLength + partyUInfoLength + partyVInfoLength + suppPubInfoLength;
             var secretAppend = new byte[secretAppendLength];
             var secretAppendSpan = secretAppend.AsSpan();
-            WriteAlgorithmId(secretAppend);
+            WriteAlgorithmId(secretAppendSpan);
             WritePartyInfo(apu, apuLength, secretAppendSpan.Slice(algorithmLength));
             WritePartyInfo(apv, apvLength, secretAppendSpan.Slice(algorithmLength + partyUInfoLength));
             BinaryPrimitives.WriteInt32BigEndian(secretAppendSpan.Slice(algorithmLength + partyUInfoLength + partyVInfoLength), _keySizeInBytes << 3);
