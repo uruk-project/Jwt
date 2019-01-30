@@ -1,6 +1,7 @@
 ﻿using JsonWebToken.Internal;
 using System;
 using System.Linq;
+using System.Text;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -18,7 +19,7 @@ namespace JsonWebToken.Tests
             descriptor.Nonce = "n-0S6_WzA2Mj";
             descriptor.ExpirationTime = EpochTime.ToDateTime(1311281970);
             descriptor.IssuedAt = EpochTime.ToDateTime(1311280970);
-            descriptor.Payload["name"] = "Jane Doe";
+            descriptor.AddClaim("name", "Jane Doe");
             descriptor.GivenName = "Jane";
             descriptor.FamilyName = "Doe";
             descriptor.Gender = "female";

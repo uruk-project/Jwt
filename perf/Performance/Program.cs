@@ -1,5 +1,8 @@
 ﻿using JsonWebToken;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Performance
@@ -22,6 +25,17 @@ namespace Performance
         private static readonly TokenValidationPolicy policy = new TokenValidationPolicyBuilder()
                     .RequireSignature(SharedKey)
                     .Build();
+
+        static IDictionary<string, object> dictionary = new Dictionary<string, object>()
+        {
+            { "sub", "sub value" },
+            { "jti", "1234567890" },
+            { "exp", 12345678 },
+            //{ "aud", new JArray(new[] { "https://example.org", "abcdef" }) },
+            { "nbf", 23456789 }
+        };
+
+        static JObject json = JObject.FromObject(dictionary);
 
         private static void Main(string[] args)
         {
@@ -59,8 +73,11 @@ namespace Performance
             _reader.EnableHeaderCaching = false;
             while (true)
             {
-                // jwt = _writer.WriteToken(jws);
-                var result = _reader.TryReadToken(jwt.AsSpan(), policy);
+#if NETCOREAPP3_0
+                JwsDescriptor.Serialize(new PayloadDescriptor(json));
+#endif
+                //jwt = _writer.WriteToken(jws);
+                //var result = _reader.TryReadToken(jwt.AsSpan(), policy);
             }
 
             //while (true)

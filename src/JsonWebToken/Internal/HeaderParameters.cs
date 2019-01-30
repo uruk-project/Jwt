@@ -1,12 +1,14 @@
 // Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using System.Text;
+
 namespace JsonWebToken.Internal
 {
     /// <summary>
     /// List of header parameter names see: http://tools.ietf.org/html/rfc7519#section-5.
     /// </summary>
-    internal static class HeaderParameters
+    public static class HeaderParameters
     {
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7515#section-4.1.1
@@ -23,7 +25,8 @@ namespace JsonWebToken.Internal
         /// see:https://tools.ietf.org/html/rfc7516#section-4.1.2
         /// </summary>
         public const string Enc = "enc";
-        
+        public static readonly byte[] EncUtf8 = Encoding.UTF8.GetBytes(Enc);
+
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7515#section-4.1.2
         /// </summary>
@@ -38,6 +41,7 @@ namespace JsonWebToken.Internal
         /// see:https://tools.ietf.org/html/rfc7515#section-4.1.4
         /// </summary>
         public const string Kid = "kid";
+        public static readonly byte[] KidUtf8 = Encoding.UTF8.GetBytes(Kid);
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7515#section-4.1.9
@@ -76,26 +80,31 @@ namespace JsonWebToken.Internal
         /// see:https://tools.ietf.org/html/rfc7518#section-4.6.1
         /// </summary>
         public const string Epk = "epk";
+        public static readonly byte[] EpkUtf8 = Encoding.UTF8.GetBytes(Epk);
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7518#section-4.6.1
         /// </summary>
         public const string Apu = "apu";
+        public static readonly byte[] ApuUtf8 = Encoding.UTF8.GetBytes(Apu);
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7518#section-4.6.1
         /// </summary>
         public const string Apv = "apv";
+        public static readonly byte[] ApvUtf8 = Encoding.UTF8.GetBytes(Apv);
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7518#section-4.7
         /// </summary>
         public const string IV = "iv";
+        public static readonly byte[] IVUtf8 = Encoding.UTF8.GetBytes(IV);
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7518#section-4.7
         /// </summary>
         public const string Tag = "tag";
+        public static readonly byte[] TagUtf8 = Encoding.UTF8.GetBytes(Tag);
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7518#section-4.8

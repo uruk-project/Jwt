@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace JsonWebToken.Internal
 {
@@ -64,7 +65,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override bool TryWrapKey(Jwk staticKey, Dictionary<string, object> header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override bool TryWrapKey(Jwk staticKey, HeaderDescriptor header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
             {
@@ -82,8 +83,8 @@ namespace JsonWebToken.Internal
                     aesGcm.Encrypt(nonce, contentEncryptionKey.ToByteArray(), destination, tag);
                     bytesWritten = destination.Length;
 
-                    header[HeaderParameters.IV] = Base64Url.Base64UrlEncode(nonce);
-                    header[HeaderParameters.Tag] = Base64Url.Base64UrlEncode(tag);
+                    header[HeaderParameters.IV] = new JwtProperty(HeaderParameters.IVUtf8, Base64Url.Base64UrlEncode(nonce));
+                    header[HeaderParameters.Tag] = new JwtProperty(HeaderParameters.TagUtf8, Base64Url.Base64UrlEncode(tag));
 
                     return true;
                 }

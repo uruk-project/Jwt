@@ -11,39 +11,39 @@ namespace JsonWebToken
 {
     public class IdTokenDescriptor : JwsDescriptor
     {
-        private static readonly ReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredOidcClaims = new ReadOnlyDictionary<string, JTokenType[]>(
-            new Dictionary<string, JTokenType[]>
+        private static readonly ReadOnlyDictionary<string, JwtTokenType[]> IdTokenRequiredOidcClaims = new ReadOnlyDictionary<string, JwtTokenType[]>(
+            new Dictionary<string, JwtTokenType[]>
             {
-                { Claims.Iss, new [] { JTokenType.String} },
-                { Claims.Sub, new [] { JTokenType.String} },
-                { Claims.Aud, new [] { JTokenType.String, JTokenType.Array} },
-                { Claims.Exp, new [] { JTokenType.Integer } },
-                { Claims.Iat, new [] { JTokenType.Integer } }
+                { Claims.Iss, new [] { JwtTokenType.String} },
+                { Claims.Sub, new [] { JwtTokenType.String} },
+                { Claims.Aud, new [] { JwtTokenType.String, JwtTokenType.Array} },
+                { Claims.Exp, new [] { JwtTokenType.Integer } },
+                { Claims.Iat, new [] { JwtTokenType.Integer } }
             });
 
-        private static readonly ReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredOidcClaimsImplicit = new ReadOnlyDictionary<string, JTokenType[]>(
-            new Dictionary<string, JTokenType[]>
+        private static readonly ReadOnlyDictionary<string, JwtTokenType[]> IdTokenRequiredOidcClaimsImplicit = new ReadOnlyDictionary<string, JwtTokenType[]>(
+            new Dictionary<string, JwtTokenType[]>
             {
-                { Claims.Iss, new [] { JTokenType.String} },
-                { Claims.Sub, new [] { JTokenType.String} },
-                { Claims.Aud, new [] { JTokenType.String, JTokenType.Array} },
-                { Claims.Exp, new [] { JTokenType.Integer } },
-                { Claims.Iat, new [] { JTokenType.Integer } },
-                { OidcClaims.Nonce, new [] { JTokenType.String} },
-                { OidcClaims.AtHash, new [] { JTokenType.String } }
+                { Claims.Iss, new [] { JwtTokenType.String} },
+                { Claims.Sub, new [] { JwtTokenType.String} },
+                { Claims.Aud, new [] { JwtTokenType.String, JwtTokenType.Array} },
+                { Claims.Exp, new [] { JwtTokenType.Integer } },
+                { Claims.Iat, new [] { JwtTokenType.Integer } },
+                { OidcClaims.Nonce, new [] { JwtTokenType.String} },
+                { OidcClaims.AtHash, new [] { JwtTokenType.String } }
             });
 
-        private static readonly ReadOnlyDictionary<string, JTokenType[]> IdTokenRequiredOidcClaimsHybrid = new ReadOnlyDictionary<string, JTokenType[]>(
-            new Dictionary<string, JTokenType[]>
+        private static readonly ReadOnlyDictionary<string, JwtTokenType[]> IdTokenRequiredOidcClaimsHybrid = new ReadOnlyDictionary<string, JwtTokenType[]>(
+            new Dictionary<string, JwtTokenType[]>
             {
-                { Claims.Iss, new [] { JTokenType.String } },
-                { Claims.Sub, new [] { JTokenType.String } },
-                { Claims.Aud, new [] { JTokenType.String, JTokenType.Array} },
-                { Claims.Exp, new [] { JTokenType.Integer } },
-                { Claims.Iat, new [] { JTokenType.Integer } },
-                { OidcClaims.Nonce, new [] { JTokenType.String } },
-                { OidcClaims.AtHash, new [] { JTokenType.String } },
-                { OidcClaims.CHash, new [] { JTokenType.String } }
+                { Claims.Iss, new [] { JwtTokenType.String } },
+                { Claims.Sub, new [] { JwtTokenType.String } },
+                { Claims.Aud, new [] { JwtTokenType.String, JwtTokenType.Array} },
+                { Claims.Exp, new [] { JwtTokenType.Integer } },
+                { Claims.Iat, new [] { JwtTokenType.Integer } },
+                { OidcClaims.Nonce, new [] { JwtTokenType.String } },
+                { OidcClaims.AtHash, new [] { JwtTokenType.String } },
+                { OidcClaims.CHash, new [] { JwtTokenType.String } }
             });
 
         public IdTokenDescriptor()
@@ -51,12 +51,12 @@ namespace JsonWebToken
         {
         }
 
-        public IdTokenDescriptor(HeaderDescriptor header, JObject payload)
+        public IdTokenDescriptor(HeaderDescriptor header, PayloadDescriptor payload)
             : base(header, payload)
         {
         }
 
-        public IdTokenDescriptor(JObject payload)
+        public IdTokenDescriptor(PayloadDescriptor payload)
             : base(new HeaderDescriptor(), payload)
         {
         }
@@ -93,7 +93,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the Authentication Methods References used in the authentication.
         /// </summary>
-        public IReadOnlyList<string> AuthenticationMethodsReferences => GetListClaims(OidcClaims.Amr);
+        public IReadOnlyList<string> AuthenticationMethodsReferences => GetListClaims<string>(OidcClaims.Amr);
 
         public void AddAuthenticationMethodsReferences(string acr)
         {
@@ -127,7 +127,7 @@ namespace JsonWebToken
             set => AddClaim(OidcClaims.CHash, value);
         }
 
-        protected override ReadOnlyDictionary<string, JTokenType[]> RequiredClaims
+        protected override ReadOnlyDictionary<string, JwtTokenType[]> RequiredClaims
         {
             get
             {
@@ -300,7 +300,7 @@ namespace JsonWebToken
                 return string.IsNullOrEmpty(address) ? null : Address.FromJson(address);
             }
 
-            set => Payload[OidcClaims.Address] = value?.ToString();
+            set => AddClaim(OidcClaims.Address, JObject.FromObject(value));
         }
 
         /// <summary>

@@ -10,22 +10,22 @@ namespace JsonWebToken
 {
     public class StateDescriptor : JwsDescriptor
     {
-        private static readonly ReadOnlyDictionary<string, JTokenType[]> StateRequiredClaims = new ReadOnlyDictionary<string, JTokenType[]>(
-              new Dictionary<string, JTokenType[]>
+        private static readonly ReadOnlyDictionary<string, JwtTokenType[]> StateRequiredClaims = new ReadOnlyDictionary<string, JwtTokenType[]>(
+              new Dictionary<string, JwtTokenType[]>
               {
-                { OAuth2Claims.Rfp, new [] { JTokenType.String} }
+                { OAuth2Claims.Rfp, new [] { JwtTokenType.String} }
               });
 
         public StateDescriptor()
         {
         }
 
-        public StateDescriptor(HeaderDescriptor header, JObject payload)
+        public StateDescriptor(HeaderDescriptor header, PayloadDescriptor payload)
             : base(header, payload)
         {
         }
 
-        protected override ReadOnlyDictionary<string, JTokenType[]> RequiredClaims => StateRequiredClaims;
+        protected override ReadOnlyDictionary<string, JwtTokenType[]> RequiredClaims => StateRequiredClaims;
 
         /// <summary>
         /// Gets or sets the value of the 'rfp' claim.

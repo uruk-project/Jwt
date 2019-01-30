@@ -12,7 +12,6 @@ namespace JsonWebToken.Internal
     internal sealed class AesGcmEncryptor : AuthenticatedEncryptor
     {
         private readonly SymmetricJwk _key;
-        private readonly EncryptionAlgorithm _encryptionAlgorithm;
 
         private bool _disposed;
 
@@ -28,8 +27,6 @@ namespace JsonWebToken.Internal
             {
                 Errors.ThrowEncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
             }
-
-            _encryptionAlgorithm = encryptionAlgorithm;
         }
 
         /// <inheritdoc />

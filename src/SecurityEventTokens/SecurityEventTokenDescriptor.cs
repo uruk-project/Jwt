@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -14,20 +15,20 @@ namespace JsonWebToken
     {
         public const string SecurityEventTokenType = "secevent+jwt";
 
-        private static readonly ReadOnlyDictionary<string, JTokenType[]> SetRequiredClaims = new ReadOnlyDictionary<string, JTokenType[]>(
-            new Dictionary<string, JTokenType[]>          
-        {           
-            { Claims.Iss, new[] { JTokenType.String } },               
-            { Claims.Iat, new[] { JTokenType.Integer} },               
-            { Claims.Jti, new[] { JTokenType.String } },               
-            { SetClaims.Events, new[] { JTokenType.Object } }             
+        private static readonly ReadOnlyDictionary<string, JwtTokenType[]> SetRequiredClaims = new ReadOnlyDictionary<string, JwtTokenType[]>(
+            new Dictionary<string, JwtTokenType[]>
+        {
+            { Claims.Iss, new[] { JwtTokenType.String } },
+            { Claims.Iat, new[] { JwtTokenType.Integer} },
+            { Claims.Jti, new[] { JwtTokenType.String } },
+            { SetClaims.Events, new[] { JwtTokenType.Object } }
         });
 
         public SecurityEventTokenDescriptor()
         {
         }
 
-        public SecurityEventTokenDescriptor(JObject payload)
+        public SecurityEventTokenDescriptor(PayloadDescriptor payload)
             : base(new HeaderDescriptor(), payload)
         {
         }
@@ -40,12 +41,12 @@ namespace JsonWebToken
 
         public void AddEvent(string eventName, JObject @event)
         {
-            AddClaim(SetClaims.Events, new JProperty(eventName, @event));
+            AddClaim(SetClaims.Events, new JwtProperty(Encoding.UTF8.GetBytes(eventName), @event));
         }
 
         public void AddEvent(string eventName, IEvent @event)
         {
-            AddClaim(SetClaims.Events, new JProperty(eventName, JObject.FromObject(@event)));
+            AddClaim(SetClaims.Events, new JwtProperty(Encoding.UTF8.GetBytes(eventName), JObject.FromObject(@event)));
         }
 
         /// <summary>
@@ -66,6 +67,6 @@ namespace JsonWebToken
             set => AddClaim(SetClaims.Toe, value);
         }
 
-        protected override ReadOnlyDictionary<string, JTokenType[]> RequiredClaims => SetRequiredClaims;
+        protected override ReadOnlyDictionary<string, JwtTokenType[]> RequiredClaims => SetRequiredClaims;
     }
 }

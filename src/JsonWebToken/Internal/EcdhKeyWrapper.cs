@@ -103,7 +103,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override bool TryWrapKey(Jwk staticKey, Dictionary<string, object> header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override bool TryWrapKey(Jwk staticKey, HeaderDescriptor header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
             {
@@ -119,7 +119,7 @@ namespace JsonWebToken.Internal
             {
                 exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
                 var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
-                header[HeaderParameters.Epk] = epk;
+                header[HeaderParameters.Epk] = new JwtProperty(HeaderParameters.EpkUtf8, JObject.FromObject(epk));
             }
 
             if (Algorithm.ProduceEncryptionKey)
@@ -159,11 +159,11 @@ namespace JsonWebToken.Internal
             return hashAlgorithm;
         }
 
-        private static string GetPartyInfo(Dictionary<string, object> header, string headerName)
+        private static string GetPartyInfo(HeaderDescriptor header, string headerName)
         {
             if (header.TryGetValue(headerName, out var token))
             {
-                return (string)token;
+                return (string)token.Value;
             }
 
             return null;

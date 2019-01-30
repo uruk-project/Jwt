@@ -1,7 +1,15 @@
 ﻿using JsonWebToken.Internal;
 using Newtonsoft.Json;
+using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
+using System.Text;
 using Xunit;
+#if NETCOREAPP3_0
+using System.Text.Json;
+#endif
 
 namespace JsonWebToken.Tests
 {
@@ -56,6 +64,71 @@ namespace JsonWebToken.Tests
             Assert.True(events.ContainsKey("urn:ietf:params:scim:event:create"));
             Assert.True(events["urn:ietf:params:scim:event:create"].ContainsKey("ref"));
             Assert.Equal("https://scim.example.com/Users/44f6142df96bd6ab61e7521d9", events["urn:ietf:params:scim:event:create"]["ref"]);
+        }
+
+        //[Fact]
+        //public void JsonWriter_UnescapedProperty()
+        //{
+        //    var output = new FixedSizedBufferWriter(100);
+
+        //    var jsonUtf8 = new Utf8JsonWriter(output);
+        //    jsonUtf8.WriteStartObject();
+        //    jsonUtf8.WriteString("unescaped", "jwt+secevent", false);
+        //    jsonUtf8.WriteEndObject();
+        //    jsonUtf8.Flush();
+
+        //    string actualStr = Encoding.UTF8.GetString(output.Formatted);
+        //    Assert.Equal(@"{""unescaped"":""jwt+secevent""}", actualStr);
+        //}
+
+
+        //[Fact]
+        //public void JsonWriter_UnescapedValue()
+        //{
+        //    var output = new FixedSizedBufferWriter(100);
+
+        //    var jsonUtf8 = new Utf8JsonWriter(output);
+        //    //jsonUtf8.WriteStringValue("jwt+secevent", false);
+        //    jsonUtf8.WriteStringValue("jwt+secevent", true);
+        //    jsonUtf8.Flush();
+
+        //    string actualStr = Encoding.UTF8.GetString(output.Formatted);
+        //    Assert.Equal(@"""jwt+secevent""", actualStr);
+        //}
+
+        internal class FixedSizedBufferWriter : IBufferWriter<byte>
+        {
+            private readonly byte[] _buffer;
+            private int _count;
+
+            public FixedSizedBufferWriter(int capacity)
+            {
+                _buffer = new byte[capacity];
+            }
+
+            public void Clear()
+            {
+                _count = 0;
+            }
+
+            public Span<byte> Free => _buffer.AsSpan(_count);
+
+            public byte[] Formatted => _buffer.AsSpan(0, _count).ToArray();
+
+            public Memory<byte> GetMemory(int minimumLength = 0) => _buffer.AsMemory(_count);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Span<byte> GetSpan(int minimumLength = 0) => _buffer.AsSpan(_count);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Advance(int bytes)
+            {
+                _count += bytes;
+                if (_count > _buffer.Length)
+                {
+                    throw new InvalidOperationException("Cannot advance past the end of the buffer.");
+                }
+            }
         }
     }
 }

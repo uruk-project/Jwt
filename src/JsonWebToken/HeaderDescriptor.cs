@@ -8,7 +8,7 @@ namespace JsonWebToken
     /// <summary>
     /// Represents a JWT header used as descriptor.
     /// </summary>
-    public class HeaderDescriptor : Dictionary<string, object>
+    public class HeaderDescriptor : Dictionary<string, JwtProperty>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="HeaderDescriptor"/> class.

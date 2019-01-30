@@ -38,7 +38,7 @@ namespace JwtCreator
 
             foreach (var key in jwks.Keys.Where(k => k.Use == ""))
             {
-                var jwsDescriptor = new JwsDescriptor(new HeaderDescriptor(), json);
+                var jwsDescriptor = new JwsDescriptor(new HeaderDescriptor(), new PayloadDescriptor(json));
                 jwsDescriptor.Key = key;
                 var jwt = writer.WriteToken(jwsDescriptor);
                 result.Add(jwt);
@@ -184,7 +184,7 @@ namespace JwtCreator
                 payload.Add(kvp.Key, kvp.Value);
             }
 
-            return new JwsDescriptor(new HeaderDescriptor(), payload);
+            return new JwsDescriptor(new HeaderDescriptor(), new PayloadDescriptor(payload));
         }
 
         private static JObject CreateToken(TokenValidationStatus status, JwtDescriptor descriptor, string claim = null)
@@ -192,10 +192,10 @@ namespace JwtCreator
             switch (status)
             {
                 case TokenValidationStatus.SignatureKeyNotFound:
-                    descriptor.Header["kid"] += "x";
+                    descriptor.Header["kid"] = new JwtProperty(HeaderParameters.KidUtf8, (string)descriptor.Header["kid"].Value + "x"); ;
                     break;
                 case TokenValidationStatus.MissingEncryptionAlgorithm:
-                    descriptor.Header["enc"] = null;
+                    descriptor.Header["enc"] = new JwtProperty(HeaderParameters.EncUtf8);
                     break;
             }
 

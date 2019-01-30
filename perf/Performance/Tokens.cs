@@ -133,7 +133,7 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new JwsDescriptor()
                 {
-                   Algorithm = SignatureAlgorithm.None
+                    Algorithm = SignatureAlgorithm.None
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -240,7 +240,7 @@ namespace JsonWebToken.Performance
                     Payload = descriptor,
                     Key = encryptionKey,
                     EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                    ContentType = "JWT", 
+                    ContentType = "JWT",
                     CompressionAlgorithm = CompressionAlgorithm.Deflate
                 };
 
@@ -369,7 +369,7 @@ namespace JsonWebToken.Performance
                 payload.Add(kvp.Key, kvp.Value);
             }
 
-            return new JwsDescriptor(new HeaderDescriptor(), payload);
+            return new JwsDescriptor(new HeaderDescriptor(), new PayloadDescriptor(payload));
         }
 
         private static TokenState CreateInvalidToken(TokenValidationStatus status, JwtDescriptor descriptor, string claim = null)
@@ -377,10 +377,10 @@ namespace JsonWebToken.Performance
             switch (status)
             {
                 case TokenValidationStatus.SignatureKeyNotFound:
-                    descriptor.Header["kid"] += "x";
+                    descriptor.Header["kid"] = new JwtProperty(HeaderParameters.KidUtf8, (string)descriptor.Header["kid"].Value + "x"); ;
                     break;
                 case TokenValidationStatus.MissingEncryptionAlgorithm:
-                    descriptor.Header["enc"] = null;
+                    descriptor.Header["enc"] = new JwtProperty(HeaderParameters.EncUtf8);
                     break;
             }
 

@@ -13,13 +13,13 @@ namespace JsonWebToken
     /// </summary>
     public class ClientAssertionDescriptor : JwsDescriptor
     {
-        private static readonly ReadOnlyDictionary<string, JTokenType[]> ClientAssertionRequiredClaims = new ReadOnlyDictionary<string, JTokenType[]>(
-            new Dictionary<string, JTokenType[]>           
+        private static readonly ReadOnlyDictionary<string, JwtTokenType[]> ClientAssertionRequiredClaims = new ReadOnlyDictionary<string, JwtTokenType[]>(
+            new Dictionary<string, JwtTokenType[]>           
         {
-            { Claims.Iss, new [] { JTokenType.String } },
-            { Claims.Sub, new [] { JTokenType.String } },
-            { Claims.Aud, new [] { JTokenType.String, JTokenType.Array } },
-            { Claims.Exp, new [] { JTokenType.Integer } }
+            { Claims.Iss, new [] { JwtTokenType.String } },
+            { Claims.Sub, new [] { JwtTokenType.String } },
+            { Claims.Aud, new [] { JwtTokenType.String, JwtTokenType.Array } },
+            { Claims.Exp, new [] { JwtTokenType.Integer } }
         });
 
         public ClientAssertionDescriptor()
@@ -27,12 +27,12 @@ namespace JsonWebToken
         {
         }
 
-        public ClientAssertionDescriptor(JObject payload)
+        public ClientAssertionDescriptor(PayloadDescriptor payload)
             : base(new HeaderDescriptor(), payload)
         {
         }
 
-        public ClientAssertionDescriptor(HeaderDescriptor header, JObject payload)
+        public ClientAssertionDescriptor(HeaderDescriptor header, PayloadDescriptor payload)
             : base(header, payload)
         {
         }
@@ -47,6 +47,6 @@ namespace JsonWebToken
             base.Validate();
         }
 
-        protected override ReadOnlyDictionary<string, JTokenType[]> RequiredClaims => ClientAssertionRequiredClaims;
+        protected override ReadOnlyDictionary<string, JwtTokenType[]> RequiredClaims => ClientAssertionRequiredClaims;
     }
 }

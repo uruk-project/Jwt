@@ -43,7 +43,7 @@ namespace JsonWebToken
         /// <param name="alg"></param>
         /// <param name="base64UrlHeader"></param>
         /// <returns></returns>
-        public bool TryGetHeader(Dictionary<string, object> header, SignatureAlgorithm alg, out byte[] base64UrlHeader)
+        public bool TryGetHeader(HeaderDescriptor header, SignatureAlgorithm alg, out byte[] base64UrlHeader)
         {
             if (!IsSimpleHeader(header, alg))
             {
@@ -51,7 +51,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            if (header.TryGetValue(HeaderParameters.Kid, out var kid))
+            if (header.TryGetValue(HeaderParameters.Kid, out var kidProperty) && kidProperty.Type == JwtTokenType.String)
             {
                 var key = ComputeHeaderKey(header, alg);
                 if (key == -1)
@@ -60,6 +60,7 @@ namespace JsonWebToken
                     return false;
                 }
 
+                var kid = (string)kidProperty.Value;
                 var keyId = ((string)kid).AsSpan();
                 var node = _head;
                 while (node != null)
@@ -89,16 +90,16 @@ namespace JsonWebToken
             return false;
         }
 
-        private static long ComputeHeaderKey(Dictionary<string, object> header, SignatureAlgorithm alg)
+        private static long ComputeHeaderKey(HeaderDescriptor header, SignatureAlgorithm alg)
         {
-            header.TryGetValue(HeaderParameters.Cty, out object cty);
+            header.TryGetValue(HeaderParameters.Cty, out var cty);
 
             if (alg is null)
             {
                 return -1;
             }
 
-            if (cty is string ctyValue && !string.Equals(ctyValue, ContentTypeValues.Jwt, StringComparison.Ordinal))
+            if (cty.Type == JwtTokenType.String && !string.Equals((string)cty.Value, ContentTypeValues.Jwt, StringComparison.Ordinal))
             {
                 // only support 'cty': 'JWT' or not cty
                 return -1;
@@ -113,9 +114,9 @@ namespace JsonWebToken
         /// <param name="header"></param>
         /// <param name="alg"></param>
         /// <param name="base6UrlHeader"></param>
-        public void AddHeader(Dictionary<string, object> header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
+        public void AddHeader(HeaderDescriptor header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
         {
-            if (!header.TryGetValue(HeaderParameters.Kid, out var kid))
+            if (!header.TryGetValue(HeaderParameters.Kid, out var kidProperty) && kidProperty.Type == JwtTokenType.String)
             {
                 return;
             }
@@ -125,6 +126,7 @@ namespace JsonWebToken
                 return;
             }
 
+            var kid = (string)kidProperty.Value;
             bool lockTaken = false;
             try
             {
@@ -193,7 +195,7 @@ namespace JsonWebToken
             }
         }
 
-        private static bool IsSimpleHeader(Dictionary<string, object> header, SignatureAlgorithm alg)
+        private static bool IsSimpleHeader(HeaderDescriptor header, SignatureAlgorithm alg)
         {
             if (!header.ContainsKey(HeaderParameters.Kid))
             {
@@ -208,7 +210,7 @@ namespace JsonWebToken
 
             if (header.TryGetValue(HeaderParameters.Cty, out var cty))
             {
-                if (cty is string value && string.Equals(value, ContentTypeValues.Jwt, StringComparison.Ordinal))
+                if (cty.Type == JwtTokenType.String&& string.Equals((string)cty.Value, ContentTypeValues.Jwt, StringComparison.Ordinal))
                 {
                     return false;
                 }

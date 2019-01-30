@@ -108,13 +108,13 @@ namespace JsonWebToken
 #if !NETSTANDARD
                             else if (string.Equals(Epk, propertyName, StringComparison.Ordinal))
                             {
-                                if (reader.Read() && reader.TokenType == JsonToken.String)
+                                if (reader.Read() && reader.TokenType == JsonToken.StartObject)
                                 {
                                     header.Epk = ECJwk.FromDictionary(JsonParser.ReadJson(reader));
                                 }
                                 else if (reader.TokenType != JsonToken.Null)
                                 {
-                                    ThrowHelper.FormatMalformedJson(HeaderParameters.Cty, JsonToken.String);
+                                    ThrowHelper.FormatMalformedJson(HeaderParameters.Epk, JsonToken.StartObject);
                                 }
                             }
                             else if (string.Equals(Apu, propertyName, StringComparison.Ordinal))

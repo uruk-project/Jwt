@@ -102,13 +102,18 @@ namespace JsonWebToken
 
             if (header.ContainsKey(HeaderParameters.Kid) && Key.Kid != null)
             {
-                header[HeaderParameters.Kid] = Key.Kid;
+                header[HeaderParameters.Kid] = new JwtProperty(HeaderParameters.KidUtf8, Key.Kid);
             }
 
             try
             {
-                var headerJson = Serialize(header, Formatting.None);
-                int headerJsonLength = headerJson.Length;
+#if NETCOREAPP3_0
+                ReadOnlySequence<byte> headerJson = default;
+#else
+                string headerJson = null;
+#endif
+                headerJson = Serialize(header, Formatting.None);
+                int headerJsonLength = (int)headerJson.Length;
                 int base64EncodedHeaderLength = Base64Url.GetArraySizeRequiredToEncode(headerJsonLength);
 
                 byte[] arrayByteToReturnToPool = null;
@@ -125,12 +130,7 @@ namespace JsonWebToken
 
                 try
                 {
-#if !NETSTANDARD2_0
-                    Encoding.UTF8.GetBytes(headerJson, utf8HeaderBuffer);
-#else
-                    EncodingHelper.GetUtf8Bytes(headerJson, utf8HeaderBuffer);
-#endif                  
-                    int bytesWritten = Base64Url.Base64UrlEncode(utf8HeaderBuffer, base64EncodedHeader);
+                    TryEncodeUtf8ToBase64Url(headerJson, base64EncodedHeader, out int bytesWritten);
 
                     Compressor compressor = null;
                     var compressionAlgorithm = CompressionAlgorithm;
@@ -217,5 +217,63 @@ namespace JsonWebToken
                 return null;
             }
         }
+
+        private static bool TryEncodeUtf8ToBase64Url(string input, Span<byte> destination, out int bytesWritten)
+        {
+            byte[] arrayToReturnToPool = null;
+            var encodedBytes = input.Length <= Constants.MaxStackallocBytes
+                  ? stackalloc byte[input.Length]
+                  : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(input.Length)).AsSpan(0, input.Length);
+            try
+            {
+#if !NETSTANDARD2_0
+                Encoding.UTF8.GetBytes(input, encodedBytes);
+#else
+                EncodingHelper.GetUtf8Bytes(input, encodedBytes);
+#endif
+                bytesWritten = Base64Url.Base64UrlEncode(encodedBytes, destination);
+                return bytesWritten == destination.Length;
+            }
+            finally
+            {
+                if (arrayToReturnToPool != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
+                }
+            }
+        }
+
+#if NETCOREAPP3_0
+        private static bool TryEncodeUtf8ToBase64Url(ReadOnlySequence<byte> input, Span<byte> destination, out int bytesWritten)
+        {
+            if (input.IsSingleSegment)
+            {
+                bytesWritten = Base64Url.Base64UrlEncode(input.First.Span, destination);
+                return bytesWritten == destination.Length;
+            }
+            else
+            {
+                byte[] arrayToReturnToPool = null;
+                try
+                {
+                    var encodedBytes = input.Length <= Constants.MaxStackallocBytes
+                          ? stackalloc byte[(int)input.Length]
+                          : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent((int)input.Length)).AsSpan(0, (int)input.Length);
+
+                    input.CopyTo(encodedBytes);
+                    bytesWritten = Base64Url.Base64UrlEncode(encodedBytes, destination);
+                    return bytesWritten == destination.Length;
+                }
+                finally
+                {
+                    if (arrayToReturnToPool != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
+                    }
+                }
+            }
+
+        }
+#endif
     }
 }

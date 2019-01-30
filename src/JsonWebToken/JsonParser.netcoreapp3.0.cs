@@ -40,14 +40,14 @@ namespace JsonWebToken
                             return stack.Peek();
                         }
                     case JsonTokenType.PropertyName:
-                        string name = reader.GetStringValue();
+                        string name = reader.GetString();
                         reader.Read();
                         var type = reader.TokenType;
                         var current = stack.Peek();
                         switch (type)
                         {
                             case JsonTokenType.String:
-                                current[name] = reader.GetStringValue();
+                                current[name] = reader.GetString();
                                 break;
                             case JsonTokenType.StartObject:
                                 var newObj = new Dictionary<string, object>(2);
@@ -64,13 +64,13 @@ namespace JsonWebToken
                                 current[name] = null;
                                 break;
                             case JsonTokenType.Number:
-                                if (reader.TryGetInt64Value(out long longValue))
+                                if (reader.TryGetInt64(out long longValue))
                                 {
                                     current[name] = longValue;
                                 }
                                 else
                                 {
-                                    if (reader.TryGetDoubleValue(out double doubleValue))
+                                    if (reader.TryGetDouble(out double doubleValue))
                                     {
                                         current[name] = doubleValue;
                                     }
@@ -113,13 +113,13 @@ namespace JsonWebToken
                         array.Add(null);
                         break;
                     case JsonTokenType.Number:
-                        if (reader.TryGetInt64Value(out long longValue))
+                        if (reader.TryGetInt64(out long longValue))
                         {
                             array.Add(longValue);
                         }
                         else
                         {
-                            if (reader.TryGetDoubleValue(out double doubleValue))
+                            if (reader.TryGetDouble(out double doubleValue))
                             {
                                 array.Add(doubleValue);
                             }
@@ -131,7 +131,7 @@ namespace JsonWebToken
 
                         break;
                     case JsonTokenType.String:
-                        string valueString = reader.GetStringValue();
+                        string valueString = reader.GetString();
                         array.Add(valueString);
                         break;
                     case JsonTokenType.True:

@@ -376,17 +376,17 @@ namespace JsonWebToken
 
             if (jObject.TryGetValue("x", out object x))
             {
-                key.X = (byte[])x;
+                key.X = Base64Url.Base64UrlDecode( (string)x);
             }
 
             if (jObject.TryGetValue("y", out object y))
             {
-                key.Y = (byte[])y;
+                key.Y = Base64Url.Base64UrlDecode((string)y);
             }
 
             if (jObject.TryGetValue("d", out object d))
             {
-                key.D = (byte[])d;
+                key.D = Base64Url.Base64UrlDecode((string)d);
             }
 
             return key;
@@ -454,7 +454,7 @@ namespace JsonWebToken
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
-                                            key.Crv = reader.GetStringValue();
+                                            key.Crv = reader.GetString();
                                         }
                                         else if (reader.TokenType != JsonTokenType.Null)
                                         {

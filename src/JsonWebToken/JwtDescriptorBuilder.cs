@@ -5,6 +5,7 @@ using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -14,7 +15,7 @@ namespace JsonWebToken
     public sealed class JwtDescriptorBuilder
     {
         private readonly HeaderDescriptor _header = new HeaderDescriptor();
-        private JObject _jsonPayload;
+        private PayloadDescriptor _jsonPayload;
         private byte[] _binaryPayload;
         private string _textPayload;
 
@@ -26,11 +27,59 @@ namespace JsonWebToken
         /// Adds a header parameter.
         /// </summary>
         /// <param name="headerName"></param>
-        /// <param name="headerValue"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddHeader(string headerName, JToken headerValue)
+        public JwtDescriptorBuilder AddHeader(string headerName, string value)
         {
-            _header[headerName] = headerValue;
+            _header[headerName] = new JwtProperty(Encoding.UTF8.GetBytes(headerName), value);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a header parameter.
+        /// </summary>
+        /// <param name="headerName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddHeader(string headerName, long value)
+        {
+            _header[headerName] = new JwtProperty(Encoding.UTF8.GetBytes(headerName), value);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a header parameter.
+        /// </summary>
+        /// <param name="headerName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddHeader(string headerName, bool value)
+        {
+            _header[headerName] = new JwtProperty(Encoding.UTF8.GetBytes(headerName), value);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a header parameter.
+        /// </summary>
+        /// <param name="headerName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddHeader(string headerName, JArray value)
+        {
+            _header[headerName] = new JwtProperty(Encoding.UTF8.GetBytes(headerName), value);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a header parameter.
+        /// </summary>
+        /// <param name="headerName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddHeader(string headerName, JObject value)
+        {
+            _header[headerName] = new JwtProperty(Encoding.UTF8.GetBytes(headerName), value);
             return this;
         }
 
@@ -51,23 +100,108 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder Expires(DateTime exp)
         {
-            return AddClaim(Claims.Exp, exp);
+            return AddClaim(Claims.Exp, exp.ToEpochTime());
         }
 
         /// <summary>
         /// Adds a claim.
         /// </summary>
         /// <param name="claimName"></param>
-        /// <param name="claimValue"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddClaim(string claimName, JToken claimValue)
+        public JwtDescriptorBuilder AddClaim(string claimName, string value)
         {
             if (_jsonPayload == null)
             {
-                _jsonPayload = new JObject();
+                _jsonPayload = new PayloadDescriptor();
             }
 
-            _jsonPayload[claimName] = claimValue;
+            _jsonPayload[claimName] = new JwtProperty(Encoding.UTF8.GetBytes(claimName), value);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="claimName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddClaim(string claimName, int value)
+        {
+            if (_jsonPayload == null)
+            {
+                _jsonPayload = new PayloadDescriptor();
+            }
+
+            _jsonPayload[claimName] = new JwtProperty(Encoding.UTF8.GetBytes(claimName), value);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="claimName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddClaim(string claimName, double value)
+        {
+            if (_jsonPayload == null)
+            {
+                _jsonPayload = new PayloadDescriptor();
+            }
+
+            _jsonPayload[claimName] = new JwtProperty(Encoding.UTF8.GetBytes(claimName), value);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="claimName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddClaim(string claimName, long value)
+        {
+            if (_jsonPayload == null)
+            {
+                _jsonPayload = new PayloadDescriptor();
+            }
+
+            _jsonPayload[claimName] = new JwtProperty(Encoding.UTF8.GetBytes(claimName), value);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="claimName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddClaim(string claimName, float value)
+        {
+            if (_jsonPayload == null)
+            {
+                _jsonPayload = new PayloadDescriptor();
+            }
+
+            _jsonPayload[claimName] = new JwtProperty(Encoding.UTF8.GetBytes(claimName), value);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="claimName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddClaim(string claimName, bool value)
+        {
+            if (_jsonPayload == null)
+            {
+                _jsonPayload = new PayloadDescriptor();
+            }
+
+            _jsonPayload[claimName] = new JwtProperty(Encoding.UTF8.GetBytes(claimName), value);
             return this;
         }
 
@@ -186,7 +320,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="payload"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder Json(JObject payload)
+        public JwtDescriptorBuilder Json(PayloadDescriptor payload)
         {
             EnsureNotDefined("JSON");
 

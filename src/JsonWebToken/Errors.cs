@@ -61,13 +61,13 @@ namespace JsonWebToken
             throw new JwtDescriptorException($"The claim '{claim}' is prohibited.");
         }
 
-        internal static void ThrowClaimMustBeOfType(KeyValuePair<string, JTokenType[]> claim)
+        internal static void ThrowClaimMustBeOfType(KeyValuePair<string, JwtTokenType[]> claim)
         {
             var claimTypes = string.Join(", ", claim.Value.Select(t => t.ToString()));
             throw new JwtDescriptorException($"The claim '{claim.Key}' must be of type[{claimTypes}].");
         }
 
-        internal static void ThrowHeaderMustBeOfType(KeyValuePair<string, Type[]> header)
+        internal static void ThrowHeaderMustBeOfType(KeyValuePair<string, JwtTokenType[]> header)
         {
             var claimTypes = string.Join(", ", header.Value.Select(t => t.ToString()));
             throw new JwtDescriptorException($"The header parameter '{header.Key}' must be of type[{claimTypes}].");

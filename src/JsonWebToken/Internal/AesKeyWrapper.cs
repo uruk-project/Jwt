@@ -183,7 +183,7 @@ namespace JsonWebToken.Internal
         /// <param name="contentEncryptionKey"></param>
         /// <param name="bytesWritten"></param>
         /// <returns>A wrapped key</returns>
-        public override bool TryWrapKey(Jwk staticKey, Dictionary<string, object> header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override bool TryWrapKey(Jwk staticKey, HeaderDescriptor header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
             {

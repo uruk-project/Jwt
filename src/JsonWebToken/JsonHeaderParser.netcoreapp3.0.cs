@@ -38,7 +38,7 @@ namespace JsonWebToken
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
-                                            header.Alg = reader.GetStringValue();
+                                            header.Alg = reader.GetString();
                                         }
                                         else if (reader.TokenType != JsonTokenType.Null)
                                         {
@@ -49,7 +49,7 @@ namespace JsonWebToken
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
-                                            header.Enc = reader.GetStringValue();
+                                            header.Enc = reader.GetString();
                                         }
                                         else if (reader.TokenType != JsonTokenType.Null)
                                         {
@@ -60,7 +60,7 @@ namespace JsonWebToken
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
-                                            header.Kid = reader.GetStringValue();
+                                            header.Kid = reader.GetString();
                                         }
                                         else if (reader.TokenType != JsonTokenType.Null)
                                         {
@@ -71,7 +71,7 @@ namespace JsonWebToken
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
-                                            header.Cty = reader.GetStringValue();
+                                            header.Cty = reader.GetString();
                                         }
                                         else if (reader.TokenType != JsonTokenType.Null)
                                         {
@@ -82,7 +82,7 @@ namespace JsonWebToken
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
-                                            header.Typ = reader.GetStringValue();
+                                            header.Typ = reader.GetString();
                                         }
                                         else if (reader.TokenType != JsonTokenType.Null)
                                         {
@@ -104,7 +104,7 @@ namespace JsonWebToken
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
-                                            header.Apu = reader.GetStringValue();
+                                            header.Apu = reader.GetString();
                                         }
                                         else if (reader.TokenType != JsonTokenType.Null)
                                         {
@@ -115,7 +115,7 @@ namespace JsonWebToken
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
-                                            header.Apv = reader.GetStringValue();
+                                            header.Apv = reader.GetString();
                                         }
                                         else if (reader.TokenType != JsonTokenType.Null)
                                         {
@@ -126,7 +126,7 @@ namespace JsonWebToken
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
-                                            header.Zip = reader.GetStringValue();
+                                            header.Zip = reader.GetString();
                                         }
                                         else if (reader.TokenType != JsonTokenType.Null)
                                         {
@@ -135,7 +135,7 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        name = reader.GetStringValue();
+                                        name = reader.GetString();
                                     }
                                     break;
                                 case 4:
@@ -147,7 +147,7 @@ namespace JsonWebToken
                                             var crit = new List<string>();
                                             while (reader.Read() && reader.TokenType == JsonTokenType.String)
                                             {
-                                                crit.Add(reader.GetStringValue());
+                                                crit.Add(reader.GetString());
                                             }
 
                                             if (reader.TokenType != JsonTokenType.EndArray)
@@ -164,12 +164,12 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        name = reader.GetStringValue();
+                                        name = reader.GetString();
                                     }
 
                                     break;
                                 default:
-                                    name = reader.GetStringValue();
+                                    name = reader.GetString();
                                     break;
                             }
                         }
@@ -177,7 +177,7 @@ namespace JsonWebToken
                         break;
 
                     case JsonTokenType.String:
-                        string stringValue = reader.GetStringValue();
+                        string stringValue = reader.GetString();
                         header[name] = stringValue;
                         break;
                     case JsonTokenType.True:
@@ -190,13 +190,13 @@ namespace JsonWebToken
                         header[name] = null;
                         break;
                     case JsonTokenType.Number:
-                        if (reader.TryGetInt64Value(out long longValue))
+                        if (reader.TryGetInt64(out long longValue))
                         {
                             header[name] = longValue;
                         }
                         else
                         {
-                            if (reader.TryGetDoubleValue(out double doubleValue))
+                            if (reader.TryGetDouble(out double doubleValue))
                             {
                                 header[name] = doubleValue;
                             }
