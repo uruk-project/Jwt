@@ -74,9 +74,9 @@ namespace Performance
             while (true)
             {
 #if NETCOREAPP3_0
-                JwsDescriptor.Serialize(new PayloadDescriptor(json));
+                //JwsDescriptor.Serialize(new PayloadDescriptor(json));
 #endif
-                //jwt = _writer.WriteToken(jws);
+                jwt = _writer.WriteToken(jws);
                 //var result = _reader.TryReadToken(jwt.AsSpan(), policy);
             }
 

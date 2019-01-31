@@ -1,16 +1,11 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
+#if NETCOREAPP3_0
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-#if NETCOREAPP3_0
-#endif
 
 namespace JsonWebToken
 {
@@ -23,25 +18,13 @@ namespace JsonWebToken
 
         private readonly BufferSegment[] _bufferSegmentPool;
 
-        private long _length;
-        private long _currentWriteLength;
-
         private int _pooledSegmentCount;
-
-        // The read head which is the extent of the IPipelineReader's consumed bytes
-        private BufferSegment _readHead;
-        private int _readHeadIndex;
 
         // The commit head which is the extent of the bytes available to the IPipelineReader to consume
         private BufferSegment _head;
-        private int _commitHeadIndex;
 
         // The write head which is the extent of the IPipelineWriter's written bytes
         private BufferSegment _tail;
-
-        private bool _disposed;
-
-        public long Length => _length;
 
         public BufferWriter()
         {
@@ -107,7 +90,6 @@ namespace JsonWebToken
 
                 // if bytesWritten is zero, these do nothing
                 _tail.End += bytesWritten;
-                _currentWriteLength += bytesWritten;
             }
             else
             {
@@ -117,7 +99,7 @@ namespace JsonWebToken
 
         private void AllocateWriteSegment(int sizeHint)
         {
-            BufferSegment segment = null;
+            BufferSegment segment;
             if (_tail != null)
             {
                 segment = _tail;
@@ -127,7 +109,7 @@ namespace JsonWebToken
                 // If inadequate bytes left or if the segment is readonly
                 if (bytesLeftInBuffer == 0 || bytesLeftInBuffer < sizeHint || segment.ReadOnly)
                 {
-                    BufferSegment nextSegment = CreateSegmentUnsynchronized();
+                    BufferSegment nextSegment = CreateSegment();
                     nextSegment.SetMemory(_pool.Rent(GetSegmentSize(sizeHint)));
 
                     segment.SetNext(nextSegment);
@@ -154,7 +136,7 @@ namespace JsonWebToken
                 }
 
                 // No free tail space, allocate a new segment
-                segment = CreateSegmentUnsynchronized();
+                segment = CreateSegment();
                 segment.SetMemory(_pool.Rent(GetSegmentSize(sizeHint)));
 
                 if (_head == null)
@@ -188,7 +170,7 @@ namespace JsonWebToken
             return adjustedToMaximumSize;
         }
 
-        private BufferSegment CreateSegmentUnsynchronized()
+        private BufferSegment CreateSegment()
         {
             if (_pooledSegmentCount > 0)
             {
@@ -309,3 +291,4 @@ namespace JsonWebToken
         }
     }
 }
+#endif
