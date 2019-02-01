@@ -19,7 +19,7 @@ namespace JsonWebToken
         public JweDescriptor()
             : base()
         {
-            Header[HeaderParameters.Cty] = Cty;
+            Header.Add(Cty);
         }
 
         /// <summary>
@@ -27,10 +27,10 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public JweDescriptor(HeaderDescriptor header, JwsDescriptor payload)
+        public JweDescriptor(DescriptorDictionary header, JwsDescriptor payload)
             : base(header, payload)
         {
-            Header[HeaderParameters.Cty] = Cty;
+            Header.Add(Cty);
         }
 
         /// <summary>
@@ -38,9 +38,9 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="payload"></param>
         public JweDescriptor(JwsDescriptor payload)
-            : base(new HeaderDescriptor(), payload)
+            : base(new DescriptorDictionary(), payload)
         {
-            Header[HeaderParameters.Cty] = Cty;
+            Header.Add(Cty);
         }
     }
 }

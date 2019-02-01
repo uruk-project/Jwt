@@ -25,7 +25,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public EncryptedJwtDescriptor(HeaderDescriptor header, TPayload payload)
+        public EncryptedJwtDescriptor(DescriptorDictionary header, TPayload payload)
             : base(header, payload)
         {
         }
@@ -44,7 +44,7 @@ namespace JsonWebToken
         /// </summary>
         public EncryptionAlgorithm EncryptionAlgorithm
         {
-            get => (EncryptionAlgorithm)GetHeaderParameter<string>(HeaderParameters.Enc);
+            get => (EncryptionAlgorithm)GetHeaderParameter<string>(HeaderParameters.EncUtf8);
             set => SetHeaderParameter(HeaderParameters.Enc, (string)value);
         }
 
@@ -53,7 +53,7 @@ namespace JsonWebToken
         /// </summary>
         public CompressionAlgorithm CompressionAlgorithm
         {
-            get => (CompressionAlgorithm)GetHeaderParameter<string>(HeaderParameters.Zip);
+            get => (CompressionAlgorithm)GetHeaderParameter<string>(HeaderParameters.ZipUtf8);
             set => SetHeaderParameter(HeaderParameters.Zip, (string)value);
         }
 
@@ -100,19 +100,15 @@ namespace JsonWebToken
                 Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
             }
 
-            if (header.ContainsKey(HeaderParameters.Kid) && Key.Kid != null)
+            if (header.ContainsKey(HeaderParameters.KidUtf8) && Key.Kid != null)
             {
-                header[HeaderParameters.Kid] = new JwtProperty(HeaderParameters.KidUtf8, Key.Kid);
+                header.Add(new JwtProperty(HeaderParameters.KidUtf8, Key.Kid));
             }
 
             try
             {
-#if NETCOREAPP3_0
                 ReadOnlySequence<byte> headerJson = default;
-#else
-                string headerJson = null;
-#endif
-                headerJson = Serialize(header, Formatting.None);
+                headerJson = Serialize(header);
                 int headerJsonLength = (int)headerJson.Length;
                 int base64EncodedHeaderLength = Base64Url.GetArraySizeRequiredToEncode(headerJsonLength);
 
@@ -218,32 +214,6 @@ namespace JsonWebToken
             }
         }
 
-        private static bool TryEncodeUtf8ToBase64Url(string input, Span<byte> destination, out int bytesWritten)
-        {
-            byte[] arrayToReturnToPool = null;
-            var encodedBytes = input.Length <= Constants.MaxStackallocBytes
-                  ? stackalloc byte[input.Length]
-                  : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(input.Length)).AsSpan(0, input.Length);
-            try
-            {
-#if !NETSTANDARD2_0
-                Encoding.UTF8.GetBytes(input, encodedBytes);
-#else
-                EncodingHelper.GetUtf8Bytes(input, encodedBytes);
-#endif
-                bytesWritten = Base64Url.Base64UrlEncode(encodedBytes, destination);
-                return bytesWritten == destination.Length;
-            }
-            finally
-            {
-                if (arrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
-                }
-            }
-        }
-
-#if NETCOREAPP3_0
         private static bool TryEncodeUtf8ToBase64Url(ReadOnlySequence<byte> input, Span<byte> destination, out int bytesWritten)
         {
             if (input.IsSingleSegment)
@@ -274,6 +244,5 @@ namespace JsonWebToken
             }
 
         }
-#endif
     }
 }

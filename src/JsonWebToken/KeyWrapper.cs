@@ -84,7 +84,7 @@ namespace JsonWebToken
         /// <param name="contentEncryptionKey">The generated content encryption key.</param>
         /// <param name="bytesWritten">The count of bytes written.</param>
         /// <returns>True .</returns>
-        public abstract bool TryWrapKey(Jwk staticKey, HeaderDescriptor header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten);
+        public abstract bool TryWrapKey(Jwk staticKey, DescriptorDictionary header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten);
 
         /// <summary>
         /// Gets the size of the unwrapped key.

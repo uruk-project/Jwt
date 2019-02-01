@@ -21,8 +21,8 @@ namespace JsonWebToken.Performance
             return WilsonCore(payload);
         }
 
-        [Benchmark]
-        [ArgumentsSource(nameof(GetPayloads))]
+        //[Benchmark]
+        //[ArgumentsSource(nameof(GetPayloads))]
         public override string WilsonJwt(string payload)
         {
             return WilsonJwtCore(payload);

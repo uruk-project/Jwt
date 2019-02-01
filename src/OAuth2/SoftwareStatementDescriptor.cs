@@ -19,8 +19,8 @@ namespace JsonWebToken
                 { Claims.Iss, new [] { JwtTokenType.String} }
             });
 
-        public SoftwareStatementDescriptor(PayloadDescriptor payload)
-            : base(new HeaderDescriptor(), payload)
+        public SoftwareStatementDescriptor(DescriptorDictionary payload)
+            : base(new DescriptorDictionary(), payload)
         {
         }
 

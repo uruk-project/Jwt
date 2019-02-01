@@ -13,9 +13,9 @@ namespace JsonWebToken
     public enum JwtTokenType : byte
     {
         /// <summary>
-        ///  No token type has been set. Useful?
+        ///  A null value. 
         /// </summary>
-        None = 0,
+        Null = 0,
 
         /// <summary>
         /// A JSON object.
@@ -45,11 +45,6 @@ namespace JsonWebToken
         /// <summary>
         ///  A boolean value.
         /// </summary>
-        Boolean = 6,
-
-        /// <summary>
-        ///  A null value. 
-        /// </summary>
-        Null = 7
+        Boolean = 6
     }
 }

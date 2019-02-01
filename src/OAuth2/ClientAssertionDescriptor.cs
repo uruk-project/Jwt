@@ -27,12 +27,12 @@ namespace JsonWebToken
         {
         }
 
-        public ClientAssertionDescriptor(PayloadDescriptor payload)
-            : base(new HeaderDescriptor(), payload)
+        public ClientAssertionDescriptor(DescriptorDictionary payload)
+            : base(new DescriptorDictionary(), payload)
         {
         }
 
-        public ClientAssertionDescriptor(HeaderDescriptor header, PayloadDescriptor payload)
+        public ClientAssertionDescriptor(DescriptorDictionary header, DescriptorDictionary payload)
             : base(header, payload)
         {
         }

@@ -24,7 +24,7 @@ namespace JsonWebToken.Tests
             descriptor.Issuer = "https://scim.example.com";
             descriptor.IssuedAt = EpochTime.ToDateTime(1458496404);
             descriptor.JwtId = "4d3559ec67504aaba65d40b0363faad8";
-            descriptor.Audiences = new[] { "https://scim.example.com/Feeds/98d52461fa5bbc879593b7754", "https://scim.example.com/Feeds/5d7604516b1d08641d7676ee7" };
+            descriptor.Audiences = new List<string> { "https://scim.example.com/Feeds/98d52461fa5bbc879593b7754", "https://scim.example.com/Feeds/5d7604516b1d08641d7676ee7" };
 
             var @event = new ScimCreateEvent
             {

@@ -43,7 +43,7 @@ namespace JsonWebToken
         /// <param name="alg"></param>
         /// <param name="base64UrlHeader"></param>
         /// <returns></returns>
-        public bool TryGetHeader(HeaderDescriptor header, SignatureAlgorithm alg, out byte[] base64UrlHeader)
+        public bool TryGetHeader(DescriptorDictionary header, SignatureAlgorithm alg, out byte[] base64UrlHeader)
         {
             if (!IsSimpleHeader(header, alg))
             {
@@ -51,7 +51,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            if (header.TryGetValue(HeaderParameters.Kid, out var kidProperty) && kidProperty.Type == JwtTokenType.String)
+            if (header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty) && kidProperty.Type == JwtTokenType.String)
             {
                 var key = ComputeHeaderKey(header, alg);
                 if (key == -1)
@@ -90,10 +90,9 @@ namespace JsonWebToken
             return false;
         }
 
-        private static long ComputeHeaderKey(HeaderDescriptor header, SignatureAlgorithm alg)
+        private static long ComputeHeaderKey(DescriptorDictionary header, SignatureAlgorithm alg)
         {
-            header.TryGetValue(HeaderParameters.Cty, out var cty);
-
+            header.TryGetValue(HeaderParameters.CtyUtf8, out var cty);
             if (alg is null)
             {
                 return -1;
@@ -114,9 +113,9 @@ namespace JsonWebToken
         /// <param name="header"></param>
         /// <param name="alg"></param>
         /// <param name="base6UrlHeader"></param>
-        public void AddHeader(HeaderDescriptor header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
+        public void AddHeader(DescriptorDictionary header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
         {
-            if (!header.TryGetValue(HeaderParameters.Kid, out var kidProperty) && kidProperty.Type == JwtTokenType.String)
+            if (!header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty) && kidProperty.Type == JwtTokenType.String)
             {
                 return;
             }
@@ -195,9 +194,9 @@ namespace JsonWebToken
             }
         }
 
-        private static bool IsSimpleHeader(HeaderDescriptor header, SignatureAlgorithm alg)
+        private static bool IsSimpleHeader(DescriptorDictionary header, SignatureAlgorithm alg)
         {
-            if (!header.ContainsKey(HeaderParameters.Kid))
+            if (!header.ContainsKey(HeaderParameters.KidUtf8))
             {
                 return false;
             }
@@ -208,9 +207,9 @@ namespace JsonWebToken
                 simpleHeaders++;
             }
 
-            if (header.TryGetValue(HeaderParameters.Cty, out var cty))
+            if (header.TryGetValue(HeaderParameters.CtyUtf8, out var cty))
             {
-                if (cty.Type == JwtTokenType.String&& string.Equals((string)cty.Value, ContentTypeValues.Jwt, StringComparison.Ordinal))
+                if (cty.Type == JwtTokenType.String && string.Equals((string)cty.Value, ContentTypeValues.Jwt, StringComparison.Ordinal))
                 {
                     return false;
                 }

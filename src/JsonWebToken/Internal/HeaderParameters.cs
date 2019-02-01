@@ -14,12 +14,14 @@ namespace JsonWebToken.Internal
         /// see:https://tools.ietf.org/html/rfc7515#section-4.1.1
         /// </summary>
         public const string Alg = "alg";
+        public static readonly byte[] AlgUtf8 = Encoding.UTF8.GetBytes(Alg);
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7515#section-4.1.10
         /// also:https://tools.ietf.org/html/rfc7519#section-5.2
         /// </summary>
         public const string Cty = "cty";
+        public static readonly byte[] CtyUtf8 = Encoding.UTF8.GetBytes(Cty);
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7516#section-4.1.2
@@ -31,11 +33,13 @@ namespace JsonWebToken.Internal
         /// see:https://tools.ietf.org/html/rfc7515#section-4.1.2
         /// </summary>
         public const string Jku = "jku";
+        public static readonly byte[] JkuUtf8 = Encoding.UTF8.GetBytes(Jku);
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7515#section-4.1.3
         /// </summary>
         public const string Jwk = "jwk";
+        public static readonly byte[] JwkUtf8 = Encoding.UTF8.GetBytes(Jwk);
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7515#section-4.1.4
@@ -48,31 +52,37 @@ namespace JsonWebToken.Internal
         /// also:https://tools.ietf.org/html/rfc7519#section-5.1
         /// </summary>
         public const string Typ = "typ";
+        public static readonly byte[] TypUtf8 = Encoding.UTF8.GetBytes(Typ);
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7515#section-4.1.6
         /// </summary>
         public const string X5c = "x5c";
+        public static readonly byte[] X5cUtf8 = Encoding.UTF8.GetBytes(X5c);
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7515#page-12
         /// </summary>
         public const string X5t = "x5t";
+        public static readonly byte[] X5tUtf8 = Encoding.UTF8.GetBytes(X5t);
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7515#section-4.1.5
         /// </summary>
         public const string X5u = "x5u";
+        public static readonly byte[] X5uUtf8 = Encoding.UTF8.GetBytes(X5u);
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7515#section-4.1.5
         /// </summary>
         public const string Crit = "crit";
+        public static readonly byte[] CritUtf8 = Encoding.UTF8.GetBytes(Crit);
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7516#section-4.1.3
         /// </summary>
         public const string Zip = "zip";
+        public static readonly byte[] ZipUtf8 = Encoding.UTF8.GetBytes(Zip);
 
         public const string Address = "address";
 

@@ -103,15 +103,15 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override bool TryWrapKey(Jwk staticKey, HeaderDescriptor header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override bool TryWrapKey(Jwk staticKey, DescriptorDictionary header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
             {
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-            var partyUInfo = GetPartyInfo(header, HeaderParameters.Apu);
-            var partyVInfo = GetPartyInfo(header, HeaderParameters.Apv);
+            var partyUInfo = GetPartyInfo(header, HeaderParameters.ApuUtf8);
+            var partyVInfo = GetPartyInfo(header, HeaderParameters.ApvUtf8);
             var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
             byte[] exchangeHash;
             using (var ephemeralKey = (staticKey == null) ? ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256) : ECDiffieHellman.Create(((ECJwk)staticKey).ExportParameters(true)))
@@ -119,7 +119,7 @@ namespace JsonWebToken.Internal
             {
                 exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
                 var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
-                header[HeaderParameters.Epk] = new JwtProperty(HeaderParameters.EpkUtf8, JObject.FromObject(epk));
+                header.Add(new JwtProperty(HeaderParameters.EpkUtf8, JObject.FromObject(epk)));
             }
 
             if (Algorithm.ProduceEncryptionKey)
@@ -159,7 +159,7 @@ namespace JsonWebToken.Internal
             return hashAlgorithm;
         }
 
-        private static string GetPartyInfo(HeaderDescriptor header, string headerName)
+        private static string GetPartyInfo(DescriptorDictionary header, ReadOnlySpan<byte> headerName)
         {
             if (header.TryGetValue(headerName, out var token))
             {
@@ -173,7 +173,7 @@ namespace JsonWebToken.Internal
         {
             BinaryPrimitives.WriteInt32BigEndian(destination, _keySizeInBytes << 3);
         }
-        
+
         private static void WritePartyInfo(string partyInfo, int partyInfoLength, Span<byte> destination)
         {
             if (partyInfoLength == 0)

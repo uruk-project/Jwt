@@ -28,8 +28,8 @@ namespace JsonWebToken
         {
         }
 
-        public SecurityEventTokenDescriptor(PayloadDescriptor payload)
-            : base(new HeaderDescriptor(), payload)
+        public SecurityEventTokenDescriptor(DescriptorDictionary payload)
+            : base(new DescriptorDictionary(), payload)
         {
         }
 

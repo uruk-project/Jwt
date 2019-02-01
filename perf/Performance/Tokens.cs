@@ -369,7 +369,7 @@ namespace JsonWebToken.Performance
                 payload.Add(kvp.Key, kvp.Value);
             }
 
-            return new JwsDescriptor(new HeaderDescriptor(), new PayloadDescriptor(payload));
+            return new JwsDescriptor(new DescriptorDictionary(), new DescriptorDictionary(payload));
         }
 
         private static TokenState CreateInvalidToken(TokenValidationStatus status, JwtDescriptor descriptor, string claim = null)
@@ -377,10 +377,10 @@ namespace JsonWebToken.Performance
             switch (status)
             {
                 case TokenValidationStatus.SignatureKeyNotFound:
-                    descriptor.Header["kid"] = new JwtProperty(HeaderParameters.KidUtf8, (string)descriptor.Header["kid"].Value + "x"); ;
+                    descriptor.Header.Replace(new JwtProperty(HeaderParameters.KidUtf8, (string)descriptor.Header["kid"].Value + "x"));
                     break;
                 case TokenValidationStatus.MissingEncryptionAlgorithm:
-                    descriptor.Header["enc"] = new JwtProperty(HeaderParameters.EncUtf8);
+                    descriptor.Header.Replace(new JwtProperty(HeaderParameters.EncUtf8));
                     break;
             }
 

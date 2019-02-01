@@ -40,7 +40,7 @@ namespace JsonWebToken.Performance
 
         static JObject json = JObject.FromObject(dictionary);
 
-        static JObject jsonMedium = JObject.FromObject(jsonMedium);
+        static JObject jsonMedium = JObject.FromObject(dictionaryMedium);
 
         static dynamic dyn = new
         {

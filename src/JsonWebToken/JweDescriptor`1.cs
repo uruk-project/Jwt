@@ -15,7 +15,7 @@ namespace JsonWebToken
         /// Initializes an new instance of <see cref="JweDescriptor"/>.
         /// </summary>
         public JweDescriptor()
-            : base(new HeaderDescriptor(), new TDescriptor())
+            : base(new DescriptorDictionary(), new TDescriptor())
         {
         }
 
@@ -24,7 +24,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="payload"></param>
         public JweDescriptor(TDescriptor payload)
-            : base(new HeaderDescriptor(), payload)
+            : base(new DescriptorDictionary(), payload)
         {
         }
 
@@ -33,7 +33,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public JweDescriptor(HeaderDescriptor header, TDescriptor payload)
+        public JweDescriptor(DescriptorDictionary header, TDescriptor payload)
             : base(header, payload)
         {
         }
@@ -46,7 +46,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the audiences 'aud'.
         /// </summary>
-        public IReadOnlyList<string> Audiences { get => Payload.Audiences; set => Payload.Audiences = value; }
+        public List<string> Audiences { get => Payload.Audiences; set => Payload.Audiences = value; }
 
         /// <summary>
         /// Gets or sets the expiration time 'exp'.

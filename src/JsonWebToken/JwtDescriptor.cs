@@ -9,7 +9,10 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Text;
+using System.Text.Json;
 #if NETCOREAPP3_0
 using System.Text.Json;
 #endif
@@ -34,7 +37,7 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="JwtDescriptor"/>.
         /// </summary>
         protected JwtDescriptor()
-            : this(new HeaderDescriptor())
+            : this(new DescriptorDictionary())
         {
         }
 
@@ -42,7 +45,7 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="JwtDescriptor"/>.
         /// </summary>
         /// <param name="header"></param>
-        protected JwtDescriptor(HeaderDescriptor header)
+        protected JwtDescriptor(DescriptorDictionary header)
         {
             Header = header;
         }
@@ -50,7 +53,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the parameters header.
         /// </summary>
-        public HeaderDescriptor Header { get; }
+        public DescriptorDictionary Header { get; }
 
         /// <summary>
         /// Gets the <see cref="Jwt"/> used.
@@ -86,7 +89,7 @@ namespace JsonWebToken
         /// </summary>
         public string Algorithm
         {
-            get => GetHeaderParameter<string>(HeaderParameters.Alg);
+            get => GetHeaderParameter<string>(HeaderParameters.AlgUtf8);
             set => SetHeaderParameter(HeaderParameters.Alg, value);
         }
 
@@ -95,7 +98,7 @@ namespace JsonWebToken
         /// </summary>
         public string KeyId
         {
-            get => GetHeaderParameter<string>(HeaderParameters.Kid);
+            get => GetHeaderParameter<string>(HeaderParameters.KidUtf8);
             set => SetHeaderParameter(HeaderParameters.Kid, value);
         }
 
@@ -104,7 +107,7 @@ namespace JsonWebToken
         /// </summary>
         public string JwkSetUrl
         {
-            get => GetHeaderParameter<string>(HeaderParameters.Jku);
+            get => GetHeaderParameter<string>(HeaderParameters.JkuUtf8);
             set => SetHeaderParameter(HeaderParameters.Jku, value);
         }
 
@@ -113,7 +116,7 @@ namespace JsonWebToken
         /// </summary>
         public Jwk Jwk
         {
-            get => GetHeaderParameter<Jwk>(HeaderParameters.Jwk);
+            get => GetHeaderParameter<Jwk>(HeaderParameters.JwkUtf8);
             set => SetHeaderParameter(HeaderParameters.Jwk, value);
         }
 
@@ -122,7 +125,7 @@ namespace JsonWebToken
         /// </summary>
         public string X509Url
         {
-            get => GetHeaderParameter<string>(HeaderParameters.X5u);
+            get => GetHeaderParameter<string>(HeaderParameters.X5uUtf8);
             set => SetHeaderParameter(HeaderParameters.X5u, value);
         }
 
@@ -131,7 +134,7 @@ namespace JsonWebToken
         /// </summary>
         public IReadOnlyList<string> X509CertificateChain
         {
-            get => GetHeaderParameters<string>(HeaderParameters.X5c);
+            get => GetHeaderParameters<string>(HeaderParameters.X5cUtf8);
             set => SetHeaderParameter(HeaderParameters.X5c, value);
         }
 
@@ -140,7 +143,7 @@ namespace JsonWebToken
         /// </summary>
         public string X509CertificateSha1Thumbprint
         {
-            get => GetHeaderParameter<string>(HeaderParameters.X5t);
+            get => GetHeaderParameter<string>(HeaderParameters.X5tUtf8);
             set => SetHeaderParameter(HeaderParameters.X5t, value);
         }
 
@@ -149,7 +152,7 @@ namespace JsonWebToken
         /// </summary>
         public string Type
         {
-            get => GetHeaderParameter<string>(HeaderParameters.Typ);
+            get => GetHeaderParameter<string>(HeaderParameters.TypUtf8);
             set => SetHeaderParameter(HeaderParameters.Typ, value);
         }
 
@@ -158,7 +161,7 @@ namespace JsonWebToken
         /// </summary>
         public string ContentType
         {
-            get => GetHeaderParameter<string>(HeaderParameters.Cty);
+            get => GetHeaderParameter<string>(HeaderParameters.CtyUtf8);
             set => SetHeaderParameter(HeaderParameters.Cty, value);
         }
 
@@ -167,7 +170,7 @@ namespace JsonWebToken
         /// </summary>
         public IReadOnlyList<string> Critical
         {
-            get => GetHeaderParameters<string>(HeaderParameters.Crit);
+            get => GetHeaderParameters<string>(HeaderParameters.CritUtf8);
             set => SetHeaderParameter(HeaderParameters.Crit, value);
         }
 
@@ -184,7 +187,7 @@ namespace JsonWebToken
         /// <typeparam name="T"></typeparam>
         /// <param name="headerName"></param>
         /// <returns></returns>
-        protected T GetHeaderParameter<T>(string headerName)
+        protected T GetHeaderParameter<T>(ReadOnlySpan<byte> headerName)
         {
             if (Header.TryGetValue(headerName, out var value))
             {
@@ -203,11 +206,11 @@ namespace JsonWebToken
         {
             if (value != null)
             {
-                Header[headerName] = new JwtProperty(Encoding.UTF8.GetBytes(headerName), value);
+                Header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName), value));
             }
             else
             {
-                Header[headerName] = new JwtProperty(Encoding.UTF8.GetBytes(headerName));
+                Header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName)));
             }
         }
 
@@ -220,11 +223,11 @@ namespace JsonWebToken
         {
             if (value != null)
             {
-                Header[headerName] = new JwtProperty(Encoding.UTF8.GetBytes(headerName), JObject.FromObject(value));
+                Header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName), JObject.FromObject(value)));
             }
             else
             {
-                Header[headerName] = new JwtProperty(Encoding.UTF8.GetBytes(headerName));
+                Header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName)));
             }
         }
 
@@ -233,15 +236,15 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="headerName"></param>
         /// <param name="value"></param>
-        protected void SetHeaderParameter<T>(string headerName, IReadOnlyList<T> value)
+        protected void SetHeaderParameter(string headerName, List<string> value)
         {
             if (value != null)
             {
-                Header[headerName] = new JwtProperty(Encoding.UTF8.GetBytes(headerName), JArray.FromObject(value));
+                Header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName), new JwtArray(value)));
             }
             else
             {
-                Header[headerName] = new JwtProperty(Encoding.UTF8.GetBytes(headerName));
+                Header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName)));
             }
         }
 
@@ -250,17 +253,17 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="headerName"></param>
         /// <returns></returns>
-        protected IReadOnlyList<T> GetHeaderParameters<T>(string headerName)
+        protected List<T> GetHeaderParameters<T>(ReadOnlySpan<byte> headerName)
         {
             if (Header.TryGetValue(headerName, out JwtProperty value))
             {
                 if (value.Type == JwtTokenType.Array)
                 {
-                    return new ReadOnlyCollection<T>((List<T>)value.Value);
+                    return (List<T>)value.Value;
                 }
 
                 var list = new List<T> { (T)value.Value };
-                return new ReadOnlyCollection<T>(list);
+                return list;
             }
 
             return null;
@@ -295,14 +298,27 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Serializes the <see cref="JwtDescriptor"/> into its JSON representation.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        protected string Serialize(object value)
+        public static ReadOnlySequence<byte> Serialize(DescriptorDictionary value)
         {
-            return JsonConvert.SerializeObject(value, Formatting.None, serializerSettings);
+            var bufferWriter = new BufferWriter();
+            {
+                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = false }));
+
+                writer.WriteStartObject();
+                WriteObject(ref writer, value);
+                writer.WriteEndObject();
+                writer.Flush();
+
+                return bufferWriter.GetSequence();
+            }
+        }
+               
+        private static void WriteObject(ref Utf8JsonWriter writer, DescriptorDictionary dictionary)
+        {
+            for (int i = 0; i < dictionary.Count; i++)
+            {
+                dictionary[i].WriteTo(ref writer);
+            }
         }
 
         /// <summary>
@@ -320,186 +336,5 @@ namespace JsonWebToken
         {
             return JsonConvert.SerializeObject(Header, Formatting.Indented, serializerSettings);
         }
-
-#if NETCOREAPP3_0
-        public static ReadOnlySequence<byte> Serialize(HeaderDescriptor value, Formatting formatting)
-        {
-            var bufferWriter = new BufferWriter();
-            {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = formatting == Formatting.Indented }));
-
-                writer.WriteStartObject();
-                WriteObject(ref writer, value);
-                writer.WriteEndObject();
-                writer.Flush();
-
-                return bufferWriter.GetSequence();
-            }
-        }
-
-        public static ReadOnlySequence<byte> Serialize(PayloadDescriptor value)
-        {
-            var bufferWriter = new BufferWriter();
-            {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = false}));
-
-                writer.WriteStartObject();
-                WriteObject(ref writer, value);
-                writer.WriteEndObject();
-                writer.Flush();
-
-                return bufferWriter.GetSequence();
-            }
-        }
-
-        private static void WriteArray(ref Utf8JsonWriter writer, JArray value)
-        {
-            for (int i = 0; i < value.Count; i++)
-            {
-                var token = value[i];
-                switch (token.Type)
-                {
-                    case JTokenType.Object:
-                        writer.WriteStartObject();
-                        WriteObject(ref writer, token.Value<JObject>());
-                        writer.WriteEndObject();
-                        break;
-                    case JTokenType.Array:
-                        writer.WriteStartArray();
-                        WriteArray(ref writer, token.Value<JArray>());
-                        writer.WriteEndArray();
-                        break;
-                    case JTokenType.Integer:
-                        writer.WriteNumberValue(token.Value<long>());
-                        break;
-                    case JTokenType.Float:
-                        writer.WriteNumberValue(token.Value<double>());
-                        break;
-                    case JTokenType.String:
-                        writer.WriteStringValue(token.Value<string>());
-                        break;
-                    case JTokenType.Boolean:
-                        writer.WriteBooleanValue(token.Value<bool>());
-                        break;
-                    case JTokenType.Null:
-                        writer.WriteNullValue();
-                        break;
-                    default:
-                        throw new JsonWriterException($"The type {value.Type} is not supported.");
-                }
-            }
-        }
-
-        private static void WriteObject(ref Utf8JsonWriter writer, JObject jObject)
-        {
-            foreach ((var key, var value) in jObject)
-            {
-                switch (value.Type)
-                {
-                    case JTokenType.Object:
-                        writer.WriteStartObject(key);
-                        WriteObject(ref writer, value.Value<JObject>());
-                        writer.WriteEndObject();
-                        break;
-                    case JTokenType.Array:
-                        writer.WriteStartArray(key);
-                        WriteArray(ref writer, value.Value<JArray>());
-                        writer.WriteEndArray();
-                        break;
-                    case JTokenType.Integer:
-                        writer.WriteNumber(key, value.Value<long>());
-                        break;
-                    case JTokenType.Float:
-                        writer.WriteNumber(key, value.Value<double>());
-                        break;
-                    case JTokenType.String:
-                        writer.WriteString(key, value.Value<string>(), false);
-                        break;
-                    case JTokenType.Boolean:
-                        writer.WriteBoolean(key, value.Value<bool>());
-                        break;
-                    case JTokenType.Null:
-                        writer.WriteNull(key);
-                        break;
-                    default:
-                        throw new JsonWriterException($"The type {value.Type} is not supported.");
-                }
-            }
-        }
-
-        private static void WriteObject(ref Utf8JsonWriter writer, PayloadDescriptor payload)
-        {
-            foreach (var property in payload.Values)
-            {
-                switch (property.Type)
-                {
-                    case JwtTokenType.Object:
-                        writer.WriteStartObject(property.Utf8Name.Span);
-                        WriteObject(ref writer, (JObject)property.Value);
-                        writer.WriteEndObject();
-                        break;
-                    case JwtTokenType.Array:
-                        writer.WriteStartArray(property.Utf8Name.Span);
-                        WriteArray(ref writer, (JArray)property.Value);
-                        writer.WriteEndArray();
-                        break;
-                    case JwtTokenType.Integer:
-                        writer.WriteNumber(property.Utf8Name.Span, (long)property.Value);
-                        break;
-                    case JwtTokenType.Float:
-                        writer.WriteNumber(property.Utf8Name.Span, (double)property.Value);
-                        break;
-                    case JwtTokenType.String:
-                        writer.WriteString(property.Utf8Name.Span, (string)property.Value, false);
-                        break;
-                    case JwtTokenType.Boolean:
-                        writer.WriteBoolean(property.Utf8Name.Span, (bool)property.Value);
-                        break;
-                    case JwtTokenType.Null:
-                        writer.WriteNull(property.Utf8Name.Span);
-                        break;
-                    default:
-                        throw new JsonWriterException($"The type {property.Type} is not supported.");
-                }
-            }
-        }
-
-        private static void WriteObject(ref Utf8JsonWriter writer, HeaderDescriptor payload)
-        {
-            foreach (var property in payload.Values)
-            {
-                switch (property.Type)
-                {
-                    case JwtTokenType.Object:
-                        writer.WriteStartObject(property.Utf8Name.Span);
-                        WriteObject(ref writer, (JObject)property.Value);
-                        writer.WriteEndObject();
-                        break;
-                    case JwtTokenType.Array:
-                        writer.WriteStartArray(property.Utf8Name.Span);
-                        WriteArray(ref writer, (JArray)property.Value);
-                        writer.WriteEndArray();
-                        break;
-                    case JwtTokenType.Integer:
-                        writer.WriteNumber(property.Utf8Name.Span, (long)property.Value);
-                        break;
-                    case JwtTokenType.Float:
-                        writer.WriteNumber(property.Utf8Name.Span, (double)property.Value);
-                        break;
-                    case JwtTokenType.String:
-                        writer.WriteString(property.Utf8Name.Span, (string)property.Value, false);
-                        break;
-                    case JwtTokenType.Boolean:
-                        writer.WriteBoolean(property.Utf8Name.Span, (bool)property.Value);
-                        break;
-                    case JwtTokenType.Null:
-                        writer.WriteNull(property.Utf8Name.Span);
-                        break;
-                    default:
-                        throw new JsonWriterException($"The type {property.Type} is not supported.");
-                }
-            }
-        }
-#endif
     }
 }

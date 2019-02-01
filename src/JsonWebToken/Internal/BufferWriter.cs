@@ -1,7 +1,5 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
-#if NETCOREAPP3_0
-
 using System;
 using System.Buffers;
 using System.Diagnostics;
@@ -291,4 +289,3 @@ namespace JsonWebToken
         }
     }
 }
-#endif

@@ -27,11 +27,9 @@ namespace JsonWebToken.Tests
         public void Wrap_Rfc7518_Appendix_C()
         {
             var kwp = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.EcdhEs);
-            var header = new HeaderDescriptor
-            {
-                { HeaderParameters.Apu, new JwtProperty(HeaderParameters.ApuUtf8, Base64Url.Base64UrlEncode("Alice")) },
-                { HeaderParameters.Apv, new JwtProperty(HeaderParameters.ApvUtf8, Base64Url.Base64UrlEncode("Bob")) }
-            };
+            var header = new DescriptorDictionary();
+            header.Add(new JwtProperty(HeaderParameters.ApuUtf8, Base64Url.Base64UrlEncode("Alice")));
+            header.Add(new JwtProperty(HeaderParameters.ApvUtf8, Base64Url.Base64UrlEncode("Bob")));
 
             var wrapped = kwp.TryWrapKey(_aliceKey, header, null, out var cek, out var bytesWritten);
             Assert.True(wrapped);
@@ -45,11 +43,9 @@ namespace JsonWebToken.Tests
         {
             var kwp = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW);
             byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
-            var header = new HeaderDescriptor
-            {
-                { HeaderParameters.Apu, new JwtProperty(HeaderParameters.ApuUtf8, Base64Url.Base64UrlEncode("Alice")) },
-                { HeaderParameters.Apv, new JwtProperty(HeaderParameters.ApvUtf8, Base64Url.Base64UrlEncode("Bob")) }
-            };
+            var header = new DescriptorDictionary();
+            header.Add(new JwtProperty(HeaderParameters.ApuUtf8, Base64Url.Base64UrlEncode("Alice")));
+            header.Add(new JwtProperty(HeaderParameters.ApvUtf8, Base64Url.Base64UrlEncode("Bob")));
 
             var wrapped = kwp.TryWrapKey(_aliceKey, header, wrappedKey, out _, out _);
 
@@ -71,11 +67,9 @@ namespace JsonWebToken.Tests
         {
             var kwp = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW);
             byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
-            var header = new HeaderDescriptor
-            {
-                { HeaderParameters.Apu, new JwtProperty(HeaderParameters.ApuUtf8, Base64Url.Base64UrlEncode("Alice")) },
-                { HeaderParameters.Apv, new JwtProperty(HeaderParameters.ApvUtf8, Base64Url.Base64UrlEncode("Bob")) }
-            };
+            var header = new DescriptorDictionary();
+            header.Add(new JwtProperty(HeaderParameters.ApuUtf8, Base64Url.Base64UrlEncode("Alice")));
+            header.Add(new JwtProperty(HeaderParameters.ApvUtf8, Base64Url.Base64UrlEncode("Bob")));
 
             var wrapped = kwp.TryWrapKey(_aliceKey, header, wrappedKey, out var cek, out var bytesWritten);
 

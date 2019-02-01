@@ -15,7 +15,7 @@ namespace JsonWebToken
         {
         }
 
-        public EncryptedStatedDescriptor(HeaderDescriptor header, StateDescriptor payload) 
+        public EncryptedStatedDescriptor(DescriptorDictionary header, StateDescriptor payload) 
             : base(header, payload)
         {
         }

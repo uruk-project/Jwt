@@ -24,7 +24,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public BinaryJweDescriptor(HeaderDescriptor header, byte[] payload)
+        public BinaryJweDescriptor(DescriptorDictionary header, byte[] payload)
             : base(header, payload)
         {
         }

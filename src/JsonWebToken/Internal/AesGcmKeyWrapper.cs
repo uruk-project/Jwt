@@ -65,7 +65,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override bool TryWrapKey(Jwk staticKey, HeaderDescriptor header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override bool TryWrapKey(Jwk staticKey, DescriptorDictionary header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
             {
@@ -83,8 +83,8 @@ namespace JsonWebToken.Internal
                     aesGcm.Encrypt(nonce, contentEncryptionKey.ToByteArray(), destination, tag);
                     bytesWritten = destination.Length;
 
-                    header[HeaderParameters.IV] = new JwtProperty(HeaderParameters.IVUtf8, Base64Url.Base64UrlEncode(nonce));
-                    header[HeaderParameters.Tag] = new JwtProperty(HeaderParameters.TagUtf8, Base64Url.Base64UrlEncode(tag));
+                    header.Add(new JwtProperty(HeaderParameters.IVUtf8, Base64Url.Base64UrlEncode(nonce)));
+                    header.Add(new JwtProperty(HeaderParameters.TagUtf8, Base64Url.Base64UrlEncode(tag)));
 
                     return true;
                 }

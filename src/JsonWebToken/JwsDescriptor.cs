@@ -20,7 +20,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines a signed JWT with a JSON payload.
     /// </summary>
-    public partial class JwsDescriptor : JwtDescriptor<PayloadDescriptor>
+    public partial class JwsDescriptor : JwtDescriptor<DescriptorDictionary>
     {
         private const byte dot = (byte)'.';
         private static readonly ReadOnlyDictionary<string, JwtTokenType[]> DefaultRequiredClaims = new ReadOnlyDictionary<string, JwtTokenType[]>(new Dictionary<string, JwtTokenType[]>());
@@ -35,14 +35,14 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="JwsDescriptor"/>.
         /// </summary>
         public JwsDescriptor()
-            : base(new HeaderDescriptor(), new PayloadDescriptor())
+            : base(new DescriptorDictionary(), new DescriptorDictionary())
         {
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwsDescriptor"/>.
         /// </summary>
-        public JwsDescriptor(HeaderDescriptor header, PayloadDescriptor payload)
+        public JwsDescriptor(DescriptorDictionary header, DescriptorDictionary payload)
             : base(header, payload)
         {
         }
@@ -92,7 +92,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the value of the 'aud' claim.
         /// </summary>
-        public IReadOnlyList<string> Audiences
+        public List<string> Audiences
         {
             get { return GetListClaims<string>(Claims.Aud); }
             set { SetClaim(Claims.Aud, value); }
@@ -142,7 +142,7 @@ namespace JsonWebToken
         public void AddClaim(string name, string value)
         {
             // TODO: allow to add a value into an array
-            Payload[name] = new JwtProperty(Encoding.UTF8.GetBytes(name), value);
+            Payload.Add(new JwtProperty(Encoding.UTF8.GetBytes(name), value));
         }
 
         /// <summary>
@@ -154,11 +154,11 @@ namespace JsonWebToken
         {
             if (value.HasValue)
             {
-                Payload[name] = new JwtProperty(Encoding.UTF8.GetBytes(name), value.Value);
+                Payload.Add(new JwtProperty(Encoding.UTF8.GetBytes(name), value.Value));
             }
             else
             {
-                Payload[name] = new JwtProperty(Encoding.UTF8.GetBytes(name));
+                Payload.Add(new JwtProperty(Encoding.UTF8.GetBytes(name)));
             }
         }
 
@@ -171,11 +171,11 @@ namespace JsonWebToken
         {
             if (value.HasValue)
             {
-                Payload[name] = new JwtProperty(Encoding.UTF8.GetBytes(name), value.Value.ToEpochTime());
+                Payload.Add(new JwtProperty(Encoding.UTF8.GetBytes(name), value.Value.ToEpochTime()));
             }
             else
             {
-                Payload[name] = new JwtProperty(Encoding.UTF8.GetBytes(name));
+                Payload.Add(new JwtProperty(Encoding.UTF8.GetBytes(name)));
             }
         }
 
@@ -186,7 +186,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, int value)
         {
-            Payload[name] = new JwtProperty(Encoding.UTF8.GetBytes(name), value);
+            Payload.Add(new JwtProperty(Encoding.UTF8.GetBytes(name), value));
         }
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, bool value)
         {
-            Payload[name] = new JwtProperty(Encoding.UTF8.GetBytes(name), value);
+            Payload.Add(new JwtProperty(Encoding.UTF8.GetBytes(name), value));
         }
 
         /// <summary>
@@ -206,7 +206,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, JObject value)
         {
-            Payload[name] = new JwtProperty(Encoding.UTF8.GetBytes(name), value);
+            Payload.Add(new JwtProperty(Encoding.UTF8.GetBytes(name), value));
         }
 
         /// <summary>
@@ -224,26 +224,16 @@ namespace JsonWebToken
             else
             {
                 jObject = new JObject();
-                Payload[name] = new JwtProperty(Encoding.UTF8.GetBytes(name), jObject);
+                Payload.Add(new JwtProperty(Encoding.UTF8.GetBytes(name), jObject));
             }
 
 #if NETSTANDARD
-            jObject.Add(Encoding.UTF8.GetString(value.Utf8Name.ToArray()), (JObject)value.Value);
+            jObject.Add(EncodingHelper.GetUtf8String(value.Utf8Name.Span), (JObject)value.Value);
 #else
             jObject.Add(Encoding.UTF8.GetString(value.Utf8Name.Span), (JObject)value.Value);
 #endif
         }
-
-        ///// <summary>
-        ///// Adds a claim.
-        ///// </summary>
-        ///// <param name="name"></param>
-        ///// <param name="value"></param>
-        //public void AddClaim(string name, JValue value)
-        //{
-        //    Payload[name] = new JwtProperty(JwtTokenType.Object, Encoding.UTF8.GetBytes(name), value);
-        //}
-
+        
         /// <summary>
         /// Gets a claim as <see cref="string"/>.
         /// </summary>
@@ -309,17 +299,17 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="claimType"></param>
         /// <returns></returns>
-        protected IReadOnlyList<T> GetListClaims<T>(string claimType)
+        protected List<T> GetListClaims<T>(string claimType)
         {
             if (Payload.TryGetValue(claimType, out JwtProperty value))
             {
                 if (value.Type == JwtTokenType.Array)
                 {
-                    return new ReadOnlyCollection<T>((List<T>)value.Value);
+                    return (List<T>)value.Value;
                 }
 
                 var list = new List<T> { (T)value.Value };
-                return new ReadOnlyCollection<T>(list);
+                return list;
             }
 
             return null;
@@ -348,7 +338,7 @@ namespace JsonWebToken
         /// <returns></returns>
         protected void SetClaim(string claimType, string value)
         {
-            Payload[claimType] = new JwtProperty(Encoding.UTF8.GetBytes(claimType), value);
+            Payload.Add(new JwtProperty(Encoding.UTF8.GetBytes(claimType), value));
         }
 
         /// <summary>
@@ -357,9 +347,15 @@ namespace JsonWebToken
         /// <param name="claimType"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        protected void SetClaim(string claimType, IReadOnlyList<string> value)
+        protected void SetClaim(string claimType, List<string> value)
         {
-            Payload[claimType] = new JwtProperty(Encoding.UTF8.GetBytes(claimType), JArray.FromObject(value));
+            var list = new List<JwtValue>(value.Count);
+            for (int i = 0; i < value.Count; i++)
+            {
+                list.Add(new JwtValue(value[i]));
+            }
+
+            Payload.Add(new JwtProperty(Encoding.UTF8.GetBytes(claimType), new JwtArray(list)));
         }
 
         /// <summary>
@@ -394,12 +390,12 @@ namespace JsonWebToken
             if (context.TokenLifetimeInMinutes != 0 || context.GenerateIssuedTime)
             {
                 DateTime now = DateTime.UtcNow;
-                if (context.GenerateIssuedTime && !Payload.ContainsKey(Claims.Iat))
+                if (context.GenerateIssuedTime && !Payload.ContainsKey(Claims.IatUtf8))
                 {
                     AddClaim(Claims.Iat, now);
                 }
 
-                if (context.TokenLifetimeInMinutes != 0 && !Payload.ContainsKey(Claims.Exp))
+                if (context.TokenLifetimeInMinutes != 0 && !Payload.ContainsKey(Claims.ExpUtf8))
                 {
                     AddClaim(Claims.Exp, now + TimeSpan.FromMinutes(context.TokenLifetimeInMinutes));
                 }
@@ -409,11 +405,7 @@ namespace JsonWebToken
             int length = Base64Url.GetArraySizeRequiredToEncode((int)payloadJson.Length)
                        + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBytes))
                        + (Constants.JwsSegmentCount - 1);
-#if NETCOREAPP3_0
             ReadOnlySequence<byte> headerJson = default;
-#else
-            string headerJson = null;
-#endif   
             var headerCache = context.HeaderCache;
             byte[] base64UrlHeader = null;
             if (headerCache != null && headerCache.TryGetHeader(Header, alg, out base64UrlHeader))
@@ -422,7 +414,7 @@ namespace JsonWebToken
             }
             else
             {
-                headerJson = Serialize(Header, Formatting.None);
+                headerJson = Serialize(Header);
                 length += Base64Url.GetArraySizeRequiredToEncode((int)headerJson.Length);
             }
 
@@ -457,33 +449,7 @@ namespace JsonWebToken
             Debug.Assert(buffer.Length == payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten);
             return bufferToReturn;
         }
-
-        private static bool TryEncodeUtf8ToBase64Url(string input, Span<byte> destination, out int bytesWritten)
-        {
-            byte[] arrayToReturnToPool = null;
-            var encodedBytes = input.Length <= Constants.MaxStackallocBytes
-                  ? stackalloc byte[input.Length]
-                  : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(input.Length)).AsSpan(0, input.Length);
-            try
-            {
-#if !NETSTANDARD2_0
-                Encoding.UTF8.GetBytes(input, encodedBytes);
-#else
-                EncodingHelper.GetUtf8Bytes(input, encodedBytes);
-#endif
-                bytesWritten = Base64Url.Base64UrlEncode(encodedBytes, destination);
-                return bytesWritten == destination.Length;
-            }
-            finally
-            {
-                if (arrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
-                }
-            }
-        }
-
-#if NETCOREAPP3_0
+        
         private static bool TryEncodeUtf8ToBase64Url(ReadOnlySequence<byte> input, Span<byte> destination, out int bytesWritten)
         {
             if (input.IsSingleSegment)
@@ -514,14 +480,13 @@ namespace JsonWebToken
             }
 
         }
-#endif
 
         /// <inheritsdoc />
         public override void Validate()
         {
             for (int i = 0; i < ProhibitedClaims.Count; i++)
             {
-                if (Payload.ContainsKey(ProhibitedClaims[i]))
+                if (Payload.ContainsKey(Encoding.UTF8.GetBytes(ProhibitedClaims[i])))
                 {
                     Errors.ThrowClaimIsProhibited(ProhibitedClaims[i]);
                 }
