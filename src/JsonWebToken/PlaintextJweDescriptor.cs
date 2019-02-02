@@ -19,7 +19,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public PlaintextJweDescriptor(DescriptorDictionary header, string payload)
+        public PlaintextJweDescriptor(JwtObject header, string payload)
             : base(header, payload)
         {
         }

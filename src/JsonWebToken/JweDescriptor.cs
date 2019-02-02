@@ -11,7 +11,7 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JweDescriptor : JweDescriptor<JwsDescriptor>
     {
-        private static readonly JwtProperty Cty = new JwtProperty(Encoding.UTF8.GetBytes(HeaderParameters.Cty), ContentTypeValues.Jwt);
+        private static readonly JwtProperty Cty = new JwtProperty(Encoding.UTF8.GetBytes(HeaderParameters.Cty), ContentTypeValues.JwtUtf8);
 
         /// <summary>
         /// Initializes an new instance of <see cref="JweDescriptor{TDescriptor}"/>.
@@ -27,7 +27,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public JweDescriptor(DescriptorDictionary header, JwsDescriptor payload)
+        public JweDescriptor(JwtObject header, JwsDescriptor payload)
             : base(header, payload)
         {
             Header.Add(Cty);
@@ -38,7 +38,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="payload"></param>
         public JweDescriptor(JwsDescriptor payload)
-            : base(new DescriptorDictionary(), payload)
+            : base(new JwtObject(), payload)
         {
             Header.Add(Cty);
         }

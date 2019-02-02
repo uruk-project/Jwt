@@ -1,10 +1,7 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
@@ -81,7 +78,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override bool TryWrapKey(Jwk staticKey, DescriptorDictionary header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override bool TryWrapKey(Jwk staticKey, JwtObject header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
             {

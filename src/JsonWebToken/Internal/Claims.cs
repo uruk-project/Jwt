@@ -19,6 +19,7 @@ namespace JsonWebToken.Internal
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string Aud = "aud";
+        public static readonly byte[] AudUtf8 = Encoding.UTF8.GetBytes(Aud);
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
@@ -36,20 +37,24 @@ namespace JsonWebToken.Internal
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string Iss = "iss";
+        public static readonly byte[] IssUtf8 = Encoding.UTF8.GetBytes(Iss);
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string Jti = "jti";
+        public static readonly byte[] JtiUtf8 = Encoding.UTF8.GetBytes(Jti);
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string Nbf = "nbf";
+        public static readonly byte[] NbfUtf8 = Encoding.UTF8.GetBytes(Nbf);
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string Sub = "sub";
+        public static readonly byte[] SubUtf8 = Encoding.UTF8.GetBytes(Sub);
     }
 }

@@ -1,5 +1,4 @@
-﻿#if NETCOREAPP3_0
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Running;
 using Newtonsoft.Json;
@@ -81,8 +80,8 @@ namespace JsonWebToken.Performance
             claim9 = "".PadRight(100, 'j')
         };
 
-        private static readonly DescriptorDictionary payload = new DescriptorDictionary(json);
-        private static readonly DescriptorDictionary payloadMedium = new DescriptorDictionary(jsonMedium);
+        private static readonly JwtObject payload = Tokens.ToJwtObject(json);
+        private static readonly JwtObject payloadMedium = Tokens.ToJwtObject(jsonMedium);
 
         public JsonWriterBenchmark()
         {
@@ -90,7 +89,7 @@ namespace JsonWebToken.Performance
             Old();
         }
 
-        [Benchmark(Baseline = true)]
+        [Benchmark(Baseline = false)]
         public ReadOnlySequence<byte> New()
         {
             return JwtDescriptor.Serialize(payloadMedium);
@@ -106,20 +105,14 @@ namespace JsonWebToken.Performance
                 for (int i = 0; i < payloadMedium.Count; i++)
                 {
                     var property = payloadMedium[i];
-#if NETSTANDARD2_0
-                    writer.WritePropertyName(EncodingHelper.GetUtf8String(property.Utf8Name.Span));
-#else
                     writer.WritePropertyName(Encoding.UTF8.GetString(property.Utf8Name.Span));
-#endif
                     switch (property.Type)
                     {
                         case JwtTokenType.Object:
-                            var jObject = (JObject)property.Value;
-                            jObject.WriteTo(writer);
+                            writer.WriteValue((JwtObject)property.Value);
                             break;
                         case JwtTokenType.Array:
-                            var jArray = (JArray)property.Value;
-                            jArray.WriteTo(writer);
+                            writer.WriteValue((JArray)property.Value);
                             break;
                         case JwtTokenType.Integer:
                             writer.WriteValue((long)property.Value);
@@ -153,4 +146,3 @@ namespace JsonWebToken.Performance
         }
     }
 }
-#endif

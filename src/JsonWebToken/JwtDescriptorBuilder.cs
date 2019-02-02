@@ -14,8 +14,8 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtDescriptorBuilder
     {
-        private readonly DescriptorDictionary _header = new DescriptorDictionary();
-        private DescriptorDictionary _jsonPayload;
+        private readonly JwtObject _header = new JwtObject();
+        private JwtObject _jsonPayload;
         private byte[] _binaryPayload;
         private string _textPayload;
 
@@ -72,18 +72,6 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Adds a header parameter.
-        /// </summary>
-        /// <param name="headerName"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public JwtDescriptorBuilder AddHeader(string headerName, JObject value)
-        {
-            _header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName), value));
-            return this;
-        }
-
-        /// <summary>
         /// Defines the issuer.
         /// </summary>
         /// <param name="iss"></param>
@@ -113,7 +101,7 @@ namespace JsonWebToken
         {
             if (_jsonPayload == null)
             {
-                _jsonPayload = new DescriptorDictionary();
+                _jsonPayload = new JwtObject();
             }
 
             _jsonPayload.Add(new JwtProperty(Encoding.UTF8.GetBytes(claimName), value));
@@ -130,7 +118,7 @@ namespace JsonWebToken
         {
             if (_jsonPayload == null)
             {
-                _jsonPayload = new DescriptorDictionary();
+                _jsonPayload = new JwtObject();
             }
 
             _jsonPayload.Add(new JwtProperty(Encoding.UTF8.GetBytes(claimName), value));
@@ -147,7 +135,7 @@ namespace JsonWebToken
         {
             if (_jsonPayload == null)
             {
-                _jsonPayload = new DescriptorDictionary();
+                _jsonPayload = new JwtObject();
             }
 
             _jsonPayload.Add(new JwtProperty(Encoding.UTF8.GetBytes(claimName), value));
@@ -164,7 +152,7 @@ namespace JsonWebToken
         {
             if (_jsonPayload == null)
             {
-                _jsonPayload = new DescriptorDictionary();
+                _jsonPayload = new JwtObject();
             }
 
             _jsonPayload.Add(new JwtProperty(Encoding.UTF8.GetBytes(claimName), value));
@@ -181,7 +169,7 @@ namespace JsonWebToken
         {
             if (_jsonPayload == null)
             {
-                _jsonPayload = new DescriptorDictionary();
+                _jsonPayload = new JwtObject();
             }
 
             _jsonPayload.Add(new JwtProperty(Encoding.UTF8.GetBytes(claimName), value));
@@ -198,7 +186,7 @@ namespace JsonWebToken
         {
             if (_jsonPayload == null)
             {
-                _jsonPayload = new DescriptorDictionary();
+                _jsonPayload = new JwtObject();
             }
 
             _jsonPayload.Add(new JwtProperty(Encoding.UTF8.GetBytes(claimName), value));
@@ -266,7 +254,7 @@ namespace JsonWebToken
             }
             else if (_jsonPayload != null)
             {
-                var jws = new JwsDescriptor(new DescriptorDictionary(), _jsonPayload);
+                var jws = new JwsDescriptor(new JwtObject(), _jsonPayload);
                 if (_signingKey != null)
                 {
                     jws.Key = _signingKey;
@@ -320,7 +308,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="payload"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder Json(DescriptorDictionary payload)
+        public JwtDescriptorBuilder Json(JwtObject payload)
         {
             EnsureNotDefined("JSON");
 

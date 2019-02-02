@@ -2,10 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
@@ -13,86 +10,66 @@ using System.Buffers;
 
 namespace JsonWebToken
 {
-
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
-    public readonly struct JwtProperty
+
+    public readonly struct JwtValue
     {
-        public bool IsEmpty => Utf8Name.IsEmpty;
-
         public readonly JwtTokenType Type;
-
-        public readonly ReadOnlyMemory<byte> Utf8Name;
 
         public readonly object Value;
 
-        public JwtProperty(byte[] utf8Name, JwtArray value)
+        public JwtValue(JwtArray value)
         {
             Type = JwtTokenType.Array;
-            Utf8Name = utf8Name;
             Value = value;
         }
 
-        public JwtProperty(byte[] utf8Name, JwtObject value)
+        public JwtValue(JwtObject value)
         {
             Type = JwtTokenType.Object;
-            Utf8Name = utf8Name;
             Value = value ?? throw new ArgumentNullException(nameof(value));
         }
 
-        public JwtProperty(byte[] utf8Name, string value)
+        public JwtValue(string value)
         {
             Type = JwtTokenType.String;
-            Utf8Name = utf8Name;
             Value = value ?? throw new ArgumentNullException(nameof(value));
         }
 
-        public JwtProperty(byte[] utf8Name, byte[] value)
+        public JwtValue(byte[] value)
         {
             Type = JwtTokenType.Utf8String;
-            Utf8Name = utf8Name;
-            Value = value;
+            Value = value ?? throw new ArgumentNullException(nameof(value));
         }
-
-        public JwtProperty(byte[] utf8Name, long value)
+        
+        public JwtValue(long value)
         {
             Type = JwtTokenType.Integer;
-            Utf8Name = utf8Name;
             Value = value;
         }
 
-        public JwtProperty(byte[] utf8Name, int value)
+        public JwtValue(int value)
         {
             Type = JwtTokenType.Integer;
-            Utf8Name = utf8Name;
             Value = value;
         }
 
-        public JwtProperty(byte[] utf8Name, double value)
+        public JwtValue(double value)
         {
             Type = JwtTokenType.Float;
-            Utf8Name = utf8Name;
             Value = value;
         }
 
-        public JwtProperty(byte[] utf8Name, float value)
+        public JwtValue(float value)
         {
             Type = JwtTokenType.Float;
-            Utf8Name = utf8Name;
             Value = value;
         }
 
-        public JwtProperty(byte[] utf8Name, bool value)
+        public JwtValue(bool value)
         {
             Type = JwtTokenType.Boolean;
-            Utf8Name = utf8Name;
             Value = value;
-        }
-
-        public JwtProperty(byte[] utf8Name)
-        {
-            Type = JwtTokenType.Null;
-            Utf8Name = utf8Name;
-            Value = null;
         }
 
         internal void WriteTo(ref Utf8JsonWriter writer)
@@ -100,54 +77,32 @@ namespace JsonWebToken
             switch (Type)
             {
                 case JwtTokenType.Object:
-                    ((JwtObject)Value).WriteTo(ref writer, Utf8Name.Span);
+                    ((JwtObject)Value).WriteTo(ref writer);
                     break;
                 case JwtTokenType.Array:
-                    ((JwtArray)Value).WriteTo(ref writer, Utf8Name.Span);
+                    ((JwtArray)Value).WriteTo(ref writer);
                     break;
                 case JwtTokenType.Integer:
-                    writer.WriteNumber(Utf8Name.Span, (long)Value);
+                    writer.WriteNumberValue((long)Value);
                     break;
                 case JwtTokenType.Float:
-                    writer.WriteNumber(Utf8Name.Span, (double)Value);
+                    writer.WriteNumberValue((double)Value);
                     break;
                 case JwtTokenType.String:
-                    writer.WriteString(Utf8Name.Span, (string)Value, false);
+                    writer.WriteStringValue((string)Value, false);
                     break;
                 case JwtTokenType.Utf8String:
-                    writer.WriteString(Utf8Name.Span, (byte[])Value, false);
+                    writer.WriteStringValue((byte[])Value, false);
                     break;
                 case JwtTokenType.Boolean:
-                    writer.WriteBoolean(Utf8Name.Span, (bool)Value);
+                    writer.WriteBooleanValue((bool)Value);
                     break;
                 case JwtTokenType.Null:
-                    writer.WriteNull(Utf8Name.Span);
+                    writer.WriteNullValue();
                     break;
                 default:
                     throw new JsonWriterException($"The type {Type} is not supported.");
             }
-        }
-
-        /// <inheritsdoc />
-        public override int GetHashCode()
-        {
-            return Utf8Name.GetHashCode();
-        }
-
-        /// <inheritsdoc />
-        public override bool Equals(object obj)
-        {
-            if (obj is null)
-            {
-                return false;
-            }
-
-            if (obj is ReadOnlyMemory<byte> rom)
-            {
-                return Utf8Name.Equals(rom);
-            }
-
-            return false;
         }
 
         private string DebuggerDisplay()
@@ -156,9 +111,7 @@ namespace JsonWebToken
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
 
-                writer.WriteStartObject();
                 WriteTo(ref writer);
-                writer.WriteEndObject();
                 writer.Flush();
 
                 var input = bufferWriter.GetSequence();

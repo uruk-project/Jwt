@@ -39,13 +39,24 @@ namespace JsonWebToken.Tests
         }
 
         [JsonObject]
-        private class ScimCreateEvent : IEvent
+        private class ScimCreateEvent
         {
+            private List<string> _attributes = new List<string>();
+
             [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = "ref", Required = Required.Default)]
             public string Ref { get; set; }
 
             [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = "attributes", Required = Required.Default)]
-            public IList<string> Attributes { get; set; } = new List<string>();
+            public IList<string> Attributes => _attributes;
+
+            public static implicit operator JwtObject(ScimCreateEvent @event)
+            {
+                var jwtObject = new JwtObject();
+                jwtObject.Add(new JwtProperty(Encoding.UTF8.GetBytes("ref"), @event.Ref));
+                jwtObject.Add(new JwtProperty(Encoding.UTF8.GetBytes("attribute"), new JwtArray(@event._attributes)));
+
+                return jwtObject;
+            }
         }
 
         [Fact]

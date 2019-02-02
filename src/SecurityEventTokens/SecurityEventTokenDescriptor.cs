@@ -28,8 +28,8 @@ namespace JsonWebToken
         {
         }
 
-        public SecurityEventTokenDescriptor(DescriptorDictionary payload)
-            : base(new DescriptorDictionary(), payload)
+        public SecurityEventTokenDescriptor(JwtObject payload)
+            : base(new JwtObject(), payload)
         {
         }
 
@@ -37,16 +37,16 @@ namespace JsonWebToken
         /// Gets or sets the set of event statements that each provide 
         /// information describing a single logical event that has occurred about a security subject.
         /// </summary>
-        public JObject Events => GetClaim(SetClaims.Events);
+        public JwtObject Events => GetClaim(SetClaims.EventsUtf8);
 
-        public void AddEvent(string eventName, JObject @event)
+        public void AddEvent(string eventName, JwtObject @event)
         {
-            AddClaim(SetClaims.Events, new JwtProperty(Encoding.UTF8.GetBytes(eventName), @event));
+            AddEvent(Encoding.UTF8.GetBytes(eventName), @event);
         }
 
-        public void AddEvent(string eventName, IEvent @event)
+        public void AddEvent(byte[] utf8EventName, JwtObject @event)
         {
-            AddClaim(SetClaims.Events, new JwtProperty(Encoding.UTF8.GetBytes(eventName), JObject.FromObject(@event)));
+            AddClaim(SetClaims.EventsUtf8, new JwtProperty(utf8EventName, @event));
         }
 
         /// <summary>
@@ -54,8 +54,8 @@ namespace JsonWebToken
         /// </summary>
         public string TransactionNumber
         {
-            get => GetStringClaim(SetClaims.Txn);
-            set => AddClaim(SetClaims.Txn, value);
+            get => GetStringClaim(SetClaims.TxnUtf8);
+            set => AddClaim(SetClaims.TxnUtf8, value);
         }
 
         /// <summary>
@@ -63,8 +63,8 @@ namespace JsonWebToken
         /// </summary>
         public DateTime? TimeOfEvent
         {
-            get => GetDateTime(SetClaims.Toe);
-            set => AddClaim(SetClaims.Toe, value);
+            get => GetDateTime(SetClaims.ToeUtf8);
+            set => AddClaim(SetClaims.ToeUtf8, value);
         }
 
         protected override ReadOnlyDictionary<string, JwtTokenType[]> RequiredClaims => SetRequiredClaims;

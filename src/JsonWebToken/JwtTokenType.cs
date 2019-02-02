@@ -43,8 +43,13 @@ namespace JsonWebToken
         String = 5,
 
         /// <summary>
+        /// A byte array representing a UTF8 string.
+        /// </summary>
+        Utf8String = 8,
+
+        /// <summary>
         ///  A boolean value.
         /// </summary>
-        Boolean = 6
+        Boolean = 7
     }
 }

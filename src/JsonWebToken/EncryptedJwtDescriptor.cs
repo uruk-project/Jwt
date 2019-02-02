@@ -25,7 +25,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public EncryptedJwtDescriptor(DescriptorDictionary header, TPayload payload)
+        public EncryptedJwtDescriptor(JwtObject header, TPayload payload)
             : base(header, payload)
         {
         }
@@ -242,7 +242,6 @@ namespace JsonWebToken
                     }
                 }
             }
-
         }
     }
 }

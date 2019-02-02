@@ -43,7 +43,7 @@ namespace JsonWebToken
         /// <param name="alg"></param>
         /// <param name="base64UrlHeader"></param>
         /// <returns></returns>
-        public bool TryGetHeader(DescriptorDictionary header, SignatureAlgorithm alg, out byte[] base64UrlHeader)
+        public bool TryGetHeader(JwtObject header, SignatureAlgorithm alg, out byte[] base64UrlHeader)
         {
             if (!IsSimpleHeader(header, alg))
             {
@@ -61,7 +61,7 @@ namespace JsonWebToken
                 }
 
                 var kid = (string)kidProperty.Value;
-                var keyId = ((string)kid).AsSpan();
+                var keyId = kid.AsSpan();
                 var node = _head;
                 while (node != null)
                 {
@@ -90,7 +90,7 @@ namespace JsonWebToken
             return false;
         }
 
-        private static long ComputeHeaderKey(DescriptorDictionary header, SignatureAlgorithm alg)
+        private static long ComputeHeaderKey(JwtObject header, SignatureAlgorithm alg)
         {
             header.TryGetValue(HeaderParameters.CtyUtf8, out var cty);
             if (alg is null)
@@ -113,7 +113,7 @@ namespace JsonWebToken
         /// <param name="header"></param>
         /// <param name="alg"></param>
         /// <param name="base6UrlHeader"></param>
-        public void AddHeader(DescriptorDictionary header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
+        public void AddHeader(JwtObject header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
         {
             if (!header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty) && kidProperty.Type == JwtTokenType.String)
             {
@@ -194,7 +194,7 @@ namespace JsonWebToken
             }
         }
 
-        private static bool IsSimpleHeader(DescriptorDictionary header, SignatureAlgorithm alg)
+        private static bool IsSimpleHeader(JwtObject header, SignatureAlgorithm alg)
         {
             if (!header.ContainsKey(HeaderParameters.KidUtf8))
             {

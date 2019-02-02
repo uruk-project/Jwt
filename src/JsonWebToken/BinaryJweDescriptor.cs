@@ -1,8 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
-
 namespace JsonWebToken
 {
     /// <summary>
@@ -24,7 +22,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public BinaryJweDescriptor(DescriptorDictionary header, byte[] payload)
+        public BinaryJweDescriptor(JwtObject header, byte[] payload)
             : base(header, payload)
         {
         }
