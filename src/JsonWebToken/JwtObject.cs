@@ -10,20 +10,40 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represents a JSON object.
+    /// </summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public class JwtObject
     {
         private readonly List<JwtProperty> _properties = new List<JwtProperty>();
 
+        /// <summary>
+        /// Gets the number of <see cref="JwtProperty"/>.
+        /// </summary>
         public int Count => _properties.Count;
 
+        /// <summary>
+        /// Adds a <see cref="JwtProperty"/> to the end of the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="property"></param>
         public void Add(JwtProperty property)
         {
             _properties.Add(property);
         }
 
+        /// <summary>
+        /// Gets the <see cref="JwtProperty"/> at the specified index;
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public JwtProperty this[int index] => _properties[index];
 
+        /// <summary>
+        /// Gets or sets the <see cref="JwtProperty"/> at the specified key;
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public JwtProperty this[ReadOnlyMemory<byte> key]
         {
             get
@@ -57,11 +77,23 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="JwtProperty"/> associated with the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public bool TryGetValue(string key, out JwtProperty value)
         {
             return TryGetValue(Encoding.UTF8.GetBytes(key), out value);
         }
 
+        /// <summary>
+        /// Gets the <see cref="JwtProperty"/> associated with the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public bool TryGetValue(ReadOnlyMemory<byte> key, out JwtProperty value)
         {
             var span = key.Span;
@@ -79,6 +111,11 @@ namespace JsonWebToken
             return false;
         }
 
+        /// <summary>
+        /// Determines whether a <see cref="JwtProperty"/> is in the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public bool ContainsKey(ReadOnlyMemory<byte> key)
         {
             var span = key.Span;
@@ -94,6 +131,10 @@ namespace JsonWebToken
             return false;
         }
 
+        /// <summary>
+        /// Replaces a <see cref="JwtProperty"/> 
+        /// </summary>
+        /// <param name="property"></param>
         public void Replace(JwtProperty property)
         {
             var span = property.Utf8Name.Span;
@@ -102,14 +143,29 @@ namespace JsonWebToken
                 var current = _properties[i];
                 if (current.Utf8Name.Span.SequenceEqual(span))
                 {
-                    _properties.RemoveAt(i);
+                    _properties[i] = property;
                     break;
                 }
             }
 
-            _properties.Add(property);
+            throw new InvalidOperationException();
         }
 
+        public byte[] Serialize()
+        {
+            using (var bufferWriter = new BufferWriter())
+            {
+                Serialize(bufferWriter);
+                return bufferWriter.OutputAsSequence.ToArray();
+            }
+        }
+
+        public void Serialize(IBufferWriter<byte> bufferWriter)
+        {
+            Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = false, SkipValidation = true }));
+            WriteTo(ref writer);
+            writer.Flush();
+        }
 
         internal void WriteTo(ref Utf8JsonWriter writer)
         {
@@ -142,7 +198,7 @@ namespace JsonWebToken
                 WriteTo(ref writer);
                 writer.Flush();
 
-                var input = bufferWriter.GetSequence();
+                var input = bufferWriter.OutputAsSequence;
                 if (input.IsSingleSegment)
                 {
                     return Encoding.UTF8.GetString(input.First.Span.ToArray());

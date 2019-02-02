@@ -68,7 +68,7 @@ namespace JsonWebToken
                 WriteTo(ref writer);
                 writer.Flush();
 
-                var input = bufferWriter.GetSequence();
+                var input = bufferWriter.OutputAsSequence;
                 if (input.IsSingleSegment)
                 {
                     return Encoding.UTF8.GetString(input.First.Span.ToArray());

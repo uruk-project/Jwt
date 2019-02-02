@@ -1,6 +1,7 @@
 // Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using System;
 using System.Text;
 
 namespace JsonWebToken.Internal
@@ -19,42 +20,70 @@ namespace JsonWebToken.Internal
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string Aud = "aud";
-        public static readonly byte[] AudUtf8 = Encoding.UTF8.GetBytes(Aud);
+     
+        /// <summary>
+        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// </summary> 
+        public static ReadOnlyMemory<byte> AudUtf8 => new byte[] { (byte)'a', (byte)'u', (byte)'d' };
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string Exp = "exp";
-        public static readonly byte[] ExpUtf8 = Encoding.UTF8.GetBytes(Exp);
+
+        /// <summary>
+        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// </summary>
+        public static ReadOnlyMemory<byte> ExpUtf8 => new byte[] { (byte)'e', (byte)'x', (byte)'p' };
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string Iat = "iat";
-        public static readonly byte[] IatUtf8 = Encoding.UTF8.GetBytes(Iat);
+
+        /// <summary>
+        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// </summary>
+        public static ReadOnlyMemory<byte> IatUtf8 => new byte[] { (byte)'i', (byte)'a', (byte)'t' };
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string Iss = "iss";
-        public static readonly byte[] IssUtf8 = Encoding.UTF8.GetBytes(Iss);
+
+        /// <summary>
+        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// </summary>
+        public static ReadOnlyMemory<byte> IssUtf8 => new byte[] { (byte)'i', (byte)'s', (byte)'s' };
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string Jti = "jti";
-        public static readonly byte[] JtiUtf8 = Encoding.UTF8.GetBytes(Jti);
+
+        /// <summary>
+        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// </summary>
+        public static ReadOnlyMemory<byte> JtiUtf8 => new byte[] { (byte)'j', (byte)'t', (byte)'i' };
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string Nbf = "nbf";
-        public static readonly byte[] NbfUtf8 = Encoding.UTF8.GetBytes(Nbf);
+
+        /// <summary>
+        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// </summary>
+        public static ReadOnlyMemory<byte> NbfUtf8 => new byte[] { (byte)'n', (byte)'b', (byte)'f' };
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string Sub = "sub";
-        public static readonly byte[] SubUtf8 = Encoding.UTF8.GetBytes(Sub);
+
+        /// <summary>
+        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// </summary>
+        public static ReadOnlyMemory<byte> SubUtf8 => new byte[] { (byte)'s', (byte)'u', (byte)'b' };
     }
 }

@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -10,10 +10,10 @@ namespace JsonWebToken
 {
     public class StateDescriptor : JwsDescriptor
     {
-        private static readonly ReadOnlyDictionary<string, JwtTokenType[]> StateRequiredClaims = new ReadOnlyDictionary<string, JwtTokenType[]>(
-              new Dictionary<string, JwtTokenType[]>
+        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> StateRequiredClaims
+            = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>
               {
-                { OAuth2Claims.Rfp, new [] { JwtTokenType.String} }
+                { OAuth2Claims.RfpUtf8, new [] { JwtTokenType.String} }
               });
 
         public StateDescriptor()
@@ -25,15 +25,15 @@ namespace JsonWebToken
         {
         }
 
-        protected override ReadOnlyDictionary<string, JwtTokenType[]> RequiredClaims => StateRequiredClaims;
+        protected override ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> RequiredClaims => StateRequiredClaims;
 
         /// <summary>
         /// Gets or sets the value of the 'rfp' claim.
         /// </summary>
         public string RequestForgeryProtection
         {
-            get { return GetStringClaim(OAuth2Claims.Rfp); }
-            set { AddClaim(OAuth2Claims.Rfp, value); }
+            get { return GetStringClaim(OAuth2Claims.RfpUtf8); }
+            set { AddClaim(OAuth2Claims.RfpUtf8, value); }
         }
 
         /// <summary>
@@ -41,8 +41,8 @@ namespace JsonWebToken
         /// </summary>
         public string TargetLinkUri
         {
-            get { return GetStringClaim(OAuth2Claims.TargetLinkUri); }
-            set { AddClaim(OAuth2Claims.TargetLinkUri, value); }
+            get { return GetStringClaim(OAuth2Claims.TargetLinkUriUtf8); }
+            set { AddClaim(OAuth2Claims.TargetLinkUriUtf8, value); }
         }
 
         /// <summary>
@@ -50,8 +50,8 @@ namespace JsonWebToken
         /// </summary>
         public string AuthorizationServer
         {
-            get { return GetStringClaim(OAuth2Claims.As); }
-            set { AddClaim(OAuth2Claims.As, value); }
+            get { return GetStringClaim(OAuth2Claims.AsUtf8); }
+            set { AddClaim(OAuth2Claims.AsUtf8, value); }
         }
 
         /// <summary>
@@ -59,8 +59,8 @@ namespace JsonWebToken
         /// </summary>
         public string AccessTokenHash
         {
-            get => GetStringClaim(OAuth2Claims.AtHash);
-            set => AddClaim(OAuth2Claims.AtHash, value);
+            get => GetStringClaim(OAuth2Claims.AtHashUtf8);
+            set => AddClaim(OAuth2Claims.AtHashUtf8, value);
         }
 
         /// <summary>     
@@ -68,8 +68,8 @@ namespace JsonWebToken
         /// </summary>
         public string CodeHash
         {
-            get => GetStringClaim(OAuth2Claims.CHash);
-            set => AddClaim(OAuth2Claims.CHash, value);
+            get => GetStringClaim(OAuth2Claims.CHashUtf8);
+            set => AddClaim(OAuth2Claims.CHashUtf8, value);
         }
     }
 }

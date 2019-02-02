@@ -15,13 +15,13 @@ namespace JsonWebToken
     {
         public const string SecurityEventTokenType = "secevent+jwt";
 
-        private static readonly ReadOnlyDictionary<string, JwtTokenType[]> SetRequiredClaims = new ReadOnlyDictionary<string, JwtTokenType[]>(
-            new Dictionary<string, JwtTokenType[]>
+        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> SetRequiredClaims = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(
+            new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>
         {
-            { Claims.Iss, new[] { JwtTokenType.String } },
-            { Claims.Iat, new[] { JwtTokenType.Integer} },
-            { Claims.Jti, new[] { JwtTokenType.String } },
-            { SetClaims.Events, new[] { JwtTokenType.Object } }
+            { Claims.IssUtf8, new[] { JwtTokenType.String } },
+            { Claims.IatUtf8, new[] { JwtTokenType.Integer} },
+            { Claims.JtiUtf8, new[] { JwtTokenType.String } },
+            { SetClaims.EventsUtf8, new[] { JwtTokenType.Object } }
         });
 
         public SecurityEventTokenDescriptor()
@@ -67,6 +67,6 @@ namespace JsonWebToken
             set => AddClaim(SetClaims.ToeUtf8, value);
         }
 
-        protected override ReadOnlyDictionary<string, JwtTokenType[]> RequiredClaims => SetRequiredClaims;
+        protected override ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> RequiredClaims => SetRequiredClaims;
     }
 }

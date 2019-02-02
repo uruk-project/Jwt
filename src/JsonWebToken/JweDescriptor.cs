@@ -11,7 +11,7 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JweDescriptor : JweDescriptor<JwsDescriptor>
     {
-        private static readonly JwtProperty Cty = new JwtProperty(Encoding.UTF8.GetBytes(HeaderParameters.Cty), ContentTypeValues.JwtUtf8);
+        private static readonly JwtProperty Cty = new JwtProperty(Encoding.UTF8.GetBytes(HeaderParameters.Cty), ContentTypeValues.Jwt);
 
         /// <summary>
         /// Initializes an new instance of <see cref="JweDescriptor{TDescriptor}"/>.

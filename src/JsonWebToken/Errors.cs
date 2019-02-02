@@ -1,12 +1,14 @@
 // Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using JsonWebToken.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -51,26 +53,50 @@ namespace JsonWebToken
             throw new InvalidOperationException($"Signature validation must be either defined by calling the method '{nameof(TokenValidationPolicyBuilder.RequireSignature)}' or explicitly ignored by calling the '{nameof(TokenValidationPolicyBuilder.AcceptUnsecureToken)}' method.");
         }
 
-        internal static void ThrowClaimIsRequired(string claim)
+        internal static void ThrowClaimIsRequired(ReadOnlyMemory<byte> claim)
         {
-            throw new JwtDescriptorException($"The claim '{claim}' is required.");
+            var value =
+#if NETSTANDARD2_0
+                EncodingHelper.GetUtf8String(claim.Span);
+#else
+                Encoding.UTF8.GetString(claim.Span);
+#endif
+            throw new JwtDescriptorException($"The claim '{value}' is required.");
         }
 
-        internal static void ThrowClaimIsProhibited(string claim)
+        internal static void ThrowClaimIsProhibited(ReadOnlyMemory<byte> claim)
         {
-            throw new JwtDescriptorException($"The claim '{claim}' is prohibited.");
+            var value =
+#if NETSTANDARD2_0
+                EncodingHelper.GetUtf8String(claim.Span);
+#else
+                Encoding.UTF8.GetString(claim.Span);
+#endif
+            throw new JwtDescriptorException($"The claim '{value}' is prohibited.");
         }
 
-        internal static void ThrowClaimMustBeOfType(KeyValuePair<string, JwtTokenType[]> claim)
+        internal static void ThrowClaimMustBeOfType(KeyValuePair<ReadOnlyMemory<byte>, JwtTokenType[]> claim)
         {
             var claimTypes = string.Join(", ", claim.Value.Select(t => t.ToString()));
-            throw new JwtDescriptorException($"The claim '{claim.Key}' must be of type[{claimTypes}].");
+            var value =
+#if NETSTANDARD2_0
+                EncodingHelper.GetUtf8String(claim.Key.Span);
+#else
+                Encoding.UTF8.GetString(claim.Key.Span);
+#endif
+            throw new JwtDescriptorException($"The claim '{value}' must be of type[{claimTypes}].");
         }
 
-        internal static void ThrowHeaderMustBeOfType(KeyValuePair<string, JwtTokenType[]> header)
+        internal static void ThrowHeaderMustBeOfType(KeyValuePair<ReadOnlyMemory<byte>, JwtTokenType[]> header)
         {
             var claimTypes = string.Join(", ", header.Value.Select(t => t.ToString()));
-            throw new JwtDescriptorException($"The header parameter '{header.Key}' must be of type[{claimTypes}].");
+            var value =
+#if NETSTANDARD2_0
+                EncodingHelper.GetUtf8String(header.Key.Span);
+#else
+                Encoding.UTF8.GetString(header.Key.Span);
+#endif
+            throw new JwtDescriptorException($"The header parameter '{value}' must be of type[{claimTypes}].");
         }
 
         internal static void ThrowNoSigningKeyDefined()
@@ -78,9 +104,15 @@ namespace JsonWebToken
             throw new InvalidOperationException("No signing key is defined.");
         }
 
-        internal static void ThrowHeaderIsRequired(string header)
+        internal static void ThrowHeaderIsRequired(ReadOnlyMemory<byte> header)
         {
-            throw new JwtDescriptorException($"The header parameter '{header}' is required.");
+            var value =
+#if NETSTANDARD2_0
+                EncodingHelper.GetUtf8String(header.Span);
+#else
+                Encoding.UTF8.GetString(header.Span);
+#endif
+            throw new JwtDescriptorException($"The header parameter '{value}' is required.");
         }
 
         internal static void ThrowMustBeGreaterOrEqualToZero(string name, int value)

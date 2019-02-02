@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -26,49 +25,93 @@ namespace JsonWebToken
         /// <summary>
         /// Adds a header parameter.
         /// </summary>
-        /// <param name="headerName"></param>
+        /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddHeader(string headerName, string value)
+        public JwtDescriptorBuilder AddHeader(ReadOnlyMemory<byte> utf8Name, string value)
         {
-            _header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName), value));
+            _header.Add(new JwtProperty(utf8Name, value));
             return this;
         }
 
         /// <summary>
         /// Adds a header parameter.
         /// </summary>
-        /// <param name="headerName"></param>
+        /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddHeader(string headerName, long value)
+        public JwtDescriptorBuilder AddHeader(string name, string value)
         {
-            _header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName), value));
+            return AddHeader(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        /// <summary>
+        /// Adds a header parameter.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddHeader(ReadOnlyMemory<byte> utf8Name, long value)
+        {
+            _header.Add(new JwtProperty(utf8Name, value));
             return this;
         }
 
         /// <summary>
         /// Adds a header parameter.
         /// </summary>
-        /// <param name="headerName"></param>
+        /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddHeader(string headerName, bool value)
+        public JwtDescriptorBuilder AddHeader(string name, long value)
         {
-            _header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName), value));
+            return AddHeader(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        /// <summary>
+        /// Adds a header parameter.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddHeader(ReadOnlyMemory<byte> utf8Name, bool value)
+        {
+            _header.Add(new JwtProperty(utf8Name, value));
             return this;
         }
 
         /// <summary>
         /// Adds a header parameter.
         /// </summary>
-        /// <param name="headerName"></param>
+        /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddHeader(string headerName, JwtArray value)
+        public JwtDescriptorBuilder AddHeader(string name, bool value)
         {
-            _header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName), value));
+            return AddHeader(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        /// <summary>
+        /// Adds a header parameter.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddHeader(ReadOnlyMemory<byte> utf8Name, JwtArray value)
+        {
+            _header.Add(new JwtProperty(utf8Name, value));
             return this;
+        }
+
+        /// <summary>
+        /// Adds a header parameter.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddHeader(string name, JwtArray value)
+        {
+            return AddHeader(Encoding.UTF8.GetBytes(name), value);
         }
 
         /// <summary>
@@ -94,103 +137,169 @@ namespace JsonWebToken
         /// <summary>
         /// Adds a claim.
         /// </summary>
-        /// <param name="claimName"></param>
+        /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddClaim(string claimName, string value)
+        public JwtDescriptorBuilder AddClaim(ReadOnlyMemory<byte> utf8Name, string value)
         {
             if (_jsonPayload == null)
             {
                 _jsonPayload = new JwtObject();
             }
 
-            _jsonPayload.Add(new JwtProperty(Encoding.UTF8.GetBytes(claimName), value));
+            _jsonPayload.Add(new JwtProperty(utf8Name, value));
             return this;
         }
 
         /// <summary>
         /// Adds a claim.
         /// </summary>
-        /// <param name="claimName"></param>
+        /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddClaim(string claimName, int value)
+        public JwtDescriptorBuilder AddClaim(string name, string value)
+        {
+            return AddClaim(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddClaim(ReadOnlyMemory<byte> utf8Name, int value)
         {
             if (_jsonPayload == null)
             {
                 _jsonPayload = new JwtObject();
             }
 
-            _jsonPayload.Add(new JwtProperty(Encoding.UTF8.GetBytes(claimName), value));
+            _jsonPayload.Add(new JwtProperty(utf8Name, value));
             return this;
         }
 
         /// <summary>
         /// Adds a claim.
         /// </summary>
-        /// <param name="claimName"></param>
+        /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddClaim(string claimName, double value)
+        public JwtDescriptorBuilder AddClaim(string name, int value)
+        {
+            return AddClaim(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddClaim(ReadOnlyMemory<byte> utf8Name, double value)
         {
             if (_jsonPayload == null)
             {
                 _jsonPayload = new JwtObject();
             }
 
-            _jsonPayload.Add(new JwtProperty(Encoding.UTF8.GetBytes(claimName), value));
+            _jsonPayload.Add(new JwtProperty(utf8Name, value));
             return this;
         }
 
         /// <summary>
         /// Adds a claim.
         /// </summary>
-        /// <param name="claimName"></param>
+        /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddClaim(string claimName, long value)
+        public JwtDescriptorBuilder AddClaim(string name, double value)
+        {
+            return AddClaim(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddClaim(ReadOnlyMemory<byte> utf8Name, long value)
         {
             if (_jsonPayload == null)
             {
                 _jsonPayload = new JwtObject();
             }
 
-            _jsonPayload.Add(new JwtProperty(Encoding.UTF8.GetBytes(claimName), value));
+            _jsonPayload.Add(new JwtProperty(utf8Name, value));
             return this;
         }
 
         /// <summary>
         /// Adds a claim.
         /// </summary>
-        /// <param name="claimName"></param>
+        /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddClaim(string claimName, float value)
+        public JwtDescriptorBuilder AddClaim(string name, long value)
+        {
+            return AddClaim(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddClaim(ReadOnlyMemory<byte> utf8Name, float value)
         {
             if (_jsonPayload == null)
             {
                 _jsonPayload = new JwtObject();
             }
 
-            _jsonPayload.Add(new JwtProperty(Encoding.UTF8.GetBytes(claimName), value));
+            _jsonPayload.Add(new JwtProperty(utf8Name, value));
             return this;
         }
 
         /// <summary>
         /// Adds a claim.
         /// </summary>
-        /// <param name="claimName"></param>
+        /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddClaim(string claimName, bool value)
+        public JwtDescriptorBuilder AddClaim(string name, float value)
+        {
+            return AddClaim(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddClaim(ReadOnlyMemory<byte> utf8Name, bool value)
         {
             if (_jsonPayload == null)
             {
                 _jsonPayload = new JwtObject();
             }
 
-            _jsonPayload.Add(new JwtProperty(Encoding.UTF8.GetBytes(claimName), value));
+            _jsonPayload.Add(new JwtProperty(utf8Name, value));
             return this;
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddClaim(string name, bool value)
+        {
+            return AddClaim(Encoding.UTF8.GetBytes(name), value);
         }
 
         /// <summary>
@@ -341,7 +450,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder Algorithm(string algorithm)
         {
-            return AddHeader(HeaderParameters.Alg, algorithm);
+            return AddHeader(HeaderParameters.AlgUtf8, algorithm);
         }
 
         /// <summary>
@@ -351,7 +460,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder KeyId(string kid)
         {
-            return AddHeader(HeaderParameters.Kid, kid);
+            return AddHeader(HeaderParameters.KidUtf8, kid);
         }
 
         /// <summary>
@@ -361,7 +470,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder JwkSetUrl(string jku)
         {
-            return AddHeader(HeaderParameters.Jku, jku);
+            return AddHeader(HeaderParameters.JkuUtf8, jku);
         }
 
         /// <summary>
@@ -371,7 +480,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder Jwk(Jwk jwk)
         {
-            return AddHeader(HeaderParameters.Jwk, jwk.ToString());
+            return AddHeader(HeaderParameters.JwkUtf8, jwk.ToString());
         }
 
         /// <summary>
@@ -381,7 +490,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder X509Url(string x5u)
         {
-            return AddHeader(HeaderParameters.X5u, x5u);
+            return AddHeader(HeaderParameters.X5uUtf8, x5u);
         }
 
         /// <summary>
@@ -391,7 +500,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder X509CertificateChain(List<string> x5c)
         {
-            return AddHeader(HeaderParameters.X5c, new JwtArray(x5c));
+            return AddHeader(HeaderParameters.X5cUtf8, new JwtArray(x5c));
         }
 
         /// <summary>
@@ -401,7 +510,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder X509CertificateSha1Thumbprint(string x5t)
         {
-            return AddHeader(HeaderParameters.X5t, x5t);
+            return AddHeader(HeaderParameters.X5tUtf8, x5t);
         }
 
         /// <summary>
@@ -411,7 +520,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder Type(string typ)
         {
-            return AddHeader(HeaderParameters.Typ, typ);
+            return AddHeader(HeaderParameters.TypUtf8, typ);
         }
 
         /// <summary>
@@ -421,7 +530,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder ContentType(string cty)
         {
-            return AddHeader(HeaderParameters.Cty, cty);
+            return AddHeader(HeaderParameters.CtyUtf8, cty);
         }
 
         /// <summary>
@@ -431,7 +540,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder Critical(List<string> crit)
         {
-            return AddHeader(HeaderParameters.Crit, new JwtArray(crit));
+            return AddHeader(HeaderParameters.CritUtf8, new JwtArray(crit));
         }
 
         /// <summary>

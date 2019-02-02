@@ -90,9 +90,9 @@ namespace JsonWebToken.Performance
         }
 
         [Benchmark(Baseline = false)]
-        public ReadOnlySequence<byte> New()
+        public byte[] New()
         {
-            return JwtDescriptor.Serialize(payloadMedium);
+            return payloadMedium.Serialize();
         }
 
         [Benchmark]

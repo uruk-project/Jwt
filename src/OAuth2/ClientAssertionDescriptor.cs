@@ -3,6 +3,7 @@
 
 using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -13,13 +14,13 @@ namespace JsonWebToken
     /// </summary>
     public class ClientAssertionDescriptor : JwsDescriptor
     {
-        private static readonly ReadOnlyDictionary<string, JwtTokenType[]> ClientAssertionRequiredClaims = new ReadOnlyDictionary<string, JwtTokenType[]>(
-            new Dictionary<string, JwtTokenType[]>           
+        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> ClientAssertionRequiredClaims = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(
+            new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>           
         {
-            { Claims.Iss, new [] { JwtTokenType.String } },
-            { Claims.Sub, new [] { JwtTokenType.String } },
-            { Claims.Aud, new [] { JwtTokenType.String, JwtTokenType.Array } },
-            { Claims.Exp, new [] { JwtTokenType.Integer } }
+            { Claims.IssUtf8, new [] { JwtTokenType.String } },
+            { Claims.SubUtf8, new [] { JwtTokenType.String } },
+            { Claims.AudUtf8, new [] { JwtTokenType.String, JwtTokenType.Array } },
+            { Claims.ExpUtf8, new [] { JwtTokenType.Integer } }
         });
 
         public ClientAssertionDescriptor()
@@ -47,6 +48,6 @@ namespace JsonWebToken
             base.Validate();
         }
 
-        protected override ReadOnlyDictionary<string, JwtTokenType[]> RequiredClaims => ClientAssertionRequiredClaims;
+        protected override ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> RequiredClaims => ClientAssertionRequiredClaims;
     }
 }

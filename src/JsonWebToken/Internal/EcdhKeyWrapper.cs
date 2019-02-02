@@ -160,9 +160,9 @@ namespace JsonWebToken.Internal
             return hashAlgorithm;
         }
 
-        private static byte[] GetPartyInfo(JwtObject header, byte[] headerName)
+        private static byte[] GetPartyInfo(JwtObject header, ReadOnlyMemory<byte> utf8Name)
         {
-            if (header.TryGetValue(headerName, out var token))
+            if (header.TryGetValue(utf8Name, out var token))
             {
                 return (byte[])token.Value;
             }

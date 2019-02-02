@@ -543,7 +543,7 @@ namespace JsonWebToken
             return key;
         }
 
-        public JwtObject AsJwtObject()
+        internal JwtObject AsJwtObject()
         {
             var jwtObject = new JwtObject();
             jwtObject.Add(new JwtProperty(JwkParameterNames.CrvUtf8, Crv));

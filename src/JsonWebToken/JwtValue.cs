@@ -10,62 +10,106 @@ using System.Buffers;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represents a JSON value.
+    /// </summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
-
     public readonly struct JwtValue
     {
+        /// <summary>
+        /// Gets the <see cref="JwtTokenType"/> of the <see cref="JwtValue"/>.
+        /// </summary>
         public readonly JwtTokenType Type;
 
+        /// <summary>
+        /// Gets the value of the <see cref="JwtValue"/>.
+        /// </summary>
         public readonly object Value;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtValue"/> class.
+        /// </summary>
+        /// <param name="value"></param>
         public JwtValue(JwtArray value)
         {
             Type = JwtTokenType.Array;
             Value = value;
         }
-
+               
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtValue"/> class.
+        /// </summary>
+        /// <param name="value"></param>
         public JwtValue(JwtObject value)
         {
             Type = JwtTokenType.Object;
             Value = value ?? throw new ArgumentNullException(nameof(value));
         }
-
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtValue"/> class.
+        /// </summary>
+        /// <param name="value"></param>
         public JwtValue(string value)
         {
             Type = JwtTokenType.String;
             Value = value ?? throw new ArgumentNullException(nameof(value));
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtValue"/> class.
+        /// </summary>
+        /// <param name="value"></param>
         public JwtValue(byte[] value)
         {
             Type = JwtTokenType.Utf8String;
             Value = value ?? throw new ArgumentNullException(nameof(value));
         }
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtValue"/> class.
+        /// </summary>
+        /// <param name="value"></param>
         public JwtValue(long value)
         {
             Type = JwtTokenType.Integer;
             Value = value;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtValue"/> class.
+        /// </summary>
+        /// <param name="value"></param>
         public JwtValue(int value)
         {
             Type = JwtTokenType.Integer;
             Value = value;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtValue"/> class.
+        /// </summary>
+        /// <param name="value"></param>
         public JwtValue(double value)
         {
             Type = JwtTokenType.Float;
             Value = value;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtValue"/> class.
+        /// </summary>
+        /// <param name="value"></param>
         public JwtValue(float value)
         {
             Type = JwtTokenType.Float;
             Value = value;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtValue"/> class.
+        /// </summary>
+        /// <param name="value"></param>
         public JwtValue(bool value)
         {
             Type = JwtTokenType.Boolean;
@@ -114,7 +158,7 @@ namespace JsonWebToken
                 WriteTo(ref writer);
                 writer.Flush();
 
-                var input = bufferWriter.GetSequence();
+                var input = bufferWriter.OutputAsSequence;
                 if (input.IsSingleSegment)
                 {
                     return Encoding.UTF8.GetString(input.First.Span.ToArray());

@@ -2,93 +2,153 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using System.Buffers;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using System.Buffers;
 
 namespace JsonWebToken
 {
-
+    /// <summary>
+    /// Represents a JSON property.
+    /// </summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public readonly struct JwtProperty
     {
+        /// <summary>
+        /// Gets whether the <see cref="JwtProperty"/> is empty.
+        /// </summary>
         public bool IsEmpty => Utf8Name.IsEmpty;
 
+        /// <summary>
+        /// Gets the <see cref="JwtTokenType"/> of the <see cref="JwtProperty"/>.
+        /// </summary>
         public readonly JwtTokenType Type;
 
+        /// <summary>
+        /// Gets the name of the <see cref="JwtProperty"/> in its UTF-8 representation.
+        /// </summary>
         public readonly ReadOnlyMemory<byte> Utf8Name;
 
+        /// <summary>
+        /// Gets the value of the <see cref="JwtProperty"/>.
+        /// </summary>
         public readonly object Value;
 
-        public JwtProperty(byte[] utf8Name, JwtArray value)
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlyMemory<byte> utf8Name, JwtArray value)
         {
             Type = JwtTokenType.Array;
             Utf8Name = utf8Name;
             Value = value;
         }
 
-        public JwtProperty(byte[] utf8Name, JwtObject value)
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlyMemory<byte> utf8Name, JwtObject value)
         {
             Type = JwtTokenType.Object;
             Utf8Name = utf8Name;
             Value = value ?? throw new ArgumentNullException(nameof(value));
         }
 
-        public JwtProperty(byte[] utf8Name, string value)
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlyMemory<byte> utf8Name, string value)
         {
             Type = JwtTokenType.String;
             Utf8Name = utf8Name;
             Value = value ?? throw new ArgumentNullException(nameof(value));
         }
 
-        public JwtProperty(byte[] utf8Name, byte[] value)
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlyMemory<byte> utf8Name, byte[] value)
         {
             Type = JwtTokenType.Utf8String;
             Utf8Name = utf8Name;
             Value = value;
         }
 
-        public JwtProperty(byte[] utf8Name, long value)
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlyMemory<byte> utf8Name, long value)
         {
             Type = JwtTokenType.Integer;
             Utf8Name = utf8Name;
             Value = value;
         }
 
-        public JwtProperty(byte[] utf8Name, int value)
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlyMemory<byte> utf8Name, int value)
         {
             Type = JwtTokenType.Integer;
             Utf8Name = utf8Name;
             Value = value;
         }
 
-        public JwtProperty(byte[] utf8Name, double value)
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlyMemory<byte> utf8Name, double value)
         {
             Type = JwtTokenType.Float;
             Utf8Name = utf8Name;
             Value = value;
         }
 
-        public JwtProperty(byte[] utf8Name, float value)
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlyMemory<byte> utf8Name, float value)
         {
             Type = JwtTokenType.Float;
             Utf8Name = utf8Name;
             Value = value;
         }
 
-        public JwtProperty(byte[] utf8Name, bool value)
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlyMemory<byte> utf8Name, bool value)
         {
             Type = JwtTokenType.Boolean;
             Utf8Name = utf8Name;
             Value = value;
         }
 
-        public JwtProperty(byte[] utf8Name)
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/> with a <c>null</c> value.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        public JwtProperty(ReadOnlyMemory<byte> utf8Name)
         {
             Type = JwtTokenType.Null;
             Utf8Name = utf8Name;
@@ -128,28 +188,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <inheritsdoc />
-        public override int GetHashCode()
-        {
-            return Utf8Name.GetHashCode();
-        }
-
-        /// <inheritsdoc />
-        public override bool Equals(object obj)
-        {
-            if (obj is null)
-            {
-                return false;
-            }
-
-            if (obj is ReadOnlyMemory<byte> rom)
-            {
-                return Utf8Name.Equals(rom);
-            }
-
-            return false;
-        }
-
         private string DebuggerDisplay()
         {
             var bufferWriter = new BufferWriter();
@@ -161,7 +199,7 @@ namespace JsonWebToken
                 writer.WriteEndObject();
                 writer.Flush();
 
-                var input = bufferWriter.GetSequence();
+                var input = bufferWriter.OutputAsSequence;
                 if (input.IsSingleSegment)
                 {
                     return Encoding.UTF8.GetString(input.First.Span.ToArray());

@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace JsonWebToken
 {
-    internal class BufferWriter : IBufferWriter<byte>
+    internal class BufferWriter : IBufferWriter<byte>, IDisposable
     {
         internal const int SegmentPoolSize = 16;
 
@@ -23,13 +23,14 @@ namespace JsonWebToken
 
         // The write head which is the extent of the IPipelineWriter's written bytes
         private BufferSegment _tail;
+        private bool _disposed;
 
         public BufferWriter()
         {
             _bufferSegmentPool = new BufferSegment[SegmentPoolSize];
 
             _pool = MemoryPool<byte>.Shared;
-            _minimumSegmentSize = 2048;
+            _minimumSegmentSize = 512;
         }
 
         public Memory<byte> GetMemory(int sizeHint)
@@ -154,9 +155,12 @@ namespace JsonWebToken
             }
         }
 
-        public ReadOnlySequence<byte> GetSequence()
+        public ReadOnlySequence<byte> OutputAsSequence
         {
-            return new ReadOnlySequence<byte>(_head, 0, _tail, _tail.End);
+            get
+            {
+                return new ReadOnlySequence<byte>(_head, 0, _tail, _tail.End);
+            }
         }
 
         private int GetSegmentSize(int sizeHint)
@@ -177,6 +181,30 @@ namespace JsonWebToken
             }
 
             return new BufferSegment();
+        }
+
+        public void Reset()
+        {
+            _head = null;
+            _tail = null;
+            _pooledSegmentCount = 0;
+        }
+
+        // Returns the rented buffer back to the pool
+        public void Dispose()
+        {
+            if (!_disposed && _pooledSegmentCount != 0)
+            {
+                _disposed = true;
+                BufferSegment segment = _head;
+                while (segment != null)
+                {
+                    segment.ResetMemory();
+                    segment = segment.NextSegment;
+                }
+
+                Reset();
+            }
         }
     }
 
