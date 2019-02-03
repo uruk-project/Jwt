@@ -2,13 +2,10 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json;
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace JsonWebToken
 {
@@ -18,7 +15,9 @@ namespace JsonWebToken
     public abstract class EncryptedJwtDescriptor<TPayload> : JwtDescriptor<TPayload> where TPayload : class
     {
         private const byte dot = (byte)'.';
+#if NETSTANDARD2_0
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
+#endif
 
         /// <summary>
         /// Initializes a new instance of <see cref="EncryptedJwtDescriptor{TPayload}"/>.
@@ -60,7 +59,7 @@ namespace JsonWebToken
         /// <summary>
         /// Encrypt the token.
         /// </summary>
-        protected byte[] EncryptToken(EncodingContext context, ReadOnlySpan<byte> payload)
+        protected void EncryptToken(EncodingContext context, ReadOnlySpan<byte> payload, IBufferWriter<byte> output)
         {
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
             KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)Algorithm;
@@ -102,7 +101,7 @@ namespace JsonWebToken
 
             if (header.ContainsKey(HeaderParameters.KidUtf8) && Key.Kid != null)
             {
-                header.Add(new JwtProperty(HeaderParameters.KidUtf8, Key.Kid));
+                header.Replace(new JwtProperty(HeaderParameters.KidUtf8, Key.Kid));
             }
 
             try
@@ -152,8 +151,8 @@ namespace JsonWebToken
                                                     ? (arrayCiphertextToReturnToPool = ArrayPool<byte>.Shared.Rent(ciphertextLength)).AsSpan(0, ciphertextLength)
                                                     : stackalloc byte[ciphertextLength];
 #if !NETSTANDARD2_0
-                    Span<byte> nonce = stackalloc byte[encryptionProvider.GetNonceSize()];
-                    RandomNumberGenerator.Fill(nonce);
+                        Span<byte> nonce = stackalloc byte[encryptionProvider.GetNonceSize()];
+                        RandomNumberGenerator.Fill(nonce);
 #else
                         var nonce = new byte[encryptionProvider.GetNonceSize()];
                         _randomNumberGenerator.GetBytes(nonce);
@@ -171,8 +170,7 @@ namespace JsonWebToken
                             encryptionLength += Base64Url.GetArraySizeRequiredToEncode(wrappedKey.Length);
                         }
 
-                        var encryptedTokenToReturn = new byte[encryptionLength];
-                        Span<byte> encryptedToken = encryptedTokenToReturn.AsSpan();
+                        Span<byte> encryptedToken = output.GetSpan(encryptionLength).Slice(0, encryptionLength);
 
                         base64EncodedHeader.CopyTo(encryptedToken);
                         encryptedToken[bytesWritten++] = dot;
@@ -187,9 +185,8 @@ namespace JsonWebToken
                         bytesWritten += Base64Url.Base64UrlEncode(ciphertext, encryptedToken.Slice(bytesWritten));
                         encryptedToken[bytesWritten++] = dot;
                         bytesWritten += Base64Url.Base64UrlEncode(tag, encryptedToken.Slice(bytesWritten));
-                        Debug.Assert(encryptedToken.Length == bytesWritten);
-
-                        return encryptedTokenToReturn;
+                        Debug.Assert(encryptionLength == bytesWritten);
+                        output.Advance(encryptionLength);
                     }
                     finally
                     {
@@ -213,7 +210,6 @@ namespace JsonWebToken
             catch (Exception ex)
             {
                 Errors.ThrowEncryptionFailed(encryptionAlgorithm, Key, ex);
-                return null;
             }
         }
 

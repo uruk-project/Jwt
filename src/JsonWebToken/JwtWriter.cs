@@ -3,6 +3,8 @@
 
 using JsonWebToken.Internal;
 using System;
+using System.Buffers;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -107,6 +109,20 @@ namespace JsonWebToken
         /// <returns>The array of <see cref="byte"/> representation of the JWT.</returns>
         public byte[] WriteToken(JwtDescriptor descriptor)
         {
+            using (var bufferWriter = new ArrayBufferWriter())
+            {
+                WriteToken(descriptor, bufferWriter);
+                return bufferWriter.OutputAsSpan.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Writes a JWT in its compact serialization format.
+        /// </summary>
+        /// <param name="descriptor">The descriptor of the JWT.</param>
+        /// <returns>The array of <see cref="byte"/> representation of the JWT.</returns>
+        public void WriteToken(JwtDescriptor descriptor, IBufferWriter<byte> output)
+        {
             if (descriptor == null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
@@ -128,7 +144,17 @@ namespace JsonWebToken
             }
 
             var encodingContext = new EncodingContext(_signatureFactory, _keyWrapFactory, _authenticatedEncryptionFactory, EnableHeaderCaching ? _headerCache : null, TokenLifetimeInMinutes, GenerateIssuedTime);
-            return descriptor.Encode(encodingContext);
+            descriptor.Encode(encodingContext, output);
+        }
+
+        /// <summary>
+        /// Writes a JWT in its compact serialization format and returns it a string.
+        /// </summary>
+        /// <param name="descriptor">The descriptor of the JWT.</param>
+        /// <returns>The <see cref="string"/> retpresention of the JWT.</returns>
+        public string WriteTokenString(JwtDescriptor descriptor)
+        {
+            return Encoding.UTF8.GetString(WriteToken(descriptor));
         }
 
         /// <summary>

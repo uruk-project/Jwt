@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 
 namespace JsonWebToken
@@ -74,10 +75,14 @@ namespace JsonWebToken
         public DateTime? NotBefore { get => Payload.NotBefore; set => Payload.NotBefore = value; }
 
         /// <inheritsdoc />
-        public override byte[] Encode(EncodingContext context)
+        public override void Encode(EncodingContext context, IBufferWriter<byte> output)
         {
-            var payload = Payload.Encode(context);
-            return EncryptToken(context, payload);
+            using (var bufferWriter = new ArrayBufferWriter())
+            {
+                Payload.Encode(context, bufferWriter);
+                var payload = bufferWriter.OutputAsSpan;
+                EncryptToken(context, payload, output);
+            }
         }
 
         /// <inheritsdoc />

@@ -71,6 +71,7 @@ namespace Performance
             var jwB = new BinaryJweDescriptor(Encoding.UTF8.GetBytes("Hello world !"));
             var jwt = _writer.WriteToken(jws);
             _reader.EnableHeaderCaching = false;
+            _writer.EnableHeaderCaching = false;
             while (true)
             {
                 jwt = _writer.WriteToken(jws);

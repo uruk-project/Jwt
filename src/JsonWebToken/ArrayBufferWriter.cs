@@ -4,22 +4,22 @@ using System.Diagnostics;
 
 namespace JsonWebToken
 {
-    internal class ArrayBufferWriter : IBufferWriter<byte>, IDisposable
+    public class ArrayBufferWriter : IBufferWriter<byte>, IDisposable
     {
         private byte[] _rentedBuffer;
         private int _written;
-        private long _committed;
 
         private const int MinimumBufferSize = 256;
 
         public ArrayBufferWriter(int initialCapacity = MinimumBufferSize)
         {
             if (initialCapacity <= 0)
+            {
                 throw new ArgumentException(nameof(initialCapacity));
+            }
 
             _rentedBuffer = ArrayPool<byte>.Shared.Rent(initialCapacity);
             _written = 0;
-            _committed = 0;
         }
 
         public Memory<byte> OutputAsMemory
@@ -52,16 +52,6 @@ namespace JsonWebToken
             }
         }
 
-        public long BytesCommitted
-        {
-            get
-            {
-                CheckIfDisposed();
-
-                return _committed;
-            }
-        }
-
         public void Clear()
         {
             CheckIfDisposed();
@@ -80,10 +70,14 @@ namespace JsonWebToken
             CheckIfDisposed();
 
             if (count < 0)
+            {
                 throw new ArgumentException(nameof(count));
+            }
 
             if (_written > _rentedBuffer.Length - count)
+            {
                 throw new InvalidOperationException("Cannot advance past the end of the buffer.");
+            }
 
             _written += count;
         }
@@ -91,39 +85,45 @@ namespace JsonWebToken
         // Returns the rented buffer back to the pool
         public void Dispose()
         {
-            if (_rentedBuffer == null)
+            if (_rentedBuffer != null)
             {
-                return;
+                ArrayPool<byte>.Shared.Return(_rentedBuffer, clearArray: true);
+                _rentedBuffer = null;
+                _written = 0;
             }
-
-            ArrayPool<byte>.Shared.Return(_rentedBuffer, clearArray: true);
-            _rentedBuffer = null;
-            _written = 0;
         }
 
         private void CheckIfDisposed()
         {
             if (_rentedBuffer == null)
+            {
                 throw new ObjectDisposedException(nameof(ArrayBufferWriter));
+            }
         }
 
+        /// <inheritsdoc />
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
             CheckIfDisposed();
 
             if (sizeHint < 0)
+            {
                 throw new ArgumentException(nameof(sizeHint));
+            }
 
             CheckAndResizeBuffer(sizeHint);
             return _rentedBuffer.AsMemory(_written);
         }
 
+        /// <inheritsdoc />
         public Span<byte> GetSpan(int sizeHint = 0)
         {
             CheckIfDisposed();
 
             if (sizeHint < 0)
+            {
                 throw new ArgumentException(nameof(sizeHint));
+            }
 
             CheckAndResizeBuffer(sizeHint);
             return _rentedBuffer.AsSpan(_written);
@@ -132,14 +132,12 @@ namespace JsonWebToken
         private void CheckAndResizeBuffer(int sizeHint)
         {
             Debug.Assert(sizeHint >= 0);
-
             if (sizeHint == 0)
             {
                 sizeHint = MinimumBufferSize;
             }
 
             int availableSpace = _rentedBuffer.Length - _written;
-
             if (sizeHint > availableSpace)
             {
                 int growBy = sizeHint > _rentedBuffer.Length ? sizeHint : _rentedBuffer.Length;
