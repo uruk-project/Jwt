@@ -148,7 +148,7 @@ namespace JsonWebToken
         public string Type
         {
             get => GetHeaderParameter<string>(HeaderParameters.TypUtf8);
-            set => SetHeaderParameter(HeaderParameters.Typ, value);
+            set => SetHeaderParameter(HeaderParameters.TypUtf8, value);
         }
 
         /// <summary>

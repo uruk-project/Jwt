@@ -83,7 +83,7 @@ namespace JsonWebToken
         public string Audience
         {
             get { return Audiences?.FirstOrDefault(); }
-            set { SetClaim(Claims.AudUtf8, value); }
+            set { AddClaim(Claims.AudUtf8, value); }
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace JsonWebToken
         public List<string> Audiences
         {
             get { return GetListClaims<string>(Claims.Aud); }
-            set { SetClaim(Claims.AudUtf8, value); }
+            set { AddClaim(Claims.AudUtf8, value); }
         }
 
         /// <summary>
@@ -370,11 +370,11 @@ namespace JsonWebToken
         /// <summary>
         /// Gets a claim as a list of <see cref="string"/>.
         /// </summary>
-        /// <param name="claimType"></param>
+        /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected List<T> GetListClaims<T>(string claimType)
+        protected List<T> GetListClaims<T>(ReadOnlyMemory<byte> utf8Name)
         {
-            if (Payload.TryGetValue(claimType, out JwtProperty value))
+            if (Payload.TryGetValue(utf8Name, out JwtProperty value))
             {
                 if (value.Type == JwtTokenType.Array)
                 {
@@ -386,6 +386,16 @@ namespace JsonWebToken
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets a claim as a list of <see cref="string"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        protected List<T> GetListClaims<T>(string name)
+        {
+            return GetListClaims<T>(Encoding.UTF8.GetBytes(name));
         }
 
         /// <summary>
@@ -404,31 +414,14 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Sets a claim as <see cref="string"/>.
+        /// Add a claim as a list of <see cref="string"/>.
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        protected void SetClaim(ReadOnlyMemory<byte> utf8Name, string value)
+        protected void AddClaim(ReadOnlyMemory<byte> utf8Name, List<string> value)
         {
-            Payload.Add(new JwtProperty(utf8Name, value));
-        }
-
-        /// <summary>
-        /// Gets a claim as a list of <see cref="string"/>.
-        /// </summary>
-        /// <param name="utf8Name"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        protected void SetClaim(ReadOnlyMemory<byte> utf8Name, List<string> value)
-        {
-            var list = new List<JwtValue>(value.Count);
-            for (int i = 0; i < value.Count; i++)
-            {
-                list.Add(new JwtValue(value[i]));
-            }
-
-            Payload.Add(new JwtProperty(utf8Name, new JwtArray(list)));
+            Payload.Add(new JwtProperty(utf8Name, new JwtArray(value)));
         }
 
         /// <summary>

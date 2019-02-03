@@ -94,7 +94,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the Authentication Methods References used in the authentication.
         /// </summary>
-        public IReadOnlyList<string> AuthenticationMethodsReferences => GetListClaims<string>(OidcClaims.Amr);
+        public IReadOnlyList<string> AuthenticationMethodsReferences => GetListClaims<string>(OidcClaims.AmrUtf8);
 
         public void AddAuthenticationMethodsReferences(string acr)
         {

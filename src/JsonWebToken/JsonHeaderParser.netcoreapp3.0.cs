@@ -4,6 +4,7 @@
 #if NETCOREAPP3_0
 using JsonWebToken.Internal;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Text.Json;
 
@@ -26,7 +27,7 @@ namespace JsonWebToken
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        ReadOnlySpan<byte> propertyName = reader.ValueSpan;
+                        ReadOnlySpan<byte> propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
                         fixed (byte* pPropertyByte = propertyName)
                         {
                             switch (propertyName.Length)

@@ -5,6 +5,7 @@
 using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Text.Json;
 
@@ -27,7 +28,7 @@ namespace JsonWebToken
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        var propertyName = reader.ValueSpan;
+                        var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
                         fixed (byte* pPropertyByte = propertyName)
                         {
                             switch (propertyName.Length)
