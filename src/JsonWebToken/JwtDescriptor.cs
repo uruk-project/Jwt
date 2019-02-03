@@ -173,6 +173,7 @@ namespace JsonWebToken
         /// Encodes the current <see cref="JwtDescriptor"/> into it <see cref="string"/> representation.
         /// </summary>
         /// <param name="context"></param>
+        /// <param name="output"></param>
         /// <returns></returns>
         public abstract void Encode(EncodingContext context, IBufferWriter<byte> output);
 

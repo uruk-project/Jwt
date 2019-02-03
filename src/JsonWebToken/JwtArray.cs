@@ -10,16 +10,27 @@ using System.Buffers;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represents a JSON array.s
+    /// </summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public readonly struct JwtArray
     {
         private readonly List<JwtValue> _inner;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtArray"/> class.
+        /// </summary>
+        /// <param name="values"></param>
         public JwtArray(List<JwtValue> values)
         {
             _inner = new List<JwtValue>(values);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtArray"/> class.
+        /// </summary>
+        /// <param name="values"></param>
         public JwtArray(List<string> values)
         {
             var list = new List<JwtValue>(values.Count);
@@ -31,10 +42,22 @@ namespace JsonWebToken
             _inner = list;
         }
 
+        /// <summary>
+        /// Exports the <see cref="List{JwtValue}"/> use as back storage.
+        /// </summary>
+        /// <returns></returns>
         public List<JwtValue> ToList() => _inner;
 
+        /// <summary>
+        /// Gets the number of <see cref="JwtValue"/>s contained in the <see cref="JwtArray"/>.
+        /// </summary>
         public int Count => _inner.Count;
 
+        /// <summary>
+        ///  Gets the <see cref="JwtValue"/> at the specified index.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public JwtValue this[int index] => _inner[index];
 
         internal void WriteTo(ref Utf8JsonWriter writer)

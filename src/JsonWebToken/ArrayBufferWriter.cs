@@ -4,6 +4,9 @@ using System.Diagnostics;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Reprensents an impelemntation of <see cref="IBufferWriter{T}" /> where the memory owner is a <see cref="ArrayPool{T}"/>.
+    /// </summary>
     public class ArrayBufferWriter : IBufferWriter<byte>, IDisposable
     {
         private byte[] _rentedBuffer;
@@ -11,6 +14,10 @@ namespace JsonWebToken
 
         private const int MinimumBufferSize = 256;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArrayBufferWriter"/> class.
+        /// </summary>
+        /// <param name="initialCapacity"></param>
         public ArrayBufferWriter(int initialCapacity = MinimumBufferSize)
         {
             if (initialCapacity <= 0)
@@ -22,6 +29,9 @@ namespace JsonWebToken
             _written = 0;
         }
 
+        /// <summary>
+        /// Gets the output as a <see cref="Memory{T}"/>.
+        /// </summary>
         public Memory<byte> OutputAsMemory
         {
             get
@@ -32,6 +42,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Gets the output as a <see cref="Span{T}"/>.
+        /// </summary>
         public Span<byte> OutputAsSpan
         {
             get
@@ -42,6 +55,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Gets the bytes written.
+        /// </summary>
         public int BytesWritten
         {
             get
@@ -52,6 +68,9 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Clear the <see cref="ArrayBufferWriter"/>. 
+        /// </summary>
         public void Clear()
         {
             CheckIfDisposed();
@@ -65,6 +84,10 @@ namespace JsonWebToken
             _written = 0;
         }
 
+        /// <summary>
+        /// Advances the <see cref="ArrayBufferWriter"/> of the <paramref name="count"/> indicated.
+        /// </summary>
+        /// <param name="count"></param>
         public void Advance(int count)
         {
             CheckIfDisposed();
@@ -82,7 +105,9 @@ namespace JsonWebToken
             _written += count;
         }
 
-        // Returns the rented buffer back to the pool
+        /// <summary>
+        /// Returns the rented buffer back to the pool.
+        /// </summary>
         public void Dispose()
         {
             if (_rentedBuffer != null)

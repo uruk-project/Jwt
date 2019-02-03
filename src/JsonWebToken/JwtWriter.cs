@@ -120,6 +120,7 @@ namespace JsonWebToken
         /// Writes a JWT in its compact serialization format.
         /// </summary>
         /// <param name="descriptor">The descriptor of the JWT.</param>
+        /// <param name="output">The <see cref="IBufferWriter{T}"/> used for writing the output.</param>
         /// <returns>The array of <see cref="byte"/> representation of the JWT.</returns>
         public void WriteToken(JwtDescriptor descriptor, IBufferWriter<byte> output)
         {

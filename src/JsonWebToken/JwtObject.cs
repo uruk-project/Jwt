@@ -151,6 +151,10 @@ namespace JsonWebToken
             throw new InvalidOperationException();
         }
 
+        /// <summary>
+        /// Serializes the <see cref="JwtObject"/> into it JSON representation.
+        /// </summary>
+        /// <returns></returns>
         public byte[] Serialize()
         {
             using (var bufferWriter = new BufferWriter())
@@ -160,6 +164,10 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>
+        /// Serializes the <see cref="JwtObject"/> into it JSON representation.
+        /// </summary>
+        /// <param name="bufferWriter"></param>
         public void Serialize(IBufferWriter<byte> bufferWriter)
         {
             Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = false, SkipValidation = true }));
