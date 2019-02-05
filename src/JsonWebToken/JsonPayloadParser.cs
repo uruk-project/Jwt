@@ -40,10 +40,10 @@ namespace JsonWebToken
                             switch (propertyName.Length)
                             {
                                 case 3:
-                                    uint property = (uint)(((*(ushort*)pPropertyByte) << 8) | *(pPropertyByte + 2));
-                                    switch (property)
+                                    short propertyShort = *(short*)(pPropertyByte + 1);
+                                    switch (*pPropertyByte)
                                     {
-                                        case 7563635u /* 'iss' */:
+                                        case (byte)'i' when propertyShort == 29555 /* 'iss' */:
                                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                             {
                                                 payload.Iss = reader.GetString();
@@ -53,7 +53,7 @@ namespace JsonWebToken
                                                 JwtThrowHelper.FormatMalformedJson(Claims.Iss, JsonTokenType.String);
                                             }
                                             break;
-                                        case 7692644u /* 'aud' */:
+                                        case (byte)'a' when propertyShort == 25717 /* 'aud' */:
                                             if (reader.Read())
                                             {
                                                 if (reader.TokenType == JsonTokenType.String)
@@ -85,7 +85,7 @@ namespace JsonWebToken
                                                 JwtThrowHelper.FormatMalformedJson();
                                             }
                                             break;
-                                        case 7890288 /* 'exp' */:
+                                        case (byte)'e' when propertyShort == 28792 /* 'exp' */:
                                             if (reader.Read() && reader.TryGetInt64(out long expValue))
                                             {
                                                 payload.Exp = expValue;
@@ -95,7 +95,7 @@ namespace JsonWebToken
                                                 JwtThrowHelper.FormatMalformedJson(Claims.Exp, JsonTokenType.Number);
                                             }
                                             break;
-                                        case 7697250u /* 'sub' */:
+                                        case (byte)'s' when propertyShort == 25205 /* 'sub' */:
                                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                             {
                                                 payload.Sub = reader.GetString();
@@ -105,7 +105,7 @@ namespace JsonWebToken
                                                 JwtThrowHelper.FormatMalformedJson(Claims.Sub, JsonTokenType.String);
                                             }
                                             break;
-                                        case 7629417 /* 'jti' */:
+                                        case (byte)'j' when propertyShort == 26996 /* 'jti' */:
                                             if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                             {
                                                 payload.Jti = reader.GetString();
@@ -115,7 +115,7 @@ namespace JsonWebToken
                                                 JwtThrowHelper.FormatMalformedJson(Claims.Jti, JsonTokenType.String);
                                             }
                                             break;
-                                        case 6450790u /* 'nbf' */:
+                                        case (byte)'n' when propertyShort == 26210 /* 'nbf' */:
                                             if (reader.Read() && reader.TryGetInt64(out long nbfValue))
                                             {
                                                 payload.Nbf = nbfValue;
@@ -125,7 +125,7 @@ namespace JsonWebToken
                                                 JwtThrowHelper.FormatMalformedJson(Claims.Nbf, JsonTokenType.Number);
                                             }
                                             break;
-                                        case 6383988u /* 'iat' */:
+                                        case (byte)'i' when propertyShort == 29793 /* 'iat' */:
                                             if (reader.Read() && reader.TryGetInt64(out long iatValue))
                                             {
                                                 payload.Iat = iatValue;
