@@ -30,10 +30,10 @@ namespace JsonWebToken.Performance
 
         public IEnumerable<string> GetPayloads()
         {
-            yield return "JWT-empty";
+            //yield return "JWT-empty";
             yield return "JWT-small";
             yield return "JWT-medium";
-            yield return "JWT-big";
+            //yield return "JWT-big";
         }
     }
 }

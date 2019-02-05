@@ -106,7 +106,7 @@ namespace JsonWebToken
             var status = Base64UrlDecode(base64Url, data, out int bytesConsumed, out int bytesWritten);
             if (status != OperationStatus.Done)
             {
-                ThrowHelper.ThrowOperationNotDone(status);
+                JwtThrowHelper.ThrowOperationNotDone(status);
             }
 
             return bytesWritten;
@@ -143,7 +143,7 @@ namespace JsonWebToken
             var status = _base64.EncodeToUtf8(utf8Data, base64Url, out var bytesConsumed, out var bytesWritten);
             if (status != OperationStatus.Done)
             {
-                ThrowHelper.ThrowOperationNotDone(status);
+                JwtThrowHelper.ThrowOperationNotDone(status);
             }
 
             return bytesWritten;

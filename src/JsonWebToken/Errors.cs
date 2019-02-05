@@ -43,6 +43,11 @@ namespace JsonWebToken
             throw new JsonSerializationException($"Unexpected token. Expected {expected}, got {tokenType}");
         }
 
+        internal static Exception ThrowArgumentNullException(string argumentName)
+        {
+            throw new ArgumentNullException(argumentName);
+        }
+
         internal static void ThrowUnexpectedTokenIssuer(JTokenType tokenType)
         {
             throw new JsonSerializationException($"Unexpected token. Expected {nameof(JTokenType.String)} or array of {nameof(JTokenType.String)}, got {tokenType}");
@@ -87,6 +92,11 @@ namespace JsonWebToken
             throw new JwtDescriptorException($"The claim '{value}' must be of type[{claimTypes}].");
         }
 
+        internal static void ThrowCannotAdvanceBuffer()
+        {
+            throw new InvalidOperationException("Cannot advance past the end of the buffer.");
+        }
+
         internal static void ThrowHeaderMustBeOfType(KeyValuePair<ReadOnlyMemory<byte>, JwtTokenType[]> header)
         {
             var claimTypes = string.Join(", ", header.Value.Select(t => t.ToString()));
@@ -104,6 +114,11 @@ namespace JsonWebToken
             throw new InvalidOperationException("No signing key is defined.");
         }
 
+        internal static void ThrowArgument(string argumentName)
+        {
+            throw new ArgumentException(argumentName);
+        }
+
         internal static void ThrowHeaderIsRequired(ReadOnlyMemory<byte> header)
         {
             var value =
@@ -118,6 +133,11 @@ namespace JsonWebToken
         internal static void ThrowMustBeGreaterOrEqualToZero(string name, int value)
         {
             throw new ArgumentOutOfRangeException(name, $"{nameof(value)} must be greater equal or zero. value: '{value}'.");
+        }
+
+        internal static void ThrowNotSupportedJsonType(JwtTokenType type)
+        {
+            new JsonWriterException($"The type {type} is not supported.");
         }
 
         internal static void ThrowMustBeGreaterThanZero(string name, int value)

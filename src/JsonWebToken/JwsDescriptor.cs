@@ -467,17 +467,17 @@ namespace JsonWebToken
                 }
             }
 
-            using (var payloadBufferWriter = new BufferWriter())
+            using (var payloadBufferWriter = new ArrayBufferWriter())
             {
                 Payload.Serialize(payloadBufferWriter);
-                var payloadJson = payloadBufferWriter.OutputAsSequence;
+                var payloadJson = payloadBufferWriter.OutputAsSpan;
                 int length = Base64Url.GetArraySizeRequiredToEncode((int)payloadJson.Length)
                            + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBytes))
                            + (Constants.JwsSegmentCount - 1);
-                ReadOnlySequence<byte> headerJson = default;
+                ReadOnlySpan<byte> headerJson = default;
                 var headerCache = context.HeaderCache;
                 byte[] cachedHeader = null;
-                using (var headerBufferWriter = new BufferWriter())
+                using (var headerBufferWriter = new ArrayBufferWriter())
                 {
                     if (headerCache != null && headerCache.TryGetHeader(Header, alg, out cachedHeader))
                     {
@@ -486,7 +486,7 @@ namespace JsonWebToken
                     else
                     {
                         Header.Serialize(headerBufferWriter);
-                        headerJson = headerBufferWriter.OutputAsSequence;
+                        headerJson = headerBufferWriter.OutputAsSpan;
                         length += Base64Url.GetArraySizeRequiredToEncode((int)headerJson.Length);
                     }
 
@@ -553,6 +553,13 @@ namespace JsonWebToken
                     }
                 }
             }
+        }
+
+
+        private static bool TryEncodeUtf8ToBase64Url(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
+        {
+            bytesWritten = Base64Url.Base64UrlEncode(input, destination);
+            return bytesWritten == destination.Length;
         }
 
         /// <inheritsdoc />

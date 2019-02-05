@@ -82,12 +82,7 @@ namespace JsonWebToken.Performance
 
         private static readonly JwtObject payload = Tokens.ToJwtObject(json);
         private static readonly JwtObject payloadMedium = Tokens.ToJwtObject(jsonMedium);
-
-        public JsonWriterBenchmark()
-        {
-            New();
-            Old();
-        }
+        private static readonly ArrayBufferWriter _output = new ArrayBufferWriter();
 
         [Benchmark(Baseline = false)]
         public byte[] New()
@@ -96,47 +91,10 @@ namespace JsonWebToken.Performance
         }
 
         [Benchmark]
-        public string Legacy()
+        public void New2()
         {
-            StringWriter sw = new StringWriter(new StringBuilder(256), CultureInfo.InvariantCulture);
-            using (JsonTextWriter writer = new JsonTextWriter(sw))
-            {
-                writer.WriteStartObject();
-                for (int i = 0; i < payloadMedium.Count; i++)
-                {
-                    var property = payloadMedium[i];
-                    writer.WritePropertyName(Encoding.UTF8.GetString(property.Utf8Name.Span));
-                    switch (property.Type)
-                    {
-                        case JwtTokenType.Object:
-                            writer.WriteValue((JwtObject)property.Value);
-                            break;
-                        case JwtTokenType.Array:
-                            writer.WriteValue((JArray)property.Value);
-                            break;
-                        case JwtTokenType.Integer:
-                            writer.WriteValue((long)property.Value);
-                            break;
-                        case JwtTokenType.Float:
-                            writer.WriteValue((double)property.Value);
-                            break;
-                        case JwtTokenType.String:
-                            writer.WriteValue((string)property.Value);
-                            break;
-                        case JwtTokenType.Boolean:
-                            writer.WriteValue((bool)property.Value);
-                            break;
-                        case JwtTokenType.Null:
-                            writer.WriteNull();
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                writer.WriteEndObject();
-                return sw.ToString();
-            }
+            _output.Clear();
+            payloadMedium.Serialize(_output);            
         }
 
         [Benchmark]

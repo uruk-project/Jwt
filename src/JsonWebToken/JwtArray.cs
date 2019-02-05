@@ -2,16 +2,16 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using System.Buffers;
 
 namespace JsonWebToken
 {
     /// <summary>
-    /// Represents a JSON array.s
+    /// Represents a JSON array.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public readonly struct JwtArray
@@ -24,7 +24,7 @@ namespace JsonWebToken
         /// <param name="values"></param>
         public JwtArray(List<JwtValue> values)
         {
-            _inner = new List<JwtValue>(values);
+            _inner = values;
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace JsonWebToken
 
         private string DebuggerDisplay()
         {
-            var bufferWriter = new BufferWriter();
+            using (var bufferWriter = new ArrayBufferWriter())
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
 
@@ -92,17 +92,7 @@ namespace JsonWebToken
                 writer.Flush();
 
                 var input = bufferWriter.OutputAsSequence;
-                if (input.IsSingleSegment)
-                {
-                    return Encoding.UTF8.GetString(input.First.Span.ToArray());
-                }
-                else
-                {
-                    var encodedBytes = new byte[(int)input.Length];
-
-                    input.CopyTo(encodedBytes);
-                    return Encoding.UTF8.GetString(encodedBytes);
-                }
+                return Encoding.UTF8.GetString(input.ToArray());
             }
         }
     }

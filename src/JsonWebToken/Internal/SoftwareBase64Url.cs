@@ -81,7 +81,7 @@ namespace JsonWebToken.Internal
         public int GetMaxEncodedToUtf8Length(int length)
         {
             if ((uint)length > MaximumEncodeLength)
-                ThrowHelper.ThrowArgumentOutOfRangeException();
+                JwtThrowHelper.ThrowArgumentOutOfRangeException();
 
             return (((length + 2) / 3) << 2) - GetNumBase64PaddingCharsAddedByEncode(length);
         }
@@ -156,7 +156,7 @@ namespace JsonWebToken.Internal
 
             if (result == 3)
             {
-                ThrowHelper.ThrowMalformedInputException(urlEncodedLen);
+                JwtThrowHelper.ThrowMalformedInputException(urlEncodedLen);
             }
 
             return result;

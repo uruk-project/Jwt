@@ -21,8 +21,6 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtReader : IDisposable
     {
-        private const byte dot = (byte)'.';
-
         private readonly IKeyProvider[] _encryptionKeyProviders;
         private readonly JwtHeaderCache _headerCache;
         private readonly KeyWrapperFactory _keyWrapFactory;
@@ -661,7 +659,7 @@ namespace JsonWebToken
             }
 
             Span<byte> encryptedKey = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length)];
-            var operationResult = Base64Url.Base64UrlDecode(rawEncryptedKey, encryptedKey, out int bytesConsumed, out int bytesWritten);
+            var operationResult = Base64Url.Base64UrlDecode(rawEncryptedKey, encryptedKey, out _, out _);
             Debug.Assert(operationResult == OperationStatus.Done);
 
             var unwrappedKeys = new List<Jwk>(1);
@@ -684,7 +682,6 @@ namespace JsonWebToken
 
         private List<Jwk> ResolveDecryptionKey(JwtHeader header)
         {
-            var kid = header.Kid;
             var alg = header.Alg;
 
             var keys = new List<Jwk>(1);

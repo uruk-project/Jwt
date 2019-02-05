@@ -1,9 +1,7 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using Newtonsoft.Json;
 using System;
-using System.Buffers;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
@@ -55,9 +53,14 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public JwtProperty(ReadOnlyMemory<byte> utf8Name, JwtObject value)
         {
+            if (value == null)
+            {
+                Errors.ThrowArgumentNullException(nameof(value));
+            }
+
             Type = JwtTokenType.Object;
             Utf8Name = utf8Name;
-            Value = value ?? throw new ArgumentNullException(nameof(value));
+            Value = value;
         }
 
         /// <summary>
@@ -67,9 +70,14 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public JwtProperty(ReadOnlyMemory<byte> utf8Name, string value)
         {
+            if (value == null)
+            {
+                Errors.ThrowArgumentNullException(nameof(value));
+            }
+
             Type = JwtTokenType.String;
             Utf8Name = utf8Name;
-            Value = value ?? throw new ArgumentNullException(nameof(value));
+            Value = value;
         }
 
         /// <summary>
@@ -184,13 +192,14 @@ namespace JsonWebToken
                     writer.WriteNull(Utf8Name.Span);
                     break;
                 default:
-                    throw new JsonWriterException($"The type {Type} is not supported.");
+                    Errors.ThrowNotSupportedJsonType(Type);
+                    break;
             }
         }
 
         private string DebuggerDisplay()
         {
-            var bufferWriter = new BufferWriter();
+            var bufferWriter = new ArrayBufferWriter();
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
 
@@ -199,18 +208,8 @@ namespace JsonWebToken
                 writer.WriteEndObject();
                 writer.Flush();
 
-                var input = bufferWriter.OutputAsSequence;
-                if (input.IsSingleSegment)
-                {
-                    return Encoding.UTF8.GetString(input.First.Span.ToArray());
-                }
-                else
-                {
-                    var encodedBytes = new byte[(int)input.Length];
-
-                    input.CopyTo(encodedBytes);
-                    return Encoding.UTF8.GetString(encodedBytes);
-                }
+                var input = bufferWriter.OutputAsSpan;
+                return Encoding.UTF8.GetString(input.ToArray());
             }
         }
     }

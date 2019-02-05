@@ -157,10 +157,10 @@ namespace JsonWebToken
         /// <returns></returns>
         public byte[] Serialize()
         {
-            using (var bufferWriter = new BufferWriter())
+            using (var bufferWriter = new ArrayBufferWriter())
             {
                 Serialize(bufferWriter);
-                return bufferWriter.OutputAsSequence.ToArray();
+                return bufferWriter.OutputAsSpan.ToArray();
             }
         }
 
@@ -199,25 +199,15 @@ namespace JsonWebToken
 
         private string DebuggerDisplay()
         {
-            var bufferWriter = new BufferWriter();
+            using (var bufferWriter = new ArrayBufferWriter())
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
 
                 WriteTo(ref writer);
                 writer.Flush();
 
-                var input = bufferWriter.OutputAsSequence;
-                if (input.IsSingleSegment)
-                {
-                    return Encoding.UTF8.GetString(input.First.Span.ToArray());
-                }
-                else
-                {
-                    var encodedBytes = new byte[(int)input.Length];
-
-                    input.CopyTo(encodedBytes);
-                    return Encoding.UTF8.GetString(encodedBytes);
-                }
+                var input = bufferWriter.OutputAsSpan;
+                return Encoding.UTF8.GetString(input.ToArray());
             }
         }
     }

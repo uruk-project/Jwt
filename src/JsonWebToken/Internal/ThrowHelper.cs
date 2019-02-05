@@ -4,15 +4,11 @@
 using System;
 using System.Buffers;
 using System.Globalization;
-#if NETCOREAPP3_0
 using System.Text.Json;
-#else
-using Newtonsoft.Json;
-#endif
 
 namespace JsonWebToken.Internal
 {
-    internal static class ThrowHelper
+    internal static class JwtThrowHelper
     {
         public static void ThrowArgumentOutOfRangeException()
         {
@@ -97,7 +93,7 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// The claim '{claim}' must be of type {type}.
         /// </summary>
-        internal static string FormatMalformedJson(string claim, JsonToken type)
+        internal static string FormatMalformedJson(string claim, JsonTokenType type)
         {
             throw new FormatException($"The claim '{claim}' must be of type {type}.");
         }

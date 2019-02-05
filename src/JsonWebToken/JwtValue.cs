@@ -1,12 +1,9 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using Newtonsoft.Json;
-using System;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using System.Buffers;
 
 namespace JsonWebToken
 {
@@ -35,25 +32,35 @@ namespace JsonWebToken
             Type = JwtTokenType.Array;
             Value = value;
         }
-               
+
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtValue"/> class.
         /// </summary>
         /// <param name="value"></param>
         public JwtValue(JwtObject value)
         {
+            if (value == null)
+            {
+                Errors.ThrowArgumentNullException(nameof(value));
+            }
+
             Type = JwtTokenType.Object;
-            Value = value ?? throw new ArgumentNullException(nameof(value));
+            Value = value;
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtValue"/> class.
         /// </summary>
         /// <param name="value"></param>
         public JwtValue(string value)
         {
+            if (value == null)
+            {
+                Errors.ThrowArgumentNullException(nameof(value));
+            }
+
             Type = JwtTokenType.String;
-            Value = value ?? throw new ArgumentNullException(nameof(value));
+            Value = value;
         }
 
         /// <summary>
@@ -62,8 +69,13 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public JwtValue(byte[] value)
         {
+            if (value == null)
+            {
+                Errors.ThrowArgumentNullException(nameof(value));
+            }
+
             Type = JwtTokenType.Utf8String;
-            Value = value ?? throw new ArgumentNullException(nameof(value));
+            Value = value;
         }
 
         /// <summary>
@@ -145,31 +157,22 @@ namespace JsonWebToken
                     writer.WriteNullValue();
                     break;
                 default:
-                    throw new JsonWriterException($"The type {Type} is not supported.");
+                    Errors.ThrowNotSupportedJsonType(Type);
+                    break;
             }
         }
 
         private string DebuggerDisplay()
         {
-            var bufferWriter = new BufferWriter();
+            var bufferWriter = new ArrayBufferWriter();
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
 
                 WriteTo(ref writer);
                 writer.Flush();
 
-                var input = bufferWriter.OutputAsSequence;
-                if (input.IsSingleSegment)
-                {
-                    return Encoding.UTF8.GetString(input.First.Span.ToArray());
-                }
-                else
-                {
-                    var encodedBytes = new byte[(int)input.Length];
-
-                    input.CopyTo(encodedBytes);
-                    return Encoding.UTF8.GetString(encodedBytes);
-                }
+                var input = bufferWriter.OutputAsSpan;
+                return Encoding.UTF8.GetString(input.ToArray());
             }
         }
     }

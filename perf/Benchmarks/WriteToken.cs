@@ -5,6 +5,7 @@ using JWT.Serializers;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -37,6 +38,8 @@ namespace JsonWebToken.Performance
         protected static readonly Dictionary<string, Dictionary<string, object>> DictionaryPayloads = CreateDictionaryDescriptors();
         protected static readonly Dictionary<string, SecurityTokenDescriptor> WilsonPayloads = CreateWilsonDescriptors();
 
+        private static readonly ArrayBufferWriter _output = new ArrayBufferWriter();
+
         static WriteToken()
         {
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
@@ -53,11 +56,9 @@ namespace JsonWebToken.Performance
 
         protected byte[] JwtCore(string payload)
         {
-            using (var output = new ArrayBufferWriter())
-            {
-                Writer.WriteToken(JwtPayloads[payload], output);
-                return Array.Empty<byte>();
-            }
+            _output.Clear();
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            return Array.Empty<byte>();
         }
 
         public abstract string Wilson(string payload);
