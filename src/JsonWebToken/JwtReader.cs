@@ -464,9 +464,24 @@ namespace JsonWebToken
             }
 
             Jwt jws = new Jwt(header, payload);
-            var signatureSegment = segments[2];
-            TokenSegment headerSegment = segments[0];
-            return policy.TryValidate(new TokenValidationContext(jws, _signatureFactory, utf8Buffer.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), utf8Buffer.Slice(signatureSegment.Start, signatureSegment.Length)));
+
+            if (policy.SignatureValidation != null)
+            {
+                var headerSegment = segments[0];
+                var signatureSegment = segments[2];
+                var result = TryValidateSignature(policy.SignatureValidation, jws, utf8Buffer.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), utf8Buffer.Slice(signatureSegment.Start, signatureSegment.Length));
+                if (!result.Succedeed)
+                {
+                    return result;
+                }
+            }
+
+            if (policy.HasValidation)
+            {
+                return policy.TryValidate(new TokenValidationContext(jws));
+            }
+
+            return TokenValidationResult.Success(jws);
         }
 
         private static JwtPayload GetJsonPayload(ReadOnlySpan<byte> data)
@@ -701,6 +716,87 @@ namespace JsonWebToken
             }
 
             return keys;
+        }
+
+        private TokenValidationResult TryValidateSignature(SignatureValidationContext signatureValidationContext, Jwt jwt, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
+        {
+            if (contentBytes.Length == 0 && signatureSegment.Length == 0)
+            {
+                // This is not a JWS
+                return TokenValidationResult.Success(jwt);
+            }
+
+            if (signatureSegment.IsEmpty)
+            {
+                if (signatureValidationContext.SupportUnsecure && jwt.SignatureAlgorithm == SignatureAlgorithm.None)
+                {
+                    return TokenValidationResult.Success(jwt);
+                }
+
+                return TokenValidationResult.MissingSignature(jwt);
+            }
+
+            int signatureBytesLength;
+            try
+            {
+                signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(signatureSegment.Length);
+            }
+            catch (FormatException e)
+            {
+                return TokenValidationResult.MalformedSignature(jwt, e);
+            }
+
+            Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
+            try
+            {
+                Base64Url.Base64UrlDecode(signatureSegment, signatureBytes, out int byteConsumed, out int bytesWritten);
+                Debug.Assert(bytesWritten == signatureBytes.Length);
+            }
+            catch (FormatException e)
+            {
+                return TokenValidationResult.MalformedSignature(jwt, e);
+            }
+
+            bool keysTried = false;
+
+            var keySet = signatureValidationContext.KeyProvider.GetKeys(jwt.Header);
+            if (keySet != null)
+            {
+                for (int j = 0; j < keySet.Count; j++)
+                {
+                    var key = keySet[j];
+                    if ((string.IsNullOrEmpty(key.Use) || string.Equals(key.Use, JwkUseNames.Sig, StringComparison.Ordinal)) &&
+                        (string.IsNullOrEmpty(key.Alg) || string.Equals(key.Alg, jwt.Header.Alg, StringComparison.Ordinal)))
+                    {
+                        var alg = signatureValidationContext.Algorithm ?? key.Alg;
+                        if (TryValidateSignature(contentBytes, signatureBytes, key, alg))
+                        {
+                            jwt.SigningKey = key;
+                            return TokenValidationResult.Success(jwt);
+                        }
+
+                        keysTried = true;
+                    }
+                }
+            }
+
+            if (keysTried)
+            {
+                return TokenValidationResult.InvalidSignature(jwt);
+            }
+
+            return TokenValidationResult.SignatureKeyNotFound(jwt);
+        }
+
+        private bool TryValidateSignature(ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signature, Jwk key, SignatureAlgorithm algorithm)
+        {
+            var signatureProvider = _signatureFactory.Create(key, algorithm, willCreateSignatures: false);
+            if (signatureProvider == null)
+            {
+                return false;
+            }
+
+            return signatureProvider.Verify(contentBytes, signature);
         }
 
         /// <summary>

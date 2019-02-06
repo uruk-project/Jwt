@@ -14,39 +14,15 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="TokenValidationContext"/>.
         /// </summary>
         /// <param name="jwt"></param>
-        /// <param name="signatureFactory"></param>
-        /// <param name="contentSegment"></param>
-        /// <param name="signatureSegment"></param>
         public TokenValidationContext(
-            Jwt jwt, 
-            SignerFactory signatureFactory,
-            ReadOnlySpan<byte> contentSegment,
-            ReadOnlySpan<byte> signatureSegment)
+            Jwt jwt)
         {
             Jwt = jwt;
-            SignatureFactory = signatureFactory;
-            ContentSegment = contentSegment;
-            SignatureSegment = signatureSegment;
         }
 
         /// <summary>
         /// The decoded JWT.
         /// </summary>
         public readonly Jwt Jwt;
-
-        /// <summary>
-        /// The <see cref="SignerFactory"/>.
-        /// </summary>
-        public readonly SignerFactory SignatureFactory;
-
-        /// <summary>
-        /// The <see cref="TokenSegment"/> containing the header and the payload
-        /// </summary>
-        public readonly ReadOnlySpan<byte> ContentSegment;
-
-        /// <summary>
-        /// The <see cref="TokenSegment"/> containing the signature.
-        /// </summary>
-        public readonly ReadOnlySpan<byte> SignatureSegment;
     }
 }

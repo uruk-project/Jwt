@@ -74,8 +74,8 @@ namespace Performance
             _writer.EnableHeaderCaching = false;
             while (true)
             {
-                jwt = _writer.WriteToken(jws);
-                //var result = _reader.TryReadToken(jwt.AsSpan(), policy);
+                //jwt = _writer.WriteToken(jws);
+                var result = _reader.TryReadToken(jwt.AsSpan(), policy);
             }
 
             //while (true)
