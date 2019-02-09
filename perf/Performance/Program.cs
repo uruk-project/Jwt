@@ -75,7 +75,7 @@ namespace Performance
             while (true)
             {
                 //jwt = _writer.WriteToken(jws);
-                var result = _reader.TryReadToken(jwt.AsSpan(), policy);
+                var result = _reader.TryReadToken(jwt.AsSpan(), TokenValidationPolicy.NoValidation);
             }
 
             //while (true)

@@ -74,7 +74,7 @@ namespace JsonWebToken.Tests
 
             Assert.True(events.ContainsKey("urn:ietf:params:scim:event:create"));
             Assert.True(events["urn:ietf:params:scim:event:create"].ContainsKey("ref"));
-            Assert.Equal("https://scim.example.com/Users/44f6142df96bd6ab61e7521d9", events["urn:ietf:params:scim:event:create"]["ref"]);
+            Assert.Equal("https://scim.example.com/Users/44f6142df96bd6ab61e7521d9", (string)events["urn:ietf:params:scim:event:create"]["ref"].Value);
         }
 
         //[Fact]

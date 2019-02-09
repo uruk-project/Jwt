@@ -387,7 +387,7 @@ namespace JsonWebToken
             return key;
         }
 
-//#if NETCOREAPP3_0
+        //#if NETCOREAPP3_0
         internal static unsafe ECJwk FromJsonReader(ref Utf8JsonReader reader)
         {
             var key = new ECJwk();
@@ -475,7 +475,7 @@ namespace JsonWebToken
 
             return key;
         }
-//#endif
+        //#endif
 
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
@@ -532,9 +532,9 @@ namespace JsonWebToken
             Debug.Assert(jwtObject.Count == 3);
             var key = new ECJwk
             {
-                Y = Base64Url.Base64UrlDecode((byte[])jwtObject[2].Value),
-                X = Base64Url.Base64UrlDecode((byte[])jwtObject[1].Value),
-                Crv = (string)jwtObject[0].Value
+                Y = Base64Url.Base64UrlDecode(jwtObject.TryGetValue(JwkParameterNames.YUtf8, out var property) ? (string)property.Value : null),
+                X = Base64Url.Base64UrlDecode(jwtObject.TryGetValue(JwkParameterNames.XUtf8, out property) ? (string)property.Value : null),
+                Crv = jwtObject.TryGetValue(JwkParameterNames.CrvUtf8, out property) ? (string)property.Value : null
             };
 
 

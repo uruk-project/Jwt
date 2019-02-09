@@ -106,10 +106,10 @@ namespace JsonWebToken
 
             try
             {
-                using (var bufferWriter = new ArrayBufferWriter())
+                using (var bufferWriter = new ArrayBufferWriter<byte>())
                 {
                     header.Serialize(bufferWriter);
-                    var headerJson = bufferWriter.OutputAsSequence;
+                    var headerJson = bufferWriter.WrittenSpan;
                     int headerJsonLength = (int)headerJson.Length;
                     int base64EncodedHeaderLength = Base64Url.GetArraySizeRequiredToEncode(headerJsonLength);
 
@@ -241,6 +241,12 @@ namespace JsonWebToken
                     }
                 }
             }
+        }
+
+        private static bool TryEncodeUtf8ToBase64Url(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
+        {
+            bytesWritten = Base64Url.Base64UrlEncode(input, destination);
+            return bytesWritten == destination.Length;
         }
     }
 }

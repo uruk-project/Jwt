@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
+using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -11,21 +13,21 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtPayload
     {
-        private readonly Dictionary<string, object> _inner;
+        private readonly JwtObject _inner;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtPayload"/> class.
         /// </summary>
         public JwtPayload()
         {
-            _inner = new Dictionary<string, object>();
+            _inner = new JwtObject();
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtPayload"/> class.
         /// </summary>
         /// <param name="inner"></param>
-        public JwtPayload(Dictionary<string, object> inner)
+        public JwtPayload(JwtObject inner)
         {
             _inner = inner;
         }
@@ -39,95 +41,69 @@ namespace JsonWebToken
         {
             get
             {
-                switch (key)
-                {
-                    case Claims.Iss:
-                        return Iss;
-                    case Claims.Exp:
-                        return Exp;
-                    case Claims.Aud:
-                        return Aud;
-                    case Claims.Jti:
-                        return Jti;
-                    case Claims.Sub:
-                        return Sub;
-                    case Claims.Nbf:
-                        return Nbf;
-                    case Claims.Iat:
-                        return Iat;
-                    default:
-                        return _inner.TryGetValue(key, out var value) ? value : null;
-                }
-            }
-
-            set
-            {
-                switch (key)
-                {
-                    case Claims.Iss:
-                        Iss = (string)value;
-                        break;
-                    case Claims.Exp:
-                        Exp = (long?)value;
-                        break;
-                    case Claims.Aud:
-                        Aud = (IList<string>)value;
-                        break;
-                    case Claims.Jti:
-                        Jti = (string)value;
-                        break;
-                    case Claims.Sub:
-                        Sub = (string)value;
-                        break;
-                    case Claims.Nbf:
-                        Nbf = (long?)value;
-                        break;
-                    case Claims.Iat:
-                        Iat = (long?)value;
-                        break;
-                    default:
-                        _inner[key] = value;
-                        break;
-                }
-
-                _inner[key] = value;
+                return _inner.TryGetValue(key, out var value) ? value.Value : null;
             }
         }
 
         /// <summary>
         /// Gets the 'audience' claim as a list of strings.
         /// </summary>
-        public IList<string> Aud { get; set; }
+        public IList<string> Aud
+        {
+            get
+            {
+                if (_inner.TryGetValue(Claims.AudUtf8, out var property))
+                {
+                    if (property.Type == JwtTokenType.Array)
+                    {
+                        var list = new List<string>();
+                        var array = (JwtArray)property.Value;
+                        for (int i = 0; i < array.Count; i++)
+                        {
+                            list.Add((string)array[i].Value);
+                        }
+
+                        return list;
+                    }
+                    else if (property.Type == JwtTokenType.String)
+                    {
+                        return new List<string> { (string)property.Value };
+                    }
+                }
+
+                return Array.Empty<string>();
+            }
+        }
 
         /// <summary>
         /// Gets the 'expiration time' claim.
         /// </summary>
-        public long? Exp { get; set; }
+        public long? Exp => _inner.TryGetValue(Claims.ExpUtf8, out var property) ? (long?)property.Value : null;
 
         /// <summary>
         /// Gets the 'JWT ID' claim.
         /// </summary>
-        public string Jti { get; set; }
+        public string Jti => _inner.TryGetValue(Claims.JtiUtf8, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the 'issued at' claim.
         /// </summary>
-        public long? Iat { get; set; }
+        public long? Iat => _inner.TryGetValue(Claims.IatUtf8, out var property) ? (long?)property.Value : null;
 
         /// <summary>
         /// Gets the 'issuer' claim.
         /// </summary>
-        public string Iss { get; set; }
+        public string Iss => _inner.TryGetValue(Claims.IssUtf8, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the 'not before' claim.
         /// </summary>
-        public long? Nbf { get; set; }
+        public long? Nbf => _inner.TryGetValue(Claims.NbfUtf8, out var property) ? (long?)property.Value : null;
 
         /// <summary>
         /// Gets the 'subject' claim.
         /// </summary>
-        public string Sub { get; set; }
+        public string Sub => _inner.TryGetValue(Claims.SubUtf8, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the claim for a specified key in the current <see cref="JwtPayload"/>.
@@ -152,7 +128,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool ContainsKey(string key)
         {
-            return _inner.ContainsKey(key);
+            return _inner.ContainsKey(Encoding.UTF8.GetBytes(key));
         }
 
         /// <summary>
@@ -160,7 +136,14 @@ namespace JsonWebToken
         /// </summary>
         public bool TryGetValue(string key, out object value)
         {
-            return _inner.TryGetValue(key, out value);
+            if (_inner.TryGetValue(key, out var property))
+            {
+                value = property.Value;
+                return true;
+            }
+
+            value = null;
+            return false;
         }
     }
 }

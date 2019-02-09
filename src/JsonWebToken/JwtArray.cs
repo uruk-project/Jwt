@@ -84,14 +84,14 @@ namespace JsonWebToken
 
         private string DebuggerDisplay()
         {
-            using (var bufferWriter = new ArrayBufferWriter())
+            using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
 
                 WriteTo(ref writer);
                 writer.Flush();
 
-                var input = bufferWriter.OutputAsSequence;
+                var input = bufferWriter.WrittenSpan;
                 return Encoding.UTF8.GetString(input.ToArray());
             }
         }

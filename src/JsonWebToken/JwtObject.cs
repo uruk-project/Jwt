@@ -16,7 +16,7 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public class JwtObject
     {
-        private readonly List<JwtProperty> _properties = new List<JwtProperty>();
+        private readonly List<JwtProperty> _properties = new List<JwtProperty>(6);
 
         /// <summary>
         /// Gets the number of <see cref="JwtProperty"/>.
@@ -38,6 +38,13 @@ namespace JsonWebToken
         /// <param name="index"></param>
         /// <returns></returns>
         public JwtProperty this[int index] => _properties[index];
+
+        /// <summary>
+        /// Gets or sets the <see cref="JwtProperty"/> at the specified key;
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public JwtProperty this[string key] => this[Encoding.UTF8.GetBytes(key)];
 
         /// <summary>
         /// Gets or sets the <see cref="JwtProperty"/> at the specified key;
@@ -132,6 +139,13 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Determines whether a <see cref="JwtProperty"/> is in the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool ContainsKey(string key) => ContainsKey(Encoding.UTF8.GetBytes(key));
+
+        /// <summary>
         /// Replaces a <see cref="JwtProperty"/> 
         /// </summary>
         /// <param name="property"></param>
@@ -157,10 +171,10 @@ namespace JsonWebToken
         /// <returns></returns>
         public byte[] Serialize()
         {
-            using (var bufferWriter = new ArrayBufferWriter())
+            using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
                 Serialize(bufferWriter);
-                return bufferWriter.OutputAsSpan.ToArray();
+                return bufferWriter.WrittenSpan.ToArray();
             }
         }
 
@@ -199,14 +213,20 @@ namespace JsonWebToken
 
         private string DebuggerDisplay()
         {
-            using (var bufferWriter = new ArrayBufferWriter())
+            return ToString();
+        }
+
+        /// <inheritsdoc />
+        public override string ToString()
+        {
+            using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
 
                 WriteTo(ref writer);
                 writer.Flush();
 
-                var input = bufferWriter.OutputAsSpan;
+                var input = bufferWriter.WrittenSpan;
                 return Encoding.UTF8.GetString(input.ToArray());
             }
         }

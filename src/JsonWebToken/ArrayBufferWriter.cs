@@ -9,15 +9,15 @@ namespace JsonWebToken
     /// <summary>
     /// Reprensents an implementation of <see cref="IBufferWriter{T}" /> where the memory owner is a <see cref="ArrayPool{T}"/>.
     /// </summary>
-    public class ArrayBufferWriter : IBufferWriter<byte>, IDisposable
+    public class ArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
     {
-        private byte[] _rentedBuffer;
-        private int _written;
+        private T[] _rentedBuffer;
+        private int _index;
 
         private const int MinimumBufferSize = 256;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ArrayBufferWriter"/> class.
+        /// Initializes a new instance of the <see cref="ArrayBufferWriter{T}"/> class.
         /// </summary>
         /// <param name="initialCapacity"></param>
         public ArrayBufferWriter(int initialCapacity = MinimumBufferSize)
@@ -27,33 +27,33 @@ namespace JsonWebToken
                 throw new ArgumentException(nameof(initialCapacity));
             }
 
-            _rentedBuffer = ArrayPool<byte>.Shared.Rent(initialCapacity);
-            _written = 0;
+            _rentedBuffer = ArrayPool<T>.Shared.Rent(initialCapacity);
+            _index = 0;
         }
 
         /// <summary>
         /// Gets the output as a <see cref="Memory{T}"/>.
         /// </summary>
-        public Memory<byte> OutputAsMemory
+        public ReadOnlyMemory<T> WrittenMemory
         {
             get
             {
                 CheckIfDisposed();
 
-                return _rentedBuffer.AsMemory(0, _written);
+                return _rentedBuffer.AsMemory(0, _index);
             }
         }
 
         /// <summary>
-        /// Gets the output as a <see cref="Span{T}"/>.
+        /// Gets the output as a <see cref="ReadOnlySpan{T}"/>.
         /// </summary>
-        public Span<byte> OutputAsSpan
+        public ReadOnlySpan<T> WrittenSpan
         {
             get
             {
                 CheckIfDisposed();
 
-                return _rentedBuffer.AsSpan(0, _written);
+                return _rentedBuffer.AsSpan(0, _index);
             }
         }
 
@@ -61,31 +61,44 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the output as a <see cref="Span{T}"/>.
         /// </summary>
-        public ReadOnlySequence<byte> OutputAsSequence
+        public ReadOnlySequence<T> OutputAsSequence
         {
             get
             {
                 CheckIfDisposed();
 
-                return new ReadOnlySequence<byte>(_rentedBuffer, 0, _written);
+                return new ReadOnlySequence<T>(_rentedBuffer, 0, _index);
             }
         }
 
         /// <summary>
         /// Gets the bytes written.
         /// </summary>
-        public int BytesWritten
+        public int WrittenCount
         {
             get
             {
                 CheckIfDisposed();
 
-                return _written;
+                return _index;
             }
         }
 
         /// <summary>
-        /// Clear the <see cref="ArrayBufferWriter"/>. 
+        /// Gets the capacity.
+        /// </summary>
+        public int Capacity
+        {
+            get
+            {
+                CheckIfDisposed();
+
+                return _rentedBuffer.Length;
+            }
+        }
+
+        /// <summary>
+        /// Clear the <see cref="ArrayBufferWriter{T}"/>. 
         /// </summary>
         public void Clear()
         {
@@ -97,12 +110,13 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ClearHelper()
         {
-            _rentedBuffer.AsSpan(0, _written).Clear();
-            _written = 0;
+            Debug.Assert(_rentedBuffer != null);
+            _rentedBuffer.AsSpan(0, _index).Clear();
+            _index = 0;
         }
 
         /// <summary>
-        /// Advances the <see cref="ArrayBufferWriter"/> of the <paramref name="count"/> indicated.
+        /// Advances the <see cref="ArrayBufferWriter{T}"/> of the <paramref name="count"/> indicated.
         /// </summary>
         /// <param name="count"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -115,12 +129,12 @@ namespace JsonWebToken
                 Errors.ThrowMustBeGreaterOrEqualToZero(nameof(count), count);
             }
 
-            if (_written > _rentedBuffer.Length - count)
+            if (_index > _rentedBuffer.Length - count)
             {
                 Errors.ThrowCannotAdvanceBuffer();
             }
 
-            _written += count;
+            _index += count;
         }
 
         /// <summary>
@@ -130,9 +144,9 @@ namespace JsonWebToken
         {
             if (_rentedBuffer != null)
             {
-                ArrayPool<byte>.Shared.Return(_rentedBuffer, clearArray: true);
+                ClearHelper();
+                ArrayPool<T>.Shared.Return(_rentedBuffer);
                 _rentedBuffer = null;
-                _written = 0;
             }
         }
 
@@ -141,82 +155,80 @@ namespace JsonWebToken
         {
             if (_rentedBuffer == null)
             {
-                Errors.ThrowObjectDisposed(typeof(ArrayBufferWriter));
+                Errors.ThrowObjectDisposed(typeof(ArrayBufferWriter<T>));
             }
         }
 
         /// <inheritsdoc />
-        public Memory<byte> GetMemory(int sizeHint = 0)
+        public Span<T> GetSpan(int sizeHint = 0)
         {
             CheckIfDisposed();
 
-            if (sizeHint < 0)
-            {
-                Errors.ThrowArgument(nameof(sizeHint));
-            }
-
             CheckAndResizeBuffer(sizeHint);
-            return _rentedBuffer.AsMemory(_written);
+            return _rentedBuffer.AsSpan(_index);
         }
 
+
         /// <inheritsdoc />
-        public Span<byte> GetSpan(int sizeHint = 0)
+        public Memory<T> GetMemory(int sizeHint = 0)
         {
             CheckIfDisposed();
 
-            if (sizeHint < 0)
-            {
-                Errors.ThrowArgument(nameof(sizeHint));
-            }
-
             CheckAndResizeBuffer(sizeHint);
-            return _rentedBuffer.AsSpan(_written);
+            return _rentedBuffer.AsMemory(_index);
         }
 
         private void CheckAndResizeBuffer(int sizeHint)
         {
-            Debug.Assert(sizeHint >= 0);
+            Debug.Assert(_rentedBuffer != null);
+            if (sizeHint < 0)
+            {
+                Errors.ThrowArgument(nameof(sizeHint));
+            }
+
             if (sizeHint == 0)
             {
                 sizeHint = MinimumBufferSize;
             }
-
-            int availableSpace = _rentedBuffer.Length - _written;
+            int bufferLength = _rentedBuffer.Length;
+            int availableSpace = bufferLength - _index;
             if (sizeHint > availableSpace)
             {
-                int growBy = sizeHint > _rentedBuffer.Length ? sizeHint : _rentedBuffer.Length;
+                int growBy = Math.Max(sizeHint, bufferLength);
 
-                int newSize = checked(_rentedBuffer.Length + growBy);
+                int newSize = checked(bufferLength + growBy);
 
-                byte[] oldBuffer = _rentedBuffer;
+                T[] oldBuffer = _rentedBuffer;
 
-                _rentedBuffer = ArrayPool<byte>.Shared.Rent(newSize);
+                _rentedBuffer = ArrayPool<T>.Shared.Rent(newSize);
 
-                Debug.Assert(oldBuffer.Length >= _written);
-                Debug.Assert(_rentedBuffer.Length >= _written);
+                Debug.Assert(oldBuffer.Length >= _index);
+                Debug.Assert(_rentedBuffer.Length >= _index);
 
-                oldBuffer.AsSpan(0, _written).CopyTo(_rentedBuffer);
-                ArrayPool<byte>.Shared.Return(oldBuffer, clearArray: true);
+                Span<T> previousBuffer = oldBuffer.AsSpan(0, _index);
+                previousBuffer.CopyTo(_rentedBuffer);
+                previousBuffer.Clear();
+                ArrayPool<T>.Shared.Return(oldBuffer);
             }
 
-            Debug.Assert(_rentedBuffer.Length - _written > 0);
-            Debug.Assert(_rentedBuffer.Length - _written >= sizeHint);
+            Debug.Assert(_rentedBuffer.Length - _index > 0);
+            Debug.Assert(_rentedBuffer.Length - _index >= sizeHint);
         }
     }
 
     /// <summary>
     /// Reprensents an implementation of <see cref="IBufferWriter{T}" /> where the memory owner is a <see cref="ArrayPool{T}"/>.
     /// </summary>
-    public unsafe class UnmanagedBufferWriter : IBufferWriter<byte>, IDisposable
+    public unsafe class UnmanagedBufferWriter<T> : IBufferWriter<T>, IDisposable
     {
         private IntPtr _rentedBuffer;
-        private int _written;
+        private int _index;
         private int _capacity;
 
         private const int MinimumBufferSize = 256;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ArrayBufferWriter"/> class.
+        /// Initializes a new instance of the <see cref="ArrayBufferWriter{T}"/> class.
         /// </summary>
         /// <param name="initialCapacity"></param>
         public UnmanagedBufferWriter(int initialCapacity = MinimumBufferSize)
@@ -226,39 +238,39 @@ namespace JsonWebToken
                 throw new ArgumentException(nameof(initialCapacity));
             }
 
-            _capacity = Marshal.SizeOf(typeof(byte)) * initialCapacity;
+            _capacity = Marshal.SizeOf(typeof(T)) * initialCapacity;
             _rentedBuffer = Marshal.AllocHGlobal(_capacity);
-            _written = 0;
+            _index = 0;
         }
 
         /// <summary>
-        /// Gets the output as a <see cref="Span{T}"/>.
+        /// Gets the output as a <see cref="ReadOnlySpan{T}"/>.
         /// </summary>
-        public Span<byte> OutputAsSpan
+        public ReadOnlySpan<T> WrittenSpan
         {
             get
             {
                 CheckIfDisposed();
 
-                return new Span<byte>(_rentedBuffer.ToPointer(), _written);
+                return new ReadOnlySpan<T>(_rentedBuffer.ToPointer(), _index);
             }
         }
 
         /// <summary>
         /// Gets the bytes written.
         /// </summary>
-        public int BytesWritten
+        public int WrittenCount
         {
             get
             {
                 CheckIfDisposed();
 
-                return _written;
+                return _index;
             }
         }
 
         /// <summary>
-        /// Clear the <see cref="ArrayBufferWriter"/>. 
+        /// Clear the <see cref="ArrayBufferWriter{T}"/>. 
         /// </summary>
         public void Clear()
         {
@@ -270,12 +282,13 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ClearHelper()
         {
-            OutputAsSpan.Clear();
-            _written = 0;
+            Debug.Assert(_rentedBuffer != null);
+            new Span<T>(_rentedBuffer.ToPointer(), _index).Clear();
+            _index = 0;
         }
 
         /// <summary>
-        /// Advances the <see cref="ArrayBufferWriter"/> of the <paramref name="count"/> indicated.
+        /// Advances the <see cref="ArrayBufferWriter{T}"/> of the <paramref name="count"/> indicated.
         /// </summary>
         /// <param name="count"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -288,12 +301,12 @@ namespace JsonWebToken
                 Errors.ThrowMustBeGreaterOrEqualToZero(nameof(count), count);
             }
 
-            if (_written > _capacity - count)
+            if (_index > _capacity - count)
             {
                 Errors.ThrowCannotAdvanceBuffer();
             }
 
-            _written += count;
+            _index += count;
         }
 
         /// <summary>
@@ -303,8 +316,9 @@ namespace JsonWebToken
         {
             if (_rentedBuffer != IntPtr.Zero)
             {
+                ClearHelper();
                 Marshal.FreeHGlobal(_rentedBuffer);
-                _written = 0;
+                _index = 0;
             }
         }
 
@@ -313,42 +327,41 @@ namespace JsonWebToken
         {
             if (_rentedBuffer == IntPtr.Zero)
             {
-                Errors.ThrowObjectDisposed(typeof(ArrayBufferWriter));
+                Errors.ThrowObjectDisposed(typeof(UnmanagedBufferWriter<T>));
             }
         }
 
         /// <inheritsdoc />
-        public Memory<byte> GetMemory(int sizeHint = 0)
+        public Memory<T> GetMemory(int sizeHint = 0)
         {
             throw new NotImplementedException();
         }
 
         /// <inheritsdoc />
-        public Span<byte> GetSpan(int sizeHint = 0)
+        public Span<T> GetSpan(int sizeHint = 0)
         {
             CheckIfDisposed();
+            CheckAndResizeBuffer(sizeHint);
+            return new Span<T>(_rentedBuffer.ToPointer(), _capacity).Slice(_index, sizeHint);
+        }
 
+        private void CheckAndResizeBuffer(int sizeHint)
+        {
+            Debug.Assert(_rentedBuffer != IntPtr.Zero);
             if (sizeHint < 0)
             {
                 Errors.ThrowArgument(nameof(sizeHint));
             }
 
-            CheckAndResizeBuffer(sizeHint);
-            return new Span<byte>(_rentedBuffer.ToPointer(), _capacity).Slice(_written, sizeHint);
-        }
-
-        private void CheckAndResizeBuffer(int sizeHint)
-        {
-            Debug.Assert(sizeHint >= 0);
             if (sizeHint == 0)
             {
                 sizeHint = MinimumBufferSize;
             }
 
-            int availableSpace = _capacity - _written;
+            int availableSpace = _capacity - _index;
             if (sizeHint > availableSpace)
             {
-                int growBy = sizeHint > _capacity ? sizeHint : _capacity;
+                int growBy = Math.Max(sizeHint, _capacity);
 
                 int newSize = checked(_capacity + growBy);
 
@@ -357,15 +370,16 @@ namespace JsonWebToken
                 _rentedBuffer = Marshal.AllocHGlobal(newSize);
 
                 //Debug.Assert(oldBuffer.Length >= _written);
-                Debug.Assert(newSize >= _written);
+                Debug.Assert(newSize >= _index);
 
-                new Span<byte>(oldBuffer.ToPointer(), _capacity).CopyTo(new Span<byte>(_rentedBuffer.ToPointer(), newSize));
+                Buffer.MemoryCopy(oldBuffer.ToPointer(), _rentedBuffer.ToPointer(), newSize, _index);
+                new Span<T>(oldBuffer.ToPointer(), _capacity).Clear();
                 _capacity = newSize;
                 Marshal.FreeHGlobal(oldBuffer);
             }
 
-            Debug.Assert(_capacity - _written > 0);
-            Debug.Assert(_capacity - _written >= sizeHint);
+            Debug.Assert(_capacity - _index > 0);
+            Debug.Assert(_capacity - _index >= sizeHint);
         }
     }
 

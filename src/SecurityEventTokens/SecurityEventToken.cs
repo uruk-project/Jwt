@@ -2,16 +2,14 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 
 namespace JsonWebToken
 {
     public class SecurityEventToken : Jwt
     {
         private readonly Jwt _token;
-        private IReadOnlyDictionary<string, JObject> _events;
+        private JwtObject _events;
 
         public SecurityEventToken(Jwt token)
         {
@@ -22,7 +20,7 @@ namespace JsonWebToken
 
         public override JwtPayload Payload => _token.Payload;
 
-        public IReadOnlyDictionary<string, JObject> Events
+        public JwtObject Events
         {
             get
             {
@@ -30,15 +28,15 @@ namespace JsonWebToken
                 {
                     if (Payload == null)
                     {
-                        return new Dictionary<string, JObject>();
+                        return new JwtObject();
                     }
 
                     if (!Payload.TryGetValue(SetClaims.Events, out var events))
                     {
-                        return new Dictionary<string, JObject>();
+                        return new JwtObject();
                     }
 
-                    _events = JToken.FromObject(events).ToObject<Dictionary<string, JObject>>();
+                    _events = (JwtObject)events;
                     return _events;
                 }
 

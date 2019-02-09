@@ -467,17 +467,17 @@ namespace JsonWebToken
                 }
             }
 
-            using (var payloadBufferWriter = new ArrayBufferWriter())
+            using (var payloadBufferWriter = new ArrayBufferWriter<byte>())
             {
                 Payload.Serialize(payloadBufferWriter);
-                var payloadJson = payloadBufferWriter.OutputAsSpan;
+                var payloadJson = payloadBufferWriter.WrittenSpan;
                 int length = Base64Url.GetArraySizeRequiredToEncode((int)payloadJson.Length)
                            + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBytes))
                            + (Constants.JwsSegmentCount - 1);
                 ReadOnlySpan<byte> headerJson = default;
                 var headerCache = context.HeaderCache;
                 byte[] cachedHeader = null;
-                using (var headerBufferWriter = new ArrayBufferWriter())
+                using (var headerBufferWriter = new ArrayBufferWriter<byte>())
                 {
                     if (headerCache != null && headerCache.TryGetHeader(Header, alg, out cachedHeader))
                     {
@@ -486,7 +486,7 @@ namespace JsonWebToken
                     else
                     {
                         Header.Serialize(headerBufferWriter);
-                        headerJson = headerBufferWriter.OutputAsSpan;
+                        headerJson = headerBufferWriter.WrittenSpan;
                         length += Base64Url.GetArraySizeRequiredToEncode((int)headerJson.Length);
                     }
 

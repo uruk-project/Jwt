@@ -13,6 +13,10 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public readonly struct JwtValue
     {
+        public static readonly JwtValue Null = default;
+        public static readonly JwtValue True = new JwtValue(true);
+        public static readonly JwtValue False = new JwtValue(false);
+
         /// <summary>
         /// Gets the <see cref="JwtTokenType"/> of the <see cref="JwtValue"/>.
         /// </summary>
@@ -164,14 +168,14 @@ namespace JsonWebToken
 
         private string DebuggerDisplay()
         {
-            var bufferWriter = new ArrayBufferWriter();
+            var bufferWriter = new ArrayBufferWriter<byte>();
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
 
                 WriteTo(ref writer);
                 writer.Flush();
 
-                var input = bufferWriter.OutputAsSpan;
+                var input = bufferWriter.WrittenSpan;
                 return Encoding.UTF8.GetString(input.ToArray());
             }
         }

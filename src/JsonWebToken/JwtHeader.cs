@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
+using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -12,13 +14,13 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtHeader
     {
-        private readonly Dictionary<string, object> _inner;
+        private readonly JwtObject _inner;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtHeader"/> class.
         /// </summary>
         /// <param name="inner"></param>
-        public JwtHeader(Dictionary<string, object> inner)
+        public JwtHeader(JwtObject inner)
         {
             _inner = inner;
         }
@@ -26,85 +28,119 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtHeader"/> class.
         /// </summary>
+        /// <param name="json"></param>
+        public JwtHeader(string json)
+        {
+            _inner = JsonParser.Parse(Encoding.UTF8.GetBytes(json));
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtHeader"/> class.
+        /// </summary>
         public JwtHeader()
         {
-            _inner = new Dictionary<string, object>();
+            _inner = new JwtObject();
         }
 
         /// <summary>
         /// Gets the signature algorithm that was used to create the signature.
         /// </summary>
-        public string Alg { get; set; }
+        public string Alg => _inner.TryGetValue(HeaderParameters.AlgUtf8, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the content type (Cty) of the token.
         /// </summary>
-        public string Cty { get; set; }
+        public string Cty => _inner.TryGetValue(HeaderParameters.CtyUtf8, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the encryption algorithm (Enc) of the token.
         /// </summary>
-        public string Enc { get; set; }
+        public string Enc => _inner.TryGetValue(HeaderParameters.EncUtf8, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the key identifier for the key used to sign the token.
         /// </summary>
-        public string Kid { get; set; }
+        public string Kid => _inner.TryGetValue(HeaderParameters.KidUtf8, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the mime type (Typ) of the token.
         /// </summary>
-        public string Typ { get; set; }
+        public string Typ => _inner.TryGetValue(HeaderParameters.TypUtf8, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the thumbprint of the certificate used to sign the token.
         /// </summary>
-        public string X5t => GetValue<string>(HeaderParameters.X5t);
+        public string X5t => _inner.TryGetValue(HeaderParameters.TagUtf8, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the URL of the JWK used to sign the token.
         /// </summary>
-        public string Jku => GetValue<string>(HeaderParameters.Jku);
+        public string Jku => _inner.TryGetValue(HeaderParameters.JkuUtf8, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the URL of the certificate used to sign the token
         /// </summary>
-        public string X5u => GetValue<string>(HeaderParameters.X5u);
+        public string X5u => _inner.TryGetValue(HeaderParameters.X5uUtf8, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the algorithm used to compress the token.
         /// </summary>
-        public string Zip { get; set; }
+        public string Zip => _inner.TryGetValue(HeaderParameters.ZipUtf8, out var property) ? (string)property.Value : null;
         /// <summary>
         /// Gets the Initialization Vector used for AES GCM encryption.
         /// </summary>
-        public string IV => GetValue<string>(HeaderParameters.IV);
+        public string IV => _inner.TryGetValue(HeaderParameters.IVUtf8, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the Authentication Tag used for AES GCM encryption.
         /// </summary>
-        public string Tag => GetValue<string>(HeaderParameters.Typ);
+        public string Tag => _inner.TryGetValue(HeaderParameters.TagUtf8, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the Crit header.
         /// </summary>
-        public IList<string> Crit { get; set; }
+        public IList<string> Crit
+        {
+            get
+            {
+                if (_inner.TryGetValue(HeaderParameters.CritUtf8, out var property))
+                {
+                    if (property.Type == JwtTokenType.Array)
+                    {
+                        var list = new List<string>();
+                        var array = (JwtArray)property.Value;
+                        for (int i = 0; i < array.Count; i++)
+                        {
+                            list.Add((string)array[i].Value);
+                        }
+
+                        return list;
+                    }
+                    else if (property.Type == JwtTokenType.String)
+                    {
+                        return new List<string> { (string)property.Value };
+                    }
+                }
+
+                return Array.Empty<string>();
+            }
+        }
 
 #if !NETSTANDARD
         /// <summary>
         /// Gets the ephemeral key used for ECDH key agreement.
         /// </summary>
-        public ECJwk Epk { get; set; }
+        public ECJwk Epk => _inner.TryGetValue(HeaderParameters.EpkUtf8, out var property) ? ECJwk.FromJwtObject((JwtObject)property.Value) : null;
 
         /// <summary>
         /// Gets the Agreement PartyUInfo used for ECDH key agreement.
         /// </summary>
-        public string Apu { get; set; }
+        public string Apu => _inner.TryGetValue(HeaderParameters.ApuUtf8, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the Agreement PartyVInfo used for ECDH key agreement.
         /// </summary>
-        public string Apv { get; set; }
+        public string Apv => _inner.TryGetValue(HeaderParameters.ApvUtf8, out var property) ? (string)property.Value : null;
 #endif
 
         /// <summary>
@@ -132,75 +168,7 @@ namespace JsonWebToken
         {
             get
             {
-                switch (key)
-                {
-                    case HeaderParameters.Alg:
-                        return Alg;
-                    case HeaderParameters.Enc:
-                        return Enc;
-                    case HeaderParameters.Kid:
-                        return Kid;
-                    case HeaderParameters.Cty:
-                        return Cty;
-                    case HeaderParameters.Typ:
-                        return Typ;
-                    case HeaderParameters.Zip:
-                        return Zip;
-                    case HeaderParameters.Crit:
-                        return Crit;
-#if NETCOREAPP2_1
-                    case HeaderParameters.Epk:
-                        return Epk;
-                    case HeaderParameters.Apu:
-                        return Apu;
-                    case HeaderParameters.Apv:
-                        return Apv;
-#endif  
-                    default:
-                        return _inner.TryGetValue(key, out var value) ? value : null;
-                }
-            }
-
-            set
-            {
-                switch (key)
-                {
-                    case HeaderParameters.Alg:
-                        Alg = (string)value;
-                        break;
-                    case HeaderParameters.Enc:
-                        Enc = (string)value;
-                        break;
-                    case HeaderParameters.Kid:
-                        Kid = (string)value;
-                        break;
-                    case HeaderParameters.Cty:
-                        Cty = (string)value;
-                        break;
-                    case HeaderParameters.Typ:
-                        Typ = (string)value;
-                        break;
-                    case HeaderParameters.Zip:
-                        Zip = (string)value;
-                        break;
-                    case HeaderParameters.Crit:
-                        Crit = (IList<string>)value;
-                        break;
-#if NETCOREAPP2_1
-                    case HeaderParameters.Epk:
-                        Epk = ECJwk.FromDictionary((Dictionary<string, object>)value);
-                        break;
-                    case HeaderParameters.Apu:
-                        Apu = (string)value;
-                        break;
-                    case HeaderParameters.Apv:
-                        Apv = (string)value;
-                        break;
-#endif
-                    default:
-                        _inner[key] = value;
-                        break;
-                }
+                return _inner.TryGetValue(key, out var value) ? value.Value : null;
             }
         }
 
@@ -211,7 +179,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool ContainsKey(string key)
         {
-            return _inner.ContainsKey(key);
+            return _inner.ContainsKey(Encoding.UTF8.GetBytes(key));
         }
     }
 }

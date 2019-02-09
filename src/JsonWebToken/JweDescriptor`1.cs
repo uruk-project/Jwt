@@ -77,10 +77,10 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override void Encode(EncodingContext context, IBufferWriter<byte> output)
         {
-            using (var bufferWriter = new ArrayBufferWriter())
+            using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
                 Payload.Encode(context, bufferWriter);
-                var payload = bufferWriter.OutputAsSpan;
+                var payload = bufferWriter.WrittenSpan;
                 EncryptToken(context, payload, output);
             }
         }

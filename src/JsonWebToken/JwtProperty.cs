@@ -163,6 +163,35 @@ namespace JsonWebToken
             Value = null;
         }
 
+
+        /// <summary>
+        /// Gets or sets the <see cref="JwtProperty"/> at the specified key;
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public JwtProperty this[string key]
+        {
+            get
+            {
+                if (Type == JwtTokenType.Object && ((JwtObject)Value).TryGetValue(key, out var property))
+                {
+                    return property;
+                }
+
+                return default;
+            }
+        }
+
+        internal bool ContainsKey(string key)
+        {
+            if (Type == JwtTokenType.Object)
+            {
+                return ((JwtObject)Value).ContainsKey(key);
+            }
+
+            return false;
+        }
+
         internal void WriteTo(ref Utf8JsonWriter writer)
         {
             switch (Type)
@@ -199,7 +228,7 @@ namespace JsonWebToken
 
         private string DebuggerDisplay()
         {
-            var bufferWriter = new ArrayBufferWriter();
+            var bufferWriter = new ArrayBufferWriter<byte>();
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
 
@@ -208,7 +237,7 @@ namespace JsonWebToken
                 writer.WriteEndObject();
                 writer.Flush();
 
-                var input = bufferWriter.OutputAsSpan;
+                var input = bufferWriter.WrittenSpan;
                 return Encoding.UTF8.GetString(input.ToArray());
             }
         }
