@@ -4,8 +4,11 @@
 using JsonWebToken.Internal;
 using Newtonsoft.Json;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -93,21 +96,6 @@ namespace JsonWebToken
 
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Returns a new instance of <see cref="Jwks"/>.
-        /// </summary>
-        /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
-        /// <returns><see cref="Jwks"/></returns>
-        public static Jwks FromJson(string json)
-        {
-            if (string.IsNullOrEmpty(json))
-            {
-                throw new ArgumentNullException(nameof(json));
-            }
-
-            return new Jwks(json);
         }
 
         /// <summary>
@@ -200,5 +188,56 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keys"></param>
         public static implicit operator Jwks(Jwk[] keys) => new Jwks(keys);
+
+        /// <summary>
+        /// Returns a new instance of <see cref="Jwks"/>.
+        /// </summary>
+        /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
+        /// <returns><see cref="Jwks"/></returns>
+        public unsafe static Jwks FromJson(string json)
+        {
+            // a JWKS is :
+            // {
+            //   "keys": [
+            //   { jwk1 },
+            //   { jwk2 },
+            //   ???
+            //   ]
+            // }
+            var jwks = new Jwks();
+            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json), true, default);
+
+            reader.Read();
+            if (reader.TokenType == JsonTokenType.StartObject && reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
+            {
+                var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                if (propertyName.Length == 4)
+                {
+                    fixed (byte* pPropertyName = propertyName)
+                    {
+                        if (*((uint*)pPropertyName) == 1937335659u /* keys */)
+                        {
+                            reader.Read();
+                            if (reader.TokenType == JsonTokenType.StartArray)
+                            {
+                                while (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
+                                {
+                                    Jwk jwk = Jwk.FromJsonReader(ref reader);
+                                    jwks.Add(jwk);
+                                }
+
+                                if (reader.Read() && reader.TokenType == JsonTokenType.EndObject)
+                                {
+                                    return jwks;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Errors.ThrowMalformedJwks();
+            return null;
+        }
     }
 }

@@ -92,7 +92,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool TryGetValue(string key, out JwtProperty value)
         {
-            return TryGetValue(Encoding.UTF8.GetBytes(key), out value);
+            return TryGetValue(Encoding.UTF8.GetBytes(key).AsSpan(), out value);
         }
 
         /// <summary>
@@ -103,11 +103,21 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool TryGetValue(ReadOnlyMemory<byte> key, out JwtProperty value)
         {
-            var span = key.Span;
+            return TryGetValue(key.Span, out value);
+        }
+
+        /// <summary>
+        /// Gets the <see cref="JwtProperty"/> associated with the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public bool TryGetValue(ReadOnlySpan<byte> key, out JwtProperty value)
+        {
             for (int i = 0; i < _properties.Count; i++)
             {
                 var current = _properties[i];
-                if (current.Utf8Name.Span.SequenceEqual(span))
+                if (current.Utf8Name.Span.SequenceEqual(key))
                 {
                     value = current;
                     return true;

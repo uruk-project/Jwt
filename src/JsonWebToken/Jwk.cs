@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -157,6 +158,141 @@ namespace JsonWebToken
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> to verify.</param>
         /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
         public abstract bool IsSupported(SignatureAlgorithm algorithm);
+
+        internal unsafe static Jwk FromJsonReader(ref Utf8JsonReader reader)
+        {
+            bool fastPath = true;
+            JwtObject jwk = null;
+            while (reader.Read())
+            {
+                switch (reader.TokenType)
+                {
+                    case JsonTokenType.EndObject:
+                        return FromJwtObject(jwk);
+
+                    case JsonTokenType.PropertyName:
+                        var nameSpan = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                        if (fastPath && nameSpan.SequenceEqual(JwkParameterNames.KtyUtf8))
+                        {
+                            reader.Read();
+                            var valueSpan = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                            fixed (byte* pKty = valueSpan)
+                            {
+                                var pKtyShort = (short*)pKty;
+                                switch (valueSpan.Length)
+                                {
+                                    case 2:
+                                        if (*pKtyShort == 17221u)
+                                        {
+                                            return ECJwk.FromJsonReaderFast(ref reader);
+                                        }
+
+                                        Errors.ThrowNotSupportedJwk(Encoding.UTF8.GetString(valueSpan.ToArray()));
+                                        break;
+                                    case 3:
+                                        switch (*pKtyShort)
+                                        {
+                                            case 21330 when *(pKty + 2) == (byte)'A' /* RSA */:
+                                                return RsaJwk.FromJsonReaderFast(ref reader);
+                                            case 25455 when *(pKty + 2) == (byte)'t' /* oct */:
+                                                return SymmetricJwk.FromJsonReaderFast(ref reader);
+                                            default:
+                                                Errors.ThrowNotSupportedJwk(Encoding.UTF8.GetString(valueSpan.ToArray()));
+                                                break;
+                                        }
+                                        break;
+                                    default:
+                                        Errors.ThrowNotSupportedJwk(Encoding.UTF8.GetString(valueSpan.ToArray()));
+                                        break;
+                                }
+                            }
+                        }
+
+                        if(fastPath)
+                        {
+                            fastPath = false;
+                            jwk = new JwtObject();
+                        }
+
+                        var name = nameSpan.ToArray();
+                        reader.Read();
+                        var type = reader.TokenType;
+                        switch (type)
+                        {
+                            case JsonTokenType.String:
+                                jwk.Add(new JwtProperty(name, reader.GetString()));
+                                break;
+                            case JsonTokenType.StartObject:
+                                var jwtObject = JsonParser.ReadJson(ref reader);
+                                jwk.Add(new JwtProperty(name, jwtObject));
+                                break;
+                            case JsonTokenType.True:
+                                jwk.Add(new JwtProperty(name, true));
+                                break;
+                            case JsonTokenType.False:
+                                jwk.Add(new JwtProperty(name, false));
+                                break;
+                            case JsonTokenType.Null:
+                                jwk.Add(new JwtProperty(name));
+                                break;
+                            case JsonTokenType.Number:
+                                if (reader.TryGetInt64(out long longValue))
+                                {
+                                    jwk.Add(new JwtProperty(name, longValue));
+                                }
+                                else
+                                {
+                                    if (reader.TryGetDouble(out double doubleValue))
+                                    {
+                                        jwk.Add(new JwtProperty(name, doubleValue));
+                                    }
+                                    else
+                                    {
+                                        JwtThrowHelper.FormatNotSupportedNumber(Encoding.UTF8.GetString(name));
+                                    }
+                                }
+                                break;
+                            case JsonTokenType.StartArray:
+                                var array = JsonParser.ReadJsonArray(ref reader);
+                                jwk.Add(new JwtProperty(name, array));
+                                break;
+                            default:
+                                JwtThrowHelper.FormatMalformedJson();
+                                break;
+                        }
+                        break;
+                    default:
+                        JwtThrowHelper.FormatMalformedJson();
+                        break;
+                }
+            }
+
+            return FromJwtObject(jwk);
+        }
+
+        private static Jwk FromJwtObject(JwtObject jwk)
+        {
+            if (jwk.TryGetValue(JwkParameterNames.KtyUtf8, out var property))
+            {
+                switch ((string)property.Value)
+                {
+                    case JwkTypeNames.Octet:
+                        return SymmetricJwk.Populate(jwk);
+
+                    case JwkTypeNames.EllipticCurve:
+                        return ECJwk.Populate(jwk);
+
+                    case JwkTypeNames.Rsa:
+                        return RsaJwk.Populate(jwk);
+
+                    default:
+                        break;
+                }
+            }
+
+            Errors.ThrowMalformedKey();
+            return null;
+        }
 
         /// <summary>
         /// Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.
@@ -421,11 +557,122 @@ namespace JsonWebToken
 
         private sealed class JwkContractResolver : DefaultContractResolver
         {
-            protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+            protected override IList<Newtonsoft.Json.Serialization.JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
             {
-                IList<JsonProperty> properties = base.CreateProperties(type, memberSerialization);
+                var properties = base.CreateProperties(type, memberSerialization);
                 properties = properties.OrderBy(p => p.PropertyName).ToList();
                 return properties;
+            }
+        }
+
+        internal void Populate(ReadOnlySpan<byte> name, string value)
+        {
+            if (name.SequenceEqual(JwkParameterNames.AlgUtf8))
+            {
+                Alg = value;
+            }
+            else if (name.SequenceEqual(JwkParameterNames.KidUtf8))
+            {
+                Kid = value;
+            }
+            else if (name.SequenceEqual(JwkParameterNames.UseUtf8))
+            {
+                Use = value;
+            }
+            else if (name.SequenceEqual(JwkParameterNames.X5uUtf8))
+            {
+                X5u = value;
+            }
+        }
+
+        internal void Populate(ReadOnlySpan<byte> name, JwtArray value)
+        {
+            if (name.SequenceEqual(JwkParameterNames.X5cUtf8))
+            {
+                for (int i = 0; i < value.Count; i++)
+                {
+                    X5c.Add((byte[])value[i].Value);
+                }
+            }
+            else if (name.SequenceEqual(JwkParameterNames.KeyOpsUtf8))
+            {
+                for (int i = 0; i < value.Count; i++)
+                {
+                    KeyOps.Add((string)value[i].Value);
+                }
+            }
+        }
+
+        internal void Populate(ReadOnlySpan<byte> name, byte[] value)
+        {
+            if (name.SequenceEqual(JwkParameterNames.X5tS256Utf8))
+            {
+                X5tS256 = value;
+            }
+            else if (name.SequenceEqual(JwkParameterNames.X5tUtf8))
+            {
+                X5t = value;
+            }
+        }
+
+        internal static unsafe void PopulateEight(ref Utf8JsonReader reader, byte* pPropertyName, Jwk key)
+        {
+            if (*(ulong*)pPropertyName == 3906083584472266104u /* x5t#s256 */)
+            {
+                key.X5tS256 = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+            }
+        }
+
+        internal static unsafe void PopulateArray(ref Utf8JsonReader reader, byte* pPropertyName, int propertyLength, Jwk key)
+        {
+            if (propertyLength == 7 && *((uint*)pPropertyName) == 1601791339u /* key_ */ && *((uint*)pPropertyName + 3) == 1936748383 /* _ops */)
+            {
+                while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+                {
+                    key.KeyOps.Add(reader.GetString());
+                }
+            }
+            else
+            {
+                JsonParser.ReadJsonArray(ref reader);
+            }
+        }
+
+        internal static unsafe void PopulateObject(ref Utf8JsonReader reader, byte* pPropertyName, int propertyLength, Jwk key)
+        {
+            JsonParser.ReadJson(ref reader);
+        }
+
+        internal static unsafe void PopulateThree(ref Utf8JsonReader reader, byte* pPropertytName, Jwk key)
+        {
+            short* pPropertyNameShort = (short*)(pPropertytName + 1);
+            switch (*pPropertytName)
+            {
+                case (byte)'a' when *pPropertyNameShort == 26476 /* alg */ :
+                    key.Alg = reader.GetString();
+                    break;
+                case (byte)'k' when *pPropertyNameShort == 25705 /* kid */ :
+                    key.Kid = reader.GetString();
+                    break;
+                case (byte)'u' when *pPropertyNameShort == 25971 /* use */ :
+                    key.Use = reader.GetString();
+                    break;
+                case (byte)'x' when *pPropertyNameShort == 25397 /* x5c */ :
+                    while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+                    {
+                        var x5xItem = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                        key.X5c.Add(Base64Url.Base64UrlDecode(x5xItem));
+                    }
+                    break;
+                case (byte)'x' when *pPropertyNameShort == 29749 /* x5t */ :
+                    key.X5t = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                    break;
+                case (byte)'x' when *pPropertyNameShort == 30005 /* x5u */ :
+                    key.X5u = reader.GetString();
+                    break;
+
+                default:
+                    break;
             }
         }
     }

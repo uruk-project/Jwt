@@ -2,13 +2,8 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 #if !NETSTANDARD2_0
-using JsonWebToken.Internal;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers.Binary;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 

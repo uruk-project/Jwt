@@ -4,7 +4,11 @@
 using JsonWebToken.Internal;
 using Newtonsoft.Json;
 using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -276,6 +280,64 @@ namespace JsonWebToken
             }
         }
 
+        internal unsafe static Jwk FromJsonReaderFast(ref Utf8JsonReader reader)
+        {
+            var key = new SymmetricJwk();
+
+            while (reader.Read())
+            {
+                switch (reader.TokenType)
+                {
+                    case JsonTokenType.PropertyName:
+
+                        var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                        fixed (byte* pPropertyName = propertyName)
+                        {
+                            reader.Read();
+                            switch (reader.TokenType)
+                            {
+                                case JsonTokenType.StartObject:
+                                    PopulateObject(ref reader, pPropertyName, propertyName.Length, key);
+                                    break;
+                                case JsonTokenType.StartArray:
+                                    PopulateArray(ref reader, pPropertyName, propertyName.Length, key);
+                                    break;
+                                case JsonTokenType.String:
+                                    switch (propertyName.Length)
+                                    {
+                                        case 1:
+                                            if (*pPropertyName == (byte)'k')
+                                            {
+                                                key.K = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                            }
+                                            break;
+
+                                        case 3:
+                                            PopulateThree(ref reader, pPropertyName, key);
+                                            break;
+                                        case 8:
+                                            PopulateEight(ref reader, pPropertyName, key);
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        break;
+                    case JsonTokenType.EndObject:
+                        return key;
+                    default:
+                        break;
+                }
+            }
+
+            Errors.ThrowMalformedKey();
+            return null;
+        }
+
         /// <inheritsdoc />
         public override Jwk Canonicalize()
         {
@@ -286,6 +348,39 @@ namespace JsonWebToken
         public override byte[] ToByteArray()
         {
             return K;
+        }
+
+        internal static SymmetricJwk Populate(JwtObject @object)
+        {
+            var key = new SymmetricJwk();
+            for (int i = 0; i < @object.Count; i++)
+            {
+                var property = @object[i];
+                var name = property.Utf8Name.Span;
+                switch (property.Type)
+                {
+                    case JwtTokenType.Array:
+                            key.Populate(name, (JwtArray)property.Value);
+                        break;
+                    case JwtTokenType.String:
+                            key.Populate(name, (string)property.Value);
+                        break;
+                    case JwtTokenType.Utf8String:
+                        if (name.SequenceEqual(JwkParameterNames.KUtf8))
+                        {
+                            key.K = (byte[])property.Value;
+                        }
+                        else
+                        {
+                            key.Populate(name, (byte[])property.Value);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return key;
         }
     }
 }

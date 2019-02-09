@@ -4,48 +4,14 @@
 using JsonWebToken.Internal;
 using Newtonsoft.Json;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
-    //internal static class JwkFactory
-    //{
-    //    public static Jwk Create(JwkInfo info)
-    //    {
-    //        switch (info.Kty)
-    //        {
-    //            case 1:
-    //                return new SymmetricJwk(info);
-    //            case 2:
-    //                return new RsaJwk(info);
-    //            case 3:
-    //                return new ECJwk(info);
-    //            default:
-    //                ThrowHelper.NotSupportedKey();
-    //                return null;
-    //        }
-    //    }
-    //}
-    ///// <summary>
-    ///// Represents a JWK in its JSON form.
-    ///// </summary>
-    //internal ref struct JwkInfo
-    //{
-    //    // TODO : Add all the JWK fields.
-    //    public Kty Kty { get; set; }
-
-    //    public ReadOnlySpan<byte> MyProperty { get; set; }
-    //}
-
-    //internal enum Kty
-    //{
-    //    None,
-    //    Octet,
-    //    EC,
-    //    Rsa
-    //}
-
     /// <summary>
     /// Represents a RSA JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
     /// </summary>
@@ -311,13 +277,6 @@ namespace JsonWebToken
         public byte[] N { get; set; }
 
         /// <summary>
-        /// Gets or sets the 'oth' (Other Primes Info).
-        /// </summary>
-        /// <remarks>Not supported.</remarks>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.Oth, Required = Required.Default)]
-        public IList<PrimeInfo> Oth { get; set; }
-
-        /// <summary>
         /// Gets or sets the 'p' (First Prime Factor).
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.P, Required = Required.Default)]
@@ -408,31 +367,150 @@ namespace JsonWebToken
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// Represents the Other Prime Info as defined in  in https://tools.ietf.org/html/rfc7518#section-6.3.2.7.
-        /// </summary>
-        public sealed class PrimeInfo
+        internal static RsaJwk Populate(JwtObject @object)
         {
-            /// <summary>
-            /// Gets or sets the 'r' (Prime Factor).
-            /// </summary>
-            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.R, Required = Required.Default)]
-            [JsonConverter(typeof(Base64UrlConverter))]
-            public byte[] R { get; set; }
+            var key = new RsaJwk();
+            for (int i = 0; i < @object.Count; i++)
+            {
+                var property = @object[i];
+                var name = property.Utf8Name.Span;
+                switch (property.Type)
+                {
+                    case JwtTokenType.Array:
+                        key.Populate(name, (JwtArray)property.Value);
+                        break;
+                    case JwtTokenType.String:
+                        key.Populate(name, (string)property.Value);
+                        break;
+                    case JwtTokenType.Utf8String:
+                        if (name.SequenceEqual(JwkParameterNames.NUtf8))
+                        {
+                            key.D = (byte[])property.Value;
+                        }
+                        else if (name.SequenceEqual(JwkParameterNames.EUtf8))
+                        {
+                            key.E = (byte[])property.Value;
+                        }
+                        else if (name.SequenceEqual(JwkParameterNames.DUtf8))
+                        {
+                            key.D = (byte[])property.Value;
+                        }
+                        else if (name.SequenceEqual(JwkParameterNames.DPUtf8))
+                        {
+                            key.DP = (byte[])property.Value;
+                        }
+                        else if (name.SequenceEqual(JwkParameterNames.DQUtf8))
+                        {
+                            key.DQ = (byte[])property.Value;
+                        }
+                        else if (name.SequenceEqual(JwkParameterNames.PUtf8))
+                        {
+                            key.P = (byte[])property.Value;
+                        }
+                        else if (name.SequenceEqual(JwkParameterNames.QUtf8))
+                        {
+                            key.Q = (byte[])property.Value;
+                        }
+                        else if (name.SequenceEqual(JwkParameterNames.QIUtf8))
+                        {
+                            key.QI = (byte[])property.Value;
+                        }
+                        else
+                        {
+                            key.Populate(name, (byte[])property.Value);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
 
-            /// <summary>
-            /// Gets or sets the 'd' (Factor CRT Exponent).
-            /// </summary>
-            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.D, Required = Required.Default)]
-            [JsonConverter(typeof(Base64UrlConverter))]
-            public byte[] D { get; set; }
+            return key;
+        }
 
-            /// <summary>
-            /// Gets or sets the 't' (Factor CRT Coefficient).
-            /// </summary>
-            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.T, Required = Required.Default)]
-            [JsonConverter(typeof(Base64UrlConverter))]
-            public byte[] T { get; set; }
+        internal unsafe static Jwk FromJsonReaderFast(ref Utf8JsonReader reader)
+        {
+            var key = new RsaJwk();
+
+            while (reader.Read())
+            {
+                switch (reader.TokenType)
+                {
+                    case JsonTokenType.PropertyName:
+
+                        var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                        fixed (byte* pPropertyName = propertyName)
+                        {
+                            reader.Read();
+                            switch (reader.TokenType)
+                            {
+                                case JsonTokenType.StartObject:
+                                    PopulateObject(ref reader, pPropertyName, propertyName.Length, key);
+                                    break;
+                                case JsonTokenType.StartArray:
+                                    PopulateArray(ref reader, pPropertyName, propertyName.Length, key);
+                                    break;
+                                case JsonTokenType.String:
+                                    switch (propertyName.Length)
+                                    {
+                                        case 1:
+                                            if (*pPropertyName == (byte)'e')
+                                            {
+                                                key.E = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                            }
+                                            else if (*pPropertyName == (byte)'n')
+                                            {
+                                                key.N = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                            }
+                                            else if (*pPropertyName == (byte)'p')
+                                            {
+                                                key.P = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                            }
+                                            else if (*pPropertyName == (byte)'q')
+                                            {
+                                                key.Q = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                            }
+                                            break;
+
+                                        case 2:
+                                            var pKtyShort = (short*)pPropertyName;
+                                            if (*pKtyShort == 26993u)
+                                            {
+                                                key.QI = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                            }
+                                            else if (*pKtyShort == 28772u)
+                                            {
+                                                key.DP = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                            }
+                                            else if (*pKtyShort == 29028u)
+                                            {
+                                                key.DQ = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                            }
+                                            break;
+                                        case 3:
+                                            PopulateThree(ref reader, pPropertyName, key);
+                                            break;
+                                        case 8:
+                                            PopulateEight(ref reader, pPropertyName, key);
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        break;
+                    case JsonTokenType.EndObject:
+                        return key;
+                    default:
+                        break;
+                }
+            }
+
+            Errors.ThrowMalformedKey();
+            return null;
         }
     }
 }
