@@ -153,36 +153,18 @@ namespace JsonWebToken
         /// Encodes a span of UTF-8 text.
         /// </summary>
         /// <returns>The base64-url encoded string.</returns>
-        public static string Base64UrlEncode(ReadOnlySpan<byte> utf8Data)
+        public static byte[] Base64UrlEncode(ReadOnlySpan<byte> utf8Data)
         {
             // Special-case empty input
             if (utf8Data.IsEmpty)
             {
-                return string.Empty;
+                return Array.Empty<byte>();
             }
 
-            byte[] arrayToReturn = null;
             int base64UrlLength = _base64.GetMaxEncodedToUtf8Length(utf8Data.Length);
-            try
-            {
-                var utf8Encoded = base64UrlLength > Constants.MaxStackallocBytes
-                    ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(base64UrlLength)).AsSpan(0, base64UrlLength)
-                    : stackalloc byte[base64UrlLength];
-
-                Base64UrlEncode(utf8Data, utf8Encoded);
-#if !NETSTANDARD2_0
-                return Encoding.UTF8.GetString(utf8Encoded);
-#else
-                return EncodingHelper.GetUtf8String(utf8Encoded);
-#endif
-            }
-            finally
-            {
-                if (arrayToReturn != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturn);
-                }
-            }
+            var utf8Encoded = new byte[base64UrlLength];
+            Base64UrlEncode(utf8Data, utf8Encoded);
+            return utf8Encoded;
         }
 
 #if NETSTANDARD2_0
@@ -190,7 +172,7 @@ namespace JsonWebToken
         /// Encodes a string of UTF-8 text.
         /// </summary>
         /// <returns>The base64-url encoded string.</returns>
-        public static string Base64UrlEncode(string data)
+        public static byte[] Base64UrlEncode(string data)
         {
             if (data == null)
             {
@@ -205,7 +187,7 @@ namespace JsonWebToken
         /// Encodes a string of UTF-8 text.
         /// </summary>
         /// <returns>The base64-url encoded string.</returns>
-        public static string Base64UrlEncode(ReadOnlySpan<char> data)
+        public static byte[] Base64UrlEncode(ReadOnlySpan<char> data)
         {
             byte[] utf8ArrayToReturn = null;
             try

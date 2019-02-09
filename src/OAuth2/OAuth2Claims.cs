@@ -1,6 +1,8 @@
 // Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using System;
+
 namespace JsonWebToken.Internal
 {
     /// <summary>
@@ -13,98 +15,68 @@ namespace JsonWebToken.Internal
     public static class OAuth2Claims
     {
         /// <summary>
-        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
-        public const string Aud = "aud";
+        public static ReadOnlyMemory<byte> SoftwareIdUtf8 => new byte[] { (byte)'s', (byte)'o', (byte)'f', (byte)'t', (byte)'w', (byte)'a', (byte)'r', (byte)'e', (byte)'_', (byte)'i', (byte)'d' };
 
-        /// <summary>
-        /// http://tools.ietf.org/html/rfc7519#section-4
-        /// </summary>
-        public const string Exp = "exp";
-
-        /// <summary>
-        /// http://tools.ietf.org/html/rfc7519#section-4
-        /// </summary>
-        public const string Iat = "iat";
-
-        /// <summary>
-        /// http://tools.ietf.org/html/rfc7519#section-4
-        /// </summary>
-        public const string Iss = "iss";
-
-        /// <summary>
-        /// http://tools.ietf.org/html/rfc7519#section-4
-        /// </summary>
-        public const string Jti = "jti";
-
-        /// <summary>
-        /// http://tools.ietf.org/html/rfc7519#section-4
-        /// </summary>
-        public const string Nbf = "nbf";
-
-        /// <summary>
-        /// http://tools.ietf.org/html/rfc7519#section-4
-        /// </summary>
-        public const string Sub = "sub";
-      
         /// <summary>
         /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
-        public const string SoftwareId = "software_id";
-
+        public static ReadOnlyMemory<byte> VotUtf8 => new byte[] { (byte)'v', (byte)'o', (byte)'t' };
+        
         /// <summary>
-        /// https://tools.ietf.org/html/draft-richer-vectors-of-trust-11
+        /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
-        public const string Vot = "vot";
+        public static ReadOnlyMemory<byte> VtmUtf8 => new byte[] { (byte)'v', (byte)'t', (byte)'m' };
 
         /// <summary>
-        /// https://tools.ietf.org/html/draft-richer-vectors-of-trust-11
-        /// </summary>
-        public const string Vtm = "vtm";
-
-        /// <summary>
-        /// https://tools.ietf.org/html/draft-ietf-oauth-token-exchange-14
+        /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
         public const string Act = "act";
 
-        /// <summary>   
-        /// https://tools.ietf.org/html/draft-ietf-oauth-token-exchange-14
+        /// <summary>
+        /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
-        public const string Scope = "scope";
+        public static ReadOnlyMemory<byte> ActUtf8 => new byte[] { (byte)'a', (byte)'c', (byte)'t' };
+        
+        /// <summary>
+        /// https://tools.ietf.org/html/rfc7591#section-2
+        /// </summary>
+        public static ReadOnlyMemory<byte> ScopeUtf8 => new byte[] { (byte)'s', (byte)'c', (byte)'o', (byte)'p', (byte)'e' };
 
         /// <summary>
-        /// https://tools.ietf.org/html/draft-ietf-oauth-token-exchange-14
+        /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
-        public const string ClientId = "client_id";
-
+        public static ReadOnlyMemory<byte> ClientIdUtf8 => new byte[] { (byte)'c', (byte)'l', (byte)'i', (byte)'e', (byte)'n', (byte)'t', (byte)'_', (byte)'i', (byte)'d' };
+        
         /// <summary>
-        /// https://tools.ietf.org/html/draft-ietf-oauth-token-exchange-14
+        /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
-        public const string MayAct = "may_act";
-
+        public static ReadOnlyMemory<byte> MayActUtf8 => new byte[] { (byte)'m', (byte)'a', (byte)'y', (byte)'_', (byte)'a', (byte)'c', (byte)'t' };
+        
         /// <summary>
-        /// https://tools.ietf.org/html/draft-bradley-oauth-jwt-encoded-state-09
+        /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
-        public const string Rfp = "rfp";
-
+        public static ReadOnlyMemory<byte> RfpUtf8 => new byte[] { (byte)'r', (byte)'f', (byte)'p' };
+        
         /// <summary>
-        /// https://tools.ietf.org/html/draft-bradley-oauth-jwt-encoded-state-09
+        /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
-        public const string TargetLinkUri = "target_link_uri";
-
+        public static ReadOnlyMemory<byte> TargetLinkUriUtf8 => new byte[] { (byte)'t', (byte)'a', (byte)'r', (byte)'g', (byte)'e', (byte)'t', (byte)'_', (byte)'l', (byte)'i', (byte)'n', (byte)'k', (byte)'_', (byte)'u', (byte)'r', (byte)'i' };
+        
         /// <summary>
-        /// https://tools.ietf.org/html/draft-bradley-oauth-jwt-encoded-state-09
+        /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
-        public const string As = "as";
-
+        public static ReadOnlyMemory<byte> AsUtf8 => new byte[] { (byte)'a', (byte)'s' };
+        
         /// <summary>
-        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
-        public const string CHash = "c_hash";
-
+        public static ReadOnlyMemory<byte> CHashUtf8 => new byte[] { (byte)'c', (byte)'_', (byte)'h', (byte)'a', (byte)'s', (byte)'h' };
+        
         /// <summary>
-        /// http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
+        /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
-        public const string AtHash = "at_hash";
+        public static ReadOnlyMemory<byte> AtHashUtf8 => new byte[] { (byte)'a', (byte)'t', (byte)'_', (byte)'h', (byte)'a', (byte)'s', (byte)'h' };
     }
 }

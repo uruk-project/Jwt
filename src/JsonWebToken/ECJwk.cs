@@ -6,7 +6,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Text;
 #if NETCOREAPP3_0
 using System.Text.Json;
 #endif
@@ -147,11 +149,6 @@ namespace JsonWebToken
         private ECJwk()
         {
         }
-
-        //internal ECJwk(JwkInfo info)
-        //{
-        //    throw new NotImplementedException();
-        //}
 
         /// <inheritsdoc />
         public override string Kty => JwkTypeNames.EllipticCurve;
@@ -376,17 +373,17 @@ namespace JsonWebToken
 
             if (jObject.TryGetValue("x", out object x))
             {
-                key.X = (byte[])x;
+                key.X = Base64Url.Base64UrlDecode((string)x);
             }
 
             if (jObject.TryGetValue("y", out object y))
             {
-                key.Y = (byte[])y;
+                key.Y = Base64Url.Base64UrlDecode((string)y);
             }
 
             if (jObject.TryGetValue("d", out object d))
             {
-                key.D = (byte[])d;
+                key.D = Base64Url.Base64UrlDecode((string)d);
             }
 
             return key;
@@ -454,7 +451,7 @@ namespace JsonWebToken
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
-                                            key.Crv = reader.GetStringValue();
+                                            key.Crv = reader.GetString();
                                         }
                                         else if (reader.TokenType != JsonTokenType.Null)
                                         {
@@ -527,6 +524,33 @@ namespace JsonWebToken
 #else
             throw new NotImplementedException();
 #endif
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
+        internal static ECJwk FromJwtObject(JwtObject jwtObject)
+        {
+            Debug.Assert(jwtObject.Count == 3);
+            var key = new ECJwk
+            {
+                Y = Base64Url.Base64UrlDecode((byte[])jwtObject[2].Value),
+                X = Base64Url.Base64UrlDecode((byte[])jwtObject[1].Value),
+                Crv = (string)jwtObject[0].Value
+            };
+
+
+            return key;
+        }
+
+        internal JwtObject AsJwtObject()
+        {
+            var jwtObject = new JwtObject();
+            jwtObject.Add(new JwtProperty(JwkParameterNames.CrvUtf8, Crv));
+            jwtObject.Add(new JwtProperty(JwkParameterNames.XUtf8, Base64Url.Base64UrlEncode(X)));
+            jwtObject.Add(new JwtProperty(JwkParameterNames.YUtf8, Base64Url.Base64UrlEncode(Y)));
+
+            return jwtObject;
         }
     }
 }

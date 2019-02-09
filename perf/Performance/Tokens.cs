@@ -133,7 +133,7 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new JwsDescriptor()
                 {
-                   Algorithm = SignatureAlgorithm.None
+                    Algorithm = SignatureAlgorithm.None
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -240,7 +240,7 @@ namespace JsonWebToken.Performance
                     Payload = descriptor,
                     Key = encryptionKey,
                     EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                    ContentType = "JWT", 
+                    ContentType = "JWT",
                     CompressionAlgorithm = CompressionAlgorithm.Deflate
                 };
 
@@ -369,7 +369,7 @@ namespace JsonWebToken.Performance
                 payload.Add(kvp.Key, kvp.Value);
             }
 
-            return new JwsDescriptor(new HeaderDescriptor(), payload);
+            return new JwsDescriptor(new JwtObject(), ToJwtObject(payload));
         }
 
         private static TokenState CreateInvalidToken(TokenValidationStatus status, JwtDescriptor descriptor, string claim = null)
@@ -377,10 +377,10 @@ namespace JsonWebToken.Performance
             switch (status)
             {
                 case TokenValidationStatus.SignatureKeyNotFound:
-                    descriptor.Header["kid"] += "x";
+                    descriptor.Header.Replace(new JwtProperty(HeaderParameters.KidUtf8, (string)descriptor.Header[HeaderParameters.KidUtf8].Value + "x"));
                     break;
                 case TokenValidationStatus.MissingEncryptionAlgorithm:
-                    descriptor.Header["enc"] = null;
+                    descriptor.Header.Replace(new JwtProperty(HeaderParameters.EncUtf8));
                     break;
             }
 
@@ -428,7 +428,84 @@ namespace JsonWebToken.Performance
 
             return CreateInvalidToken(status, descriptor);
         }
+
+        public static JwtObject ToJwtObject(JObject json)
+        {
+            var jwtObject = new JwtObject();
+            foreach (var property in json.Properties())
+            {
+                JwtProperty jwtProperty;
+                switch (property.Value.Type)
+                {
+                    case JTokenType.Object:
+                        jwtProperty = new JwtProperty(Encoding.UTF8.GetBytes(property.Name), ToJwtObject(property.Value.Value<JObject>()));
+                        break;
+                    case JTokenType.Array:
+                        jwtProperty = new JwtProperty(Encoding.UTF8.GetBytes(property.Name), ToJwtArray(property.Value.Value<JArray>()));
+                        break;
+                    case JTokenType.Integer:
+                        jwtProperty = new JwtProperty(Encoding.UTF8.GetBytes(property.Name), property.Value.Value<long>());
+                        break;
+                    case JTokenType.Float:
+                        jwtProperty = new JwtProperty(Encoding.UTF8.GetBytes(property.Name), property.Value.Value<double>());
+                        break;
+                    case JTokenType.String:
+                        jwtProperty = new JwtProperty(Encoding.UTF8.GetBytes(property.Name), property.Value.Value<string>());
+                        break;
+                    case JTokenType.Boolean:
+                        jwtProperty = new JwtProperty(Encoding.UTF8.GetBytes(property.Name), property.Value.Value<bool>());
+                        break;
+                    case JTokenType.Null:
+                        jwtProperty = new JwtProperty(Encoding.UTF8.GetBytes(property.Name));
+                        break;
+                    default:
+                        throw new NotSupportedException();
+                }
+
+                jwtObject.Add(jwtProperty);
+            }
+
+            return jwtObject;
+        }
+
+        private static JwtArray ToJwtArray(JArray array)
+        {
+            var list = new List<JwtValue>(array.Count);
+            for (int i = 0; i < array.Count; i++)
+            {
+                var value = array[i];
+                switch (value.Type)
+                {
+                    case JTokenType.Object:
+                        list.Add(new JwtValue(ToJwtObject((JObject)value)));
+                        break;
+                    case JTokenType.Array:
+                        list.Add(new JwtValue(ToJwtArray((JArray)value)));
+                        break;
+                    case JTokenType.Integer:
+                        list.Add(new JwtValue((long)value));
+                        break;
+                    case JTokenType.Float:
+                        list.Add(new JwtValue((double)value));
+                        break;
+                    case JTokenType.String:
+                        list.Add(new JwtValue((string)value));
+                        break;
+                    case JTokenType.Boolean:
+                        list.Add(new JwtValue((bool)value));
+                        break;
+                    case JTokenType.Null:
+                        list.Add(new JwtValue());
+                        break;
+                    default:
+                        throw new NotSupportedException();
+                }
+            }
+
+            return new JwtArray(list);
+        }
     }
+
     public class TokenState
     {
         public TokenState(string jwt, TokenValidationStatus status)
@@ -441,182 +518,3 @@ namespace JsonWebToken.Performance
         public TokenValidationStatus Status { get; }
     }
 }
-
-//using Newtonsoft.Json.Linq;
-//using System;
-//using System.Collections.Generic;
-//using System.Security.Cryptography;
-
-//namespace JsonWebToken.Performance
-//{
-//    public static class Tokens
-//    {
-//        public static IDictionary<string, string> ValidTokens { get; }
-
-//        public static SymmetricJwk SigningKey { get; }
-
-//        public static SymmetricJwk EncryptionKey { get; }
-
-//        public static IDictionary<string, JObject> Payloads { get; }
-
-//        static Tokens()
-//        {
-//            var signingKey = CreateSigningKey();
-//            var encryptionKey = CreateEncryptionKey();
-//            var payloads = CreatePayloads();
-//            ValidTokens = CreateTokens(payloads, signingKey, encryptionKey);
-//            Payloads = payloads;
-//            SigningKey = signingKey;
-//            EncryptionKey = encryptionKey;
-//        }
-
-//        private static SymmetricJwk CreateSigningKey()
-//        {
-//            return SymmetricJwk.GenerateKey(128, SignatureAlgorithms.HmacSha256);
-//        }
-
-//        private static SymmetricJwk CreateEncryptionKey()
-//        {
-//            return SymmetricJwk.GenerateKey(128, KeyManagementAlgorithms.Aes128KW);
-//        }
-
-//        private static IDictionary<string, JObject> CreatePayloads()
-//        {
-//            byte[] bigData = new byte[1024 * 64];
-//            using (var rnd = RandomNumberGenerator.Create())
-//            {
-//                rnd.GetNonZeroBytes(bigData);
-//            }
-
-//            var payloads = new Dictionary<string, JObject>
-//            {
-//                {
-//                    "empty", new JObject()
-//                },
-//                {
-//                    "small", new JObject
-//                    {
-//                        { "jti", "756E69717565206964656E746966696572"},
-//                        { "iss", "https://idp.example.com/"},
-//                        { "iat", 1508184845},
-//                        { "aud", "636C69656E745F6964"},
-//                        { "exp", 1628184845}
-//                    }
-//                },
-//                {
-//                    "medium", new JObject
-//                    {
-//                        { "jti", "756E69717565206964656E746966696572"},
-//                        { "iss", "https://idp.example.com/"},
-//                        { "iat", 1508184845},
-//                        { "aud", "636C69656E745F6964"},
-//                        { "exp", 1628184845},
-//                        { "claim1", "value1ABCDEFGH" },
-//                        { "claim2", "value1ABCDEFGH" },
-//                        { "claim3", "value1ABCDEFGH" },
-//                        { "claim4", "value1ABCDEFGH" },
-//                        { "claim5", "value1ABCDEFGH" },
-//                        { "claim6", "value1ABCDEFGH" },
-//                        { "claim7", "value1ABCDEFGH" },
-//                        { "claim8", "value1ABCDEFGH" },
-//                        { "claim9", "value1ABCDEFGH" },
-//                        { "claim10", "value1ABCDEFGH" },
-//                        { "claim11", "value1ABCDEFGH" },
-//                        { "claim12", "value1ABCDEFGH" },
-//                        { "claim13", "value1ABCDEFGH" },
-//                        { "claim14", "value1ABCDEFGH" },
-//                        { "claim15", "value1ABCDEFGH" },
-//                        { "claim16", "value1ABCDEFGH" }
-//                    }
-//                },
-//                {
-//                    "big", new JObject
-//                    {
-//                        { "jti", "756E69717565206964656E746966696572" },
-//                        { "iss", "https://idp.example.com/" },
-//                        { "iat", 1508184845 },
-//                        { "aud", "636C69656E745F6964" },
-//                        { "exp", 1628184845 },
-//                        { "big_claim", Convert.ToBase64String(bigData) }
-//                    }
-//                },
-//            };
-
-//            return payloads;
-//        }
-
-//        private static IDictionary<string, string> CreateTokens(IDictionary<string, JObject> payloads, SymmetricJwk signingKey, SymmetricJwk encryptionKey)
-//        {
-//            var writer = new JsonWebTokenWriter();
-//            var descriptors = new Dictionary<string, string>();
-//            foreach (var payload in payloads)
-//            {
-//                var descriptor = new JwsDescriptor()
-//                {
-//                    Key = signingKey
-//                };
-
-//                foreach (var property in payload.Value.Properties())
-//                {
-//                    switch (property.Name)
-//                    {
-//                        case "iat":
-//                        case "nbf":
-//                        case "exp":
-//                            descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
-//                            break;
-//                        default:
-//                            descriptor.AddClaim(property.Name, (string)property.Value);
-//                            break;
-//                    }
-//                }
-
-//                descriptors.Add("JWS-" + payload.Key, writer.WriteToken(descriptor));
-//            }
-
-//            foreach (var payload in payloads)
-//            {
-//                foreach (var compression in new[] { null, "DEF" })
-//                {
-//                    var descriptor = new JwsDescriptor()
-//                    {
-//                        Key = signingKey
-//                    };
-
-//                    foreach (var property in payload.Value.Properties())
-//                    {
-//                        switch (property.Name)
-//                        {
-//                            case "iat":
-//                            case "nbf":
-//                            case "exp":
-//                                descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
-//                                break;
-//                            default:
-//                                descriptor.AddClaim(property.Name, (string)property.Value);
-//                                break;
-//                        }
-//                    }
-
-//                    var jwe = new JweDescriptor
-//                    {
-//                        Payload = descriptor,
-//                        Key = encryptionKey,
-//                        EncryptionAlgorithm = ContentEncryptionAlgorithms.Aes128CbcHmacSha256,
-//                        ContentType = "JWT"
-//                    };
-//                    var descriptorName = "JWE-";
-//                    if (compression != null)
-//                    {
-//                        descriptorName += compression + "-";
-//                    }
-
-//                    descriptorName += payload.Key;
-//                    descriptors.Add(descriptorName, writer.WriteToken(jwe));
-//                }
-//            }
-
-//            return descriptors;
-//        }
-//    }
-//}

@@ -5,6 +5,7 @@
 using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Text.Json;
 
@@ -27,7 +28,7 @@ namespace JsonWebToken
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        var propertyName = reader.ValueSpan;
+                        var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
                         fixed (byte* pPropertyByte = propertyName)
                         {
                             switch (propertyName.Length)
@@ -39,7 +40,7 @@ namespace JsonWebToken
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
-                                            payload.Iss = reader.GetStringValue();
+                                            payload.Iss = reader.GetString();
                                         }
                                         else if (reader.TokenType != JsonTokenType.Null)
                                         {
@@ -52,14 +53,14 @@ namespace JsonWebToken
                                         {
                                             if (reader.TokenType == JsonTokenType.String)
                                             {
-                                                payload.Aud = new List<string> { reader.GetStringValue() };
+                                                payload.Aud = new List<string> { reader.GetString() };
                                             }
                                             else if (reader.TokenType == JsonTokenType.StartArray)
                                             {
                                                 var aud = new List<string>(2);
                                                 while (reader.Read() && reader.TokenType == JsonTokenType.String)
                                                 {
-                                                    aud.Add(reader.GetStringValue());
+                                                    aud.Add(reader.GetString());
                                                 }
 
                                                 if (reader.TokenType != JsonTokenType.EndArray)
@@ -81,7 +82,7 @@ namespace JsonWebToken
                                     }
                                     else if (property == 7890288 /* 'exp' */)
                                     {
-                                        if (reader.Read() && reader.TryGetInt64Value(out long expValue))
+                                        if (reader.Read() && reader.TryGetInt64(out long expValue))
                                         {
                                             payload.Exp = expValue;
                                         }
@@ -94,7 +95,7 @@ namespace JsonWebToken
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
-                                            payload.Sub = reader.GetStringValue();
+                                            payload.Sub = reader.GetString();
                                         }
                                         else if (reader.TokenType != JsonTokenType.Null)
                                         {
@@ -105,7 +106,7 @@ namespace JsonWebToken
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
-                                            payload.Jti = reader.GetStringValue();
+                                            payload.Jti = reader.GetString();
                                         }
                                         else if (reader.TokenType != JsonTokenType.Null)
                                         {
@@ -114,7 +115,7 @@ namespace JsonWebToken
                                     }
                                     else if (property == 6450790u /* 'nbf' */)
                                     {
-                                        if (reader.Read() && reader.TryGetInt64Value(out long nbfValue))
+                                        if (reader.Read() && reader.TryGetInt64(out long nbfValue))
                                         {
                                             payload.Nbf = nbfValue;
                                         }
@@ -126,7 +127,7 @@ namespace JsonWebToken
                                     // 'iat' = { 105, 97, 116 };
                                     else if (property == 6383988u)
                                     {
-                                        if (reader.Read() && reader.TryGetInt64Value(out long iatValue))
+                                        if (reader.Read() && reader.TryGetInt64(out long iatValue))
                                         {
                                             payload.Iat = iatValue;
                                         }
@@ -137,19 +138,19 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        name = reader.GetStringValue();
+                                        name = reader.GetString();
                                     }
 
                                     break;
                                 default:
-                                    name = reader.GetStringValue();
+                                    name = reader.GetString();
                                     break;
                             }
                         }
                         break;
 
                     case JsonTokenType.String:
-                        payload[name] = reader.GetStringValue();
+                        payload[name] = reader.GetString();
                         break;
                     case JsonTokenType.True:
                         payload[name] = true;
@@ -161,13 +162,13 @@ namespace JsonWebToken
                         payload[name] = null;
                         break;
                     case JsonTokenType.Number:
-                        if (reader.TryGetInt64Value(out long longValue))
+                        if (reader.TryGetInt64(out long longValue))
                         {
                             payload[name] = longValue;
                         }
                         else
                         {
-                            if (reader.TryGetDoubleValue(out double doubleValue))
+                            if (reader.TryGetDouble(out double doubleValue))
                             {
                                 payload[name] = doubleValue;
                             }

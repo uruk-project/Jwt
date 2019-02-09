@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
+using System.Buffers;
 
 namespace JsonWebToken
 {
@@ -24,15 +24,15 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public BinaryJweDescriptor(HeaderDescriptor header, byte[] payload)
+        public BinaryJweDescriptor(JwtObject header, byte[] payload)
             : base(header, payload)
         {
         }
 
         /// <inheritdoc />
-        public override byte[] Encode(EncodingContext context)
+        public override void Encode(EncodingContext context, IBufferWriter<byte> output)
         {
-            return EncryptToken(context, Payload);
+            EncryptToken(context, Payload, output);
         }
     }
 }

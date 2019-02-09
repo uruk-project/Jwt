@@ -241,8 +241,12 @@ namespace JsonWebToken
                     Span<byte> hash = stackalloc byte[hashAlgorithm.HashSize >> 3];
                     hashAlgorithm.TryComputeHash(buffer, hash, out int bytesWritten);
                     Debug.Assert(bytesWritten == hashAlgorithm.HashSize >> 3);
-
-                    return Base64Url.Base64UrlEncode(hash);
+                    var thumbprint = Base64Url.Base64UrlEncode(hash);
+#if !NETSTANDARD2_0
+                    return Encoding.UTF8.GetString(thumbprint);
+#else
+                    return EncodingHelper.GetUtf8String(thumbprint);
+#endif
                 }
             }
             finally
@@ -264,7 +268,7 @@ namespace JsonWebToken
             using (var hashAlgorithm = SHA256.Create())
             {
                 var hash = hashAlgorithm.ComputeHash(buffer);
-                return Base64Url.Base64UrlEncode(hash);
+                return Encoding.UTF8.GetString(Base64Url.Base64UrlEncode(hash));
             }
         }
 #endif

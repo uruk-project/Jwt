@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 
 namespace JsonWebToken
@@ -15,7 +16,7 @@ namespace JsonWebToken
         /// Initializes an new instance of <see cref="JweDescriptor"/>.
         /// </summary>
         public JweDescriptor()
-            : base(new HeaderDescriptor(), new TDescriptor())
+            : base(new JwtObject(), new TDescriptor())
         {
         }
 
@@ -24,7 +25,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="payload"></param>
         public JweDescriptor(TDescriptor payload)
-            : base(new HeaderDescriptor(), payload)
+            : base(new JwtObject(), payload)
         {
         }
 
@@ -33,7 +34,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public JweDescriptor(HeaderDescriptor header, TDescriptor payload)
+        public JweDescriptor(JwtObject header, TDescriptor payload)
             : base(header, payload)
         {
         }
@@ -46,7 +47,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the audiences 'aud'.
         /// </summary>
-        public IReadOnlyList<string> Audiences { get => Payload.Audiences; set => Payload.Audiences = value; }
+        public List<string> Audiences { get => Payload.Audiences; set => Payload.Audiences = value; }
 
         /// <summary>
         /// Gets or sets the expiration time 'exp'.
@@ -74,10 +75,14 @@ namespace JsonWebToken
         public DateTime? NotBefore { get => Payload.NotBefore; set => Payload.NotBefore = value; }
 
         /// <inheritsdoc />
-        public override byte[] Encode(EncodingContext context)
+        public override void Encode(EncodingContext context, IBufferWriter<byte> output)
         {
-            var payload = Payload.Encode(context);
-            return EncryptToken(context, payload);
+            using (var bufferWriter = new ArrayBufferWriter())
+            {
+                Payload.Encode(context, bufferWriter);
+                var payload = bufferWriter.OutputAsSpan;
+                EncryptToken(context, payload, output);
+            }
         }
 
         /// <inheritsdoc />

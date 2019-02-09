@@ -31,7 +31,7 @@ namespace JsonWebToken.Performance
 
         public static readonly SigningCredentials signingCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.Alg);
 
-        public static readonly JwtWriter Writer = new JwtWriter();
+        public static readonly JwtWriter Writer = new JwtWriter() { EnableHeaderCaching = false };
 
         protected static readonly Dictionary<string, JwtDescriptor> JwtPayloads = CreateJwtDescriptors();
         protected static readonly Dictionary<string, Dictionary<string, object>> DictionaryPayloads = CreateDictionaryDescriptors();
@@ -53,7 +53,11 @@ namespace JsonWebToken.Performance
 
         protected byte[] JwtCore(string payload)
         {
-            return Writer.WriteToken(JwtPayloads[payload]);
+            using (var output = new ArrayBufferWriter())
+            {
+                Writer.WriteToken(JwtPayloads[payload], output);
+                return Array.Empty<byte>();
+            }
         }
 
         public abstract string Wilson(string payload);

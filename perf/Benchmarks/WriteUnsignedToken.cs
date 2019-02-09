@@ -21,8 +21,8 @@ namespace JsonWebToken.Performance
             return WilsonCore(payload);
         }
 
-        [Benchmark]
-        [ArgumentsSource(nameof(GetPayloads))]
+        //[Benchmark]
+        //[ArgumentsSource(nameof(GetPayloads))]
         public override string WilsonJwt(string payload)
         {
             return WilsonJwtCore(payload);
@@ -30,10 +30,10 @@ namespace JsonWebToken.Performance
 
         public IEnumerable<string> GetPayloads()
         {
-            //yield return "JWT-empty";
+            yield return "JWT-empty";
             yield return "JWT-small";
             yield return "JWT-medium";
-            //yield return "JWT-big";
+            yield return "JWT-big";
         }
     }
 }

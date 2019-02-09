@@ -3,6 +3,7 @@
 
 using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -13,13 +14,13 @@ namespace JsonWebToken
     /// </summary>
     public class ClientAssertionDescriptor : JwsDescriptor
     {
-        private static readonly ReadOnlyDictionary<string, JTokenType[]> ClientAssertionRequiredClaims = new ReadOnlyDictionary<string, JTokenType[]>(
-            new Dictionary<string, JTokenType[]>           
+        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> ClientAssertionRequiredClaims = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(
+            new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>           
         {
-            { Claims.Iss, new [] { JTokenType.String } },
-            { Claims.Sub, new [] { JTokenType.String } },
-            { Claims.Aud, new [] { JTokenType.String, JTokenType.Array } },
-            { Claims.Exp, new [] { JTokenType.Integer } }
+            { Claims.IssUtf8, new [] { JwtTokenType.String } },
+            { Claims.SubUtf8, new [] { JwtTokenType.String } },
+            { Claims.AudUtf8, new [] { JwtTokenType.String, JwtTokenType.Array } },
+            { Claims.ExpUtf8, new [] { JwtTokenType.Integer } }
         });
 
         public ClientAssertionDescriptor()
@@ -27,12 +28,12 @@ namespace JsonWebToken
         {
         }
 
-        public ClientAssertionDescriptor(JObject payload)
-            : base(new HeaderDescriptor(), payload)
+        public ClientAssertionDescriptor(JwtObject payload)
+            : base(new JwtObject(), payload)
         {
         }
 
-        public ClientAssertionDescriptor(HeaderDescriptor header, JObject payload)
+        public ClientAssertionDescriptor(JwtObject header, JwtObject payload)
             : base(header, payload)
         {
         }
@@ -47,6 +48,6 @@ namespace JsonWebToken
             base.Validate();
         }
 
-        protected override ReadOnlyDictionary<string, JTokenType[]> RequiredClaims => ClientAssertionRequiredClaims;
+        protected override ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> RequiredClaims => ClientAssertionRequiredClaims;
     }
 }

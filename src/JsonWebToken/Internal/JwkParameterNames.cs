@@ -1,6 +1,8 @@
 // Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using System.Text;
+
 namespace JsonWebToken.Internal
 {
     /// <summary>
@@ -10,7 +12,11 @@ namespace JsonWebToken.Internal
     {
         public const string Alg = "alg";
         public const string Crv = "crv";
+        public static readonly byte[] CrvUtf8 = Encoding.UTF8.GetBytes(Crv);
+
         public const string D = "d";
+        public static readonly byte[] DUtf8 = Encoding.UTF8.GetBytes(D);
+
         public const string DP = "dp";
         public const string DQ = "dq";
         public const string E = "e";
@@ -32,6 +38,8 @@ namespace JsonWebToken.Internal
         public const string X5tS256 = "x5t#S256";
         public const string X5u = "x5u";
         public const string X = "x";
+        public static readonly byte[] XUtf8 = Encoding.UTF8.GetBytes(X);
         public const string Y = "y";
+        public static readonly byte[] YUtf8 = Encoding.UTF8.GetBytes(Y);
     }
 }

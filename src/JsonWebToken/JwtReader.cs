@@ -239,8 +239,18 @@ namespace JsonWebToken
                           ? stackalloc byte[sequenceLength]
                           : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(sequenceLength)).AsSpan(0, sequenceLength);
 
-            utf8TokenSequence.CopyTo(utf8Token);
-            return TryReadToken(utf8Token, policy);
+            try
+            {
+                utf8TokenSequence.CopyTo(utf8Token);
+                return TryReadToken(utf8Token, policy);
+            }
+            finally
+            {
+                if (arrayToReturnToPool != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
+                }
+            }
         }
 
         /// <summary>

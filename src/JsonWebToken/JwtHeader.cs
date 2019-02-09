@@ -148,7 +148,7 @@ namespace JsonWebToken
                         return Zip;
                     case HeaderParameters.Crit:
                         return Crit;
-#if !NETSTANDARD
+#if NETCOREAPP2_1
                     case HeaderParameters.Epk:
                         return Epk;
                     case HeaderParameters.Apu:
@@ -186,7 +186,7 @@ namespace JsonWebToken
                     case HeaderParameters.Crit:
                         Crit = (IList<string>)value;
                         break;
-#if !NETSTANDARD
+#if NETCOREAPP2_1
                     case HeaderParameters.Epk:
                         Epk = ECJwk.FromDictionary((Dictionary<string, object>)value);
                         break;

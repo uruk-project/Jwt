@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -17,29 +15,31 @@ namespace JsonWebToken
     /// <summary>
     /// Defines a signed JWT with a JSON payload.
     /// </summary>
-    public class JwsDescriptor : JwtDescriptor<JObject>
+    public partial class JwsDescriptor : JwtDescriptor<JwtObject>
     {
         private const byte dot = (byte)'.';
-        private static readonly ReadOnlyDictionary<string, JTokenType[]> DefaultRequiredClaims = new ReadOnlyDictionary<string, JTokenType[]>(new Dictionary<string, JTokenType[]>());
-        private static readonly string[] DefaultProhibitedClaims = Array.Empty<string>();
-        private static readonly ReadOnlyDictionary<string, Type[]> JwsRequiredHeaderParameters = new ReadOnlyDictionary<string, Type[]>(
-            new Dictionary<string, Type[]>
+        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> DefaultRequiredClaims
+            = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>());
+        private static readonly ReadOnlyMemory<byte>[] DefaultProhibitedClaims = Array.Empty<ReadOnlyMemory<byte>>();
+        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> JwsRequiredHeaderParameters
+            = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(
+            new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>
             {
-                { HeaderParameters.Alg, new [] { typeof(string) } }
+                { HeaderParameters.AlgUtf8, new [] { JwtTokenType.String } }
             });
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwsDescriptor"/>.
         /// </summary>
         public JwsDescriptor()
-            : base(new HeaderDescriptor(), new JObject())
+            : base(new JwtObject(), new JwtObject())
         {
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwsDescriptor"/>.
         /// </summary>
-        public JwsDescriptor(HeaderDescriptor header, JObject payload)
+        public JwsDescriptor(JwtObject header, JwtObject payload)
             : base(header, payload)
         {
         }
@@ -47,25 +47,25 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the required claims of the <see cref="JwsDescriptor"/>.
         /// </summary>
-        protected virtual ReadOnlyDictionary<string, JTokenType[]> RequiredClaims => DefaultRequiredClaims;
+        protected virtual ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> RequiredClaims => DefaultRequiredClaims;
 
         /// <summary>
         /// gets the prohibited claims of the <see cref="JwsDescriptor"/>.
         /// </summary>
-        protected virtual IReadOnlyList<string> ProhibitedClaims => DefaultProhibitedClaims;
+        protected virtual IReadOnlyList<ReadOnlyMemory<byte>> ProhibitedClaims => DefaultProhibitedClaims;
 
         /// <summary>
         /// Gets the required header parameters of the <see cref="JwsDescriptor"/>. 
         /// </summary>
-        protected override ReadOnlyDictionary<string, Type[]> RequiredHeaderParameters => JwsRequiredHeaderParameters;
+        protected override ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> RequiredHeaderParameters => JwsRequiredHeaderParameters;
 
         /// <summary>
         /// Gets or sets the value of the 'sub' claim.
         /// </summary>
         public string Subject
         {
-            get { return GetStringClaim(Claims.Sub); }
-            set { AddClaim(Claims.Sub, value); }
+            get { return GetStringClaim(Claims.SubUtf8); }
+            set { AddClaim(Claims.SubUtf8, value); }
         }
 
         /// <summary>
@@ -73,8 +73,8 @@ namespace JsonWebToken
         /// </summary>
         public string JwtId
         {
-            get { return GetStringClaim(Claims.Jti); }
-            set { AddClaim(Claims.Jti, value); }
+            get { return GetStringClaim(Claims.JtiUtf8); }
+            set { AddClaim(Claims.JtiUtf8, value); }
         }
 
         /// <summary>
@@ -83,16 +83,16 @@ namespace JsonWebToken
         public string Audience
         {
             get { return Audiences?.FirstOrDefault(); }
-            set { SetClaim(Claims.Aud, value); }
+            set { AddClaim(Claims.AudUtf8, value); }
         }
 
         /// <summary>
         /// Gets or sets the value of the 'aud' claim.
         /// </summary>
-        public IReadOnlyList<string> Audiences
+        public List<string> Audiences
         {
-            get { return GetListClaims(Claims.Aud); }
-            set { SetClaim(Claims.Aud, value); }
+            get { return GetListClaims<string>(Claims.Aud); }
+            set { AddClaim(Claims.AudUtf8, value); }
         }
 
         /// <summary>
@@ -100,8 +100,8 @@ namespace JsonWebToken
         /// </summary>
         public DateTime? ExpirationTime
         {
-            get { return GetDateTime(Claims.Exp); }
-            set { SetClaim(Claims.Exp, value); }
+            get { return GetDateTime(Claims.ExpUtf8); }
+            set { AddClaim(Claims.ExpUtf8, value); }
         }
 
         /// <summary>
@@ -109,8 +109,8 @@ namespace JsonWebToken
         /// </summary>
         public string Issuer
         {
-            get { return GetStringClaim(Claims.Iss); }
-            set { AddClaim(Claims.Iss, value); }
+            get { return GetStringClaim(Claims.IssUtf8); }
+            set { AddClaim(Claims.IssUtf8, value); }
         }
 
         /// <summary>
@@ -118,8 +118,8 @@ namespace JsonWebToken
         /// </summary>
         public DateTime? IssuedAt
         {
-            get { return GetDateTime(Claims.Iat); }
-            set { SetClaim(Claims.Iat, value); }
+            get { return GetDateTime(Claims.IatUtf8); }
+            set { AddClaim(Claims.IatUtf8, value); }
         }
 
         /// <summary>
@@ -127,8 +127,19 @@ namespace JsonWebToken
         /// </summary>
         public DateTime? NotBefore
         {
-            get { return GetDateTime(Claims.Nbf); }
-            set { SetClaim(Claims.Nbf, value); }
+            get { return GetDateTime(Claims.NbfUtf8); }
+            set { AddClaim(Claims.NbfUtf8, value); }
+        }
+
+        /// <summary>
+        /// Adds a claim;
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public void AddClaim(ReadOnlyMemory<byte> utf8Name, string value)
+        {
+            // TODO: allow to add a value into an array
+            Payload.Add(new JwtProperty(utf8Name, value));
         }
 
         /// <summary>
@@ -138,8 +149,24 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, string value)
         {
-            // TODO: allow to add a value into an array
-            Payload[name] = value;
+            AddClaim(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public void AddClaim(ReadOnlyMemory<byte> utf8Name, bool? value)
+        {
+            if (value.HasValue)
+            {
+                Payload.Add(new JwtProperty(utf8Name, value.Value));
+            }
+            else
+            {
+                Payload.Add(new JwtProperty(utf8Name));
+            }
         }
 
         /// <summary>
@@ -149,7 +176,24 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, bool? value)
         {
-            Payload[name] = value;
+            AddClaim(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public void AddClaim(ReadOnlyMemory<byte> utf8Name, DateTime? value)
+        {
+            if (value.HasValue)
+            {
+                Payload.Add(new JwtProperty(utf8Name, value.Value.ToEpochTime()));
+            }
+            else
+            {
+                Payload.Add(new JwtProperty(utf8Name));
+            }
         }
 
         /// <summary>
@@ -159,7 +203,17 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, DateTime? value)
         {
-            SetClaim(name, value);
+            AddClaim(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public void AddClaim(ReadOnlyMemory<byte> utf8Name, int value)
+        {
+            Payload.Add(new JwtProperty(utf8Name, value));
         }
 
         /// <summary>
@@ -169,7 +223,17 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, int value)
         {
-            Payload[name] = value;
+            AddClaim(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public void AddClaim(ReadOnlyMemory<byte> utf8Name, bool value)
+        {
+            Payload.Add(new JwtProperty(utf8Name, value));
         }
 
         /// <summary>
@@ -179,7 +243,17 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, bool value)
         {
-            Payload[name] = value;
+            AddClaim(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public void AddClaim(ReadOnlyMemory<byte> utf8Name, JwtObject value)
+        {
+            Payload.Add(new JwtProperty(utf8Name, value));
         }
 
         /// <summary>
@@ -187,24 +261,30 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
-        public void AddClaim(string name, JObject value)
+        public void AddClaim(string name, JwtObject value)
         {
-            if (Payload.TryGetValue(name, out JToken jToken))
+            AddClaim(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public void AddClaim(ReadOnlyMemory<byte> utf8Name, JwtProperty value)
+        {
+            JwtObject jwtObject;
+            if (Payload.TryGetValue(utf8Name, out JwtProperty property) && property.Type == JwtTokenType.Object)
             {
-                if (jToken.Type == JTokenType.Array)
-                {
-                    ((JArray)jToken).Add(value);
-                }
-                else
-                {
-                    var jArray = new JArray(jToken, value);
-                    Payload[name] = value;
-                }
+                jwtObject = (JwtObject)property.Value;
             }
             else
             {
-                Payload[name] = value;
+                jwtObject = new JwtObject();
+                Payload.Add(new JwtProperty(utf8Name, jwtObject));
             }
+
+            jwtObject.Add(value);
         }
 
         /// <summary>
@@ -212,67 +292,46 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
-        public void AddClaim(string name, JProperty value)
+        public void AddClaim(string name, JwtProperty value)
         {
-            JObject jObject;
-            if (Payload.TryGetValue(name, out JToken jToken) && jToken.Type == JTokenType.Object)
-            {
-                jObject = (JObject)jToken;
-            }
-            else
-            {
-                jObject = new JObject();
-            }
-
-            jObject.Add(value.Name, value.Value);
-            Payload[name] = jObject;
-        }
-
-        /// <summary>
-        /// Adds a claim.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        public void AddClaim(string name, JValue value)
-        {
-            Payload[name] = value;
-        }
-
-        /// <summary>
-        /// Adds a claim.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        public void AddClaim(string name, JArray value)
-        {
-            Payload[name] = value;
+            AddClaim(Encoding.UTF8.GetBytes(name), value);
         }
 
         /// <summary>
         /// Gets a claim as <see cref="string"/>.
         /// </summary>
-        /// <param name="claimType"></param>
+        /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected string GetStringClaim(string claimType)
+        protected string GetStringClaim(ReadOnlyMemory<byte> utf8Name)
         {
-            if (Payload.TryGetValue(claimType, out JToken value))
+            if (Payload.TryGetValue(utf8Name, out JwtProperty value))
             {
-                return value.Value<string>();
+                return (string)value.Value;
             }
 
             return null;
         }
 
         /// <summary>
+        /// Gets a claim as <see cref="string"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        protected string GetStringClaim(string name)
+        {
+            return GetStringClaim(Encoding.UTF8.GetBytes(name));
+        }
+
+        /// <summary>
         /// Gets a claim as <see cref="int"/>.
         /// </summary>
-        /// <param name="claimType"></param>
+        /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected int? GetIntClaim(string claimType)
+        protected int? GetInt32Claim(ReadOnlyMemory<byte> utf8Name)
         {
-            if (Payload.TryGetValue(claimType, out JToken value))
+            if (Payload.TryGetValue(utf8Name, out JwtProperty value))
             {
-                return value.Value<int?>();
+                return (int)value.Value;
             }
 
             return null;
@@ -283,11 +342,11 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="claimType"></param>
         /// <returns></returns>
-        protected TClaim? GetClaim<TClaim>(string claimType) where TClaim : struct
+        protected TClaim? GetClaim<TClaim>(byte[] claimType) where TClaim : struct
         {
-            if (Payload.TryGetValue(claimType, out JToken value))
+            if (Payload.TryGetValue(claimType, out JwtProperty value))
             {
-                return value.Value<TClaim?>();
+                return (TClaim?)value.Value;
             }
 
             return null;
@@ -296,13 +355,13 @@ namespace JsonWebToken
         /// <summary>
         /// Gets a claim as <see cref="bool"/>.
         /// </summary>
-        /// <param name="claimType"></param>
+        /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected bool? GetBoolClaim(string claimType)
+        protected bool? GetBoolClaim(ReadOnlyMemory<byte> utf8Name)
         {
-            if (Payload.TryGetValue(claimType, out JToken value))
+            if (Payload.TryGetValue(utf8Name, out JwtProperty value))
             {
-                return value.Value<bool?>();
+                return (bool?)value.Value;
             }
 
             return null;
@@ -311,95 +370,77 @@ namespace JsonWebToken
         /// <summary>
         /// Gets a claim as a list of <see cref="string"/>.
         /// </summary>
-        /// <param name="claimType"></param>
+        /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected IReadOnlyList<string> GetListClaims(string claimType)
+        protected List<T> GetListClaims<T>(ReadOnlyMemory<byte> utf8Name)
         {
-            if (Payload.TryGetValue(claimType, out JToken value))
+            if (Payload.TryGetValue(utf8Name, out JwtProperty value))
             {
-                if (value.Type == JTokenType.Array)
+                if (value.Type == JwtTokenType.Array)
                 {
-                    return new List<string>(value.Values<string>());
+                    return (List<T>)value.Value;
                 }
 
-                return new List<string> { value.Value<string>() };
+                var list = new List<T> { (T)value.Value };
+                return list;
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Gets a claim as <see cref="JObject"/>.
-        /// </summary>
-        /// <param name="claimType"></param>
-        /// <returns></returns>
-        protected JObject GetClaim(string claimType)
-        {
-            if (Payload.TryGetValue(claimType, out JToken value) && value.Type == JTokenType.Object)
-            {
-                return (JObject)value;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets a claim as <see cref="string"/>.
-        /// </summary>
-        /// <param name="claimType"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        protected void SetClaim(string claimType, string value)
-        {
-            Payload[claimType] = value;
         }
 
         /// <summary>
         /// Gets a claim as a list of <see cref="string"/>.
         /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        protected List<T> GetListClaims<T>(string name)
+        {
+            return GetListClaims<T>(Encoding.UTF8.GetBytes(name));
+        }
+
+        /// <summary>
+        /// Gets a claim as <see cref="JwtObject"/>.
+        /// </summary>
         /// <param name="claimType"></param>
+        /// <returns></returns>
+        protected JwtObject GetClaim(byte[] claimType)
+        {
+            if (Payload.TryGetValue(claimType, out JwtProperty value) && value.Type == JwtTokenType.Object)
+            {
+                return (JwtObject)value.Value;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Add a claim as a list of <see cref="string"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        protected void SetClaim(string claimType, IReadOnlyList<string> value)
+        protected void AddClaim(ReadOnlyMemory<byte> utf8Name, List<string> value)
         {
-            Payload[claimType] = JArray.FromObject(value);
+            Payload.Add(new JwtProperty(utf8Name, new JwtArray(value)));
         }
 
         /// <summary>
         /// Gets a claim as <see cref="DateTime"/>.
         /// </summary>
-        /// <param name="claimType"></param>
+        /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected DateTime? GetDateTime(string claimType)
+        protected DateTime? GetDateTime(ReadOnlyMemory<byte> utf8Name)
         {
-            if (!Payload.TryGetValue(claimType, out JToken dateValue) || dateValue.Type == JTokenType.Null)
+            if (!Payload.TryGetValue(utf8Name, out JwtProperty dateValue) || dateValue.Type == JwtTokenType.Null)
             {
                 return null;
             }
 
-            return EpochTime.ToDateTime(dateValue.Value<long>());
-        }
-
-        /// <summary>
-        /// Sets a claim as <see cref="DateTime"/>.
-        /// </summary>
-        /// <param name="claimType"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        protected void SetClaim(string claimType, DateTime? value)
-        {
-            if (value.HasValue)
-            {
-                Payload[claimType] = value.Value.ToEpochTime();
-            }
-            else
-            {
-                Payload[claimType] = null;
-            }
+            return EpochTime.ToDateTime((long)dateValue.Value);
         }
 
         /// <inheritsdoc />
-        public override byte[] Encode(EncodingContext context)
+        public override void Encode(EncodingContext context, IBufferWriter<byte> output)
         {
             Signer signatureProvider = null;
             var alg = (SignatureAlgorithm)(Algorithm ?? Key?.Alg);
@@ -415,88 +456,101 @@ namespace JsonWebToken
             if (context.TokenLifetimeInMinutes != 0 || context.GenerateIssuedTime)
             {
                 DateTime now = DateTime.UtcNow;
-                if (context.GenerateIssuedTime && !Payload.ContainsKey(Claims.Iat))
+                if (context.GenerateIssuedTime && !Payload.ContainsKey(Claims.IatUtf8))
                 {
-                    AddClaim(Claims.Iat, now);
+                    AddClaim(Claims.IatUtf8, now);
                 }
 
-                if (context.TokenLifetimeInMinutes != 0 && !Payload.ContainsKey(Claims.Exp))
+                if (context.TokenLifetimeInMinutes != 0 && !Payload.ContainsKey(Claims.ExpUtf8))
                 {
-                    AddClaim(Claims.Exp, now + TimeSpan.FromMinutes(context.TokenLifetimeInMinutes));
+                    AddClaim(Claims.ExpUtf8, now + TimeSpan.FromMinutes(context.TokenLifetimeInMinutes));
                 }
             }
 
-            var payloadJson = Serialize(Payload, Formatting.None);
-            int length = Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
-                       + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBytes))
-                       + (Constants.JwsSegmentCount - 1);
-            string headerJson = null;
-
-            var headerCache = context.HeaderCache;
-            byte[] base64UrlHeader = null;
-            if (headerCache != null && headerCache.TryGetHeader(Header, alg, out base64UrlHeader))
+            using (var payloadBufferWriter = new BufferWriter())
             {
-                length += base64UrlHeader.Length;
-            }
-            else
-            {
-                headerJson = Serialize(Header, Formatting.None);
-                length += Base64Url.GetArraySizeRequiredToEncode(headerJson.Length);
-            }
+                Payload.Serialize(payloadBufferWriter);
+                var payloadJson = payloadBufferWriter.OutputAsSequence;
+                int length = Base64Url.GetArraySizeRequiredToEncode((int)payloadJson.Length)
+                           + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBytes))
+                           + (Constants.JwsSegmentCount - 1);
+                ReadOnlySequence<byte> headerJson = default;
+                var headerCache = context.HeaderCache;
+                byte[] cachedHeader = null;
+                using (var headerBufferWriter = new BufferWriter())
+                {
+                    if (headerCache != null && headerCache.TryGetHeader(Header, alg, out cachedHeader))
+                    {
+                        length += cachedHeader.Length;
+                    }
+                    else
+                    {
+                        Header.Serialize(headerBufferWriter);
+                        headerJson = headerBufferWriter.OutputAsSequence;
+                        length += Base64Url.GetArraySizeRequiredToEncode((int)headerJson.Length);
+                    }
 
-            byte[] bufferToReturn = new byte[length];
-            var buffer = bufferToReturn.AsSpan();
-            int headerBytesWritten;
-            if (base64UrlHeader != null)
-            {
-                base64UrlHeader.CopyTo(buffer);
-                headerBytesWritten = base64UrlHeader.Length;
-            }
-            else
-            {
-                TryEncodeUtf8ToBase64Url(headerJson, buffer, out headerBytesWritten);
-                headerCache?.AddHeader(Header, alg, buffer.Slice(0, headerBytesWritten));
-            }
+                    //byte[] bufferToReturn = new byte[length];
+                    //var buffer = bufferToReturn.AsSpan();
+                    var buffer = output.GetSpan(length).Slice(0, length);
+                    int headerBytesWritten;
+                    if (cachedHeader != null)
+                    {
+                        cachedHeader.CopyTo(buffer);
+                        headerBytesWritten = cachedHeader.Length;
+                    }
+                    else
+                    {
+                        TryEncodeUtf8ToBase64Url(headerJson, buffer, out headerBytesWritten);
+                        headerCache?.AddHeader(Header, alg, buffer.Slice(0, headerBytesWritten));
+                    }
 
-            buffer[headerBytesWritten] = dot;
-            TryEncodeUtf8ToBase64Url(payloadJson, buffer.Slice(headerBytesWritten + 1), out int payloadBytesWritten);
-            buffer[payloadBytesWritten + headerBytesWritten + 1] = dot;
-            int bytesWritten = 0;
-            if (signatureProvider != null)
-            {
-                Span<byte> signature = stackalloc byte[signatureProvider.HashSizeInBytes];
-                bool success = signatureProvider.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signatureBytesWritten);
-                Debug.Assert(success);
-                Debug.Assert(signature.Length == signatureBytesWritten);
+                    buffer[headerBytesWritten] = dot;
+                    TryEncodeUtf8ToBase64Url(payloadJson, buffer.Slice(headerBytesWritten + 1), out int payloadBytesWritten);
+                    buffer[payloadBytesWritten + headerBytesWritten + 1] = dot;
+                    int bytesWritten = 0;
+                    if (signatureProvider != null)
+                    {
+                        Span<byte> signature = stackalloc byte[signatureProvider.HashSizeInBytes];
+                        bool success = signatureProvider.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signatureBytesWritten);
+                        Debug.Assert(success);
+                        Debug.Assert(signature.Length == signatureBytesWritten);
 
-                bytesWritten = Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)));
+                        bytesWritten = Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)));
+                    }
+
+                    Debug.Assert(length == payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten);
+                    output.Advance(length);
+                }
             }
-
-            Debug.Assert(buffer.Length == payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten);
-            return bufferToReturn;
         }
 
-        private static bool TryEncodeUtf8ToBase64Url(string input, Span<byte> destination, out int bytesWritten)
+        private static bool TryEncodeUtf8ToBase64Url(ReadOnlySequence<byte> input, Span<byte> destination, out int bytesWritten)
         {
-            byte[] arrayToReturnToPool = null;
-            var encodedBytes = input.Length <= Constants.MaxStackallocBytes
-                  ? stackalloc byte[input.Length]
-                  : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(input.Length)).AsSpan(0, input.Length);
-            try
+            if (input.IsSingleSegment)
             {
-#if !NETSTANDARD2_0
-                Encoding.UTF8.GetBytes(input, encodedBytes);
-#else
-                EncodingHelper.GetUtf8Bytes(input, encodedBytes);
-#endif
-                bytesWritten = Base64Url.Base64UrlEncode(encodedBytes, destination);
+                bytesWritten = Base64Url.Base64UrlEncode(input.First.Span, destination);
                 return bytesWritten == destination.Length;
             }
-            finally
+            else
             {
-                if (arrayToReturnToPool != null)
+                byte[] arrayToReturnToPool = null;
+                try
                 {
-                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
+                    var encodedBytes = input.Length <= Constants.MaxStackallocBytes
+                          ? stackalloc byte[(int)input.Length]
+                          : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent((int)input.Length)).AsSpan(0, (int)input.Length);
+
+                    input.CopyTo(encodedBytes);
+                    bytesWritten = Base64Url.Base64UrlEncode(encodedBytes, destination);
+                    return bytesWritten == destination.Length;
+                }
+                finally
+                {
+                    if (arrayToReturnToPool != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
+                    }
                 }
             }
         }
@@ -514,7 +568,7 @@ namespace JsonWebToken
 
             foreach (var claim in RequiredClaims)
             {
-                if (!Payload.TryGetValue(claim.Key, out JToken token) || token.Type == JTokenType.Null)
+                if (!Payload.TryGetValue(claim.Key, out JwtProperty token) || token.Type == JwtTokenType.Null)
                 {
                     Errors.ThrowClaimIsRequired(claim.Key);
                 }
@@ -522,7 +576,7 @@ namespace JsonWebToken
                 bool claimFound = false;
                 for (int i = 0; i < claim.Value.Length; i++)
                 {
-                    if (token?.Type == claim.Value[i])
+                    if (token.Type == claim.Value[i])
                     {
                         claimFound = true;
                         break;
