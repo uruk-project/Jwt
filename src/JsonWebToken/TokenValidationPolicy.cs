@@ -23,11 +23,12 @@ namespace JsonWebToken
         private readonly Dictionary<string, ICriticalHeaderHandler> _criticalHandlers;
         private readonly bool _ignoreCriticalHeader;
 
-        internal TokenValidationPolicy(IList<IValidator> validators, Dictionary<string, ICriticalHeaderHandler> criticalHandlers, int maximumTokenSizeInBytes, bool ignoreCriticalHeader) 
+        internal TokenValidationPolicy(List<IValidator> validators, Dictionary<string, ICriticalHeaderHandler> criticalHandlers, int maximumTokenSizeInBytes, bool ignoreCriticalHeader, SignatureValidationContext signatureValidation) 
         {
             _validators = validators ?? throw new ArgumentNullException(nameof(validators));
             _criticalHandlers = criticalHandlers ?? throw new ArgumentNullException(nameof(criticalHandlers));
             _ignoreCriticalHeader = ignoreCriticalHeader;
+            SignatureValidation = signatureValidation;
             MaximumTokenSizeInBytes = maximumTokenSizeInBytes;
         }
 
@@ -35,6 +36,16 @@ namespace JsonWebToken
         /// Gets the maximum token size in bytes.
         /// </summary>
         public int MaximumTokenSizeInBytes { get; }
+
+        /// <summary>
+        /// Gets the signature validation parameters.
+        /// </summary>
+        public SignatureValidationContext SignatureValidation { get; }
+
+        /// <summary>
+        /// Gets whether the <see cref="TokenValidationPolicy"/> has validation.
+        /// </summary>
+        public bool HasValidation => _validators.Count != 0;
 
         /// <summary>
         /// Try to validate the token, according to the <paramref name="context"/>.

@@ -19,7 +19,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public PlaintextJweDescriptor(HeaderDescriptor header, string payload)
+        public PlaintextJweDescriptor(JwtObject header, string payload)
             : base(header, payload)
         {
         }
@@ -34,7 +34,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override byte[] Encode(EncodingContext context)
+        public override void Encode(EncodingContext context, IBufferWriter<byte> output)
         {
             int payloadLength = Payload.Length;
             byte[] payloadToReturnToPool = null;
@@ -49,7 +49,7 @@ namespace JsonWebToken
 #else
                 EncodingHelper.GetUtf8Bytes(Payload.AsSpan(), encodedPayload);
 #endif
-                return EncryptToken(context, encodedPayload);
+                EncryptToken(context, encodedPayload, output);
             }
             finally
             {

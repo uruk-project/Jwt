@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -14,9 +15,10 @@ namespace JsonWebToken
         /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtPayload"/>.
         /// </summary>
         /// <param name="buffer"></param>
-        public static JwtPayload ParsePayload(ReadOnlySpan<byte> buffer)
+        public static unsafe JwtPayload ParsePayload(ReadOnlySpan<byte> buffer)
         {
-            return ReadJsonPayload(buffer);
+            Utf8JsonReader reader = new Utf8JsonReader(buffer, true, default);
+            return new JwtPayload(JsonParser.ReadJson(ref reader));
         }
     }
 }

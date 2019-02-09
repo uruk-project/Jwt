@@ -3,13 +3,13 @@
 
 using JsonWebToken.Internal;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Cryptography;
-#if NETCOREAPP3_0
+using System.Text;
 using System.Text.Json;
-#endif
 
 namespace JsonWebToken
 {
@@ -147,11 +147,6 @@ namespace JsonWebToken
         private ECJwk()
         {
         }
-
-        //internal ECJwk(JwkInfo info)
-        //{
-        //    throw new NotImplementedException();
-        //}
 
         /// <inheritsdoc />
         public override string Kty => JwkTypeNames.EllipticCurve;
@@ -376,23 +371,23 @@ namespace JsonWebToken
 
             if (jObject.TryGetValue("x", out object x))
             {
-                key.X = (byte[])x;
+                key.X = Base64Url.Base64UrlDecode((string)x);
             }
 
             if (jObject.TryGetValue("y", out object y))
             {
-                key.Y = (byte[])y;
+                key.Y = Base64Url.Base64UrlDecode((string)y);
             }
 
             if (jObject.TryGetValue("d", out object d))
             {
-                key.D = (byte[])d;
+                key.D = Base64Url.Base64UrlDecode((string)d);
             }
 
             return key;
         }
 
-#if NETCOREAPP3_0
+        //#if NETCOREAPP3_0
         internal static unsafe ECJwk FromJsonReader(ref Utf8JsonReader reader)
         {
             var key = new ECJwk();
@@ -402,7 +397,7 @@ namespace JsonWebToken
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        ReadOnlySpan<byte> valueSpan = reader.ValueSpan;
+                        ReadOnlySpan<byte> valueSpan = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
                         switch (valueSpan.Length)
                         {
                             case 1:
@@ -415,7 +410,7 @@ namespace JsonWebToken
                                     }
                                     else if (reader.TokenType != JsonTokenType.Null)
                                     {
-                                        ThrowHelper.FormatMalformedJson(JwkParameterNames.X, JsonTokenType.String);
+                                        JwtThrowHelper.FormatMalformedJson(JwkParameterNames.X, JsonTokenType.String);
                                     }
                                 }
                                 else if (value == 121 /* 'y' */)
@@ -426,7 +421,7 @@ namespace JsonWebToken
                                     }
                                     else if (reader.TokenType != JsonTokenType.Null)
                                     {
-                                        ThrowHelper.FormatMalformedJson(JwkParameterNames.Y, JsonTokenType.String);
+                                        JwtThrowHelper.FormatMalformedJson(JwkParameterNames.Y, JsonTokenType.String);
                                     }
                                 }
                                 else if (value == 100 /* 'd' */)
@@ -437,7 +432,7 @@ namespace JsonWebToken
                                     }
                                     else if (reader.TokenType != JsonTokenType.Null)
                                     {
-                                        ThrowHelper.FormatMalformedJson(JwkParameterNames.D, JsonTokenType.String);
+                                        JwtThrowHelper.FormatMalformedJson(JwkParameterNames.D, JsonTokenType.String);
                                     }
                                 }
                                 else
@@ -454,11 +449,11 @@ namespace JsonWebToken
                                     {
                                         if (reader.Read() && reader.TokenType == JsonTokenType.String)
                                         {
-                                            key.Crv = reader.GetStringValue();
+                                            key.Crv = reader.GetString();
                                         }
                                         else if (reader.TokenType != JsonTokenType.Null)
                                         {
-                                            ThrowHelper.FormatMalformedJson(JwkParameterNames.Crv, JsonTokenType.String);
+                                            JwtThrowHelper.FormatMalformedJson(JwkParameterNames.Crv, JsonTokenType.String);
                                         }
                                     }
                                     else
@@ -480,7 +475,7 @@ namespace JsonWebToken
 
             return key;
         }
-#endif
+        //#endif
 
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
@@ -527,6 +522,33 @@ namespace JsonWebToken
 #else
             throw new NotImplementedException();
 #endif
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
+        internal static ECJwk FromJwtObject(JwtObject jwtObject)
+        {
+            Debug.Assert(jwtObject.Count == 3);
+            var key = new ECJwk
+            {
+                Y = Base64Url.Base64UrlDecode(jwtObject.TryGetValue(JwkParameterNames.YUtf8, out var property) ? (string)property.Value : null),
+                X = Base64Url.Base64UrlDecode(jwtObject.TryGetValue(JwkParameterNames.XUtf8, out property) ? (string)property.Value : null),
+                Crv = jwtObject.TryGetValue(JwkParameterNames.CrvUtf8, out property) ? (string)property.Value : null
+            };
+
+
+            return key;
+        }
+
+        internal JwtObject AsJwtObject()
+        {
+            var jwtObject = new JwtObject();
+            jwtObject.Add(new JwtProperty(JwkParameterNames.CrvUtf8, Crv));
+            jwtObject.Add(new JwtProperty(JwkParameterNames.XUtf8, Base64Url.Base64UrlEncode(X)));
+            jwtObject.Add(new JwtProperty(JwkParameterNames.YUtf8, Base64Url.Base64UrlEncode(Y)));
+
+            return jwtObject;
         }
     }
 }

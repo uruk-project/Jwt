@@ -3,18 +3,28 @@ using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Running;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Text;
 
 namespace JsonWebToken.Performance
 {
     [MemoryDiagnoser]
-    public class JsonSerilization
+    public class JsonWriterBenchmark
     {
+        private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore
+        };
+
         static IDictionary<string, object> dictionary = new Dictionary<string, object>()
         {
             { "sub", "sub value" },
             { "jti", "1234567890" },
             { "exp", 12345678 },
+            //{ "aud", "https://example.org" },
             { "aud", new JArray(new[] { "https://example.org", "abcdef" }) },
             { "nbf", 23456789 }
         };
@@ -42,7 +52,7 @@ namespace JsonWebToken.Performance
 
         static JObject jsonMedium = JObject.FromObject(dictionaryMedium);
 
-        static dynamic dyn = new
+        static readonly dynamic dyn = new
         {
             sub = "sub value",
             jti = "1234567890",
@@ -51,7 +61,7 @@ namespace JsonWebToken.Performance
             nbf = 23456789
         };
 
-        static dynamic dynMedium = new
+        static readonly dynamic dynMedium = new
         {
             sub = "sub value",
             jti = "1234567890",
@@ -70,40 +80,27 @@ namespace JsonWebToken.Performance
             claim9 = "".PadRight(100, 'j')
         };
 
-        [Benchmark(Baseline = true)]
-        public void JsonObject()
+        private static readonly JwtObject payload = Tokens.ToJwtObject(json);
+        private static readonly JwtObject payloadMedium = Tokens.ToJwtObject(jsonMedium);
+        private static readonly ArrayBufferWriter<byte> _output = new ArrayBufferWriter<byte>();
+
+        [Benchmark(Baseline = false)]
+        public byte[] New()
         {
-            JsonConvert.SerializeObject(json);
+            return payloadMedium.Serialize();
         }
 
         [Benchmark]
-        public void JsonObject_Medium()
+        public void New2()
         {
-            JsonConvert.SerializeObject(jsonMedium);
+            _output.Clear();
+            payloadMedium.Serialize(_output);            
         }
 
         [Benchmark]
-        public void Dictionary()
+        public string Old()
         {
-            JsonConvert.SerializeObject(dictionary);
-        }
-
-        [Benchmark]
-        public void Dictionary_Medium()
-        {
-            JsonConvert.SerializeObject(dictionaryMedium);
-        }
-
-        [Benchmark]
-        public void Dynamic()
-        {
-            JsonConvert.SerializeObject(dyn);
-        }
-
-        [Benchmark]
-        public void Dynamic_Medium()
-        {
-            JsonConvert.SerializeObject(dynMedium);
+            return JsonConvert.SerializeObject(jsonMedium, Formatting.None, serializerSettings);
         }
     }
 }

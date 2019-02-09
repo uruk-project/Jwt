@@ -4,9 +4,12 @@
 using JsonWebToken.Internal;
 using Newtonsoft.Json;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Text;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -21,14 +24,15 @@ namespace JsonWebToken
             NullValueHandling = NullValueHandling.Ignore
         };
 
-        private static readonly ReadOnlyDictionary<string, Type[]> DefaultRequiredHeaderParameters = new ReadOnlyDictionary<string, Type[]>(new Dictionary<string, Type[]>());
+        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> DefaultRequiredHeaderParameters
+            = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>());
         private Jwk _key;
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwtDescriptor"/>.
         /// </summary>
         protected JwtDescriptor()
-            : this(new HeaderDescriptor())
+            : this(new JwtObject())
         {
         }
 
@@ -36,7 +40,7 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="JwtDescriptor"/>.
         /// </summary>
         /// <param name="header"></param>
-        protected JwtDescriptor(HeaderDescriptor header)
+        protected JwtDescriptor(JwtObject header)
         {
             Header = header;
         }
@@ -44,7 +48,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the parameters header.
         /// </summary>
-        public HeaderDescriptor Header { get; }
+        public JwtObject Header { get; }
 
         /// <summary>
         /// Gets the <see cref="Jwt"/> used.
@@ -73,15 +77,15 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the required header parameters.
         /// </summary>
-        protected virtual ReadOnlyDictionary<string, Type[]> RequiredHeaderParameters => DefaultRequiredHeaderParameters;
+        protected virtual ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> RequiredHeaderParameters => DefaultRequiredHeaderParameters;
 
         /// <summary>
         /// Gets or sets the algorithm header.
         /// </summary>
         public string Algorithm
         {
-            get => GetHeaderParameter<string>(HeaderParameters.Alg);
-            set => SetHeaderParameter(HeaderParameters.Alg, value);
+            get => GetHeaderParameter<string>(HeaderParameters.AlgUtf8);
+            set => SetHeaderParameter(HeaderParameters.AlgUtf8, value);
         }
 
         /// <summary>
@@ -89,8 +93,8 @@ namespace JsonWebToken
         /// </summary>
         public string KeyId
         {
-            get => GetHeaderParameter<string>(HeaderParameters.Kid);
-            set => SetHeaderParameter(HeaderParameters.Kid, value);
+            get => GetHeaderParameter<string>(HeaderParameters.KidUtf8);
+            set => SetHeaderParameter(HeaderParameters.KidUtf8, value);
         }
 
         /// <summary>
@@ -98,8 +102,8 @@ namespace JsonWebToken
         /// </summary>
         public string JwkSetUrl
         {
-            get => GetHeaderParameter<string>(HeaderParameters.Jku);
-            set => SetHeaderParameter(HeaderParameters.Jku, value);
+            get => GetHeaderParameter<string>(HeaderParameters.JkuUtf8);
+            set => SetHeaderParameter(HeaderParameters.JkuUtf8, value);
         }
 
         /// <summary>
@@ -107,8 +111,8 @@ namespace JsonWebToken
         /// </summary>
         public Jwk Jwk
         {
-            get => GetHeaderParameter<Jwk>(HeaderParameters.Jwk);
-            set => SetHeaderParameter(HeaderParameters.Jwk, value);
+            get => throw new NotSupportedException(); // GetHeaderParameter<Jwk>(HeaderParameters.JwkUtf8);
+            set => throw new NotSupportedException(); //SetHeaderParameter(HeaderParameters.Jwk, value);
         }
 
         /// <summary>
@@ -116,17 +120,17 @@ namespace JsonWebToken
         /// </summary>
         public string X509Url
         {
-            get => GetHeaderParameter<string>(HeaderParameters.X5u);
-            set => SetHeaderParameter(HeaderParameters.X5u, value);
+            get => GetHeaderParameter<string>(HeaderParameters.X5uUtf8);
+            set => SetHeaderParameter(HeaderParameters.X5uUtf8, value);
         }
 
         /// <summary>
         /// Gets or sets the X509 certification chain header.
         /// </summary>
-        public IList<string> X509CertificateChain
+        public List<string> X509CertificateChain
         {
-            get => GetHeaderParameters(HeaderParameters.X5c);
-            set => SetHeaderParameter(HeaderParameters.X5c, value);
+            get => GetHeaderParameters<string>(HeaderParameters.X5cUtf8);
+            set => SetHeaderParameter(HeaderParameters.X5cUtf8, value);
         }
 
         /// <summary>
@@ -134,8 +138,8 @@ namespace JsonWebToken
         /// </summary>
         public string X509CertificateSha1Thumbprint
         {
-            get => GetHeaderParameter<string>(HeaderParameters.X5t);
-            set => SetHeaderParameter(HeaderParameters.X5t, value);
+            get => GetHeaderParameter<string>(HeaderParameters.X5tUtf8);
+            set => SetHeaderParameter(HeaderParameters.X5tUtf8, value);
         }
 
         /// <summary>
@@ -143,8 +147,8 @@ namespace JsonWebToken
         /// </summary>
         public string Type
         {
-            get => GetHeaderParameter<string>(HeaderParameters.Typ);
-            set => SetHeaderParameter(HeaderParameters.Typ, value);
+            get => GetHeaderParameter<string>(HeaderParameters.TypUtf8);
+            set => SetHeaderParameter(HeaderParameters.TypUtf8, value);
         }
 
         /// <summary>
@@ -152,37 +156,38 @@ namespace JsonWebToken
         /// </summary>
         public string ContentType
         {
-            get => GetHeaderParameter<string>(HeaderParameters.Cty);
-            set => SetHeaderParameter(HeaderParameters.Cty, value);
+            get => GetHeaderParameter<string>(HeaderParameters.CtyUtf8);
+            set => SetHeaderParameter(HeaderParameters.CtyUtf8, value);
         }
 
         /// <summary>
         /// Gets or sets the critical header parameter.
         /// </summary>
-        public IList<string> Critical
+        public List<string> Critical
         {
-            get => GetHeaderParameters(HeaderParameters.Crit);
-            set => SetHeaderParameter(HeaderParameters.Crit, value);
+            get => GetHeaderParameters<string>(HeaderParameters.CritUtf8);
+            set => SetHeaderParameter(HeaderParameters.CritUtf8, value);
         }
 
         /// <summary>
         /// Encodes the current <see cref="JwtDescriptor"/> into it <see cref="string"/> representation.
         /// </summary>
         /// <param name="context"></param>
+        /// <param name="output"></param>
         /// <returns></returns>
-        public abstract byte[] Encode(EncodingContext context);
+        public abstract void Encode(EncodingContext context, IBufferWriter<byte> output);
 
         /// <summary>
         /// Gets the header parameter for a specified header name.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="headerName"></param>
+        /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected T GetHeaderParameter<T>(string headerName)
+        protected T GetHeaderParameter<T>(ReadOnlyMemory<byte> utf8Name)
         {
-            if (Header.TryGetValue(headerName, out object value))
+            if (Header.TryGetValue(utf8Name, out var value))
             {
-                return (T)value;
+                return (T)value.Value;
             }
 
             return default;
@@ -191,40 +196,90 @@ namespace JsonWebToken
         /// <summary>
         /// Sets the header parameter for a specified header name.
         /// </summary>
-        /// <param name="headerName"></param>
+        /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        protected void SetHeaderParameter(string headerName, object value)
+        protected void SetHeaderParameter(ReadOnlyMemory<byte> utf8Name, string value)
         {
             if (value != null)
             {
-                Header[headerName] = value;
+                Header.Add(new JwtProperty(utf8Name, value));
             }
             else
             {
-                Header.Remove(headerName);
+                Header.Add(new JwtProperty(utf8Name));
             }
+        }
+
+        /// <summary>
+        /// Sets the header parameter for a specified header name.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        protected void SetHeaderParameter(string name, string value)
+        {
+            SetHeaderParameter(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        ///// <summary>
+        ///// Sets the header parameter for a specified header name.
+        ///// </summary>
+        ///// <param name="headerName"></param>
+        ///// <param name="value"></param>
+        //protected void SetHeaderParameter(string headerName, object value)
+        //{
+        //    if (value != null)
+        //    {
+        //        Header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName), JObject.FromObject(value)));
+        //    }
+        //    else
+        //    {
+        //        Header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName)));
+        //    }
+        //}
+
+        /// <summary>
+        /// Sets the header parameter for a specified header name.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        protected void SetHeaderParameter(ReadOnlyMemory<byte> utf8Name, List<string> value)
+        {
+            if (value != null)
+            {
+                Header.Add(new JwtProperty(utf8Name, new JwtArray(value)));
+            }
+            else
+            {
+                Header.Add(new JwtProperty(utf8Name));
+            }
+        }
+
+        /// <summary>
+        /// Sets the header parameter for a specified header name.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        protected void SetHeaderParameter(string name, List<string> value)
+        {
+            SetHeaderParameter(Encoding.UTF8.GetBytes(name), value);
         }
 
         /// <summary>
         /// Gets the list of header parameters for a header name.
         /// </summary>
-        /// <param name="headerName"></param>
+        /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected IList<string> GetHeaderParameters(string headerName)
+        protected List<T> GetHeaderParameters<T>(ReadOnlyMemory<byte> utf8Name)
         {
-            if (Header.TryGetValue(headerName, out object value))
+            if (Header.TryGetValue(utf8Name, out JwtProperty value))
             {
-                if (value is List<string> list)
+                if (value.Type == JwtTokenType.Array)
                 {
-                    return list;
+                    return (List<T>)value.Value;
                 }
-                else
-                {
-                    if (value is string strValue)
-                    {
-                        return new List<string> { strValue };
-                    }
-                }
+
+                var list = new List<T> { (T)value.Value };
+                return list;
             }
 
             return null;
@@ -237,7 +292,7 @@ namespace JsonWebToken
         {
             foreach (var header in RequiredHeaderParameters)
             {
-                if (!Header.TryGetValue(header.Key, out object token) || token == null)
+                if (!Header.TryGetValue(header.Key, out var token) || token.Type == JwtTokenType.Null)
                 {
                     Errors.ThrowHeaderIsRequired(header.Key);
                 }
@@ -245,7 +300,7 @@ namespace JsonWebToken
                 bool headerFound = false;
                 for (int i = 0; i < header.Value.Length; i++)
                 {
-                    if (token.GetType() == header.Value[i])
+                    if (token.Type == header.Value[i])
                     {
                         headerFound = true;
                         break;
@@ -272,7 +327,7 @@ namespace JsonWebToken
 
         private string DebuggerDisplay()
         {
-            return Serialize(Header, Formatting.Indented);
+            return JsonConvert.SerializeObject(Header, Formatting.Indented, serializerSettings);
         }
     }
 }

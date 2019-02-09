@@ -17,7 +17,6 @@ namespace JsonWebToken.Internal
     internal sealed class EcdhKeyWrapper : KeyWrapper
     {
         private static readonly byte[] _secretPreprend = { 0x0, 0x0, 0x0, 0x1 };
-        private static readonly uint OneBigEndian = BitConverter.IsLittleEndian ? 0x1000000u : 1u;
 
         private readonly string _algorithmName;
         private readonly int _algorithmNameLength;
@@ -77,7 +76,9 @@ namespace JsonWebToken.Internal
                 return Errors.TryWriteError(out bytesWritten);
             }
 
-            byte[] secretAppend = BuildSecretAppend(header.Apu, header.Apv);
+            var apu = header.Apu == null ? null : Encoding.UTF8.GetBytes(header.Apu);
+            var apv = header.Apv == null ? null : Encoding.UTF8.GetBytes(header.Apv);
+            byte[] secretAppend = BuildSecretAppend(apu, apv);
             var ephemeralJwk = epk;
             byte[] exchangeHash;
             using (var ephemeralKey = ECDiffieHellman.Create(ephemeralJwk.ExportParameters()))
@@ -103,15 +104,15 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override bool TryWrapKey(Jwk staticKey, Dictionary<string, object> header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override bool TryWrapKey(Jwk staticKey, JwtObject header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
             {
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-            var partyUInfo = GetPartyInfo(header, HeaderParameters.Apu);
-            var partyVInfo = GetPartyInfo(header, HeaderParameters.Apv);
+            var partyUInfo = GetPartyInfo(header, HeaderParameters.ApuUtf8);
+            var partyVInfo = GetPartyInfo(header, HeaderParameters.ApvUtf8);
             var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
             byte[] exchangeHash;
             using (var ephemeralKey = (staticKey == null) ? ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256) : ECDiffieHellman.Create(((ECJwk)staticKey).ExportParameters(true)))
@@ -119,7 +120,7 @@ namespace JsonWebToken.Internal
             {
                 exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
                 var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
-                header[HeaderParameters.Epk] = epk;
+                header.Add(new JwtProperty(HeaderParameters.EpkUtf8, epk.AsJwtObject()));
             }
 
             if (Algorithm.ProduceEncryptionKey)
@@ -159,22 +160,17 @@ namespace JsonWebToken.Internal
             return hashAlgorithm;
         }
 
-        private static string GetPartyInfo(Dictionary<string, object> header, string headerName)
+        private static byte[] GetPartyInfo(JwtObject header, ReadOnlyMemory<byte> utf8Name)
         {
-            if (header.TryGetValue(headerName, out var token))
+            if (header.TryGetValue(utf8Name, out var token))
             {
-                return (string)token;
+                return (byte[])token.Value;
             }
 
             return null;
         }
 
-        private void WriteSuppInfo(Span<byte> destination)
-        {
-            BinaryPrimitives.WriteInt32BigEndian(destination, _keySizeInBytes << 3);
-        }
-        
-        private static void WritePartyInfo(string partyInfo, int partyInfoLength, Span<byte> destination)
+        private static void WritePartyInfo(byte[] partyInfo, int partyInfoLength, Span<byte> destination)
         {
             if (partyInfoLength == 0)
             {
@@ -193,7 +189,7 @@ namespace JsonWebToken.Internal
             Encoding.ASCII.GetBytes(_algorithmName, destination.Slice(sizeof(int)));
         }
 
-        private byte[] BuildSecretAppend(string apu, string apv)
+        private byte[] BuildSecretAppend(byte[] apu, byte[] apv)
         {
             int apuLength = apu == null ? 0 : Base64Url.GetArraySizeRequiredToDecode(apu.Length);
             int apvLength = apv == null ? 0 : Base64Url.GetArraySizeRequiredToDecode(apv.Length);

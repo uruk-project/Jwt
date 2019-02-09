@@ -5,6 +5,7 @@ using JWT.Serializers;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -31,11 +32,13 @@ namespace JsonWebToken.Performance
 
         public static readonly SigningCredentials signingCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.Alg);
 
-        public static readonly JwtWriter Writer = new JwtWriter();
+        public static readonly JwtWriter Writer = new JwtWriter() { EnableHeaderCaching = false };
 
         protected static readonly Dictionary<string, JwtDescriptor> JwtPayloads = CreateJwtDescriptors();
         protected static readonly Dictionary<string, Dictionary<string, object>> DictionaryPayloads = CreateDictionaryDescriptors();
         protected static readonly Dictionary<string, SecurityTokenDescriptor> WilsonPayloads = CreateWilsonDescriptors();
+
+        private static readonly ArrayBufferWriter<byte> _output = new ArrayBufferWriter<byte>();
 
         static WriteToken()
         {
@@ -53,7 +56,9 @@ namespace JsonWebToken.Performance
 
         protected byte[] JwtCore(string payload)
         {
-            return Writer.WriteToken(JwtPayloads[payload]);
+            _output.Clear();
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            return Array.Empty<byte>();
         }
 
         public abstract string Wilson(string payload);

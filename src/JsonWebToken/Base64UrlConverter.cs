@@ -3,6 +3,7 @@
 
 using Newtonsoft.Json;
 using System;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -21,7 +22,7 @@ namespace JsonWebToken
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            writer.WriteValue(Base64Url.Base64UrlEncode((byte[])value));
+            writer.WriteValue(Encoding.UTF8.GetString(Base64Url.Base64UrlEncode((byte[])value)));
         }
     }
 }

@@ -15,50 +15,50 @@ namespace JsonWebToken.Tests
             AssertDictionaryEqual(expected, value);
         }
 
-        private static void AssertDictionaryEqual(Dictionary<string, object> expected, Dictionary<string, object> value)
+        private static void AssertDictionaryEqual(Dictionary<string, object> expected, JwtObject value)
         {
             foreach (var expectedItem in expected)
             {
-                if (!value.ContainsKey(expectedItem.Key))
+                if (!value.ContainsKey(Encoding.UTF8.GetBytes(expectedItem.Key)))
                 {
                     throw new Xunit.Sdk.AssertActualExpectedException(expected, value, $"Expected the key {expectedItem.Key}.");
                 }
 
-                var valueItem = value[expectedItem.Key];
+                var valueItem = value[Encoding.UTF8.GetBytes(expectedItem.Key)];
                 if (expectedItem.Value is Dictionary<string, object> expectedDict)
                 {
-                    if (!(valueItem is Dictionary<string, object> valueDict))
+                    if (!(valueItem.Value is JwtObject valueDict))
                     {
-                        throw new Xunit.Sdk.AssertActualExpectedException(expected, value, $"Expected the type '{typeof(Dictionary<string, object>)}', got {valueItem?.GetType()}.");
+                        throw new Xunit.Sdk.AssertActualExpectedException(expected, value, $"Expected the type '{typeof(Dictionary<string, object>)}', got {valueItem.Value?.GetType()}.");
                     }
 
                     AssertDictionaryEqual(expectedDict, valueDict);
                 }
                 else if (expectedItem.Value is List<object> expectedList)
                 {
-//#if NETCOREAPP3_0
-                    if (!(valueItem is List<object> valueList))
+                    //#if NETCOREAPP3_0
+                    if (!(valueItem.Value is JwtArray valueList))
                     {
-                        throw new Xunit.Sdk.AssertActualExpectedException(expected, value, $"Expected the type '{typeof(List<object>)}', got {valueItem?.GetType()}.");
+                        throw new Xunit.Sdk.AssertActualExpectedException(expected, value, $"Expected the type '{typeof(List<object>)}', got {valueItem.Value?.GetType()}.");
                     }
 
                     AssertListEqual(expectedList, valueList);
-//#else
-//                    if (!(valueItem is JArray valueList))
-//                    {
-//                        throw new Xunit.Sdk.AssertActualExpectedException(expected, value, $"Expected the type '{typeof(List<object>)}', got {valueItem?.GetType()}.");
-//                    }
+                    //#else
+                    //                    if (!(valueItem is JArray valueList))
+                    //                    {
+                    //                        throw new Xunit.Sdk.AssertActualExpectedException(expected, value, $"Expected the type '{typeof(List<object>)}', got {valueItem?.GetType()}.");
+                    //                    }
 
-//#endif
+                    //#endif
                 }
                 else
                 {
-                    Assert.Equal(expectedItem.Value, valueItem);
+                    Assert.Equal(expectedItem.Value, valueItem.Value);
                 }
             }
         }
 
-        private static void AssertListEqual(List<object> expected, List<object> value)
+        private static void AssertListEqual(List<object> expected, JwtArray value)
         {
             for (int i = 0; i < expected.Count; i++)
             {
@@ -66,25 +66,25 @@ namespace JsonWebToken.Tests
                 var valueItem = value[i];
                 if (expectedItem is Dictionary<string, object> expectedDict)
                 {
-                    if (!(valueItem is Dictionary<string, object> valueDict))
+                    if (!(valueItem.Value is JwtObject valueDict))
                     {
-                        throw new Xunit.Sdk.AssertActualExpectedException(expected, value, $"Expected the type '{typeof(Dictionary<string, object>)}', got {valueItem?.GetType()}.");
+                        throw new Xunit.Sdk.AssertActualExpectedException(expected, value, $"Expected the type '{typeof(Dictionary<string, object>)}', got {valueItem.Value?.GetType()}.");
                     }
 
                     AssertDictionaryEqual(expectedDict, valueDict);
                 }
                 else if (expectedItem is List<object> expectedList)
                 {
-                    if (!(valueItem is List<object> valueList))
+                    if (!(valueItem.Value is JwtArray valueList))
                     {
-                        throw new Xunit.Sdk.AssertActualExpectedException(expected, value, $"Expected the type '{typeof(List<object>)}', got {valueItem?.GetType()}.");
+                        throw new Xunit.Sdk.AssertActualExpectedException(expected, value, $"Expected the type '{typeof(List<object>)}', got {valueItem.Value?.GetType()}.");
                     }
 
                     AssertListEqual(expectedList, valueList);
                 }
                 else
                 {
-                    Assert.Equal(expectedItem, valueItem);
+                    Assert.Equal(expectedItem, valueItem.Value);
                 }
             }
         }
