@@ -36,7 +36,7 @@ namespace JsonWebToken
                         return new JwtObject();
                     }
 
-                    _events = (JwtObject)events;
+                    _events = (JwtObject)events.Value;
                     return _events;
                 }
 
@@ -48,7 +48,7 @@ namespace JsonWebToken
         {
             get
             {
-                return EpochTime.ToDateTime(Payload.GetValue<long?>(SetClaims.Toe));
+                return Payload.TryGetValue(SetClaims.ToeUtf8.Span, out var property) ? EpochTime.ToDateTime((long?)property.Value) : null;
             }
         }
 

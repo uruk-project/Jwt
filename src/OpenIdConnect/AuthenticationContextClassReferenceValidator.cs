@@ -17,13 +17,12 @@ namespace JsonWebToken
         public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
             var jwt = context.Jwt;
-            var act = jwt.Payload[OidcClaims.Acr];
-            if (act == null)
+            if (!jwt.Payload.TryGetValue(OidcClaims.AcrUtf8, out var property))
             {
                 return TokenValidationResult.MissingClaim(jwt, OidcClaims.Acr);
             }
 
-            if (string.Equals(_requiredAcr, (string)act, StringComparison.Ordinal))
+            if (string.Equals(_requiredAcr, (string)property.Value, StringComparison.Ordinal))
             {
                 return TokenValidationResult.InvalidClaim(jwt, OidcClaims.Acr);
             }

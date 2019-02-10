@@ -214,7 +214,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Token">The JWT encoded as JWE or JWS.</param>
         /// <param name="policy">The validation policy.</param>
-        public TokenValidationResult TryReadToken(ReadOnlySequence<byte> utf8Token, TokenValidationPolicy policy)
+        public TokenValidationResult TryReadToken(in ReadOnlySequence<byte> utf8Token, TokenValidationPolicy policy)
         {
             if (utf8Token.IsSingleSegment)
             {
@@ -224,7 +224,7 @@ namespace JsonWebToken
             return TryReadTokenMultiSegment(utf8Token, policy);
         }
 
-        private TokenValidationResult TryReadTokenMultiSegment(ReadOnlySequence<byte> utf8TokenSequence, TokenValidationPolicy policy)
+        private TokenValidationResult TryReadTokenMultiSegment(in ReadOnlySequence<byte> utf8TokenSequence, TokenValidationPolicy policy)
         {
             // TODO : Read directly from the ReadOnlySequence withouy copy
             var sequenceLength = (int)utf8TokenSequence.Length;

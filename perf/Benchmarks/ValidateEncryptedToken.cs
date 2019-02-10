@@ -23,7 +23,7 @@ namespace JsonWebToken.Performance
             return WilsonCore(token, wilsonParameters);
         }
 
-        [Benchmark]
+        //[Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public override Microsoft.IdentityModel.JsonWebTokens.TokenValidationResult WilsonJwt(string token)
         {

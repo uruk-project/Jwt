@@ -134,16 +134,17 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the value associated with the specified key.
         /// </summary>
-        public bool TryGetValue(string key, out object value)
+        public bool TryGetValue(ReadOnlySpan<byte> key, out JwtProperty value)
         {
-            if (_inner.TryGetValue(key, out var property))
-            {
-                value = property.Value;
-                return true;
-            }
+            return _inner.TryGetValue(key, out value);
+        }
 
-            value = null;
-            return false;
+        /// <summary>
+        /// Gets the value associated with the specified key.
+        /// </summary>
+        public bool TryGetValue(string key, out JwtProperty value)
+        {
+            return _inner.TryGetValue(key, out value);
         }
     }
 }

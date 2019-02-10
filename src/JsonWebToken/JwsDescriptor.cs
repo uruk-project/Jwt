@@ -342,9 +342,9 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="claimType"></param>
         /// <returns></returns>
-        protected TClaim? GetClaim<TClaim>(byte[] claimType) where TClaim : struct
+        protected TClaim? GetClaim<TClaim>(ReadOnlySpan<byte> claimType) where TClaim : struct
         {
-            if (Payload.TryGetValue(claimType.AsSpan(), out JwtProperty value))
+            if (Payload.TryGetValue(claimType, out JwtProperty value))
             {
                 return (TClaim?)value.Value;
             }
@@ -403,9 +403,9 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="claimType"></param>
         /// <returns></returns>
-        protected JwtObject GetClaim(byte[] claimType)
+        protected JwtObject GetClaim(ReadOnlySpan<byte> claimType)
         {
-            if (Payload.TryGetValue(claimType.AsSpan(), out JwtProperty value) && value.Type == JwtTokenType.Object)
+            if (Payload.TryGetValue(claimType, out JwtProperty value) && value.Type == JwtTokenType.Object)
             {
                 return (JwtObject)value.Value;
             }

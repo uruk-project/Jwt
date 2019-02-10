@@ -33,7 +33,7 @@ namespace JsonWebToken.Internal
             return count;
         }
 
-        public static int Tokenize(ReadOnlySequence<byte> token, Span<TokenSegment> segments, int maxCount)
+        public static int Tokenize(in ReadOnlySequence<byte> token, Span<TokenSegment> segments, int maxCount)
         {
             int count = 0;
             int start = 0;

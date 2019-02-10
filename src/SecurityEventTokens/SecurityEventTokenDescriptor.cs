@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken;
 using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
@@ -36,14 +35,14 @@ namespace JsonWebToken
         /// Gets or sets the set of event statements that each provide 
         /// information describing a single logical event that has occurred about a security subject.
         /// </summary>
-        public JwtObject Events => GetClaim(SetClaims.EventsUtf8);
+        public JwtObject Events => GetClaim(SetClaims.EventsUtf8.Span);
 
         public void AddEvent(string eventName, JwtObject @event)
         {
             AddEvent(Encoding.UTF8.GetBytes(eventName), @event);
         }
 
-        public void AddEvent(byte[] utf8EventName, JwtObject @event)
+        public void AddEvent(ReadOnlyMemory<byte> utf8EventName, JwtObject @event)
         {
             AddClaim(SetClaims.EventsUtf8, new JwtProperty(utf8EventName, @event));
         }
