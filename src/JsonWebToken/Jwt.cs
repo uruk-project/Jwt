@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -142,11 +141,11 @@ namespace JsonWebToken
         {
             if (Payload != null)
             {
-                return JsonConvert.SerializeObject(Header) + "." + JsonConvert.SerializeObject(Payload);
+                return Header.ToString() + "." + Payload.ToString();
             }
             else
             {
-                return JsonConvert.SerializeObject(Header) + ".";
+                return Header.ToString() + ".";
             }
         }
     }

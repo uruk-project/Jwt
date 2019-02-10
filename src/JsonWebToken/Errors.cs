@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,24 +31,9 @@ namespace JsonWebToken
             throw new ArgumentException($"The address specified '{address}' is not valid as per HTTPS scheme.", nameof(address));
         }
 
-        internal static void ThrowUnexpectedTokenParsingDate(JTokenType tokenType)
-        {
-            throw new JsonSerializationException($"Unexpected token parsing date. Expected {nameof(JTokenType.Integer)}, got {tokenType}");
-        }
-
-        internal static void ThrowUnexpectedToken(JTokenType tokenType, JTokenType expected)
-        {
-            throw new JsonSerializationException($"Unexpected token. Expected {expected}, got {tokenType}");
-        }
-
         internal static Exception ThrowArgumentNullException(string argumentName)
         {
             throw new ArgumentNullException(argumentName);
-        }
-
-        internal static void ThrowUnexpectedTokenIssuer(JTokenType tokenType)
-        {
-            throw new JsonSerializationException($"Unexpected token. Expected {nameof(JTokenType.String)} or array of {nameof(JTokenType.String)}, got {tokenType}");
         }
 
         internal static void ThrowPolicyBuilderRequireSignature()
@@ -137,7 +120,7 @@ namespace JsonWebToken
 
         internal static void ThrowNotSupportedJsonType(JwtTokenType type)
         {
-            new JsonWriterException($"The type {type} is not supported.");
+            new InvalidOperationException($"The type {type} is not supported.");
         }
 
         internal static void ThrowMustBeGreaterThanZero(string name, int value)

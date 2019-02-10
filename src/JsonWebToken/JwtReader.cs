@@ -8,11 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-#if NETCOREAPP3_0
 using System.Text.Json;
-#else
-using Newtonsoft.Json;
-#endif
 
 namespace JsonWebToken
 {

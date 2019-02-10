@@ -2,14 +2,12 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
-using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -19,11 +17,6 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class JwtDescriptor
     {
-        private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore
-        };
-
         private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> DefaultRequiredHeaderParameters
             = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>());
         private Jwk _key;
@@ -312,22 +305,6 @@ namespace JsonWebToken
                     Errors.ThrowHeaderMustBeOfType(header);
                 }
             }
-        }
-
-        /// <summary>
-        /// Serializes the <see cref="JwtDescriptor"/> into its JSON representation.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="formatting"></param>
-        /// <returns></returns>
-        protected string Serialize(object value, Formatting formatting)
-        {
-            return JsonConvert.SerializeObject(value, formatting, serializerSettings);
-        }
-
-        private string DebuggerDisplay()
-        {
-            return JsonConvert.SerializeObject(Header, Formatting.Indented, serializerSettings);
         }
     }
 }
