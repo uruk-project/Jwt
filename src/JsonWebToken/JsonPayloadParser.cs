@@ -18,7 +18,7 @@ namespace JsonWebToken
         public static unsafe JwtPayload ParsePayload(ReadOnlySpan<byte> buffer)
         {
             Utf8JsonReader reader = new Utf8JsonReader(buffer, true, default);
-            return new JwtPayload(JsonParser.ReadJson(ref reader));
+            return new JwtPayload(JsonParser.ReadJsonObject(ref reader));
         }
     }
 }

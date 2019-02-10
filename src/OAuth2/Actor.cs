@@ -1,21 +1,55 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using Newtonsoft.Json;
+using JsonWebToken.Internal;
+using System;
 using System.Collections.Generic;
+using System.Text;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
-    public class Actor : Dictionary<string, object>
+    public class Actor 
     {
+        private readonly JwtObject _inner;
+
+        public Actor(JwtObject inner)
+        {
+            _inner = inner;
+        }
+
+        public Actor NestedActor => _inner.TryGetValue(OAuth2Claims.ActUtf8, out var property) ? new Actor((JwtObject)property.Value) : null;
+
+        public string Subject { get; set; }
+
         public static Actor FromJson(string json)
         {
-            return (Actor)JsonConvert.DeserializeObject(json, typeof(Actor));
+            return FromJson(Encoding.UTF8.GetBytes(json));
+        }
+
+        public static Actor FromJson(ReadOnlySpan<byte> json)
+        {
+            var reader = new Utf8JsonReader(json, true, default);
+            return new Actor(JsonParser.ReadJsonObject(ref reader));
         }
 
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, Formatting.None);
+            return _inner.ToString();
+        }
+
+        public byte[] Serialize()
+        {
+            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            {
+                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
+
+                _inner.WriteTo(ref writer);
+                writer.Flush();
+
+                var input = bufferWriter.WrittenSpan;
+                return input.ToArray();
+            }
         }
     }
 }

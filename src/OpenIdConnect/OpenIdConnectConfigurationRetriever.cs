@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using Newtonsoft.Json;
 using System;
 using System.Net.Http;
 using System.Threading;
@@ -52,8 +51,8 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(retriever));
             }
 
-            string doc = retriever.GetDocument(address, cancellationToken);
-            OpenIdConnectConfiguration openIdConnectConfiguration = JsonConvert.DeserializeObject<OpenIdConnectConfiguration>(doc);
+            var doc = retriever.GetDocument(address, cancellationToken);
+            OpenIdConnectConfiguration openIdConnectConfiguration = OpenIdConnectConfiguration.FromJson(doc);
             return openIdConnectConfiguration;
         }
 

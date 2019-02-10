@@ -205,7 +205,22 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
         /// <returns><see cref="Jwks"/></returns>
-        public unsafe static Jwks FromJson(string json)
+        public static Jwks FromJson(string json)
+        {
+            if (json == null)
+            {
+                throw new ArgumentNullException(nameof(json));
+            }
+
+            return FromJson(Encoding.UTF8.GetBytes(json));
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="Jwks"/>.
+        /// </summary>
+        /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
+        /// <returns><see cref="Jwks"/></returns>
+        public unsafe static Jwks FromJson(ReadOnlySpan<byte> json)
         {
             // a JWKS is :
             // {
@@ -216,7 +231,7 @@ namespace JsonWebToken
             //   ]
             // }
             var jwks = new Jwks();
-            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json), true, default);
+            var reader = new Utf8JsonReader(json, true, default);
 
             reader.Read();
             if (reader.TokenType == JsonTokenType.StartObject && reader.Read() && reader.TokenType == JsonTokenType.PropertyName)

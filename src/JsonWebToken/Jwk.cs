@@ -174,7 +174,7 @@ namespace JsonWebToken
                                 jwk.Add(new JwtProperty(name, reader.GetString()));
                                 break;
                             case JsonTokenType.StartObject:
-                                var jwtObject = JsonParser.ReadJson(ref reader);
+                                var jwtObject = JsonParser.ReadJsonObject(ref reader);
                                 jwk.Add(new JwtProperty(name, jwtObject));
                                 break;
                             case JsonTokenType.True:
@@ -264,7 +264,7 @@ namespace JsonWebToken
         /// </summary>
         public override string ToString()
         {
-            var bufferWriter = new ArrayBufferWriter<byte>();
+            using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
 
@@ -509,13 +509,13 @@ namespace JsonWebToken
             }
             else
             {
-                JsonParser.ReadJsonArray(ref reader);
+                JsonParser.ConsumeJsonArray(ref reader);
             }
         }
 
         internal static unsafe void PopulateObject(ref Utf8JsonReader reader, byte* pPropertyName, int propertyLength, Jwk key)
         {
-            JsonParser.ReadJson(ref reader);
+            JsonParser.ConsumeJsonObject(ref reader);
         }
 
         internal static unsafe void PopulateThree(ref Utf8JsonReader reader, byte* pPropertytName, Jwk key)
@@ -606,7 +606,7 @@ namespace JsonWebToken
 
         private string DebuggerDisplay()
         {
-            var bufferWriter = new ArrayBufferWriter<byte>();
+            using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
 

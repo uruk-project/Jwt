@@ -22,10 +22,10 @@ namespace JsonWebToken
         public static JwtObject Parse(ReadOnlySpan<byte> buffer)
         {
             Utf8JsonReader reader = new Utf8JsonReader(buffer, true, default);
-            return ReadJson(ref reader);
+            return ReadJsonObject(ref reader);
         }
 
-        internal static JwtObject ReadJson(ref Utf8JsonReader reader)
+        internal static JwtObject ReadJsonObject(ref Utf8JsonReader reader)
         {
             Stack<JwtObject> stack = new Stack<JwtObject>(2);
             stack.Push(new JwtObject());
@@ -145,7 +145,7 @@ namespace JsonWebToken
                         array.Add(JwtValue.False);
                         break;
                     case JsonTokenType.StartObject:
-                        array.Add(new JwtValue(ReadJson(ref reader)));
+                        array.Add(new JwtValue(ReadJsonObject(ref reader)));
                         break;
                     case JsonTokenType.StartArray:
                         var innerArray = ReadJsonArray(ref reader);
@@ -161,6 +161,76 @@ namespace JsonWebToken
             // If we are here, we are missing a closing brace.
             JwtThrowHelper.FormatMalformedJson();
             return default;
+        }
+
+        internal static void ConsumeJsonObject(ref Utf8JsonReader reader)
+        {
+            int objectCount = 0;
+            while (reader.Read())
+            {
+                switch (reader.TokenType)
+                {
+                    case JsonTokenType.EndObject:
+                        if (objectCount != 1)
+                        {
+                            objectCount--;
+                            break;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    case JsonTokenType.PropertyName:
+                        reader.Read();
+                        var type = reader.TokenType;
+                        switch (type)
+                        {
+                            case JsonTokenType.StartObject:
+                                ConsumeJsonObject(ref reader);
+                                objectCount++;
+                                break;
+                            case JsonTokenType.StartArray:
+                                ConsumeJsonArray(ref reader);
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // If we are here, we are missing a closing brace.
+            JwtThrowHelper.FormatMalformedJson();
+        }
+
+        /// <summary>
+        /// Consume a JSON array.
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
+        internal static void ConsumeJsonArray(ref Utf8JsonReader reader)
+        {
+            while (reader.Read())
+            {
+                switch (reader.TokenType)
+                {
+                    case JsonTokenType.EndArray:
+                        return;
+                    case JsonTokenType.StartObject:
+                        ConsumeJsonObject(ref reader);
+                        break;
+                    case JsonTokenType.StartArray:
+                        ConsumeJsonArray(ref reader);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // If we are here, we are missing a closing bracket.
+            JwtThrowHelper.FormatMalformedJson();
         }
     }
 }
