@@ -15,8 +15,8 @@ namespace JsonWebToken.Tests
             var dirPath = Path.GetDirectoryName(location);
             var keysPath = Path.Combine(dirPath, "./resources/jwks.json"); ;
             var jwks = File.ReadAllText(keysPath);
-            Jwks = new Jwks(jwks);
-
+            Jwks = Jwks.FromJson(jwks);
+            var key1 = Jwks.Keys[0].ToString();
             Jwks.Keys.Add(Tokens.SigningKey);
             Jwks.Keys.Add(Tokens.EncryptionKey);
         }

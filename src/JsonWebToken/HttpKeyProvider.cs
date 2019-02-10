@@ -88,7 +88,7 @@ namespace JsonWebToken
                 try
                 {
                     var value = _documentRetriever.GetDocument(metadataAddress, CancellationToken.None);
-                    _currentKeys = JsonConvert.DeserializeObject<Jwks>(value);
+                    _currentKeys = Jwks.FromJson(value);
                     _syncAfter = now + AutomaticRefreshInterval;
                 }
                 catch

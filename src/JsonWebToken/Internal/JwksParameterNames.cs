@@ -1,6 +1,8 @@
 // Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using System;
+
 namespace JsonWebToken.Internal
 {
     /// <summary>
@@ -9,5 +11,7 @@ namespace JsonWebToken.Internal
     internal static class JwksParameterNames
     {
         public const string Keys = "keys";
+
+        public static ReadOnlySpan<byte> KeysUtf8 => new byte[] { (byte)'k', (byte)'e', (byte)'y', (byte)'s' };
     }
 }

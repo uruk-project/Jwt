@@ -2,12 +2,9 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json;
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -57,24 +54,17 @@ namespace JsonWebToken
         public SymmetricJwk()
         {
         }
-
-        //internal SymmetricJwk(JwkInfo info)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
+        
         /// <inheritsdoc />
         public override string Kty => JwkTypeNames.Octet;
 
         /// <summary>
         /// Gets or sets the 'k' (Key Value).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.K, Required = Required.Default)]
-        [JsonConverter(typeof(Base64UrlConverter))]
         public byte[] K { get; set; }
 
         /// <inheritsdoc />
-        public override int KeySizeInBits => K?.Length != 0 ? K.Length << 3 : 0;
+        public override int KeySizeInBits => K.Length != 0 ? K.Length << 3 : 0;
 
         /// <summary>
         /// Creates a new <see cref="SymmetricJwk"/> from the <paramref name="bytes"/>.
@@ -98,7 +88,7 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes);
             if (computeThumbprint)
             {
-                key.Kid = key.ComputeThumbprint(false);
+                key.Kid = key.ComputeThumbprint();
             }
 
             return key;
@@ -127,7 +117,7 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes);
             if (computeThumbprint)
             {
-                key.Kid = key.ComputeThumbprint(false);
+                key.Kid = key.ComputeThumbprint();
             }
 
             return key;
@@ -239,7 +229,7 @@ namespace JsonWebToken
             var key = new SymmetricJwk(k);
             if (computeThumbprint)
             {
-                key.Kid = key.ComputeThumbprint(false);
+                key.Kid = key.ComputeThumbprint();
             }
 
             return key;
@@ -338,10 +328,20 @@ namespace JsonWebToken
             return null;
         }
 
-        /// <inheritsdoc />
-        public override Jwk Canonicalize()
+        /// <inheritdoc />
+        public override byte[] Canonicalize()
         {
-            return new SymmetricJwk(K);
+            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            {
+                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = false, SkipValidation = true }));
+                writer.WriteStartObject();
+                writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Base64UrlEncode(K));
+                writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
+                writer.WriteEndObject();
+                writer.Flush();
+
+                return bufferWriter.WrittenSpan.ToArray();
+            }
         }
 
         /// <inheritsdoc />
@@ -360,19 +360,16 @@ namespace JsonWebToken
                 switch (property.Type)
                 {
                     case JwtTokenType.Array:
-                            key.Populate(name, (JwtArray)property.Value);
+                        key.Populate(name, (JwtArray)property.Value);
                         break;
                     case JwtTokenType.String:
-                            key.Populate(name, (string)property.Value);
-                        break;
-                    case JwtTokenType.Utf8String:
                         if (name.SequenceEqual(JwkParameterNames.KUtf8))
                         {
-                            key.K = (byte[])property.Value;
+                            key.K = Base64Url.Base64UrlDecode((string)property.Value);
                         }
                         else
                         {
-                            key.Populate(name, (byte[])property.Value);
+                            key.Populate(name, (string)property.Value);
                         }
                         break;
                     default:
@@ -381,6 +378,11 @@ namespace JsonWebToken
             }
 
             return key;
+        }
+
+        internal override void WriteComplementTo(ref Utf8JsonWriter writer)
+        {
+            writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Base64UrlEncode(K));
         }
     }
 }

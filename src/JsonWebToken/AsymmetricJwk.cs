@@ -1,9 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
-using Newtonsoft.Json;
-
 namespace JsonWebToken
 {
     /// <summary>
@@ -21,15 +18,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'd' (ECC - Private Key OR RSA - Private Exponent).
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwkParameterNames.D, Required = Required.Default)]
-        [JsonConverter(typeof(Base64UrlConverter))]
         public byte[] D { get; set; }
 
         /// <summary>
         /// Gets a bool indicating if a private key exists.
         /// </summary>
         /// <return>true if it has a private key; otherwise, false.</return>
-        [JsonIgnore]
         public abstract bool HasPrivateKey { get; }
 
         /// <inheritsdoc />

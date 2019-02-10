@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -15,7 +14,6 @@ namespace JsonWebToken
     /// <summary>
     /// Contains a collection of <see cref="Jwk"/>.
     /// </summary>
-    [JsonObject]
     public sealed class Jwks
     {
         private Jwk[] _unidentifiedKeys;
@@ -53,29 +51,8 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Initializes an new instance of <see cref="Jwks"/> from a json string.
-        /// </summary>
-        /// <param name="json">a json string containing values.</param>
-        public Jwks(string json)
-        {
-            if (string.IsNullOrEmpty(json))
-            {
-                throw new ArgumentNullException(nameof(json));
-            }
-
-            JsonConvert.PopulateObject(json, this);
-        }
-
-        /// <summary>
-        /// When deserializing from JSON any properties that are not defined will be placed here.
-        /// </summary>
-        [JsonExtensionData]
-        public Dictionary<string, object> AdditionalData { get; } = new Dictionary<string, object>();
-
-        /// <summary>
         /// Gets the <see cref="IList{Jwk}"/>.
         /// </summary>       
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwksParameterNames.Keys, Required = Required.Default, ItemConverterType = typeof(Jwk.JwkJsonConverter))]
         public IList<Jwk> Keys { get; } = new List<Jwk>();
 
         /// <summary>
@@ -129,7 +106,41 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            {
+                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
+                WriteTo(ref writer);
+                writer.Flush();
+
+                var input = bufferWriter.WrittenSpan;
+                return Encoding.UTF8.GetString(input.ToArray());
+            }
+        }
+
+        internal void WriteTo(ref Utf8JsonWriter writer)
+        {
+            writer.WriteStartObject();
+            writer.WriteStartObject(JwksParameterNames.KeysUtf8);
+            for (int i = 0; i < Keys.Count; i++)
+            {
+                Keys[i].WriteTo(ref writer);
+            }
+
+            writer.WriteEndObject();
+        }
+
+        private string DebuggerDisplay()
+        {
+            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            {
+                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
+
+                WriteTo(ref writer);
+                writer.Flush();
+
+                var input = bufferWriter.WrittenSpan;
+                return Encoding.UTF8.GetString(input.ToArray());
+            }
         }
 
         private IReadOnlyList<Jwk> UnidentifiedKeys
