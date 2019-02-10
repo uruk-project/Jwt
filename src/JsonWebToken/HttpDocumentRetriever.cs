@@ -43,7 +43,7 @@ namespace JsonWebToken
         /// <param name="address">Location of document</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation. <see cref="CancellationToken"/></param>
         /// <returns>Document as a string</returns>
-        public string GetDocument(string address, CancellationToken cancellationToken)
+        public byte[] GetDocument(string address, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(address))
             {
@@ -62,7 +62,7 @@ namespace JsonWebToken
 
             using (HttpResponseMessage response = _httpClient.GetAsync(address, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult().EnsureSuccessStatusCode())
             {
-                return response.Content.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+                return response.Content.ReadAsByteArrayAsync().ConfigureAwait(false).GetAwaiter().GetResult();
             }
         }
 
@@ -99,14 +99,6 @@ namespace JsonWebToken
         private static bool IsHttps(Uri uri)
         {
             return uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private void ThrowIfDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
         }
     }
 }

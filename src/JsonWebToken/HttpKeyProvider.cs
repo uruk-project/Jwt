@@ -1,8 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -88,7 +86,7 @@ namespace JsonWebToken
                 try
                 {
                     var value = _documentRetriever.GetDocument(metadataAddress, CancellationToken.None);
-                    _currentKeys = JsonConvert.DeserializeObject<Jwks>(value);
+                    _currentKeys = Jwks.FromJson(value);
                     _syncAfter = now + AutomaticRefreshInterval;
                 }
                 catch

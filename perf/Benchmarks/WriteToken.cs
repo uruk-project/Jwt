@@ -195,8 +195,8 @@ namespace JsonWebToken.Performance
                 {
                     //SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.Alg),
                     Subject = new ClaimsIdentity(),
-                    Expires = payload.Value.ContainsKey("exp") ? Microsoft.IdentityModel.Tokens.EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
-                    IssuedAt = payload.Value.ContainsKey("iat") ? Microsoft.IdentityModel.Tokens.EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
+                    Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
+                    IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -222,8 +222,8 @@ namespace JsonWebToken.Performance
                 {
                     SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.Alg),
                     Subject = new ClaimsIdentity(),
-                    Expires = payload.Value.ContainsKey("exp") ? Microsoft.IdentityModel.Tokens.EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
-                    IssuedAt = payload.Value.ContainsKey("iat") ? Microsoft.IdentityModel.Tokens.EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
+                    Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
+                    IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -250,8 +250,8 @@ namespace JsonWebToken.Performance
                     SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.Alg),
                     EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K), KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256),
                     Subject = new ClaimsIdentity(),
-                    Expires = payload.Value.ContainsKey("exp") ? Microsoft.IdentityModel.Tokens.EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
-                    IssuedAt = payload.Value.ContainsKey("iat") ? Microsoft.IdentityModel.Tokens.EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
+                    Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
+                    IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
                 };
 
                 foreach (var property in payload.Value.Properties())

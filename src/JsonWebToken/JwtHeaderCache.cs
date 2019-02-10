@@ -22,7 +22,6 @@ namespace JsonWebToken
             public byte[] Key;
         }
 
-        private readonly object _syncLock = new object();
         private SpinLock _spinLock = new SpinLock();
 
         private int _count = 0;

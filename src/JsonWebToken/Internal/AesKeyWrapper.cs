@@ -264,7 +264,7 @@ namespace JsonWebToken.Internal
 
         public override int GetKeyUnwrapSize(int wrappedKeySize)
         {
-            return GetKeyUnwrappedSize(wrappedKeySize, Algorithm);
+            return GetKeyUnwrappedSize(wrappedKeySize);
         }
 
         public override int GetKeyWrapSize()
@@ -272,7 +272,7 @@ namespace JsonWebToken.Internal
             return GetKeyWrappedSize(EncryptionAlgorithm);
         }
 
-        public static int GetKeyUnwrappedSize(int wrappedKeySize, KeyManagementAlgorithm algorithm)
+        public static int GetKeyUnwrappedSize(int wrappedKeySize)
         {
             return wrappedKeySize - BlockSizeInBytes;
         }

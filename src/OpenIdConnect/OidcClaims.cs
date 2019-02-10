@@ -1,6 +1,7 @@
 // Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using System;
 using System.Text;
 
 namespace JsonWebToken
@@ -169,12 +170,23 @@ namespace JsonWebToken
         public const string UpdatedAt = "updated_at";
         public static readonly byte[] UpdatedAtUtf8 = Encoding.UTF8.GetBytes(UpdatedAt);
 
-        public static readonly byte[] FormattedUtf8 = Encoding.UTF8.GetBytes("formatted");
-        public static readonly byte[] StreetAddressUtf8 = Encoding.UTF8.GetBytes("street_address");
-        public static readonly byte[] LocalityUtf8 = Encoding.UTF8.GetBytes("locality");
-        public static readonly byte[] RegionUtf8 = Encoding.UTF8.GetBytes("region");
-        public static readonly byte[] PostalCodeUtf8 = Encoding.UTF8.GetBytes("postal_code");
-        public static readonly byte[] CountryUtf8 = Encoding.UTF8.GetBytes("country");
+        public const string Formatted = "formatted";
+        public static ReadOnlyMemory<byte> FormattedUtf8 => new byte[] { (byte)'f', (byte)'o', (byte)'r', (byte)'m', (byte)'a', (byte)'t', (byte)'t', (byte)'e', (byte)'d' };
+
+        public const string StreetAddress = "street_address";
+        public static ReadOnlyMemory<byte> StreetAddressUtf8 => new byte[] { (byte)'s', (byte)'t', (byte)'r', (byte)'e', (byte)'e', (byte)'t', (byte)'_', (byte)'a', (byte)'d', (byte)'d', (byte)'r', (byte)'e', (byte)'s', (byte)'s' };
+
+        public const string  Locality = "locality";
+        public static ReadOnlyMemory<byte> LocalityUtf8 => new byte[] { (byte)'l', (byte)'o', (byte)'c', (byte)'a', (byte)'l', (byte)'i', (byte)'t', (byte)'y' };
+
+        public const string Region = "region";
+        public static ReadOnlyMemory<byte> RegionUtf8 => new byte[] { (byte)'r', (byte)'e', (byte)'g', (byte)'i', (byte)'o', (byte)'n' };
+
+        public const string PostalCode = "postal_code";
+        public static ReadOnlyMemory<byte> PostalCodeUtf8 => new byte[] { (byte)'p', (byte)'o', (byte)'s', (byte)'t', (byte)'a', (byte)'l', (byte)'_', (byte)'c', (byte)'o', (byte)'d', (byte)'e' };
+
+        public const string Country = "country";
+        public static ReadOnlyMemory<byte> CountryUtf8 => new byte[] { (byte)'c', (byte)'o', (byte)'u', (byte)'n', (byte)'t', (byte)'r', (byte)'y' };
 
     }
 }

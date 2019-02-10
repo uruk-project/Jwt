@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using Newtonsoft.Json.Linq;
 using System;
 using System.ComponentModel;
 
@@ -53,6 +52,36 @@ namespace JsonWebToken.Internal
             }
 
             return TokenValidationResult.Success(jwt);
+        }
+    }
+
+    /// <summary>
+    /// Represents a <see cref="IValidator"/> verifying the JWT has a required claim.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public class RequiredClaimValidator : IValidator
+    {
+        private readonly string _claim;
+
+        /// <summary>
+        /// Initializes an instance of <see cref="RequiredClaimValidator{TClaim}"/>.
+        /// </summary>
+        /// <param name="claim"></param>
+        public RequiredClaimValidator(string claim)
+        {
+            _claim = claim;
+        }
+
+        /// <inheritdoc />
+        public TokenValidationResult TryValidate(in TokenValidationContext context)
+        {
+            var jwt = context.Jwt;
+            if (jwt.Payload.ContainsKey(_claim))
+            {
+                return TokenValidationResult.Success(jwt);
+            }
+
+            return TokenValidationResult.MissingClaim(jwt, _claim);
         }
     }
 }

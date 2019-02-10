@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,24 +31,9 @@ namespace JsonWebToken
             throw new ArgumentException($"The address specified '{address}' is not valid as per HTTPS scheme.", nameof(address));
         }
 
-        internal static void ThrowUnexpectedTokenParsingDate(JTokenType tokenType)
-        {
-            throw new JsonSerializationException($"Unexpected token parsing date. Expected {nameof(JTokenType.Integer)}, got {tokenType}");
-        }
-
-        internal static void ThrowUnexpectedToken(JTokenType tokenType, JTokenType expected)
-        {
-            throw new JsonSerializationException($"Unexpected token. Expected {expected}, got {tokenType}");
-        }
-
         internal static Exception ThrowArgumentNullException(string argumentName)
         {
             throw new ArgumentNullException(argumentName);
-        }
-
-        internal static void ThrowUnexpectedTokenIssuer(JTokenType tokenType)
-        {
-            throw new JsonSerializationException($"Unexpected token. Expected {nameof(JTokenType.String)} or array of {nameof(JTokenType.String)}, got {tokenType}");
         }
 
         internal static void ThrowPolicyBuilderRequireSignature()
@@ -137,7 +120,7 @@ namespace JsonWebToken
 
         internal static void ThrowNotSupportedJsonType(JwtTokenType type)
         {
-            new JsonWriterException($"The type {type} is not supported.");
+            new InvalidOperationException($"The type {type} is not supported.");
         }
 
         internal static void ThrowMustBeGreaterThanZero(string name, int value)
@@ -185,6 +168,11 @@ namespace JsonWebToken
             throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), $"The algorithm '{algorithm}' requires the a key size to be greater than '{validKeySize}' bits. Key size is '{keySize}'.");
         }
 
+        internal static void ThrowMalformedJwks()
+        {
+            throw new InvalidOperationException("The JWKS is malformed.");
+        }
+
         internal static void ThrowMustBeAtLeast(string name, int value)
         {
             throw new ArgumentOutOfRangeException(nameof(value), $"{name} must be at least '{value}'.");
@@ -208,6 +196,11 @@ namespace JsonWebToken
         internal static void ThrowNotSupportedSignatureAlgorithm(SignatureAlgorithm algorithm, Jwk key)
         {
             throw new NotSupportedException($"Signature failed. No support for: Algorithm: '{algorithm}', key: '{key.Kid}'.");
+        }
+
+        internal static void ThrowNotSupportedJwk(string keyType)
+        {
+            throw new NotSupportedException($"JWK type '{keyType}' is not supported.");
         }
 
         internal static void ThrowNotSupportedSignatureAlgorithm(SignatureAlgorithm algorithm)
@@ -238,6 +231,11 @@ namespace JsonWebToken
         internal static void ThrowMalformedKey(Jwk key)
         {
             throw new ArgumentException($"The key '{key.Kid}' is malformed.", nameof(key));
+        }
+
+        internal static void ThrowMalformedKey()
+        {
+            throw new ArgumentException("The key is malformed.");
         }
 
         internal static void ThrowKeyWrapFailed()

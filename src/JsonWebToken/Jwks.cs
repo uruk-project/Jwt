@@ -2,17 +2,18 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using Newtonsoft.Json;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
     /// <summary>
     /// Contains a collection of <see cref="Jwk"/>.
     /// </summary>
-    [JsonObject]
     public sealed class Jwks
     {
         private Jwk[] _unidentifiedKeys;
@@ -50,29 +51,8 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Initializes an new instance of <see cref="Jwks"/> from a json string.
-        /// </summary>
-        /// <param name="json">a json string containing values.</param>
-        public Jwks(string json)
-        {
-            if (string.IsNullOrEmpty(json))
-            {
-                throw new ArgumentNullException(nameof(json));
-            }
-
-            JsonConvert.PopulateObject(json, this);
-        }
-
-        /// <summary>
-        /// When deserializing from JSON any properties that are not defined will be placed here.
-        /// </summary>
-        [JsonExtensionData]
-        public Dictionary<string, object> AdditionalData { get; } = new Dictionary<string, object>();
-
-        /// <summary>
         /// Gets the <see cref="IList{Jwk}"/>.
         /// </summary>       
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = JwksParameterNames.Keys, Required = Required.Default, ItemConverterType = typeof(Jwk.JwkJsonConverter))]
         public IList<Jwk> Keys { get; } = new List<Jwk>();
 
         /// <summary>
@@ -93,21 +73,6 @@ namespace JsonWebToken
 
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Returns a new instance of <see cref="Jwks"/>.
-        /// </summary>
-        /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
-        /// <returns><see cref="Jwks"/></returns>
-        public static Jwks FromJson(string json)
-        {
-            if (string.IsNullOrEmpty(json))
-            {
-                throw new ArgumentNullException(nameof(json));
-            }
-
-            return new Jwks(json);
         }
 
         /// <summary>
@@ -141,7 +106,41 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            {
+                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
+                WriteTo(ref writer);
+                writer.Flush();
+
+                var input = bufferWriter.WrittenSpan;
+                return Encoding.UTF8.GetString(input.ToArray());
+            }
+        }
+
+        internal void WriteTo(ref Utf8JsonWriter writer)
+        {
+            writer.WriteStartObject();
+            writer.WriteStartObject(JwksParameterNames.KeysUtf8);
+            for (int i = 0; i < Keys.Count; i++)
+            {
+                Keys[i].WriteTo(ref writer);
+            }
+
+            writer.WriteEndObject();
+        }
+
+        private string DebuggerDisplay()
+        {
+            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            {
+                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
+
+                WriteTo(ref writer);
+                writer.Flush();
+
+                var input = bufferWriter.WrittenSpan;
+                return Encoding.UTF8.GetString(input.ToArray());
+            }
         }
 
         private IReadOnlyList<Jwk> UnidentifiedKeys
@@ -200,5 +199,71 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keys"></param>
         public static implicit operator Jwks(Jwk[] keys) => new Jwks(keys);
+
+        /// <summary>
+        /// Returns a new instance of <see cref="Jwks"/>.
+        /// </summary>
+        /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
+        /// <returns><see cref="Jwks"/></returns>
+        public static Jwks FromJson(string json)
+        {
+            if (json == null)
+            {
+                throw new ArgumentNullException(nameof(json));
+            }
+
+            return FromJson(Encoding.UTF8.GetBytes(json));
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="Jwks"/>.
+        /// </summary>
+        /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
+        /// <returns><see cref="Jwks"/></returns>
+        public unsafe static Jwks FromJson(ReadOnlySpan<byte> json)
+        {
+            // a JWKS is :
+            // {
+            //   "keys": [
+            //   { jwk1 },
+            //   { jwk2 },
+            //   ???
+            //   ]
+            // }
+            var jwks = new Jwks();
+            var reader = new Utf8JsonReader(json, true, default);
+
+            reader.Read();
+            if (reader.TokenType == JsonTokenType.StartObject && reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
+            {
+                var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                if (propertyName.Length == 4)
+                {
+                    fixed (byte* pPropertyName = propertyName)
+                    {
+                        if (*((uint*)pPropertyName) == 1937335659u /* keys */)
+                        {
+                            reader.Read();
+                            if (reader.TokenType == JsonTokenType.StartArray)
+                            {
+                                while (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
+                                {
+                                    Jwk jwk = Jwk.FromJsonReader(ref reader);
+                                    jwks.Add(jwk);
+                                }
+
+                                if (reader.Read() && reader.TokenType == JsonTokenType.EndObject)
+                                {
+                                    return jwks;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Errors.ThrowMalformedJwks();
+            return null;
+        }
     }
 }

@@ -44,7 +44,7 @@ namespace JsonWebToken
         public const string OpPolicyUri = "op_policy_uri";
         public const string OpTosUri = "op_tos_uri";
 
-        // https://tools.ietf.org/html/draft-ietf-oauth-discovery-10
+        // https://tools.ietf.org/html/rfc8414
         public const string RevocationEndpoint = "revocation_endpoint";
         public const string RevocationEndpointAuthMethodsSupported = "revocation_endpoint_auth_methods_supported";
         public const string RevocationEndpointAuthSigningAlgValuesSupported = "revocation_endpoint_auth_signing_alg_values_supported";
@@ -58,8 +58,8 @@ namespace JsonWebToken
         public const string EndSessionEndpoint = "end_session_endpoint";
 
         // http://openid.net/specs/openid-connect-frontchannel-1_0.html
-        public const string FrontchannelLogoutSessionSupported = "frontchannel_logout_session_supported";
-        public const string FrontchannelLogoutSupported = "frontchannel_logout_supported";
+        public const string FrontChannelLogoutSessionSupported = "frontchannel_logout_session_supported";
+        public const string FrontChannelLogoutSupported = "frontchannel_logout_supported";
 
         // http://openid.net/specs/openid-connect-backchannel-1_0.html
         public const string BackchannelLogoutSupported = "backchannel_logout_session_supported";

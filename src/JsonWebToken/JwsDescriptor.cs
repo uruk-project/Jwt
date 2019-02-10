@@ -344,7 +344,7 @@ namespace JsonWebToken
         /// <returns></returns>
         protected TClaim? GetClaim<TClaim>(byte[] claimType) where TClaim : struct
         {
-            if (Payload.TryGetValue(claimType, out JwtProperty value))
+            if (Payload.TryGetValue(claimType.AsSpan(), out JwtProperty value))
             {
                 return (TClaim?)value.Value;
             }
@@ -405,7 +405,7 @@ namespace JsonWebToken
         /// <returns></returns>
         protected JwtObject GetClaim(byte[] claimType)
         {
-            if (Payload.TryGetValue(claimType, out JwtProperty value) && value.Type == JwtTokenType.Object)
+            if (Payload.TryGetValue(claimType.AsSpan(), out JwtProperty value) && value.Type == JwtTokenType.Object)
             {
                 return (JwtObject)value.Value;
             }
@@ -524,37 +524,6 @@ namespace JsonWebToken
                 }
             }
         }
-
-        private static bool TryEncodeUtf8ToBase64Url(ReadOnlySequence<byte> input, Span<byte> destination, out int bytesWritten)
-        {
-            if (input.IsSingleSegment)
-            {
-                bytesWritten = Base64Url.Base64UrlEncode(input.First.Span, destination);
-                return bytesWritten == destination.Length;
-            }
-            else
-            {
-                byte[] arrayToReturnToPool = null;
-                try
-                {
-                    var encodedBytes = input.Length <= Constants.MaxStackallocBytes
-                          ? stackalloc byte[(int)input.Length]
-                          : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent((int)input.Length)).AsSpan(0, (int)input.Length);
-
-                    input.CopyTo(encodedBytes);
-                    bytesWritten = Base64Url.Base64UrlEncode(encodedBytes, destination);
-                    return bytesWritten == destination.Length;
-                }
-                finally
-                {
-                    if (arrayToReturnToPool != null)
-                    {
-                        ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
-                    }
-                }
-            }
-        }
-
 
         private static bool TryEncodeUtf8ToBase64Url(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {

@@ -3,7 +3,6 @@
 
 using JsonWebToken;
 using JsonWebToken.Internal;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
