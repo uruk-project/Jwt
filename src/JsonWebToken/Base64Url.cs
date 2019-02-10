@@ -103,7 +103,7 @@ namespace JsonWebToken
         /// <returns>The number of the bytes written to <paramref name="data"/>.</returns>
         public static int Base64UrlDecode(ReadOnlySpan<byte> base64Url, Span<byte> data)
         {
-            var status = Base64UrlDecode(base64Url, data, out int bytesConsumed, out int bytesWritten);
+            var status = Base64UrlDecode(base64Url, data, out _, out int bytesWritten);
             if (status != OperationStatus.Done)
             {
                 JwtThrowHelper.ThrowOperationNotDone(status);
@@ -140,7 +140,7 @@ namespace JsonWebToken
                 return 0;
             }
 
-            var status = _base64.EncodeToUtf8(utf8Data, base64Url, out var bytesConsumed, out var bytesWritten);
+            var status = _base64.EncodeToUtf8(utf8Data, base64Url, out _, out var bytesWritten);
             if (status != OperationStatus.Done)
             {
                 JwtThrowHelper.ThrowOperationNotDone(status);
@@ -238,11 +238,6 @@ namespace JsonWebToken
         private static int GetUtf8Bytes(ReadOnlySpan<char> input, Span<byte> output)
         {
             return Encoding.UTF8.GetBytes(input, output);
-        }
-
-        private static string GetUtf8String(ReadOnlySpan<byte> bytes)
-        {
-            return Encoding.UTF8.GetString(bytes);
         }
 #else
         private static int GetUtf8Bytes(ReadOnlySpan<char> input, Span<byte> output)

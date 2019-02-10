@@ -31,18 +31,7 @@ namespace JsonWebToken
             _criticalHeaderHandlers.Clear();
             return this;
         }
-
-        private TokenValidationPolicyBuilder RemoveValidation(IValidator validator)
-        {
-            if (validator == null)
-            {
-                throw new ArgumentNullException(nameof(validator));
-            }
-
-            _validators.Remove(validator);
-            return this;
-        }
-
+        
         private TokenValidationPolicyBuilder RemoveValidator<TValidator>() where TValidator : IValidator
         {
             _validators.RemoveAll(v => v.GetType() == typeof(TValidator));

@@ -242,6 +242,7 @@ namespace JsonWebToken
         {
             return new TokenValidationResult
             {
+                Token = jwt,
                 Status = TokenValidationStatus.InvalidClaim,
                 ErrorClaim = claim
             };
@@ -257,6 +258,7 @@ namespace JsonWebToken
         {
             return new TokenValidationResult
             {
+                Token = jwt,
                 Status = TokenValidationStatus.MissingClaim,
                 ErrorClaim = claim
             };

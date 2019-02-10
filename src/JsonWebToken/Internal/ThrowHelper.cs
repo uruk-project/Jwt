@@ -27,7 +27,7 @@ namespace JsonWebToken.Internal
 
         public static void NotSupportedKey(string keyType)
         {
-            throw new NotSupportedException("The key type '{keyType}' is not supported.");
+            throw new NotSupportedException($"The key type '{keyType}' is not supported.");
         }
 
         public static void NotSupportedKey()

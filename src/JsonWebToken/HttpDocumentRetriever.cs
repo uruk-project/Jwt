@@ -100,13 +100,5 @@ namespace JsonWebToken
         {
             return uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
         }
-
-        private void ThrowIfDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
-        }
     }
 }

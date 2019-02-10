@@ -501,33 +501,6 @@ namespace JsonWebToken
             }
         }
 
-        private static JwtPayload GetJsonPayload(ReadOnlySequence<byte> data)
-        {
-            int base64UrlLength = Base64Url.GetArraySizeRequiredToDecode((int)data.Length);
-            byte[] base64UrlArrayToReturnToPool = null;
-            var buffer = base64UrlLength <= Constants.MaxStackallocBytes
-              ? stackalloc byte[base64UrlLength]
-              : (base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64UrlLength)).AsSpan(0, base64UrlLength);
-            try
-            {
-                SequencePosition nextPosition = data.Start;
-                int bytesWritten = 0;
-                while (data.TryGet(ref nextPosition, out ReadOnlyMemory<byte> memory, advance: true))
-                {
-                    Base64Url.Base64UrlDecode(memory.Span, buffer.Slice(bytesWritten), out int byteConsumed, out bytesWritten);
-                }
-
-                return JsonPayloadParser.ParsePayload(buffer);
-            }
-            finally
-            {
-                if (base64UrlArrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(base64UrlArrayToReturnToPool);
-                }
-            }
-        }
-
         private static JwtHeader GetJsonHeader(ReadOnlySpan<byte> data)
         {
             int base64UrlLength = Base64Url.GetArraySizeRequiredToDecode(data.Length);
@@ -538,33 +511,6 @@ namespace JsonWebToken
             try
             {
                 Base64Url.Base64UrlDecode(data, buffer);
-                return JsonHeaderParser.ParseHeader(buffer);
-            }
-            finally
-            {
-                if (base64UrlArrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(base64UrlArrayToReturnToPool);
-                }
-            }
-        }
-
-        private static JwtHeader GetJsonHeader(ReadOnlySequence<byte> data)
-        {
-            int base64UrlLength = Base64Url.GetArraySizeRequiredToDecode((int)data.Length);
-            byte[] base64UrlArrayToReturnToPool = null;
-            var buffer = base64UrlLength <= Constants.MaxStackallocBytes
-              ? stackalloc byte[base64UrlLength]
-              : (base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64UrlLength)).AsSpan(0, base64UrlLength);
-            try
-            {
-                SequencePosition nextPosition = data.Start;
-                int bytesWritten = 0;
-                while (data.TryGet(ref nextPosition, out ReadOnlyMemory<byte> memory, advance: true))
-                {
-                    Base64Url.Base64UrlDecode(memory.Span, buffer.Slice(bytesWritten), out int byteConsumed, out bytesWritten);
-                }
-
                 return JsonHeaderParser.ParseHeader(buffer);
             }
             finally
