@@ -3,7 +3,6 @@
 
 using JsonWebToken.Internal;
 using System;
-using System.Buffers;
 using System.Text;
 using System.Text.Json;
 

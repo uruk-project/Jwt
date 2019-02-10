@@ -13,8 +13,19 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public readonly struct JwtValue
     {
+        /// <summary>
+        /// A <see cref="JwtValue"/> with <c>null</c> value.
+        /// </summary>
         public static readonly JwtValue Null = default;
+
+        /// <summary>
+        /// A <see cref="JwtValue"/> with <c>true</c> value.
+        /// </summary>
         public static readonly JwtValue True = new JwtValue(true);
+
+        /// <summary>
+        /// A <see cref="JwtValue"/> with <c>false</c> value.
+        /// </summary>
         public static readonly JwtValue False = new JwtValue(false);
 
         /// <summary>
