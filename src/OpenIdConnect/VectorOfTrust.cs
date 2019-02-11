@@ -11,7 +11,7 @@ namespace JsonWebToken
     /// <summary>
     /// https://tools.ietf.org/html/draft-richer-vectors-of-trust-11
     /// </summary>
-    public class VectorOfTrust : IEnumerable<string>
+    public sealed class VectorOfTrust : IEnumerable<string>
     {
         private readonly Dictionary<char, IList<char>> _vector = new Dictionary<char, IList<char>>();
 

@@ -2,16 +2,13 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using JsonWebToken.Internal;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace JsonWebToken
 {
     /// <summary>
     /// https://tools.ietf.org/html/rfc7523#section-2.2
     /// </summary>
-    public class ClientAssertionDescriptor : JwsDescriptor
+    public sealed class ClientAssertionDescriptor : JwsDescriptor
     {
         public ClientAssertionDescriptor()
             : base()

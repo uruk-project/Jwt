@@ -3,7 +3,7 @@
 
 namespace JsonWebToken
 {
-    public class EncryptedIdTokenDescriptor : JweDescriptor<IdTokenDescriptor>
+    public sealed class EncryptedIdTokenDescriptor : JweDescriptor<IdTokenDescriptor>
     {        
     }
 }

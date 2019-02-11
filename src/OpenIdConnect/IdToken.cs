@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace JsonWebToken
 {
-    public class IdToken : Jwt
+    public sealed class IdToken : Jwt
     {
         private readonly Jwt _token;
 

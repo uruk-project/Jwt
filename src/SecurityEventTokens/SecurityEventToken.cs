@@ -6,7 +6,7 @@ using System;
 
 namespace JsonWebToken
 {
-    public class SecurityEventToken : Jwt
+    public sealed class SecurityEventToken : Jwt
     {
         private readonly Jwt _token;
         private JwtObject _events;

@@ -3,7 +3,7 @@
 
 namespace JsonWebToken.Internal
 {
-    internal class DefaultAuthenticatedEncryptorFactory : AuthenticatedEncryptorFactory
+    internal sealed class DefaultAuthenticatedEncryptorFactory : AuthenticatedEncryptorFactory
     {
         /// <summary>
         /// Creates an <see cref="AuthenticatedEncryptor"/>.

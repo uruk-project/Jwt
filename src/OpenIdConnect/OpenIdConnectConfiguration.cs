@@ -10,7 +10,7 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
-    public class OpenIdConnectConfiguration
+    public sealed class OpenIdConnectConfiguration
     {
         /// <summary>
         /// Initializes an new instance of <see cref="OpenIdConnectConfiguration"/>.
@@ -291,7 +291,7 @@ namespace JsonWebToken
         /// <summary>
         /// When deserializing from JSON any properties that are not defined will be placed here.
         /// </summary>
-        public virtual JwtObject AdditionalData { get; } = new JwtObject();
+        public JwtObject AdditionalData { get; } = new JwtObject();
 
         /// <summary>
         /// Gets the collection of 'acr_values_supported'

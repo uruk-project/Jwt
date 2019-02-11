@@ -15,7 +15,7 @@ using SscECParameters = System.Security.Cryptography.ECParameters;
 
 namespace JsonWebToken.KeyVault
 {
-    public class KeyVaultKeyProvider : IKeyProvider
+    public sealed class KeyVaultKeyProvider : IKeyProvider
     {
         private readonly IKeyVaultClient _client;
         private readonly string _vaultBaseUrl;

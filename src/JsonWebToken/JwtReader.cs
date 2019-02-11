@@ -137,7 +137,6 @@ namespace JsonWebToken
         /// </summary>
         public bool EnableHeaderCaching { get; set; } = true;
 
-#if NETSTANDARD2_0
         /// <summary>
         /// Reads and validates a JWT encoded as a JWS or JWE in compact serialized format.
         /// </summary>
@@ -157,7 +156,6 @@ namespace JsonWebToken
 
             return TryReadToken(token.AsSpan(), policy);
         }
-#endif
 
         /// <summary>
         /// Reads and validates a JWT encoded as a JWS or JWE in compact serialized format.
