@@ -9,7 +9,7 @@ namespace JsonWebToken
     /// Represents a <see cref="IValidator"/> verifying the JWT has a required claim.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class RequireAuthTimeValidator : IValidator
+    public sealed class RequireAuthTimeValidator : IValidator
     {
         /// <inheritdoc />
         public TokenValidationResult TryValidate(in TokenValidationContext context)

@@ -3,13 +3,12 @@
 
 using JsonWebToken.Internal;
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 
 namespace JsonWebToken
 {
-    public class Actor 
+    public sealed class Actor 
     {
         private readonly JwtObject _inner;
 

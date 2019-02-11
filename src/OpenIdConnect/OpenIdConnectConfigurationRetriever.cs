@@ -10,7 +10,7 @@ namespace JsonWebToken
     /// <summary>
     ///  Retrieves a populated <see cref="OpenIdConnectConfiguration"/> given an address.
     /// </summary>
-    public class OpenIdConnectConfigurationRetriever : IConfigurationRetriever<OpenIdConnectConfiguration>
+    public sealed class OpenIdConnectConfigurationRetriever : IConfigurationRetriever<OpenIdConnectConfiguration>
     {
         /// <summary>
         /// Retrieves a populated <see cref="OpenIdConnectConfiguration"/> given an address.

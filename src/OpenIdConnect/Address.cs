@@ -9,7 +9,7 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
-    public class Address
+    public sealed class Address
     {
         public string Formatted { get; set; }
 

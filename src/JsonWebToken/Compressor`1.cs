@@ -39,7 +39,7 @@ namespace JsonWebToken
             }
         }
 
-        private class DecompressionSegment : ReadOnlySequenceSegment<byte>
+        private sealed class DecompressionSegment : ReadOnlySequenceSegment<byte>
         {
             public DecompressionSegment(ReadOnlyMemory<byte> memory)
             {

@@ -9,7 +9,7 @@ namespace JsonWebToken
     /// <summary>
     /// Reprensents an implementation of <see cref="IBufferWriter{T}" /> where the memory owner is a <see cref="ArrayPool{T}"/>.
     /// </summary>
-    public class ArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
+    public sealed class ArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
     {
         private T[] _rentedBuffer;
         private int _index;

@@ -282,7 +282,7 @@ namespace JsonWebToken.Internal
             return encryptionAlgorithm.KeyWrappedSizeInBytes;
         }
 
-        private class PooledEncryptorPolicy : PooledObjectFactory<ICryptoTransform>
+        private sealed class PooledEncryptorPolicy : PooledObjectFactory<ICryptoTransform>
         {
             private readonly Aes _aes;
 
@@ -297,7 +297,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private class PooledDecryptorPolicy : PooledObjectFactory<ICryptoTransform>
+        private sealed class PooledDecryptorPolicy : PooledObjectFactory<ICryptoTransform>
         {
             private readonly Aes _aes;
 

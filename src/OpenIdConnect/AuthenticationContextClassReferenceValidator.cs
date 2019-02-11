@@ -5,7 +5,7 @@ using System;
 
 namespace JsonWebToken
 {
-    public class AuthenticationContextClassReferenceValidator : IValidator
+    public sealed class AuthenticationContextClassReferenceValidator : IValidator
     {
         private readonly string _requiredAcr;
 
