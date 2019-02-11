@@ -18,15 +18,6 @@ namespace JsonWebToken
     public partial class JwsDescriptor : JwtDescriptor<JwtObject>
     {
         private const byte dot = (byte)'.';
-        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> DefaultRequiredClaims
-            = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>());
-        private static readonly ReadOnlyMemory<byte>[] DefaultProhibitedClaims = Array.Empty<ReadOnlyMemory<byte>>();
-        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> JwsRequiredHeaderParameters
-            = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(
-            new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>
-            {
-                { HeaderParameters.AlgUtf8.ToArray(), new [] { JwtTokenType.String } }
-            });
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwsDescriptor"/>.
@@ -43,21 +34,6 @@ namespace JsonWebToken
             : base(header, payload)
         {
         }
-
-        /// <summary>
-        /// Gets the required claims of the <see cref="JwsDescriptor"/>.
-        /// </summary>
-        protected virtual ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> RequiredClaims => DefaultRequiredClaims;
-
-        /// <summary>
-        /// gets the prohibited claims of the <see cref="JwsDescriptor"/>.
-        /// </summary>
-        protected virtual IReadOnlyList<ReadOnlyMemory<byte>> ProhibitedClaims => DefaultProhibitedClaims;
-
-        /// <summary>
-        /// Gets the required header parameters of the <see cref="JwsDescriptor"/>. 
-        /// </summary>
-        protected override ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> RequiredHeaderParameters => JwsRequiredHeaderParameters;
 
         /// <summary>
         /// Gets or sets the value of the 'sub' claim.
@@ -91,7 +67,7 @@ namespace JsonWebToken
         /// </summary>
         public List<string> Audiences
         {
-            get { return GetListClaims<string>(Claims.Aud); }
+            get { return GetListClaims<string>(Claims.AudUtf8); }
             set { AddClaim(Claims.AudUtf8, value); }
         }
 
@@ -489,9 +465,7 @@ namespace JsonWebToken
                         headerJson = headerBufferWriter.WrittenSpan;
                         length += Base64Url.GetArraySizeRequiredToEncode((int)headerJson.Length);
                     }
-
-                    //byte[] bufferToReturn = new byte[length];
-                    //var buffer = bufferToReturn.AsSpan();
+                    
                     var buffer = output.GetSpan(length).Slice(0, length);
                     int headerBytesWritten;
                     if (cachedHeader != null)
@@ -534,38 +508,50 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override void Validate()
         {
-            for (int i = 0; i < ProhibitedClaims.Count; i++)
-            {
-                if (Payload.ContainsKey(ProhibitedClaims[i].Span))
-                {
-                    Errors.ThrowClaimIsProhibited(ProhibitedClaims[i]);
-                }
-            }
-
-            foreach (var claim in RequiredClaims)
-            {
-                if (!Payload.TryGetValue(claim.Key, out JwtProperty token) || token.Type == JwtTokenType.Null)
-                {
-                    Errors.ThrowClaimIsRequired(claim.Key);
-                }
-
-                bool claimFound = false;
-                for (int i = 0; i < claim.Value.Length; i++)
-                {
-                    if (token.Type == claim.Value[i])
-                    {
-                        claimFound = true;
-                        break;
-                    }
-                }
-
-                if (!claimFound)
-                {
-                    Errors.ThrowClaimMustBeOfType(claim);
-                }
-            }
+            ValidateHeader(HeaderParameters.AlgUtf8, JwtTokenType.String);
 
             base.Validate();
+        }
+
+        /// <summary>
+        /// Validates the presence and the type of a required claim.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="type"></param>
+        protected void RequireClaim(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
+        {
+            if (!Payload.TryGetValue(utf8Name, out var claim) || claim.Type == JwtTokenType.Null)
+            {
+                Errors.ThrowClaimIsRequired(utf8Name);
+            }
+
+            if (claim.Type != type)
+            {
+                Errors.ThrowClaimMustBeOfType(utf8Name, type);
+            }
+        }
+
+        /// <summary>
+        /// Validates the presence and the type of a required claim.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="types"></param>
+        protected void ValidateClaim(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
+        {
+            if (!Payload.TryGetValue(utf8Name, out var claim) || claim.Type == JwtTokenType.Null)
+            {
+                Errors.ThrowClaimIsRequired(utf8Name);
+            }
+
+            for (int i = 0; i < types.Length; i++)
+            {
+                if (claim.Type == types[i])
+                {
+                    return;
+                }
+            }
+
+            Errors.ThrowClaimMustBeOfType(utf8Name, types);
         }
     }
 }

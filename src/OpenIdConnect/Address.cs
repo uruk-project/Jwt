@@ -3,6 +3,7 @@
 
 using JsonWebToken.Internal;
 using System;
+using System.Buffers;
 using System.Text;
 using System.Text.Json;
 
@@ -35,32 +36,35 @@ namespace JsonWebToken
                         return address;
 
                     case JsonTokenType.PropertyName:
-                        var propertyName = reader.GetString();
+                        var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
 
                         reader.Read();
                         switch (reader.TokenType)
                         {
                             case JsonTokenType.String:
-                                switch (propertyName)
+                                if (propertyName.SequenceEqual(OidcClaims.FormattedUtf8))
                                 {
-                                    case OidcClaims.Formatted:
-                                        address.Formatted = reader.GetString();
-                                        break;
-                                    case OidcClaims.StreetAddress:
-                                        address.StreetAddress = reader.GetString();
-                                        break;
-                                    case OidcClaims.Locality:
-                                        address.Locality = reader.GetString();
-                                        break;
-                                    case OidcClaims.Region:
-                                        address.Region = reader.GetString();
-                                        break;
-                                    case OidcClaims.PostalCode:
-                                        address.PostalCode = reader.GetString();
-                                        break;
-                                    case OidcClaims.Country:
-                                        address.Country = reader.GetString();
-                                        break;
+                                    address.Formatted = reader.GetString();
+                                }
+                                else if (propertyName.SequenceEqual(OidcClaims.StreetAddressUtf8))
+                                {
+                                    address.StreetAddress = reader.GetString();
+                                }
+                                else if (propertyName.SequenceEqual(OidcClaims.LocalityUtf8))
+                                {
+                                    address.Locality = reader.GetString();
+                                }
+                                else if (propertyName.SequenceEqual(OidcClaims.RegionUtf8))
+                                {
+                                    address.Region = reader.GetString();
+                                }
+                                else if (propertyName.SequenceEqual(OidcClaims.PostalCodeUtf8))
+                                {
+                                    address.PostalCode = reader.GetString();
+                                }
+                                else if (propertyName.SequenceEqual(OidcClaims.CountryUtf8))
+                                {
+                                    address.Country = reader.GetString();
                                 }
                                 break;
                             case JsonTokenType.StartArray:

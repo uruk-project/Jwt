@@ -28,12 +28,7 @@ namespace JsonWebToken.Internal
         /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
         public static ReadOnlySpan<byte> VtmUtf8 => new byte[] { (byte)'v', (byte)'t', (byte)'m' };
-
-        /// <summary>
-        /// https://tools.ietf.org/html/rfc7591#section-2
-        /// </summary>
-        public const string Act = "act";
-
+        
         /// <summary>
         /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>

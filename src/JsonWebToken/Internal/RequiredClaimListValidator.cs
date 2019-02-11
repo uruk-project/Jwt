@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text;
 
 namespace JsonWebToken.Internal
 {
@@ -39,7 +40,7 @@ namespace JsonWebToken.Internal
             }
 
             for (int i = 0; i < _values.Count; i++)
-            {                
+            {
                 if (_values[i].Equals((TClaim)claim))
                 {
                     return TokenValidationResult.Success(jwt);

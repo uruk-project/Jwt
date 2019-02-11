@@ -13,15 +13,6 @@ namespace JsonWebToken
     {
         public const string SecurityEventTokenType = "secevent+jwt";
 
-        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> SetRequiredClaims = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(
-            new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>
-        {
-            { Claims.IssUtf8.ToArray(), new[] { JwtTokenType.String } },
-            { Claims.IatUtf8.ToArray(), new[] { JwtTokenType.Integer} },
-            { Claims.JtiUtf8.ToArray(), new[] { JwtTokenType.String } },
-            { SetClaims.EventsUtf8.ToArray(), new[] { JwtTokenType.Object } }
-        });
-
         public SecurityEventTokenDescriptor()
         {
         }
@@ -39,12 +30,12 @@ namespace JsonWebToken
 
         public void AddEvent(string eventName, JwtObject @event)
         {
-            AddEvent(Encoding.UTF8.GetBytes(eventName), @event);
+            AddEvent(Encoding.UTF8.GetBytes(eventName).AsSpan(), @event);
         }
-
-        public void AddEvent(ReadOnlyMemory<byte> utf8EventName, JwtObject @event)
+        
+        public void AddEvent(ReadOnlySpan<byte> utf8EventName, JwtObject @event)
         {
-            AddClaim(SetClaims.EventsUtf8.ToArray(), new JwtProperty(utf8EventName, @event));
+            AddClaim(SetClaims.EventsUtf8, new JwtProperty(utf8EventName, @event));
         }
 
         /// <summary>
@@ -65,6 +56,13 @@ namespace JsonWebToken
             set => AddClaim(SetClaims.ToeUtf8, value);
         }
 
-        protected override ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> RequiredClaims => SetRequiredClaims;
+        public override void Validate()
+        {
+            base.Validate();
+            RequireClaim(Claims.IssUtf8, JwtTokenType.String);
+            RequireClaim(Claims.IatUtf8, JwtTokenType.Integer);
+            RequireClaim(Claims.JtiUtf8, JwtTokenType.String);
+            RequireClaim(SetClaims.EventsUtf8, JwtTokenType.Object);
+        }
     }
 }

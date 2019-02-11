@@ -10,12 +10,6 @@ namespace JsonWebToken
 {
     public class StateDescriptor : JwsDescriptor
     {
-        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> StateRequiredClaims
-            = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>
-              {
-                { OAuth2Claims.RfpUtf8.ToArray(), new [] { JwtTokenType.String} }
-              });
-
         public StateDescriptor()
         {
         }
@@ -24,8 +18,6 @@ namespace JsonWebToken
             : base(header, payload)
         {
         }
-
-        protected override ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> RequiredClaims => StateRequiredClaims;
 
         /// <summary>
         /// Gets or sets the value of the 'rfp' claim.
@@ -70,6 +62,13 @@ namespace JsonWebToken
         {
             get => GetStringClaim(OAuth2Claims.CHashUtf8);
             set => AddClaim(OAuth2Claims.CHashUtf8, value);
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+
+            RequireClaim(OAuth2Claims.RfpUtf8, JwtTokenType.String);
         }
     }
 }

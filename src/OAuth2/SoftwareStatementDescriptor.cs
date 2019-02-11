@@ -13,12 +13,6 @@ namespace JsonWebToken
     /// </summary>
     public class SoftwareStatementDescriptor : JwsDescriptor
     {
-        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> SoftwareStatementRequiredClaims = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(
-            new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>
-            {
-                { Claims.IssUtf8.ToArray(), new [] { JwtTokenType.String} }
-            });
-
         public SoftwareStatementDescriptor(JwtObject payload)
             : base(new JwtObject(), payload)
         {
@@ -33,6 +27,10 @@ namespace JsonWebToken
             set { AddClaim(OAuth2Claims.SoftwareIdUtf8, value); }
         }
 
-        protected override ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> RequiredClaims => SoftwareStatementRequiredClaims;
+        public override void Validate()
+        {
+            base.Validate();
+            RequireClaim(Claims.IssUtf8, JwtTokenType.String);
+        }
     }
 }

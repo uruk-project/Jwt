@@ -121,7 +121,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder IssuedBy(string iss)
         {
-            return AddClaim(Claims.Iss, iss);
+            return AddClaim(Claims.IssUtf8, iss);
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder Expires(DateTime exp)
         {
-            return AddClaim(Claims.Exp, exp.ToEpochTime());
+            return AddClaim(Claims.ExpUtf8, exp.ToEpochTime());
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace JsonWebToken
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddClaim(ReadOnlyMemory<byte> utf8Name, string value)
+        public JwtDescriptorBuilder AddClaim(ReadOnlySpan<byte> utf8Name, string value)
         {
             if (_jsonPayload == null)
             {
@@ -224,7 +224,7 @@ namespace JsonWebToken
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddClaim(ReadOnlyMemory<byte> utf8Name, long value)
+        public JwtDescriptorBuilder AddClaim(ReadOnlySpan<byte> utf8Name, long value)
         {
             if (_jsonPayload == null)
             {

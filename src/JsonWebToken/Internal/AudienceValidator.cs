@@ -39,10 +39,10 @@ namespace JsonWebToken.Internal
 
             if (missingAudience)
             {
-                return TokenValidationResult.MissingClaim(jwt, Claims.Aud);
+                return TokenValidationResult.MissingClaim(jwt, Claims.AudUtf8);
             }
 
-            return TokenValidationResult.InvalidClaim(jwt, Claims.Aud);
+            return TokenValidationResult.InvalidClaim(jwt, Claims.AudUtf8);
         }
     }
 }

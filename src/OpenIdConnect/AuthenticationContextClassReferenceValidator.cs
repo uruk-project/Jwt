@@ -19,12 +19,12 @@ namespace JsonWebToken
             var jwt = context.Jwt;
             if (!jwt.Payload.TryGetValue(OidcClaims.AcrUtf8, out var property))
             {
-                return TokenValidationResult.MissingClaim(jwt, OidcClaims.Acr);
+                return TokenValidationResult.MissingClaim(jwt, OidcClaims.AcrUtf8);
             }
 
             if (string.Equals(_requiredAcr, (string)property.Value, StringComparison.Ordinal))
             {
-                return TokenValidationResult.InvalidClaim(jwt, OidcClaims.Acr);
+                return TokenValidationResult.InvalidClaim(jwt, OidcClaims.AcrUtf8);
             }
 
             return TokenValidationResult.Success(jwt);

@@ -46,6 +46,19 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        ///  Gets the claim for a specified key in the current <see cref="JwtPayload"/>.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public object this[ReadOnlySpan<byte> key]
+        {
+            get
+            {
+                return _inner.TryGetValue(key, out var value) ? value.Value : null;
+            }
+        }
+
+        /// <summary>
         /// Gets the 'audience' claim as a list of strings.
         /// </summary>
         public IList<string> Aud
