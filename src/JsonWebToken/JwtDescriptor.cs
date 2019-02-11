@@ -17,8 +17,6 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class JwtDescriptor
     {
-        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> DefaultRequiredHeaderParameters
-            = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>());
         private Jwk _key;
 
         /// <summary>
@@ -66,11 +64,6 @@ namespace JsonWebToken
                 }
             }
         }
-
-        /// <summary>
-        /// Gets the required header parameters.
-        /// </summary>
-        protected virtual ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> RequiredHeaderParameters => DefaultRequiredHeaderParameters;
 
         /// <summary>
         /// Gets or sets the algorithm header.
@@ -176,7 +169,7 @@ namespace JsonWebToken
         /// <typeparam name="T"></typeparam>
         /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected T GetHeaderParameter<T>(ReadOnlyMemory<byte> utf8Name)
+        protected T GetHeaderParameter<T>(ReadOnlySpan<byte> utf8Name)
         {
             if (Header.TryGetValue(utf8Name, out var value))
             {
@@ -191,7 +184,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        protected void SetHeaderParameter(ReadOnlyMemory<byte> utf8Name, string value)
+        protected void SetHeaderParameter(ReadOnlySpan<byte> utf8Name, string value)
         {
             if (value != null)
             {
@@ -213,29 +206,12 @@ namespace JsonWebToken
             SetHeaderParameter(Encoding.UTF8.GetBytes(name), value);
         }
 
-        ///// <summary>
-        ///// Sets the header parameter for a specified header name.
-        ///// </summary>
-        ///// <param name="headerName"></param>
-        ///// <param name="value"></param>
-        //protected void SetHeaderParameter(string headerName, object value)
-        //{
-        //    if (value != null)
-        //    {
-        //        Header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName), JObject.FromObject(value)));
-        //    }
-        //    else
-        //    {
-        //        Header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName)));
-        //    }
-        //}
-
         /// <summary>
         /// Sets the header parameter for a specified header name.
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        protected void SetHeaderParameter(ReadOnlyMemory<byte> utf8Name, List<string> value)
+        protected void SetHeaderParameter(ReadOnlySpan<byte> utf8Name, List<string> value)
         {
             if (value != null)
             {
@@ -262,7 +238,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected List<T> GetHeaderParameters<T>(ReadOnlyMemory<byte> utf8Name)
+        protected List<T> GetHeaderParameters<T>(ReadOnlySpan<byte> utf8Name)
         {
             if (Header.TryGetValue(utf8Name, out JwtProperty value))
             {
@@ -283,28 +259,47 @@ namespace JsonWebToken
         /// </summary>
         public virtual void Validate()
         {
-            foreach (var header in RequiredHeaderParameters)
+        }
+
+        /// <summary>
+        /// Validates the presence and the type of a required header.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="type"></param>
+        protected void ValidateHeader(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
+        {
+            if (!Header.TryGetValue(utf8Name, out var token) || token.Type == JwtTokenType.Null)
             {
-                if (!Header.TryGetValue(header.Key, out var token) || token.Type == JwtTokenType.Null)
-                {
-                    Errors.ThrowHeaderIsRequired(header.Key);
-                }
+                Errors.ThrowHeaderIsRequired(utf8Name);
+            }
 
-                bool headerFound = false;
-                for (int i = 0; i < header.Value.Length; i++)
-                {
-                    if (token.Type == header.Value[i])
-                    {
-                        headerFound = true;
-                        break;
-                    }
-                }
+            if (token.Type != type)
+            {
+                Errors.ThrowHeaderMustBeOfType(utf8Name, type);
+            }
+        }
 
-                if (!headerFound)
+        /// <summary>
+        /// Validates the presence and the type of a required header.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="types"></param>
+        protected void ValidateHeader(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
+        {
+            if (!Header.TryGetValue(utf8Name, out var token) || token.Type == JwtTokenType.Null)
+            {
+                Errors.ThrowHeaderIsRequired(utf8Name);
+            }
+            
+            for (int i = 0; i < types.Length; i++)
+            {
+                if (token.Type == types[i])
                 {
-                    Errors.ThrowHeaderMustBeOfType(header);
+                    return;
                 }
             }
+
+            Errors.ThrowHeaderMustBeOfType(utf8Name, types);
         }
     }
 }

@@ -41,13 +41,12 @@ namespace JsonWebToken
             throw new InvalidOperationException($"Signature validation must be either defined by calling the method '{nameof(TokenValidationPolicyBuilder.RequireSignature)}' or explicitly ignored by calling the '{nameof(TokenValidationPolicyBuilder.AcceptUnsecureToken)}' method.");
         }
 
-        internal static void ThrowClaimIsRequired(ReadOnlyMemory<byte> claim)
+        internal static void ThrowClaimIsRequired(ReadOnlySpan<byte> claim)
         {
-            var value =
 #if NETSTANDARD2_0
-                EncodingHelper.GetUtf8String(claim.Span);
+            var value = EncodingHelper.GetUtf8String(claim);
 #else
-                Encoding.UTF8.GetString(claim.Span);
+            var value = Encoding.UTF8.GetString(claim);
 #endif
             throw new JwtDescriptorException($"The claim '{value}' is required.");
         }
@@ -63,16 +62,25 @@ namespace JsonWebToken
             throw new JwtDescriptorException($"The claim '{value}' is prohibited.");
         }
 
-        internal static void ThrowClaimMustBeOfType(KeyValuePair<ReadOnlyMemory<byte>, JwtTokenType[]> claim)
+        internal static void ThrowClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
         {
-            var claimTypes = string.Join(", ", claim.Value.Select(t => t.ToString()));
-            var value =
+            var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
 #if NETSTANDARD2_0
-                EncodingHelper.GetUtf8String(claim.Key.Span);
+            var value = EncodingHelper.GetUtf8String(utf8Name);
 #else
-                Encoding.UTF8.GetString(claim.Key.Span);
+            var value = Encoding.UTF8.GetString(utf8Name);
 #endif
-            throw new JwtDescriptorException($"The claim '{value}' must be of type[{claimTypes}].");
+            throw new JwtDescriptorException($"The claim '{value}' must be of type [{claimTypes}].");
+        }
+
+        internal static void ThrowClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
+        {
+#if NETSTANDARD2_0
+            var value = EncodingHelper.GetUtf8String(utf8Name);
+#else
+            var value = Encoding.UTF8.GetString(utf8Name);
+#endif
+            throw new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
         }
 
         internal static void ThrowCannotAdvanceBuffer()
@@ -80,16 +88,25 @@ namespace JsonWebToken
             throw new InvalidOperationException("Cannot advance past the end of the buffer.");
         }
 
-        internal static void ThrowHeaderMustBeOfType(KeyValuePair<ReadOnlyMemory<byte>, JwtTokenType[]> header)
+        internal static void ThrowHeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
         {
-            var claimTypes = string.Join(", ", header.Value.Select(t => t.ToString()));
-            var value =
+            var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
 #if NETSTANDARD2_0
-                EncodingHelper.GetUtf8String(header.Key.Span);
+            var value = EncodingHelper.GetUtf8String(utf8Name);
 #else
-                Encoding.UTF8.GetString(header.Key.Span);
+            var value = Encoding.UTF8.GetString(utf8Name);
 #endif
-            throw new JwtDescriptorException($"The header parameter '{value}' must be of type[{claimTypes}].");
+            throw new JwtDescriptorException($"The header parameter '{value}' must be of type [{claimTypes}].");
+        }
+
+        internal static void ThrowHeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
+        {
+#if NETSTANDARD2_0
+            var value = EncodingHelper.GetUtf8String(utf8Name);
+#else
+            var value = Encoding.UTF8.GetString(utf8Name);
+#endif
+            throw new JwtDescriptorException($"The header parameter '{value}' must be of type {type}.");
         }
 
         internal static void ThrowNoSigningKeyDefined()
@@ -102,13 +119,13 @@ namespace JsonWebToken
             throw new ArgumentException(argumentName);
         }
 
-        internal static void ThrowHeaderIsRequired(ReadOnlyMemory<byte> header)
+        internal static void ThrowHeaderIsRequired(ReadOnlySpan<byte> header)
         {
             var value =
 #if NETSTANDARD2_0
-                EncodingHelper.GetUtf8String(header.Span);
+                EncodingHelper.GetUtf8String(header);
 #else
-                Encoding.UTF8.GetString(header.Span);
+                Encoding.UTF8.GetString(header);
 #endif
             throw new JwtDescriptorException($"The header parameter '{value}' is required.");
         }

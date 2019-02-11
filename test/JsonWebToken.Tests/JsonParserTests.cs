@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Xunit;
@@ -24,7 +25,7 @@ namespace JsonWebToken.Tests
                     throw new Xunit.Sdk.AssertActualExpectedException(expected, value, $"Expected the key {expectedItem.Key}.");
                 }
 
-                var valueItem = value[Encoding.UTF8.GetBytes(expectedItem.Key)];
+                var valueItem = value[Encoding.UTF8.GetBytes(expectedItem.Key).AsSpan()];
                 if (expectedItem.Value is Dictionary<string, object> expectedDict)
                 {
                     if (!(valueItem.Value is JwtObject valueDict))

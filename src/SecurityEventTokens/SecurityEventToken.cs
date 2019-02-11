@@ -31,12 +31,12 @@ namespace JsonWebToken
                         return new JwtObject();
                     }
 
-                    if (!Payload.TryGetValue(SetClaims.Events, out var events))
+                    if (!Payload.TryGetValue(SetClaims.EventsUtf8, out var events))
                     {
                         return new JwtObject();
                     }
 
-                    _events = (JwtObject)events;
+                    _events = (JwtObject)events.Value;
                     return _events;
                 }
 
@@ -48,7 +48,7 @@ namespace JsonWebToken
         {
             get
             {
-                return EpochTime.ToDateTime(Payload.GetValue<long?>(SetClaims.Toe));
+                return Payload.TryGetValue(SetClaims.ToeUtf8, out var property) ? EpochTime.ToDateTime((long?)property.Value) : null;
             }
         }
 
@@ -56,7 +56,7 @@ namespace JsonWebToken
         {
             get
             {
-                return Payload.GetValue<string>(SetClaims.Txn);
+                return Payload.TryGetValue(SetClaims.TxnUtf8, out var property) ? (string)property.Value : null;
             }
         }
     }

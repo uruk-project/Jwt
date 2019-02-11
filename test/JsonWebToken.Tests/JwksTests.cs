@@ -5,7 +5,6 @@ namespace JsonWebToken.Tests
 {
     public class JwksTests
     {
-
         [Theory]
         [MemberData(nameof(GetJwks))]
         public void ReadJwks_Valid(string origin, int count, string json)

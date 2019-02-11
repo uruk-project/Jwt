@@ -28,7 +28,7 @@ namespace JsonWebToken
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddHeader(ReadOnlyMemory<byte> utf8Name, string value)
+        public JwtDescriptorBuilder AddHeader(ReadOnlySpan<byte> utf8Name, string value)
         {
             _header.Add(new JwtProperty(utf8Name, value));
             return this;
@@ -51,7 +51,7 @@ namespace JsonWebToken
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddHeader(ReadOnlyMemory<byte> utf8Name, long value)
+        public JwtDescriptorBuilder AddHeader(ReadOnlySpan<byte> utf8Name, long value)
         {
             _header.Add(new JwtProperty(utf8Name, value));
             return this;
@@ -74,7 +74,7 @@ namespace JsonWebToken
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddHeader(ReadOnlyMemory<byte> utf8Name, bool value)
+        public JwtDescriptorBuilder AddHeader(ReadOnlySpan<byte> utf8Name, bool value)
         {
             _header.Add(new JwtProperty(utf8Name, value));
             return this;
@@ -97,7 +97,7 @@ namespace JsonWebToken
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddHeader(ReadOnlyMemory<byte> utf8Name, JwtArray value)
+        public JwtDescriptorBuilder AddHeader(ReadOnlySpan<byte> utf8Name, JwtArray value)
         {
             _header.Add(new JwtProperty(utf8Name, value));
             return this;
@@ -121,7 +121,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder IssuedBy(string iss)
         {
-            return AddClaim(Claims.Iss, iss);
+            return AddClaim(Claims.IssUtf8, iss);
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder Expires(DateTime exp)
         {
-            return AddClaim(Claims.Exp, exp.ToEpochTime());
+            return AddClaim(Claims.ExpUtf8, exp.ToEpochTime());
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace JsonWebToken
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddClaim(ReadOnlyMemory<byte> utf8Name, string value)
+        public JwtDescriptorBuilder AddClaim(ReadOnlySpan<byte> utf8Name, string value)
         {
             if (_jsonPayload == null)
             {
@@ -224,7 +224,7 @@ namespace JsonWebToken
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddClaim(ReadOnlyMemory<byte> utf8Name, long value)
+        public JwtDescriptorBuilder AddClaim(ReadOnlySpan<byte> utf8Name, long value)
         {
             if (_jsonPayload == null)
             {

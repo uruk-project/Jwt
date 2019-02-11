@@ -46,6 +46,19 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        ///  Gets the claim for a specified key in the current <see cref="JwtPayload"/>.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public object this[ReadOnlySpan<byte> key]
+        {
+            get
+            {
+                return _inner.TryGetValue(key, out var value) ? value.Value : null;
+            }
+        }
+
+        /// <summary>
         /// Gets the 'audience' claim as a list of strings.
         /// </summary>
         public IList<string> Aud
@@ -128,22 +141,33 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool ContainsKey(string key)
         {
-            return _inner.ContainsKey(Encoding.UTF8.GetBytes(key));
+            return ContainsKey(Encoding.UTF8.GetBytes(key));
+        }
+
+        /// <summary>
+        /// Determines whether the <see cref="JwtPayload"/> contains the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool ContainsKey(ReadOnlySpan<byte> key)
+        {
+            return _inner.ContainsKey(key);
         }
 
         /// <summary>
         /// Gets the value associated with the specified key.
         /// </summary>
-        public bool TryGetValue(string key, out object value)
+        public bool TryGetValue(ReadOnlySpan<byte> key, out JwtProperty value)
         {
-            if (_inner.TryGetValue(key, out var property))
-            {
-                value = property.Value;
-                return true;
-            }
+            return _inner.TryGetValue(key, out value);
+        }
 
-            value = null;
-            return false;
+        /// <summary>
+        /// Gets the value associated with the specified key.
+        /// </summary>
+        public bool TryGetValue(string key, out JwtProperty value)
+        {
+            return _inner.TryGetValue(key, out value);
         }
     }
 }

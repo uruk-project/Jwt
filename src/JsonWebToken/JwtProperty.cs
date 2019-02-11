@@ -39,6 +39,135 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
+        public JwtProperty(ReadOnlySpan<byte> utf8Name, JwtArray value)
+        {
+            Type = JwtTokenType.Array;
+            Utf8Name = utf8Name.ToArray();
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlySpan<byte> utf8Name, JwtObject value)
+        {
+            if (value == null)
+            {
+                Errors.ThrowArgumentNullException(nameof(value));
+            }
+
+            Type = JwtTokenType.Object;
+            Utf8Name = utf8Name.ToArray();
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlySpan<byte> utf8Name, string value)
+        {
+            if (value == null)
+            {
+                Errors.ThrowArgumentNullException(nameof(value));
+            }
+
+            Type = JwtTokenType.String;
+            Utf8Name = utf8Name.ToArray();
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlySpan<byte> utf8Name, byte[] value)
+        {
+            Type = JwtTokenType.Utf8String;
+            Utf8Name = utf8Name.ToArray();
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlySpan<byte> utf8Name, long value)
+        {
+            Type = JwtTokenType.Integer;
+            Utf8Name = utf8Name.ToArray();
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlySpan<byte> utf8Name, int value)
+        {
+            Type = JwtTokenType.Integer;
+            Utf8Name = utf8Name.ToArray();
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlySpan<byte> utf8Name, double value)
+        {
+            Type = JwtTokenType.Float;
+            Utf8Name = utf8Name.ToArray();
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlySpan<byte> utf8Name, float value)
+        {
+            Type = JwtTokenType.Float;
+            Utf8Name = utf8Name.ToArray();
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(ReadOnlySpan<byte> utf8Name, bool value)
+        {
+            Type = JwtTokenType.Boolean;
+            Utf8Name = utf8Name.ToArray();
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/> with a <c>null</c> value.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        public JwtProperty(ReadOnlySpan<byte> utf8Name)
+        {
+            Type = JwtTokenType.Null;
+            Utf8Name = utf8Name.ToArray();
+            Value = null;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
         public JwtProperty(ReadOnlyMemory<byte> utf8Name, JwtArray value)
         {
             Type = JwtTokenType.Array;
@@ -160,6 +289,136 @@ namespace JsonWebToken
         {
             Type = JwtTokenType.Null;
             Utf8Name = utf8Name;
+            Value = null;
+        }
+
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(string name, JwtArray value)
+        {
+            Type = JwtTokenType.Array;
+            Utf8Name = Encoding.UTF8.GetBytes(name);
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(string name, JwtObject value)
+        {
+            if (value == null)
+            {
+                Errors.ThrowArgumentNullException(nameof(value));
+            }
+
+            Type = JwtTokenType.Object;
+            Utf8Name = Encoding.UTF8.GetBytes(name);
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(string name, string value)
+        {
+            if (value == null)
+            {
+                Errors.ThrowArgumentNullException(nameof(value));
+            }
+
+            Type = JwtTokenType.String;
+            Utf8Name = Encoding.UTF8.GetBytes(name);
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(string name, byte[] value)
+        {
+            Type = JwtTokenType.Utf8String;
+            Utf8Name = Encoding.UTF8.GetBytes(name);
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(string name, long value)
+        {
+            Type = JwtTokenType.Integer;
+            Utf8Name = Encoding.UTF8.GetBytes(name);
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(string name, int value)
+        {
+            Type = JwtTokenType.Integer;
+            Utf8Name = Encoding.UTF8.GetBytes(name);
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(string name, double value)
+        {
+            Type = JwtTokenType.Float;
+            Utf8Name = Encoding.UTF8.GetBytes(name);
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(string name, float value)
+        {
+            Type = JwtTokenType.Float;
+            Utf8Name = Encoding.UTF8.GetBytes(name);
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public JwtProperty(string name, bool value)
+        {
+            Type = JwtTokenType.Boolean;
+            Utf8Name = Encoding.UTF8.GetBytes(name);
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/> with a <c>null</c> value.
+        /// </summary>
+        /// <param name="name"></param>
+        public JwtProperty(string name)
+        {
+            Type = JwtTokenType.Null;
+            Utf8Name = Encoding.UTF8.GetBytes(name);
             Value = null;
         }
 

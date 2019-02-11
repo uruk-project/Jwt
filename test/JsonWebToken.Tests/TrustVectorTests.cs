@@ -48,7 +48,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Ctor_ArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => new VectorOfTrust(string.Empty));
+            Assert.Throws<ArgumentException>(() => new VectorOfTrust(string.Empty));
             Assert.Throws<ArgumentNullException>(() => new VectorOfTrust((string)null));
         }
 

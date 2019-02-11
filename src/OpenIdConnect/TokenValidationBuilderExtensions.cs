@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
 
 namespace JsonWebToken
@@ -25,7 +24,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return builder.AddValidator(new RequiredClaimValidator<int>(OidcClaims.AuthTime));
+            return builder.AddValidator(new RequireAuthTimeValidator());
         }
 
         public static TokenValidationPolicyBuilder RequireNonce(this TokenValidationPolicyBuilder builder)
@@ -35,7 +34,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return builder.AddValidator(new RequiredClaimValidator<string>(OidcClaims.Nonce));
+            return builder.AddValidator(new RequireNonceValidator());
         }
     }
 }

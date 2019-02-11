@@ -165,7 +165,7 @@ namespace JsonWebToken
                             jwk = new JwtObject();
                         }
 
-                        var name = nameSpan.ToArray();
+                        var name = nameSpan;
                         reader.Read();
                         var type = reader.TokenType;
                         switch (type)
@@ -199,7 +199,7 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        JwtThrowHelper.FormatNotSupportedNumber(Encoding.UTF8.GetString(name));
+                                        JwtThrowHelper.FormatNotSupportedNumber(name);
                                     }
                                 }
                                 break;
@@ -421,7 +421,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
         /// <returns><see cref="Jwk"/></returns>
-        public unsafe static Jwk FromJson(string json)
+        public static Jwk FromJson(string json)
         {
             var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json), true, default);
             if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)

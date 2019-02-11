@@ -44,7 +44,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public JwtProperty this[string key] => this[Encoding.UTF8.GetBytes(key)];
+        public JwtProperty this[string key] => this[Encoding.UTF8.GetBytes(key).AsSpan()];
 
         /// <summary>
         /// Gets or sets the <see cref="JwtProperty"/> at the specified key;
@@ -67,20 +67,27 @@ namespace JsonWebToken
 
                 return default;
             }
+        }
 
-            set
+        /// <summary>
+        /// Gets or sets the <see cref="JwtProperty"/> at the specified key;
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public JwtProperty this[ReadOnlySpan<byte> key]
+        {
+            get
             {
-                var spanValue = value.Utf8Name.Span;
                 for (int i = 0; i < _properties.Count; i++)
                 {
                     var current = _properties[i];
-                    if (current.Utf8Name.Span.SequenceEqual(spanValue))
+                    if (current.Utf8Name.Span.SequenceEqual(key))
                     {
-                        _properties[i] = value;
+                        return current;
                     }
                 }
 
-                _properties.Add(value);
+                return default;
             }
         }
 
@@ -133,13 +140,12 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool ContainsKey(ReadOnlyMemory<byte> key)
+        public bool ContainsKey(ReadOnlySpan<byte> key)
         {
-            var span = key.Span;
             for (int i = 0; i < _properties.Count; i++)
             {
                 var current = _properties[i];
-                if (current.Utf8Name.Span.SequenceEqual(span))
+                if (current.Utf8Name.Span.SequenceEqual(key))
                 {
                     return true;
                 }

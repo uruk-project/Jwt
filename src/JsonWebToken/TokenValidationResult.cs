@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -63,7 +64,7 @@ namespace JsonWebToken
         {
             return new TokenValidationResult
             {
-                Status = TokenValidationStatus.CriticalHeaderMissing, 
+                Status = TokenValidationStatus.CriticalHeaderMissing,
                 ErrorHeader = criticalHeader
             };
         }
@@ -120,7 +121,7 @@ namespace JsonWebToken
         {
             return new TokenValidationResult
             {
-                Status = TokenValidationStatus.MalformedSignature, 
+                Status = TokenValidationStatus.MalformedSignature,
                 Token = token,
                 Exception = e
             };
@@ -238,6 +239,22 @@ namespace JsonWebToken
         /// <param name="jwt"></param>
         /// <param name="claim"></param>
         /// <returns></returns>
+        public static TokenValidationResult InvalidClaim(Jwt jwt, ReadOnlySpan<byte> claim)
+        {
+            return new TokenValidationResult
+            {
+                Token = jwt,
+                Status = TokenValidationStatus.InvalidClaim,
+                ErrorClaim = Encoding.UTF8.GetString(claim.ToArray())
+            };
+        }
+
+        /// <summary>
+        /// The token has an invalid claim.
+        /// </summary>
+        /// <param name="jwt"></param>
+        /// <param name="claim"></param>
+        /// <returns></returns>
         public static TokenValidationResult InvalidClaim(Jwt jwt, string claim)
         {
             return new TokenValidationResult
@@ -245,6 +262,22 @@ namespace JsonWebToken
                 Token = jwt,
                 Status = TokenValidationStatus.InvalidClaim,
                 ErrorClaim = claim
+            };
+        }
+
+        /// <summary>
+        /// The token has a missing claim.
+        /// </summary>
+        /// <param name="jwt"></param>
+        /// <param name="claim"></param>
+        /// <returns></returns>
+        public static TokenValidationResult MissingClaim(Jwt jwt, ReadOnlySpan<byte> claim)
+        {
+            return new TokenValidationResult
+            {
+                Token = jwt,
+                Status = TokenValidationStatus.MissingClaim,
+                ErrorClaim = Encoding.UTF8.GetString(claim.ToArray())
             };
         }
 
@@ -269,6 +302,20 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <returns></returns>
+        public static TokenValidationResult InvalidHeader(ReadOnlySpan<byte> header)
+        {
+            return new TokenValidationResult
+            {
+                Status = TokenValidationStatus.InvalidHeader,
+                ErrorHeader = Encoding.UTF8.GetString(header.ToArray())
+            };
+        }
+
+        /// <summary>
+        /// The token has an invalid header. 
+        /// </summary>
+        /// <param name="header"></param>
+        /// <returns></returns>
         public static TokenValidationResult InvalidHeader(string header)
         {
             return new TokenValidationResult
@@ -283,12 +330,12 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <returns></returns>
-        public static TokenValidationResult MissingHeader(string header)
+        public static TokenValidationResult MissingHeader(ReadOnlySpan<byte> header)
         {
             return new TokenValidationResult
             {
                 Status = TokenValidationStatus.MissingHeader,
-                ErrorHeader = header
+                ErrorHeader = Encoding.UTF8.GetString(header.ToArray())
             };
         }
 

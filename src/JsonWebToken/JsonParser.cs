@@ -22,41 +22,34 @@ namespace JsonWebToken
         public static JwtObject Parse(ReadOnlySpan<byte> buffer)
         {
             Utf8JsonReader reader = new Utf8JsonReader(buffer, true, default);
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+            {
+                JwtThrowHelper.FormatMalformedJson();
+            }
+
             return ReadJsonObject(ref reader);
         }
 
         internal static JwtObject ReadJsonObject(ref Utf8JsonReader reader)
         {
-            Stack<JwtObject> stack = new Stack<JwtObject>(2);
-            stack.Push(new JwtObject());
+            var current = new JwtObject();
             while (reader.Read())
             {
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.EndObject:
-                        if (stack.Count != 1)
-                        {
-                            stack.Pop();
-                            break;
-                        }
-                        else
-                        {
-                            return stack.Peek();
-                        }
+                        return current;
                     case JsonTokenType.PropertyName:
-                        byte[] name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray();
+                        var name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
                         reader.Read();
                         var type = reader.TokenType;
-                        var current = stack.Peek();
                         switch (type)
                         {
                             case JsonTokenType.String:
                                 current.Add(new JwtProperty(name, reader.GetString()));
                                 break;
                             case JsonTokenType.StartObject:
-                                var jwtObject = new JwtObject();
-                                current.Add(new JwtProperty(name, jwtObject));
-                                stack.Push(jwtObject);
+                                current.Add(new JwtProperty(name, ReadJsonObject(ref reader)));
                                 break;
                             case JsonTokenType.True:
                                 current.Add(new JwtProperty(name, true));
@@ -80,7 +73,7 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        JwtThrowHelper.FormatNotSupportedNumber(Encoding.UTF8.GetString(name));
+                                        JwtThrowHelper.FormatNotSupportedNumber(name);
                                     }
                                 }
                                 break;
@@ -93,15 +86,14 @@ namespace JsonWebToken
                                 break;
                         }
                         break;
-                    case JsonTokenType.StartObject:
-                        break;
                     default:
                         JwtThrowHelper.FormatMalformedJson();
                         break;
                 }
             }
 
-            return stack.Peek();
+            JwtThrowHelper.FormatMalformedJson();
+            return null;
         }
 
         internal static JwtArray ReadJsonArray(ref Utf8JsonReader reader)

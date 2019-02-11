@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using JsonWebToken.Internal;
 using System;
 using System.Text.Json;
 
@@ -18,6 +19,11 @@ namespace JsonWebToken
         public static unsafe JwtHeader ParseHeader(ReadOnlySpan<byte> buffer)
         {
             Utf8JsonReader reader = new Utf8JsonReader(buffer, isFinalBlock: true, state: default);
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+            {
+                JwtThrowHelper.FormatMalformedJson();
+            }
+
             return new JwtHeader(JsonParser.ReadJsonObject(ref reader));
         }
     }

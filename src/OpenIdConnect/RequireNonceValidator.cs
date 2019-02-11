@@ -1,0 +1,26 @@
+﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
+using System.ComponentModel;
+
+namespace JsonWebToken
+{
+    /// <summary>
+    /// Represents a <see cref="IValidator"/> verifying the JWT has a required claim.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public class RequireNonceValidator : IValidator
+    {
+        /// <inheritdoc />
+        public TokenValidationResult TryValidate(in TokenValidationContext context)
+        {
+            var jwt = context.Jwt;
+            if (jwt.Payload.TryGetValue(OidcClaims.NonceUtf8, out var _))
+            {
+                return TokenValidationResult.Success(jwt);
+            }
+
+            return TokenValidationResult.MissingClaim(jwt, OidcClaims.NonceUtf8);
+        }
+    }
+}

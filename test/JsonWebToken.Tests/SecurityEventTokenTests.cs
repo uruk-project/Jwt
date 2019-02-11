@@ -52,8 +52,8 @@ namespace JsonWebToken.Tests
             public static implicit operator JwtObject(ScimCreateEvent @event)
             {
                 var jwtObject = new JwtObject();
-                jwtObject.Add(new JwtProperty(Encoding.UTF8.GetBytes("ref"), @event.Ref));
-                jwtObject.Add(new JwtProperty(Encoding.UTF8.GetBytes("attribute"), new JwtArray(@event._attributes)));
+                jwtObject.Add(new JwtProperty("ref", @event.Ref));
+                jwtObject.Add(new JwtProperty("attribute", new JwtArray(@event._attributes)));
 
                 return jwtObject;
             }

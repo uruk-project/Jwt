@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 
 namespace JsonWebToken.Internal
@@ -102,9 +103,9 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// The claim '{name}' is not a supported Number value.
         /// </summary>
-        internal static string FormatNotSupportedNumber(string name)
+        internal static string FormatNotSupportedNumber(ReadOnlySpan<byte> name)
         {
-            throw new FormatException($"The claim '{name}' is not a supported Number value.");
+            throw new FormatException($"The claim '{Encoding.UTF8.GetString(name.ToArray())}' is not a supported Number value.");
         }
 
         /// <summary>

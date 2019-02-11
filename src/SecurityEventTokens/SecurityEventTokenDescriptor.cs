@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken;
 using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
@@ -13,15 +12,6 @@ namespace JsonWebToken
     public class SecurityEventTokenDescriptor : JwsDescriptor
     {
         public const string SecurityEventTokenType = "secevent+jwt";
-
-        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> SetRequiredClaims = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(
-            new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>
-        {
-            { Claims.IssUtf8, new[] { JwtTokenType.String } },
-            { Claims.IatUtf8, new[] { JwtTokenType.Integer} },
-            { Claims.JtiUtf8, new[] { JwtTokenType.String } },
-            { SetClaims.EventsUtf8, new[] { JwtTokenType.Object } }
-        });
 
         public SecurityEventTokenDescriptor()
         {
@@ -40,10 +30,10 @@ namespace JsonWebToken
 
         public void AddEvent(string eventName, JwtObject @event)
         {
-            AddEvent(Encoding.UTF8.GetBytes(eventName), @event);
+            AddEvent(Encoding.UTF8.GetBytes(eventName).AsSpan(), @event);
         }
-
-        public void AddEvent(byte[] utf8EventName, JwtObject @event)
+        
+        public void AddEvent(ReadOnlySpan<byte> utf8EventName, JwtObject @event)
         {
             AddClaim(SetClaims.EventsUtf8, new JwtProperty(utf8EventName, @event));
         }
@@ -66,6 +56,13 @@ namespace JsonWebToken
             set => AddClaim(SetClaims.ToeUtf8, value);
         }
 
-        protected override ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> RequiredClaims => SetRequiredClaims;
+        public override void Validate()
+        {
+            base.Validate();
+            RequireClaim(Claims.IssUtf8, JwtTokenType.String);
+            RequireClaim(Claims.IatUtf8, JwtTokenType.Integer);
+            RequireClaim(Claims.JtiUtf8, JwtTokenType.String);
+            RequireClaim(SetClaims.EventsUtf8, JwtTokenType.Object);
+        }
     }
 }

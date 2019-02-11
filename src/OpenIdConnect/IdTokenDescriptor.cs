@@ -5,47 +5,12 @@ using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
+using System.Linq;
 
 namespace JsonWebToken
 {
     public class IdTokenDescriptor : JwsDescriptor
     {
-        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> IdTokenRequiredOidcClaims
-            = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>
-            {
-                { Claims.IssUtf8, new [] { JwtTokenType.String} },
-                { Claims.SubUtf8, new [] { JwtTokenType.String} },
-                { Claims.AudUtf8, new [] { JwtTokenType.String, JwtTokenType.Array} },
-                { Claims.ExpUtf8, new [] { JwtTokenType.Integer } },
-                { Claims.IatUtf8, new [] { JwtTokenType.Integer } }
-            });
-
-        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> IdTokenRequiredOidcClaimsImplicit = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(
-            new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>
-            {
-                { Claims.IssUtf8, new [] { JwtTokenType.String} },
-                { Claims.SubUtf8, new [] { JwtTokenType.String} },
-                { Claims.AudUtf8, new [] { JwtTokenType.String, JwtTokenType.Array} },
-                { Claims.ExpUtf8, new [] { JwtTokenType.Integer } },
-                { Claims.IatUtf8, new [] { JwtTokenType.Integer } },
-                { OidcClaims.NonceUtf8,  new [] { JwtTokenType.String} },
-                { OidcClaims.AtHashUtf8, new [] { JwtTokenType.String } }
-            });
-
-        private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> IdTokenRequiredOidcClaimsHybrid = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(
-            new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>
-            {
-                { Claims.IssUtf8, new [] { JwtTokenType.String } },
-                { Claims.SubUtf8, new [] { JwtTokenType.String } },
-                { Claims.AudUtf8, new [] { JwtTokenType.String, JwtTokenType.Array} },
-                { Claims.ExpUtf8, new [] { JwtTokenType.Integer } },
-                { Claims.IatUtf8, new [] { JwtTokenType.Integer } },
-                { OidcClaims.NonceUtf8, new [] { JwtTokenType.String } },
-                { OidcClaims.AtHashUtf8, new [] { JwtTokenType.String } },
-                { OidcClaims.CHashUtf8, new [] { JwtTokenType.String } }
-            });
-
         public IdTokenDescriptor()
                     : base()
         {
@@ -125,24 +90,6 @@ namespace JsonWebToken
         {
             get => GetStringClaim(OidcClaims.CHashUtf8);
             set => AddClaim(OidcClaims.CHashUtf8, value);
-        }
-
-        protected override ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> RequiredClaims
-        {
-            get
-            {
-                switch (Flow)
-                {
-                    case OpenIdConnectFlow.AuthorizationCode:
-                        return IdTokenRequiredOidcClaims;
-                    case OpenIdConnectFlow.Implicit:
-                        return IdTokenRequiredOidcClaimsImplicit;
-                    case OpenIdConnectFlow.Hybrid:
-                        return IdTokenRequiredOidcClaimsHybrid;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(Flow));
-                }
-            }
         }
 
         /// <summary>
@@ -342,6 +289,28 @@ namespace JsonWebToken
         {
             get => GetDateTime(OidcClaims.UpdatedAtUtf8);
             set => AddClaim(OidcClaims.UpdatedAtUtf8, value);
+        }
+
+        public override void Validate()
+        {
+            ValidateHeader(HeaderParameters.AlgUtf8, JwtTokenType.String);
+
+            RequireClaim(Claims.IssUtf8, JwtTokenType.String);
+            RequireClaim(Claims.SubUtf8, JwtTokenType.String);
+            ValidateClaim(Claims.AudUtf8, new[] { JwtTokenType.String, JwtTokenType.Array });
+            RequireClaim(Claims.ExpUtf8, JwtTokenType.Integer);
+            RequireClaim(Claims.IatUtf8, JwtTokenType.Integer);
+            if (Flow == OpenIdConnectFlow.Implicit)
+            {
+                RequireClaim(OidcClaims.NonceUtf8, JwtTokenType.String);
+                RequireClaim(OidcClaims.AtHashUtf8, JwtTokenType.String);
+            }
+            else if (Flow == OpenIdConnectFlow.Hybrid)
+            {
+                RequireClaim(OidcClaims.NonceUtf8, JwtTokenType.String);
+                RequireClaim(OidcClaims.AtHashUtf8, JwtTokenType.String);
+                RequireClaim(OidcClaims.CHashUtf8, JwtTokenType.String);
+            }
         }
     }
 }

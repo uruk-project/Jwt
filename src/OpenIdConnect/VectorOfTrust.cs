@@ -26,11 +26,6 @@ namespace JsonWebToken
 
         public VectorOfTrust(ReadOnlySpan<char> vector)
         {
-            if (vector == null || vector.IsEmpty)
-            {
-                throw new ArgumentNullException(nameof(vector));
-            }
-
             if ((vector.Length + 1) % 3 != 0)
             {
                 throw new ArgumentException(nameof(vector), "Invalid vector value. The length is incorrect.");

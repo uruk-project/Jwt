@@ -22,7 +22,7 @@ namespace JsonWebToken.Internal
             var expires = jwt.ExpirationTime;
             if (!expires.HasValue)
             {
-                return TokenValidationResult.MissingClaim(jwt, Claims.Exp);
+                return TokenValidationResult.MissingClaim(jwt, Claims.ExpUtf8);
             }
 
             if (!_tokenReplayCache.TryAdd(jwt, expires.Value))

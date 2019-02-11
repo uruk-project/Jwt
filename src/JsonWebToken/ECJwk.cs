@@ -459,9 +459,9 @@ namespace JsonWebToken
         internal JwtObject AsJwtObject()
         {
             var jwtObject = new JwtObject();
-            jwtObject.Add(new JwtProperty(JwkParameterNames.CrvUtf8.ToArray(), Crv));
-            jwtObject.Add(new JwtProperty(JwkParameterNames.XUtf8.ToArray(), Base64Url.Base64UrlEncode(X)));
-            jwtObject.Add(new JwtProperty(JwkParameterNames.YUtf8.ToArray(), Base64Url.Base64UrlEncode(Y)));
+            jwtObject.Add(new JwtProperty(JwkParameterNames.CrvUtf8, Crv));
+            jwtObject.Add(new JwtProperty(JwkParameterNames.XUtf8, Base64Url.Base64UrlEncode(X)));
+            jwtObject.Add(new JwtProperty(JwkParameterNames.YUtf8, Base64Url.Base64UrlEncode(Y)));
 
             return jwtObject;
         }

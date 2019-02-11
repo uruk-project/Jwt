@@ -98,7 +98,7 @@ namespace JsonWebToken
                 return -1;
             }
 
-            if (cty.Type == JwtTokenType.String && !string.Equals((string)cty.Value, ContentTypeValues.Jwt, StringComparison.Ordinal))
+            if (cty.Type == JwtTokenType.String && !ContentTypeValues.JwtUtf8.SequenceEqual(((string)cty.Value).AsSpan()))
             {
                 // only support 'cty': 'JWT' or not cty
                 return -1;
@@ -209,7 +209,7 @@ namespace JsonWebToken
 
             if (header.TryGetValue(HeaderParameters.CtyUtf8, out var cty))
             {
-                if (cty.Type == JwtTokenType.String && string.Equals((string)cty.Value, ContentTypeValues.Jwt, StringComparison.Ordinal))
+                if (cty.Type == JwtTokenType.String && !ContentTypeValues.JwtUtf8.SequenceEqual(((string)cty.Value).AsSpan()))
                 {
                     return false;
                 }
