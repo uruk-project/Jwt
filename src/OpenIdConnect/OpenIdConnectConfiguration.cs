@@ -77,7 +77,7 @@ namespace JsonWebToken
                                             break;
 
                                         default:
-                                            config.AdditionalData.Add(new JwtProperty(Encoding.UTF8.GetBytes(propertyName), true));
+                                            config.AdditionalData.Add(new JwtProperty(propertyName, true));
                                             break;
                                     }
                                     break;
@@ -109,7 +109,7 @@ namespace JsonWebToken
                                             config.RequireRequestUriRegistration = false;
                                             break;
                                         default:
-                                            config.AdditionalData.Add(new JwtProperty(Encoding.UTF8.GetBytes(propertyName), false));
+                                            config.AdditionalData.Add(new JwtProperty(propertyName, false));
                                             break;
                                     }
                                     break;
@@ -156,7 +156,7 @@ namespace JsonWebToken
                                             config.IntrospectionEndpoint = reader.GetString();
                                             break;
                                         default:
-                                            config.AdditionalData.Add(new JwtProperty(Encoding.UTF8.GetBytes(propertyName), reader.GetString()));
+                                            config.AdditionalData.Add(new JwtProperty(propertyName, reader.GetString()));
                                             break;
                                     }
                                     break;
@@ -246,21 +246,21 @@ namespace JsonWebToken
                                             config.CodeChallengeMethodsSupported = GetStringArray(ref reader);
                                             break;
                                         default:
-                                            config.AdditionalData.Add(new JwtProperty(Encoding.UTF8.GetBytes(propertyName), JsonParser.ReadJsonArray(ref reader)));
+                                            config.AdditionalData.Add(new JwtProperty(propertyName, JsonParser.ReadJsonArray(ref reader)));
                                             break;
                                     }
                                     break;
                                 case JsonTokenType.StartObject:
-                                    config.AdditionalData.Add(new JwtProperty(Encoding.UTF8.GetBytes(propertyName), JsonParser.ReadJsonObject(ref reader)));
+                                    config.AdditionalData.Add(new JwtProperty(propertyName, JsonParser.ReadJsonObject(ref reader)));
                                     break;
                                 case JsonTokenType.Number:
                                     if (reader.TryGetInt64(out long longValue))
                                     {
-                                        config.AdditionalData.Add(new JwtProperty(Encoding.UTF8.GetBytes(propertyName), longValue));
+                                        config.AdditionalData.Add(new JwtProperty(propertyName, longValue));
                                     }
                                     else if (reader.TryGetDouble(out double doubleValue))
                                     {
-                                        config.AdditionalData.Add(new JwtProperty(Encoding.UTF8.GetBytes(propertyName), doubleValue));
+                                        config.AdditionalData.Add(new JwtProperty(propertyName, doubleValue));
                                     }
                                     break;
                             }

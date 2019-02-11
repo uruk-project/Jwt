@@ -16,10 +16,10 @@ namespace JsonWebToken
         private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> ClientAssertionRequiredClaims = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(
             new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>           
         {
-            { Claims.IssUtf8, new [] { JwtTokenType.String } },
-            { Claims.SubUtf8, new [] { JwtTokenType.String } },
-            { Claims.AudUtf8, new [] { JwtTokenType.String, JwtTokenType.Array } },
-            { Claims.ExpUtf8, new [] { JwtTokenType.Integer } }
+            { Claims.IssUtf8.ToArray(), new [] { JwtTokenType.String } },
+            { Claims.SubUtf8.ToArray(), new [] { JwtTokenType.String } },
+            { Claims.AudUtf8.ToArray(), new [] { JwtTokenType.String, JwtTokenType.Array } },
+            { Claims.ExpUtf8.ToArray(), new [] { JwtTokenType.Integer } }
         });
 
         public ClientAssertionDescriptor()

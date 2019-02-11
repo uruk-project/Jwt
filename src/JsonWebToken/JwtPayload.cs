@@ -128,7 +128,17 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool ContainsKey(string key)
         {
-            return _inner.ContainsKey(Encoding.UTF8.GetBytes(key));
+            return ContainsKey(Encoding.UTF8.GetBytes(key));
+        }
+
+        /// <summary>
+        /// Determines whether the <see cref="JwtPayload"/> contains the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool ContainsKey(ReadOnlySpan<byte> key)
+        {
+            return _inner.ContainsKey(key);
         }
 
         /// <summary>

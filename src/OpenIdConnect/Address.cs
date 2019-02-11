@@ -111,32 +111,32 @@ namespace JsonWebToken
         {
             if (Formatted != null)
             {
-                writer.WriteString(OidcClaims.FormattedUtf8.Span, Formatted);
+                writer.WriteString(OidcClaims.FormattedUtf8, Formatted);
             }
 
             if (StreetAddress != null)
             {
-                writer.WriteString(OidcClaims.StreetAddressUtf8.Span, StreetAddress);
+                writer.WriteString(OidcClaims.StreetAddressUtf8, StreetAddress);
             }
 
             if (Locality != null)
             {
-                writer.WriteString(OidcClaims.LocalityUtf8.Span, Locality);
+                writer.WriteString(OidcClaims.LocalityUtf8, Locality);
             }
 
             if (Region != null)
             {
-                writer.WriteString(OidcClaims.RegionUtf8.Span, Region);
+                writer.WriteString(OidcClaims.RegionUtf8, Region);
             }
 
             if (PostalCode != null)
             {
-                writer.WriteString(OidcClaims.PostalCodeUtf8.Span, PostalCode);
+                writer.WriteString(OidcClaims.PostalCodeUtf8, PostalCode);
             }
 
             if (Country != null)
             {
-                writer.WriteString(OidcClaims.CountryUtf8.Span, Country);
+                writer.WriteString(OidcClaims.CountryUtf8, Country);
             }
         }
     }

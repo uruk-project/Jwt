@@ -40,7 +40,7 @@ namespace JsonWebToken
                     case JsonTokenType.EndObject:
                         return current;
                     case JsonTokenType.PropertyName:
-                        byte[] name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray();
+                        var name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
                         reader.Read();
                         var type = reader.TokenType;
                         switch (type)
@@ -73,7 +73,7 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        JwtThrowHelper.FormatNotSupportedNumber(Encoding.UTF8.GetString(name));
+                                        JwtThrowHelper.FormatNotSupportedNumber(name);
                                     }
                                 }
                                 break;

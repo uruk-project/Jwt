@@ -5,6 +5,7 @@ using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -31,7 +32,7 @@ namespace JsonWebToken
             _criticalHeaderHandlers.Clear();
             return this;
         }
-        
+
         private TokenValidationPolicyBuilder RemoveValidator<TValidator>() where TValidator : IValidator
         {
             _validators.RemoveAll(v => v.GetType() == typeof(TValidator));
@@ -220,6 +221,16 @@ namespace JsonWebToken
         public TokenValidationPolicyBuilder RequireClaim(string requiredClaim)
         {
             return AddValidator(new RequiredClaimValidator(requiredClaim));
+        }
+
+        /// <summary>
+        /// Requires the specified claim.
+        /// </summary>
+        /// <param name="requiredClaim"></param>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder RequireClaim(ReadOnlySpan<byte> requiredClaim)
+        {
+            return RequireClaim(Encoding.UTF8.GetString(requiredClaim.ToArray()));
         }
 
         /// <summary>

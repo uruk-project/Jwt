@@ -388,7 +388,7 @@ namespace JsonWebToken
                     Compressor compressor = zip.Compressor;
                     if (compressor == null)
                     {
-                        return TokenValidationResult.InvalidHeader(HeaderParameters.Zip);
+                        return TokenValidationResult.InvalidHeader(HeaderParameters.ZipUtf8);
                     }
 
                     try
@@ -407,7 +407,8 @@ namespace JsonWebToken
                 }
 
                 Jwt jwe;
-                if (string.Equals(header.Cty, ContentTypeValues.Jwt, StringComparison.Ordinal))
+                var cty = header.Cty;
+                if (cty != null && ContentTypeValues.JwtUtf8.SequenceEqual(cty.AsSpan()))
                 {
                     var decryptionResult = compressed
                         ? TryReadToken(decompressedBytes, policy)

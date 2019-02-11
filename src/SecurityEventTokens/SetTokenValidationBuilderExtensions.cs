@@ -14,7 +14,7 @@ namespace JsonWebToken
                 throw new System.ArgumentNullException(nameof(builder));
             }
 
-            builder.RequireClaim(SetClaims.Events);
+            builder.RequireClaim(SetClaims.EventsUtf8);
 
             return builder;
         }

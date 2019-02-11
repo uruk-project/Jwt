@@ -176,7 +176,7 @@ namespace JsonWebToken
         /// <typeparam name="T"></typeparam>
         /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected T GetHeaderParameter<T>(ReadOnlyMemory<byte> utf8Name)
+        protected T GetHeaderParameter<T>(ReadOnlySpan<byte> utf8Name)
         {
             if (Header.TryGetValue(utf8Name, out var value))
             {
@@ -191,7 +191,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        protected void SetHeaderParameter(ReadOnlyMemory<byte> utf8Name, string value)
+        protected void SetHeaderParameter(ReadOnlySpan<byte> utf8Name, string value)
         {
             if (value != null)
             {
@@ -212,30 +212,13 @@ namespace JsonWebToken
         {
             SetHeaderParameter(Encoding.UTF8.GetBytes(name), value);
         }
-
-        ///// <summary>
-        ///// Sets the header parameter for a specified header name.
-        ///// </summary>
-        ///// <param name="headerName"></param>
-        ///// <param name="value"></param>
-        //protected void SetHeaderParameter(string headerName, object value)
-        //{
-        //    if (value != null)
-        //    {
-        //        Header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName), JObject.FromObject(value)));
-        //    }
-        //    else
-        //    {
-        //        Header.Add(new JwtProperty(Encoding.UTF8.GetBytes(headerName)));
-        //    }
-        //}
-
+        
         /// <summary>
         /// Sets the header parameter for a specified header name.
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        protected void SetHeaderParameter(ReadOnlyMemory<byte> utf8Name, List<string> value)
+        protected void SetHeaderParameter(ReadOnlySpan<byte> utf8Name, List<string> value)
         {
             if (value != null)
             {
@@ -262,7 +245,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected List<T> GetHeaderParameters<T>(ReadOnlyMemory<byte> utf8Name)
+        protected List<T> GetHeaderParameters<T>(ReadOnlySpan<byte> utf8Name)
         {
             if (Header.TryGetValue(utf8Name, out JwtProperty value))
             {

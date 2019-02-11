@@ -13,7 +13,7 @@ namespace JsonWebToken
         private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> StateRequiredClaims
             = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>
               {
-                { OAuth2Claims.RfpUtf8, new [] { JwtTokenType.String} }
+                { OAuth2Claims.RfpUtf8.ToArray(), new [] { JwtTokenType.String} }
               });
 
         public StateDescriptor()

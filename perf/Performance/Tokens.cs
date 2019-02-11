@@ -438,25 +438,25 @@ namespace JsonWebToken.Performance
                 switch (property.Value.Type)
                 {
                     case JTokenType.Object:
-                        jwtProperty = new JwtProperty(Encoding.UTF8.GetBytes(property.Name), ToJwtObject(property.Value.Value<JObject>()));
+                        jwtProperty = new JwtProperty(property.Name, ToJwtObject(property.Value.Value<JObject>()));
                         break;
                     case JTokenType.Array:
-                        jwtProperty = new JwtProperty(Encoding.UTF8.GetBytes(property.Name), ToJwtArray(property.Value.Value<JArray>()));
+                        jwtProperty = new JwtProperty(property.Name, ToJwtArray(property.Value.Value<JArray>()));
                         break;
                     case JTokenType.Integer:
-                        jwtProperty = new JwtProperty(Encoding.UTF8.GetBytes(property.Name), property.Value.Value<long>());
+                        jwtProperty = new JwtProperty(property.Name, property.Value.Value<long>());
                         break;
                     case JTokenType.Float:
-                        jwtProperty = new JwtProperty(Encoding.UTF8.GetBytes(property.Name), property.Value.Value<double>());
+                        jwtProperty = new JwtProperty(property.Name, property.Value.Value<double>());
                         break;
                     case JTokenType.String:
-                        jwtProperty = new JwtProperty(Encoding.UTF8.GetBytes(property.Name), property.Value.Value<string>());
+                        jwtProperty = new JwtProperty(property.Name, property.Value.Value<string>());
                         break;
                     case JTokenType.Boolean:
-                        jwtProperty = new JwtProperty(Encoding.UTF8.GetBytes(property.Name), property.Value.Value<bool>());
+                        jwtProperty = new JwtProperty(property.Name, property.Value.Value<bool>());
                         break;
                     case JTokenType.Null:
-                        jwtProperty = new JwtProperty(Encoding.UTF8.GetBytes(property.Name));
+                        jwtProperty = new JwtProperty(property.Name);
                         break;
                     default:
                         throw new NotSupportedException();

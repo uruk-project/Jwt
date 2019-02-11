@@ -171,22 +171,22 @@ namespace JsonWebToken
         public static readonly byte[] UpdatedAtUtf8 = Encoding.UTF8.GetBytes(UpdatedAt);
 
         public const string Formatted = "formatted";
-        public static ReadOnlyMemory<byte> FormattedUtf8 => new byte[] { (byte)'f', (byte)'o', (byte)'r', (byte)'m', (byte)'a', (byte)'t', (byte)'t', (byte)'e', (byte)'d' };
+        public static ReadOnlySpan<byte> FormattedUtf8 => new byte[] { (byte)'f', (byte)'o', (byte)'r', (byte)'m', (byte)'a', (byte)'t', (byte)'t', (byte)'e', (byte)'d' };
 
         public const string StreetAddress = "street_address";
-        public static ReadOnlyMemory<byte> StreetAddressUtf8 => new byte[] { (byte)'s', (byte)'t', (byte)'r', (byte)'e', (byte)'e', (byte)'t', (byte)'_', (byte)'a', (byte)'d', (byte)'d', (byte)'r', (byte)'e', (byte)'s', (byte)'s' };
+        public static ReadOnlySpan<byte> StreetAddressUtf8 => new byte[] { (byte)'s', (byte)'t', (byte)'r', (byte)'e', (byte)'e', (byte)'t', (byte)'_', (byte)'a', (byte)'d', (byte)'d', (byte)'r', (byte)'e', (byte)'s', (byte)'s' };
 
         public const string  Locality = "locality";
-        public static ReadOnlyMemory<byte> LocalityUtf8 => new byte[] { (byte)'l', (byte)'o', (byte)'c', (byte)'a', (byte)'l', (byte)'i', (byte)'t', (byte)'y' };
+        public static ReadOnlySpan<byte> LocalityUtf8 => new byte[] { (byte)'l', (byte)'o', (byte)'c', (byte)'a', (byte)'l', (byte)'i', (byte)'t', (byte)'y' };
 
         public const string Region = "region";
-        public static ReadOnlyMemory<byte> RegionUtf8 => new byte[] { (byte)'r', (byte)'e', (byte)'g', (byte)'i', (byte)'o', (byte)'n' };
+        public static ReadOnlySpan<byte> RegionUtf8 => new byte[] { (byte)'r', (byte)'e', (byte)'g', (byte)'i', (byte)'o', (byte)'n' };
 
         public const string PostalCode = "postal_code";
-        public static ReadOnlyMemory<byte> PostalCodeUtf8 => new byte[] { (byte)'p', (byte)'o', (byte)'s', (byte)'t', (byte)'a', (byte)'l', (byte)'_', (byte)'c', (byte)'o', (byte)'d', (byte)'e' };
+        public static ReadOnlySpan<byte> PostalCodeUtf8 => new byte[] { (byte)'p', (byte)'o', (byte)'s', (byte)'t', (byte)'a', (byte)'l', (byte)'_', (byte)'c', (byte)'o', (byte)'d', (byte)'e' };
 
         public const string Country = "country";
-        public static ReadOnlyMemory<byte> CountryUtf8 => new byte[] { (byte)'c', (byte)'o', (byte)'u', (byte)'n', (byte)'t', (byte)'r', (byte)'y' };
+        public static ReadOnlySpan<byte> CountryUtf8 => new byte[] { (byte)'c', (byte)'o', (byte)'u', (byte)'n', (byte)'t', (byte)'r', (byte)'y' };
 
     }
 }

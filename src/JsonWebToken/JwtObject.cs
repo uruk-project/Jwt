@@ -140,13 +140,12 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool ContainsKey(ReadOnlyMemory<byte> key)
+        public bool ContainsKey(ReadOnlySpan<byte> key)
         {
-            var span = key.Span;
             for (int i = 0; i < _properties.Count; i++)
             {
                 var current = _properties[i];
-                if (current.Utf8Name.Span.SequenceEqual(span))
+                if (current.Utf8Name.Span.SequenceEqual(key))
                 {
                     return true;
                 }

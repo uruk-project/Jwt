@@ -13,21 +13,18 @@ namespace JsonWebToken
     public static class SetClaims
     {
         /// <summary>
-        /// https://tools.ietf.org/html/draft-ietf-secevent-token-13#section-2.2
+        /// https://tools.ietf.org/html/rfc8417#section-2.2
         /// </summary>
-        public const string Events = "events";
-        public static ReadOnlyMemory<byte> EventsUtf8 => new byte[] { (byte)'e', (byte)'v', (byte)'e', (byte)'n', (byte)'t', (byte)'s' };
+        public static ReadOnlySpan<byte> EventsUtf8 => new byte[] { (byte)'e', (byte)'v', (byte)'e', (byte)'n', (byte)'t', (byte)'s' };
 
         /// <summary>
-        /// https://tools.ietf.org/html/draft-ietf-secevent-token-13#section-2.2
+        /// https://tools.ietf.org/html/rfc8417#section-2.2
         /// </summary>
-        public const string Txn = "txn";
-        public static ReadOnlyMemory<byte> TxnUtf8 => new byte[] { (byte)'t', (byte)'x', (byte)'n' };
+        public static ReadOnlySpan<byte> TxnUtf8 => new byte[] { (byte)'t', (byte)'x', (byte)'n' };
 
         /// <summary>
-        /// https://tools.ietf.org/html/draft-ietf-secevent-token-13#section-2.2
+        /// https://tools.ietf.org/html/rfc8417#section-2.2
         /// </summary>
-        public const string Toe = "toe";
-        public static ReadOnlyMemory<byte> ToeUtf8 => new byte[]{(byte)'t', (byte)'o', (byte)'e'};
+        public static ReadOnlySpan<byte> ToeUtf8 => new byte[]{(byte)'t', (byte)'o', (byte)'e'};
     }
 }

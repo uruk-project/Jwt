@@ -16,10 +16,10 @@ namespace JsonWebToken
         private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> SetRequiredClaims = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(
             new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>
         {
-            { Claims.IssUtf8, new[] { JwtTokenType.String } },
-            { Claims.IatUtf8, new[] { JwtTokenType.Integer} },
-            { Claims.JtiUtf8, new[] { JwtTokenType.String } },
-            { SetClaims.EventsUtf8, new[] { JwtTokenType.Object } }
+            { Claims.IssUtf8.ToArray(), new[] { JwtTokenType.String } },
+            { Claims.IatUtf8.ToArray(), new[] { JwtTokenType.Integer} },
+            { Claims.JtiUtf8.ToArray(), new[] { JwtTokenType.String } },
+            { SetClaims.EventsUtf8.ToArray(), new[] { JwtTokenType.Object } }
         });
 
         public SecurityEventTokenDescriptor()
@@ -35,7 +35,7 @@ namespace JsonWebToken
         /// Gets or sets the set of event statements that each provide 
         /// information describing a single logical event that has occurred about a security subject.
         /// </summary>
-        public JwtObject Events => GetClaim(SetClaims.EventsUtf8.Span);
+        public JwtObject Events => GetClaim(SetClaims.EventsUtf8);
 
         public void AddEvent(string eventName, JwtObject @event)
         {
@@ -44,7 +44,7 @@ namespace JsonWebToken
 
         public void AddEvent(ReadOnlyMemory<byte> utf8EventName, JwtObject @event)
         {
-            AddClaim(SetClaims.EventsUtf8, new JwtProperty(utf8EventName, @event));
+            AddClaim(SetClaims.EventsUtf8.ToArray(), new JwtProperty(utf8EventName, @event));
         }
 
         /// <summary>

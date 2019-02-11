@@ -165,7 +165,7 @@ namespace JsonWebToken
                             jwk = new JwtObject();
                         }
 
-                        var name = nameSpan.ToArray();
+                        var name = nameSpan;
                         reader.Read();
                         var type = reader.TokenType;
                         switch (type)
@@ -199,7 +199,7 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        JwtThrowHelper.FormatNotSupportedNumber(Encoding.UTF8.GetString(name));
+                                        JwtThrowHelper.FormatNotSupportedNumber(name);
                                     }
                                 }
                                 break;

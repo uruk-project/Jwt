@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -63,7 +64,7 @@ namespace JsonWebToken
         {
             return new TokenValidationResult
             {
-                Status = TokenValidationStatus.CriticalHeaderMissing, 
+                Status = TokenValidationStatus.CriticalHeaderMissing,
                 ErrorHeader = criticalHeader
             };
         }
@@ -120,7 +121,7 @@ namespace JsonWebToken
         {
             return new TokenValidationResult
             {
-                Status = TokenValidationStatus.MalformedSignature, 
+                Status = TokenValidationStatus.MalformedSignature,
                 Token = token,
                 Exception = e
             };
@@ -276,6 +277,16 @@ namespace JsonWebToken
                 Status = TokenValidationStatus.InvalidHeader,
                 ErrorHeader = header
             };
+        }
+
+        /// <summary>
+        /// The token has an invalid header. 
+        /// </summary>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        public static TokenValidationResult InvalidHeader(ReadOnlySpan<byte> header)
+        {
+            return InvalidHeader(Encoding.UTF8.GetString(header.ToArray()));
         }
 
         /// <summary>

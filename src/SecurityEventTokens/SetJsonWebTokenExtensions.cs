@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
 
 namespace JsonWebToken
@@ -10,7 +9,7 @@ namespace JsonWebToken
     {
         public static SecurityEventToken AsSecurityEventToken(this Jwt token)
         {
-            if (!token.Payload.ContainsKey(SetClaims.Events))
+            if (!token.Payload.ContainsKey(SetClaims.EventsUtf8))
             {
                 throw new InvalidOperationException();
             }

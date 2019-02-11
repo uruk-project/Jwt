@@ -28,7 +28,7 @@ namespace JsonWebToken
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddHeader(ReadOnlyMemory<byte> utf8Name, string value)
+        public JwtDescriptorBuilder AddHeader(ReadOnlySpan<byte> utf8Name, string value)
         {
             _header.Add(new JwtProperty(utf8Name, value));
             return this;
@@ -51,7 +51,7 @@ namespace JsonWebToken
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddHeader(ReadOnlyMemory<byte> utf8Name, long value)
+        public JwtDescriptorBuilder AddHeader(ReadOnlySpan<byte> utf8Name, long value)
         {
             _header.Add(new JwtProperty(utf8Name, value));
             return this;
@@ -74,7 +74,7 @@ namespace JsonWebToken
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddHeader(ReadOnlyMemory<byte> utf8Name, bool value)
+        public JwtDescriptorBuilder AddHeader(ReadOnlySpan<byte> utf8Name, bool value)
         {
             _header.Add(new JwtProperty(utf8Name, value));
             return this;
@@ -97,7 +97,7 @@ namespace JsonWebToken
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder AddHeader(ReadOnlyMemory<byte> utf8Name, JwtArray value)
+        public JwtDescriptorBuilder AddHeader(ReadOnlySpan<byte> utf8Name, JwtArray value)
         {
             _header.Add(new JwtProperty(utf8Name, value));
             return this;

@@ -155,7 +155,7 @@ namespace JsonWebToken.Internal
             return hashAlgorithm;
         }
 
-        private static byte[] GetPartyInfo(JwtObject header, ReadOnlyMemory<byte> utf8Name)
+        private static byte[] GetPartyInfo(JwtObject header, ReadOnlySpan<byte> utf8Name)
         {
             if (header.TryGetValue(utf8Name, out var token))
             {

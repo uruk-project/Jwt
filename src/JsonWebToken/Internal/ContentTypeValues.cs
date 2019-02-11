@@ -19,6 +19,6 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// JWT content type for 'cty' header parameter.
         /// </summary>
-        public static ReadOnlyMemory<byte> JwtUtf8 => new byte[] { (byte)'J', (byte)'W', (byte)'T' };
+        public static ReadOnlySpan<char> JwtUtf8 => new char[] { 'J', 'W', 'T' };
     }
 }

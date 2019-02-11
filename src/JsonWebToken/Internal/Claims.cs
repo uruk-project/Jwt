@@ -24,7 +24,7 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary> 
-        public static ReadOnlyMemory<byte> AudUtf8 => new byte[] { (byte)'a', (byte)'u', (byte)'d' };
+        public static ReadOnlySpan<byte> AudUtf8 => new byte[] { (byte)'a', (byte)'u', (byte)'d' };
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
@@ -34,7 +34,7 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
-        public static ReadOnlyMemory<byte> ExpUtf8 => new byte[] { (byte)'e', (byte)'x', (byte)'p' };
+        public static ReadOnlySpan<byte> ExpUtf8 => new byte[] { (byte)'e', (byte)'x', (byte)'p' };
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
@@ -44,7 +44,7 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
-        public static ReadOnlyMemory<byte> IatUtf8 => new byte[] { (byte)'i', (byte)'a', (byte)'t' };
+        public static ReadOnlySpan<byte> IatUtf8 => new byte[] { (byte)'i', (byte)'a', (byte)'t' };
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
@@ -54,7 +54,7 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
-        public static ReadOnlyMemory<byte> IssUtf8 => new byte[] { (byte)'i', (byte)'s', (byte)'s' };
+        public static ReadOnlySpan<byte> IssUtf8 => new byte[] { (byte)'i', (byte)'s', (byte)'s' };
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
@@ -64,7 +64,7 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
-        public static ReadOnlyMemory<byte> JtiUtf8 => new byte[] { (byte)'j', (byte)'t', (byte)'i' };
+        public static ReadOnlySpan<byte> JtiUtf8 => new byte[] { (byte)'j', (byte)'t', (byte)'i' };
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
@@ -74,7 +74,7 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
-        public static ReadOnlyMemory<byte> NbfUtf8 => new byte[] { (byte)'n', (byte)'b', (byte)'f' };
+        public static ReadOnlySpan<byte> NbfUtf8 => new byte[] { (byte)'n', (byte)'b', (byte)'f' };
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
@@ -84,6 +84,6 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
-        public static ReadOnlyMemory<byte> SubUtf8 => new byte[] { (byte)'s', (byte)'u', (byte)'b' };
+        public static ReadOnlySpan<byte> SubUtf8 => new byte[] { (byte)'s', (byte)'u', (byte)'b' };
     }
 }

@@ -16,7 +16,7 @@ namespace JsonWebToken
         private static readonly ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]> SoftwareStatementRequiredClaims = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(
             new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>
             {
-                { Claims.IssUtf8, new [] { JwtTokenType.String} }
+                { Claims.IssUtf8.ToArray(), new [] { JwtTokenType.String} }
             });
 
         public SoftwareStatementDescriptor(JwtObject payload)

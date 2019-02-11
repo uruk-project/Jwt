@@ -25,7 +25,7 @@ namespace JsonWebToken
             = new ReadOnlyDictionary<ReadOnlyMemory<byte>, JwtTokenType[]>(
             new Dictionary<ReadOnlyMemory<byte>, JwtTokenType[]>
             {
-                { HeaderParameters.AlgUtf8, new [] { JwtTokenType.String } }
+                { HeaderParameters.AlgUtf8.ToArray(), new [] { JwtTokenType.String } }
             });
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        public void AddClaim(ReadOnlyMemory<byte> utf8Name, string value)
+        public void AddClaim(ReadOnlySpan<byte> utf8Name, string value)
         {
             // TODO: allow to add a value into an array
             Payload.Add(new JwtProperty(utf8Name, value));
@@ -157,7 +157,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        public void AddClaim(ReadOnlyMemory<byte> utf8Name, bool? value)
+        public void AddClaim(ReadOnlySpan<byte> utf8Name, bool? value)
         {
             if (value.HasValue)
             {
@@ -184,7 +184,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        public void AddClaim(ReadOnlyMemory<byte> utf8Name, DateTime? value)
+        public void AddClaim(ReadOnlySpan<byte> utf8Name, DateTime? value)
         {
             if (value.HasValue)
             {
@@ -211,7 +211,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        public void AddClaim(ReadOnlyMemory<byte> utf8Name, int value)
+        public void AddClaim(ReadOnlySpan<byte> utf8Name, int value)
         {
             Payload.Add(new JwtProperty(utf8Name, value));
         }
@@ -231,7 +231,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        public void AddClaim(ReadOnlyMemory<byte> utf8Name, bool value)
+        public void AddClaim(ReadOnlySpan<byte> utf8Name, bool value)
         {
             Payload.Add(new JwtProperty(utf8Name, value));
         }
@@ -251,7 +251,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        public void AddClaim(ReadOnlyMemory<byte> utf8Name, JwtObject value)
+        public void AddClaim(ReadOnlySpan<byte> utf8Name, JwtObject value)
         {
             Payload.Add(new JwtProperty(utf8Name, value));
         }
@@ -271,7 +271,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        public void AddClaim(ReadOnlyMemory<byte> utf8Name, JwtProperty value)
+        public void AddClaim(ReadOnlySpan<byte> utf8Name, JwtProperty value)
         {
             JwtObject jwtObject;
             if (Payload.TryGetValue(utf8Name, out JwtProperty property) && property.Type == JwtTokenType.Object)
@@ -302,7 +302,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected string GetStringClaim(ReadOnlyMemory<byte> utf8Name)
+        protected string GetStringClaim(ReadOnlySpan<byte> utf8Name)
         {
             if (Payload.TryGetValue(utf8Name, out JwtProperty value))
             {
@@ -327,7 +327,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected int? GetInt32Claim(ReadOnlyMemory<byte> utf8Name)
+        protected int? GetInt32Claim(ReadOnlySpan<byte> utf8Name)
         {
             if (Payload.TryGetValue(utf8Name, out JwtProperty value))
             {
@@ -357,7 +357,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected bool? GetBoolClaim(ReadOnlyMemory<byte> utf8Name)
+        protected bool? GetBoolClaim(ReadOnlySpan<byte> utf8Name)
         {
             if (Payload.TryGetValue(utf8Name, out JwtProperty value))
             {
@@ -372,7 +372,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected List<T> GetListClaims<T>(ReadOnlyMemory<byte> utf8Name)
+        protected List<T> GetListClaims<T>(ReadOnlySpan<byte> utf8Name)
         {
             if (Payload.TryGetValue(utf8Name, out JwtProperty value))
             {
@@ -419,7 +419,7 @@ namespace JsonWebToken
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        protected void AddClaim(ReadOnlyMemory<byte> utf8Name, List<string> value)
+        protected void AddClaim(ReadOnlySpan<byte> utf8Name, List<string> value)
         {
             Payload.Add(new JwtProperty(utf8Name, new JwtArray(value)));
         }
@@ -429,7 +429,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected DateTime? GetDateTime(ReadOnlyMemory<byte> utf8Name)
+        protected DateTime? GetDateTime(ReadOnlySpan<byte> utf8Name)
         {
             if (!Payload.TryGetValue(utf8Name, out JwtProperty dateValue) || dateValue.Type == JwtTokenType.Null)
             {
@@ -536,7 +536,7 @@ namespace JsonWebToken
         {
             for (int i = 0; i < ProhibitedClaims.Count; i++)
             {
-                if (Payload.ContainsKey(ProhibitedClaims[i]))
+                if (Payload.ContainsKey(ProhibitedClaims[i].Span))
                 {
                     Errors.ThrowClaimIsProhibited(ProhibitedClaims[i]);
                 }
