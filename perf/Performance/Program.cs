@@ -70,7 +70,7 @@ namespace Performance
             var jwX = new PlaintextJweDescriptor("Hello world !");
             var jwB = new BinaryJweDescriptor(Encoding.UTF8.GetBytes("Hello world !"));
             var jwt = _writer.WriteToken(jws);
-            _reader.EnableHeaderCaching = false;
+            _reader.EnableHeaderCaching = true;
             _writer.EnableHeaderCaching = false;
             while (true)
             {

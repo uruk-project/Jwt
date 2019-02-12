@@ -9,16 +9,16 @@ using System.Runtime.InteropServices;
 
 namespace JsonWebToken.Internal
 {
-    internal sealed class SoftwareBase64Url : IBase64Url
+    internal sealed class Base64UrlEncoder : Base64
     {
         // Force init of map
-        static SoftwareBase64Url()
+        static Base64UrlEncoder()
         {
         }
 
         private const int MaximumEncodeLength = (int.MaxValue >> 2) * 3;
 
-        public OperationStatus EncodeToUtf8(ReadOnlySpan<byte> data, Span<byte> encoded, out int bytesConsumed, out int bytesWritten)
+        public override OperationStatus Encode(ReadOnlySpan<byte> data, Span<byte> encoded, out int bytesConsumed, out int bytesWritten)
         {
             ref byte srcBytes = ref MemoryMarshal.GetReference(data);
             ref byte destBytes = ref MemoryMarshal.GetReference(encoded);
@@ -26,7 +26,7 @@ namespace JsonWebToken.Internal
             int destLength = encoded.Length;
   
             int maxSrcLength;
-            if (srcLength <= MaximumEncodeLength && destLength >= GetMaxEncodedToUtf8Length(srcLength))
+            if (srcLength <= MaximumEncodeLength && destLength >= GetEncodedLength(srcLength))
             {
                 maxSrcLength = srcLength - 2;
             }
@@ -78,7 +78,7 @@ namespace JsonWebToken.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetMaxEncodedToUtf8Length(int length)
+        public override int GetEncodedLength(int length)
         {
             if ((uint)length > MaximumEncodeLength)
                 JwtThrowHelper.ThrowArgumentOutOfRangeException();
@@ -136,7 +136,7 @@ namespace JsonWebToken.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetMaxDecodedFromUtf8Length(int length)
+        public override int GetMaxDecodedLength(int length)
         {
             var numPaddingChars = GetNumBase64PaddingCharsToAddForDecode(length);
             var base64Len = length + numPaddingChars;
@@ -161,7 +161,8 @@ namespace JsonWebToken.Internal
 
             return result;
         }
-        public OperationStatus DecodeFromUtf8(ReadOnlySpan<byte> encoded, Span<byte> data, out int bytesConsumed, out int bytesWritten)
+
+        public override OperationStatus Decode(ReadOnlySpan<byte> encoded, Span<byte> data, out int bytesConsumed, out int bytesWritten)
         {
             ref var source = ref MemoryMarshal.GetReference(encoded);
             ref var destBytes = ref MemoryMarshal.GetReference(data);
@@ -374,6 +375,7 @@ namespace JsonWebToken.Internal
         {
             Unsafe.Add(ref destination, destIndex) = (byte)(value >> 16);
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetBufferSizeRequiredToUrlDecode(int urlEncodedLen, out int dataLength)
         {

@@ -12,10 +12,11 @@ namespace JsonWebToken
     /// <summary>
     /// Encodes and Decodes strings as Base64Url.
     /// </summary>
-    /// <remarks>Issued from https://github.com/aspnet/.</remarks>
+    /// <remarks>Issued from https://github.com/aspnet/.
+    /// </remarks>
     public static class Base64Url
     {
-        private static readonly IBase64Url _base64 = new SoftwareBase64Url();
+        private static readonly Base64 _base64 = Base64.Url;
 
         private static readonly byte[] EmptyBytes = Array.Empty<byte>();
 
@@ -125,7 +126,7 @@ namespace JsonWebToken
                 return OperationStatus.Done;
             }
 
-            return _base64.DecodeFromUtf8(base64Url, data, out bytesConsumed, out bytesWritten);
+            return _base64.Decode(base64Url, data, out bytesConsumed, out bytesWritten);
         }
 
         /// <summary>
@@ -140,7 +141,7 @@ namespace JsonWebToken
                 return 0;
             }
 
-            var status = _base64.EncodeToUtf8(utf8Data, base64Url, out _, out var bytesWritten);
+            var status = _base64.Encode(utf8Data, base64Url, out _, out var bytesWritten);
             if (status != OperationStatus.Done)
             {
                 JwtThrowHelper.ThrowOperationNotDone(status);
@@ -161,7 +162,7 @@ namespace JsonWebToken
                 return Array.Empty<byte>();
             }
 
-            int base64UrlLength = _base64.GetMaxEncodedToUtf8Length(utf8Data.Length);
+            int base64UrlLength = _base64.GetEncodedLength(utf8Data.Length);
             var utf8Encoded = new byte[base64UrlLength];
             Base64UrlEncode(utf8Data, utf8Encoded);
             return utf8Encoded;
@@ -218,7 +219,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetArraySizeRequiredToDecode(int count)
         {
-            return _base64.GetMaxDecodedFromUtf8Length(count);
+            return _base64.GetMaxDecodedLength(count);
         }
 
         /// <summary>
@@ -231,7 +232,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetArraySizeRequiredToEncode(int count)
         {
-            return _base64.GetMaxEncodedToUtf8Length(count);
+            return _base64.GetEncodedLength(count);
         }
 
 #if !NETSTANDARD2_0
