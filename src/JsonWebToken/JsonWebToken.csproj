@@ -37,7 +37,7 @@
     <PackageReference Include="System.Security.Cryptography.Cng" Version="4.5.0" />
 
 
-    <PackageReference Include="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19073.11">
+    <PackageReference Include="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19111.7">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
@@ -46,7 +46,7 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
 
 
-    <PackageReference Include="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19073.11">
+    <PackageReference Include="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19111.7">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
