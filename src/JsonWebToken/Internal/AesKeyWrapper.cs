@@ -26,9 +26,9 @@ namespace JsonWebToken.Internal
         public AesKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
-            if (key.K == null)
+            if (key == null)
             {
-                Errors.ThrowMalformedKey(key);
+                throw new ArgumentNullException(nameof(key));
             }
 
             _aes = GetSymmetricAlgorithm(key, algorithm);
@@ -58,7 +58,7 @@ namespace JsonWebToken.Internal
                 Errors.ThrowKeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, key, key.KeySizeInBits);
             }
 
-            byte[] keyBytes = key.K;
+            byte[] keyBytes = key.ToArray();
             Aes aes = null;
             try
             {

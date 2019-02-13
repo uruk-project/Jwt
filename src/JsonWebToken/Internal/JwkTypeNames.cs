@@ -1,6 +1,8 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using System;
+
 namespace JsonWebToken.Internal
 {
     /// <summary>
@@ -12,16 +14,16 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// Elliptic curve 'EC'.
         /// </summary>
-        public const string EllipticCurve = "EC";
+        public static ReadOnlySpan<byte> EllipticCurve => new byte[] { (byte)'E', (byte)'C' };
 
         /// <summary>
         /// RSA 'RSA'.
         /// </summary>
-        public const string Rsa = "RSA";
+        public static ReadOnlySpan<byte> Rsa => new byte[] { (byte)'R', (byte)'S', (byte)'A' };
 
         /// <summary>
         /// Octet 'oct';
         /// </summary>
-        public const string Octet = "oct";
+        public static ReadOnlySpan<byte> Octet => new byte[] { (byte)'o', (byte)'c', (byte)'t' };
     }
 }

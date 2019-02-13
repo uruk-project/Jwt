@@ -90,13 +90,13 @@ namespace JsonWebToken.KeyVault
             ECCurve curve;
             switch (inputParameters.Curve)
             {
-                case EllipticalCurves.P256:
+                case "P-256":
                     curve = ECCurve.NamedCurves.nistP256;
                     break;
-                case EllipticalCurves.P384:
+                case "P-384":
                     curve = ECCurve.NamedCurves.nistP384;
                     break;
-                case EllipticalCurves.P521:
+                case "P521":
                     curve = ECCurve.NamedCurves.nistP521;
                     break;
                 default:

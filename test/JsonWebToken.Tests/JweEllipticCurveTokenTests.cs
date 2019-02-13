@@ -8,7 +8,7 @@ namespace JsonWebToken.Tests
     {
         private readonly ECJwk _bobKey = new ECJwk
         (
-            crv : "P-256",
+            crv : EllipticalCurve.P256,
             x : "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
             y : "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck",
             d : "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"

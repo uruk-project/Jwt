@@ -234,10 +234,10 @@ namespace JsonWebToken
         {
             throw new NotSupportedException($"Key unwrap failed. No support for: Algorithm: '{algorithm}'.");
         }
-
-        internal static void ThrowNotSupportedCurve(string curveId)
+        
+        internal static void ThrowNotSupportedCurve(string curve)
         {
-            throw new NotSupportedException($"Elliptical Curve not supported for curveId: '{curveId}'");
+            throw new NotSupportedException($"Elliptical Curve not supported for curve: '{curve}'");
         }
 
         internal static void ThrowNotSupportedAlgorithm(string algorithm)

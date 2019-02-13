@@ -31,15 +31,15 @@ namespace JsonWebToken
             {
                 case "nistP256":
                 case "ECDSA_P256":
-                    Crv = EllipticalCurves.P256;
+                    Crv = EllipticalCurve.P256;
                     break;
                 case "nistP384":
                 case "ECDSA_P384":
-                    Crv = EllipticalCurves.P384;
+                    Crv = EllipticalCurve.P384;
                     break;
                 case "nistP521":
                 case "ECDSA_P521":
-                    Crv = EllipticalCurves.P521;
+                    Crv = EllipticalCurve.P521;
                     break;
                 default:
                     Errors.ThrowNotSupportedCurve(parameters.Curve.Oid.FriendlyName);
@@ -50,33 +50,18 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public ECJwk(string crv, byte[] d, byte[] x, byte[] y)
+        public ECJwk(in EllipticalCurve crv, byte[] d, byte[] x, byte[] y)
         {
-            if (d == null)
-            {
-                throw new ArgumentNullException(nameof(d));
-            }
-
-            if (x == null)
-            {
-                throw new ArgumentNullException(nameof(x));
-            }
-
-            if (y == null)
-            {
-                throw new ArgumentNullException(nameof(y));
-            }
-
-            Crv = crv ?? throw new ArgumentNullException(nameof(crv));
-            D = CloneByteArray(d);
-            X = CloneByteArray(x);
-            Y = CloneByteArray(y);
+            Crv = crv;
+            D = d ?? throw new ArgumentNullException(nameof(d));
+            X = x ?? throw new ArgumentNullException(nameof(x));
+            Y = y ?? throw new ArgumentNullException(nameof(y));
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public ECJwk(string crv, string d, string x, string y)
+        public ECJwk(in EllipticalCurve crv, string d, string x, string y)
         {
             if (d == null)
             {
@@ -93,7 +78,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(y));
             }
 
-            Crv = crv ?? throw new ArgumentNullException(nameof(crv));
+            Crv = crv;
             D = Base64Url.Base64UrlDecode(d);
             X = Base64Url.Base64UrlDecode(x);
             Y = Base64Url.Base64UrlDecode(y);
@@ -102,27 +87,17 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.
         /// </summary>
-        public ECJwk(string crv, byte[] x, byte[] y)
+        public ECJwk(in EllipticalCurve crv, byte[] x, byte[] y)
         {
-            if (x == null)
-            {
-                throw new ArgumentNullException(nameof(x));
-            }
-
-            if (y == null)
-            {
-                throw new ArgumentNullException(nameof(y));
-            }
-
-            Crv = crv ?? throw new ArgumentNullException(nameof(crv));
-            X = CloneByteArray(x);
-            Y = CloneByteArray(y);
+            Crv = crv;
+            X = x ?? throw new ArgumentNullException(nameof(x));
+            Y = y ?? throw new ArgumentNullException(nameof(y));
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.
         /// </summary>
-        public ECJwk(string crv, string x, string y)
+        public ECJwk(in EllipticalCurve crv, string x, string y)
         {
             if (x == null)
             {
@@ -134,7 +109,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(y));
             }
 
-            Crv = crv ?? throw new ArgumentNullException(nameof(crv));
+            Crv = crv;
             X = Base64Url.Base64UrlDecode(x);
             Y = Base64Url.Base64UrlDecode(y);
         }
@@ -147,12 +122,12 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override string Kty => JwkTypeNames.EllipticCurve;
+        public override ReadOnlySpan<byte> Kty => JwkTypeNames.EllipticCurve;
 
         /// <summary>
         /// Gets or sets the 'crv' (Curve).
         /// </summary>
-        public string Crv { get; set; }
+        public EllipticalCurve Crv { get; set; }
 
         /// <summary>
         /// Gets or sets the 'x' (X Coordinate).
@@ -168,24 +143,7 @@ namespace JsonWebToken
         public override bool HasPrivateKey => D != null;
 
         /// <inheritdoc />
-        public override int KeySizeInBits
-        {
-            get
-            {
-                switch (Crv)
-                {
-                    case EllipticalCurves.P256:
-                        return 256;
-                    case EllipticalCurves.P384:
-                        return 384;
-                    case EllipticalCurves.P521:
-                        return 521;
-                    default:
-                        Errors.ThrowNotSupportedCurve(Crv);
-                        return 0;
-                }
-            }
-        }
+        public override int KeySizeInBits => Crv.KeySizeInBits;
 
         /// <summary>
         /// Creates an <see cref="ECDsa"/> algorithm.
@@ -270,27 +228,12 @@ namespace JsonWebToken
                 {
                     X = X,
                     Y = Y
-                }
+                },
+                Curve = Crv.CurveParameters
             };
             if (includePrivateParameters)
             {
                 parameters.D = D;
-            }
-
-            switch (Crv)
-            {
-                case EllipticalCurves.P256:
-                    parameters.Curve = ECCurve.NamedCurves.nistP256;
-                    break;
-                case EllipticalCurves.P384:
-                    parameters.Curve = ECCurve.NamedCurves.nistP384;
-                    break;
-                case EllipticalCurves.P521:
-                    parameters.Curve = ECCurve.NamedCurves.nistP521;
-                    break;
-                default:
-                    Errors.ThrowNotSupportedCurve(Crv);
-                    break;
             }
 
             return parameters;
@@ -299,45 +242,23 @@ namespace JsonWebToken
         /// <summary>
         /// Generates a <see cref="ECJwk"/>.
         /// </summary>
-        /// <param name="curveId"></param>
+        /// <param name="curve"></param>
         /// <param name="withPrivateKey"></param>
         /// <returns></returns>
-        public static ECJwk GenerateKey(string curveId, bool withPrivateKey) => GenerateKey(curveId, withPrivateKey, algorithm: null);
+        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey) => GenerateKey(curve, withPrivateKey, algorithm: null);
 
         /// <summary>
         /// Generates a <see cref="ECJwk"/>.
         /// </summary>
-        /// <param name="curveId"></param>
+        /// <param name="curve"></param>
         /// <param name="withPrivateKey"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static ECJwk GenerateKey(string curveId, bool withPrivateKey, string algorithm)
+        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, string algorithm)
         {
-            if (string.IsNullOrEmpty(curveId))
-            {
-                throw new ArgumentNullException(nameof(curveId));
-            }
-
-            ECCurve curve = default;
-            switch (curveId)
-            {
-                case EllipticalCurves.P256:
-                    curve = ECCurve.NamedCurves.nistP256;
-                    break;
-                case EllipticalCurves.P384:
-                    curve = ECCurve.NamedCurves.nistP384;
-                    break;
-                case EllipticalCurves.P521:
-                    curve = ECCurve.NamedCurves.nistP521;
-                    break;
-                default:
-                    Errors.ThrowNotSupportedCurve(curveId);
-                    break;
-            }
-
             using (var ecdsa = ECDsa.Create())
             {
-                ecdsa.GenerateKey(curve);
+                ecdsa.GenerateKey(curve.CurveParameters);
                 var parameters = ecdsa.ExportParameters(withPrivateKey);
                 return FromParameters(parameters, algorithm);
             }
@@ -350,7 +271,7 @@ namespace JsonWebToken
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = false, SkipValidation = true }));
                 writer.WriteStartObject();
-                writer.WriteString(JwkParameterNames.CrvUtf8, Crv);
+                writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
                 writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
                 writer.WriteString(JwkParameterNames.XUtf8, Base64Url.Base64UrlEncode(X));
                 writer.WriteString(JwkParameterNames.YUtf8, Base64Url.Base64UrlEncode(Y));
@@ -359,37 +280,6 @@ namespace JsonWebToken
 
                 return bufferWriter.WrittenSpan.ToArray();
             }
-        }
-
-        internal static ECJwk FromDictionary(Dictionary<string, object> jObject)
-        {
-            if (jObject == null)
-            {
-                return null;
-            }
-
-            var key = new ECJwk();
-            if (jObject.TryGetValue("crv", out object crv))
-            {
-                key.Crv = (string)crv;
-            }
-
-            if (jObject.TryGetValue("x", out object x))
-            {
-                key.X = Base64Url.Base64UrlDecode((string)x);
-            }
-
-            if (jObject.TryGetValue("y", out object y))
-            {
-                key.Y = Base64Url.Base64UrlDecode((string)y);
-            }
-
-            if (jObject.TryGetValue("d", out object d))
-            {
-                key.D = Base64Url.Base64UrlDecode((string)d);
-            }
-
-            return key;
         }
 
         /// <summary>
@@ -449,7 +339,7 @@ namespace JsonWebToken
             {
                 Y = Base64Url.Base64UrlDecode(jwtObject.TryGetValue(JwkParameterNames.YUtf8, out var property) ? (string)property.Value : null),
                 X = Base64Url.Base64UrlDecode(jwtObject.TryGetValue(JwkParameterNames.XUtf8, out property) ? (string)property.Value : null),
-                Crv = jwtObject.TryGetValue(JwkParameterNames.CrvUtf8, out property) ? (string)property.Value : null
+                Crv = EllipticalCurve.FromString(jwtObject.TryGetValue(JwkParameterNames.CrvUtf8, out property) ? (string)property.Value : null)
             };
 
 
@@ -459,7 +349,7 @@ namespace JsonWebToken
         internal JwtObject AsJwtObject()
         {
             var jwtObject = new JwtObject();
-            jwtObject.Add(new JwtProperty(JwkParameterNames.CrvUtf8, Crv));
+            jwtObject.Add(new JwtProperty(JwkParameterNames.CrvUtf8, Crv.Name));
             jwtObject.Add(new JwtProperty(JwkParameterNames.XUtf8, Base64Url.Base64UrlEncode(X)));
             jwtObject.Add(new JwtProperty(JwkParameterNames.YUtf8, Base64Url.Base64UrlEncode(Y)));
 
@@ -509,7 +399,7 @@ namespace JsonWebToken
                                         case 3:
                                             if (*pPropertyName == (byte)'c' && *((short*)pPropertyName + 1) == 30322)
                                             {
-                                                key.Crv = reader.GetString();
+                                                key.Crv = EllipticalCurve.FromSpan(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
                                             else
                                             {
@@ -554,7 +444,7 @@ namespace JsonWebToken
                     case JwtTokenType.String:
                         if (name.SequenceEqual(JwkParameterNames.CrvUtf8))
                         {
-                            key.Crv = (string)property.Value;
+                            key.Crv = EllipticalCurve.FromString((string)property.Value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.XUtf8))
                         {
@@ -583,7 +473,7 @@ namespace JsonWebToken
 
         internal override void WriteComplementTo(ref Utf8JsonWriter writer)
         {
-            writer.WriteString(JwkParameterNames.CrvUtf8, Crv);
+            writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
             writer.WriteString(JwkParameterNames.XUtf8, Base64Url.Base64UrlEncode(X));
             writer.WriteString(JwkParameterNames.YUtf8, Base64Url.Base64UrlEncode(Y));
             if (D != null)

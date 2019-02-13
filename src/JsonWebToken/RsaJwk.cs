@@ -120,18 +120,8 @@ namespace JsonWebToken
         /// </summary>
         public RsaJwk(byte[] e, byte[] n)
         {
-            if (e == null)
-            {
-                throw new ArgumentNullException(nameof(e));
-            }
-
-            if (n == null)
-            {
-                throw new ArgumentNullException(nameof(n));
-            }
-
-            E = CloneByteArray(e);
-            N = CloneByteArray(n);
+            E = e ?? throw new ArgumentNullException(nameof(e));
+            N = n ?? throw new ArgumentNullException(nameof(n));
         }
 
         /// <summary>
@@ -160,13 +150,8 @@ namespace JsonWebToken
         {
         }
 
-        //internal RsaJwk(JwkInfo info)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
         /// <inheritsdoc />
-        public override string Kty => JwkTypeNames.Rsa;
+        public override ReadOnlySpan<byte> Kty => JwkTypeNames.Rsa;
 
         /// <summary>
         /// Exports the RSA parameters from the <see cref="RsaJwk"/>.
