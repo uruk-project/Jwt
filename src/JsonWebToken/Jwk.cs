@@ -40,7 +40,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'kty' (Key Type).
         /// </summary>
-        public abstract string Kty { get; }
+        public abstract ReadOnlySpan<byte> Kty { get; }
 
         // TODO : Replace string by another type faster to compare (4 comparisons).
         /// <summary>
@@ -102,7 +102,7 @@ namespace JsonWebToken
                 return _certificateChain;
             }
         }
-
+        
         /// <summary>
         /// Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.
         /// </summary>
@@ -225,19 +225,18 @@ namespace JsonWebToken
         {
             if (jwk.TryGetValue(JwkParameterNames.KtyUtf8, out var property))
             {
-                switch ((string)property.Value)
+                ReadOnlySpan<byte> kty = Encoding.UTF8.GetBytes((string)property.Value);
+                if (kty.SequenceEqual(JwkTypeNames.Octet))
                 {
-                    case JwkTypeNames.Octet:
-                        return SymmetricJwk.Populate(jwk);
-
-                    case JwkTypeNames.EllipticCurve:
-                        return ECJwk.Populate(jwk);
-
-                    case JwkTypeNames.Rsa:
-                        return RsaJwk.Populate(jwk);
-
-                    default:
-                        break;
+                    return SymmetricJwk.Populate(jwk);
+                }
+                else if (kty.SequenceEqual(JwkTypeNames.EllipticCurve))
+                {
+                    return ECJwk.Populate(jwk);
+                }
+                else if (kty.SequenceEqual(JwkTypeNames.Rsa))
+                {
+                    return RsaJwk.Populate(jwk);
                 }
             }
 
@@ -431,13 +430,6 @@ namespace JsonWebToken
 
             Errors.ThrowMalformedKey();
             return null;
-        }
-
-        internal static byte[] CloneByteArray(byte[] array)
-        {
-            var clone = new byte[array.Length];
-            array.CopyTo(clone, 0);
-            return clone;
         }
 
         internal void Populate(ReadOnlySpan<byte> name, string value)

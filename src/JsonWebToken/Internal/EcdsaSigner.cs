@@ -11,7 +11,6 @@ namespace JsonWebToken.Internal
         private readonly ObjectPool<ECDsa> _hashAlgorithmPool;
         private readonly int _hashSize;
         private readonly HashAlgorithmName _hashAlgorithm;
-        private readonly ECDsa _ecdsa;
         private bool _disposed;
 
         public EcdsaSigner(ECJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
@@ -33,24 +32,8 @@ namespace JsonWebToken.Internal
             }
 
             _hashAlgorithm = algorithm.HashAlgorithm;
+            _hashSize = key.Crv.HashSize;
 
-            switch (key.Crv)
-            {
-                case EllipticalCurves.P256:
-                    _hashSize = 64;
-                    break;
-                case EllipticalCurves.P384:
-                    _hashSize = 96;
-                    break;
-                case EllipticalCurves.P521:
-                    _hashSize = 132;
-                    break;
-                default:
-                    Errors.ThrowNotSupportedCurve(key.Crv);
-                    break;
-            }
-
-            _ecdsa = key.CreateECDsa(algorithm, willCreateSignatures);
             _hashAlgorithmPool = new ObjectPool<ECDsa>(new ECDsaObjectPoolPolicy(key, algorithm, willCreateSignatures));
         }
 
@@ -70,10 +53,11 @@ namespace JsonWebToken.Internal
                 Errors.ThrowObjectDisposed(GetType());
             }
 
+            var ecdsa = _hashAlgorithmPool.Get();
 #if !NETSTANDARD2_0
-            return _ecdsa.TrySignData(input, destination, _hashAlgorithm, out bytesWritten);
+            return ecdsa.TrySignData(input, destination, _hashAlgorithm, out bytesWritten);
 #else
-            var result = _ecdsa.SignData(input.ToArray(), _hashAlgorithm);
+            var result = ecdsa.SignData(input.ToArray(), _hashAlgorithm);
             bytesWritten = result.Length;
             result.CopyTo(destination);
             return true;
@@ -98,10 +82,11 @@ namespace JsonWebToken.Internal
                 Errors.ThrowObjectDisposed(GetType());
             }
 
+            var ecdsa = _hashAlgorithmPool.Get();
 #if !NETSTANDARD2_0
-            return _ecdsa.VerifyData(input, signature, _hashAlgorithm);
+            return ecdsa.VerifyData(input, signature, _hashAlgorithm);
 #else
-            return _ecdsa.VerifyData(input.ToArray(), signature.ToArray(), _hashAlgorithm);
+            return ecdsa.VerifyData(input.ToArray(), signature.ToArray(), _hashAlgorithm);
 #endif
         }
 
@@ -112,7 +97,6 @@ namespace JsonWebToken.Internal
             {
                 if (disposing)
                 {
-                    _ecdsa?.Dispose();
                     _hashAlgorithmPool.Dispose();
                 }
 

@@ -14,17 +14,14 @@ namespace JsonWebToken
     /// </summary>
     public sealed class SymmetricJwk : Jwk
     {
+        private byte[] _k;
+
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         public SymmetricJwk(byte[] k)
         {
-            if (k == null)
-            {
-                throw new ArgumentNullException(nameof(k));
-            }
-
-            K = CloneByteArray(k);
+            _k = k ?? throw new ArgumentNullException(nameof(k));
         }
 
         /// <summary>
@@ -32,7 +29,7 @@ namespace JsonWebToken
         /// </summary>
         public SymmetricJwk(ReadOnlySpan<byte> k)
         {
-            K = k.ToArray();
+            _k = k.ToArray();
         }
 
         /// <summary>
@@ -45,7 +42,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(k));
             }
 
-            K = Base64Url.Base64UrlDecode(k);
+            _k = Base64Url.Base64UrlDecode(k);
         }
 
         /// <summary>
@@ -54,17 +51,22 @@ namespace JsonWebToken
         public SymmetricJwk()
         {
         }
-        
+
         /// <inheritsdoc />
-        public override string Kty => JwkTypeNames.Octet;
+        public override ReadOnlySpan<byte> Kty => JwkTypeNames.Octet;
 
         /// <summary>
         /// Gets or sets the 'k' (Key Value).
         /// </summary>
-        public byte[] K { get; set; }
+        public ReadOnlySpan<byte> K => _k;
 
         /// <inheritsdoc />
         public override int KeySizeInBits => K.Length != 0 ? K.Length << 3 : 0;
+
+        private void SetKeyValue(byte[] k)
+        {
+            _k = k;
+        }
 
         /// <summary>
         /// Creates a new <see cref="SymmetricJwk"/> from the <paramref name="bytes"/>.
@@ -72,6 +74,11 @@ namespace JsonWebToken
         /// <param name="bytes"></param>
         /// <returns></returns>
         public static SymmetricJwk FromByteArray(byte[] bytes) => FromByteArray(bytes, computeThumbprint: false);
+
+        internal byte[] ToArray()
+        {
+            return _k;
+        }
 
         /// <summary>
         /// Returns a new instance of <see cref="SymmetricJwk"/>.
@@ -298,7 +305,7 @@ namespace JsonWebToken
                                         case 1:
                                             if (*pPropertyName == (byte)'k')
                                             {
-                                                key.K = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                                key.SetKeyValue(Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan));
                                             }
                                             break;
 
@@ -347,7 +354,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override byte[] ToByteArray()
         {
-            return K;
+            return _k;
         }
 
         internal static SymmetricJwk Populate(JwtObject @object)
@@ -365,7 +372,7 @@ namespace JsonWebToken
                     case JwtTokenType.String:
                         if (name.SequenceEqual(JwkParameterNames.KUtf8))
                         {
-                            key.K = Base64Url.Base64UrlDecode((string)property.Value);
+                            key.SetKeyValue(Base64Url.Base64UrlDecode((string)property.Value));
                         }
                         else
                         {

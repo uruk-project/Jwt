@@ -91,7 +91,7 @@ namespace JsonWebToken.Performance
         {
             if (token.StartsWith("JWE-"))
             {
-                var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: Tokens.EncryptionKey.K, enc: JweEncryption.A128CBC_HS256, alg: JweAlgorithm.A128KW);
+                var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: Tokens.EncryptionKey.K.ToArray(), enc: JweEncryption.A128CBC_HS256, alg: JweAlgorithm.A128KW);
                 if (value == null)
                 {
                     throw new Exception();
@@ -99,7 +99,7 @@ namespace JsonWebToken.Performance
             }
             else
             {
-                var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: Tokens.SigningKey.K, alg: JwsAlgorithm.HS256);
+                var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: Tokens.SigningKey.K.ToArray(), alg: JwsAlgorithm.HS256);
                 if (value == null)
                 {
                     throw new Exception();
@@ -111,7 +111,7 @@ namespace JsonWebToken.Performance
         //[ArgumentsSource(nameof(GetNotEncryptedTokens))]
         public void JwtDotNet(string token)
         {
-            var value = JwtDotNetDecoder.DecodeToObject(Tokens.ValidTokens[token], SymmetricKey.K, verify: true);
+            var value = JwtDotNetDecoder.DecodeToObject(Tokens.ValidTokens[token], SymmetricKey.K.ToArray(), verify: true);
             if (value == null)
             {
                 throw new Exception();

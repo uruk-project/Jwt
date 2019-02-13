@@ -37,7 +37,7 @@ namespace JsonWebToken.Tests
 
         private readonly ECJwk _privateEcc256Key = new ECJwk
         (
-            crv: "P-256",
+            crv: EllipticalCurve.P256,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
             y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck",
             d: "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
@@ -45,14 +45,14 @@ namespace JsonWebToken.Tests
 
         private readonly ECJwk _publicEcc256Key = new ECJwk
         (
-            crv: "P-256",
+            crv: EllipticalCurve.P256,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
             y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck"
         );
 
         private readonly ECJwk _publicEcc384Key = new ECJwk
         (
-            crv: "P-384",
+            crv: EllipticalCurve.P384,
             d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
             x: "2ius4b5QcXto95wPhpQsX3IGAtnT9mNjMvds18_AgU3wNpOkppfuT6wu-y-fnsVU",
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
@@ -60,7 +60,7 @@ namespace JsonWebToken.Tests
 
         private readonly ECJwk _privateEcc384Key = new ECJwk
         (
-            crv: "P-384",
+            crv: EllipticalCurve.P384,
             d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
             x: "2ius4b5QcXto95wPhpQsX3IGAtnT9mNjMvds18_AgU3wNpOkppfuT6wu-y-fnsVU",
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
@@ -68,7 +68,7 @@ namespace JsonWebToken.Tests
 
         private readonly ECJwk _privateEcc512Key = new ECJwk
         (
-            crv: "P-521",
+            crv: EllipticalCurve.P521,
             d: "Adri8PbGJBWN5upp_67cKF8E0ADCF-w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HISTMh_RSmFFhTfBH",
             x: "AEeo_Y06znu6MVjyvJW2_SX_JKK2DxbxF3QjAqkZhMTvwgLc3Z073vFwwiCHKcOwK2b5H8H4a7PDN6DGJ6YJjpN0",
             y: "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y"
@@ -76,7 +76,7 @@ namespace JsonWebToken.Tests
 
         private readonly ECJwk _publicEcc512Key = new ECJwk
         (
-            crv: "P-521",
+            crv: EllipticalCurve.P521,
             x: "AEeo_Y06znu6MVjyvJW2_SX_JKK2DxbxF3QjAqkZhMTvwgLc3Z073vFwwiCHKcOwK2b5H8H4a7PDN6DGJ6YJjpN0",
             y: "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y"
         );

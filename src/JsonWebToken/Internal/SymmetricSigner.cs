@@ -53,13 +53,13 @@ namespace JsonWebToken.Internal
             switch (Algorithm.Name)
             {
                 case "HS256":
-                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha256ObjectPoolPolicy(key.K));
+                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha256ObjectPoolPolicy(key.ToArray()));
                     break;
                 case "HS384":
-                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha384ObjectPoolPolicy(key.K));
+                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha384ObjectPoolPolicy(key.ToArray()));
                     break;
                 case "HS512":
-                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha512ObjectPoolPolicy(key.K));
+                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha512ObjectPoolPolicy(key.ToArray()));
                     break;
                 default:
                     Errors.ThrowNotSupportedKeyedHashAlgorithm(algorithm);
