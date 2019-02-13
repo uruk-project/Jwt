@@ -305,7 +305,7 @@ namespace JsonWebToken
                                         case 1:
                                             if (*pPropertyName == (byte)'k')
                                             {
-                                                key.SetKeyValue(Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan));
+                                                key._k = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
                                             break;
 
@@ -372,7 +372,7 @@ namespace JsonWebToken
                     case JwtTokenType.String:
                         if (name.SequenceEqual(JwkParameterNames.KUtf8))
                         {
-                            key.SetKeyValue(Base64Url.Base64UrlDecode((string)property.Value));
+                            key._k = Base64Url.Base64UrlDecode((string)property.Value);
                         }
                         else
                         {
