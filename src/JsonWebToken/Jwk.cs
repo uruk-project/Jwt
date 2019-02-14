@@ -46,7 +46,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'use' (Public Key Use).
         /// </summary>
-        public string Use { get; set; }
+        public byte[] Use { get; set; }
 
         /// <summary>
         /// Gets the 'x5c' collection (X.509 Certificate Chain).
@@ -102,7 +102,7 @@ namespace JsonWebToken
                 return _certificateChain;
             }
         }
-        
+
         /// <summary>
         /// Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.
         /// </summary>
@@ -444,7 +444,7 @@ namespace JsonWebToken
             }
             else if (name.SequenceEqual(JwkParameterNames.UseUtf8))
             {
-                Use = value;
+                Use = Encoding.UTF8.GetBytes(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.X5uUtf8))
             {
@@ -522,7 +522,7 @@ namespace JsonWebToken
                     key.Kid = reader.GetString();
                     break;
                 case (byte)'u' when *pPropertyNameShort == 25971 /* use */ :
-                    key.Use = reader.GetString();
+                    key.Use = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray();
                     break;
                 case (byte)'x' when *pPropertyNameShort == 25397 /* x5c */ :
                     while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)

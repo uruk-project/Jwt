@@ -1,4 +1,5 @@
 ﻿using JsonWebToken;
+using JsonWebToken.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -15,7 +16,7 @@ namespace Performance
         private const string Token1 = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiaWF0IjoxNTA4MTg0ODQ1LCJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJleHAiOjE2MjgxODQ4NDV9.i2JGGP64mggd3WqUj7oX8_FyYh9e_m1MNWI9Q-f-W3g";
         private static readonly Jwk SharedKey = new SymmetricJwk("GdaXeVyiJwKmz5LFhcbcng")
         {
-            Use = "sig",
+            Use = JwkUseNames.Sig.ToArray(),
             Kid = "kid-hs256",
             Alg = SignatureAlgorithm.HmacSha256.Name
         };
