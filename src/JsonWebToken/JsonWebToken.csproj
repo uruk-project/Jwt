@@ -35,14 +35,14 @@
     <PackageReference Include="System.Buffers" Version="4.5.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
     <PackageReference Include="System.Security.Cryptography.Cng" Version="4.5.0" />
-    <PackageReference Include="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19073.11">
+    <PackageReference Include="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19113.10">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
-    <PackageReference Include="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19073.11">
+    <PackageReference Include="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19113.10">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
