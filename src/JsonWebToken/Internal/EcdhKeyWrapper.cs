@@ -85,9 +85,9 @@ namespace JsonWebToken.Internal
             if (Algorithm.ProduceEncryptionKey)
             {
                 var key = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
-                using (KeyWrapper aesKeyWrapProvider = key.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
+                using (KeyWrapper keyWrapper = key.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
                 {
-                    return aesKeyWrapProvider.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
+                    return keyWrapper.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
                 }
             }
             else
@@ -121,9 +121,9 @@ namespace JsonWebToken.Internal
             if (Algorithm.ProduceEncryptionKey)
             {
                 var kek = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
-                using (KeyWrapper aesKeyWrapProvider = kek.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
+                using (KeyWrapper keyWrapper = kek.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
                 {
-                    return aesKeyWrapProvider.TryWrapKey(null, header, destination, out contentEncryptionKey, out bytesWritten);
+                    return keyWrapper.TryWrapKey(null, header, destination, out contentEncryptionKey, out bytesWritten);
                 }
             }
             else

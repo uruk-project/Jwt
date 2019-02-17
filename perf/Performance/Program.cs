@@ -60,13 +60,14 @@ namespace Performance
                 ExpirationTime = expires,
                 Issuer = "https://idp.example.com/",
                 Audience = "636C69656E745F6964",
-                Key = SharedKey
+                Key = SharedKey, 
+                Algorithm = SharedKey.Alg
             };
             var jwe = new JweDescriptor
             {
                 Key = EncryptionKey,
                 EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                Algorithm = KeyManagementAlgorithm.Direct,
+                Algorithm = (KeyManagementAlgorithm)EncryptionKey.Alg,
                 Payload = jws
             };
             var jwX = new PlaintextJweDescriptor("Hello world !");

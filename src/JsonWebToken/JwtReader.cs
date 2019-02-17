@@ -531,8 +531,8 @@ namespace JsonWebToken
             Span<byte> decryptedBytes,
             out int bytesWritten)
         {
-            var decryptionProvider = _authenticatedEncryptionFactory.Create(key, encryptionAlgorithm);
-            if (decryptionProvider == null)
+            var decryptor = _authenticatedEncryptionFactory.Create(key, encryptionAlgorithm);
+            if (decryptor == null)
             {
                 return Errors.TryWriteError(out bytesWritten);
             }
@@ -583,7 +583,7 @@ namespace JsonWebToken
                 Base64Url.Base64UrlDecode(rawAuthenticationTag, authenticationTag, out int authenticationTagBytesConsumed, out int authenticationTagBytesWritten);
                 Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
 
-                if (!decryptionProvider.TryDecrypt(
+                if (!decryptor.TryDecrypt(
                     ciphertext,
                     header,
                     initializationVector,
@@ -731,13 +731,13 @@ namespace JsonWebToken
 
         private bool TryValidateSignature(ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signature, Jwk key, SignatureAlgorithm algorithm)
         {
-            var signatureProvider = _signatureFactory.Create(key, algorithm, willCreateSignatures: false);
-            if (signatureProvider == null)
+            var signer = _signatureFactory.Create(key, algorithm, willCreateSignatures: false);
+            if (signer == null)
             {
                 return false;
             }
 
-            return signatureProvider.Verify(contentBytes, signature);
+            return signer.Verify(contentBytes, signature);
         }
 
         /// <summary>
