@@ -488,6 +488,9 @@ namespace JsonWebToken
                             key.Populate(name, (string)property.Value);
                         }
                         break;
+                    case JwtTokenType.Utf8String:
+                        key.Populate(name, (byte[])property.Value);
+                        break;
                     default:
                         break;
                 }

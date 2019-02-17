@@ -1,14 +1,13 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -33,6 +32,15 @@ namespace JsonWebToken
         public JwsDescriptor(JwtObject header, JwtObject payload)
             : base(header, payload)
         {
+        }
+
+        /// <summary>
+        /// Gets or sets the algorithm header.
+        /// </summary>
+        public SignatureAlgorithm Algorithm
+        {
+            get => GetHeaderParameter<byte[]>(HeaderParameters.AlgUtf8);
+            set => SetHeaderParameter(HeaderParameters.AlgUtf8, (byte[])value);
         }
 
         /// <summary>
@@ -418,12 +426,12 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override void Encode(EncodingContext context, IBufferWriter<byte> output)
         {
-            Signer signatureProvider = null;
-            var alg = (SignatureAlgorithm)(Algorithm ?? Key?.Alg);
+            Signer signer = null;
+            var alg = (Algorithm ?? Key?.Alg) ?? SignatureAlgorithm.None;
             if (Key != null)
             {
-                signatureProvider = context.SignatureFactory.Create(Key, alg, willCreateSignatures: true);
-                if (signatureProvider == null)
+                signer = context.SignatureFactory.Create(Key, alg, willCreateSignatures: true);
+                if (signer == null)
                 {
                     Errors.ThrowNotSupportedSignatureAlgorithm(alg, Key);
                 }
@@ -447,8 +455,8 @@ namespace JsonWebToken
             {
                 Payload.Serialize(payloadBufferWriter);
                 var payloadJson = payloadBufferWriter.WrittenSpan;
-                int length = Base64Url.GetArraySizeRequiredToEncode((int)payloadJson.Length)
-                           + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signatureProvider.HashSizeInBytes))
+                int length = Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
+                           + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signer.HashSizeInBytes))
                            + (Constants.JwsSegmentCount - 1);
                 ReadOnlySpan<byte> headerJson = default;
                 var headerCache = context.HeaderCache;
@@ -463,9 +471,9 @@ namespace JsonWebToken
                     {
                         Header.Serialize(headerBufferWriter);
                         headerJson = headerBufferWriter.WrittenSpan;
-                        length += Base64Url.GetArraySizeRequiredToEncode((int)headerJson.Length);
+                        length += Base64Url.GetArraySizeRequiredToEncode(headerJson.Length);
                     }
-                    
+
                     var buffer = output.GetSpan(length).Slice(0, length);
                     int headerBytesWritten;
                     if (cachedHeader != null)
@@ -483,10 +491,10 @@ namespace JsonWebToken
                     TryEncodeUtf8ToBase64Url(payloadJson, buffer.Slice(headerBytesWritten + 1), out int payloadBytesWritten);
                     buffer[payloadBytesWritten + headerBytesWritten + 1] = dot;
                     int bytesWritten = 0;
-                    if (signatureProvider != null)
+                    if (signer != null)
                     {
-                        Span<byte> signature = stackalloc byte[signatureProvider.HashSizeInBytes];
-                        bool success = signatureProvider.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signatureBytesWritten);
+                        Span<byte> signature = stackalloc byte[signer.HashSizeInBytes];
+                        bool success = signer.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signatureBytesWritten);
                         Debug.Assert(success);
                         Debug.Assert(signature.Length == signatureBytesWritten);
 
@@ -508,9 +516,8 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override void Validate()
         {
-            ValidateHeader(HeaderParameters.AlgUtf8, JwtTokenType.String);
-
             base.Validate();
+            ValidateHeader(HeaderParameters.AlgUtf8, JwtTokenType.Utf8String);
         }
 
         /// <summary>

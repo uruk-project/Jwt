@@ -14,7 +14,6 @@ namespace JsonWebToken
     /// </summary>
     public abstract class EncryptedJwtDescriptor<TPayload> : JwtDescriptor<TPayload> where TPayload : class
     {
-        private const byte dot = (byte)'.';
 #if NETSTANDARD2_0
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 #endif
@@ -36,6 +35,15 @@ namespace JsonWebToken
         public EncryptedJwtDescriptor(TPayload payload)
             : base(payload)
         {
+        }
+
+        /// <summary>
+        /// Gets or sets the algorithm header.
+        /// </summary>
+        public KeyManagementAlgorithm Algorithm
+        {
+            get => (KeyManagementAlgorithm)GetHeaderParameter<byte[]>(HeaderParameters.AlgUtf8);
+            set => SetHeaderParameter(HeaderParameters.AlgUtf8, (byte[])value);
         }
 
         /// <summary>
@@ -62,7 +70,7 @@ namespace JsonWebToken
         protected void EncryptToken(EncodingContext context, ReadOnlySpan<byte> payload, IBufferWriter<byte> output)
         {
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
-            KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)Algorithm;
+            KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)(Algorithm ?? Key?.Alg);
             bool isDirectEncryption = contentEncryptionAlgorithm == KeyManagementAlgorithm.Direct;
 
             AuthenticatedEncryptor encryptionProvider = null;
@@ -110,7 +118,7 @@ namespace JsonWebToken
                 {
                     header.Serialize(bufferWriter);
                     var headerJson = bufferWriter.WrittenSpan;
-                    int headerJsonLength = (int)headerJson.Length;
+                    int headerJsonLength = headerJson.Length;
                     int base64EncodedHeaderLength = Base64Url.GetArraySizeRequiredToEncode(headerJsonLength);
 
                     byte[] arrayByteToReturnToPool = null;
@@ -173,17 +181,17 @@ namespace JsonWebToken
                         Span<byte> encryptedToken = output.GetSpan(encryptionLength).Slice(0, encryptionLength);
 
                         base64EncodedHeader.CopyTo(encryptedToken);
-                        encryptedToken[bytesWritten++] = dot;
+                        encryptedToken[bytesWritten++] = (byte)'.';
                         if (wrappedKey != null)
                         {
                             bytesWritten += Base64Url.Base64UrlEncode(wrappedKey, encryptedToken.Slice(bytesWritten));
                         }
 
-                        encryptedToken[bytesWritten++] = dot;
+                        encryptedToken[bytesWritten++] = (byte)'.';
                         bytesWritten += Base64Url.Base64UrlEncode(nonce, encryptedToken.Slice(bytesWritten));
-                        encryptedToken[bytesWritten++] = dot;
+                        encryptedToken[bytesWritten++] = (byte)'.';
                         bytesWritten += Base64Url.Base64UrlEncode(ciphertext, encryptedToken.Slice(bytesWritten));
-                        encryptedToken[bytesWritten++] = dot;
+                        encryptedToken[bytesWritten++] = (byte)'.';
                         bytesWritten += Base64Url.Base64UrlEncode(tag, encryptedToken.Slice(bytesWritten));
                         Debug.Assert(encryptionLength == bytesWritten);
                         output.Advance(encryptionLength);
@@ -212,7 +220,7 @@ namespace JsonWebToken
                 Errors.ThrowEncryptionFailed(encryptionAlgorithm, Key, ex);
             }
         }
-        
+
         private static bool TryEncodeUtf8ToBase64Url(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {
             bytesWritten = Base64Url.Base64UrlEncode(input, destination);

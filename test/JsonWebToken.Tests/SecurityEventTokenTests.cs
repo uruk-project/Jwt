@@ -20,7 +20,7 @@ namespace JsonWebToken.Tests
         {
             var descriptor = new SecurityEventTokenDescriptor();
             descriptor.Type = "secevent+jwt";
-            descriptor.Algorithm = SignatureAlgorithm.None.Name;
+            descriptor.Algorithm = SignatureAlgorithm.None;
             descriptor.Issuer = "https://scim.example.com";
             descriptor.IssuedAt = EpochTime.ToDateTime(1458496404);
             descriptor.JwtId = "4d3559ec67504aaba65d40b0363faad8";

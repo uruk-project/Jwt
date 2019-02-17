@@ -133,6 +133,7 @@ namespace JsonWebToken
                                 switch (valueSpan.Length)
                                 {
                                     case 2:
+                                        /* EC */
                                         if (*pKtyShort == 17221u)
                                         {
                                             return ECJwk.FromJsonReaderFast(ref reader);
@@ -143,9 +144,11 @@ namespace JsonWebToken
                                     case 3:
                                         switch (*pKtyShort)
                                         {
-                                            case 21330 when *(pKty + 2) == (byte)'A' /* RSA */:
+                                            /* RSA */
+                                            case 21330 when *(pKty + 2) == (byte)'A':
                                                 return RsaJwk.FromJsonReaderFast(ref reader);
-                                            case 25455 when *(pKty + 2) == (byte)'t' /* oct */:
+                                            /* oct */
+                                            case 25455 when *(pKty + 2) == (byte)'t':
                                                 return SymmetricJwk.FromJsonReaderFast(ref reader);
                                             default:
                                                 Errors.ThrowNotSupportedJwk(Encoding.UTF8.GetString(valueSpan.ToArray()));
@@ -171,6 +174,29 @@ namespace JsonWebToken
                         switch (type)
                         {
                             case JsonTokenType.String:
+                                fixed (byte* pName = name)
+                                {
+                                    if (name.Length == 3)
+                                    {
+                                        short* pNameShort = (short*)(pName + 1);
+                                        switch (name[0])
+                                        {
+                                            /* alg */
+                                            case (byte)'a' when *pNameShort == 26476:
+                                            /* use */
+                                            case (byte)'u' when *pNameShort == 25971:
+                                            /* x5t */
+                                            case (byte)'x' when *pNameShort == 29749:
+                                                jwk.Add(new JwtProperty(name, reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray()));
+                                                continue;
+                                        }
+                                    }
+                                    else if (name.Length == 8 && name.SequenceEqual(JwkParameterNames.X5tS256Utf8))
+                                    {
+                                        jwk.Add(new JwtProperty(name, reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray()));
+                                        continue;
+                                    }
+                                }
                                 jwk.Add(new JwtProperty(name, reader.GetString()));
                                 break;
                             case JsonTokenType.StartObject:
@@ -218,7 +244,8 @@ namespace JsonWebToken
                 }
             }
 
-            return FromJwtObject(jwk);
+            Errors.ThrowMalformedKey();
+            return null;
         }
 
         private static Jwk FromJwtObject(JwtObject jwk)
@@ -434,17 +461,9 @@ namespace JsonWebToken
 
         internal void Populate(ReadOnlySpan<byte> name, string value)
         {
-            if (name.SequenceEqual(JwkParameterNames.AlgUtf8))
-            {
-                Alg = Encoding.UTF8.GetBytes(value);
-            }
-            else if (name.SequenceEqual(JwkParameterNames.KidUtf8))
+            if (name.SequenceEqual(JwkParameterNames.KidUtf8))
             {
                 Kid = value;
-            }
-            else if (name.SequenceEqual(JwkParameterNames.UseUtf8))
-            {
-                Use = Encoding.UTF8.GetBytes(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.X5uUtf8))
             {
@@ -472,7 +491,15 @@ namespace JsonWebToken
 
         internal void Populate(ReadOnlySpan<byte> name, byte[] value)
         {
-            if (name.SequenceEqual(JwkParameterNames.X5tS256Utf8))
+            if (name.SequenceEqual(JwkParameterNames.AlgUtf8))
+            {
+                Alg = value;
+            }
+            else if (name.SequenceEqual(JwkParameterNames.UseUtf8))
+            {
+                Use = value;
+            }
+            else if (name.SequenceEqual(JwkParameterNames.X5tS256Utf8))
             {
                 X5tS256 = value;
             }
@@ -515,26 +542,32 @@ namespace JsonWebToken
             short* pPropertyNameShort = (short*)(pPropertytName + 1);
             switch (*pPropertytName)
             {
-                case (byte)'a' when *pPropertyNameShort == 26476 /* alg */ :
+                /* alg */
+                case (byte)'a' when *pPropertyNameShort == 26476:
                     key.Alg = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray();
                     break;
-                case (byte)'k' when *pPropertyNameShort == 25705 /* kid */ :
+                /* kid */
+                case (byte)'k' when *pPropertyNameShort == 25705:
                     key.Kid = reader.GetString();
                     break;
-                case (byte)'u' when *pPropertyNameShort == 25971 /* use */ :
+                /* use */
+                case (byte)'u' when *pPropertyNameShort == 25971:
                     key.Use = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray();
                     break;
-                case (byte)'x' when *pPropertyNameShort == 25397 /* x5c */ :
+                /* x5c */
+                case (byte)'x' when *pPropertyNameShort == 25397:
                     while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                     {
                         var x5xItem = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
                         key.X5c.Add(Base64Url.Base64UrlDecode(x5xItem));
                     }
                     break;
-                case (byte)'x' when *pPropertyNameShort == 29749 /* x5t */ :
+                /* x5t */
+                case (byte)'x' when *pPropertyNameShort == 29749:
                     key.X5t = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                     break;
-                case (byte)'x' when *pPropertyNameShort == 30005 /* x5u */ :
+                /* x5u */
+                case (byte)'x' when *pPropertyNameShort == 30005:
                     key.X5u = reader.GetString();
                     break;
 

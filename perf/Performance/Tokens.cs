@@ -159,7 +159,8 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new JwsDescriptor()
                 {
-                    Key = signingKey
+                    Key = signingKey,
+                    Algorithm = signingKey.Alg
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -184,7 +185,8 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new JwsDescriptor()
                 {
-                    Key = signingKey
+                    Key = signingKey,
+                    Algorithm = signingKey.Alg
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -207,6 +209,7 @@ namespace JsonWebToken.Performance
                     Payload = descriptor,
                     Key = encryptionKey,
                     EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
+                    Algorithm = KeyManagementAlgorithm.Aes128KW,
                     ContentType = "JWT"
                 };
 
@@ -217,7 +220,8 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new JwsDescriptor()
                 {
-                    Key = signingKey
+                    Key = signingKey,
+                    Algorithm = signingKey.Alg
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -240,6 +244,7 @@ namespace JsonWebToken.Performance
                     Payload = descriptor,
                     Key = encryptionKey,
                     EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
+                    Algorithm = KeyManagementAlgorithm.Aes128KW,
                     ContentType = "JWT",
                     CompressionAlgorithm = CompressionAlgorithm.Deflate
                 };
@@ -416,6 +421,7 @@ namespace JsonWebToken.Performance
         private static TokenState CreateInvalidToken(Jwk signingKey, TokenValidationStatus status, JwsDescriptor descriptor, string claim = null)
         {
             descriptor.Key = signingKey;
+            descriptor.Algorithm = signingKey.Alg;
 
             return CreateInvalidToken(status, descriptor);
         }

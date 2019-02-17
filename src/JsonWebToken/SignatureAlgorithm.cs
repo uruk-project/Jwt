@@ -276,7 +276,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Cast the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.
+        /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
         public unsafe static implicit operator SignatureAlgorithm(ReadOnlySpan<byte> value)
@@ -354,6 +354,20 @@ namespace JsonWebToken
             }
 
             return value.Id;
+        }
+
+        /// <summary>
+        /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="byte"/> array representation.
+        /// </summary>
+        /// <param name="value"></param>
+        public static implicit operator byte[](SignatureAlgorithm value)
+        {
+            if (value is null)
+            {
+                return Array.Empty<byte>();
+            }
+
+            return value.Utf8Name;
         }
 
         /// <inheritsddoc />

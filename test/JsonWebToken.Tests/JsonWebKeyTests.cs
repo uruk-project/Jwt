@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -18,7 +19,7 @@ namespace JsonWebToken.Tests
             var jwk = Jwk.FromJson(json);
 
             Assert.Equal(jwk.Kid, kid);
-            Assert.Equal(jwk.Alg, alg);
+            Assert.Equal(Encoding.UTF8.GetString(jwk.Alg), alg);
         }
 
         [Theory]
@@ -57,7 +58,7 @@ namespace JsonWebToken.Tests
             )
             {
                 Kid = "2011-04-29",
-                Alg = "RS256"
+                Alg = (SignatureAlgorithm)"RS256"
             };
 
             var thumbprint = key.ComputeThumbprint();

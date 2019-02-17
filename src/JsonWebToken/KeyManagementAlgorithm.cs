@@ -91,13 +91,13 @@ namespace JsonWebToken
         /// 'ECDH-ES+A256KW'
         /// </summary>
         public static readonly KeyManagementAlgorithm EcdhEsAes256KW = new KeyManagementAlgorithm(id: 53, "ECDH-ES+A256KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes256KW);
-  
+
         // TODO : Verify the pertinence
         /// <summary>
         /// Gets the algorithm identifier. 
         /// </summary>
         public sbyte Id { get; }
-    
+
         /// <summary>
         /// Gets the required key size, in bits.
         /// </summary>
@@ -197,7 +197,7 @@ namespace JsonWebToken
             : this(id, name, keyType, 0, null, produceEncryptedKey)
         {
         }
-    
+
         /// <summary>
         /// Initializes a new instance of <see cref="KeyManagementAlgorithm"/>. 
         /// </summary>
@@ -319,6 +319,15 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Cast the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        public static explicit operator KeyManagementAlgorithm(byte[] value)
+        {
+            return (KeyManagementAlgorithm)Encoding.UTF8.GetString(value ?? Array.Empty<byte>());
+        }
+
+        /// <summary>
         /// Cast the <see cref="string"/> into its <see cref="KeyManagementAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
@@ -335,6 +344,34 @@ namespace JsonWebToken
             }
 
             return algorithm;
+        }
+
+        /// <summary>
+        /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        public unsafe static implicit operator KeyManagementAlgorithm(ReadOnlySpan<byte> value)
+        {
+            if (value.IsEmpty)
+            {
+                return null;
+            }
+
+            return (KeyManagementAlgorithm)value.ToArray();
+        }
+        
+        /// <summary>
+        /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="byte"/> array representation.
+        /// </summary>
+        /// <param name="value"></param>
+        public static implicit operator byte[] (KeyManagementAlgorithm value)
+        {
+            if (value is null)
+            {
+                return Array.Empty<byte>();
+            }
+
+            return value.Utf8Name;
         }
 
         /// <inheritsddoc />

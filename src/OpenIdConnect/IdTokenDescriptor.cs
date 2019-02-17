@@ -291,7 +291,7 @@ namespace JsonWebToken
 
         public override void Validate()
         {
-            ValidateHeader(HeaderParameters.AlgUtf8, JwtTokenType.String);
+            ValidateHeader(HeaderParameters.AlgUtf8, new[] { JwtTokenType.String, JwtTokenType.Utf8String });
 
             RequireClaim(Claims.IssUtf8, JwtTokenType.String);
             RequireClaim(Claims.SubUtf8, JwtTokenType.String);

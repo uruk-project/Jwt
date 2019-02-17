@@ -18,7 +18,7 @@ namespace Performance
         {
             Use = JwkUseNames.Sig.ToArray(),
             Kid = "kid-hs256",
-            Alg = SignatureAlgorithm.HmacSha256.Name
+            Alg = SignatureAlgorithm.HmacSha256
         };
         private static readonly Jwk EncryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithm.Aes256KW);
         private static readonly JwtReader _reader = new JwtReader(SharedKey, EncryptionKey);
@@ -66,6 +66,7 @@ namespace Performance
             {
                 Key = EncryptionKey,
                 EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
+                Algorithm = KeyManagementAlgorithm.Direct,
                 Payload = jws
             };
             var jwX = new PlaintextJweDescriptor("Hello world !");

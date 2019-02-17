@@ -278,6 +278,40 @@ namespace JsonWebToken
             return key;
         }
 
+        /// <summary>
+        /// Generates a new <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static SymmetricJwk GenerateKey(int sizeInBits, SignatureAlgorithm algorithm)
+        {
+            var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
+            if (algorithm != null)
+            {
+                key.Alg = algorithm;
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Generates a new <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static SymmetricJwk GenerateKey(int sizeInBits, KeyManagementAlgorithm algorithm)
+        {
+            var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
+            if (algorithm != null)
+            {
+                key.Alg = (byte[])algorithm;
+            }
+
+            return key;
+        }
+
         private static byte[] GenerateKeyBytes(int sizeInBits)
         {
             using (var rnd = RandomNumberGenerator.Create())
@@ -390,6 +424,9 @@ namespace JsonWebToken
                         {
                             key.Populate(name, (string)property.Value);
                         }
+                        break;
+                    case JwtTokenType.Utf8String:
+                        key.Populate(name, (byte[])property.Value);
                         break;
                     default:
                         break;

@@ -134,11 +134,6 @@ namespace JsonWebToken
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-            if (descriptor.Algorithm == null)
-            {
-                descriptor.Algorithm = SignatureAlgorithm.None.Name;
-            }
-
             if (!IgnoreTokenValidation)
             {
                 descriptor.Validate();

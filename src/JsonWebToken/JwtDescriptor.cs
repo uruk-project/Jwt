@@ -1,13 +1,12 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -52,10 +51,10 @@ namespace JsonWebToken
                 _key = value;
                 if (value != null)
                 {
-                    if (value.Alg != null)
-                    {
-                        Algorithm = value.Alg;
-                    }
+                    //if (value.Alg != null)
+                    //{
+                    //    Algorithm = value.Alg;
+                    //}
 
                     if (value.Kid != null)
                     {
@@ -63,15 +62,6 @@ namespace JsonWebToken
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets or sets the algorithm header.
-        /// </summary>
-        public byte[] Algorithm
-        {
-            get => GetHeaderParameter<string>(HeaderParameters.AlgUtf8);
-            set => SetHeaderParameter(HeaderParameters.AlgUtf8, value);
         }
 
         /// <summary>
@@ -185,6 +175,23 @@ namespace JsonWebToken
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         protected void SetHeaderParameter(ReadOnlySpan<byte> utf8Name, string value)
+        {
+            if (value != null)
+            {
+                Header.Add(new JwtProperty(utf8Name, value));
+            }
+            else
+            {
+                Header.Add(new JwtProperty(utf8Name));
+            }
+        }
+        
+        /// <summary>
+        /// Sets the header parameter for a specified header name.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        protected void SetHeaderParameter(ReadOnlySpan<byte> utf8Name, byte[] value)
         {
             if (value != null)
             {

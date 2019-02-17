@@ -280,7 +280,7 @@ namespace JsonWebToken
         /// <param name="withPrivateKey"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, string algorithm)
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, byte[] algorithm)
         {
 #if NETSTANDARD2_0
             using (RSA rsa = new RSACng())
@@ -359,45 +359,46 @@ namespace JsonWebToken
                         key.Populate(name, (JwtArray)property.Value);
                         break;
                     case JwtTokenType.String:
-                        key.Populate(name, (string)property.Value);
-                        break;
-                    case JwtTokenType.Utf8String:
+                        string value = (string)property.Value;
                         if (name.SequenceEqual(JwkParameterNames.NUtf8))
                         {
-                            key.N = Base64Url.Base64UrlDecode( (string)property.Value);
+                            key.N = Base64Url.Base64UrlDecode(value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.EUtf8))
                         {
-                            key.E = Base64Url.Base64UrlDecode((string)property.Value);
+                            key.E = Base64Url.Base64UrlDecode(value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.DUtf8))
                         {
-                            key.D = Base64Url.Base64UrlDecode((string)property.Value);
+                            key.D = Base64Url.Base64UrlDecode(value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.DPUtf8))
                         {
-                            key.DP = Base64Url.Base64UrlDecode((string)property.Value);
+                            key.DP = Base64Url.Base64UrlDecode(value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.DQUtf8))
                         {
-                            key.DQ = Base64Url.Base64UrlDecode((string)property.Value);
+                            key.DQ = Base64Url.Base64UrlDecode(value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.PUtf8))
                         {
-                            key.P = Base64Url.Base64UrlDecode((string)property.Value);
+                            key.P = Base64Url.Base64UrlDecode(value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.QUtf8))
                         {
-                            key.Q = Base64Url.Base64UrlDecode((string)property.Value);
+                            key.Q = Base64Url.Base64UrlDecode(value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.QIUtf8))
                         {
-                            key.QI = Base64Url.Base64UrlDecode((string)property.Value);
+                            key.QI = Base64Url.Base64UrlDecode(value);
                         }
                         else
                         {
-                            key.Populate(name, (string)property.Value);
+                            key.Populate(name, value);
                         }
+                        break;
+                    case JwtTokenType.Utf8String:
+                        key.Populate(name, (byte[])property.Value);
                         break;
                     default:
                         break;
