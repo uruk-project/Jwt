@@ -68,7 +68,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the algorithm header.
         /// </summary>
-        public string Algorithm
+        public byte[] Algorithm
         {
             get => GetHeaderParameter<string>(HeaderParameters.AlgUtf8);
             set => SetHeaderParameter(HeaderParameters.AlgUtf8, value);

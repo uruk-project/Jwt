@@ -1,12 +1,11 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -27,6 +26,18 @@ namespace JsonWebToken
                 JwtThrowHelper.FormatMalformedJson();
             }
 
+            return ReadJsonObject(ref reader);
+        }
+
+        internal static JwtObject ReadJwtHeader(ref Utf8JsonReader reader)
+        {
+            // TODO :specialize this reader for Header
+            return ReadJsonObject(ref reader);
+        }
+
+        internal static JwtObject ReadJwtPayload(ref Utf8JsonReader reader)
+        {
+            // TODO :specialize this reader for Payload
             return ReadJsonObject(ref reader);
         }
 

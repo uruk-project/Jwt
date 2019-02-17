@@ -7,6 +7,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -285,7 +286,31 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
+        public static ECJwk FromParameters(ECParameters parameters, KeyManagementAlgorithm algorithm, bool computeThumbprint)
+        {
+            return FromParameters(parameters, algorithm.Utf8Name, computeThumbprint);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
+        public static ECJwk FromParameters(ECParameters parameters, SignatureAlgorithm algorithm, bool computeThumbprint)
+        {
+            return FromParameters(parameters, algorithm.Name, computeThumbprint);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
         public static ECJwk FromParameters(ECParameters parameters, string algorithm, bool computeThumbprint)
+        {
+            return FromParameters(parameters, Encoding.UTF8.GetBytes(algorithm), computeThumbprint);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
+        public static ECJwk FromParameters(ECParameters parameters, byte[] algorithm, bool computeThumbprint)
         {
             var key = new ECJwk(parameters);
             if (computeThumbprint)
@@ -304,7 +329,7 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public static ECJwk FromParameters(ECParameters parameters) => FromParameters(parameters, null, false);
+        public static ECJwk FromParameters(ECParameters parameters) => FromParameters(parameters, (byte[])null, false);
 
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
@@ -314,7 +339,7 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint) => FromParameters(parameters, null, computeThumbprint);
+        public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint) => FromParameters(parameters, (byte[])null, computeThumbprint);
 
         /// <inheritdoc />
         public override byte[] ToByteArray()

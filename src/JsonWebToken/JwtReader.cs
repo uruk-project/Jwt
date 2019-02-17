@@ -649,7 +649,7 @@ namespace JsonWebToken
                 {
                     var key = keySet[j];
                     if ((key.Use == null || JwkUseNames.Enc.SequenceEqual(key.Use)) &&
-                        (string.IsNullOrEmpty(key.Alg) || string.Equals(key.Alg, alg, StringComparison.Ordinal)))
+                        (key.Alg == null || key.Alg.AsSpan().SequenceEqual(alg)))
                     {
                         keys.Add(key);
                     }
@@ -707,7 +707,7 @@ namespace JsonWebToken
                 {
                     var key = keySet[j];
                     if ((key.Use == null || JwkUseNames.Sig.SequenceEqual(key.Use)) &&
-                        (string.IsNullOrEmpty(key.Alg) || string.Equals(key.Alg, jwt.Header.Alg, StringComparison.Ordinal)))
+                        (key.Alg == null || key.Alg.AsSpan().SequenceEqual(jwt.Header.Alg)))
                     {
                         var alg = signatureValidationContext.Algorithm ?? key.Alg;
                         if (TryValidateSignature(contentBytes, signatureBytes, key, alg))

@@ -5,6 +5,7 @@ using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -247,7 +248,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="sizeInBits"></param>
         /// <returns></returns>
-        public static SymmetricJwk GenerateKey(int sizeInBits) => GenerateKey(sizeInBits, algorithm: null);
+        public static SymmetricJwk GenerateKey(int sizeInBits) => GenerateKey(sizeInBits, algorithm: (byte[])null);
 
         /// <summary>
         /// Generates a new <see cref="SymmetricJwk"/>.
@@ -256,6 +257,17 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         /// <returns></returns>
         public static SymmetricJwk GenerateKey(int sizeInBits, string algorithm)
+        {
+            return GenerateKey(sizeInBits, Encoding.UTF8.GetBytes(algorithm));
+        }
+
+        /// <summary>
+        /// Generates a new <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static SymmetricJwk GenerateKey(int sizeInBits, byte[] algorithm)
         {
             var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
             if (algorithm != null)

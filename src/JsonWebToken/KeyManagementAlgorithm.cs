@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -111,11 +112,16 @@ namespace JsonWebToken
         /// Gets the wrapped algorithm.
         /// </summary>
         public KeyManagementAlgorithm WrappedAlgorithm { get; }
-    
+
         /// <summary>
         /// Gets the name of the key management algorithm.
         /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// Gets the name of the key management algorithm.
+        /// </summary>
+        public byte[] Utf8Name => Encoding.UTF8.GetBytes(Name);
 
         /// <summary>
         /// Gets whether the algorithm produce an encryption key.

@@ -25,7 +25,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'alg' (KeyType).
         /// </summary>
-        public string Alg { get; set; }
+        public byte[] Alg { get; set; }
 
         /// <summary>
         /// Gets the 'key_ops' (Key Operations).
@@ -436,7 +436,7 @@ namespace JsonWebToken
         {
             if (name.SequenceEqual(JwkParameterNames.AlgUtf8))
             {
-                Alg = value;
+                Alg = Encoding.UTF8.GetBytes(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.KidUtf8))
             {
@@ -516,7 +516,7 @@ namespace JsonWebToken
             switch (*pPropertytName)
             {
                 case (byte)'a' when *pPropertyNameShort == 26476 /* alg */ :
-                    key.Alg = reader.GetString();
+                    key.Alg = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray();
                     break;
                 case (byte)'k' when *pPropertyNameShort == 25705 /* kid */ :
                     key.Kid = reader.GetString();

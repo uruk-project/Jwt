@@ -45,7 +45,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the signature algorithm that was used to create the signature.
         /// </summary>
-        public string Alg => _inner.TryGetValue(HeaderParameters.AlgUtf8, out var property) ? (string)property.Value : null;
+        public ReadOnlySpan<byte> Alg => _inner.TryGetValue(HeaderParameters.AlgUtf8, out var property) ? Encoding.UTF8.GetBytes((string)property.Value) : null;
 
         /// <summary>
         /// Gets the content type (Cty) of the token.
