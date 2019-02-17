@@ -8,7 +8,7 @@ namespace JsonWebToken.Internal
 {
     internal static class Tokenizer
     {
-        private const byte dot = (byte)'.';
+        private const byte ByteDot = (byte)'.';
 
         public static int Tokenize(ReadOnlySpan<byte> token, Span<TokenSegment> segments, int maxCount)
         {
@@ -16,7 +16,7 @@ namespace JsonWebToken.Internal
             int start = 0;
             int end;
             var span = token;
-            while ((end = span.IndexOf(dot)) >= 0 && count < maxCount)
+            while ((end = span.IndexOf(ByteDot)) >= 0 && count < maxCount)
             {
                 segments[count++] = new TokenSegment(start, end);
                 start += end + 1;
@@ -44,7 +44,7 @@ namespace JsonWebToken.Internal
             while (sequence.TryGet(ref nextPosition, out ReadOnlyMemory<byte> memory, advance: true))
             {
                 var span = memory.Span;
-                while ((end = span.IndexOf(dot)) >= 0 && count < maxCount)
+                while ((end = span.IndexOf(ByteDot)) >= 0 && count < maxCount)
                 {
                     end += sequenceOffset;
                     segments[count++] = new TokenSegment(start, end);

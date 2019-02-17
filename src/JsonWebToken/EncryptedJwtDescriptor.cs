@@ -14,6 +14,7 @@ namespace JsonWebToken
     /// </summary>
     public abstract class EncryptedJwtDescriptor<TPayload> : JwtDescriptor<TPayload> where TPayload : class
     {
+        private const char ByteDot = '.';
 #if NETSTANDARD2_0
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 #endif
@@ -181,17 +182,17 @@ namespace JsonWebToken
                         Span<byte> encryptedToken = output.GetSpan(encryptionLength).Slice(0, encryptionLength);
 
                         base64EncodedHeader.CopyTo(encryptedToken);
-                        encryptedToken[bytesWritten++] = (byte)'.';
+                        encryptedToken[bytesWritten++] = (byte)ByteDot;
                         if (wrappedKey != null)
                         {
                             bytesWritten += Base64Url.Base64UrlEncode(wrappedKey, encryptedToken.Slice(bytesWritten));
                         }
 
-                        encryptedToken[bytesWritten++] = (byte)'.';
+                        encryptedToken[bytesWritten++] = (byte)ByteDot;
                         bytesWritten += Base64Url.Base64UrlEncode(nonce, encryptedToken.Slice(bytesWritten));
-                        encryptedToken[bytesWritten++] = (byte)'.';
+                        encryptedToken[bytesWritten++] = (byte)ByteDot;
                         bytesWritten += Base64Url.Base64UrlEncode(ciphertext, encryptedToken.Slice(bytesWritten));
-                        encryptedToken[bytesWritten++] = (byte)'.';
+                        encryptedToken[bytesWritten++] = (byte)ByteDot;
                         bytesWritten += Base64Url.Base64UrlEncode(tag, encryptedToken.Slice(bytesWritten));
                         Debug.Assert(encryptionLength == bytesWritten);
                         output.Advance(encryptionLength);

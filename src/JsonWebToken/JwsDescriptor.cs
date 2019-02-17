@@ -16,7 +16,7 @@ namespace JsonWebToken
     /// </summary>
     public partial class JwsDescriptor : JwtDescriptor<JwtObject>
     {
-        private const byte dot = (byte)'.';
+        private const byte ByteDot = (byte)'.';
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwsDescriptor"/>.
@@ -487,9 +487,9 @@ namespace JsonWebToken
                         headerCache?.AddHeader(Header, alg, buffer.Slice(0, headerBytesWritten));
                     }
 
-                    buffer[headerBytesWritten] = dot;
+                    buffer[headerBytesWritten] = ByteDot;
                     TryEncodeUtf8ToBase64Url(payloadJson, buffer.Slice(headerBytesWritten + 1), out int payloadBytesWritten);
-                    buffer[payloadBytesWritten + headerBytesWritten + 1] = dot;
+                    buffer[payloadBytesWritten + headerBytesWritten + 1] = ByteDot;
                     int bytesWritten = 0;
                     if (signer != null)
                     {
