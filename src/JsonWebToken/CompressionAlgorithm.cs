@@ -175,7 +175,6 @@ namespace JsonWebToken
             return algorithm;
         }
 
-
         /// <summary>
         /// Cast the <see cref="string"/> into its <see cref="CompressionAlgorithm"/> representation.
         /// </summary>
