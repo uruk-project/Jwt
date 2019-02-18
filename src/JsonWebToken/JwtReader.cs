@@ -273,7 +273,12 @@ namespace JsonWebToken
             }
 
             Span<TokenSegment> segments = stackalloc TokenSegment[Constants.JweSegmentCount];
-            var segmentCount = Tokenizer.Tokenize(utf8Token, segments, Constants.JweSegmentCount);
+            var segmentCount = Tokenizer.Tokenize(utf8Token, segments);
+            if (segmentCount < Constants.JwsSegmentCount)
+            {
+                return TokenValidationResult.MalformedToken();
+            }
+
             var headerSegment = segments[0];
             if (headerSegment.IsEmpty)
             {

@@ -10,13 +10,13 @@ namespace JsonWebToken.Internal
     {
         private const byte ByteDot = (byte)'.';
 
-        public static int Tokenize(ReadOnlySpan<byte> token, Span<TokenSegment> segments, int maxCount)
+        public static int Tokenize(ReadOnlySpan<byte> token, Span<TokenSegment> segments)
         {
             int count = 0;
             int start = 0;
             int end;
             var span = token;
-            while ((end = span.IndexOf(ByteDot)) >= 0 && count < maxCount)
+            while ((end = span.IndexOf(ByteDot)) >= 0 && count < Constants.JweSegmentCount)
             {
                 segments[count++] = new TokenSegment(start, end);
                 start += end + 1;
@@ -25,7 +25,7 @@ namespace JsonWebToken.Internal
 
             // Residue
             var length = span.Length;
-            if (count < maxCount)
+            if (count < Constants.JweSegmentCount)
             {
                 segments[count++] = new TokenSegment(start, length);
             }
@@ -33,7 +33,7 @@ namespace JsonWebToken.Internal
             return count;
         }
 
-        public static int Tokenize(in ReadOnlySequence<byte> token, Span<TokenSegment> segments, int maxCount)
+        public static int Tokenize(in ReadOnlySequence<byte> token, Span<TokenSegment> segments)
         {
             int count = 0;
             int start = 0;
@@ -44,7 +44,7 @@ namespace JsonWebToken.Internal
             while (sequence.TryGet(ref nextPosition, out ReadOnlyMemory<byte> memory, advance: true))
             {
                 var span = memory.Span;
-                while ((end = span.IndexOf(ByteDot)) >= 0 && count < maxCount)
+                while ((end = span.IndexOf(ByteDot)) >= 0 && count < Constants.JweSegmentCount)
                 {
                     end += sequenceOffset;
                     segments[count++] = new TokenSegment(start, end);
@@ -57,7 +57,7 @@ namespace JsonWebToken.Internal
 
             // Residue 
             var length = (int)sequence.Length;
-            if (count < maxCount)
+            if (count < Constants.JweSegmentCount)
             {
                 segments[count++] = new TokenSegment(start, length);
             }
