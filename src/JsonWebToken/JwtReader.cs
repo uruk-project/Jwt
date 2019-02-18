@@ -312,15 +312,25 @@ namespace JsonWebToken
                 return headerValidationResult;
             }
 
-            switch (segmentCount)
+            //switch (segmentCount)
+            //{
+            //    case Constants.JwsSegmentCount:
+            //        return TryReadJws(utf8Token, policy, segments, header);
+            //    case Constants.JweSegmentCount:
+            //        return TryReadJwe(utf8Token, policy, segments, header, rawHeader);
+            //    default:
+            //        return TokenValidationResult.MalformedToken();
+            //}
+            if (segmentCount == Constants.JwsSegmentCount)
             {
-                case Constants.JwsSegmentCount:
-                    return TryReadJws(utf8Token, policy, segments, header);
-                case Constants.JweSegmentCount:
-                    return TryReadJwe(utf8Token, policy, segments, header, rawHeader);
-                default:
-                    return TokenValidationResult.MalformedToken();
+                return TryReadJws(utf8Token, policy, segments, header);
             }
+            else if (segmentCount == Constants.JweSegmentCount)
+            {
+                return TryReadJwe(utf8Token, policy, segments, header, rawHeader);
+            }
+
+            return TokenValidationResult.MalformedToken();
         }
 
         private TokenValidationResult TryReadJwe(
@@ -481,11 +491,11 @@ namespace JsonWebToken
 
         private static JwtPayload GetJsonPayload(ReadOnlySpan<byte> data)
         {
-            int base64UrlLength = Base64Url.GetArraySizeRequiredToDecode(data.Length);
+            int bufferLength = Base64Url.GetArraySizeRequiredToDecode(data.Length);
             byte[] base64UrlArrayToReturnToPool = null;
-            var buffer = base64UrlLength <= Constants.MaxStackallocBytes
-              ? stackalloc byte[base64UrlLength]
-              : (base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64UrlLength)).AsSpan(0, base64UrlLength);
+            var buffer = bufferLength <= Constants.MaxStackallocBytes
+              ? stackalloc byte[bufferLength]
+              : (base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(bufferLength)).AsSpan(0, bufferLength);
             try
             {
                 Base64Url.Base64UrlDecode(data, buffer);
@@ -645,7 +655,7 @@ namespace JsonWebToken
             {
                 var keySet = _encryptionKeyProviders[i].GetKeys(header);
 
-                for (int j = 0; j < keySet.Count; j++)
+                for (int j = 0; j < keySet.Length; j++)
                 {
                     var key = keySet[j];
                     if ((key.Use == null || JwkUseNames.Enc.SequenceEqual(key.Use)) &&
@@ -703,7 +713,7 @@ namespace JsonWebToken
             var keySet = signatureValidationContext.KeyProvider.GetKeys(jwt.Header);
             if (keySet != null)
             {
-                for (int j = 0; j < keySet.Count; j++)
+                for (int j = 0; j < keySet.Length; j++)
                 {
                     var key = keySet[j];
                     if ((key.Use == null || JwkUseNames.Sig.SequenceEqual(key.Use)) &&

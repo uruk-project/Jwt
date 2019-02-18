@@ -1,9 +1,7 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
-using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 
 namespace JsonWebToken
@@ -23,7 +21,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override IReadOnlyList<Jwk> GetKeys(JwtHeader header)
+        public override Jwk[] GetKeys(JwtHeader header)
         {
             return GetKeys(header, header.X5u);
         }

@@ -13,6 +13,6 @@ namespace JsonWebToken
         /// <summary>
         /// Gets a list of <see cref="Jwk"/>.
         /// </summary>
-        IReadOnlyList<Jwk> GetKeys(JwtHeader header);
+        Jwk[] GetKeys(JwtHeader header);
     }
 }

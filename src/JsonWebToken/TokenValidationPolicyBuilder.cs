@@ -374,7 +374,7 @@ namespace JsonWebToken
         {
             private static readonly Jwk[] Empty = Array.Empty<Jwk>();
 
-            public IReadOnlyList<Jwk> GetKeys(JwtHeader header)
+            public Jwk[] GetKeys(JwtHeader header)
             {
                 return Empty;
             }

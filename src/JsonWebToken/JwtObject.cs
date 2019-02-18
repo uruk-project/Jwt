@@ -27,10 +27,55 @@ namespace JsonWebToken
         /// Adds a <see cref="JwtProperty"/> to the end of the <see cref="JwtObject"/>.
         /// </summary>
         /// <param name="property"></param>
-        public void Add(JwtProperty property)
-        {
-            _properties.Add(property);
-        }
+        public void Add(JwtProperty property) => _properties.Add(property);
+
+        /// <summary>
+        /// Adds a <see cref="string"/> property to the end of the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void Add(ReadOnlySpan<byte> name, string value) => Add(new JwtProperty(name, value));
+
+        /// <summary>
+        /// Adds a <see cref="long"/> property to the end of the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void Add(ReadOnlySpan<byte> name, long value) => Add(new JwtProperty(name, value));
+
+        /// <summary>
+        /// Adds a <see cref="double"/> property to the end of the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void Add(ReadOnlySpan<byte> name, double value) => Add(new JwtProperty(name, value));
+
+        /// <summary>
+        /// Adds a <see cref="bool"/> property to the end of the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void Add(ReadOnlySpan<byte> name, bool value) => Add(new JwtProperty(name, value));
+
+        /// <summary>
+        /// Adds a <see cref="JwtObject"/> property to the end of the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void Add(ReadOnlySpan<byte> name, JwtObject value) => Add(new JwtProperty(name, value));
+
+        /// <summary>
+        /// Adds a <see cref="JwtArray"/> property to the end of the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void Add(ReadOnlySpan<byte> name, JwtArray value) => Add(new JwtProperty(name, value));
+
+        /// <summary>
+        /// Adds a <c>null</c> property to the end of the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        public void Add(ReadOnlySpan<byte> name) => Add(new JwtProperty(name));
 
         /// <summary>
         /// Gets the <see cref="JwtProperty"/> at the specified index;
@@ -97,10 +142,7 @@ namespace JsonWebToken
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryGetValue(string key, out JwtProperty value)
-        {
-            return TryGetValue(Encoding.UTF8.GetBytes(key).AsSpan(), out value);
-        }
+        public bool TryGetValue(string key, out JwtProperty value) => TryGetValue(Encoding.UTF8.GetBytes(key).AsSpan(), out value);
 
         /// <summary>
         /// Gets the <see cref="JwtProperty"/> associated with the specified key.
@@ -108,10 +150,7 @@ namespace JsonWebToken
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryGetValue(ReadOnlyMemory<byte> key, out JwtProperty value)
-        {
-            return TryGetValue(key.Span, out value);
-        }
+        public bool TryGetValue(ReadOnlyMemory<byte> key, out JwtProperty value) => TryGetValue(key.Span, out value);
 
         /// <summary>
         /// Gets the <see cref="JwtProperty"/> associated with the specified key.

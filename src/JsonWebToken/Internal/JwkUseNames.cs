@@ -11,9 +11,14 @@ namespace JsonWebToken.Internal
     /// </summary>
     public static class JwkUseNames
     {
-        public static ReadOnlySpan<byte> Sig => new byte[] { (byte)'s', (byte)'i', (byte)'g' }; 
+        /// <summary>
+        /// Gets the 'sig' (signature) value for the 'use' header parameter.
+        /// </summary>
+        public static ReadOnlySpan<byte> Sig => new byte[] { (byte)'s', (byte)'i', (byte)'g' };
+
+        /// <summary>
+        /// Gets the 'enc' (encryption) value for the 'use' header parameter.
+        /// </summary>
         public static ReadOnlySpan<byte> Enc => new byte[] { (byte)'e', (byte)'n', (byte)'c' };
-        //public const string Sig = "sig";
-        //public const string Enc = "enc";
     }
 }

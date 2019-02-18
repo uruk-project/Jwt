@@ -53,6 +53,12 @@ namespace JsonWebToken
                         var type = reader.TokenType;
                         switch (type)
                         {
+                            case JsonTokenType.StartObject:
+                                current.Add(name, JsonParser.ReadJsonObject(ref reader));
+                                break;
+                            case JsonTokenType.StartArray:
+                                current.Add(name, JsonParser.ReadJsonArray(ref reader));
+                                break;
                             case JsonTokenType.String:
                                 if (name.Length == 3)
                                 {
@@ -71,40 +77,33 @@ namespace JsonWebToken
                                         }
                                     }
                                 }
-                                current.Add(new JwtProperty(name, reader.GetString()));
-                                break;
-                            case JsonTokenType.StartObject:
-                                current.Add(new JwtProperty(name, JsonParser.ReadJsonObject(ref reader)));
+                                current.Add(name, reader.GetString());
                                 break;
                             case JsonTokenType.True:
-                                current.Add(new JwtProperty(name, true));
+                                current.Add(name, true);
                                 break;
                             case JsonTokenType.False:
-                                current.Add(new JwtProperty(name, false));
+                                current.Add(name, false);
                                 break;
                             case JsonTokenType.Null:
-                                current.Add(new JwtProperty(name));
+                                current.Add(name);
                                 break;
                             case JsonTokenType.Number:
                                 if (reader.TryGetInt64(out long longValue))
                                 {
-                                    current.Add(new JwtProperty(name, longValue));
+                                    current.Add(name, longValue);
                                 }
                                 else
                                 {
                                     if (reader.TryGetDouble(out double doubleValue))
                                     {
-                                        current.Add(new JwtProperty(name, doubleValue));
+                                        current.Add(name, doubleValue);
                                     }
                                     else
                                     {
                                         JwtThrowHelper.FormatNotSupportedNumber(name);
                                     }
                                 }
-                                break;
-                            case JsonTokenType.StartArray:
-                                var array = JsonParser.ReadJsonArray(ref reader);
-                                current.Add(new JwtProperty(name, array));
                                 break;
                             default:
                                 JwtThrowHelper.FormatMalformedJson();
@@ -120,6 +119,5 @@ namespace JsonWebToken
             JwtThrowHelper.FormatMalformedJson();
             return null;
         }
-
     }
 }

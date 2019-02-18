@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace JsonWebToken
@@ -172,6 +173,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult MalformedToken(Exception e = null)
         {
             return new TokenValidationResult

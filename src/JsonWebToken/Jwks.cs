@@ -143,7 +143,7 @@ namespace JsonWebToken
             }
         }
 
-        private IReadOnlyList<Jwk> UnidentifiedKeys
+        private Jwk[] UnidentifiedKeys
         {
             get
             {
@@ -179,7 +179,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="kid"></param>
         /// <returns></returns>
-        public IReadOnlyList<Jwk> GetKeys(string kid)
+        public Jwk[] GetKeys(string kid)
         {
             if (kid == null)
             {
@@ -188,7 +188,7 @@ namespace JsonWebToken
 
             if (IdentifiedKeys.TryGetValue(kid, out var jwks))
             {
-                return jwks;
+                return jwks.ToArray();
             }
 
             return UnidentifiedKeys;

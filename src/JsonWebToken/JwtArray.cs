@@ -60,6 +60,48 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtValue this[int index] => _inner[index];
 
+        /// <summary>
+        /// Adds an <see cref="JwtValue"/> to the end of the <see cref="JwtArray"/>.
+        /// </summary>
+        /// <param name="value"></param>
+        public void Add(JwtValue value) => _inner.Add(value);
+
+        /// <summary>
+        /// Adds an <see cref="string"/> to the end of the <see cref="JwtArray"/>.
+        /// </summary>
+        /// <param name="value"></param>
+        public void Add(string value) => _inner.Add(new JwtValue(value));
+
+        /// <summary>
+        /// Adds an <see cref="bool"/> to the end of the <see cref="JwtArray"/>.
+        /// </summary>
+        /// <param name="value"></param>
+        public void Add(bool value) => _inner.Add(new JwtValue(value));
+
+        /// <summary>
+        /// Adds an <see cref="long"/> to the end of the <see cref="JwtArray"/>.
+        /// </summary>
+        /// <param name="value"></param>
+        public void Add(long value) => _inner.Add(new JwtValue(value));
+
+        /// <summary>
+        /// Adds an <see cref="JwtArray"/> to the end of the <see cref="JwtArray"/>.
+        /// </summary>
+        /// <param name="value"></param>
+        public void Add(JwtArray value) => _inner.Add(new JwtValue(value));
+
+        /// <summary>
+        /// Adds an <see cref="JwtObject"/> to the end of the <see cref="JwtArray"/>.
+        /// </summary>
+        /// <param name="value"></param>
+        public void Add(JwtObject value) => _inner.Add(new JwtValue(value));
+
+        /// <summary>
+        /// Adds an <see cref="double"/> to the end of the <see cref="JwtArray"/>.
+        /// </summary>
+        /// <param name="value"></param>
+        public void Add(double value) => _inner.Add(new JwtValue(value));
+
         internal void WriteTo(ref Utf8JsonWriter writer)
         {
             writer.WriteStartArray();
