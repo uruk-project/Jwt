@@ -272,15 +272,17 @@ namespace JsonWebToken
 
             if (x is null)
             {
-                return false;
+                goto NotEqual;
             }
 
             if (y is null)
             {
-                return false;
+                goto NotEqual;
             }
 
             return x.Id == y.Id;
+        NotEqual:
+            return false;
         }
 
         /// <summary>
@@ -298,15 +300,17 @@ namespace JsonWebToken
 
             if (x is null)
             {
-                return true;
+                goto NotEqual;
             }
 
             if (y is null)
             {
-                return true;
+                goto NotEqual;
             }
 
             return x.Id != y.Id;
+        NotEqual:
+            return true;
         }
 
         /// <summary>

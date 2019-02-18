@@ -47,6 +47,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult Expired(Jwt token)
         {
             return new TokenValidationResult
@@ -61,6 +62,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="criticalHeader"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult CriticalHeaderMissing(string criticalHeader)
         {
             return new TokenValidationResult
@@ -75,6 +77,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult TokenReplayed(Jwt token)
         {
             return new TokenValidationResult
@@ -89,6 +92,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="criticalHeader"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult CriticalHeaderUnsupported(string criticalHeader)
         {
             return new TokenValidationResult
@@ -103,6 +107,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult MissingSignature(Jwt token)
         {
             return new TokenValidationResult
@@ -118,6 +123,7 @@ namespace JsonWebToken
         /// <param name="token"></param>
         /// <param name="e"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult MalformedSignature(Jwt token, Exception e = null)
         {
             return new TokenValidationResult
@@ -133,6 +139,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult SignatureKeyNotFound(Jwt token)
         {
             return new TokenValidationResult
@@ -147,6 +154,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult InvalidSignature(Jwt token)
         {
             return new TokenValidationResult
@@ -160,6 +168,7 @@ namespace JsonWebToken
         /// The encryption key was not found.
         /// </summary>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult EncryptionKeyNotFound()
         {
             return new TokenValidationResult
@@ -187,6 +196,7 @@ namespace JsonWebToken
         /// The 'enc' header parameter is missing.
         /// </summary>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult MissingEncryptionAlgorithm()
         {
             return new TokenValidationResult
@@ -200,6 +210,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="jwtToken"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult NotYetValid(Jwt jwtToken)
         {
             return new TokenValidationResult
@@ -214,6 +225,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="jwtToken"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult Success(Jwt jwtToken = null)
         {
             return new TokenValidationResult
@@ -227,6 +239,7 @@ namespace JsonWebToken
         /// The token decryption has failed.
         /// </summary>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult DecryptionFailed()
         {
             return new TokenValidationResult
@@ -241,6 +254,7 @@ namespace JsonWebToken
         /// <param name="jwt"></param>
         /// <param name="claim"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult InvalidClaim(Jwt jwt, ReadOnlySpan<byte> claim)
         {
             return new TokenValidationResult
@@ -257,6 +271,7 @@ namespace JsonWebToken
         /// <param name="jwt"></param>
         /// <param name="claim"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult InvalidClaim(Jwt jwt, string claim)
         {
             return new TokenValidationResult
@@ -273,6 +288,7 @@ namespace JsonWebToken
         /// <param name="jwt"></param>
         /// <param name="claim"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult MissingClaim(Jwt jwt, ReadOnlySpan<byte> claim)
         {
             return new TokenValidationResult
@@ -289,6 +305,7 @@ namespace JsonWebToken
         /// <param name="jwt"></param>
         /// <param name="claim"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult MissingClaim(Jwt jwt, string claim)
         {
             return new TokenValidationResult
@@ -304,6 +321,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult InvalidHeader(ReadOnlySpan<byte> header)
         {
             return new TokenValidationResult
@@ -318,6 +336,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult InvalidHeader(string header)
         {
             return new TokenValidationResult
@@ -332,6 +351,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult MissingHeader(ReadOnlySpan<byte> header)
         {
             return new TokenValidationResult
@@ -346,6 +366,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="exception"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult DecompressionFailed(Exception exception = null)
         {
             return new TokenValidationResult

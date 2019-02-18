@@ -154,7 +154,7 @@ namespace JsonWebToken
         {
             if (algorithm is null)
             {
-                return null;
+                goto NotSupported;
             }
 
             if (IsSupported(algorithm))
@@ -162,6 +162,7 @@ namespace JsonWebToken
                 return new SymmetricSigner(this, algorithm);
             }
 
+        NotSupported:
             return null;
         }
 
@@ -170,24 +171,24 @@ namespace JsonWebToken
         {
             if (contentEncryptionAlgorithm is null)
             {
-                return null;
+                goto NotSupported;
             }
 
             if (IsSupported(contentEncryptionAlgorithm))
             {
-                switch (encryptionAlgorithm.Category)
+                if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
                 {
-                    case EncryptionType.AesHmac:
-                        return new AesKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-#if NETCOREAPP3_0
-                    case EncryptionType.AesGcm:
-                        return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-#endif
-                    default:
-                        return null;
+                    return new AesKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
                 }
+#if NETCOREAPP3_0
+                else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
+                {
+                    return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                }
+#endif
             }
 
+        NotSupported:
             return null;
         }
 
@@ -196,19 +197,16 @@ namespace JsonWebToken
         {
             if (IsSupported(encryptionAlgorithm))
             {
-                switch (encryptionAlgorithm.Category)
+                if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
                 {
-                    case EncryptionType.None:
-                        break;
-                    case EncryptionType.AesHmac:
-                        return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
-#if NETCOREAPP3_0
-                    case EncryptionType.AesGcm:
-                        return new AesGcmEncryptor(this, encryptionAlgorithm);
-#endif
-                    default:
-                        return null;
+                    return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
                 }
+#if NETCOREAPP3_0
+                else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
+                {
+                    return new AesGcmEncryptor(this, encryptionAlgorithm);
+                }
+#endif
             }
 
             return null;

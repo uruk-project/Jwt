@@ -312,15 +312,6 @@ namespace JsonWebToken
                 return headerValidationResult;
             }
 
-            //switch (segmentCount)
-            //{
-            //    case Constants.JwsSegmentCount:
-            //        return TryReadJws(utf8Token, policy, segments, header);
-            //    case Constants.JweSegmentCount:
-            //        return TryReadJwe(utf8Token, policy, segments, header, rawHeader);
-            //    default:
-            //        return TokenValidationResult.MalformedToken();
-            //}
             if (segmentCount == Constants.JwsSegmentCount)
             {
                 return TryReadJws(utf8Token, policy, segments, header);

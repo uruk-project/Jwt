@@ -47,8 +47,7 @@ namespace JsonWebToken
         {
             if (!IsSimpleHeader(header, alg))
             {
-                base64UrlHeader = null;
-                return false;
+                goto NotFound;
             }
 
             if (header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty) && kidProperty.Type == JwtTokenType.String)
@@ -56,8 +55,7 @@ namespace JsonWebToken
                 var key = ComputeHeaderKey(header, alg);
                 if (key == -1)
                 {
-                    base64UrlHeader = null;
-                    return false;
+                    goto NotFound;
                 }
 
                 var kid = (string)kidProperty.Value;
@@ -78,14 +76,14 @@ namespace JsonWebToken
                             return true;
                         }
 
-                        base64UrlHeader = null;
-                        return false;
+                        goto NotFound;
                     }
 
                     node = node.Next;
                 }
             }
 
+        NotFound:
             base64UrlHeader = null;
             return false;
         }
@@ -93,12 +91,7 @@ namespace JsonWebToken
         private static long ComputeHeaderKey(JwtObject header, SignatureAlgorithm alg)
         {
             header.TryGetValue(HeaderParameters.CtyUtf8, out var cty);
-            if (alg is null)
-            {
-                return -1;
-            }
-
-            if (cty.Type == JwtTokenType.String && !ContentTypeValues.JwtUtf8.SequenceEqual(((string)cty.Value).AsSpan()))
+            if (alg is null || (cty.Type == JwtTokenType.String && !ContentTypeValues.JwtUtf8.SequenceEqual(((string)cty.Value).AsSpan())))
             {
                 // only support 'cty': 'JWT' or not cty
                 return -1;
@@ -198,7 +191,7 @@ namespace JsonWebToken
         {
             if (!header.ContainsKey(HeaderParameters.KidUtf8))
             {
-                return false;
+                goto NotSimple;
             }
 
             int simpleHeaders = 1;
@@ -211,13 +204,16 @@ namespace JsonWebToken
             {
                 if (cty.Type == JwtTokenType.String && !ContentTypeValues.JwtUtf8.SequenceEqual(((string)cty.Value).AsSpan()))
                 {
-                    return false;
+                    goto NotSimple;
                 }
 
                 simpleHeaders++;
             }
 
             return header.Count == simpleHeaders;
+
+        NotSimple:
+            return false;
         }
 
         private void MoveToHead(Bucket node)

@@ -143,16 +143,19 @@ namespace JsonWebToken.Internal
         {
             if (encryptionAlgorithm.SignatureAlgorithm is null)
             {
-                return HashAlgorithmName.SHA256;
+                goto Sha256;
             }
 
             var hashAlgorithm = encryptionAlgorithm.SignatureAlgorithm.HashAlgorithm;
             if (hashAlgorithm == default)
             {
-                return HashAlgorithmName.SHA256;
+                goto Sha256;
             }
 
             return hashAlgorithm;
+
+        Sha256:
+            return HashAlgorithmName.SHA256;
         }
 
         private static byte[] GetPartyInfo(JwtObject header, ReadOnlySpan<byte> utf8Name)

@@ -201,15 +201,17 @@ namespace JsonWebToken
 
             if (x is null)
             {
-                return false;
+                goto NotEqual;
             }
 
             if (y is null)
             {
-                return false;
+                goto NotEqual;
             }
 
             return x.Id == y.Id;
+        NotEqual:
+            return false;
         }
 
         /// <summary>
@@ -227,15 +229,17 @@ namespace JsonWebToken
 
             if (x is null)
             {
-                return true;
+                goto NotEqual;
             }
 
             if (y is null)
             {
-                return true;
+                goto NotEqual;
             }
 
             return x.Id != y.Id;
+        NotEqual:
+            return true;
         }
 
         /// <summary>
@@ -360,7 +364,7 @@ namespace JsonWebToken
         /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
-        public static implicit operator byte[](SignatureAlgorithm value)
+        public static implicit operator byte[] (SignatureAlgorithm value)
         {
             if (value is null)
             {
