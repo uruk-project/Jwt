@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -227,6 +228,53 @@ namespace JsonWebToken
 
             return algorithm;
         }
+
+
+        /// <summary>
+        /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="EncryptionAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        /// 
+        public unsafe static implicit operator EncryptionAlgorithm(ReadOnlySpan<byte> value)
+        {
+            if (value.IsEmpty)
+            {
+                return null;
+            }
+
+            fixed (byte* pValue = value)
+            {
+                if (value.Length == 13 && *pValue == (byte)'A')
+                {
+                    switch (*(long*)(pValue + 1))
+                    {
+                        case 5200887096557449777 when *(int*)(pValue + 9) == 909455955 /* A128CBC-HS256 */:
+                            return Aes128CbcHmacSha256;
+                        case 5200887096557058353 when *(int*)(pValue + 9) == 876098387 /* A128CBC-HS256 */:
+                            return Aes192CbcHmacSha384;
+                        case 5200887096557319474 when *(int*)(pValue + 9) == 842085715 /* A128CBC-HS256 */:
+                            return Aes256CbcHmacSha512;
+                    }
+                }
+#if NETCOREAPP3_0
+                else if (value.Length == 7 && *pValue == (byte)'A' && *(short*)(pValue + 5) == 19779)
+                {
+                    switch (*(int*)(pValue + 1))
+                    {
+                        case 1194865201 /* A128GCM */:
+                            return Aes128Gcm;
+                        case 1194473777 /* A192GCM */:
+                            return Aes192Gcm;
+                        case 1194734898 /* A256GCM */:
+                            return Aes256Gcm;
+                    }
+                }
+#endif
+
+                return (EncryptionAlgorithm)Encoding.UTF8.GetString(value.ToArray());
+            }
+        }
+
 
         /// <inheritsddoc />
         public override string ToString()

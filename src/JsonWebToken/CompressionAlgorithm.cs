@@ -4,6 +4,7 @@
 using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -16,13 +17,13 @@ namespace JsonWebToken
         /// Deflate
         /// </summary>
         public static readonly CompressionAlgorithm Deflate = new CompressionAlgorithm(id: 1, "DEF", new DeflateCompressor());
-     
+
         // TODO : Verify the pertinence
         /// <summary>
         /// Gets the algorithm identifier. 
         /// </summary>
         public sbyte Id { get; }
-        
+
         /// <summary>
         /// Gets the name of the compression algorithm.
         /// </summary>
@@ -172,6 +173,29 @@ namespace JsonWebToken
             }
 
             return algorithm;
+        }
+
+
+        /// <summary>
+        /// Cast the <see cref="string"/> into its <see cref="CompressionAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        public static unsafe explicit operator CompressionAlgorithm(ReadOnlySpan<byte> value)
+        {
+            if (value.IsEmpty)
+            {
+                return null;
+            }
+
+            fixed (byte* pValue = value)
+            {
+                if (value.Length == 3 && *(short*)pValue == 17732 && *(pValue + 2) == (byte)'F' /* DEF */)
+                {
+                    return Deflate;
+                }
+            }
+
+            return (CompressionAlgorithm)Encoding.UTF8.GetString(value.ToArray());
         }
 
         /// <summary>

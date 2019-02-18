@@ -29,12 +29,6 @@ namespace JsonWebToken
             return ReadJsonObject(ref reader);
         }
 
-        internal static JwtObject ReadJwtHeader(ref Utf8JsonReader reader)
-        {
-            // TODO :specialize this reader for Header
-            return ReadJsonObject(ref reader);
-        }
-
         internal static JwtObject ReadJwtPayload(ref Utf8JsonReader reader)
         {
             // TODO :specialize this reader for Payload

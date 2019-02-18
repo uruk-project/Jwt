@@ -31,7 +31,7 @@ namespace JsonWebToken
         /// <param name="json"></param>
         public JwtHeader(string json)
         {
-            _inner = JsonParser.Parse(Encoding.UTF8.GetBytes(json));
+            _inner = JsonHeaderParser.ReadHeader(Encoding.UTF8.GetBytes(json));
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the signature algorithm that was used to create the signature.
         /// </summary>
-        public ReadOnlySpan<byte> Alg => _inner.TryGetValue(HeaderParameters.AlgUtf8, out var property) ? Encoding.UTF8.GetBytes((string)property.Value) : null;
+        public ReadOnlySpan<byte> Alg => _inner.TryGetValue(HeaderParameters.AlgUtf8, out var property) ? (byte[])property.Value : null;
 
         /// <summary>
         /// Gets the content type (Cty) of the token.
@@ -55,7 +55,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the encryption algorithm (Enc) of the token.
         /// </summary>
-        public string Enc => _inner.TryGetValue(HeaderParameters.EncUtf8, out var property) ? (string)property.Value : null;
+        public ReadOnlySpan<byte> Enc => _inner.TryGetValue(HeaderParameters.EncUtf8, out var property) ? (byte[])property.Value : null;
 
         /// <summary>
         /// Gets the key identifier for the key used to sign the token.
@@ -85,7 +85,8 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the algorithm used to compress the token.
         /// </summary>
-        public string Zip => _inner.TryGetValue(HeaderParameters.ZipUtf8, out var property) ? (string)property.Value : null;
+        public ReadOnlySpan<byte> Zip => _inner.TryGetValue(HeaderParameters.ZipUtf8, out var property) ? (byte[])property.Value : null;
+
         /// <summary>
         /// Gets the Initialization Vector used for AES GCM encryption.
         /// </summary>
