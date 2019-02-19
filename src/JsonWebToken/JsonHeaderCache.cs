@@ -127,7 +127,7 @@ namespace JsonWebToken
                 var node = _head;
                 while (node != null)
                 {
-                    if (string.Equals(node.Kid, (string)kid, StringComparison.Ordinal))
+                    if (string.Equals(node.Kid, kid, StringComparison.Ordinal))
                     {
                         break;
                     }

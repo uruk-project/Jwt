@@ -16,14 +16,14 @@ namespace JsonWebToken
         /// </summary>
         public static readonly TokenValidationPolicy NoValidation = new TokenValidationPolicyBuilder()
                                                             .IgnoreSignature()
-                                                            .IgnoreCriticalHeader()     
+                                                            .IgnoreCriticalHeader()
                                                             .Build();
 
         private readonly IList<IValidator> _validators;
         private readonly Dictionary<string, ICriticalHeaderHandler> _criticalHandlers;
         private readonly bool _ignoreCriticalHeader;
 
-        internal TokenValidationPolicy(List<IValidator> validators, Dictionary<string, ICriticalHeaderHandler> criticalHandlers, int maximumTokenSizeInBytes, bool ignoreCriticalHeader, SignatureValidationContext signatureValidation) 
+        internal TokenValidationPolicy(List<IValidator> validators, Dictionary<string, ICriticalHeaderHandler> criticalHandlers, int maximumTokenSizeInBytes, bool ignoreCriticalHeader, SignatureValidationContext signatureValidation)
         {
             _validators = validators ?? throw new ArgumentNullException(nameof(validators));
             _criticalHandlers = criticalHandlers ?? throw new ArgumentNullException(nameof(criticalHandlers));
@@ -80,14 +80,14 @@ namespace JsonWebToken
 
             if (_ignoreCriticalHeader)
             {
-                return TokenValidationResult.Success();
+                goto Success;
             }
 
             var header = context.Header;
             var crit = header.Crit;
             if (crit == null || crit.Count == 0)
             {
-                return TokenValidationResult.Success();
+                goto Success;
             }
 
             for (int i = 0; i < crit.Count; i++)
@@ -113,6 +113,7 @@ namespace JsonWebToken
                 }
             }
 
+        Success:
             return TokenValidationResult.Success();
         }
     }

@@ -38,6 +38,11 @@ namespace JsonWebToken
         public string ErrorHeader { get; private set; }
 
         /// <summary>
+        /// Gets the message that cause the error, if any.
+        /// </summary>
+        public string ErrorMessage { get; private set; }
+
+        /// <summary>
         /// Gets the <see cref="Exception"/> that caused the error.
         /// </summary>
         public Exception Exception { get; private set; }
@@ -180,15 +185,17 @@ namespace JsonWebToken
         /// <summary>
         /// The token is not a JWT in compact representation, is not base64url encoded, and is not a JSON UTF-8 encoded.
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="message"></param>
+        /// <param name="exception"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult MalformedToken(Exception e = null)
+        public static TokenValidationResult MalformedToken(string message = null, Exception exception = null)
         {
             return new TokenValidationResult
             {
                 Status = TokenValidationStatus.MalformedToken,
-                Exception = e
+                ErrorMessage = message,
+                Exception = exception
             };
         }
 

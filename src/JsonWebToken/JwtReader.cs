@@ -262,31 +262,33 @@ namespace JsonWebToken
                 Errors.ThrowObjectDisposed(GetType());
             }
 
+            string malformedMessage = null;
+            Exception malformedException = null;
             if (utf8Token.IsEmpty)
             {
-                return TokenValidationResult.MalformedToken();
+                goto Malformed;
             }
 
             if (utf8Token.Length > policy.MaximumTokenSizeInBytes)
             {
-                return TokenValidationResult.MalformedToken();
+                goto Malformed;
             }
 
             Span<TokenSegment> segments = stackalloc TokenSegment[Constants.JweSegmentCount];
             var segmentCount = Tokenizer.Tokenize(utf8Token, segments);
             if (segmentCount < Constants.JwsSegmentCount)
             {
-                return TokenValidationResult.MalformedToken();
+                goto Malformed;
             }
 
             var headerSegment = segments[0];
             if (headerSegment.IsEmpty)
             {
-                return TokenValidationResult.MalformedToken();
+                goto Malformed;
             }
 
             JwtHeader header;
-            var rawHeader = utf8Token.Slice(headerSegment.Start, headerSegment.Length);
+            var rawHeader = utf8Token.Slice(0, headerSegment.Length);
             try
             {
                 if (EnableHeaderCaching)
@@ -304,11 +306,13 @@ namespace JsonWebToken
             }
             catch (FormatException formatException)
             {
-                return TokenValidationResult.MalformedToken(formatException);
+                malformedException = formatException;
+                goto Malformed;
             }
             catch (JsonReaderException readerException)
             {
-                return TokenValidationResult.MalformedToken(readerException);
+                malformedException = readerException;
+                goto Malformed;
             }
 
             var headerValidationResult = policy.TryValidate(new CriticalHeaderValidationContext(header));
@@ -326,7 +330,8 @@ namespace JsonWebToken
                 return TryReadJwe(utf8Token, policy, segments, header, rawHeader);
             }
 
-            return TokenValidationResult.MalformedToken();
+        Malformed:
+            return TokenValidationResult.MalformedToken(malformedMessage, malformedException);
         }
 
         private TokenValidationResult TryReadJwe(
@@ -450,6 +455,7 @@ namespace JsonWebToken
         {
             var payloadSegment = segments[1];
             var rawPayload = utf8Buffer.Slice(payloadSegment.Start, payloadSegment.Length);
+            Exception malformedException;
             JwtPayload payload;
             try
             {
@@ -457,15 +463,16 @@ namespace JsonWebToken
             }
             catch (FormatException formatException)
             {
-                return TokenValidationResult.MalformedToken(formatException);
+                malformedException = formatException;
+                goto Malformed;
             }
             catch (JsonReaderException readerException)
             {
-                return TokenValidationResult.MalformedToken(readerException);
+                malformedException = readerException;
+                goto Malformed;
             }
 
             Jwt jws = new Jwt(header, payload);
-
             if (policy.SignatureValidation != null)
             {
                 var headerSegment = segments[0];
@@ -483,6 +490,8 @@ namespace JsonWebToken
             }
 
             return TokenValidationResult.Success(jws);
+        Malformed:
+            return TokenValidationResult.MalformedToken(exception: malformedException);
         }
 
         private static JwtPayload GetJsonPayload(ReadOnlySpan<byte> data)
@@ -613,9 +622,10 @@ namespace JsonWebToken
 
         private List<Jwk> GetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc)
         {
-            var alg = (KeyManagementAlgorithm)header.Alg;
-            var keys = ResolveDecryptionKey(header);
-            if (alg == KeyManagementAlgorithm.Direct)
+            var alg = header.Alg;
+            var keys = ResolveDecryptionKey(header, alg);
+            var keyManamagementAlg = (KeyManagementAlgorithm)alg;
+            if (keyManamagementAlg == KeyManagementAlgorithm.Direct)
             {
                 return keys;
             }
@@ -628,7 +638,7 @@ namespace JsonWebToken
             for (int i = 0; i < keys.Count; i++)
             {
                 var key = keys[i];
-                KeyWrapper kwp = _keyWrapFactory.Create(key, enc, alg);
+                KeyWrapper kwp = _keyWrapFactory.Create(key, enc, keyManamagementAlg);
                 if (kwp != null)
                 {
                     Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length)];
@@ -642,20 +652,17 @@ namespace JsonWebToken
             return unwrappedKeys;
         }
 
-        private List<Jwk> ResolveDecryptionKey(JwtHeader header)
+        private List<Jwk> ResolveDecryptionKey(JwtHeader header, ReadOnlySpan<byte> alg)
         {
-            var alg = header.Alg;
-
             var keys = new List<Jwk>(1);
             for (int i = 0; i < _encryptionKeyProviders.Length; i++)
             {
                 var keySet = _encryptionKeyProviders[i].GetKeys(header);
-
                 for (int j = 0; j < keySet.Length; j++)
                 {
                     var key = keySet[j];
                     if ((key.Use == null || JwkUseNames.Enc.SequenceEqual(key.Use)) &&
-                        (key.Alg == null || key.Alg.AsSpan().SequenceEqual(alg)))
+                        (key.Alg == null || alg.SequenceEqual(key.Alg)))
                     {
                         keys.Add(key);
                     }
@@ -670,30 +677,20 @@ namespace JsonWebToken
             if (contentBytes.Length == 0 && signatureSegment.Length == 0)
             {
                 // This is not a JWS
-                return TokenValidationResult.Success(jwt);
+                goto Success;
             }
 
             if (signatureSegment.IsEmpty)
             {
                 if (signatureValidationContext.SupportUnsecure && jwt.SignatureAlgorithm == SignatureAlgorithm.None)
                 {
-                    return TokenValidationResult.Success(jwt);
+                    goto Success;
                 }
 
                 return TokenValidationResult.MissingSignature(jwt);
             }
 
-            int signatureBytesLength;
-            try
-            {
-                signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(signatureSegment.Length);
-            }
-            catch (FormatException e)
-            {
-                return TokenValidationResult.MalformedSignature(jwt, e);
-            }
-
-            Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
+            Span<byte> signatureBytes = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(signatureSegment.Length)];
             try
             {
                 Base64Url.Base64UrlDecode(signatureSegment, signatureBytes, out int byteConsumed, out int bytesWritten);
@@ -709,17 +706,17 @@ namespace JsonWebToken
             var keySet = signatureValidationContext.KeyProvider.GetKeys(jwt.Header);
             if (keySet != null)
             {
-                for (int j = 0; j < keySet.Length; j++)
+                for (int i = 0; i < keySet.Length; i++)
                 {
-                    var key = keySet[j];
+                    var key = keySet[i];
                     if ((key.Use == null || JwkUseNames.Sig.SequenceEqual(key.Use)) &&
-                        (key.Alg == null || key.Alg.AsSpan().SequenceEqual(jwt.Header.Alg)))
+                        (key.Alg == null || jwt.Header.Alg.SequenceEqual(key.Alg)))
                     {
                         var alg = signatureValidationContext.Algorithm ?? key.Alg;
                         if (TryValidateSignature(contentBytes, signatureBytes, key, alg))
                         {
                             jwt.SigningKey = key;
-                            return TokenValidationResult.Success(jwt);
+                            goto Success;
                         }
 
                         keysTried = true;
@@ -733,6 +730,9 @@ namespace JsonWebToken
             }
 
             return TokenValidationResult.SignatureKeyNotFound(jwt);
+
+        Success:
+            return TokenValidationResult.Success(jwt);
         }
 
         private bool TryValidateSignature(ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signature, Jwk key, SignatureAlgorithm algorithm)
