@@ -122,13 +122,8 @@ namespace JsonWebToken
                     int headerJsonLength = headerJson.Length;
                     int base64EncodedHeaderLength = Base64Url.GetArraySizeRequiredToEncode(headerJsonLength);
 
-                    byte[] arrayByteToReturnToPool = null;
                     byte[] buffer64HeaderToReturnToPool = null;
                     byte[] arrayCiphertextToReturnToPool = null;
-
-                    Span<byte> utf8HeaderBuffer = headerJsonLength > Constants.MaxStackallocBytes
-                         ? (arrayByteToReturnToPool = ArrayPool<byte>.Shared.Rent(headerJsonLength)).AsSpan(0, headerJsonLength)
-                         : stackalloc byte[headerJsonLength];
 
                     Span<byte> base64EncodedHeader = base64EncodedHeaderLength > Constants.MaxStackallocBytes
                            ? (buffer64HeaderToReturnToPool = ArrayPool<byte>.Shared.Rent(base64EncodedHeaderLength)).AsSpan(0, base64EncodedHeaderLength)
@@ -199,11 +194,6 @@ namespace JsonWebToken
                     }
                     finally
                     {
-                        if (arrayByteToReturnToPool != null)
-                        {
-                            ArrayPool<byte>.Shared.Return(arrayByteToReturnToPool);
-                        }
-
                         if (buffer64HeaderToReturnToPool != null)
                         {
                             ArrayPool<byte>.Shared.Return(buffer64HeaderToReturnToPool);

@@ -47,8 +47,8 @@ namespace JsonWebToken
         {
             base.Validate();
 
-            ValidateHeader(HeaderParameters.AlgUtf8, JwtTokenType.Utf8String);
-            ValidateHeader(HeaderParameters.EncUtf8, JwtTokenType.Utf8String);
+            CheckRequiredHeader(HeaderParameters.AlgUtf8, JwtTokenType.Utf8String);
+            CheckRequiredHeader(HeaderParameters.EncUtf8, JwtTokenType.Utf8String);
         }
     }
 }

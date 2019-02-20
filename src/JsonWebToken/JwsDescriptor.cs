@@ -483,12 +483,12 @@ namespace JsonWebToken
                     }
                     else
                     {
-                        TryEncodeUtf8ToBase64Url(headerJson, buffer, out headerBytesWritten);
+                        headerBytesWritten = Base64Url.Base64UrlEncode(headerJson, buffer);
                         headerCache?.AddHeader(Header, alg, buffer.Slice(0, headerBytesWritten));
                     }
 
                     buffer[headerBytesWritten] = ByteDot;
-                    TryEncodeUtf8ToBase64Url(payloadJson, buffer.Slice(headerBytesWritten + 1), out int payloadBytesWritten);
+                    int payloadBytesWritten = Base64Url.Base64UrlEncode(headerJson, buffer.Slice(headerBytesWritten + 1));
                     buffer[payloadBytesWritten + headerBytesWritten + 1] = ByteDot;
                     int bytesWritten = 0;
                     if (signer != null)
@@ -507,17 +507,11 @@ namespace JsonWebToken
             }
         }
 
-        private static bool TryEncodeUtf8ToBase64Url(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
-        {
-            bytesWritten = Base64Url.Base64UrlEncode(input, destination);
-            return bytesWritten == destination.Length;
-        }
-
         /// <inheritsdoc />
         public override void Validate()
         {
             base.Validate();
-            ValidateHeader(HeaderParameters.AlgUtf8, JwtTokenType.Utf8String);
+            CheckRequiredHeader(HeaderParameters.AlgUtf8, JwtTokenType.Utf8String);
         }
 
         /// <summary>

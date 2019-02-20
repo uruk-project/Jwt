@@ -290,7 +290,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="type"></param>
-        protected void ValidateHeader(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
+        protected void CheckRequiredHeader(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
         {
             if (!Header.TryGetValue(utf8Name, out var token) || token.Type == JwtTokenType.Null)
             {
@@ -308,7 +308,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="types"></param>
-        protected void ValidateHeader(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
+        protected void CheckRequiredHeader(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
         {
             if (!Header.TryGetValue(utf8Name, out var token) || token.Type == JwtTokenType.Null)
             {
