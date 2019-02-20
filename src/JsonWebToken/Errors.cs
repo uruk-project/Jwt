@@ -170,9 +170,9 @@ namespace JsonWebToken
             throw new NotSupportedException($"Key wrap is not supported for algorithm: '{algorithm}'.");
         }
 
-        internal static void ThrowNotSupportedCompressionAlgorithm(string compressionAlgorithm)
+        internal static void ThrowNotSupportedCompressionAlgorithm(CompressionAlgorithm compressionAlgorithm)
         {
-            throw new NotSupportedException($"Compression algorithm: '{compressionAlgorithm}' is not supported.");
+            throw new NotSupportedException($"Compression algorithm: '{compressionAlgorithm.Name}' is not supported.");
         }
 
         internal static void ThrowInvalidEcdsaKeySize(Jwk key, SignatureAlgorithm algorithm, int validKeySize, int keySize)

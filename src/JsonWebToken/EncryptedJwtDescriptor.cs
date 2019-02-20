@@ -52,8 +52,8 @@ namespace JsonWebToken
         /// </summary>
         public EncryptionAlgorithm EncryptionAlgorithm
         {
-            get => (EncryptionAlgorithm)GetHeaderParameter<string>(HeaderParameters.EncUtf8);
-            set => SetHeaderParameter(HeaderParameters.EncUtf8, value);
+            get => (EncryptionAlgorithm)GetHeaderParameter<byte[]>(HeaderParameters.EncUtf8);
+            set => SetHeaderParameter(HeaderParameters.EncUtf8, (byte[])value);
         }
 
         /// <summary>
@@ -61,8 +61,8 @@ namespace JsonWebToken
         /// </summary>
         public CompressionAlgorithm CompressionAlgorithm
         {
-            get => (CompressionAlgorithm)GetHeaderParameter<string>(HeaderParameters.ZipUtf8);
-            set => SetHeaderParameter(HeaderParameters.ZipUtf8, value);
+            get => (CompressionAlgorithm)GetHeaderParameter<byte[]>(HeaderParameters.ZipUtf8);
+            set => SetHeaderParameter(HeaderParameters.ZipUtf8, (byte[])value);
         }
 
         /// <summary>

@@ -30,6 +30,11 @@ namespace JsonWebToken
         public string Name { get; }
 
         /// <summary>
+        /// Gets the name of the signature algorithm.
+        /// </summary>
+        public byte[] Utf8Name => Encoding.UTF8.GetBytes(Name);
+
+        /// <summary>
         /// Gets the <see cref="Compressor"/>.
         /// </summary>
         public Compressor Compressor { get; }
@@ -147,36 +152,36 @@ namespace JsonWebToken
             return x.Id != y.Id;
         }
 
-        /// <summary>
-        /// Cast the <see cref="CompressionAlgorithm"/> into its <see cref="string"/> representation.
-        /// </summary>
-        /// <param name="value"></param>
-        public static implicit operator string(CompressionAlgorithm value)
-        {
-            return value?.Name;
-        }
+        ///// <summary>
+        ///// Cast the <see cref="CompressionAlgorithm"/> into its <see cref="string"/> representation.
+        ///// </summary>
+        ///// <param name="value"></param>
+        //public static implicit operator string(CompressionAlgorithm value)
+        //{
+        //    return value?.Name;
+        //}
+
+        ///// <summary>
+        ///// Cast the <see cref="string"/> into its <see cref="CompressionAlgorithm"/> representation.
+        ///// </summary>
+        ///// <param name="value"></param>
+        //public static explicit operator CompressionAlgorithm(string value)
+        //{
+        //    if (value == null)
+        //    {
+        //        return null;
+        //    }
+
+        //    if (!Algorithms.TryGetValue(value, out var algorithm))
+        //    {
+        //        Errors.ThrowNotSupportedAlgorithm(value);
+        //    }
+
+        //    return algorithm;
+        //}
 
         /// <summary>
-        /// Cast the <see cref="string"/> into its <see cref="CompressionAlgorithm"/> representation.
-        /// </summary>
-        /// <param name="value"></param>
-        public static explicit operator CompressionAlgorithm(string value)
-        {
-            if (value == null)
-            {
-                return null;
-            }
-
-            if (!Algorithms.TryGetValue(value, out var algorithm))
-            {
-                Errors.ThrowNotSupportedAlgorithm(value);
-            }
-
-            return algorithm;
-        }
-
-        /// <summary>
-        /// Cast the <see cref="string"/> into its <see cref="CompressionAlgorithm"/> representation.
+        /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="CompressionAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
         public static unsafe explicit operator CompressionAlgorithm(ReadOnlySpan<byte> value)
@@ -194,7 +199,27 @@ namespace JsonWebToken
                 }
             }
 
-            return (CompressionAlgorithm)Encoding.UTF8.GetString(value.ToArray());
+            var key = Encoding.UTF8.GetString(value.ToArray());
+            if (!Algorithms.TryGetValue(key, out var algorithm))
+            {
+                Errors.ThrowNotSupportedAlgorithm(key);
+            }
+
+            return algorithm;
+        }
+
+        /// <summary>
+        /// Cast the array of <see cref="byte"/> into its <see cref="CompressionAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        public static unsafe explicit operator CompressionAlgorithm(byte[] value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            return (CompressionAlgorithm)new ReadOnlySpan<byte>(value);
         }
 
         /// <summary>
@@ -209,6 +234,20 @@ namespace JsonWebToken
             }
 
             return value.Id;
+        }
+
+        /// <summary>
+        /// Cast the <see cref="CompressionAlgorithm"/> into its <see cref="byte"/> array representation.
+        /// </summary>
+        /// <param name="value"></param>
+        public static implicit operator byte[](CompressionAlgorithm value)
+        {
+            if (value is null)
+            {
+                return Array.Empty<byte>();
+            }
+
+            return value.Utf8Name;
         }
 
         /// <inheritsddoc />

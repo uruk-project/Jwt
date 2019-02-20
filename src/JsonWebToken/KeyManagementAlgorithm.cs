@@ -300,16 +300,16 @@ namespace JsonWebToken
 
             if (x is null)
             {
-                goto NotEqual;
+                goto Equal;
             }
 
             if (y is null)
             {
-                goto NotEqual;
+                goto Equal;
             }
 
             return x.Id != y.Id;
-        NotEqual:
+        Equal:
             return true;
         }
 
@@ -363,9 +363,9 @@ namespace JsonWebToken
 
             return (KeyManagementAlgorithm)value.ToArray();
         }
-        
+
         /// <summary>
-        /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="byte"/> array representation.
+        /// Cast the <see cref="KeyManagementAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
         public static implicit operator byte[] (KeyManagementAlgorithm value)

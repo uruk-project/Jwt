@@ -71,9 +71,14 @@ namespace JsonWebToken
         public SignatureAlgorithm SignatureAlgorithm { get; }
 
         /// <summary>
-        /// Gets the name of the signature algorithm.
+        /// Gets the name of the encryption algorithm.
         /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// Gets the name of the signature algorithm.
+        /// </summary>
+        public byte[] Utf8Name => Encoding.UTF8.GetBytes(Name);
 
         /// <summary>
         /// Gets the <see cref="EncryptionAlgorithm"/> list; 
@@ -86,7 +91,7 @@ namespace JsonWebToken
 #if NETCOREAPP3_0
             { Aes128Gcm.Name, Aes128Gcm },
             { Aes192Gcm.Name, Aes192Gcm },
-            { Aes256Gcm.Name , Aes256Gcm },
+            { Aes256Gcm.Name, Aes256Gcm },
 #endif
         };
 
@@ -108,7 +113,7 @@ namespace JsonWebToken
             KeyWrappedSizeInBytes = requiredKeyWrappedSizeInBytes;
             Category = category;
         }
-
+        
         /// <summary>
         /// Determines whether this instance and a specified object, which must also be a
         /// <see cref="EncryptionAlgorithm"/> object, have the same value.
@@ -211,10 +216,33 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Cast the <see cref="EncryptionAlgorithm"/> into its <see cref="byte"/> array representation.
+        /// </summary>
+        /// <param name="value"></param>
+        public static implicit operator byte[] (EncryptionAlgorithm value)
+        {
+            if (value is null)
+            {
+                return Array.Empty<byte>();
+            }
+
+            return value.Utf8Name;
+        }
+
+        /// <summary>
         /// Cast the <see cref="string"/> into its <see cref="EncryptionAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator EncryptionAlgorithm(string value)
+        public static implicit operator EncryptionAlgorithm(byte[] value)
+        {
+            return Encoding.UTF8.GetString(value);
+        }
+
+        /// <summary>
+        /// Cast the <see cref="string"/> into its <see cref="EncryptionAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        public static implicit operator EncryptionAlgorithm(string value)
         {
             if (value == null)
             {
@@ -228,7 +256,6 @@ namespace JsonWebToken
 
             return algorithm;
         }
-
 
         /// <summary>
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="EncryptionAlgorithm"/> representation.
@@ -274,7 +301,6 @@ namespace JsonWebToken
                 return (EncryptionAlgorithm)Encoding.UTF8.GetString(value.ToArray());
             }
         }
-
 
         /// <inheritsddoc />
         public override string ToString()

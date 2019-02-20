@@ -70,6 +70,7 @@ namespace JsonWebToken
                                             case (byte)'a' when nameSuffix == 26476 /* alg */:
                                             case (byte)'e' when nameSuffix == 25454 /* enc */:
                                             case (byte)'z' when nameSuffix == 28777 /* zip */:
+                                            case (byte)'c' when nameSuffix == 31092 /* cty */:
                                                 // TODO : Fix when the Utf8JsonReader will allow
                                                 // to read an unescaped string without allocating a string
                                                 current.Add(new JwtProperty(name, Encoding.UTF8.GetBytes(reader.GetString())));

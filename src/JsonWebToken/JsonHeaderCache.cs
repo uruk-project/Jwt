@@ -90,8 +90,10 @@ namespace JsonWebToken
 
         private static long ComputeHeaderKey(JwtObject header, SignatureAlgorithm alg)
         {
-            header.TryGetValue(HeaderParameters.CtyUtf8, out var cty);
-            if (alg is null || (cty.Type == JwtTokenType.String && !ContentTypeValues.JwtUtf8.SequenceEqual(((string)cty.Value).AsSpan())))
+            if (alg is null
+                || !header.TryGetValue(HeaderParameters.CtyUtf8, out var cty)
+                || cty.Type != JwtTokenType.Utf8String 
+                && !ContentTypeValues.JwtUtf8.SequenceEqual(((byte[])cty.Value)))
             {
                 // only support 'cty': 'JWT' or not cty
                 return -1;
@@ -202,7 +204,7 @@ namespace JsonWebToken
 
             if (header.TryGetValue(HeaderParameters.CtyUtf8, out var cty))
             {
-                if (cty.Type == JwtTokenType.String && !ContentTypeValues.JwtUtf8.SequenceEqual(((string)cty.Value).AsSpan()))
+                if (cty.Type == JwtTokenType.Utf8String && !ContentTypeValues.JwtUtf8.SequenceEqual(((byte[])cty.Value)))
                 {
                     goto NotSimple;
                 }

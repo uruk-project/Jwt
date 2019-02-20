@@ -50,7 +50,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the content type (Cty) of the token.
         /// </summary>
-        public string Cty => _inner.TryGetValue(HeaderParameters.CtyUtf8, out var property) ? (string)property.Value : null;
+        public ReadOnlySpan<byte> Cty => _inner.TryGetValue(HeaderParameters.CtyUtf8, out var property) ? (byte[])property.Value : null;
 
         /// <summary>
         /// Gets the encryption algorithm (Enc) of the token.

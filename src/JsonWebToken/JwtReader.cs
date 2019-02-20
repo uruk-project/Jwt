@@ -417,7 +417,7 @@ namespace JsonWebToken
 
                 Jwt jwe;
                 var cty = header.Cty;
-                if (cty != null && ContentTypeValues.JwtUtf8.SequenceEqual(cty.AsSpan()))
+                if (cty != null && ContentTypeValues.JwtUtf8.SequenceEqual(cty))
                 {
                     var decryptionResult = compressed
                         ? TryReadToken(decompressedBytes, policy)
@@ -690,7 +690,17 @@ namespace JsonWebToken
                 return TokenValidationResult.MissingSignature(jwt);
             }
 
-            Span<byte> signatureBytes = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(signatureSegment.Length)];
+            int signatureBytesLength;
+            try
+            {
+                signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(signatureSegment.Length);
+            }
+            catch (FormatException e)
+            {
+                return TokenValidationResult.MalformedSignature(jwt, e);
+            }
+
+            Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
             try
             {
                 Base64Url.Base64UrlDecode(signatureSegment, signatureBytes, out int byteConsumed, out int bytesWritten);

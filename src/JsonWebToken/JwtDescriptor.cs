@@ -185,7 +185,7 @@ namespace JsonWebToken
                 Header.Add(new JwtProperty(utf8Name));
             }
         }
-        
+
         /// <summary>
         /// Sets the header parameter for a specified header name.
         /// </summary>
@@ -196,6 +196,23 @@ namespace JsonWebToken
             if (value != null)
             {
                 Header.Add(new JwtProperty(utf8Name, value));
+            }
+            else
+            {
+                Header.Add(new JwtProperty(utf8Name));
+            }
+        }
+
+        /// <summary>
+        /// Sets the header parameter for a specified header name.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        protected void SetHeaderParameter(ReadOnlySpan<byte> utf8Name, ReadOnlySpan<byte> value)
+        {
+            if (!value.IsEmpty)
+            {
+                Header.Add(new JwtProperty(utf8Name, value.ToArray()));
             }
             else
             {
@@ -297,7 +314,7 @@ namespace JsonWebToken
             {
                 Errors.ThrowHeaderIsRequired(utf8Name);
             }
-            
+
             for (int i = 0; i < types.Length; i++)
             {
                 if (token.Type == types[i])
