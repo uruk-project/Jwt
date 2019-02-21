@@ -95,7 +95,7 @@ namespace JsonWebToken
             {
                 if (value < 0)
                 {
-                    Errors.ThrowMustBeGreaterOrEqualToZero(nameof(value), value);
+                    Errors.ThrowMustBeGreaterOrEqualToZero(ExceptionArgument.value, value);
                 }
 
                 _tokenLifetimeInMinutes = value;
@@ -141,7 +141,7 @@ namespace JsonWebToken
         {
             if (descriptor == null)
             {
-                throw new ArgumentNullException(nameof(descriptor));
+                Errors.ThrowArgumentNullException(ExceptionArgument.descriptor);
             }
 
             if (_disposed)

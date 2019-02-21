@@ -213,11 +213,11 @@ namespace JsonWebToken
                 if (current.Utf8Name.Span.SequenceEqual(span))
                 {
                     _properties[i] = property;
-                    break;
+                    return;
                 }
             }
 
-            throw new InvalidOperationException();
+            Errors.ThrowKeyNotFound();
         }
 
         /// <summary>

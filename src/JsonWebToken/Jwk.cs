@@ -139,7 +139,7 @@ namespace JsonWebToken
                                             return ECJwk.FromJsonReaderFast(ref reader);
                                         }
 
-                                        Errors.ThrowNotSupportedJwk(Encoding.UTF8.GetString(valueSpan.ToArray()));
+                                        Errors.ThrowNotSupportedJwk(valueSpan);
                                         break;
                                     case 3:
                                         switch (*pKtyShort)
@@ -151,12 +151,12 @@ namespace JsonWebToken
                                             case 25455 when *(pKty + 2) == (byte)'t':
                                                 return SymmetricJwk.FromJsonReaderFast(ref reader);
                                             default:
-                                                Errors.ThrowNotSupportedJwk(Encoding.UTF8.GetString(valueSpan.ToArray()));
+                                                Errors.ThrowNotSupportedJwk(valueSpan);
                                                 break;
                                         }
                                         break;
                                     default:
-                                        Errors.ThrowNotSupportedJwk(Encoding.UTF8.GetString(valueSpan.ToArray()));
+                                        Errors.ThrowNotSupportedJwk(valueSpan);
                                         break;
                                 }
                             }

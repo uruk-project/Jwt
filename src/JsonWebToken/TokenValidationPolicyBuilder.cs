@@ -64,7 +64,7 @@ namespace JsonWebToken
         {
             if (size <= 0)
             {
-                Errors.ThrowMustBeGreaterThanZero(nameof(size), size);
+                Errors.ThrowMustBeGreaterThanZero(ExceptionArgument.size, size);
             }
 
             _maximumTokenSizeInBytes = size;
@@ -111,7 +111,8 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keyProvider"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider) => RequireSignature(keyProvider, null);
+        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider) 
+            => RequireSignature(keyProvider, null);
 
         /// <summary>
         /// Requires a valid signature.
@@ -126,7 +127,8 @@ namespace JsonWebToken
         /// <param name="jwksUrl"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl, SignatureAlgorithm algorithm) => RequireSignature(jwksUrl, algorithm, null);
+        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl, SignatureAlgorithm algorithm)
+            => RequireSignature(jwksUrl, algorithm, null);
 
         /// <summary>
         /// Requires a valid signature.
@@ -134,7 +136,8 @@ namespace JsonWebToken
         /// <param name="jwksUrl"></param>
         /// <param name="handler"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl, HttpMessageHandler handler) => RequireSignature(jwksUrl, null, handler);
+        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl, HttpMessageHandler handler)
+            => RequireSignature(jwksUrl, null, handler);
 
         /// <summary>
         /// Requires a valid signature.
@@ -143,7 +146,8 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         /// <param name="handler"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl, SignatureAlgorithm algorithm, HttpMessageHandler handler) => RequireSignature(new JwksKeyProvider(jwksUrl, handler), algorithm);
+        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl, SignatureAlgorithm algorithm, HttpMessageHandler handler)
+            => RequireSignature(new JwksKeyProvider(jwksUrl, handler), algorithm);
 
         /// <summary>
         /// Requires a valid signature.
@@ -243,7 +247,7 @@ namespace JsonWebToken
         {
             if (clockSkew <= 0)
             {
-                Errors.ThrowMustBeGreaterThanTimeSpanZero(nameof(clockSkew), clockSkew);
+                Errors.ThrowMustBeGreaterThanTimeSpanZero(ExceptionArgument.clockSkew, clockSkew);
             }
 
             RemoveValidator<LifetimeValidator>();

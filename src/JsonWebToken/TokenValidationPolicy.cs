@@ -75,7 +75,7 @@ namespace JsonWebToken
         {
             if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                Errors. ThrowArgumentNullException(ExceptionArgument.context);
             }
 
             if (_ignoreCriticalHeader)

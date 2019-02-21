@@ -84,7 +84,7 @@ namespace JsonWebToken.Internal
             {
                 if (value < DefaultMinimumSymmetricKeySizeInBits)
                 {
-                    Errors.ThrowMustBeAtLeast(nameof(DefaultMinimumSymmetricKeySizeInBits), DefaultMinimumSymmetricKeySizeInBits);
+                    Errors.ThrowMustBeAtLeast(ExceptionArgument.value, DefaultMinimumSymmetricKeySizeInBits);
                 }
 
                 _minimumKeySizeInBits = value;

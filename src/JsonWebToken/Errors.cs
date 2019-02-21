@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
@@ -29,6 +30,11 @@ namespace JsonWebToken
         internal static void ThrowRequireHttps(string address)
         {
             throw new ArgumentException($"The address specified '{address}' is not valid as per HTTPS scheme.", nameof(address));
+        }
+
+        internal static void ThrowArgumentOutOfRange_NeedNonNegNum(ExceptionArgument argument)
+        {
+            throw new ArgumentOutOfRangeException(GetArgumentName(argument), "Non-negative number required.");
         }
 
         internal static Exception ThrowArgumentNullException(ExceptionArgument argument)
@@ -130,9 +136,10 @@ namespace JsonWebToken
             throw new JwtDescriptorException($"The header parameter '{value}' is required.");
         }
 
-        internal static void ThrowMustBeGreaterOrEqualToZero(string name, int value)
+        internal static void ThrowMustBeGreaterOrEqualToZero(ExceptionArgument argument, int value)
         {
-            throw new ArgumentOutOfRangeException(name, $"{nameof(value)} must be greater equal or zero. value: '{value}'.");
+            var name = GetArgumentName(argument);
+            throw new ArgumentOutOfRangeException(name, $"{name} must be greater equal or zero. value: '{value}'.");
         }
 
         internal static void ThrowNotSupportedJsonType(JwtTokenType type)
@@ -140,13 +147,15 @@ namespace JsonWebToken
             new InvalidOperationException($"The type {type} is not supported.");
         }
 
-        internal static void ThrowMustBeGreaterThanZero(string name, int value)
+        internal static void ThrowMustBeGreaterThanZero(ExceptionArgument argument, int value)
         {
+            var name = GetArgumentName(argument);
             throw new ArgumentOutOfRangeException(name, $"{nameof(value)} must be greater than zero. value: '{value}'.");
         }
 
-        internal static void ThrowMustBeGreaterThanTimeSpanZero(string name, int value)
+        internal static void ThrowMustBeGreaterThanTimeSpanZero(ExceptionArgument argument, int value)
         {
+            var name = GetArgumentName(argument);
             throw new ArgumentOutOfRangeException($"{name} must be greater than TimeSpan.Zero. value: '{value}'.");
         }
 
@@ -185,13 +194,19 @@ namespace JsonWebToken
             throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), $"The algorithm '{algorithm}' requires the a key size to be greater than '{validKeySize}' bits. Key size is '{keySize}'.");
         }
 
+        internal static void ThrowKeyNotFound()
+        {
+            throw new KeyNotFoundException();
+        }
+
         internal static void ThrowMalformedJwks()
         {
             throw new InvalidOperationException("The JWKS is malformed.");
         }
 
-        internal static void ThrowMustBeAtLeast(string name, int value)
+        internal static void ThrowMustBeAtLeast(ExceptionArgument argument, int value)
         {
+            var name = GetArgumentName(argument);
             throw new ArgumentOutOfRangeException(nameof(value), $"{name} must be at least '{value}'.");
         }
 
@@ -215,9 +230,9 @@ namespace JsonWebToken
             throw new NotSupportedException($"Signature failed. No support for: Algorithm: '{algorithm}', key: '{key.Kid}'.");
         }
 
-        internal static void ThrowNotSupportedJwk(string keyType)
+        internal static void ThrowNotSupportedJwk(ReadOnlySpan<byte> name)
         {
-            throw new NotSupportedException($"JWK type '{keyType}' is not supported.");
+            throw new NotSupportedException($"JWK type '{Encoding.UTF8.GetString(name.ToArray())}' is not supported.");
         }
 
         internal static void ThrowNotSupportedSignatureAlgorithm(SignatureAlgorithm algorithm)
@@ -343,6 +358,13 @@ namespace JsonWebToken
                 case ExceptionArgument.jwks: return "jwks";
                 case ExceptionArgument.bytes: return "bytes";
                 case ExceptionArgument.k: return "k";
+                case ExceptionArgument.count: return "count";
+                case ExceptionArgument.clockSkew: return "clockSkew";
+                case ExceptionArgument.size: return "size";
+                case ExceptionArgument.capacity: return "capacity";
+                case ExceptionArgument.base64url: return "base64url";
+                case ExceptionArgument.descriptor: return "descriptor";
+                case ExceptionArgument.context: return "context";
 
                 default:
                     Debug.Fail("The enum value is not defined, please check the ExceptionArgument Enum.");
@@ -396,6 +418,13 @@ namespace JsonWebToken
         n,
         jwks,
         bytes,
-        k
+        k,
+        count,
+        clockSkew,
+        size,
+        capacity,
+        base64url,
+        descriptor,
+        context
     }
 }

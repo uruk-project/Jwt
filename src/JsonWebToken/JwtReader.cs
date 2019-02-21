@@ -117,7 +117,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="encryptionKeyProvider"></param>
         public JwtReader(IKeyProvider encryptionKeyProvider)
-            : this(new[] { encryptionKeyProvider ?? throw new ArgumentNullException(nameof(encryptionKeyProvider)) })
+            : this(new[] { encryptionKeyProvider })
         {
         }
 
