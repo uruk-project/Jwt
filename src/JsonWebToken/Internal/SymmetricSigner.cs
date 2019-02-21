@@ -31,12 +31,12 @@ namespace JsonWebToken.Internal
         {
             if (key == null)
             {
-                throw new ArgumentNullException(nameof(key));
+                Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             if (algorithm is null)
             {
-                throw new ArgumentNullException(nameof(algorithm));
+                Errors.ThrowArgumentNullException(ExceptionArgument.algorithm);
             }
 
             if (key.KeySizeInBits < MinimumKeySizeInBits)

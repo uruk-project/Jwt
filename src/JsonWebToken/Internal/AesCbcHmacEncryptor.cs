@@ -23,12 +23,13 @@ namespace JsonWebToken.Internal
         {
             if (key == null)
             {
-                throw new ArgumentNullException(nameof(key));
+                Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
+
 
             if (encryptionAlgorithm is null)
             {
-                throw new ArgumentNullException(nameof(encryptionAlgorithm));
+                Errors.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
             }
 
             if (encryptionAlgorithm.Category != EncryptionType.AesHmac)
@@ -83,12 +84,12 @@ namespace JsonWebToken.Internal
         {
             if (plaintext.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(plaintext));
+                Errors.ThrowArgumentNullException(ExceptionArgument.plaintext);
             }
 
             if (associatedData.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(associatedData));
+                Errors.ThrowArgumentNullException(ExceptionArgument.associatedData);
             }
 
             if (_disposed)
@@ -139,22 +140,22 @@ namespace JsonWebToken.Internal
         {
             if (ciphertext.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(ciphertext));
+                Errors.ThrowArgumentNullException(ExceptionArgument.ciphertext);
             }
 
             if (associatedData.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(associatedData));
+                Errors.ThrowArgumentNullException(ExceptionArgument.associatedData);
             }
 
             if (nonce.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(nonce));
+                Errors.ThrowArgumentNullException(ExceptionArgument.nonce);
             }
 
             if (authenticationTag.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(authenticationTag));
+                Errors.ThrowArgumentNullException(ExceptionArgument.authenticationTag);
             }
 
             if (_disposed)

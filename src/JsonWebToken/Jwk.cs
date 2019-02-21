@@ -378,7 +378,7 @@ namespace JsonWebToken
         {
             if (certificate == null)
             {
-                throw new ArgumentNullException(nameof(certificate));
+                Errors.ThrowArgumentNullException(ExceptionArgument.certificate);
             }
 
             AsymmetricJwk key = null;

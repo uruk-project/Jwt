@@ -27,14 +27,54 @@ namespace JsonWebToken
             byte[] dq,
             byte[] qi)
         {
-            D = d ?? throw new ArgumentNullException(nameof(d));
-            DP = dp ?? throw new ArgumentNullException(nameof(dp));
-            DQ = dq ?? throw new ArgumentNullException(nameof(dq));
-            QI = qi ?? throw new ArgumentNullException(nameof(qi));
-            P = p ?? throw new ArgumentNullException(nameof(p));
-            Q = q ?? throw new ArgumentNullException(nameof(q));
-            E = e ?? throw new ArgumentNullException(nameof(e));
-            N = n ?? throw new ArgumentNullException(nameof(n));
+            if (d == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.d);
+            }
+
+            if (dp == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.dp);
+            }
+
+            if (dq == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.dq);
+            }
+
+            if (q == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.q);
+            }
+
+            if (qi == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.qi);
+            }
+
+            if (p == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.p);
+            }
+
+            if (e == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.e);
+            }
+
+            if (n == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.n);
+            }
+
+            D = d;
+            DP = dp;
+            DQ = dq;
+            QI = qi;
+            P = p;
+            Q = q;
+            E = e;
+            N = n;
         }
 
         /// <summary>
@@ -52,42 +92,42 @@ namespace JsonWebToken
         {
             if (d == null)
             {
-                throw new ArgumentNullException(nameof(d));
-            }
-
-            if (p == null)
-            {
-                throw new ArgumentNullException(nameof(p));
-            }
-
-            if (q == null)
-            {
-                throw new ArgumentNullException(nameof(q));
+                Errors.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
             if (dp == null)
             {
-                throw new ArgumentNullException(nameof(dp));
+                Errors.ThrowArgumentNullException(ExceptionArgument.dp);
             }
 
             if (dq == null)
             {
-                throw new ArgumentNullException(nameof(dq));
+                Errors.ThrowArgumentNullException(ExceptionArgument.dq);
+            }
+
+            if (q == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.q);
             }
 
             if (qi == null)
             {
-                throw new ArgumentNullException(nameof(qi));
+                Errors.ThrowArgumentNullException(ExceptionArgument.qi);
+            }
+
+            if (p == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.p);
             }
 
             if (e == null)
             {
-                throw new ArgumentNullException(nameof(e));
+                Errors.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
             if (n == null)
             {
-                throw new ArgumentNullException(nameof(n));
+                Errors.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
             D = Base64Url.Base64UrlDecode(d);
@@ -120,8 +160,18 @@ namespace JsonWebToken
         /// </summary>
         public RsaJwk(byte[] e, byte[] n)
         {
-            E = e ?? throw new ArgumentNullException(nameof(e));
-            N = n ?? throw new ArgumentNullException(nameof(n));
+            if (e == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.e);
+            }
+
+            if (n == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.n);
+            }
+
+            E = e;
+            N = n;
         }
 
         /// <summary>
@@ -131,14 +181,14 @@ namespace JsonWebToken
         {
             if (e == null)
             {
-                throw new ArgumentNullException(nameof(e));
+                Errors.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
             if (n == null)
             {
-                throw new ArgumentNullException(nameof(n));
+                Errors.ThrowArgumentNullException(ExceptionArgument.n);
             }
-
+            
             E = Base64Url.Base64UrlDecode(e);
             N = Base64Url.Base64UrlDecode(n);
         }

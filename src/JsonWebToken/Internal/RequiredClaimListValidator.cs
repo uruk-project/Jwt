@@ -25,8 +25,18 @@ namespace JsonWebToken.Internal
         /// <param name="values"></param>
         public RequiredClaimListValidator(string claim, IList<TClaim> values)
         {
-            _claim = claim ?? throw new ArgumentNullException(nameof(claim));
-            _values = values ?? throw new ArgumentNullException(nameof(values));
+            if (claim == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.claim);
+            }
+
+            if (values == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.values);
+            }
+
+            _claim = claim;
+            _values = values;
         }
 
         /// <inheritdoc />

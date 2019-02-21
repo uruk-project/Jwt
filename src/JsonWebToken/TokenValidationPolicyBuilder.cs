@@ -165,7 +165,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keys"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(ICollection<Jwk> keys) => RequireSignature(keys, null);
+        public TokenValidationPolicyBuilder RequireSignature(IList<Jwk> keys) => RequireSignature(keys, null);
 
         /// <summary>
         /// Requires a valid signature.
@@ -173,7 +173,7 @@ namespace JsonWebToken
         /// <param name="keys"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(ICollection<Jwk> keys, SignatureAlgorithm algorithm) => RequireSignature(new Jwks(keys), algorithm);
+        public TokenValidationPolicyBuilder RequireSignature(IList<Jwk> keys, SignatureAlgorithm algorithm) => RequireSignature(new Jwks(keys), algorithm);
 
         /// <summary>
         /// Requires a valid signature.

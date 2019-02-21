@@ -59,13 +59,28 @@ namespace JsonWebToken
         {
             if (encryptionKeyProviders == null)
             {
-                throw new ArgumentNullException(nameof(encryptionKeyProviders));
+                Errors.ThrowArgumentNullException(ExceptionArgument.encryptionKeyProviders);
             }
 
-            _encryptionKeyProviders = encryptionKeyProviders.ToArray();
-            _signatureFactory = signerFactory ?? throw new ArgumentNullException(nameof(signerFactory));
-            _keyWrapFactory = keyWrapperFactory ?? throw new ArgumentNullException(nameof(keyWrapperFactory));
-            _authenticatedEncryptionFactory = authenticatedEncryptorFactory ?? throw new ArgumentNullException(nameof(authenticatedEncryptorFactory));
+            if (signerFactory == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.signerFactory);
+            }
+
+            if (keyWrapperFactory == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.keyWrapperFactory);
+            }
+
+            if (authenticatedEncryptorFactory == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.authenticatedEncryptorFactory);
+            }
+
+            _encryptionKeyProviders = encryptionKeyProviders.Where(p => p != null).ToArray();
+            _signatureFactory = signerFactory;
+            _keyWrapFactory = keyWrapperFactory;
+            _authenticatedEncryptionFactory = authenticatedEncryptorFactory;
             _headerCache = headerCache ?? new JwtHeaderCache();
         }
 
@@ -146,12 +161,12 @@ namespace JsonWebToken
         {
             if (token == null)
             {
-                throw new ArgumentNullException(nameof(token));
+                Errors.ThrowArgumentNullException(ExceptionArgument.token);
             }
 
             if (policy == null)
             {
-                throw new ArgumentNullException(nameof(policy));
+                Errors.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
             return TryReadToken(token.AsSpan(), policy);
@@ -166,7 +181,7 @@ namespace JsonWebToken
         {
             if (policy == null)
             {
-                throw new ArgumentNullException(nameof(policy));
+                Errors.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
             if (_disposed)
@@ -254,7 +269,7 @@ namespace JsonWebToken
         {
             if (policy == null)
             {
-                throw new ArgumentNullException(nameof(policy));
+                Errors.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
             if (_disposed)

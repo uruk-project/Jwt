@@ -488,7 +488,7 @@ namespace JsonWebToken
                     }
 
                     buffer[headerBytesWritten] = ByteDot;
-                    int payloadBytesWritten = Base64Url.Base64UrlEncode(headerJson, buffer.Slice(headerBytesWritten + 1));
+                    int payloadBytesWritten = Base64Url.Base64UrlEncode(payloadJson, buffer.Slice(headerBytesWritten + 1));
                     buffer[payloadBytesWritten + headerBytesWritten + 1] = ByteDot;
                     int bytesWritten = 0;
                     if (signer != null)

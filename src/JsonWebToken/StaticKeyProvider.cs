@@ -19,7 +19,12 @@ namespace JsonWebToken
         /// <param name="jwks"></param>
         public StaticKeyProvider(Jwks jwks)
         {
-            _jwks = jwks ?? throw new ArgumentNullException(nameof(jwks));
+            if (jwks == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.jwks);
+            }
+
+            _jwks = jwks;
         }
 
         /// <summary>

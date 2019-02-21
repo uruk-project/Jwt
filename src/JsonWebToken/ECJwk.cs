@@ -53,10 +53,25 @@ namespace JsonWebToken
         /// </summary>
         public ECJwk(in EllipticalCurve crv, byte[] d, byte[] x, byte[] y)
         {
+            if (d == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.d);
+            }
+
+            if (x == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.x);
+            }
+
+            if (y == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.y);
+            }
+
             Crv = crv;
-            D = d ?? throw new ArgumentNullException(nameof(d));
-            X = x ?? throw new ArgumentNullException(nameof(x));
-            Y = y ?? throw new ArgumentNullException(nameof(y));
+            D = d;
+            X = x;
+            Y = y;
         }
 
         /// <summary>
@@ -64,19 +79,20 @@ namespace JsonWebToken
         /// </summary>
         public ECJwk(in EllipticalCurve crv, string d, string x, string y)
         {
+
             if (d == null)
             {
-                throw new ArgumentNullException(nameof(d));
+                Errors.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
             if (x == null)
             {
-                throw new ArgumentNullException(nameof(x));
+                Errors.ThrowArgumentNullException(ExceptionArgument.x);
             }
 
             if (y == null)
             {
-                throw new ArgumentNullException(nameof(y));
+                Errors.ThrowArgumentNullException(ExceptionArgument.y);
             }
 
             Crv = crv;
@@ -90,9 +106,19 @@ namespace JsonWebToken
         /// </summary>
         public ECJwk(in EllipticalCurve crv, byte[] x, byte[] y)
         {
+            if (x == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.x);
+            }
+
+            if (y == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.y);
+            }
+
             Crv = crv;
-            X = x ?? throw new ArgumentNullException(nameof(x));
-            Y = y ?? throw new ArgumentNullException(nameof(y));
+            X = x;
+            Y = y;
         }
 
         /// <summary>
@@ -102,12 +128,12 @@ namespace JsonWebToken
         {
             if (x == null)
             {
-                throw new ArgumentNullException(nameof(x));
+                Errors.ThrowArgumentNullException(ExceptionArgument.x);
             }
 
             if (y == null)
             {
-                throw new ArgumentNullException(nameof(y));
+                Errors.ThrowArgumentNullException(ExceptionArgument.y);
             }
 
             Crv = crv;

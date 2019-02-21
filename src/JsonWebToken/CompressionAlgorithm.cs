@@ -56,8 +56,18 @@ namespace JsonWebToken
         public CompressionAlgorithm(sbyte id, string name, Compressor compressor)
         {
             Id = id;
-            Name = name ?? throw new ArgumentNullException(nameof(name));
-            Compressor = compressor ?? throw new ArgumentNullException(nameof(compressor));
+            if (name == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.name);
+            }
+
+            if (compressor == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.compressor);
+            }
+
+            Name = name ;
+            Compressor = compressor;
         }
 
         /// <summary>

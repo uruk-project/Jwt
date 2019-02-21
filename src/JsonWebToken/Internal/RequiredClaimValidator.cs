@@ -32,7 +32,12 @@ namespace JsonWebToken.Internal
         /// <param name="value"></param>
         public RequiredClaimValidator(string claim, TClaim value)
         {
-            _claim = claim ?? throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.claim);
+            }
+
+            _claim = claim;
             _value = value;
         }
 

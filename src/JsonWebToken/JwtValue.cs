@@ -56,7 +56,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(nameof(value));
+                Errors.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.Object;
@@ -71,7 +71,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(nameof(value));
+                Errors.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.String;
@@ -86,7 +86,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(nameof(value));
+                Errors.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.Utf8String;

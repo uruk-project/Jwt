@@ -22,7 +22,12 @@ namespace JsonWebToken.Internal
                 Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
             }
 
-            _key = key ?? throw new ArgumentNullException(nameof(key));
+            if (key == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.key);
+            }
+
+            _key = key;
             if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBytes << 3)
             {
                 Errors.ThrowEncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);

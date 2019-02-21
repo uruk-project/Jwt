@@ -20,7 +20,12 @@ namespace JsonWebToken
         public JwtDescriptor(JwtObject header, TPayload payload)
             : base(header)
         {
-            Payload = payload ?? throw new ArgumentNullException(nameof(payload));
+            if (payload == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.payload);
+            }
+
+            Payload = payload;
         }
 
         /// <summary>
@@ -30,7 +35,12 @@ namespace JsonWebToken
         public JwtDescriptor(TPayload payload)
             : base()
         {
-            Payload = payload ?? throw new ArgumentNullException(nameof(payload));
+            if (payload == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.payload);
+            }
+
+            Payload = payload;
         }
 
         /// <summary>

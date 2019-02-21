@@ -21,7 +21,7 @@ namespace JsonWebToken
         {
             if (key == null)
             {
-                throw new ArgumentNullException(nameof(key));
+                Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             if (willCreateSignatures && !key.HasPrivateKey)
@@ -66,11 +66,11 @@ namespace JsonWebToken
 
         public override int HashSizeInBytes => _hashSizeInBytes;
 
-        public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
+        public override bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
         {
-            if (input.IsEmpty)
+            if (data.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(input));
+                Errors.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
             if (_disposed)
@@ -82,11 +82,11 @@ namespace JsonWebToken
             try
             {
 #if !NETSTANDARD2_0
-                return rsa.TrySignData(input, destination, _hashAlgorithm, _signaturePadding, out bytesWritten);
+                return rsa.TrySignData(data, destination, _hashAlgorithm, _signaturePadding, out bytesWritten);
 #else
                 try
                 {
-                    var result = rsa.SignData(input.ToArray(), _hashAlgorithm, _signaturePadding);
+                    var result = rsa.SignData(data.ToArray(), _hashAlgorithm, _signaturePadding);
                     bytesWritten = result.Length;
                     result.CopyTo(destination);
                     return true;
@@ -103,16 +103,16 @@ namespace JsonWebToken
             }
         }
 
-        public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
+        public override bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
         {
-            if (input.IsEmpty)
+            if (data.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(input));
+                Errors.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
             if (signature.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(signature));
+                Errors.ThrowArgumentNullException(ExceptionArgument.signature);
             }
 
             if (_disposed)
@@ -124,9 +124,9 @@ namespace JsonWebToken
             try
             {
 #if !NETSTANDARD2_0
-                return rsa.VerifyData(input, signature, _hashAlgorithm, _signaturePadding);
+                return rsa.VerifyData(data, signature, _hashAlgorithm, _signaturePadding);
 #else
-                return rsa.VerifyData(input.ToArray(), signature.ToArray(), _hashAlgorithm, _signaturePadding);
+                return rsa.VerifyData(data.ToArray(), signature.ToArray(), _hashAlgorithm, _signaturePadding);
 #endif
             }
             finally

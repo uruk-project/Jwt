@@ -31,23 +31,28 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         public Jwks(Jwk key)
-            : this(new[] { key ?? throw new ArgumentNullException(nameof(key)) })
+            : this(new[] { key })
         {
         }
 
         /// <summary>
         /// Initializes an new instance of <see cref="Jwks"/>.
         /// </summary>
-        public Jwks(ICollection<Jwk> keys)
+        public Jwks(IList<Jwk> keys)
         {
             if (keys == null)
             {
-                throw new ArgumentNullException(nameof(keys));
+                Errors.ThrowArgumentNullException(ExceptionArgument.keys);
             }
 
-            var k = new Jwk[keys.Count];
-            keys.CopyTo(k, 0);
-            Keys = new List<Jwk>(k);
+            for (int i = 0; i < keys.Count; i++)
+            {
+                var key = keys[i];
+                if (key != null)
+                {
+                    Keys.Add(key);
+                }
+            }
         }
 
         /// <summary>
@@ -83,7 +88,7 @@ namespace JsonWebToken
         {
             if (key == null)
             {
-                throw new ArgumentNullException(nameof(key));
+                Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             Keys.Add(key);
@@ -97,7 +102,7 @@ namespace JsonWebToken
         {
             if (key == null)
             {
-                throw new ArgumentNullException(nameof(key));
+                Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             Keys.Remove(key);
@@ -209,7 +214,7 @@ namespace JsonWebToken
         {
             if (json == null)
             {
-                throw new ArgumentNullException(nameof(json));
+                Errors.ThrowArgumentNullException(ExceptionArgument.json);
             }
 
             return FromJson(Encoding.UTF8.GetBytes(json));

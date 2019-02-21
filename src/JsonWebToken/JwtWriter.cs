@@ -58,9 +58,24 @@ namespace JsonWebToken
             AuthenticatedEncryptorFactory authenticatedEncryptorFactory,
             JsonHeaderCache headerCache)
         {
-            _signatureFactory = signerFactory ?? throw new ArgumentNullException(nameof(signerFactory));
-            _keyWrapFactory = keyWrapperFactory ?? throw new ArgumentNullException(nameof(keyWrapperFactory));
-            _authenticatedEncryptionFactory = authenticatedEncryptorFactory ?? throw new ArgumentNullException(nameof(authenticatedEncryptorFactory));
+            if (signerFactory == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.signerFactory);
+            }
+
+            if (keyWrapperFactory == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.keyWrapperFactory);
+            }
+
+            if (authenticatedEncryptorFactory == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.authenticatedEncryptorFactory);
+            }
+
+            _signatureFactory = signerFactory;
+            _keyWrapFactory = keyWrapperFactory;
+            _authenticatedEncryptionFactory = authenticatedEncryptorFactory;
             _headerCache = headerCache ?? new JsonHeaderCache();
         }
 

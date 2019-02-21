@@ -22,7 +22,12 @@ namespace JsonWebToken
         /// </summary>
         public SymmetricJwk(byte[] k)
         {
-            _k = k ?? throw new ArgumentNullException(nameof(k));
+            if (k == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.k);
+            }
+
+            _k = k;
         }
 
         /// <summary>
@@ -40,7 +45,7 @@ namespace JsonWebToken
         {
             if (k == null)
             {
-                throw new ArgumentNullException(nameof(k));
+                Errors.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
             _k = Base64Url.Base64UrlDecode(k);
@@ -90,7 +95,7 @@ namespace JsonWebToken
         {
             if (bytes == null)
             {
-                throw new ArgumentNullException(nameof(bytes));
+                Errors.ThrowArgumentNullException(ExceptionArgument.bytes);
             }
 
             var key = new SymmetricJwk(bytes);
@@ -119,7 +124,7 @@ namespace JsonWebToken
         {
             if (bytes == null)
             {
-                throw new ArgumentNullException(nameof(bytes));
+                Errors.ThrowArgumentNullException(ExceptionArgument.bytes);
             }
 
             var key = new SymmetricJwk(bytes);
@@ -229,7 +234,7 @@ namespace JsonWebToken
         {
             if (k == null)
             {
-                throw new ArgumentNullException(nameof(k));
+                Errors.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
             var key = new SymmetricJwk(k);

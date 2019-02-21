@@ -21,9 +21,24 @@ namespace JsonWebToken
         /// <param name="generateIssuedTime"></param>
         public EncodingContext(SignerFactory signatureFactory, KeyWrapperFactory keyWrapFactory, AuthenticatedEncryptorFactory authenticatedEncryptionFactory, JsonHeaderCache headerCache, int tokenLifetimeInMinutes, bool generateIssuedTime)
         {
-            SignatureFactory = signatureFactory ?? throw new ArgumentNullException(nameof(signatureFactory));
-            KeyWrapFactory = keyWrapFactory ?? throw new ArgumentNullException(nameof(keyWrapFactory));
-            AuthenticatedEncryptionFactory = authenticatedEncryptionFactory ?? throw new ArgumentNullException(nameof(authenticatedEncryptionFactory));
+            if (signatureFactory == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.signatureFactory);
+            }
+
+            if (keyWrapFactory == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.keyWrapFactory);
+            }
+
+            if (authenticatedEncryptionFactory == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.authenticatedEncryptionFactory);
+            }
+
+            SignatureFactory = signatureFactory;
+            KeyWrapFactory = keyWrapFactory;
+            AuthenticatedEncryptionFactory = authenticatedEncryptionFactory;
             HeaderCache = headerCache;
             TokenLifetimeInMinutes = tokenLifetimeInMinutes;
             GenerateIssuedTime = generateIssuedTime;

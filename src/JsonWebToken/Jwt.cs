@@ -31,22 +31,52 @@ namespace JsonWebToken
         /// <param name="encryptionKey"></param>
         public Jwt(JwtHeader header, Jwt nestedToken, Jwk encryptionKey)
         {
-            Header = header ?? throw new ArgumentNullException(nameof(header));
-            NestedToken = nestedToken ?? throw new ArgumentNullException(nameof(nestedToken));
-            EncryptionKey = encryptionKey ?? throw new ArgumentNullException(nameof(encryptionKey));
+            if (header == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.header);
+            }
+
+            if (nestedToken == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.nestedToken);
+            }
+
+            if (encryptionKey == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.encryptionKey);
+            }
+
+            Header = header;
+            NestedToken = nestedToken;
+            EncryptionKey = encryptionKey;
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="Jwt"/>.
         /// </summary>
         /// <param name="header"></param>
-        /// <param name="binary"></param>
+        /// <param name="data"></param>
         /// <param name="encryptionKey"></param>
-        public Jwt(JwtHeader header, byte[] binary, Jwk encryptionKey)
+        public Jwt(JwtHeader header, byte[] data, Jwk encryptionKey)
         {
-            Header = header ?? throw new ArgumentNullException(nameof(header));
-            Binary = binary ?? throw new ArgumentNullException(nameof(binary));
-            EncryptionKey = encryptionKey ?? throw new ArgumentNullException(nameof(encryptionKey));
+            if (header == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.header);
+            }
+
+            if (data == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.data);
+            }
+
+            if (encryptionKey == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.encryptionKey);
+            }
+
+            Header = header;
+            Binary = data;
+            EncryptionKey = encryptionKey;
         }
 
         /// <summary>
@@ -56,8 +86,18 @@ namespace JsonWebToken
         /// <param name="payload"></param>
         public Jwt(JwtHeader header, JwtPayload payload)
         {
-            Header = header ?? throw new ArgumentNullException(nameof(header));
-            _payload = payload ?? throw new ArgumentNullException(nameof(payload));
+            if (header == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.header);
+            }
+
+            if (payload == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.payload);
+            }
+
+            Header = header;
+            _payload = payload;
         }
 
         /// <summary>
