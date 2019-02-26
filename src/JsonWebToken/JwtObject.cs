@@ -14,7 +14,7 @@ namespace JsonWebToken
     /// Represents a JSON object.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
-    public class JwtObject
+    public sealed class JwtObject
     {
         private readonly List<JwtProperty> _properties = new List<JwtProperty>(6);
 
