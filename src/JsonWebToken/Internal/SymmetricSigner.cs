@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
@@ -23,6 +22,7 @@ namespace JsonWebToken.Internal
         /// This is the minimum <see cref="SymmetricJwk"/>.KeySize when creating and verifying signatures.
         /// </summary>
         public static readonly int DefaultMinimumSymmetricKeySizeInBits = 128;
+
         private readonly int _hashSizeInBytes;
         private int _minimumKeySizeInBits = DefaultMinimumSymmetricKeySizeInBits;
 

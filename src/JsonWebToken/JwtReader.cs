@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -9,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -186,7 +186,7 @@ namespace JsonWebToken
 
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                Errors.ThrowObjectDisposed(typeof(JwtReader));
             }
 
             if (token.IsEmpty)
@@ -265,7 +265,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Token">The JWT encoded as JWE or JWS.</param>
         /// <param name="policy">The validation policy.</param>
-        public TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Token, TokenValidationPolicy policy)
+        public unsafe TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Token, TokenValidationPolicy policy)
         {
             if (policy == null)
             {
@@ -274,7 +274,7 @@ namespace JsonWebToken
 
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                Errors.ThrowObjectDisposed(typeof(JwtReader));
             }
 
             string malformedMessage = null;
@@ -289,13 +289,14 @@ namespace JsonWebToken
                 goto Malformed;
             }
 
-            Span<TokenSegment> segments = stackalloc TokenSegment[Constants.JweSegmentCount];
-            var segmentCount = Tokenizer.Tokenize(utf8Token, segments);
+            var pSegments = stackalloc TokenSegment[Constants.JweSegmentCount];
+            var segmentCount = Tokenizer.Tokenize(utf8Token, pSegments);
             if (segmentCount < Constants.JwsSegmentCount)
             {
                 goto Malformed;
             }
 
+            var segments = new ReadOnlySpan<TokenSegment>(pSegments, segmentCount);
             var headerSegment = segments[0];
             if (headerSegment.IsEmpty)
             {
@@ -352,7 +353,7 @@ namespace JsonWebToken
         private TokenValidationResult TryReadJwe(
             ReadOnlySpan<byte> utf8Buffer,
             TokenValidationPolicy policy,
-            Span<TokenSegment> segments,
+            ReadOnlySpan<TokenSegment> segments,
             JwtHeader header,
             ReadOnlySpan<byte> rawHeader)
         {
@@ -465,7 +466,7 @@ namespace JsonWebToken
         private TokenValidationResult TryReadJws(
             ReadOnlySpan<byte> utf8Buffer,
             TokenValidationPolicy policy,
-            Span<TokenSegment> segments,
+            ReadOnlySpan<TokenSegment> segments,
             JwtHeader header)
         {
             var payloadSegment = segments[1];

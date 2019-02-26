@@ -10,27 +10,60 @@ namespace JsonWebToken.Internal
     {
         private const byte ByteDot = (byte)'.';
 
-        public static int Tokenize(ReadOnlySpan<byte> token, Span<TokenSegment> segments)
+        public unsafe static int Tokenize(ReadOnlySpan<byte> token, TokenSegment* pSegments)
         {
-            int count = 0;
-            int start = 0;
-            int end;
+            int start;
             var span = token;
-            while ((end = span.IndexOf(ByteDot)) >= 0 && count < Constants.JweSegmentCount)
+            int last = span.LastIndexOf(ByteDot);
+            int end = span.IndexOf(ByteDot);
+            if (end < 0)
             {
-                segments[count++] = new TokenSegment(start, end);
-                start += end + 1;
-                span = token.Slice(start);
+                return 0;
             }
 
-            // Residue
-            var length = span.Length;
-            if (count < Constants.JweSegmentCount)
+            *pSegments = new TokenSegment(0, end);
+            start = end + 1;
+            span = token.Slice(start);
+            end = span.IndexOf(ByteDot);
+            if (end < 0)
             {
-                segments[count++] = new TokenSegment(start, length);
+                return 0;
             }
 
-            return count;
+            *(pSegments + 1) = new TokenSegment(start, end);
+            start += end + 1;
+            if (last == start - 1)
+            {
+                *(pSegments + 2) = new TokenSegment(last + 1, token.Length - last - 1);
+                return Constants.JwsSegmentCount;
+            }
+
+            span = token.Slice(start);
+            end = span.IndexOf(ByteDot);
+            if (end < 0)
+            {
+                return 0;
+            }
+
+            *(pSegments + 2) = new TokenSegment(start, end);
+            start += end + 1;
+            span = token.Slice(start);
+
+            end = span.IndexOf(ByteDot);
+            if (end < 0)
+            {
+                return 0;
+            }
+
+            *(pSegments + 3) = new TokenSegment(start, end);
+            start += end + 1;
+            if (last == start - 1)
+            {
+                *(pSegments + 4) = new TokenSegment(last + 1, token.Length - last - 1);
+                return Constants.JweSegmentCount;
+            }
+
+            return 0;
         }
 
         public static int Tokenize(in ReadOnlySequence<byte> token, Span<TokenSegment> segments)
