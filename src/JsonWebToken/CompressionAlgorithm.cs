@@ -66,7 +66,7 @@ namespace JsonWebToken
                 Errors.ThrowArgumentNullException(ExceptionArgument.compressor);
             }
 
-            Name = name ;
+            Name = name;
             Compressor = compressor;
         }
 
@@ -250,7 +250,7 @@ namespace JsonWebToken
         /// Cast the <see cref="CompressionAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
-        public static implicit operator byte[](CompressionAlgorithm value)
+        public static implicit operator byte[] (CompressionAlgorithm value)
         {
             if (value is null)
             {
