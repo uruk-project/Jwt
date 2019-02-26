@@ -19,7 +19,7 @@ namespace JsonWebToken.Internal
 
             if (algorithm is null)
             {
-                return null;
+                goto NotSupported;
             }
 
             var signers = willCreateSignatures ? VerificationSigners : CreationSigners;
@@ -35,6 +35,7 @@ namespace JsonWebToken.Internal
                 return signers.AddValue(factoryKey, signer);
             }
 
+        NotSupported:
             return null;
         }
     }

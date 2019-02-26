@@ -26,11 +26,6 @@ namespace JsonWebToken.Internal
         public AesKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
             _aes = GetSymmetricAlgorithm(key, algorithm);
             _encryptorPool = new ObjectPool<ICryptoTransform>(new PooledEncryptorPolicy(_aes));
             _decryptorPool = new ObjectPool<ICryptoTransform>(new PooledDecryptorPolicy(_aes));
@@ -87,16 +82,16 @@ namespace JsonWebToken.Internal
             }
         }
 
-        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
+        public override bool TryUnwrapKey(ReadOnlySpan<byte> key, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
-            if (keyBytes.IsEmpty)
+            if (key.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(keyBytes));
+                Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            if (keyBytes.Length % 8 != 0)
+            if (key.Length % 8 != 0)
             {
-                Errors.ThrowKeySizeMustBeMultipleOf64(keyBytes);
+                Errors.ThrowKeySizeMustBeMultipleOf64(key);
             }
 
             if (_disposed)
@@ -104,7 +99,7 @@ namespace JsonWebToken.Internal
                 Errors.ThrowObjectDisposed(GetType());
             }
 
-            return TryUnwrapKeyPrivate(keyBytes, destination, out bytesWritten);
+            return TryUnwrapKeyPrivate(key, destination, out bytesWritten);
         }
 
         private unsafe bool TryUnwrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, Span<byte> destination, out int bytesWritten)

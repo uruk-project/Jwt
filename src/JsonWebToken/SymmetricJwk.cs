@@ -5,6 +5,7 @@ using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -21,7 +22,12 @@ namespace JsonWebToken
         /// </summary>
         public SymmetricJwk(byte[] k)
         {
-            _k = k ?? throw new ArgumentNullException(nameof(k));
+            if (k == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.k);
+            }
+
+            _k = k;
         }
 
         /// <summary>
@@ -39,7 +45,7 @@ namespace JsonWebToken
         {
             if (k == null)
             {
-                throw new ArgumentNullException(nameof(k));
+                Errors.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
             _k = Base64Url.Base64UrlDecode(k);
@@ -89,7 +95,7 @@ namespace JsonWebToken
         {
             if (bytes == null)
             {
-                throw new ArgumentNullException(nameof(bytes));
+                Errors.ThrowArgumentNullException(ExceptionArgument.bytes);
             }
 
             var key = new SymmetricJwk(bytes);
@@ -118,7 +124,7 @@ namespace JsonWebToken
         {
             if (bytes == null)
             {
-                throw new ArgumentNullException(nameof(bytes));
+                Errors.ThrowArgumentNullException(ExceptionArgument.bytes);
             }
 
             var key = new SymmetricJwk(bytes);
@@ -153,7 +159,7 @@ namespace JsonWebToken
         {
             if (algorithm is null)
             {
-                return null;
+                goto NotSupported;
             }
 
             if (IsSupported(algorithm))
@@ -161,6 +167,7 @@ namespace JsonWebToken
                 return new SymmetricSigner(this, algorithm);
             }
 
+        NotSupported:
             return null;
         }
 
@@ -169,24 +176,24 @@ namespace JsonWebToken
         {
             if (contentEncryptionAlgorithm is null)
             {
-                return null;
+                goto NotSupported;
             }
 
             if (IsSupported(contentEncryptionAlgorithm))
             {
-                switch (encryptionAlgorithm.Category)
+                if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
                 {
-                    case EncryptionType.AesHmac:
-                        return new AesKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-#if NETCOREAPP3_0
-                    case EncryptionType.AesGcm:
-                        return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-#endif
-                    default:
-                        return null;
+                    return new AesKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
                 }
+#if NETCOREAPP3_0
+                else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
+                {
+                    return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                }
+#endif
             }
 
+        NotSupported:
             return null;
         }
 
@@ -195,19 +202,16 @@ namespace JsonWebToken
         {
             if (IsSupported(encryptionAlgorithm))
             {
-                switch (encryptionAlgorithm.Category)
+                if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
                 {
-                    case EncryptionType.None:
-                        break;
-                    case EncryptionType.AesHmac:
-                        return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
-#if NETCOREAPP3_0
-                    case EncryptionType.AesGcm:
-                        return new AesGcmEncryptor(this, encryptionAlgorithm);
-#endif
-                    default:
-                        return null;
+                    return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
                 }
+#if NETCOREAPP3_0
+                else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
+                {
+                    return new AesGcmEncryptor(this, encryptionAlgorithm);
+                }
+#endif
             }
 
             return null;
@@ -230,7 +234,7 @@ namespace JsonWebToken
         {
             if (k == null)
             {
-                throw new ArgumentNullException(nameof(k));
+                Errors.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
             var key = new SymmetricJwk(k);
@@ -247,7 +251,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="sizeInBits"></param>
         /// <returns></returns>
-        public static SymmetricJwk GenerateKey(int sizeInBits) => GenerateKey(sizeInBits, algorithm: null);
+        public static SymmetricJwk GenerateKey(int sizeInBits) => GenerateKey(sizeInBits, algorithm: (byte[])null);
 
         /// <summary>
         /// Generates a new <see cref="SymmetricJwk"/>.
@@ -257,10 +261,55 @@ namespace JsonWebToken
         /// <returns></returns>
         public static SymmetricJwk GenerateKey(int sizeInBits, string algorithm)
         {
+            return GenerateKey(sizeInBits, Encoding.UTF8.GetBytes(algorithm));
+        }
+
+        /// <summary>
+        /// Generates a new <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static SymmetricJwk GenerateKey(int sizeInBits, byte[] algorithm)
+        {
             var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
             if (algorithm != null)
             {
                 key.Alg = algorithm;
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Generates a new <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static SymmetricJwk GenerateKey(int sizeInBits, SignatureAlgorithm algorithm)
+        {
+            var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
+            if (algorithm != null)
+            {
+                key.Alg = algorithm;
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Generates a new <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static SymmetricJwk GenerateKey(int sizeInBits, KeyManagementAlgorithm algorithm)
+        {
+            var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
+            if (algorithm != null)
+            {
+                key.Alg = (byte[])algorithm;
             }
 
             return key;
@@ -378,6 +427,9 @@ namespace JsonWebToken
                         {
                             key.Populate(name, (string)property.Value);
                         }
+                        break;
+                    case JwtTokenType.Utf8String:
+                        key.Populate(name, (byte[])property.Value);
                         break;
                     default:
                         break;

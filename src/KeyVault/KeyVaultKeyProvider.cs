@@ -40,12 +40,12 @@ namespace JsonWebToken.KeyVault
             _client = new KeyVaultClient((authority, resource, scope) => GetTokenFromClientSecret(authority, resource, clientId, clientSecret));
         }
 
-        public IReadOnlyList<Jwk> GetKeys(JwtHeader header)
+        public Jwk[] GetKeys(JwtHeader header)
         {
             return GetKeysAsync(header).GetAwaiter().GetResult();
         }
 
-        private async Task<IReadOnlyList<Jwk>> GetKeysAsync(JwtHeader header)
+        private async Task<Jwk[]> GetKeysAsync(JwtHeader header)
         {
             var keys = new List<Jwk>();
             var keyIdentifiers = await _client.GetKeysAsync(_vaultBaseUrl, MaxResults);
@@ -82,7 +82,7 @@ namespace JsonWebToken.KeyVault
                 }
             }
 
-            return keys;
+            return keys.ToArray();
         }
 
         private static SscECParameters ConvertToECParameters(KVECParameters inputParameters)

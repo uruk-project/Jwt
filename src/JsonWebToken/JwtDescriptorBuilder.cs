@@ -546,22 +546,32 @@ namespace JsonWebToken
         /// <summary>
         /// Defines the <see cref="Jwk"/> used as key for signature.
         /// </summary>
-        /// <param name="jwk"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder SignWith(Jwk jwk)
+        public JwtDescriptorBuilder SignWith(Jwk key)
         {
-            _signingKey = jwk ?? throw new ArgumentNullException(nameof(jwk));
+            if (key == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.key);
+            }
+
+            _signingKey = key;
             return this;
         }
 
         /// <summary>
         /// Defines the <see cref="Jwk"/> used as key for encryption.
         /// </summary>
-        /// <param name="jwk"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder EncryptWith(Jwk jwk)
+        public JwtDescriptorBuilder EncryptWith(Jwk key)
         {
-            _encryptionKey = jwk ?? throw new ArgumentNullException(nameof(jwk));
+            if (key == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.key);
+            }
+
+            _encryptionKey = key;
             return this;
         }
 

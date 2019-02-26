@@ -180,7 +180,7 @@ namespace JsonWebToken
                 node = node.Next;
                 if (node != null && node.Previous != previous)
                 {
-                    return false;
+                    goto Invalid;
                 }
             }
 
@@ -191,11 +191,14 @@ namespace JsonWebToken
                 node = node.Previous;
                 if (node != null && node.Next != next)
                 {
-                    return false;
+                    goto Invalid;
                 }
             }
 
             return true;
+
+        Invalid:
+            return false;
         }
     }
 }

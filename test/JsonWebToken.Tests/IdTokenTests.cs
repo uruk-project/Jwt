@@ -12,7 +12,7 @@ namespace JsonWebToken.Tests
         public void Create()
         {
             var descriptor = new IdTokenDescriptor();
-            descriptor.Algorithm = SignatureAlgorithm.None.Name;
+            descriptor.Algorithm = SignatureAlgorithm.None;
             descriptor.Issuer = "http://server.example.com";
             descriptor.Subject = "248289761001";
             descriptor.Audience = "s6BhdRkqt3";
@@ -42,7 +42,7 @@ namespace JsonWebToken.Tests
             )
             {
                 Kid = "1e9gdk7",
-                Alg = SignatureAlgorithm.RsaSha256.Name
+                Alg = SignatureAlgorithm.RsaSha256
             };
             var reader = new JwtReader();
 

@@ -58,9 +58,24 @@ namespace JsonWebToken
             AuthenticatedEncryptorFactory authenticatedEncryptorFactory,
             JsonHeaderCache headerCache)
         {
-            _signatureFactory = signerFactory ?? throw new ArgumentNullException(nameof(signerFactory));
-            _keyWrapFactory = keyWrapperFactory ?? throw new ArgumentNullException(nameof(keyWrapperFactory));
-            _authenticatedEncryptionFactory = authenticatedEncryptorFactory ?? throw new ArgumentNullException(nameof(authenticatedEncryptorFactory));
+            if (signerFactory == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.signerFactory);
+            }
+
+            if (keyWrapperFactory == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.keyWrapperFactory);
+            }
+
+            if (authenticatedEncryptorFactory == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.authenticatedEncryptorFactory);
+            }
+
+            _signatureFactory = signerFactory;
+            _keyWrapFactory = keyWrapperFactory;
+            _authenticatedEncryptionFactory = authenticatedEncryptorFactory;
             _headerCache = headerCache ?? new JsonHeaderCache();
         }
 
@@ -80,7 +95,7 @@ namespace JsonWebToken
             {
                 if (value < 0)
                 {
-                    Errors.ThrowMustBeGreaterOrEqualToZero(nameof(value), value);
+                    Errors.ThrowMustBeGreaterOrEqualToZero(ExceptionArgument.value, value);
                 }
 
                 _tokenLifetimeInMinutes = value;
@@ -126,17 +141,12 @@ namespace JsonWebToken
         {
             if (descriptor == null)
             {
-                throw new ArgumentNullException(nameof(descriptor));
+                Errors.ThrowArgumentNullException(ExceptionArgument.descriptor);
             }
 
             if (_disposed)
             {
                 Errors.ThrowObjectDisposed(GetType());
-            }
-
-            if (descriptor.Algorithm == null)
-            {
-                descriptor.Algorithm = SignatureAlgorithm.None.Name;
             }
 
             if (!IgnoreTokenValidation)

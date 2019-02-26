@@ -1,12 +1,13 @@
 // Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -31,9 +32,14 @@ namespace JsonWebToken
             throw new ArgumentException($"The address specified '{address}' is not valid as per HTTPS scheme.", nameof(address));
         }
 
-        internal static Exception ThrowArgumentNullException(string argumentName)
+        internal static void ThrowArgumentOutOfRange_NeedNonNegNum(ExceptionArgument argument)
         {
-            throw new ArgumentNullException(argumentName);
+            throw new ArgumentOutOfRangeException(GetArgumentName(argument), "Non-negative number required.");
+        }
+
+        internal static Exception ThrowArgumentNullException(ExceptionArgument argument)
+        {
+            throw new ArgumentNullException(GetArgumentName(argument));
         }
 
         internal static void ThrowPolicyBuilderRequireSignature()
@@ -130,9 +136,10 @@ namespace JsonWebToken
             throw new JwtDescriptorException($"The header parameter '{value}' is required.");
         }
 
-        internal static void ThrowMustBeGreaterOrEqualToZero(string name, int value)
+        internal static void ThrowMustBeGreaterOrEqualToZero(ExceptionArgument argument, int value)
         {
-            throw new ArgumentOutOfRangeException(name, $"{nameof(value)} must be greater equal or zero. value: '{value}'.");
+            var name = GetArgumentName(argument);
+            throw new ArgumentOutOfRangeException(name, $"{name} must be greater equal or zero. value: '{value}'.");
         }
 
         internal static void ThrowNotSupportedJsonType(JwtTokenType type)
@@ -140,13 +147,15 @@ namespace JsonWebToken
             new InvalidOperationException($"The type {type} is not supported.");
         }
 
-        internal static void ThrowMustBeGreaterThanZero(string name, int value)
+        internal static void ThrowMustBeGreaterThanZero(ExceptionArgument argument, int value)
         {
+            var name = GetArgumentName(argument);
             throw new ArgumentOutOfRangeException(name, $"{nameof(value)} must be greater than zero. value: '{value}'.");
         }
 
-        internal static void ThrowMustBeGreaterThanTimeSpanZero(string name, int value)
+        internal static void ThrowMustBeGreaterThanTimeSpanZero(ExceptionArgument argument, int value)
         {
+            var name = GetArgumentName(argument);
             throw new ArgumentOutOfRangeException($"{name} must be greater than TimeSpan.Zero. value: '{value}'.");
         }
 
@@ -170,9 +179,9 @@ namespace JsonWebToken
             throw new NotSupportedException($"Key wrap is not supported for algorithm: '{algorithm}'.");
         }
 
-        internal static void ThrowNotSupportedCompressionAlgorithm(string compressionAlgorithm)
+        internal static void ThrowNotSupportedCompressionAlgorithm(CompressionAlgorithm compressionAlgorithm)
         {
-            throw new NotSupportedException($"Compression algorithm: '{compressionAlgorithm}' is not supported.");
+            throw new NotSupportedException($"Compression algorithm: '{compressionAlgorithm.Name}' is not supported.");
         }
 
         internal static void ThrowInvalidEcdsaKeySize(Jwk key, SignatureAlgorithm algorithm, int validKeySize, int keySize)
@@ -185,13 +194,19 @@ namespace JsonWebToken
             throw new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), $"The algorithm '{algorithm}' requires the a key size to be greater than '{validKeySize}' bits. Key size is '{keySize}'.");
         }
 
+        internal static void ThrowKeyNotFound()
+        {
+            throw new KeyNotFoundException();
+        }
+
         internal static void ThrowMalformedJwks()
         {
             throw new InvalidOperationException("The JWKS is malformed.");
         }
 
-        internal static void ThrowMustBeAtLeast(string name, int value)
+        internal static void ThrowMustBeAtLeast(ExceptionArgument argument, int value)
         {
+            var name = GetArgumentName(argument);
             throw new ArgumentOutOfRangeException(nameof(value), $"{name} must be at least '{value}'.");
         }
 
@@ -215,9 +230,9 @@ namespace JsonWebToken
             throw new NotSupportedException($"Signature failed. No support for: Algorithm: '{algorithm}', key: '{key.Kid}'.");
         }
 
-        internal static void ThrowNotSupportedJwk(string keyType)
+        internal static void ThrowNotSupportedJwk(ReadOnlySpan<byte> name)
         {
-            throw new NotSupportedException($"JWK type '{keyType}' is not supported.");
+            throw new NotSupportedException($"JWK type '{Encoding.UTF8.GetString(name.ToArray())}' is not supported.");
         }
 
         internal static void ThrowNotSupportedSignatureAlgorithm(SignatureAlgorithm algorithm)
@@ -234,7 +249,7 @@ namespace JsonWebToken
         {
             throw new NotSupportedException($"Key unwrap failed. No support for: Algorithm: '{algorithm}'.");
         }
-        
+
         internal static void ThrowNotSupportedCurve(string curve)
         {
             throw new NotSupportedException($"Elliptical Curve not supported for curve: '{curve}'");
@@ -294,5 +309,122 @@ namespace JsonWebToken
         {
             throw new FormatException();
         }
+
+        private static string GetArgumentName(ExceptionArgument argument)
+        {
+            switch (argument)
+            {
+                case ExceptionArgument.value: return "value";
+                case ExceptionArgument.name: return "name";
+                case ExceptionArgument.compressor: return "compressor";
+                case ExceptionArgument.key: return "key";
+                case ExceptionArgument.d: return "d";
+                case ExceptionArgument.x: return "x";
+                case ExceptionArgument.y: return "y";
+                case ExceptionArgument.signatureFactory: return "signatureFactory";
+                case ExceptionArgument.keyWrapFactory: return "keyWrapFactory";
+                case ExceptionArgument.authenticatedEncryptionFactory: return "authenticatedEncryptionFactory";
+                case ExceptionArgument.encryptionAlgorithm: return "encryptionAlgorithm";
+                case ExceptionArgument.plaintext: return "plaintext";
+                case ExceptionArgument.associatedData: return "associatedData";
+                case ExceptionArgument.ciphertext: return "ciphertext";
+                case ExceptionArgument.nonce: return "nonce";
+                case ExceptionArgument.authenticationTag: return "authenticationTag";
+                case ExceptionArgument.data: return "data";
+                case ExceptionArgument.signature: return "signature";
+                case ExceptionArgument.policy: return "policy";
+                case ExceptionArgument.values: return "values";
+                case ExceptionArgument.claim: return "claim";
+                case ExceptionArgument.header: return "header";
+                case ExceptionArgument.algorithm: return "algorithm";
+                case ExceptionArgument.certificate: return "certificate";
+                case ExceptionArgument.keys: return "keys";
+                case ExceptionArgument.json: return "json";
+                case ExceptionArgument.nestedToken: return "nestedToken";
+                case ExceptionArgument.encryptionKey: return "encryptionKey";
+                case ExceptionArgument.payload: return "payload";
+                case ExceptionArgument.encryptionKeyProviders: return "encryptionKeyProviders";
+                case ExceptionArgument.signerFactory: return "signerFactory";
+                case ExceptionArgument.keyWrapperFactory: return "keyWrapperFactory";
+                case ExceptionArgument.authenticatedEncryptorFactory: return "authenticatedEncryptorFactory";
+                case ExceptionArgument.token: return "token";
+                case ExceptionArgument.dp: return "dp";
+                case ExceptionArgument.dq: return "dq";
+                case ExceptionArgument.q: return "q";
+                case ExceptionArgument.qi: return "qi";
+                case ExceptionArgument.p: return "p";
+                case ExceptionArgument.e: return "e";
+                case ExceptionArgument.n: return "n";
+                case ExceptionArgument.jwks: return "jwks";
+                case ExceptionArgument.bytes: return "bytes";
+                case ExceptionArgument.k: return "k";
+                case ExceptionArgument.count: return "count";
+                case ExceptionArgument.clockSkew: return "clockSkew";
+                case ExceptionArgument.size: return "size";
+                case ExceptionArgument.capacity: return "capacity";
+                case ExceptionArgument.base64url: return "base64url";
+                case ExceptionArgument.descriptor: return "descriptor";
+                case ExceptionArgument.context: return "context";
+
+                default:
+                    Debug.Fail("The enum value is not defined, please check the ExceptionArgument Enum.");
+                    return "";
+            }
+        }
+    }
+
+    internal enum ExceptionArgument
+    {
+        value,
+        name,
+        compressor,
+        key,
+        d,
+        x,
+        y,
+        signatureFactory,
+        keyWrapFactory,
+        authenticatedEncryptionFactory,
+        encryptionAlgorithm,
+        plaintext,
+        associatedData,
+        ciphertext,
+        nonce,
+        authenticationTag,
+        data,
+        signature,
+        policy,
+        values,
+        claim,
+        header,
+        algorithm,
+        certificate,
+        keys,
+        json,
+        nestedToken,
+        encryptionKey,
+        payload,
+        encryptionKeyProviders,
+        signerFactory,
+        keyWrapperFactory,
+        authenticatedEncryptorFactory,
+        token,
+        dp,
+        dq,
+        q,
+        qi,
+        p,
+        e,
+        n,
+        jwks,
+        bytes,
+        k,
+        count,
+        clockSkew,
+        size,
+        capacity,
+        base64url,
+        descriptor,
+        context
     }
 }

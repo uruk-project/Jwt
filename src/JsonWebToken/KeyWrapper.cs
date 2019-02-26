@@ -36,7 +36,7 @@ namespace JsonWebToken
         {
             if (key == null)
             {
-                throw new ArgumentNullException(nameof(key));
+                Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             if (!key.IsSupported(algorithm))
@@ -44,8 +44,18 @@ namespace JsonWebToken
                 Errors.ThrowNotSupportedAlgorithmForKeyWrap(algorithm);
             }
 
-            Algorithm = algorithm ?? throw new ArgumentNullException(nameof(algorithm));
-            EncryptionAlgorithm = encryptionAlgorithm ?? throw new ArgumentNullException(nameof(encryptionAlgorithm));
+            if (algorithm == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.algorithm);
+            }
+
+            if (encryptionAlgorithm == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
+            }
+
+            Algorithm = algorithm;
+            EncryptionAlgorithm = encryptionAlgorithm;
             Key = key;
         }
 

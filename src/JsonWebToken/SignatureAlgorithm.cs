@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -87,6 +88,11 @@ namespace JsonWebToken
         /// Gets the name of the signature algorithm.
         /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// Gets the name of the signature algorithm.
+        /// </summary>
+        public byte[] Utf8Name => Encoding.UTF8.GetBytes(Name);
 
         /// <summary>
         /// Gets the algorithm category.
@@ -195,15 +201,17 @@ namespace JsonWebToken
 
             if (x is null)
             {
-                return false;
+                goto NotEqual;
             }
 
             if (y is null)
             {
-                return false;
+                goto NotEqual;
             }
 
             return x.Id == y.Id;
+        NotEqual:
+            return false;
         }
 
         /// <summary>
@@ -221,15 +229,17 @@ namespace JsonWebToken
 
             if (x is null)
             {
-                return true;
+                goto NotEqual;
             }
 
             if (y is null)
             {
-                return true;
+                goto NotEqual;
             }
 
             return x.Id != y.Id;
+        NotEqual:
+            return true;
         }
 
         /// <summary>
@@ -261,6 +271,82 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Cast the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        public static implicit operator SignatureAlgorithm(byte[] value)
+        {
+            return Encoding.UTF8.GetString(value);
+        }
+
+        /// <summary>
+        /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        public unsafe static implicit operator SignatureAlgorithm(ReadOnlySpan<byte> value)
+        {
+            if (value.IsEmpty)
+            {
+                return null;
+            }
+
+            fixed (byte* pValue = value)
+            {
+                if (value.Length == 5)
+                {
+                    switch (*(int*)(pValue + 1))
+                    {
+                        case 909455955 /* S256 */:
+                            switch (value[0])
+                            {
+                                case (byte)'H':
+                                    return HmacSha256;
+                                case (byte)'R':
+                                    return RsaSha256;
+                                case (byte)'E':
+                                    return EcdsaSha256;
+                                case (byte)'P':
+                                    return RsaSsaPssSha256;
+                            }
+                            break;
+                        case 876098387 /* S384 */:
+                            switch (value[0])
+                            {
+                                case (byte)'H':
+                                    return HmacSha384;
+                                case (byte)'R':
+                                    return RsaSsaPssSha384;
+                                case (byte)'E':
+                                    return EcdsaSha384;
+                                case (byte)'P':
+                                    return RsaSsaPssSha384;
+                            }
+                            break;
+                        case 842085715 /* S512 */:
+                            switch (value[0])
+                            {
+                                case (byte)'H':
+                                    return HmacSha512;
+                                case (byte)'R':
+                                    return RsaSsaPssSha512;
+                                case (byte)'E':
+                                    return EcdsaSha512;
+                                case (byte)'P':
+                                    return RsaSsaPssSha512;
+                            }
+                            break;
+                    }
+                }
+                else if (value.Length == 4 && *(int*)pValue == 1701736302/* none */)
+                {
+                    return None;
+                }
+
+                return value.ToArray();
+            }
+        }
+
+        /// <summary>
         /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="long"/> representation.
         /// </summary>
         /// <param name="value"></param>
@@ -272,6 +358,20 @@ namespace JsonWebToken
             }
 
             return value.Id;
+        }
+
+        /// <summary>
+        /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="byte"/> array representation.
+        /// </summary>
+        /// <param name="value"></param>
+        public static implicit operator byte[] (SignatureAlgorithm value)
+        {
+            if (value is null)
+            {
+                return Array.Empty<byte>();
+            }
+
+            return value.Utf8Name;
         }
 
         /// <inheritsddoc />

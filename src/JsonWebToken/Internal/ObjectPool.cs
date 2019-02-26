@@ -38,7 +38,12 @@ namespace JsonWebToken.Internal
         /// <param name="maximumRetained"></param>
         public ObjectPool(PooledObjectFactory<T> policy, int maximumRetained)
         {
-            _policy = policy ?? throw new ArgumentNullException(nameof(policy));
+            if (policy == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.policy);
+            }
+
+            _policy = policy;
 
             // -1 due to _firstItem
             _items = new ObjectWrapper[maximumRetained - 1];

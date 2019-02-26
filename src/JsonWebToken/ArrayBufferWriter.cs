@@ -19,15 +19,15 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of the <see cref="ArrayBufferWriter{T}"/> class.
         /// </summary>
-        /// <param name="initialCapacity"></param>
-        public ArrayBufferWriter(int initialCapacity = MinimumBufferSize)
+        /// <param name="capacity"></param>
+        public ArrayBufferWriter(int capacity = MinimumBufferSize)
         {
-            if (initialCapacity <= 0)
+            if (capacity <= 0)
             {
-                throw new ArgumentException(nameof(initialCapacity));
+                Errors.ThrowArgumentOutOfRange_NeedNonNegNum(ExceptionArgument.capacity);
             }
 
-            _rentedBuffer = ArrayPool<T>.Shared.Rent(initialCapacity);
+            _rentedBuffer = ArrayPool<T>.Shared.Rent(capacity);
             _index = 0;
         }
 
@@ -126,7 +126,7 @@ namespace JsonWebToken
 
             if (count < 0)
             {
-                Errors.ThrowMustBeGreaterOrEqualToZero(nameof(count), count);
+                Errors.ThrowMustBeGreaterOrEqualToZero(ExceptionArgument.count, count);
             }
 
             if (_index > _rentedBuffer.Length - count)
@@ -228,17 +228,17 @@ namespace JsonWebToken
         private const int MinimumBufferSize = 256;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ArrayBufferWriter{T}"/> class.
+        /// Initializes a new instance of the <see cref="UnmanagedBufferWriter{T}"/> class.
         /// </summary>
-        /// <param name="initialCapacity"></param>
-        public UnmanagedBufferWriter(int initialCapacity = MinimumBufferSize)
+        /// <param name="capacity"></param>
+        public UnmanagedBufferWriter(int capacity = MinimumBufferSize)
         {
-            if (initialCapacity <= 0)
+            if (capacity <= 0)
             {
-                throw new ArgumentException(nameof(initialCapacity));
+                Errors.ThrowArgumentOutOfRange_NeedNonNegNum(ExceptionArgument.capacity);
             }
 
-            _capacity = Marshal.SizeOf(typeof(T)) * initialCapacity;
+            _capacity = Marshal.SizeOf(typeof(T)) * capacity;
             _rentedBuffer = Marshal.AllocHGlobal(_capacity);
             _index = 0;
         }
@@ -270,7 +270,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Clear the <see cref="ArrayBufferWriter{T}"/>. 
+        /// Clear the <see cref="UnmanagedBufferWriter{T}"/>. 
         /// </summary>
         public void Clear()
         {
@@ -288,7 +288,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Advances the <see cref="ArrayBufferWriter{T}"/> of the <paramref name="count"/> indicated.
+        /// Advances the <see cref="UnmanagedBufferWriter{T}"/> of the <paramref name="count"/> indicated.
         /// </summary>
         /// <param name="count"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -298,7 +298,7 @@ namespace JsonWebToken
 
             if (count < 0)
             {
-                Errors.ThrowMustBeGreaterOrEqualToZero(nameof(count), count);
+                Errors.ThrowMustBeGreaterOrEqualToZero(ExceptionArgument.count, count);
             }
 
             if (_index > _capacity - count)
@@ -382,5 +382,4 @@ namespace JsonWebToken
             Debug.Assert(_capacity - _index >= sizeHint);
         }
     }
-
 }

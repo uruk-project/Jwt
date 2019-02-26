@@ -18,7 +18,7 @@ namespace JsonWebToken.Internal
         {
             if (key == null)
             {
-                throw new ArgumentNullException(nameof(key));
+                Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             if (willCreateSignatures && !key.HasPrivateKey)
@@ -41,11 +41,11 @@ namespace JsonWebToken.Internal
         public override int HashSizeInBytes => _hashSize;
 
         /// <inheritsdoc />
-        public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
+        public override bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
         {
-            if (input.IsEmpty)
+            if (data.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(input));
+                Errors.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
             if (_disposed)
@@ -55,9 +55,9 @@ namespace JsonWebToken.Internal
 
             var ecdsa = _hashAlgorithmPool.Get();
 #if !NETSTANDARD2_0
-            return ecdsa.TrySignData(input, destination, _hashAlgorithm, out bytesWritten);
+            return ecdsa.TrySignData(data, destination, _hashAlgorithm, out bytesWritten);
 #else
-            var result = ecdsa.SignData(input.ToArray(), _hashAlgorithm);
+            var result = ecdsa.SignData(data.ToArray(), _hashAlgorithm);
             bytesWritten = result.Length;
             result.CopyTo(destination);
             return true;
@@ -65,16 +65,16 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
+        public override bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
         {
-            if (input.IsEmpty)
+            if (data.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(input));
+                Errors.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
             if (signature.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(signature));
+                Errors.ThrowArgumentNullException(ExceptionArgument.signature);
             }
 
             if (_disposed)
@@ -84,9 +84,9 @@ namespace JsonWebToken.Internal
 
             var ecdsa = _hashAlgorithmPool.Get();
 #if !NETSTANDARD2_0
-            return ecdsa.VerifyData(input, signature, _hashAlgorithm);
+            return ecdsa.VerifyData(data, signature, _hashAlgorithm);
 #else
-            return ecdsa.VerifyData(input.ToArray(), signature.ToArray(), _hashAlgorithm);
+            return ecdsa.VerifyData(data.ToArray(), signature.ToArray(), _hashAlgorithm);
 #endif
         }
 

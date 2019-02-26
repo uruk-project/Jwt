@@ -20,7 +20,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override IReadOnlyList<Jwk> GetKeys(JwtHeader header)
+        public override Jwk[] GetKeys(JwtHeader header)
         {
             return GetKeys(header, header.Jku);
         }

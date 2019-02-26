@@ -7,6 +7,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -52,10 +53,25 @@ namespace JsonWebToken
         /// </summary>
         public ECJwk(in EllipticalCurve crv, byte[] d, byte[] x, byte[] y)
         {
+            if (d == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.d);
+            }
+
+            if (x == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.x);
+            }
+
+            if (y == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.y);
+            }
+
             Crv = crv;
-            D = d ?? throw new ArgumentNullException(nameof(d));
-            X = x ?? throw new ArgumentNullException(nameof(x));
-            Y = y ?? throw new ArgumentNullException(nameof(y));
+            D = d;
+            X = x;
+            Y = y;
         }
 
         /// <summary>
@@ -63,19 +79,20 @@ namespace JsonWebToken
         /// </summary>
         public ECJwk(in EllipticalCurve crv, string d, string x, string y)
         {
+
             if (d == null)
             {
-                throw new ArgumentNullException(nameof(d));
+                Errors.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
             if (x == null)
             {
-                throw new ArgumentNullException(nameof(x));
+                Errors.ThrowArgumentNullException(ExceptionArgument.x);
             }
 
             if (y == null)
             {
-                throw new ArgumentNullException(nameof(y));
+                Errors.ThrowArgumentNullException(ExceptionArgument.y);
             }
 
             Crv = crv;
@@ -89,9 +106,19 @@ namespace JsonWebToken
         /// </summary>
         public ECJwk(in EllipticalCurve crv, byte[] x, byte[] y)
         {
+            if (x == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.x);
+            }
+
+            if (y == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.y);
+            }
+
             Crv = crv;
-            X = x ?? throw new ArgumentNullException(nameof(x));
-            Y = y ?? throw new ArgumentNullException(nameof(y));
+            X = x;
+            Y = y;
         }
 
         /// <summary>
@@ -101,12 +128,12 @@ namespace JsonWebToken
         {
             if (x == null)
             {
-                throw new ArgumentNullException(nameof(x));
+                Errors.ThrowArgumentNullException(ExceptionArgument.x);
             }
 
             if (y == null)
             {
-                throw new ArgumentNullException(nameof(y));
+                Errors.ThrowArgumentNullException(ExceptionArgument.y);
             }
 
             Crv = crv;
@@ -285,7 +312,31 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
+        public static ECJwk FromParameters(ECParameters parameters, KeyManagementAlgorithm algorithm, bool computeThumbprint)
+        {
+            return FromParameters(parameters, algorithm.Utf8Name, computeThumbprint);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
+        public static ECJwk FromParameters(ECParameters parameters, SignatureAlgorithm algorithm, bool computeThumbprint)
+        {
+            return FromParameters(parameters, algorithm.Name, computeThumbprint);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
         public static ECJwk FromParameters(ECParameters parameters, string algorithm, bool computeThumbprint)
+        {
+            return FromParameters(parameters, Encoding.UTF8.GetBytes(algorithm), computeThumbprint);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
+        public static ECJwk FromParameters(ECParameters parameters, byte[] algorithm, bool computeThumbprint)
         {
             var key = new ECJwk(parameters);
             if (computeThumbprint)
@@ -304,7 +355,7 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public static ECJwk FromParameters(ECParameters parameters) => FromParameters(parameters, null, false);
+        public static ECJwk FromParameters(ECParameters parameters) => FromParameters(parameters, (byte[])null, false);
 
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
@@ -314,7 +365,7 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint) => FromParameters(parameters, null, computeThumbprint);
+        public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint) => FromParameters(parameters, (byte[])null, computeThumbprint);
 
         /// <inheritdoc />
         public override byte[] ToByteArray()
@@ -462,6 +513,9 @@ namespace JsonWebToken
                         {
                             key.Populate(name, (string)property.Value);
                         }
+                        break;
+                    case JwtTokenType.Utf8String:
+                        key.Populate(name, (byte[])property.Value);
                         break;
                     default:
                         break;

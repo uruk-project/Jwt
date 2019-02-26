@@ -1,12 +1,11 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -30,6 +29,12 @@ namespace JsonWebToken
             return ReadJsonObject(ref reader);
         }
 
+        internal static JwtObject ReadJwtPayload(ref Utf8JsonReader reader)
+        {
+            // TODO :specialize this reader for Payload
+            return ReadJsonObject(ref reader);
+        }
+
         internal static JwtObject ReadJsonObject(ref Utf8JsonReader reader)
         {
             var current = new JwtObject();
@@ -45,41 +50,40 @@ namespace JsonWebToken
                         var type = reader.TokenType;
                         switch (type)
                         {
-                            case JsonTokenType.String:
-                                current.Add(new JwtProperty(name, reader.GetString()));
-                                break;
                             case JsonTokenType.StartObject:
-                                current.Add(new JwtProperty(name, ReadJsonObject(ref reader)));
+                                current.Add(name, ReadJsonObject(ref reader));
+                                break;
+                            case JsonTokenType.StartArray:
+                                current.Add(name, ReadJsonArray(ref reader));
+                                break;
+                            case JsonTokenType.String:
+                                current.Add(name, reader.GetString());
                                 break;
                             case JsonTokenType.True:
-                                current.Add(new JwtProperty(name, true));
+                                current.Add(name, true);
                                 break;
                             case JsonTokenType.False:
-                                current.Add(new JwtProperty(name, false));
+                                current.Add(name, false);
                                 break;
                             case JsonTokenType.Null:
-                                current.Add(new JwtProperty(name));
+                                current.Add(name);
                                 break;
                             case JsonTokenType.Number:
                                 if (reader.TryGetInt64(out long longValue))
                                 {
-                                    current.Add(new JwtProperty(name, longValue));
+                                    current.Add(name, longValue);
                                 }
                                 else
                                 {
                                     if (reader.TryGetDouble(out double doubleValue))
                                     {
-                                        current.Add(new JwtProperty(name, doubleValue));
+                                        current.Add(name, doubleValue);
                                     }
                                     else
                                     {
                                         JwtThrowHelper.FormatNotSupportedNumber(name);
                                     }
                                 }
-                                break;
-                            case JsonTokenType.StartArray:
-                                var array = ReadJsonArray(ref reader);
-                                current.Add(new JwtProperty(name, array));
                                 break;
                             default:
                                 JwtThrowHelper.FormatMalformedJson();
@@ -98,26 +102,34 @@ namespace JsonWebToken
 
         internal static JwtArray ReadJsonArray(ref Utf8JsonReader reader)
         {
-            List<JwtValue> array = new List<JwtValue>(2);
+            var array = new JwtArray(new List<JwtValue>(2));
             while (reader.Read())
             {
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.EndArray:
-                        return new JwtArray(array);
+                        return array;
+
+                    case JsonTokenType.StartObject:
+                        array.Add(ReadJsonObject(ref reader));
+                        break;
+                    case JsonTokenType.StartArray:
+                        var innerArray = ReadJsonArray(ref reader);
+                        array.Add(innerArray);
+                        break;
                     case JsonTokenType.Null:
                         array.Add(JwtValue.Null);
                         break;
                     case JsonTokenType.Number:
                         if (reader.TryGetInt64(out long longValue))
                         {
-                            array.Add(new JwtValue(longValue));
+                            array.Add(longValue);
                         }
                         else
                         {
                             if (reader.TryGetDouble(out double doubleValue))
                             {
-                                array.Add(new JwtValue(doubleValue));
+                                array.Add(doubleValue);
                             }
                             else
                             {
@@ -128,20 +140,13 @@ namespace JsonWebToken
                         break;
                     case JsonTokenType.String:
                         string valueString = reader.GetString();
-                        array.Add(new JwtValue(valueString));
+                        array.Add(valueString);
                         break;
                     case JsonTokenType.True:
                         array.Add(JwtValue.True);
                         break;
                     case JsonTokenType.False:
                         array.Add(JwtValue.False);
-                        break;
-                    case JsonTokenType.StartObject:
-                        array.Add(new JwtValue(ReadJsonObject(ref reader)));
-                        break;
-                    case JsonTokenType.StartArray:
-                        var innerArray = ReadJsonArray(ref reader);
-                        array.Add(new JwtValue(innerArray));
                         break;
                     case JsonTokenType.EndObject:
                     case JsonTokenType.PropertyName:

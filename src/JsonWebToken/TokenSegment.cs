@@ -1,14 +1,12 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using System;
-
 namespace JsonWebToken
 {
     /// <summary>
     /// Represents a segment of token.
     /// </summary>
-    public readonly struct TokenSegment : IEquatable<TokenSegment>
+    public readonly struct TokenSegment
     {
         /// <summary>
         /// The start of the segment.
@@ -29,18 +27,6 @@ namespace JsonWebToken
         {
             Start = start;
             Length = length;
-        }
-
-        /// <inheritsdoc />
-        public override bool Equals(object obj) => obj is TokenSegment segment ? Equals(segment) : false;
-
-        /// <inheritsdoc />
-        public bool Equals(TokenSegment other) => Start == other.Start && Length == other.Length;
-
-        /// <inheritsdoc />
-        public override int GetHashCode()
-        {
-            return Start;
         }
 
         /// <inheritsdoc />

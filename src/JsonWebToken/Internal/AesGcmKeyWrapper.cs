@@ -16,10 +16,6 @@ namespace JsonWebToken.Internal
         public AesGcmKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
         }
 
         /// <inheritsdoc />

@@ -17,7 +17,7 @@ namespace JsonWebToken.Internal
 
             if (encryptionAlgorithm is null || contentEncryptionAlgorithm is null)
             {
-                return null;
+                goto NotSupported;
             }
 
             var algorithmKey = (encryptionAlgorithm.Id << 8) | (byte)contentEncryptionAlgorithm.Id;
@@ -33,6 +33,7 @@ namespace JsonWebToken.Internal
                 return KeyWrappers.AddValue(factoryKey, keyWrapper);
             }
 
+        NotSupported:
             return null;
         }
     }

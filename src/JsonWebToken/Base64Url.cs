@@ -23,14 +23,14 @@ namespace JsonWebToken
         /// <summary>
         /// Decodes a string of UTF-8 base64url-encoded text.
         /// </summary>
-        public static byte[] Base64UrlDecode(string input)
+        public static byte[] Base64UrlDecode(string data)
         {
-            if (input == null)
+            if (data == null)
             {
-                throw new ArgumentNullException(nameof(input));
+                Errors.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
-            return Base64UrlDecode(Encoding.UTF8.GetBytes(input));
+            return Base64UrlDecode(Encoding.UTF8.GetBytes(data));
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace JsonWebToken
         {
             if (base64Url == null)
             {
-                throw new ArgumentNullException(nameof(base64Url));
+                Errors.ThrowArgumentNullException(ExceptionArgument.base64url);
             }
 
             return Base64UrlDecode(base64Url.AsSpan(), data);
@@ -177,7 +177,7 @@ namespace JsonWebToken
         {
             if (data == null)
             {
-                throw new ArgumentNullException(nameof(data));
+                Errors.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
             return Base64UrlEncode(data.AsSpan());

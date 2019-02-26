@@ -56,7 +56,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public abstract IReadOnlyList<Jwk> GetKeys(JwtHeader header);
+        public abstract Jwk[] GetKeys(JwtHeader header);
 
         /// <summary>
         /// Deserializes a JSON string representing a JWKS.
@@ -66,7 +66,7 @@ namespace JsonWebToken
         protected abstract Jwks DeserializeKeySet(string value);
 
         /// <inheritsdoc />
-        protected IReadOnlyList<Jwk> GetKeys(JwtHeader header, string metadataAddress)
+        protected Jwk[] GetKeys(JwtHeader header, string metadataAddress)
         {
             if (_disposed)
             {

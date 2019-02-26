@@ -1,16 +1,13 @@
-﻿using JsonWebToken;
-using JsonWebToken.Internal;
-using JsonWebToken.Performance;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
-//using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
+using JsonWebToken;
+using JsonWebToken.Internal;
+using JsonWebToken.Performance;
+using Newtonsoft.Json.Linq;
 
 namespace JwtCreator
 {
@@ -35,7 +32,7 @@ namespace JwtCreator
             var invalidJwt = new JArray();
             var json = descriptors.First() as JObject;
 
-            foreach (var key in jwks.Keys.Where(k => k.Use == ""))
+            foreach (var key in jwks.Keys.Where(k => k.Use == null))
             {
                 var jwsDescriptor = new JwsDescriptor(new JwtObject(), Tokens.ToJwtObject(json));
                 jwsDescriptor.Key = key;
@@ -235,8 +232,8 @@ namespace JwtCreator
         }
         private static JObject CreateToken(Jwks jwks, TokenValidationStatus status, JwsDescriptor descriptor, string claim = null)
         {
-            var key = jwks.Keys.First(k => k.Use == "sig" && k.Alg == SignatureAlgorithm.HmacSha256.Name);
-            var encKey = jwks.Keys.First(k => k.Use == "enc" && k.Alg == KeyManagementAlgorithm.Direct.Name);
+            var key = jwks.Keys.First(k => k.Use == JwkUseNames.Sig.ToArray() && k.Alg == SignatureAlgorithm.HmacSha256);
+            var encKey = jwks.Keys.First(k => k.Use == JwkUseNames.Enc.ToArray() && k.Alg == (byte[])KeyManagementAlgorithm.Direct);
             descriptor.Key = key;
 
             return CreateToken(status, descriptor);
@@ -244,8 +241,8 @@ namespace JwtCreator
 
         private static JObject CreateToken(Jwks jwks, TokenValidationStatus status, JweDescriptor descriptor, string claim = null)
         {
-            var key = jwks.Keys.First(k => k.Use == "sig" && k.Alg == SignatureAlgorithm.HmacSha256.Name);
-            var encKey = jwks.Keys.First(k => k.Use == "enc" && k.Alg == KeyManagementAlgorithm.Direct.Name);
+            var key = jwks.Keys.First(k => k.Use == JwkUseNames.Sig.ToArray() && k.Alg == SignatureAlgorithm.HmacSha256);
+            var encKey = jwks.Keys.First(k => k.Use == JwkUseNames.Enc.ToArray() && k.Alg == (byte[])KeyManagementAlgorithm.Direct);
             descriptor.Payload.Key = key;
             descriptor.Key = encKey;
             descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
@@ -261,8 +258,8 @@ namespace JwtCreator
             foreach (var keySize in hsKeySizes)
             {
                 var key = SymmetricJwk.GenerateKey(keySize);
-                key.Use = "sig";
-                key.Alg = "HS" + keySize;
+                key.Use = JwkUseNames.Sig.ToArray();
+                key.Alg = (SignatureAlgorithm)("HS" + keySize);
                 key.Kid = "symmetric-" + keySize;
                 keys.Add(key);
             }
@@ -270,8 +267,8 @@ namespace JwtCreator
             foreach (var keySize in hsKeySizes)
             {
                 var key = SymmetricJwk.GenerateKey(keySize);
-                key.Use = "enc";
-                key.Alg = "dir";
+                key.Use = JwkUseNames.Enc.ToArray();
+                key.Alg = (KeyManagementAlgorithm)("dir");
                 key.Kid = "dir-" + keySize;
                 keys.Add(key);
             }
@@ -279,8 +276,8 @@ namespace JwtCreator
             foreach (var keySize in kwKeySizes)
             {
                 var key = SymmetricJwk.GenerateKey(keySize);
-                key.Use = "enc";
-                key.Alg = "A" + keySize + "KW";
+                key.Use = JwkUseNames.Enc.ToArray();
+                key.Alg = (KeyManagementAlgorithm)("A" + keySize + "KW");
                 key.Kid = "kw-" + keySize;
                 keys.Add(key);
             }
@@ -291,16 +288,16 @@ namespace JwtCreator
                 foreach (var rsaKeySize in rsaKeySizes)
                 {
                     var key = RsaJwk.GenerateKey(rsaKeySize, true);
-                    key.Use = "sig";
-                    key.Alg = "RS" + hsKeySize;
+                    key.Use = JwkUseNames.Sig.ToArray();
+                    key.Alg = (SignatureAlgorithm)("RS" + hsKeySize);
                     key.Kid = "rsa-pkcs1-" + hsKeySize + "-" + rsaKeySize;
                     keys.Add(key);
                 }
                 foreach (var rsaKeySize in rsaKeySizes)
                 {
                     var key = RsaJwk.GenerateKey(rsaKeySize, true);
-                    key.Use = "sig";
-                    key.Alg = "PS" + hsKeySize;
+                    key.Use = JwkUseNames.Sig.ToArray();
+                    key.Alg = (SignatureAlgorithm)("PS" + hsKeySize);
                     key.Kid = "rsa-pss-" + hsKeySize + "-" + rsaKeySize;
                     keys.Add(key);
                 }
@@ -309,39 +306,39 @@ namespace JwtCreator
             foreach (var rsaKeySize in rsaKeySizes)
             {
                 var key = RsaJwk.GenerateKey(rsaKeySize, true);
-                key.Use = "enc";
-                key.Alg = "RSA1_5";
+                key.Use = JwkUseNames.Enc.ToArray();
+                key.Alg = (KeyManagementAlgorithm)("RSA1_5");
                 key.Kid = "rsa1-5-" + rsaKeySize;
                 keys.Add(key);
 
                 key = RsaJwk.GenerateKey(rsaKeySize, true);
-                key.Use = "enc";
-                key.Alg = "RSA-OAEP";
+                key.Use = JwkUseNames.Enc.ToArray();
+                key.Alg = (KeyManagementAlgorithm)("RSA-OAEP");
                 key.Kid = "rsa-oaep-" + rsaKeySize;
                 keys.Add(key);
 
                 key = RsaJwk.GenerateKey(rsaKeySize, true);
-                key.Use = "enc";
-                key.Alg = "RSA-OAEP-256";
+                key.Use = JwkUseNames.Enc.ToArray();
+                key.Alg = (KeyManagementAlgorithm)("RSA-OAEP-256");
                 key.Kid = "rsa-oaep-256-" + rsaKeySize;
                 keys.Add(key);
             }
 
             var esKey = ECJwk.GenerateKey(EllipticalCurve.P256, true);
-            esKey.Use = "sig";
-            esKey.Alg = "ES256";
+            esKey.Use = JwkUseNames.Sig.ToArray();
+            esKey.Alg = (KeyManagementAlgorithm)("ES256");
             esKey.Kid = "ecdsa-" + esKey.KeySizeInBits;
             keys.Add(esKey);
 
             esKey = ECJwk.GenerateKey(EllipticalCurve.P384, true);
-            esKey.Use = "sig";
-            esKey.Alg = "ES384";
+            esKey.Use = JwkUseNames.Sig.ToArray();
+            esKey.Alg = (KeyManagementAlgorithm)("ES384");
             esKey.Kid = "ecdsa-" + esKey.KeySizeInBits;
             keys.Add(esKey);
 
             esKey = ECJwk.GenerateKey(EllipticalCurve.P521, true);
-            esKey.Use = "sig";
-            esKey.Alg = "ES512";
+            esKey.Use = JwkUseNames.Sig.ToArray();
+            esKey.Alg = (KeyManagementAlgorithm)("ES512");
             esKey.Kid = "ecdsa-" + esKey.KeySizeInBits;
             keys.Add(esKey);
 

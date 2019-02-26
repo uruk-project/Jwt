@@ -19,7 +19,12 @@ namespace JsonWebToken
         /// <param name="jwks"></param>
         public StaticKeyProvider(Jwks jwks)
         {
-            _jwks = jwks ?? throw new ArgumentNullException(nameof(jwks));
+            if (jwks == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.jwks);
+            }
+
+            _jwks = jwks;
         }
 
         /// <summary>
@@ -27,7 +32,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <returns></returns>
-        public IReadOnlyList<Jwk> GetKeys(JwtHeader header)
+        public Jwk[] GetKeys(JwtHeader header)
         {
             var kid = header.Kid;
             return _jwks.GetKeys(kid);

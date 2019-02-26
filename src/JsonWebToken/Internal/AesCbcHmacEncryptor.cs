@@ -15,7 +15,7 @@ namespace JsonWebToken.Internal
     /// </summary>
     internal sealed class AesCbcHmacEncryptor : AuthenticatedEncryptor
     {
-        private readonly SymmetricSigner _symmetricSignatureProvider;
+        private readonly SymmetricSigner _signer;
         private readonly ObjectPool<Aes> _aesPool;
         private bool _disposed;
 
@@ -23,12 +23,12 @@ namespace JsonWebToken.Internal
         {
             if (key == null)
             {
-                throw new ArgumentNullException(nameof(key));
+                Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             if (encryptionAlgorithm is null)
             {
-                throw new ArgumentNullException(nameof(encryptionAlgorithm));
+                Errors.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
             }
 
             if (encryptionAlgorithm.Category != EncryptionType.AesHmac)
@@ -48,8 +48,8 @@ namespace JsonWebToken.Internal
             var hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
 
             _aesPool = new ObjectPool<Aes>(new AesPooledPolicy(aesKey));
-            _symmetricSignatureProvider = hmacKey.CreateSigner(encryptionAlgorithm.SignatureAlgorithm, true) as SymmetricSigner;
-            if (_symmetricSignatureProvider == null)
+            _signer = hmacKey.CreateSigner(encryptionAlgorithm.SignatureAlgorithm, true) as SymmetricSigner;
+            if (_signer == null)
             {
                 Errors.ThrowNotSupportedSignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
             }
@@ -64,7 +64,7 @@ namespace JsonWebToken.Internal
         /// <inheritdoc />
         public override int GetTagSize()
         {
-            return _symmetricSignatureProvider.HashSizeInBytes;
+            return _signer.HashSizeInBytes;
         }
 
         /// <inheritdoc />
@@ -83,12 +83,12 @@ namespace JsonWebToken.Internal
         {
             if (plaintext.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(plaintext));
+                Errors.ThrowArgumentNullException(ExceptionArgument.plaintext);
             }
 
             if (associatedData.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(associatedData));
+                Errors.ThrowArgumentNullException(ExceptionArgument.associatedData);
             }
 
             if (_disposed)
@@ -116,7 +116,7 @@ namespace JsonWebToken.Internal
                 ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
                 BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length, sizeof(long)), associatedData.Length << 3);
 
-                _symmetricSignatureProvider.TrySign(macBytes, authenticationTag, out int writtenBytes);
+                _signer.TrySign(macBytes, authenticationTag, out int writtenBytes);
                 Debug.Assert(writtenBytes == authenticationTag.Length);
             }
             catch
@@ -139,22 +139,22 @@ namespace JsonWebToken.Internal
         {
             if (ciphertext.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(ciphertext));
+                Errors.ThrowArgumentNullException(ExceptionArgument.ciphertext);
             }
 
             if (associatedData.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(associatedData));
+                Errors.ThrowArgumentNullException(ExceptionArgument.associatedData);
             }
 
             if (nonce.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(nonce));
+                Errors.ThrowArgumentNullException(ExceptionArgument.nonce);
             }
 
             if (authenticationTag.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(authenticationTag));
+                Errors.ThrowArgumentNullException(ExceptionArgument.authenticationTag);
             }
 
             if (_disposed)
@@ -173,7 +173,7 @@ namespace JsonWebToken.Internal
                 nonce.CopyTo(macBytes.Slice(associatedData.Length));
                 ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
                 BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length), associatedData.Length * 8);
-                if (!_symmetricSignatureProvider.Verify(macBytes, authenticationTag))
+                if (!_signer.Verify(macBytes, authenticationTag))
                 {
                     plaintext.Clear();
                     return Errors.TryWriteError(out bytesWritten);
@@ -214,7 +214,7 @@ namespace JsonWebToken.Internal
         {
             if (!_disposed)
             {
-                _symmetricSignatureProvider.Dispose();
+                _signer.Dispose();
                 _aesPool.Dispose();
 
                 _disposed = true;

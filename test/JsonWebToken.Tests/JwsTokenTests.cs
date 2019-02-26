@@ -90,7 +90,7 @@ namespace JsonWebToken.Tests
             var descriptor = new JwsDescriptor
             {
                 Key = signingKey,
-                Algorithm = alg,
+                Algorithm = (SignatureAlgorithm)alg,
                 Subject = "Alice"
             };
 

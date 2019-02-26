@@ -1,13 +1,12 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -52,10 +51,10 @@ namespace JsonWebToken
                 _key = value;
                 if (value != null)
                 {
-                    if (value.Alg != null)
-                    {
-                        Algorithm = value.Alg;
-                    }
+                    //if (value.Alg != null)
+                    //{
+                    //    Algorithm = value.Alg;
+                    //}
 
                     if (value.Kid != null)
                     {
@@ -63,15 +62,6 @@ namespace JsonWebToken
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets or sets the algorithm header.
-        /// </summary>
-        public string Algorithm
-        {
-            get => GetHeaderParameter<string>(HeaderParameters.AlgUtf8);
-            set => SetHeaderParameter(HeaderParameters.AlgUtf8, value);
         }
 
         /// <summary>
@@ -199,6 +189,40 @@ namespace JsonWebToken
         /// <summary>
         /// Sets the header parameter for a specified header name.
         /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        protected void SetHeaderParameter(ReadOnlySpan<byte> utf8Name, byte[] value)
+        {
+            if (value != null)
+            {
+                Header.Add(new JwtProperty(utf8Name, value));
+            }
+            else
+            {
+                Header.Add(new JwtProperty(utf8Name));
+            }
+        }
+
+        /// <summary>
+        /// Sets the header parameter for a specified header name.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        protected void SetHeaderParameter(ReadOnlySpan<byte> utf8Name, ReadOnlySpan<byte> value)
+        {
+            if (!value.IsEmpty)
+            {
+                Header.Add(new JwtProperty(utf8Name, value.ToArray()));
+            }
+            else
+            {
+                Header.Add(new JwtProperty(utf8Name));
+            }
+        }
+
+        /// <summary>
+        /// Sets the header parameter for a specified header name.
+        /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
         protected void SetHeaderParameter(string name, string value)
@@ -266,7 +290,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="type"></param>
-        protected void ValidateHeader(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
+        protected void CheckRequiredHeader(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
         {
             if (!Header.TryGetValue(utf8Name, out var token) || token.Type == JwtTokenType.Null)
             {
@@ -284,13 +308,13 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="types"></param>
-        protected void ValidateHeader(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
+        protected void CheckRequiredHeader(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
         {
             if (!Header.TryGetValue(utf8Name, out var token) || token.Type == JwtTokenType.Null)
             {
                 Errors.ThrowHeaderIsRequired(utf8Name);
             }
-            
+
             for (int i = 0; i < types.Length; i++)
             {
                 if (token.Type == types[i])

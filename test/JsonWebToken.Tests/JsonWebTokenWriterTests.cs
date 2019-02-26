@@ -20,7 +20,7 @@ namespace JsonWebToken.Tests
             qi: "eNho5yRBEBxhGBtQRww9QirZsB66TrfFReG_CcteI1aCneT0ELGhYlRlCtUkTRclIfuEPmNsNDPbLoLqqCVznFbvdB7x-Tl-m0l_eFTj2KiqwGqE9PZB9nNTwMVvH3VRRSLWACvPnSiwP8N5Usy-WRXS-V7TbpxIhvepTfE0NNo"
         )
         {
-            Alg = KeyManagementAlgorithm.RsaPkcs1.Name
+            Alg = KeyManagementAlgorithm.RsaPkcs1
         };
 
         [Theory]
@@ -65,6 +65,7 @@ namespace JsonWebToken.Tests
             var descriptor = new PlaintextJweDescriptor(plaintext);
             descriptor.Key = RsaKey;
             descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
+            descriptor.Algorithm = KeyManagementAlgorithm.RsaPkcs1;
 
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
@@ -101,6 +102,7 @@ namespace JsonWebToken.Tests
             var descriptor = new BinaryJweDescriptor(data);
             descriptor.Key = key;
             descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
+            descriptor.Algorithm = KeyManagementAlgorithm.RsaPkcs1;
 
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
@@ -134,6 +136,7 @@ namespace JsonWebToken.Tests
             var descriptor = new PlaintextJweDescriptor(plaintext);
             descriptor.Key = RsaKey;
             descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
+            descriptor.Algorithm = KeyManagementAlgorithm.RsaPkcs1;
             descriptor.CompressionAlgorithm = CompressionAlgorithm.Deflate;
 
             JwtWriter writer = new JwtWriter();

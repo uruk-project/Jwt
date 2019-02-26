@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace JsonWebToken
 {
-    internal class BufferWriter : IBufferWriter<byte>, IDisposable
+    internal sealed class BufferWriter : IBufferWriter<byte>, IDisposable
     {
         internal const int SegmentPoolSize = 16;
 

@@ -14,8 +14,7 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="TokenValidationContext"/>.
         /// </summary>
         /// <param name="jwt"></param>
-        public TokenValidationContext(
-            Jwt jwt)
+        public TokenValidationContext(Jwt jwt)
         {
             Jwt = jwt;
         }

@@ -41,5 +41,14 @@ namespace JsonWebToken
         {
             Header.Add(Cty);
         }
+
+        /// <inheritsdoc />
+        public override void Validate()
+        {
+            base.Validate();
+
+            CheckRequiredHeader(HeaderParameters.AlgUtf8, JwtTokenType.Utf8String);
+            CheckRequiredHeader(HeaderParameters.EncUtf8, JwtTokenType.Utf8String);
+        }
     }
 }

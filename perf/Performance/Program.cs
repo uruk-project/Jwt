@@ -1,4 +1,5 @@
 ﻿using JsonWebToken;
+using JsonWebToken.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -15,9 +16,9 @@ namespace Performance
         private const string Token1 = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiaWF0IjoxNTA4MTg0ODQ1LCJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJleHAiOjE2MjgxODQ4NDV9.i2JGGP64mggd3WqUj7oX8_FyYh9e_m1MNWI9Q-f-W3g";
         private static readonly Jwk SharedKey = new SymmetricJwk("GdaXeVyiJwKmz5LFhcbcng")
         {
-            Use = "sig",
+            Use = JwkUseNames.Sig.ToArray(),
             Kid = "kid-hs256",
-            Alg = SignatureAlgorithm.HmacSha256.Name
+            Alg = SignatureAlgorithm.HmacSha256
         };
         private static readonly Jwk EncryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithm.Aes256KW);
         private static readonly JwtReader _reader = new JwtReader(SharedKey, EncryptionKey);
@@ -59,12 +60,14 @@ namespace Performance
                 ExpirationTime = expires,
                 Issuer = "https://idp.example.com/",
                 Audience = "636C69656E745F6964",
-                Key = SharedKey
+                Key = SharedKey, 
+                Algorithm = SharedKey.Alg
             };
             var jwe = new JweDescriptor
             {
                 Key = EncryptionKey,
                 EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
+                Algorithm = (KeyManagementAlgorithm)EncryptionKey.Alg,
                 Payload = jws
             };
             var jwX = new PlaintextJweDescriptor("Hello world !");

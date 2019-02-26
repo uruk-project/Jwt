@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -9,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -59,13 +59,28 @@ namespace JsonWebToken
         {
             if (encryptionKeyProviders == null)
             {
-                throw new ArgumentNullException(nameof(encryptionKeyProviders));
+                Errors.ThrowArgumentNullException(ExceptionArgument.encryptionKeyProviders);
             }
 
-            _encryptionKeyProviders = encryptionKeyProviders.ToArray();
-            _signatureFactory = signerFactory ?? throw new ArgumentNullException(nameof(signerFactory));
-            _keyWrapFactory = keyWrapperFactory ?? throw new ArgumentNullException(nameof(keyWrapperFactory));
-            _authenticatedEncryptionFactory = authenticatedEncryptorFactory ?? throw new ArgumentNullException(nameof(authenticatedEncryptorFactory));
+            if (signerFactory == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.signerFactory);
+            }
+
+            if (keyWrapperFactory == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.keyWrapperFactory);
+            }
+
+            if (authenticatedEncryptorFactory == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.authenticatedEncryptorFactory);
+            }
+
+            _encryptionKeyProviders = encryptionKeyProviders.Where(p => p != null).ToArray();
+            _signatureFactory = signerFactory;
+            _keyWrapFactory = keyWrapperFactory;
+            _authenticatedEncryptionFactory = authenticatedEncryptorFactory;
             _headerCache = headerCache ?? new JwtHeaderCache();
         }
 
@@ -102,7 +117,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="encryptionKeyProvider"></param>
         public JwtReader(IKeyProvider encryptionKeyProvider)
-            : this(new[] { encryptionKeyProvider ?? throw new ArgumentNullException(nameof(encryptionKeyProvider)) })
+            : this(new[] { encryptionKeyProvider })
         {
         }
 
@@ -146,12 +161,12 @@ namespace JsonWebToken
         {
             if (token == null)
             {
-                throw new ArgumentNullException(nameof(token));
+                Errors.ThrowArgumentNullException(ExceptionArgument.token);
             }
 
             if (policy == null)
             {
-                throw new ArgumentNullException(nameof(policy));
+                Errors.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
             return TryReadToken(token.AsSpan(), policy);
@@ -166,12 +181,12 @@ namespace JsonWebToken
         {
             if (policy == null)
             {
-                throw new ArgumentNullException(nameof(policy));
+                Errors.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                Errors.ThrowObjectDisposed(typeof(JwtReader));
             }
 
             if (token.IsEmpty)
@@ -250,38 +265,46 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Token">The JWT encoded as JWE or JWS.</param>
         /// <param name="policy">The validation policy.</param>
-        public TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Token, TokenValidationPolicy policy)
+        public unsafe TokenValidationResult TryReadToken(ReadOnlySpan<byte> utf8Token, TokenValidationPolicy policy)
         {
             if (policy == null)
             {
-                throw new ArgumentNullException(nameof(policy));
+                Errors.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                Errors.ThrowObjectDisposed(typeof(JwtReader));
             }
 
+            string malformedMessage = null;
+            Exception malformedException = null;
             if (utf8Token.IsEmpty)
             {
-                return TokenValidationResult.MalformedToken();
+                goto Malformed;
             }
 
             if (utf8Token.Length > policy.MaximumTokenSizeInBytes)
             {
-                return TokenValidationResult.MalformedToken();
+                goto Malformed;
             }
 
-            Span<TokenSegment> segments = stackalloc TokenSegment[Constants.JweSegmentCount];
-            var segmentCount = Tokenizer.Tokenize(utf8Token, segments, Constants.JweSegmentCount);
+            var pSegments = stackalloc TokenSegment[Constants.JweSegmentCount];
+            var segmentCount = Tokenizer.Tokenize(utf8Token, pSegments);
+            if (segmentCount < Constants.JwsSegmentCount)
+            {
+                goto Malformed;
+            }
+
+            var segments = new ReadOnlySpan<TokenSegment>(pSegments, segmentCount);
             var headerSegment = segments[0];
             if (headerSegment.IsEmpty)
             {
-                return TokenValidationResult.MalformedToken();
+                goto Malformed;
             }
 
             JwtHeader header;
-            var rawHeader = utf8Token.Slice(headerSegment.Start, headerSegment.Length);
+            var rawHeader = utf8Token.Slice(0, headerSegment.Length);
             try
             {
                 if (EnableHeaderCaching)
@@ -299,11 +322,13 @@ namespace JsonWebToken
             }
             catch (FormatException formatException)
             {
-                return TokenValidationResult.MalformedToken(formatException);
+                malformedException = formatException;
+                goto Malformed;
             }
             catch (JsonReaderException readerException)
             {
-                return TokenValidationResult.MalformedToken(readerException);
+                malformedException = readerException;
+                goto Malformed;
             }
 
             var headerValidationResult = policy.TryValidate(new CriticalHeaderValidationContext(header));
@@ -312,21 +337,23 @@ namespace JsonWebToken
                 return headerValidationResult;
             }
 
-            switch (segmentCount)
+            if (segmentCount == Constants.JwsSegmentCount)
             {
-                case Constants.JwsSegmentCount:
-                    return TryReadJws(utf8Token, policy, segments, header);
-                case Constants.JweSegmentCount:
-                    return TryReadJwe(utf8Token, policy, segments, header, rawHeader);
-                default:
-                    return TokenValidationResult.MalformedToken();
+                return TryReadJws(utf8Token, policy, segments, header);
             }
+            else if (segmentCount == Constants.JweSegmentCount)
+            {
+                return TryReadJwe(utf8Token, policy, segments, header, rawHeader);
+            }
+
+        Malformed:
+            return TokenValidationResult.MalformedToken(malformedMessage, malformedException);
         }
 
         private TokenValidationResult TryReadJwe(
             ReadOnlySpan<byte> utf8Buffer,
             TokenValidationPolicy policy,
-            Span<TokenSegment> segments,
+            ReadOnlySpan<TokenSegment> segments,
             JwtHeader header,
             ReadOnlySpan<byte> rawHeader)
         {
@@ -406,7 +433,7 @@ namespace JsonWebToken
 
                 Jwt jwe;
                 var cty = header.Cty;
-                if (cty != null && ContentTypeValues.JwtUtf8.SequenceEqual(cty.AsSpan()))
+                if (cty != null && ContentTypeValues.JwtUtf8.SequenceEqual(cty))
                 {
                     var decryptionResult = compressed
                         ? TryReadToken(decompressedBytes, policy)
@@ -439,11 +466,12 @@ namespace JsonWebToken
         private TokenValidationResult TryReadJws(
             ReadOnlySpan<byte> utf8Buffer,
             TokenValidationPolicy policy,
-            Span<TokenSegment> segments,
+            ReadOnlySpan<TokenSegment> segments,
             JwtHeader header)
         {
             var payloadSegment = segments[1];
             var rawPayload = utf8Buffer.Slice(payloadSegment.Start, payloadSegment.Length);
+            Exception malformedException;
             JwtPayload payload;
             try
             {
@@ -451,15 +479,16 @@ namespace JsonWebToken
             }
             catch (FormatException formatException)
             {
-                return TokenValidationResult.MalformedToken(formatException);
+                malformedException = formatException;
+                goto Malformed;
             }
             catch (JsonReaderException readerException)
             {
-                return TokenValidationResult.MalformedToken(readerException);
+                malformedException = readerException;
+                goto Malformed;
             }
 
             Jwt jws = new Jwt(header, payload);
-
             if (policy.SignatureValidation != null)
             {
                 var headerSegment = segments[0];
@@ -477,15 +506,17 @@ namespace JsonWebToken
             }
 
             return TokenValidationResult.Success(jws);
+        Malformed:
+            return TokenValidationResult.MalformedToken(exception: malformedException);
         }
 
         private static JwtPayload GetJsonPayload(ReadOnlySpan<byte> data)
         {
-            int base64UrlLength = Base64Url.GetArraySizeRequiredToDecode(data.Length);
+            int bufferLength = Base64Url.GetArraySizeRequiredToDecode(data.Length);
             byte[] base64UrlArrayToReturnToPool = null;
-            var buffer = base64UrlLength <= Constants.MaxStackallocBytes
-              ? stackalloc byte[base64UrlLength]
-              : (base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64UrlLength)).AsSpan(0, base64UrlLength);
+            var buffer = bufferLength <= Constants.MaxStackallocBytes
+              ? stackalloc byte[bufferLength]
+              : (base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(bufferLength)).AsSpan(0, bufferLength);
             try
             {
                 Base64Url.Base64UrlDecode(data, buffer);
@@ -531,8 +562,8 @@ namespace JsonWebToken
             Span<byte> decryptedBytes,
             out int bytesWritten)
         {
-            var decryptionProvider = _authenticatedEncryptionFactory.Create(key, encryptionAlgorithm);
-            if (decryptionProvider == null)
+            var decryptor = _authenticatedEncryptionFactory.Create(key, encryptionAlgorithm);
+            if (decryptor == null)
             {
                 return Errors.TryWriteError(out bytesWritten);
             }
@@ -583,7 +614,7 @@ namespace JsonWebToken
                 Base64Url.Base64UrlDecode(rawAuthenticationTag, authenticationTag, out int authenticationTagBytesConsumed, out int authenticationTagBytesWritten);
                 Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
 
-                if (!decryptionProvider.TryDecrypt(
+                if (!decryptor.TryDecrypt(
                     ciphertext,
                     header,
                     initializationVector,
@@ -607,9 +638,10 @@ namespace JsonWebToken
 
         private List<Jwk> GetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc)
         {
-            var alg = (KeyManagementAlgorithm)header.Alg;
-            var keys = ResolveDecryptionKey(header);
-            if (alg == KeyManagementAlgorithm.Direct)
+            var alg = header.Alg;
+            var keys = ResolveDecryptionKey(header, alg);
+            var keyManamagementAlg = (KeyManagementAlgorithm)alg;
+            if (keyManamagementAlg == KeyManagementAlgorithm.Direct)
             {
                 return keys;
             }
@@ -622,7 +654,7 @@ namespace JsonWebToken
             for (int i = 0; i < keys.Count; i++)
             {
                 var key = keys[i];
-                KeyWrapper kwp = _keyWrapFactory.Create(key, enc, alg);
+                KeyWrapper kwp = _keyWrapFactory.Create(key, enc, keyManamagementAlg);
                 if (kwp != null)
                 {
                     Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length)];
@@ -636,20 +668,17 @@ namespace JsonWebToken
             return unwrappedKeys;
         }
 
-        private List<Jwk> ResolveDecryptionKey(JwtHeader header)
+        private List<Jwk> ResolveDecryptionKey(JwtHeader header, ReadOnlySpan<byte> alg)
         {
-            var alg = header.Alg;
-
             var keys = new List<Jwk>(1);
             for (int i = 0; i < _encryptionKeyProviders.Length; i++)
             {
                 var keySet = _encryptionKeyProviders[i].GetKeys(header);
-
-                for (int j = 0; j < keySet.Count; j++)
+                for (int j = 0; j < keySet.Length; j++)
                 {
                     var key = keySet[j];
-                    if ((string.IsNullOrEmpty(key.Use) || string.Equals(key.Use, JwkUseNames.Enc, StringComparison.Ordinal)) &&
-                        (string.IsNullOrEmpty(key.Alg) || string.Equals(key.Alg, alg, StringComparison.Ordinal)))
+                    if ((key.Use == null || JwkUseNames.Enc.SequenceEqual(key.Use)) &&
+                        (key.Alg == null || alg.SequenceEqual(key.Alg)))
                     {
                         keys.Add(key);
                     }
@@ -664,14 +693,14 @@ namespace JsonWebToken
             if (contentBytes.Length == 0 && signatureSegment.Length == 0)
             {
                 // This is not a JWS
-                return TokenValidationResult.Success(jwt);
+                goto Success;
             }
 
             if (signatureSegment.IsEmpty)
             {
                 if (signatureValidationContext.SupportUnsecure && jwt.SignatureAlgorithm == SignatureAlgorithm.None)
                 {
-                    return TokenValidationResult.Success(jwt);
+                    goto Success;
                 }
 
                 return TokenValidationResult.MissingSignature(jwt);
@@ -703,17 +732,17 @@ namespace JsonWebToken
             var keySet = signatureValidationContext.KeyProvider.GetKeys(jwt.Header);
             if (keySet != null)
             {
-                for (int j = 0; j < keySet.Count; j++)
+                for (int i = 0; i < keySet.Length; i++)
                 {
-                    var key = keySet[j];
-                    if ((string.IsNullOrEmpty(key.Use) || string.Equals(key.Use, JwkUseNames.Sig, StringComparison.Ordinal)) &&
-                        (string.IsNullOrEmpty(key.Alg) || string.Equals(key.Alg, jwt.Header.Alg, StringComparison.Ordinal)))
+                    var key = keySet[i];
+                    if ((key.Use == null || JwkUseNames.Sig.SequenceEqual(key.Use)) &&
+                        (key.Alg == null || jwt.Header.Alg.SequenceEqual(key.Alg)))
                     {
                         var alg = signatureValidationContext.Algorithm ?? key.Alg;
                         if (TryValidateSignature(contentBytes, signatureBytes, key, alg))
                         {
                             jwt.SigningKey = key;
-                            return TokenValidationResult.Success(jwt);
+                            goto Success;
                         }
 
                         keysTried = true;
@@ -727,17 +756,20 @@ namespace JsonWebToken
             }
 
             return TokenValidationResult.SignatureKeyNotFound(jwt);
+
+        Success:
+            return TokenValidationResult.Success(jwt);
         }
 
         private bool TryValidateSignature(ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signature, Jwk key, SignatureAlgorithm algorithm)
         {
-            var signatureProvider = _signatureFactory.Create(key, algorithm, willCreateSignatures: false);
-            if (signatureProvider == null)
+            var signer = _signatureFactory.Create(key, algorithm, willCreateSignatures: false);
+            if (signer == null)
             {
                 return false;
             }
 
-            return signatureProvider.Verify(contentBytes, signature);
+            return signer.Verify(contentBytes, signature);
         }
 
         /// <summary>

@@ -49,16 +49,16 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
+        public override bool TryUnwrapKey(ReadOnlySpan<byte> key, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
-            if (keyBytes.IsEmpty)
+            if (key.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(keyBytes));
+                Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             if (header == null)
             {
-                throw new ArgumentNullException(nameof(header));
+                Errors.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
             if (_disposed)
@@ -67,9 +67,9 @@ namespace JsonWebToken.Internal
             }
 
 #if !NETSTANDARD2_0
-            return _rsa.TryDecrypt(keyBytes, destination, _padding, out bytesWritten);
+            return _rsa.TryDecrypt(key, destination, _padding, out bytesWritten);
 #else
-            var result = _rsa.Decrypt(keyBytes.ToArray(), _padding);
+            var result = _rsa.Decrypt(key.ToArray(), _padding);
             bytesWritten = result.Length;
             result.CopyTo(destination);
 
@@ -99,7 +99,8 @@ namespace JsonWebToken.Internal
         /// <inheritsdoc />
         public override int GetKeyUnwrapSize(int wrappedKeySize)
         {
-            return Key.KeySizeInBits >> 3 > EncryptionAlgorithm.RequiredKeySizeInBytes 
+            int unwrapSize = GetKeyWrapSize();
+            return unwrapSize > EncryptionAlgorithm.RequiredKeySizeInBytes 
                 ? Key.KeySizeInBits >> 3 
                 : EncryptionAlgorithm.RequiredKeySizeInBytes;
         }
