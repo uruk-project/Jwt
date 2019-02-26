@@ -26,7 +26,6 @@ namespace JsonWebToken.Internal
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-
             if (encryptionAlgorithm is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
