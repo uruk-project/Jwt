@@ -29,16 +29,16 @@ namespace Performance
             var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
             var jws = new JwsDescriptor()
             {
-                IssuedAt = issuedAt,
-                ExpirationTime = expires,
-                Issuer = "https://idp.example.com/",
-                Audience = "636C69656E745F6964",
+                //IssuedAt = issuedAt,
+                //ExpirationTime = expires,
+                //Issuer = "https://idp.example.com/",
+                //Audience = "636C69656E745F6964",
                 Key = SharedKey, 
                 Algorithm = SharedKey.Alg
             };
 
             var jwt = _writer.WriteToken(jws);
-            _reader.EnableHeaderCaching = true;
+            _reader.EnableHeaderCaching = false;
             _writer.EnableHeaderCaching = false;
             while (true)
             {

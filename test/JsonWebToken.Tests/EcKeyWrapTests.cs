@@ -29,8 +29,8 @@ namespace JsonWebToken.Tests
         {
             var kwp = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.EcdhEs);
             var header = new JwtObject();
-            header.Add(new JwtProperty(HeaderParameters.ApuUtf8, Base64Url.Base64UrlEncode("Alice")));
-            header.Add(new JwtProperty(HeaderParameters.ApvUtf8, Base64Url.Base64UrlEncode("Bob")));
+            header.Add(new JwtProperty(HeaderParameters.ApuUtf8, Base64Url.Encode("Alice")));
+            header.Add(new JwtProperty(HeaderParameters.ApvUtf8, Base64Url.Encode("Bob")));
 
             var wrapped = kwp.TryWrapKey(_aliceKey, header, null, out var cek, out var bytesWritten);
             Assert.True(wrapped);
@@ -45,14 +45,14 @@ namespace JsonWebToken.Tests
             var kwp = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW);
             byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
             var header = new JwtObject();
-            header.Add(new JwtProperty(HeaderParameters.ApuUtf8, Base64Url.Base64UrlEncode("Alice")));
-            header.Add(new JwtProperty(HeaderParameters.ApvUtf8, Base64Url.Base64UrlEncode("Bob")));
+            header.Add(new JwtProperty(HeaderParameters.ApuUtf8, Base64Url.Encode("Alice")));
+            header.Add(new JwtProperty(HeaderParameters.ApvUtf8, Base64Url.Encode("Bob")));
 
             var wrapped = kwp.TryWrapKey(_aliceKey, header, wrappedKey, out _, out _);
 
             var kwp2 = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW);
-            var apu = Encoding.UTF8.GetString(Base64Url.Base64UrlEncode("Alice")); ;
-            var apv = Encoding.UTF8.GetString(Base64Url.Base64UrlEncode("Bob"));
+            var apu = Encoding.UTF8.GetString(Base64Url.Encode("Alice")); ;
+            var apv = Encoding.UTF8.GetString(Base64Url.Encode("Bob"));
             var epk = ((JwtObject)header[HeaderParameters.EpkUtf8].Value).ToString();
             var jwtHeader = new JwtHeader($"{{\"apu\":\"{apu}\",\"apv\":\"{apv}\",\"epk\":{epk}}}");
 
@@ -68,14 +68,14 @@ namespace JsonWebToken.Tests
             var kwp = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW);
             byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
             var header = new JwtObject();
-            header.Add(new JwtProperty(HeaderParameters.ApuUtf8, Base64Url.Base64UrlEncode("Alice")));
-            header.Add(new JwtProperty(HeaderParameters.ApvUtf8, Base64Url.Base64UrlEncode("Bob")));
+            header.Add(new JwtProperty(HeaderParameters.ApuUtf8, Base64Url.Encode("Alice")));
+            header.Add(new JwtProperty(HeaderParameters.ApvUtf8, Base64Url.Encode("Bob")));
 
             var wrapped = kwp.TryWrapKey(_aliceKey, header, wrappedKey, out var cek, out var bytesWritten);
 
             var kwp2 = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW);
-            var apu = Encoding.UTF8.GetString(Base64Url.Base64UrlEncode("Alice")); ;
-            var apv = Encoding.UTF8.GetString(Base64Url.Base64UrlEncode("Bob"));
+            var apu = Encoding.UTF8.GetString(Base64Url.Encode("Alice")); ;
+            var apv = Encoding.UTF8.GetString(Base64Url.Encode("Bob"));
             var epk = ((JwtObject)header[HeaderParameters.EpkUtf8].Value).ToString();
             var jwtHeader = new JwtHeader($"{{\"apu\":\"{apu}\",\"apv\":\"{apv}\",\"epk\":{epk}}}");
 

@@ -37,6 +37,13 @@ namespace JsonWebToken
         public void Add(ReadOnlySpan<byte> name, string value) => Add(new JwtProperty(name, value));
 
         /// <summary>
+        /// Adds a <see cref="string"/> property to the end of the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void Add(string name, string value) => Add(new JwtProperty(name, value));
+
+        /// <summary>
         /// Adds a <see cref="long"/> property to the end of the <see cref="JwtObject"/>.
         /// </summary>
         /// <param name="name"></param>
@@ -44,11 +51,25 @@ namespace JsonWebToken
         public void Add(ReadOnlySpan<byte> name, long value) => Add(new JwtProperty(name, value));
 
         /// <summary>
+        /// Adds a <see cref="long"/> property to the end of the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void Add(string name, long value) => Add(new JwtProperty(name, value));
+
+        /// <summary>
         /// Adds a <see cref="double"/> property to the end of the <see cref="JwtObject"/>.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
         public void Add(ReadOnlySpan<byte> name, double value) => Add(new JwtProperty(name, value));
+
+        /// <summary>
+        /// Adds a <see cref="double"/> property to the end of the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void Add(string name, double value) => Add(new JwtProperty(name, value));
 
         /// <summary>
         /// Adds a <see cref="bool"/> property to the end of the <see cref="JwtObject"/>.
@@ -65,6 +86,13 @@ namespace JsonWebToken
         public void Add(ReadOnlySpan<byte> name, JwtObject value) => Add(new JwtProperty(name, value));
 
         /// <summary>
+        /// Adds a <see cref="JwtObject"/> property to the end of the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void Add(string name, JwtObject value) => Add(new JwtProperty(name, value));
+
+        /// <summary>
         /// Adds a <see cref="JwtArray"/> property to the end of the <see cref="JwtObject"/>.
         /// </summary>
         /// <param name="name"></param>
@@ -72,10 +100,23 @@ namespace JsonWebToken
         public void Add(ReadOnlySpan<byte> name, JwtArray value) => Add(new JwtProperty(name, value));
 
         /// <summary>
+        /// Adds a <see cref="JwtArray"/> property to the end of the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void Add(string name, JwtArray value) => Add(new JwtProperty(name, value));
+
+        /// <summary>
         /// Adds a <c>null</c> property to the end of the <see cref="JwtObject"/>.
         /// </summary>
         /// <param name="name"></param>
         public void Add(ReadOnlySpan<byte> name) => Add(new JwtProperty(name));
+
+        /// <summary>
+        /// Adds a <c>null</c> property to the end of the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        public void Add(string name) => Add(new JwtProperty(name));
 
         /// <summary>
         /// Gets the <see cref="JwtProperty"/> at the specified index;
@@ -101,9 +142,10 @@ namespace JsonWebToken
             get
             {
                 var span = key.Span;
-                for (int i = 0; i < _properties.Count; i++)
+                var properties = _properties;
+                for (int i = 0; i < properties.Count; i++)
                 {
-                    var current = _properties[i];
+                    var current = properties[i];
                     if (current.Utf8Name.Span.SequenceEqual(span))
                     {
                         return current;
@@ -123,7 +165,8 @@ namespace JsonWebToken
         {
             get
             {
-                for (int i = 0; i < _properties.Count; i++)
+                var properties = _properties;
+                for (int i = 0; i < properties.Count; i++)
                 {
                     var current = _properties[i];
                     if (current.Utf8Name.Span.SequenceEqual(key))
@@ -160,9 +203,11 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool TryGetValue(ReadOnlySpan<byte> key, out JwtProperty value)
         {
-            for (int i = 0; i < _properties.Count; i++)
+            var properties = _properties;
+            int count = properties.Count;
+            for (int i = 0; i < count; i++)
             {
-                var current = _properties[i];
+                var current = properties[i];
                 if (current.Utf8Name.Span.SequenceEqual(key))
                 {
                     value = current;
@@ -181,9 +226,11 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool ContainsKey(ReadOnlySpan<byte> key)
         {
-            for (int i = 0; i < _properties.Count; i++)
+            var properties = _properties;
+            int count = properties.Count;
+            for (int i = 0; i < count; i++)
             {
-                var current = _properties[i];
+                var current = properties[i];
                 if (current.Utf8Name.Span.SequenceEqual(key))
                 {
                     return true;
@@ -207,12 +254,14 @@ namespace JsonWebToken
         public void Replace(JwtProperty property)
         {
             var span = property.Utf8Name.Span;
-            for (int i = 0; i < _properties.Count; i++)
+            var properties = _properties;
+            int count = properties.Count;
+            for (int i = 0; i < count; i++)
             {
-                var current = _properties[i];
+                var current = properties[i];
                 if (current.Utf8Name.Span.SequenceEqual(span))
                 {
-                    _properties[i] = property;
+                    properties[i] = property;
                     return;
                 }
             }
@@ -247,9 +296,10 @@ namespace JsonWebToken
         internal void WriteTo(ref Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
-            for (int i = 0; i < _properties.Count; i++)
+            var properties = _properties;
+            for (int i = 0; i < properties.Count; i++)
             {
-                _properties[i].WriteTo(ref writer);
+                properties[i].WriteTo(ref writer);
             }
 
             writer.WriteEndObject();
@@ -258,9 +308,10 @@ namespace JsonWebToken
         internal void WriteTo(ref Utf8JsonWriter writer, ReadOnlySpan<byte> utf8Name)
         {
             writer.WriteStartObject(utf8Name);
-            for (int i = 0; i < _properties.Count; i++)
+            var properties = _properties;
+            for (int i = 0; i < properties.Count; i++)
             {
-                _properties[i].WriteTo(ref writer);
+                properties[i].WriteTo(ref writer);
             }
 
             writer.WriteEndObject();

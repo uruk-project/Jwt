@@ -78,41 +78,13 @@ namespace JsonWebToken
         /// </summary>
         public static readonly SignatureAlgorithm RsaSsaPssSha512 = new SignatureAlgorithm(id: 42, "PS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA512);
 
-        // TODO : Verify the pertinence
-        /// <summary>
-        /// Gets the algorithm identifier. 
-        /// </summary>
-        public sbyte Id { get; }
+        private readonly sbyte _id;
+        private readonly string _name;
+        private readonly AlgorithmCategory _category;
+        private readonly ushort _requiredKeySizeInBits;
+        private readonly HashAlgorithmName _hashAlgorithm;
 
-        /// <summary>
-        /// Gets the name of the signature algorithm.
-        /// </summary>
-        public string Name { get; }
-
-        /// <summary>
-        /// Gets the name of the signature algorithm.
-        /// </summary>
-        public byte[] Utf8Name => Encoding.UTF8.GetBytes(Name);
-
-        /// <summary>
-        /// Gets the algorithm category.
-        /// </summary>
-        public AlgorithmCategory Category { get; }
-
-        /// <summary>
-        /// Gets the required key size, in bits.
-        /// </summary>
-        public ushort RequiredKeySizeInBits { get; }
-
-        /// <summary>
-        /// Gets the hash algorithm. 
-        /// </summary>
-        public HashAlgorithmName HashAlgorithm { get; }
-
-        /// <summary>
-        /// Gets the <see cref="SignatureAlgorithm"/> list. 
-        /// </summary>
-        public static Dictionary<string, SignatureAlgorithm> Algorithms { get; } = new Dictionary<string, SignatureAlgorithm>
+        private static readonly Dictionary<string, SignatureAlgorithm> _algorithms = new Dictionary<string, SignatureAlgorithm>
         {
             { EcdsaSha256.Name, EcdsaSha256 },
             { EcdsaSha384.Name, EcdsaSha384 },
@@ -129,6 +101,42 @@ namespace JsonWebToken
             { None.Name, None }
         };
 
+        // TODO : Verify the pertinence
+        /// <summary>
+        /// Gets the algorithm identifier. 
+        /// </summary>
+        public sbyte Id => _id;
+
+        /// <summary>
+        /// Gets the name of the signature algorithm.
+        /// </summary>
+        public string Name => _name;
+
+        /// <summary>
+        /// Gets the name of the signature algorithm.
+        /// </summary>
+        public byte[] Utf8Name => Encoding.UTF8.GetBytes(_name);
+
+        /// <summary>
+        /// Gets the algorithm category.
+        /// </summary>
+        public AlgorithmCategory Category => _category;
+
+        /// <summary>
+        /// Gets the required key size, in bits.
+        /// </summary>
+        public ushort RequiredKeySizeInBits => _requiredKeySizeInBits;
+
+        /// <summary>
+        /// Gets the hash algorithm. 
+        /// </summary>
+        public HashAlgorithmName HashAlgorithm => _hashAlgorithm;
+
+        /// <summary>
+        /// Gets the <see cref="SignatureAlgorithm"/> list. 
+        /// </summary>
+        public static Dictionary<string, SignatureAlgorithm> Algorithms => _algorithms;
+
         /// <summary>
         /// Initializes a new instance of <see cref="SignatureAlgorithm"/>. 
         /// </summary>
@@ -139,11 +147,11 @@ namespace JsonWebToken
         /// <param name="hashAlgorithm"></param>
         public SignatureAlgorithm(sbyte id, string name, AlgorithmCategory category, ushort requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
         {
-            Id = id;
-            Name = name;
-            Category = category;
-            RequiredKeySizeInBits = requiredKeySizeInBits;
-            HashAlgorithm = hashAlgorithm;
+            _id = id;
+            _name = name;
+            _category = category;
+            _requiredKeySizeInBits = requiredKeySizeInBits;
+            _hashAlgorithm = hashAlgorithm;
         }
 
         /// <summary>
@@ -174,7 +182,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            return Id == other.Id;
+            return _id == other._id;
         }
 
         /// <summary>
@@ -183,7 +191,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public override int GetHashCode()
         {
-            return Id.GetHashCode();
+            return _id.GetHashCode();
         }
 
         /// <summary>
@@ -209,7 +217,7 @@ namespace JsonWebToken
                 goto NotEqual;
             }
 
-            return x.Id == y.Id;
+            return x._id == y._id;
         NotEqual:
             return false;
         }
@@ -237,7 +245,7 @@ namespace JsonWebToken
                 goto NotEqual;
             }
 
-            return x.Id != y.Id;
+            return x._id != y._id;
         NotEqual:
             return true;
         }
@@ -248,7 +256,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public static implicit operator string(SignatureAlgorithm value)
         {
-            return value?.Name;
+            return value?._name;
         }
 
         /// <summary>
@@ -357,7 +365,7 @@ namespace JsonWebToken
                 return 0;
             }
 
-            return value.Id;
+            return value._id;
         }
 
         /// <summary>
@@ -377,7 +385,7 @@ namespace JsonWebToken
         /// <inheritsddoc />
         public override string ToString()
         {
-            return Name;
+            return _name;
         }
     }
 }

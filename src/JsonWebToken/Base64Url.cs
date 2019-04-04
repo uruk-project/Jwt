@@ -23,20 +23,20 @@ namespace JsonWebToken
         /// <summary>
         /// Decodes a string of UTF-8 base64url-encoded text.
         /// </summary>
-        public static byte[] Base64UrlDecode(string data)
+        public static byte[] Decode(string data)
         {
             if (data == null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
-            return Base64UrlDecode(Encoding.UTF8.GetBytes(data));
+            return Decode(Encoding.UTF8.GetBytes(data));
         }
 
         /// <summary>
         /// Decodes a span of UTF-8 base64url-encoded text.
         /// </summary>
-        public static byte[] Base64UrlDecode(ReadOnlySpan<byte> base64Url)
+        public static byte[] Decode(ReadOnlySpan<byte> base64Url)
         {
             if (base64Url.IsEmpty)
             {
@@ -45,7 +45,7 @@ namespace JsonWebToken
 
             var dataLength = GetArraySizeRequiredToDecode(base64Url.Length);
             var data = new byte[dataLength];
-            Base64UrlDecode(base64Url, data);
+            Decode(base64Url, data);
             return data;
         }
 
@@ -54,14 +54,14 @@ namespace JsonWebToken
         /// Decodes a string of UTF-8 base64url-encoded text into a span of bytes.
         /// </summary>
         /// <returns>The number of the bytes written to <paramref name="data"/>.</returns>
-        public static int Base64UrlDecode(string base64Url, Span<byte> data)
+        public static int Decode(string base64Url, Span<byte> data)
         {
             if (base64Url == null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.base64url);
             }
 
-            return Base64UrlDecode(base64Url.AsSpan(), data);
+            return Decode(base64Url.AsSpan(), data);
         }
 #endif
 
@@ -69,7 +69,7 @@ namespace JsonWebToken
         /// Decodes a span of UTF-8 base64url-encoded text into a span of bytes.
         /// </summary>
         /// <returns>The number of the bytes written to <paramref name="data"/>.</returns>
-        public static int Base64UrlDecode(ReadOnlySpan<char> base64Url, Span<byte> data)
+        public static int Decode(ReadOnlySpan<char> base64Url, Span<byte> data)
         {
             if (base64Url.IsEmpty)
             {
@@ -87,7 +87,7 @@ namespace JsonWebToken
 #else
                 EncodingHelper.GetUtf8Bytes(base64Url, buffer);
 #endif
-                return Base64UrlDecode(buffer, data);
+                return Decode(buffer, data);
             }
             finally
             {
@@ -102,9 +102,9 @@ namespace JsonWebToken
         /// Decodes the span of UTF-8 base64url-encoded text into a span of bytes.
         /// </summary>
         /// <returns>The number of the bytes written to <paramref name="data"/>.</returns>
-        public static int Base64UrlDecode(ReadOnlySpan<byte> base64Url, Span<byte> data)
+        public static int Decode(ReadOnlySpan<byte> base64Url, Span<byte> data)
         {
-            var status = Base64UrlDecode(base64Url, data, out _, out int bytesWritten);
+            var status = Decode(base64Url, data, out _, out int bytesWritten);
             if (status != OperationStatus.Done)
             {
                 JwtThrowHelper.ThrowOperationNotDone(status);
@@ -116,7 +116,7 @@ namespace JsonWebToken
         /// <summary>
         /// Decodes the span of UTF-8 base64url-encoded text into binary data.
         /// </summary>
-        public static OperationStatus Base64UrlDecode(ReadOnlySpan<byte> base64Url, Span<byte> data, out int bytesConsumed, out int bytesWritten)
+        public static OperationStatus Decode(ReadOnlySpan<byte> base64Url, Span<byte> data, out int bytesConsumed, out int bytesWritten)
         {
             // Special-case empty input
             if (base64Url.IsEmpty)
@@ -133,7 +133,7 @@ namespace JsonWebToken
         /// Encodes a span of UTF-8 text into a span of bytes.
         /// </summary>
         /// <returns>The number of the bytes written to <paramref name="base64Url"/>.</returns>
-        public static int Base64UrlEncode(ReadOnlySpan<byte> utf8Data, Span<byte> base64Url)
+        public static int Encode(ReadOnlySpan<byte> utf8Data, Span<byte> base64Url)
         {
             // Special-case empty input
             if (utf8Data.IsEmpty)
@@ -154,7 +154,7 @@ namespace JsonWebToken
         /// Encodes a span of UTF-8 text.
         /// </summary>
         /// <returns>The base64-url encoded string.</returns>
-        public static byte[] Base64UrlEncode(ReadOnlySpan<byte> utf8Data)
+        public static byte[] Encode(ReadOnlySpan<byte> utf8Data)
         {
             // Special-case empty input
             if (utf8Data.IsEmpty)
@@ -164,7 +164,7 @@ namespace JsonWebToken
 
             int base64UrlLength = _base64.GetEncodedLength(utf8Data.Length);
             var utf8Encoded = new byte[base64UrlLength];
-            Base64UrlEncode(utf8Data, utf8Encoded);
+            Encode(utf8Data, utf8Encoded);
             return utf8Encoded;
         }
 
@@ -173,14 +173,14 @@ namespace JsonWebToken
         /// Encodes a string of UTF-8 text.
         /// </summary>
         /// <returns>The base64-url encoded string.</returns>
-        public static byte[] Base64UrlEncode(string data)
+        public static byte[] Encode(string data)
         {
             if (data == null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
-            return Base64UrlEncode(data.AsSpan());
+            return Encode(data.AsSpan());
         }
 #endif
 
@@ -188,7 +188,7 @@ namespace JsonWebToken
         /// Encodes a string of UTF-8 text.
         /// </summary>
         /// <returns>The base64-url encoded string.</returns>
-        public static byte[] Base64UrlEncode(ReadOnlySpan<char> data)
+        public static byte[] Encode(ReadOnlySpan<char> data)
         {
             byte[] utf8ArrayToReturn = null;
             try
@@ -198,7 +198,7 @@ namespace JsonWebToken
                     : stackalloc byte[data.Length];
 
                 GetUtf8Bytes(data, utf8Data);
-                return Base64UrlEncode(utf8Data);
+                return Encode(utf8Data);
             }
             finally
             {

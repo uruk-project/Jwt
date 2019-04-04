@@ -104,10 +104,11 @@ namespace JsonWebToken
 
         internal void WriteTo(ref Utf8JsonWriter writer)
         {
+            var inner = _inner;
             writer.WriteStartArray();
-            for (int i = 0; i < _inner.Count; i++)
+            for (int i = 0; i < inner.Count; i++)
             {
-                _inner[i].WriteTo(ref writer);
+                inner[i].WriteTo(ref writer);
             }
 
             writer.WriteEndArray();
@@ -115,10 +116,11 @@ namespace JsonWebToken
 
         internal void WriteTo(ref Utf8JsonWriter writer, ReadOnlySpan<byte> utf8Name)
         {
+            var inner = _inner;
             writer.WriteStartArray(utf8Name);
-            for (int i = 0; i < _inner.Count; i++)
+            for (int i = 0; i < inner.Count; i++)
             {
-                _inner[i].WriteTo(ref writer);
+                inner[i].WriteTo(ref writer);
             }
 
             writer.WriteEndArray();

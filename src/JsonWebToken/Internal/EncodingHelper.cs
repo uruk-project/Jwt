@@ -102,6 +102,32 @@ namespace JsonWebToken.Internal
                 }
             }
         }
+
+        internal static unsafe void GetAsciiBytes(in ReadOnlySequence<byte> rawHeader, Span<byte> header)
+        {
+            char[] headerArrayToReturn = null;
+            try
+            {
+                Span<char> utf8Header = header.Length < Constants.MaxStackallocBytes
+                ? stackalloc char[header.Length]
+                : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(header.Length)).AsSpan(0, header.Length);
+
+                fixed (byte* rawPtr = rawHeader.ToArray().AsSpan())
+                fixed (char* utf8Ptr = utf8Header)
+                fixed (byte* header8Ptr = header)
+                {
+                    Encoding.UTF8.GetChars(rawPtr, (int)rawHeader.Length, utf8Ptr, utf8Header.Length);
+                    Encoding.ASCII.GetBytes(utf8Ptr, utf8Header.Length, header8Ptr, header.Length);
+                }
+            }
+            finally
+            {
+                if (headerArrayToReturn != null)
+                {
+                    ArrayPool<char>.Shared.Return(headerArrayToReturn);
+                }
+            }
+        }
     }
 }
 #endif

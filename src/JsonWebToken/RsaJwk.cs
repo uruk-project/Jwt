@@ -130,14 +130,14 @@ namespace JsonWebToken
                 Errors.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
-            D = Base64Url.Base64UrlDecode(d);
-            DP = Base64Url.Base64UrlDecode(dp);
-            DQ = Base64Url.Base64UrlDecode(dq);
-            QI = Base64Url.Base64UrlDecode(qi);
-            P = Base64Url.Base64UrlDecode(p);
-            Q = Base64Url.Base64UrlDecode(q);
-            E = Base64Url.Base64UrlDecode(e);
-            N = Base64Url.Base64UrlDecode(n);
+            D = Base64Url.Decode(d);
+            DP = Base64Url.Decode(dp);
+            DQ = Base64Url.Decode(dq);
+            QI = Base64Url.Decode(qi);
+            P = Base64Url.Decode(p);
+            Q = Base64Url.Decode(q);
+            E = Base64Url.Decode(e);
+            N = Base64Url.Decode(n);
         }
 
         /// <summary>
@@ -189,8 +189,8 @@ namespace JsonWebToken
                 Errors.ThrowArgumentNullException(ExceptionArgument.n);
             }
             
-            E = Base64Url.Base64UrlDecode(e);
-            N = Base64Url.Base64UrlDecode(n);
+            E = Base64Url.Decode(e);
+            N = Base64Url.Decode(n);
         }
 
         /// <summary>
@@ -380,9 +380,9 @@ namespace JsonWebToken
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = false, SkipValidation = true }));
                 writer.WriteStartObject();
-                writer.WriteString(JwkParameterNames.EUtf8, Base64Url.Base64UrlEncode(E));
+                writer.WriteString(JwkParameterNames.EUtf8, Base64Url.Encode(E));
                 writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
-                writer.WriteString(JwkParameterNames.NUtf8, Base64Url.Base64UrlEncode(N));
+                writer.WriteString(JwkParameterNames.NUtf8, Base64Url.Encode(N));
                 writer.WriteEndObject();
                 writer.Flush();
 
@@ -412,35 +412,35 @@ namespace JsonWebToken
                         string value = (string)property.Value;
                         if (name.SequenceEqual(JwkParameterNames.NUtf8))
                         {
-                            key.N = Base64Url.Base64UrlDecode(value);
+                            key.N = Base64Url.Decode(value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.EUtf8))
                         {
-                            key.E = Base64Url.Base64UrlDecode(value);
+                            key.E = Base64Url.Decode(value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.DUtf8))
                         {
-                            key.D = Base64Url.Base64UrlDecode(value);
+                            key.D = Base64Url.Decode(value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.DPUtf8))
                         {
-                            key.DP = Base64Url.Base64UrlDecode(value);
+                            key.DP = Base64Url.Decode(value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.DQUtf8))
                         {
-                            key.DQ = Base64Url.Base64UrlDecode(value);
+                            key.DQ = Base64Url.Decode(value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.PUtf8))
                         {
-                            key.P = Base64Url.Base64UrlDecode(value);
+                            key.P = Base64Url.Decode(value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.QUtf8))
                         {
-                            key.Q = Base64Url.Base64UrlDecode(value);
+                            key.Q = Base64Url.Decode(value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.QIUtf8))
                         {
-                            key.QI = Base64Url.Base64UrlDecode(value);
+                            key.QI = Base64Url.Decode(value);
                         }
                         else
                         {
@@ -486,19 +486,19 @@ namespace JsonWebToken
                                         case 1:
                                             if (*pPropertyName == (byte)'e')
                                             {
-                                                key.E = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                                key.E = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
                                             else if (*pPropertyName == (byte)'n')
                                             {
-                                                key.N = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                                key.N = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
                                             else if (*pPropertyName == (byte)'p')
                                             {
-                                                key.P = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                                key.P = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
                                             else if (*pPropertyName == (byte)'q')
                                             {
-                                                key.Q = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                                key.Q = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
                                             break;
 
@@ -506,15 +506,15 @@ namespace JsonWebToken
                                             var pKtyShort = (short*)pPropertyName;
                                             if (*pKtyShort == 26993u)
                                             {
-                                                key.QI = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                                key.QI = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
                                             else if (*pKtyShort == 28772u)
                                             {
-                                                key.DP = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                                key.DP = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
                                             else if (*pKtyShort == 29028u)
                                             {
-                                                key.DQ = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                                key.DQ = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
                                             break;
                                         case 3:
@@ -545,36 +545,36 @@ namespace JsonWebToken
 
         internal override void WriteComplementTo(ref Utf8JsonWriter writer)
         {
-            writer.WriteString(JwkParameterNames.NUtf8, Base64Url.Base64UrlEncode(N));
-            writer.WriteString(JwkParameterNames.EUtf8, Base64Url.Base64UrlEncode(E));
+            writer.WriteString(JwkParameterNames.NUtf8, Base64Url.Encode(N));
+            writer.WriteString(JwkParameterNames.EUtf8, Base64Url.Encode(E));
             if (D != null)
             {
-                writer.WriteString(JwkParameterNames.DUtf8, Base64Url.Base64UrlEncode(D));
+                writer.WriteString(JwkParameterNames.DUtf8, Base64Url.Encode(D));
             }
 
             if (DP != null)
             {
-                writer.WriteString(JwkParameterNames.DPUtf8, Base64Url.Base64UrlEncode(DP));
+                writer.WriteString(JwkParameterNames.DPUtf8, Base64Url.Encode(DP));
             }
 
             if (DQ != null)
             {
-                writer.WriteString(JwkParameterNames.DQUtf8, Base64Url.Base64UrlEncode(DQ));
+                writer.WriteString(JwkParameterNames.DQUtf8, Base64Url.Encode(DQ));
             }
 
             if (P != null)
             {
-                writer.WriteString(JwkParameterNames.PUtf8, Base64Url.Base64UrlEncode(P));
+                writer.WriteString(JwkParameterNames.PUtf8, Base64Url.Encode(P));
             }
 
             if (Q != null)
             {
-                writer.WriteString(JwkParameterNames.QUtf8, Base64Url.Base64UrlEncode(Q));
+                writer.WriteString(JwkParameterNames.QUtf8, Base64Url.Encode(Q));
             }
 
             if (QI != null)
             {
-                writer.WriteString(JwkParameterNames.QIUtf8, Base64Url.Base64UrlEncode(QI));
+                writer.WriteString(JwkParameterNames.QIUtf8, Base64Url.Encode(QI));
             }
         }
     }

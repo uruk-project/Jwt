@@ -15,7 +15,7 @@ namespace JsonWebToken
     /// <summary>
     /// Reads and validates a JWT.
     /// </summary>
-    public sealed class JwtReader : IDisposable
+    public sealed partial class JwtReader : IDisposable
     {
         private readonly IKeyProvider[] _encryptionKeyProviders;
         private readonly JwtHeaderCache _headerCache;
@@ -175,6 +175,21 @@ namespace JsonWebToken
         /// <summary>
         /// Reads and validates a JWT encoded as a JWS or JWE in compact serialized format.
         /// </summary>
+        /// <param name="utf8Token">The JWT encoded as JWE or JWS.</param>
+        /// <param name="policy">The validation policy.</param>
+        public TokenValidationResult TryReadToken(in ReadOnlySequence<byte> utf8Token, TokenValidationPolicy policy)
+        {
+            if (utf8Token.IsSingleSegment)
+            {
+                return TryReadToken(utf8Token.First.Span, policy);
+            }
+     
+            return TryReadToken(utf8Token.ToArray(), policy);
+        }
+
+        /// <summary>
+        /// Reads and validates a JWT encoded as a JWS or JWE in compact serialized format.
+        /// </summary>
         /// <param name="token">The JWT encoded as JWE or JWS</param>
         /// <param name="policy">The validation policy.</param>
         public TokenValidationResult TryReadToken(ReadOnlySpan<char> token, TokenValidationPolicy policy)
@@ -210,7 +225,7 @@ namespace JsonWebToken
                 Encoding.UTF8.GetBytes(token, utf8Token);
 #else
                 EncodingHelper.GetUtf8Bytes(token, utf8Token);
-#endif             
+#endif
                 return TryReadToken(utf8Token, policy);
             }
             finally
@@ -218,44 +233,6 @@ namespace JsonWebToken
                 if (utf8ArrayToReturnToPool != null)
                 {
                     ArrayPool<byte>.Shared.Return(utf8ArrayToReturnToPool);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Reads and validates a JWT encoded as a JWS or JWE in compact serialized format.
-        /// </summary>
-        /// <param name="utf8Token">The JWT encoded as JWE or JWS.</param>
-        /// <param name="policy">The validation policy.</param>
-        public TokenValidationResult TryReadToken(in ReadOnlySequence<byte> utf8Token, TokenValidationPolicy policy)
-        {
-            if (utf8Token.IsSingleSegment)
-            {
-                return TryReadToken(utf8Token.First.Span, policy);
-            }
-
-            return TryReadTokenMultiSegment(utf8Token, policy);
-        }
-
-        private TokenValidationResult TryReadTokenMultiSegment(in ReadOnlySequence<byte> utf8TokenSequence, TokenValidationPolicy policy)
-        {
-            // TODO : Read directly from the ReadOnlySequence withouy copy
-            var sequenceLength = (int)utf8TokenSequence.Length;
-            byte[] arrayToReturnToPool = null;
-            var utf8Token = sequenceLength <= Constants.MaxStackallocBytes
-                          ? stackalloc byte[sequenceLength]
-                          : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(sequenceLength)).AsSpan(0, sequenceLength);
-
-            try
-            {
-                utf8TokenSequence.CopyTo(utf8Token);
-                return TryReadToken(utf8Token, policy);
-            }
-            finally
-            {
-                if (arrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
                 }
             }
         }
@@ -337,13 +314,13 @@ namespace JsonWebToken
                 return headerValidationResult;
             }
 
-            if (segmentCount == Constants.JwsSegmentCount)
+            if (segments.Length == Constants.JwsSegmentCount)
             {
-                return TryReadJws(utf8Token, policy, segments, header);
+                return TryReadJws(utf8Token, policy, segments[0], segments[1], segments[2], header);
             }
-            else if (segmentCount == Constants.JweSegmentCount)
+            else if (segments.Length == Constants.JweSegmentCount)
             {
-                return TryReadJwe(utf8Token, policy, segments, header, rawHeader);
+                return TryReadJwe(utf8Token, policy, rawHeader, segments[1], segments[2], segments[3], segments[4], header);
             }
 
         Malformed:
@@ -353,9 +330,12 @@ namespace JsonWebToken
         private TokenValidationResult TryReadJwe(
             ReadOnlySpan<byte> utf8Buffer,
             TokenValidationPolicy policy,
-            ReadOnlySpan<TokenSegment> segments,
-            JwtHeader header,
-            ReadOnlySpan<byte> rawHeader)
+            ReadOnlySpan<byte> rawHeader,
+            TokenSegment encryptionKeySegment,
+            TokenSegment ivSegment,
+            TokenSegment ciphertextSegment,
+            TokenSegment authenticationTagSegment,
+            JwtHeader header)
         {
             var enc = (EncryptionAlgorithm)header.Enc;
             if (enc is null)
@@ -363,20 +343,16 @@ namespace JsonWebToken
                 return TokenValidationResult.MissingEncryptionAlgorithm();
             }
 
-            var encryptionKeySegment = segments[1];
             var keys = GetContentEncryptionKeys(header, utf8Buffer.Slice(encryptionKeySegment.Start, encryptionKeySegment.Length), enc);
             if (keys.Count == 0)
             {
                 return TokenValidationResult.EncryptionKeyNotFound();
             }
 
-            var ivSegment = segments[2];
             var rawInitializationVector = utf8Buffer.Slice(ivSegment.Start, ivSegment.Length);
 
-            var ciphertextSegment = segments[3];
             var rawCiphertext = utf8Buffer.Slice(ciphertextSegment.Start, ciphertextSegment.Length);
 
-            var authenticationTagSegment = segments[4];
             var rawAuthenticationTag = utf8Buffer.Slice(authenticationTagSegment.Start, authenticationTagSegment.Length);
 
             int decryptedLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length);
@@ -466,10 +442,11 @@ namespace JsonWebToken
         private TokenValidationResult TryReadJws(
             ReadOnlySpan<byte> utf8Buffer,
             TokenValidationPolicy policy,
-            ReadOnlySpan<TokenSegment> segments,
+            TokenSegment headerSegment,
+            TokenSegment payloadSegment,
+            TokenSegment signatureSegment,
             JwtHeader header)
         {
-            var payloadSegment = segments[1];
             var rawPayload = utf8Buffer.Slice(payloadSegment.Start, payloadSegment.Length);
             Exception malformedException;
             JwtPayload payload;
@@ -491,8 +468,6 @@ namespace JsonWebToken
             Jwt jws = new Jwt(header, payload);
             if (policy.SignatureValidation != null)
             {
-                var headerSegment = segments[0];
-                var signatureSegment = segments[2];
                 var result = TryValidateSignature(policy.SignatureValidation, jws, utf8Buffer.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), utf8Buffer.Slice(signatureSegment.Start, signatureSegment.Length));
                 if (!result.Succedeed)
                 {
@@ -519,7 +494,7 @@ namespace JsonWebToken
               : (base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(bufferLength)).AsSpan(0, bufferLength);
             try
             {
-                Base64Url.Base64UrlDecode(data, buffer);
+                Base64Url.Decode(data, buffer);
                 return JsonPayloadParser.ParsePayload(buffer);
             }
             finally
@@ -540,7 +515,7 @@ namespace JsonWebToken
               : (base64UrlArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64UrlLength)).AsSpan(0, base64UrlLength);
             try
             {
-                Base64Url.Base64UrlDecode(data, buffer);
+                Base64Url.Decode(data, buffer);
                 return JsonHeaderParser.ParseHeader(buffer);
             }
             finally
@@ -584,7 +559,7 @@ namespace JsonWebToken
             Span<byte> authenticationTag = buffer.Slice(ciphertextLength + headerLength + initializationVectorLength, authenticationTagLength);
             try
             {
-                Base64Url.Base64UrlDecode(rawCiphertext, ciphertext, out int ciphertextBytesConsumed, out int ciphertextBytesWritten);
+                Base64Url.Decode(rawCiphertext, ciphertext, out int ciphertextBytesConsumed, out int ciphertextBytesWritten);
                 Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
 
 #if !NETSTANDARD2_0
@@ -608,10 +583,10 @@ namespace JsonWebToken
 #else
                 EncodingHelper.GetAsciiBytes(rawHeader, header);
 #endif
-                Base64Url.Base64UrlDecode(rawInitializationVector, initializationVector, out int ivBytesConsumed, out int ivBytesWritten);
+                Base64Url.Decode(rawInitializationVector, initializationVector, out int ivBytesConsumed, out int ivBytesWritten);
                 Debug.Assert(initializationVector.Length == ivBytesWritten);
 
-                Base64Url.Base64UrlDecode(rawAuthenticationTag, authenticationTag, out int authenticationTagBytesConsumed, out int authenticationTagBytesWritten);
+                Base64Url.Decode(rawAuthenticationTag, authenticationTag, out int authenticationTagBytesConsumed, out int authenticationTagBytesWritten);
                 Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
 
                 if (!decryptor.TryDecrypt(
@@ -647,7 +622,7 @@ namespace JsonWebToken
             }
 
             Span<byte> encryptedKey = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length)];
-            var operationResult = Base64Url.Base64UrlDecode(rawEncryptedKey, encryptedKey, out _, out _);
+            var operationResult = Base64Url.Decode(rawEncryptedKey, encryptedKey, out _, out _);
             Debug.Assert(operationResult == OperationStatus.Done);
 
             var unwrappedKeys = new List<Jwk>(1);
@@ -719,7 +694,7 @@ namespace JsonWebToken
             Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
             try
             {
-                Base64Url.Base64UrlDecode(signatureSegment, signatureBytes, out int byteConsumed, out int bytesWritten);
+                Base64Url.Decode(signatureSegment, signatureBytes, out int byteConsumed, out int bytesWritten);
                 Debug.Assert(bytesWritten == signatureBytes.Length);
             }
             catch (FormatException e)

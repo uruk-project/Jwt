@@ -16,8 +16,6 @@ namespace JsonWebToken
     /// </summary>
     public partial class JwsDescriptor : JwtDescriptor<JwtObject>
     {
-        private const byte ByteDot = (byte)'.';
-
         /// <summary>
         /// Initializes a new instance of <see cref="JwsDescriptor"/>.
         /// </summary>
@@ -483,13 +481,13 @@ namespace JsonWebToken
                     }
                     else
                     {
-                        headerBytesWritten = Base64Url.Base64UrlEncode(headerJson, buffer);
+                        headerBytesWritten = Base64Url.Encode(headerJson, buffer);
                         headerCache?.AddHeader(Header, alg, buffer.Slice(0, headerBytesWritten));
                     }
 
-                    buffer[headerBytesWritten] = ByteDot;
-                    int payloadBytesWritten = Base64Url.Base64UrlEncode(payloadJson, buffer.Slice(headerBytesWritten + 1));
-                    buffer[payloadBytesWritten + headerBytesWritten + 1] = ByteDot;
+                    buffer[headerBytesWritten] = Constants.ByteDot;
+                    int payloadBytesWritten = Base64Url.Encode(payloadJson, buffer.Slice(headerBytesWritten + 1));
+                    buffer[payloadBytesWritten + headerBytesWritten + 1] = Constants.ByteDot;
                     int bytesWritten = 0;
                     if (signer != null)
                     {
@@ -498,7 +496,7 @@ namespace JsonWebToken
                         Debug.Assert(success);
                         Debug.Assert(signature.Length == signatureBytesWritten);
 
-                        bytesWritten = Base64Url.Base64UrlEncode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)));
+                        bytesWritten = Base64Url.Encode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)));
                     }
 
                     Debug.Assert(length == payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten);

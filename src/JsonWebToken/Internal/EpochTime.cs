@@ -13,6 +13,7 @@ namespace JsonWebToken.Internal
     public static class EpochTime
     {
         internal static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime MaxUnixTime = UnixEpoch.AddSafe(TimeSpan.MaxValue.Ticks).ToUniversalTime();
 
         /// <summary>
         /// Per JWT spec:
@@ -50,7 +51,7 @@ namespace JsonWebToken.Internal
 
             if (secondsSinceUnixEpoch > TimeSpan.MaxValue.TotalSeconds)
             {
-                return UnixEpoch.AddSafe(TimeSpan.MaxValue.Ticks).ToUniversalTime();
+                return MaxUnixTime;
             }
 
             return UnixEpoch.AddSafe(secondsSinceUnixEpoch * TimeSpan.TicksPerSecond).ToUniversalTime();

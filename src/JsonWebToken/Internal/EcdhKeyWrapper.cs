@@ -177,7 +177,7 @@ namespace JsonWebToken.Internal
             else
             {
                 BinaryPrimitives.WriteInt32BigEndian(destination, partyInfoLength);
-                Base64Url.Base64UrlDecode(partyInfo, destination.Slice(sizeof(int)));
+                Base64Url.Decode(partyInfo, destination.Slice(sizeof(int)));
             }
         }
 
