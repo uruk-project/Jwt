@@ -162,6 +162,36 @@ namespace JsonWebToken
             return x.Id != y.Id;
         }
 
+        /// <summary>
+        /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="algorithm"></param>
+        public unsafe static bool TryParse(ReadOnlySpan<byte> value, out CompressionAlgorithm algorithm)
+        {
+            if (value.IsEmpty)
+            {
+                algorithm = null;
+                return true;
+            }
+
+            fixed (byte* pValue = value)
+            {
+                if (value.Length == 5)
+                {
+                    // DEF
+                    if (*pValue == (byte)'D' && *(ushort*)(pValue+1) == 17989u)
+                    {
+                        algorithm = Deflate;
+                        return true;
+                    }
+                }
+
+                algorithm = null;
+                return false;
+            }
+        }
+
         ///// <summary>
         ///// Cast the <see cref="CompressionAlgorithm"/> into its <see cref="string"/> representation.
         ///// </summary>

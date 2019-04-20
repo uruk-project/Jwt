@@ -107,9 +107,9 @@ namespace JsonWebToken
                 Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
             }
 
-            if (header.ContainsKey(HeaderParameters.KidUtf8) && Key.Kid != null)
+            if (header.ContainsKey(WellKnownProperty.Kid) && Key.Kid != null)
             {
-                header.Replace(new JwtProperty(HeaderParameters.KidUtf8, Key.Kid));
+                header.Replace(new JwtProperty(WellKnownProperty.Kid, Key.Kid));
             }
 
             try

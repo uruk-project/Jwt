@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -8,7 +9,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -337,7 +337,7 @@ namespace JsonWebToken
             TokenSegment authenticationTagSegment,
             JwtHeader header)
         {
-            var enc = (EncryptionAlgorithm)header.Enc;
+            var enc = header.Enc;
             if (enc is null)
             {
                 return TokenValidationResult.MissingEncryptionAlgorithm();
@@ -409,7 +409,7 @@ namespace JsonWebToken
 
                 Jwt jwe;
                 var cty = header.Cty;
-                if (cty != null && ContentTypeValues.JwtUtf8.SequenceEqual(cty))
+                if (!cty.IsEmpty && ContentTypeValues.JwtUtf8.SequenceEqual(cty))
                 {
                     var decryptionResult = compressed
                         ? TryReadToken(decompressedBytes, policy)
@@ -613,7 +613,7 @@ namespace JsonWebToken
 
         private List<Jwk> GetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc)
         {
-            var alg = header.Alg;
+            var alg = header.KeyManagementAlgorithm;
             var keys = ResolveDecryptionKey(header, alg);
             var keyManamagementAlg = (KeyManagementAlgorithm)alg;
             if (keyManamagementAlg == KeyManagementAlgorithm.Direct)
@@ -643,7 +643,7 @@ namespace JsonWebToken
             return unwrappedKeys;
         }
 
-        private List<Jwk> ResolveDecryptionKey(JwtHeader header, ReadOnlySpan<byte> alg)
+        private List<Jwk> ResolveDecryptionKey(JwtHeader header, KeyManagementAlgorithm alg)
         {
             var keys = new List<Jwk>(1);
             for (int i = 0; i < _encryptionKeyProviders.Length; i++)
@@ -653,7 +653,7 @@ namespace JsonWebToken
                 {
                     var key = keySet[j];
                     if ((key.Use == null || JwkUseNames.Enc.SequenceEqual(key.Use)) &&
-                        (key.Alg == null || alg.SequenceEqual(key.Alg)))
+                        (key.Alg == null || alg.Utf8Name.SequenceEqual(key.Alg)))
                     {
                         keys.Add(key);
                     }
@@ -711,7 +711,7 @@ namespace JsonWebToken
                 {
                     var key = keySet[i];
                     if ((key.Use == null || JwkUseNames.Sig.SequenceEqual(key.Use)) &&
-                        (key.Alg == null || jwt.Header.Alg.SequenceEqual(key.Alg)))
+                        (key.Alg == null || jwt.Header.SignatureAlgorithm.Utf8Name.SequenceEqual(key.Alg)))
                     {
                         var alg = signatureValidationContext.Algorithm ?? key.Alg;
                         if (TryValidateSignature(contentBytes, signatureBytes, key, alg))

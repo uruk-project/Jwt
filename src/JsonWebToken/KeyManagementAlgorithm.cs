@@ -12,6 +12,8 @@ namespace JsonWebToken
     /// </summary>
     public sealed class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>
     {
+        private static ReadOnlySpan<byte> Dir => new[] { (byte)'d', (byte)'i', (byte)'r' };
+
         /// <summary>
         /// 'dir'
         /// </summary>
@@ -354,14 +356,76 @@ namespace JsonWebToken
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public unsafe static implicit operator KeyManagementAlgorithm(ReadOnlySpan<byte> value)
+        public unsafe static explicit operator KeyManagementAlgorithm(ReadOnlySpan<byte> value)
         {
             if (value.IsEmpty)
             {
                 return null;
             }
 
-            return (KeyManagementAlgorithm)value.ToArray();
+            fixed (byte* pValue = value)
+            {
+                switch (value.Length)
+                {
+                    case 3 when *(ushort*)pValue == 26980u && *(pValue + 2) == (byte)'r' /* dir */:
+                        return Direct;
+                    case 6 when *(ushort*)(pValue + 4) == 22347u:
+                        switch (*(uint*)pValue)
+                        {
+                            case 942813505u:
+                                return Aes128KW;
+                            case 842608961u:
+                                return Aes192KW;
+                            case 909455937u:
+                                return Aes256KW;
+                        }
+                        break;
+                    case 6 when *(uint*)pValue == 826364754u && *(ushort*)pValue == 12639u  /* RSA1_5 */:
+                        return RsaPkcs1;
+                    case 7 when *(uint*)pValue == 1212433221u && *(uint*)(pValue + 3) == 1397042504u /* ECDH-ES */ :
+                        return EcdhEs;
+                    case 8 when *(ulong*)pValue == 5784101104744747858u:
+                        return RsaOaep;
+                    case 9 when *(pValue + 4) == (byte)'G' && *(uint*)(pValue + 5) == 1464552771u /* CMKW */ :
+                        switch (*(uint*)pValue)
+                        {
+                            case 942813505u:
+                                return Aes128GcmKW;
+                            case 842608961u:
+                                return Aes192GcmKW;
+                            case 909455937u:
+                                return Aes256GcmKW;
+                        }
+                        break;
+                    case 12 when *(ulong*)pValue == 5784101104744747858u:
+                        switch (*(uint*)(pValue + 8))
+                        {
+                            case 909455917u:
+                                return RsaOaep256;
+                            case 876098349u:
+                                return RsaOaep384;
+                            case 842085677u:
+                                return RsaOaep512;
+                        }
+                        break;
+                    case 14 when *(ulong*)pValue == 5784101104744747858u /* ECDH-ES+ */ :
+                        switch (*(ulong*)(pValue + 6))
+                        {
+                            case 6290183092778904403u:
+                                return EcdhEsAes128KW;
+                            case 6290176525773908819u:
+                                return EcdhEsAes192KW;
+                            case 6290180906657327955u:
+                                return EcdhEsAes256KW;
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -382,6 +446,117 @@ namespace JsonWebToken
         public override string ToString()
         {
             return Name;
+        }
+
+        /// <summary>
+        /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="KeyManagementAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="algorithm"></param>
+        public unsafe static bool TryParse(ReadOnlySpan<byte> value, out KeyManagementAlgorithm algorithm)
+        {
+            if (value.IsEmpty)
+            {
+                algorithm = null;
+                return true;
+            }
+
+            fixed (byte* pValue = value)
+            {
+                switch (value.Length)
+                {
+                    case 3 when *(ushort*)pValue == 26980u && *(pValue + 2) == (byte)'r' /* dir */:
+                        algorithm = Direct;
+                        return true;
+                    case 6 when *(ushort*)(pValue + 4) == 22347u:
+                        switch (*(uint*)pValue)
+                        {
+                            case 942813505u:
+                                algorithm = Aes128KW;
+                                return true;
+                            case 842608961u:
+                                algorithm = Aes192KW;
+                                return true;
+                            case 909455937u:
+                                algorithm = Aes256KW;
+                                return true;
+                        }
+                        break;
+                    case 6 when *(uint*)pValue == 826364754u && *(ushort*)(pValue + 4) == 13663u  /* RSA1_5 */:
+                        algorithm = RsaPkcs1;
+                        return true;
+                    case 7 when *(uint*)pValue == 1212433221u && *(uint*)(pValue + 3) == 1397042504u /* ECDH-ES */ :
+                        algorithm = EcdhEs;
+                        return true;
+                    case 8 when *(ulong*)pValue == 5784101104744747858u  /* RSA-OAEP */ :
+                        algorithm = RsaOaep;
+                        return true;
+                    case 9 when *(pValue + 4) == (byte)'G' && *(uint*)(pValue + 5) == 1464552771u /* CMKW */ :
+                        switch (*(uint*)pValue)
+                        {
+                            case 942813505u /* A128 */ :
+                                algorithm = Aes128GcmKW;
+                                return true;
+                            case 842608961u /* A192 */ :
+                                algorithm = Aes192GcmKW;
+                                return true;
+                            case 909455937u /* A256 */ :
+                                algorithm = Aes256GcmKW;
+                                return true;
+                        }
+                        break;
+                    case 12 when *(ulong*)pValue == 5784101104744747858u:
+                        switch (*(uint*)(pValue + 8))
+                        {
+                            case 909455917u:
+                                algorithm = RsaOaep256;
+                                return true;
+                            case 876098349u:
+                                algorithm = RsaOaep384;
+                                return true;
+                            case 842085677u:
+                                algorithm = RsaOaep512;
+                                return true;
+                        }
+                        break;
+                    case 14 when *(ulong*)pValue == 5784101104744747858u /* ECDH-ES+ */ :
+                        switch (*(ulong*)(pValue + 6))
+                        {
+                            case 6290183092778904403u:
+                                algorithm = EcdhEsAes128KW;
+                                return true;
+                            case 6290176525773908819u:
+                                algorithm = EcdhEsAes192KW;
+                                return true;
+                            case 6290180906657327955u:
+                                algorithm = EcdhEsAes256KW;
+                                return true;
+                        }
+                        break;
+
+                    // Special case for ECDH-ES\u002bAxxxKW 
+                    case 19 when *(ulong*)pValue == 6652737135344632645u /* ECDH-ES\ */ :
+                        switch (*(ulong*)(pValue + 8))
+                        {
+                            case 3616743865759838325u when (*(uint*)(pValue + 15)) == 1464547378u:
+                                algorithm = EcdhEsAes128KW;
+                                return true;
+                            case 4121147024025333877u when (*(uint*)(pValue + 15)) == 1464545849u:
+                                algorithm = EcdhEsAes192KW;
+                                return true;
+                            case 3833198122850332789u when (*(uint*)(pValue + 15)) == 1464546869u:
+                                algorithm = EcdhEsAes256KW;
+                                return true;
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+
+                algorithm = null;
+                return false;
+            }
         }
     }
 }

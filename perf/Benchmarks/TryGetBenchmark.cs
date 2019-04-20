@@ -110,7 +110,7 @@ namespace JsonWebToken.Performance
             for (int i = 0; i < _properties.Count; i++)
             {
                 var current = _properties[i];
-                if (current.Property.Utf8Name.Span.SequenceEqual(key))
+                if (current.Property.Utf8Name.SequenceEqual(key))
                 {
                     value = current.Property;
                     return true;
@@ -128,7 +128,7 @@ namespace JsonWebToken.Performance
             for (int i = 0; i < _properties.Count; i++)
             {
                 var current = _properties[i];
-                if (current.HashCode == hashCode && current.Property.Utf8Name.Span.SequenceEqual(span))
+                if (current.HashCode == hashCode && current.Property.Utf8Name.SequenceEqual(span))
                 {
                     value = current.Property;
                     return true;
@@ -145,7 +145,7 @@ namespace JsonWebToken.Performance
             for (int i = 0; i < _properties.Count; i++)
             {
                 var current = _properties[i];
-                if (current.Property.Utf8Name.Span.SequenceEqual(span))
+                if (current.Property.Utf8Name.SequenceEqual(span))
                 {
                     value = current.Property;
                     return true;

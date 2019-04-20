@@ -46,6 +46,22 @@ namespace JsonWebToken
         /// <summary>
         ///  A boolean value.
         /// </summary>
-        Boolean = 7
+        Boolean = 7,
+
+        /// <summary>
+        /// A signature algorithm.
+        /// </summary>
+        SignatureAlgorithm = 9,
+
+        /// <summary>
+        /// A key management algorithm.
+        /// </summary>
+        KeyManagementAlgorithm = 10,
+
+        /// <summary>
+        /// And encryption algorithm.
+        /// </summary>
+        EncryptionAlgorithm = 11,
+        CompressionAlgorithm = 12
     }
 }

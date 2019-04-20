@@ -45,27 +45,37 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the signature algorithm that was used to create the signature.
         /// </summary>
-        public ReadOnlySpan<byte> Alg => _inner.TryGetValue(HeaderParameters.AlgUtf8, out var property) ? (byte[])property.Value : null;
+        public ReadOnlySpan<byte> Alg => _inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (byte[])property.Value : default;
+
+        /// <summary>
+        /// Gets the signature algorithm that was used to create the signature.
+        /// </summary>
+        public SignatureAlgorithm SignatureAlgorithm => _inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (SignatureAlgorithm)property.Value : null;
+
+        /// <summary>
+        /// Gets the signature algorithm that was used to create the signature.
+        /// </summary>
+        public KeyManagementAlgorithm KeyManagementAlgorithm => _inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (KeyManagementAlgorithm)property.Value : null;
 
         /// <summary>
         /// Gets the content type (Cty) of the token.
         /// </summary>
-        public ReadOnlySpan<byte> Cty => _inner.TryGetValue(HeaderParameters.CtyUtf8, out var property) ? (byte[])property.Value : null;
+        public ReadOnlySpan<byte> Cty => _inner.TryGetValue(WellKnownProperty.Cty, out var property) ? (byte[])property.Value : default;
 
         /// <summary>
         /// Gets the encryption algorithm (Enc) of the token.
         /// </summary>
-        public ReadOnlySpan<byte> Enc => _inner.TryGetValue(HeaderParameters.EncUtf8, out var property) ? (byte[])property.Value : null;
+        public EncryptionAlgorithm Enc => _inner.TryGetValue(WellKnownProperty.Enc, out var property) ? (EncryptionAlgorithm)property.Value : default;
 
         /// <summary>
         /// Gets the key identifier for the key used to sign the token.
         /// </summary>
-        public string Kid => _inner.TryGetValue(HeaderParameters.KidUtf8, out var property) ? (string)property.Value : null;
+        public string Kid => _inner.TryGetValue(WellKnownProperty.Kid, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the mime type (Typ) of the token.
         /// </summary>
-        public string Typ => _inner.TryGetValue(HeaderParameters.TypUtf8, out var property) ? (string)property.Value : null;
+        public string Typ => _inner.TryGetValue(WellKnownProperty.Typ, out var property) ? (string)property.Value : null;
 
         /// <summary>
         /// Gets the thumbprint of the certificate used to sign the token.
@@ -85,7 +95,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the algorithm used to compress the token.
         /// </summary>
-        public ReadOnlySpan<byte> Zip => _inner.TryGetValue(HeaderParameters.ZipUtf8, out var property) ? (byte[])property.Value : null;
+        public ReadOnlySpan<byte> Zip => _inner.TryGetValue(WellKnownProperty.Zip, out var property) ? (byte[])property.Value : null;
 
         /// <summary>
         /// Gets the Initialization Vector used for AES GCM encryption.

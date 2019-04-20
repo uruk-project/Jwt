@@ -402,7 +402,7 @@ namespace JsonWebToken
             for (int i = 0; i < @object.Count; i++)
             {
                 var property = @object[i];
-                var name = property.Utf8Name.Span;
+                var name = property.Utf8Name;
                 switch (property.Type)
                 {
                     case JwtTokenType.Array:

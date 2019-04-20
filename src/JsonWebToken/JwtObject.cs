@@ -146,7 +146,7 @@ namespace JsonWebToken
                 for (int i = 0; i < properties.Count; i++)
                 {
                     var current = properties[i];
-                    if (current.Utf8Name.Span.SequenceEqual(span))
+                    if (current.Utf8Name.SequenceEqual(span))
                     {
                         return current;
                     }
@@ -169,7 +169,7 @@ namespace JsonWebToken
                 for (int i = 0; i < properties.Count; i++)
                 {
                     var current = _properties[i];
-                    if (current.Utf8Name.Span.SequenceEqual(key))
+                    if (current.Utf8Name.SequenceEqual(key))
                     {
                         return current;
                     }
@@ -208,7 +208,32 @@ namespace JsonWebToken
             for (int i = 0; i < count; i++)
             {
                 var current = properties[i];
-                if (current.Utf8Name.Span.SequenceEqual(key))
+                if (current.Utf8Name.SequenceEqual(key))
+                {
+                    value = current;
+                    return true;
+                }
+            }
+
+            value = default;
+            return false;
+        }
+
+
+        /// <summary>
+        /// Gets the <see cref="JwtProperty"/> associated with the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public bool TryGetValue(WellKnownProperty key, out JwtProperty value)
+        {
+            var properties = _properties;
+            int count = properties.Count;
+            for (int i = 0; i < count; i++)
+            {
+                var current = properties[i];
+                if (current.WellKnownName == key)
                 {
                     value = current;
                     return true;
@@ -224,6 +249,27 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
+        public bool ContainsKey(WellKnownProperty key)
+        {
+            var properties = _properties;
+            int count = properties.Count;
+            for (int i = 0; i < count; i++)
+            {
+                var current = properties[i];
+                if (current.WellKnownName == key)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether a <see cref="JwtProperty"/> is in the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public bool ContainsKey(ReadOnlySpan<byte> key)
         {
             var properties = _properties;
@@ -231,7 +277,7 @@ namespace JsonWebToken
             for (int i = 0; i < count; i++)
             {
                 var current = properties[i];
-                if (current.Utf8Name.Span.SequenceEqual(key))
+                if (current.Utf8Name.SequenceEqual(key))
                 {
                     return true;
                 }
@@ -253,13 +299,13 @@ namespace JsonWebToken
         /// <param name="property"></param>
         public void Replace(JwtProperty property)
         {
-            var span = property.Utf8Name.Span;
+            var span = property.Utf8Name;
             var properties = _properties;
             int count = properties.Count;
             for (int i = 0; i < count; i++)
             {
                 var current = properties[i];
-                if (current.Utf8Name.Span.SequenceEqual(span))
+                if (current.Utf8Name.SequenceEqual(span))
                 {
                     properties[i] = property;
                     return;

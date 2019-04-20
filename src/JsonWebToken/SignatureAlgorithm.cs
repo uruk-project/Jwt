@@ -16,69 +16,69 @@ namespace JsonWebToken
         /// <summary>
         /// 'none'
         /// </summary>
-        public static readonly SignatureAlgorithm None = new SignatureAlgorithm(id: -1, "none", AlgorithmCategory.None, requiredKeySizeInBits: 0, new HashAlgorithmName());
+        public static readonly SignatureAlgorithm None = new SignatureAlgorithm(id: Algorithm.None, "none", AlgorithmCategory.None, requiredKeySizeInBits: 0, new HashAlgorithmName());
 
         /// <summary>
         /// 'HS256'
         /// </summary>
-        public static readonly SignatureAlgorithm HmacSha256 = new SignatureAlgorithm(id: 11, "HS256", AlgorithmCategory.Hmac, requiredKeySizeInBits: 128/*?*/, HashAlgorithmName.SHA256);
+        public static readonly SignatureAlgorithm HmacSha256 = new SignatureAlgorithm(id: Algorithm.HmacSha256, "HS256", AlgorithmCategory.Hmac, requiredKeySizeInBits: 128/*?*/, HashAlgorithmName.SHA256);
 
         /// <summary>
         /// 'HS384'
         /// </summary>
-        public static readonly SignatureAlgorithm HmacSha384 = new SignatureAlgorithm(id: 12, "HS384", AlgorithmCategory.Hmac, requiredKeySizeInBits: 192/*?*/, HashAlgorithmName.SHA384);
+        public static readonly SignatureAlgorithm HmacSha384 = new SignatureAlgorithm(id: Algorithm.HmacSha384, "HS384", AlgorithmCategory.Hmac, requiredKeySizeInBits: 192/*?*/, HashAlgorithmName.SHA384);
 
         /// <summary>
         /// 'HS512'
         /// </summary>
-        public static readonly SignatureAlgorithm HmacSha512 = new SignatureAlgorithm(id: 13, "HS512", AlgorithmCategory.Hmac, requiredKeySizeInBits: 256/*?*/, HashAlgorithmName.SHA512);
+        public static readonly SignatureAlgorithm HmacSha512 = new SignatureAlgorithm(id: Algorithm.HmacSha512, "HS512", AlgorithmCategory.Hmac, requiredKeySizeInBits: 256/*?*/, HashAlgorithmName.SHA512);
 
         /// <summary>
         /// 'RS256'
         /// </summary>
-        public static readonly SignatureAlgorithm RsaSha256 = new SignatureAlgorithm(id: 21, "RS256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA256);
+        public static readonly SignatureAlgorithm RsaSha256 = new SignatureAlgorithm(id: Algorithm.RsaSha256, "RS256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA256);
 
         /// <summary>
         /// 'RS384'
         /// </summary>
-        public static readonly SignatureAlgorithm RsaSha384 = new SignatureAlgorithm(id: 22, "RS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA384);
+        public static readonly SignatureAlgorithm RsaSha384 = new SignatureAlgorithm(id: Algorithm.RsaSha384, "RS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA384);
 
         /// <summary>
         /// 'RS512'
         /// </summary>
-        public static readonly SignatureAlgorithm RsaSha512 = new SignatureAlgorithm(id: 23, "RS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA512);
+        public static readonly SignatureAlgorithm RsaSha512 = new SignatureAlgorithm(id: Algorithm.RsaSha512, "RS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA512);
 
         /// <summary>
         /// 'ES256'
         /// </summary>
-        public static readonly SignatureAlgorithm EcdsaSha256 = new SignatureAlgorithm(id: 31, "ES256", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 256, HashAlgorithmName.SHA256);
+        public static readonly SignatureAlgorithm EcdsaSha256 = new SignatureAlgorithm(id: Algorithm.EcdsaSha256, "ES256", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 256, HashAlgorithmName.SHA256);
 
         /// <summary>
         /// 'ES384'
         /// </summary>
-        public static readonly SignatureAlgorithm EcdsaSha384 = new SignatureAlgorithm(id: 32, "ES384", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 384, HashAlgorithmName.SHA384);
+        public static readonly SignatureAlgorithm EcdsaSha384 = new SignatureAlgorithm(id: Algorithm.EcdsaSha384, "ES384", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 384, HashAlgorithmName.SHA384);
 
         /// <summary>
         /// 'ES512'
         /// </summary>
-        public static readonly SignatureAlgorithm EcdsaSha512 = new SignatureAlgorithm(id: 33, "ES512", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 521, HashAlgorithmName.SHA512);
+        public static readonly SignatureAlgorithm EcdsaSha512 = new SignatureAlgorithm(id: Algorithm.EcdsaSha512, "ES512", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 521, HashAlgorithmName.SHA512);
 
         /// <summary>
         /// 'PS256'
         /// </summary>
-        public static readonly SignatureAlgorithm RsaSsaPssSha256 = new SignatureAlgorithm(id: 40, "PS256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA256);
+        public static readonly SignatureAlgorithm RsaSsaPssSha256 = new SignatureAlgorithm(id: Algorithm.RsaSsaPssSha256, "PS256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA256);
 
         /// <summary>
         /// 'PS384'
         /// </summary>
-        public static readonly SignatureAlgorithm RsaSsaPssSha384 = new SignatureAlgorithm(id: 41, "PS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA384);
+        public static readonly SignatureAlgorithm RsaSsaPssSha384 = new SignatureAlgorithm(id: Algorithm.RsaSsaPssSha384, "PS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA384);
 
         /// <summary>
         /// 'PS512'
         /// </summary>
-        public static readonly SignatureAlgorithm RsaSsaPssSha512 = new SignatureAlgorithm(id: 42, "PS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA512);
+        public static readonly SignatureAlgorithm RsaSsaPssSha512 = new SignatureAlgorithm(id: Algorithm.RsaSsaPssSha512, "PS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA512);
 
-        private readonly sbyte _id;
+        private readonly int _id;
         private readonly string _name;
         private readonly AlgorithmCategory _category;
         private readonly ushort _requiredKeySizeInBits;
@@ -105,7 +105,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the algorithm identifier. 
         /// </summary>
-        public sbyte Id => _id;
+        public int Id => _id;
 
         /// <summary>
         /// Gets the name of the signature algorithm.
@@ -116,7 +116,7 @@ namespace JsonWebToken
         /// Gets the name of the signature algorithm.
         /// </summary>
         public byte[] Utf8Name => Encoding.UTF8.GetBytes(_name);
-
+        
         /// <summary>
         /// Gets the algorithm category.
         /// </summary>
@@ -145,7 +145,7 @@ namespace JsonWebToken
         /// <param name="category"></param>
         /// <param name="requiredKeySizeInBits"></param>
         /// <param name="hashAlgorithm"></param>
-        public SignatureAlgorithm(sbyte id, string name, AlgorithmCategory category, ushort requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
+        public SignatureAlgorithm(int id, string name, AlgorithmCategory category, ushort requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
         {
             _id = id;
             _name = name;
@@ -291,6 +291,89 @@ namespace JsonWebToken
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
+        /// <param name="algorithm"></param>
+        public unsafe static bool TryParse(ReadOnlySpan<byte> value, out SignatureAlgorithm algorithm)
+        {
+            if (value.IsEmpty)
+            {
+                algorithm = null;
+                return true;
+            }
+
+            fixed (byte* pValue = value)
+            {
+                if (value.Length == 5)
+                {
+                    switch (*(int*)(pValue + 1))
+                    {
+                        case 909455955 /* S256 */:
+                            switch (value[0])
+                            {
+                                case (byte)'H':
+                                    algorithm = HmacSha256;
+                                    return true;
+                                case (byte)'R':
+                                    algorithm = RsaSha256;
+                                    return true;
+                                case (byte)'E':
+                                    algorithm = EcdsaSha256;
+                                    return true;
+                                case (byte)'P':
+                                    algorithm = RsaSsaPssSha256;
+                                    return true;
+                            }
+                            break;
+                        case 876098387 /* S384 */:
+                            switch (value[0])
+                            {
+                                case (byte)'H':
+                                    algorithm = HmacSha384;
+                                    return true;
+                                case (byte)'R':
+                                    algorithm = RsaSsaPssSha384;
+                                    return true;
+                                case (byte)'E':
+                                    algorithm = EcdsaSha384;
+                                    return true;
+                                case (byte)'P':
+                                    algorithm = RsaSsaPssSha384;
+                                    return true;
+                            }
+                            break;
+                        case 842085715 /* S512 */:
+                            switch (value[0])
+                            {
+                                case (byte)'H':
+                                    algorithm = HmacSha512;
+                                    return true;
+                                case (byte)'R':
+                                    algorithm = RsaSsaPssSha512;
+                                    return true;
+                                case (byte)'E':
+                                    algorithm = EcdsaSha512;
+                                    return true;
+                                case (byte)'P':
+                                    algorithm = RsaSsaPssSha512;
+                                    return true;
+                            }
+                            break;
+                    }
+                }
+                else if (value.Length == 4 && *(int*)pValue == 1701736302/* none */)
+                {
+                    algorithm = None;
+                    return true;
+                }
+
+                algorithm = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
         public unsafe static implicit operator SignatureAlgorithm(ReadOnlySpan<byte> value)
         {
             if (value.IsEmpty)
@@ -353,6 +436,7 @@ namespace JsonWebToken
                 return value.ToArray();
             }
         }
+
 
         /// <summary>
         /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="long"/> representation.
