@@ -70,7 +70,6 @@ namespace JsonWebToken
         /// </summary>
         public const int RsaSsaPssSha512 = -39;
 
-
         /// <summary>
         /// 'dir'
         /// </summary>
