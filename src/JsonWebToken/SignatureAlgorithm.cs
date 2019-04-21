@@ -437,7 +437,6 @@ namespace JsonWebToken
             }
         }
 
-
         /// <summary>
         /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="long"/> representation.
         /// </summary>
