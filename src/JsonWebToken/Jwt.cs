@@ -133,7 +133,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the signature algorithm associated with this instance.
         /// </summary>
-        public SignatureAlgorithm SignatureAlgorithm => Header.Alg;
+        public SignatureAlgorithm SignatureAlgorithm => Header.SignatureAlgorithm;
 
         /// <summary>
         /// Gets the <see cref="Jwk"/> used for the signature of this token.

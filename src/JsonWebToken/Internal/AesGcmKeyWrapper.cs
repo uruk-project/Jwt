@@ -42,8 +42,8 @@ namespace JsonWebToken.Internal
             Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.Tag.Length)];
             try
             {
-                Base64Url.Base64UrlDecode(header.IV, nonce);
-                Base64Url.Base64UrlDecode(header.Tag, tag);
+                Base64Url.Decode(header.IV, nonce);
+                Base64Url.Decode(header.Tag, tag);
                 using (var aesGcm = new AesGcm(Key.ToByteArray()))
                 {
                     aesGcm.Decrypt(nonce, keyBytes, tag, destination);
@@ -77,8 +77,8 @@ namespace JsonWebToken.Internal
                     aesGcm.Encrypt(nonce, contentEncryptionKey.ToByteArray(), destination, tag);
                     bytesWritten = destination.Length;
 
-                    header.Add(new JwtProperty(HeaderParameters.IVUtf8, Base64Url.Base64UrlEncode(nonce)));
-                    header.Add(new JwtProperty(HeaderParameters.TagUtf8, Base64Url.Base64UrlEncode(tag)));
+                    header.Add(new JwtProperty(HeaderParameters.IVUtf8, Base64Url.Encode(nonce)));
+                    header.Add(new JwtProperty(HeaderParameters.TagUtf8, Base64Url.Encode(tag)));
 
                     return true;
                 }

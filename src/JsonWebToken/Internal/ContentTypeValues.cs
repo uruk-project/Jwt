@@ -14,7 +14,7 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// JWT content type for 'cty' header parameter.
         /// </summary>
-        public const string Jwt = "JWT";
+        public static readonly string Jwt = "JWT";
 
         /// <summary>
         /// JWT content type for 'cty' header parameter.

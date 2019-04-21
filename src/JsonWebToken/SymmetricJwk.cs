@@ -48,7 +48,7 @@ namespace JsonWebToken
                 Errors.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
-            _k = Base64Url.Base64UrlDecode(k);
+            _k = Base64Url.Decode(k);
         }
 
         /// <summary>
@@ -354,7 +354,7 @@ namespace JsonWebToken
                                         case 1:
                                             if (*pPropertyName == (byte)'k')
                                             {
-                                                key._k = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                                key._k = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
                                             break;
 
@@ -391,7 +391,7 @@ namespace JsonWebToken
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = false, SkipValidation = true }));
                 writer.WriteStartObject();
-                writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Base64UrlEncode(K));
+                writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(K));
                 writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
                 writer.WriteEndObject();
                 writer.Flush();
@@ -412,7 +412,7 @@ namespace JsonWebToken
             for (int i = 0; i < @object.Count; i++)
             {
                 var property = @object[i];
-                var name = property.Utf8Name.Span;
+                var name = property.Utf8Name;
                 switch (property.Type)
                 {
                     case JwtTokenType.Array:
@@ -421,7 +421,7 @@ namespace JsonWebToken
                     case JwtTokenType.String:
                         if (name.SequenceEqual(JwkParameterNames.KUtf8))
                         {
-                            key._k = Base64Url.Base64UrlDecode((string)property.Value);
+                            key._k = Base64Url.Decode((string)property.Value);
                         }
                         else
                         {
@@ -441,7 +441,7 @@ namespace JsonWebToken
 
         internal override void WriteComplementTo(ref Utf8JsonWriter writer)
         {
-            writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Base64UrlEncode(K));
+            writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(K));
         }
     }
 }

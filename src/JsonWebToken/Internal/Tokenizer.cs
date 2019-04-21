@@ -8,14 +8,12 @@ namespace JsonWebToken.Internal
 {
     internal static class Tokenizer
     {
-        private const byte ByteDot = (byte)'.';
-
         public unsafe static int Tokenize(ReadOnlySpan<byte> token, TokenSegment* pSegments)
         {
             int start;
             var span = token;
-            int last = span.LastIndexOf(ByteDot);
-            int end = span.IndexOf(ByteDot);
+            int last = span.LastIndexOf(Constants.ByteDot);
+            int end = span.IndexOf(Constants.ByteDot);
             if (end < 0)
             {
                 return 0;
@@ -24,7 +22,7 @@ namespace JsonWebToken.Internal
             *pSegments = new TokenSegment(0, end);
             start = end + 1;
             span = token.Slice(start);
-            end = span.IndexOf(ByteDot);
+            end = span.IndexOf(Constants.ByteDot);
             if (end < 0)
             {
                 return 0;
@@ -39,7 +37,7 @@ namespace JsonWebToken.Internal
             }
 
             span = token.Slice(start);
-            end = span.IndexOf(ByteDot);
+            end = span.IndexOf(Constants.ByteDot);
             if (end < 0)
             {
                 return 0;
@@ -49,7 +47,7 @@ namespace JsonWebToken.Internal
             start += end + 1;
             span = token.Slice(start);
 
-            end = span.IndexOf(ByteDot);
+            end = span.IndexOf(Constants.ByteDot);
             if (end < 0)
             {
                 return 0;
@@ -66,36 +64,59 @@ namespace JsonWebToken.Internal
             return 0;
         }
 
-        public static int Tokenize(in ReadOnlySequence<byte> token, Span<TokenSegment> segments)
+        public unsafe static int Tokenize(in ReadOnlySequence<byte> token, TokenSegment* pSegments)
         {
-            int count = 0;
-            int start = 0;
-            int end;
-            int sequenceOffset = 0;
-            var sequence = token;
-            SequencePosition nextPosition = token.Start;
-            while (sequence.TryGet(ref nextPosition, out ReadOnlyMemory<byte> memory, advance: true))
+            int start;
+            var span = token;
+            //int last = (int)span.LastIndexOf(ByteDot);
+            int end = (int)span.IndexOf(Constants.ByteDot);
+            if (end < 0)
             {
-                var span = memory.Span;
-                while ((end = span.IndexOf(ByteDot)) >= 0 && count < Constants.JweSegmentCount)
-                {
-                    end += sequenceOffset;
-                    segments[count++] = new TokenSegment(start, end);
-                    start += end + 1;
-                    span = memory.Span.Slice(start);
-                }
-
-                sequenceOffset += span.Length;
+                return 0;
             }
 
-            // Residue 
-            var length = (int)sequence.Length;
-            if (count < Constants.JweSegmentCount)
+            *pSegments = new TokenSegment(0, end);
+            start = end + 1;
+            span = token.Slice(start);
+            end = (int)span.IndexOf(Constants.ByteDot);
+            if (end < 0)
             {
-                segments[count++] = new TokenSegment(start, length);
+                return 0;
             }
 
-            return count;
+
+            *(pSegments + 1) = new TokenSegment(start, end);
+            start += end + 1;
+            span = token.Slice(start);
+            end = (int)span.IndexOf(Constants.ByteDot);
+            if (end < 0)
+            {
+                *(pSegments + 2) = new TokenSegment(start, (int)span.Length);
+                return Constants.JwsSegmentCount;
+            }
+
+            *(pSegments + 2) = new TokenSegment(start, end);
+            start += end + 1;
+            span = token.Slice(start);
+
+            end = (int)span.IndexOf(Constants.ByteDot);
+            if (end < 0)
+            {
+                return 0;
+            }
+
+            *(pSegments + 3) = new TokenSegment(start, end);
+            start += end + 1;
+            span = token.Slice(start);
+
+            end = (int)span.IndexOf(Constants.ByteDot);
+            if (end < 0)
+            {
+                *(pSegments + 4) = new TokenSegment(start, (int)span.Length);
+                return Constants.JweSegmentCount;
+            }
+
+            return 0;
         }
     }
 }

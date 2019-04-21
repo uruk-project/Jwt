@@ -12,5 +12,7 @@ namespace JsonWebToken
         internal const int MaxStackallocBytes = 1024 * 1024 / 8;
 
         internal static readonly int DecompressionBufferLength = 1024;
+
+        internal const byte ByteDot = (byte)'.';
     }
 }

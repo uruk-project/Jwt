@@ -4,68 +4,78 @@
 namespace JsonWebToken
 {
     /// <summary>
-    /// Specifies the type of token.
+    /// Defines the well known JWT properties.
     /// </summary>
-    public enum JwtTokenType : byte
+    public enum WellKnownProperty
     {
         /// <summary>
-        ///  A null value. 
+        /// None.
         /// </summary>
-        Null = 0,
+        None = 0,
 
         /// <summary>
-        /// A JSON object.
+        /// exp
         /// </summary>
-        Object = 1,
+        Exp,
 
         /// <summary>
-        /// A JSON array.
+        /// aud
         /// </summary>
-        Array = 2,
+        Aud,
 
         /// <summary>
-        /// An integer value.
+        /// iat
         /// </summary>
-        Integer = 3,
+        Iat,
 
         /// <summary>
-        /// A float value.
+        /// iss
         /// </summary>
-        Float = 4,
+        Iss,
 
         /// <summary>
-        /// A string value.
+        /// jti
         /// </summary>
-        String = 5,
+        Jti,
 
         /// <summary>
-        /// A byte array representing a UTF8 string.
+        /// nbf
         /// </summary>
-        Utf8String = 8,
+        Nbf,
 
         /// <summary>
-        ///  A boolean value.
+        /// kid
         /// </summary>
-        Boolean = 7,
+        Kid,
 
         /// <summary>
-        /// A signature algorithm.
+        /// alg
         /// </summary>
-        SignatureAlgorithm = 9,
+        Alg,
 
         /// <summary>
-        /// A key management algorithm.
+        /// enc
         /// </summary>
-        KeyManagementAlgorithm = 10,
+        Enc,
 
         /// <summary>
-        /// A encryption algorithm.
+        /// cty
         /// </summary>
-        EncryptionAlgorithm = 11,
-        
+        Cty,
+
         /// <summary>
-        /// A compression algorithm.
+        /// typ
         /// </summary>
-        CompressionAlgorithm = 12
+        Typ,
+
+        /// <summary>
+        /// zip
+        /// </summary>
+        Zip,
+
+        /// <summary>
+        /// sub
+        /// </summary>
+        Sub
     }
 }

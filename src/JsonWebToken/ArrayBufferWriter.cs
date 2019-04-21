@@ -57,20 +57,6 @@ namespace JsonWebToken
             }
         }
 
-
-        /// <summary>
-        /// Gets the output as a <see cref="Span{T}"/>.
-        /// </summary>
-        public ReadOnlySequence<T> OutputAsSequence
-        {
-            get
-            {
-                CheckIfDisposed();
-
-                return new ReadOnlySequence<T>(_rentedBuffer, 0, _index);
-            }
-        }
-
         /// <summary>
         /// Gets the bytes written.
         /// </summary>
@@ -123,11 +109,7 @@ namespace JsonWebToken
         public void Advance(int count)
         {
             CheckIfDisposed();
-
-            if (count < 0)
-            {
-                Errors.ThrowMustBeGreaterOrEqualToZero(ExceptionArgument.count, count);
-            }
+            Debug.Assert(count >= 0);
 
             if (_index > _rentedBuffer.Length - count)
             {
@@ -150,7 +132,7 @@ namespace JsonWebToken
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Conditional("DEBUG")]
         private void CheckIfDisposed()
         {
             if (_rentedBuffer == null)
@@ -181,15 +163,13 @@ namespace JsonWebToken
         private void CheckAndResizeBuffer(int sizeHint)
         {
             Debug.Assert(_rentedBuffer != null);
-            if (sizeHint < 0)
-            {
-                Errors.ThrowArgument(nameof(sizeHint));
-            }
+            Debug.Assert(sizeHint >= 0);
 
             if (sizeHint == 0)
             {
                 sizeHint = MinimumBufferSize;
             }
+
             int bufferLength = _rentedBuffer.Length;
             int availableSpace = bufferLength - _index;
             if (sizeHint > availableSpace)

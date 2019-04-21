@@ -113,7 +113,62 @@ namespace JsonWebToken
             KeyWrappedSizeInBytes = requiredKeyWrappedSizeInBytes;
             Category = category;
         }
-        
+
+
+        /// <summary>
+        /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="EncryptionAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="algorithm"></param>
+        public unsafe static bool TryParse(ReadOnlySpan<byte> value, out EncryptionAlgorithm algorithm)
+        {
+            if (value.IsEmpty)
+            {
+                algorithm = null;
+                return true;
+            }
+
+            fixed (byte* pValue = value)
+            {
+                if (value.Length == 13)
+                {
+                    switch (*(ulong*)pValue)
+                    {
+                        case 3261523411619426625u when *(ulong*)(pValue + 5) == 3906083585088373570u:
+                            algorithm = Aes128CbcHmacSha256;
+                            return true;
+                        case 3261523411519222081u when *(ulong*)(pValue + 5) == 3762813921454277442u:
+                            algorithm = Aes192CbcHmacSha384;
+                            return true;
+                        case 3261523411586069057u when *(ulong*)(pValue + 5) == 3616730607564702530u:
+                            algorithm = Aes256CbcHmacSha512;
+                            return true;                          
+                    }
+                }
+#if NETCOREAPP3_0
+                else if (value.Length == 7)
+                {
+                    switch(*(uint*)pValue)
+                    {
+                        case 942813505u when * (uint*)(pValue + 3) == 1296254776u:
+                            algorithm = Aes128Gcm;
+                        return true;
+                        case 842608961u when *(uint*)(pValue + 3) == 1296254770u:
+                            algorithm = Aes192Gcm;
+                        return true;
+                        case 909455937u when *(uint*)(pValue + 3) == 1296254774u:
+                            algorithm = Aes256Gcm;
+                        return true;
+                    }
+                }
+#endif
+
+                algorithm = null;
+                return false;
+            }
+        }
+
+
         /// <summary>
         /// Determines whether this instance and a specified object, which must also be a
         /// <see cref="EncryptionAlgorithm"/> object, have the same value.

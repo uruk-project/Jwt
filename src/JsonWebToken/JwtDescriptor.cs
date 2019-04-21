@@ -306,6 +306,24 @@ namespace JsonWebToken
         /// <summary>
         /// Validates the presence and the type of a required header.
         /// </summary>
+        /// <param name="wellKnownName"></param>
+        /// <param name="type"></param>
+        protected void CheckRequiredHeader(WellKnownProperty wellKnownName, JwtTokenType type)
+        {
+            if (!Header.TryGetValue(wellKnownName, out var token) || token.Type == JwtTokenType.Null)
+            {
+                Errors.ThrowHeaderIsRequired(JwtProperty.GetWellKnowName(wellKnownName));
+            }
+
+            if (token.Type != type)
+            {
+                Errors.ThrowHeaderMustBeOfType(JwtProperty.GetWellKnowName(wellKnownName), type);
+            }
+        }
+
+        /// <summary>
+        /// Validates the presence and the type of a required header.
+        /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="types"></param>
         protected void CheckRequiredHeader(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)

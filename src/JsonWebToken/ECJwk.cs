@@ -96,9 +96,9 @@ namespace JsonWebToken
             }
 
             Crv = crv;
-            D = Base64Url.Base64UrlDecode(d);
-            X = Base64Url.Base64UrlDecode(x);
-            Y = Base64Url.Base64UrlDecode(y);
+            D = Base64Url.Decode(d);
+            X = Base64Url.Decode(x);
+            Y = Base64Url.Decode(y);
         }
 
         /// <summary>
@@ -137,8 +137,8 @@ namespace JsonWebToken
             }
 
             Crv = crv;
-            X = Base64Url.Base64UrlDecode(x);
-            Y = Base64Url.Base64UrlDecode(y);
+            X = Base64Url.Decode(x);
+            Y = Base64Url.Decode(y);
         }
 
         /// <summary>
@@ -300,8 +300,8 @@ namespace JsonWebToken
                 writer.WriteStartObject();
                 writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
                 writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
-                writer.WriteString(JwkParameterNames.XUtf8, Base64Url.Base64UrlEncode(X));
-                writer.WriteString(JwkParameterNames.YUtf8, Base64Url.Base64UrlEncode(Y));
+                writer.WriteString(JwkParameterNames.XUtf8, Base64Url.Encode(X));
+                writer.WriteString(JwkParameterNames.YUtf8, Base64Url.Encode(Y));
                 writer.WriteEndObject();
                 writer.Flush();
 
@@ -388,8 +388,8 @@ namespace JsonWebToken
             Debug.Assert(jwtObject.Count == 3);
             var key = new ECJwk
             {
-                Y = Base64Url.Base64UrlDecode(jwtObject.TryGetValue(JwkParameterNames.YUtf8, out var property) ? (string)property.Value : null),
-                X = Base64Url.Base64UrlDecode(jwtObject.TryGetValue(JwkParameterNames.XUtf8, out property) ? (string)property.Value : null),
+                Y = Base64Url.Decode(jwtObject.TryGetValue(JwkParameterNames.YUtf8, out var property) ? (string)property.Value : null),
+                X = Base64Url.Decode(jwtObject.TryGetValue(JwkParameterNames.XUtf8, out property) ? (string)property.Value : null),
                 Crv = EllipticalCurve.FromString(jwtObject.TryGetValue(JwkParameterNames.CrvUtf8, out property) ? (string)property.Value : null)
             };
 
@@ -401,8 +401,8 @@ namespace JsonWebToken
         {
             var jwtObject = new JwtObject();
             jwtObject.Add(new JwtProperty(JwkParameterNames.CrvUtf8, Crv.Name));
-            jwtObject.Add(new JwtProperty(JwkParameterNames.XUtf8, Base64Url.Base64UrlEncode(X)));
-            jwtObject.Add(new JwtProperty(JwkParameterNames.YUtf8, Base64Url.Base64UrlEncode(Y)));
+            jwtObject.Add(new JwtProperty(JwkParameterNames.XUtf8, Base64Url.Encode(X)));
+            jwtObject.Add(new JwtProperty(JwkParameterNames.YUtf8, Base64Url.Encode(Y)));
 
             return jwtObject;
         }
@@ -435,15 +435,15 @@ namespace JsonWebToken
                                         case 1:
                                             if (*pPropertyName == (byte)'x')
                                             {
-                                                key.X = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                                key.X = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
                                             else if (*pPropertyName == (byte)'y')
                                             {
-                                                key.Y = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                                key.Y = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
                                             else if (*pPropertyName == (byte)'d')
                                             {
-                                                key.D = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                                key.D = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
                                             break;
 
@@ -486,7 +486,7 @@ namespace JsonWebToken
             for (int i = 0; i < @object.Count; i++)
             {
                 var property = @object[i];
-                var name = property.Utf8Name.Span;
+                var name = property.Utf8Name;
                 switch (property.Type)
                 {
                     case JwtTokenType.Array:
@@ -499,15 +499,15 @@ namespace JsonWebToken
                         }
                         else if (name.SequenceEqual(JwkParameterNames.XUtf8))
                         {
-                            key.X = Base64Url.Base64UrlDecode((string)property.Value);
+                            key.X = Base64Url.Decode((string)property.Value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.YUtf8))
                         {
-                            key.Y = Base64Url.Base64UrlDecode((string)property.Value);
+                            key.Y = Base64Url.Decode((string)property.Value);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.DUtf8))
                         {
-                            key.D = Base64Url.Base64UrlDecode((string)property.Value);
+                            key.D = Base64Url.Decode((string)property.Value);
                         }
                         else
                         {
@@ -528,11 +528,11 @@ namespace JsonWebToken
         internal override void WriteComplementTo(ref Utf8JsonWriter writer)
         {
             writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
-            writer.WriteString(JwkParameterNames.XUtf8, Base64Url.Base64UrlEncode(X));
-            writer.WriteString(JwkParameterNames.YUtf8, Base64Url.Base64UrlEncode(Y));
+            writer.WriteString(JwkParameterNames.XUtf8, Base64Url.Encode(X));
+            writer.WriteString(JwkParameterNames.YUtf8, Base64Url.Encode(Y));
             if (D != null)
             {
-                writer.WriteString(JwkParameterNames.DUtf8, Base64Url.Base64UrlEncode(D));
+                writer.WriteString(JwkParameterNames.DUtf8, Base64Url.Encode(D));
             }
         }
     }

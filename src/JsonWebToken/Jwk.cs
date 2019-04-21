@@ -347,7 +347,7 @@ namespace JsonWebToken
                 Span<byte> hash = stackalloc byte[hashAlgorithm.HashSize >> 3];
                 hashAlgorithm.TryComputeHash(Canonicalize(), hash, out int bytesWritten);
                 Debug.Assert(bytesWritten == hashAlgorithm.HashSize >> 3);
-                var thumbprint = Base64Url.Base64UrlEncode(hash);
+                var thumbprint = Base64Url.Encode(hash);
 #if !NETSTANDARD2_0
                 return Encoding.UTF8.GetString(thumbprint);
 #else
@@ -364,7 +364,7 @@ namespace JsonWebToken
             using (var hashAlgorithm = SHA256.Create())
             {
                 var hash = hashAlgorithm.ComputeHash(Canonicalize());
-                return Encoding.UTF8.GetString(Base64Url.Base64UrlEncode(hash));
+                return Encoding.UTF8.GetString(Base64Url.Encode(hash));
             }
         }
 #endif
@@ -513,7 +513,7 @@ namespace JsonWebToken
         {
             if (*(ulong*)pPropertyName == 3906083584472266104u /* x5t#s256 */)
             {
-                key.X5tS256 = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                key.X5tS256 = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
             }
         }
 
@@ -559,12 +559,12 @@ namespace JsonWebToken
                     while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                     {
                         var x5xItem = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                        key.X5c.Add(Base64Url.Base64UrlDecode(x5xItem));
+                        key.X5c.Add(Base64Url.Decode(x5xItem));
                     }
                     break;
                 /* x5t */
                 case (byte)'x' when *pPropertyNameShort == 29749:
-                    key.X5t = Base64Url.Base64UrlDecode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                    key.X5t = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                     break;
                 /* x5u */
                 case (byte)'x' when *pPropertyNameShort == 30005:
@@ -620,7 +620,7 @@ namespace JsonWebToken
                 writer.WriteStartArray(JwkParameterNames.X5cUtf8);
                 for (int i = 0; i < X5c.Count; i++)
                 {
-                    writer.WriteStringValue(Base64Url.Base64UrlEncode(X5c[i]));
+                    writer.WriteStringValue(Base64Url.Encode(X5c[i]));
                 }
 
                 writer.WriteEndArray();
