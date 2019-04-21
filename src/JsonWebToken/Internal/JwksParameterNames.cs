@@ -10,8 +10,6 @@ namespace JsonWebToken.Internal
     /// </summary>
     internal static class JwksParameterNames
     {
-        public const string Keys = "keys";
-
         public static ReadOnlySpan<byte> KeysUtf8 => new byte[] { (byte)'k', (byte)'e', (byte)'y', (byte)'s' };
     }
 }

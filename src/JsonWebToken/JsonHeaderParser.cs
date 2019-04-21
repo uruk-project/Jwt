@@ -20,14 +20,14 @@ namespace JsonWebToken
         /// <param name="buffer"></param>
         public static unsafe JwtHeader ParseHeader(ReadOnlySpan<byte> buffer)
         {
-            return new JwtHeader(ReadHeader(buffer));
+            return ReadHeader(buffer);
         }
 
         /// <summary>
         /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtHeader"/>.
         /// </summary>
         /// <param name="buffer"></param>
-        internal static unsafe JwtObject ReadHeader(ReadOnlySpan<byte> buffer)
+        internal static unsafe JwtHeader ReadHeader(ReadOnlySpan<byte> buffer)
         {
             Utf8JsonReader reader = new Utf8JsonReader(buffer, isFinalBlock: true, state: default);
             if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
@@ -38,15 +38,16 @@ namespace JsonWebToken
             return ReadJwtHeader(ref reader);
         }
 
-        internal unsafe static JwtObject ReadJwtHeader(ref Utf8JsonReader reader)
+        internal unsafe static JwtHeader ReadJwtHeader(ref Utf8JsonReader reader)
         {
             var current = new JwtObject();
+            var header = new JwtHeader(current);
             while (reader.Read())
             {
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.EndObject:
-                        return current;
+                        return header;
                     case JsonTokenType.PropertyName:
                         var name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
                         reader.Read();
@@ -71,11 +72,11 @@ namespace JsonWebToken
                                                 var alg = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
                                                 if (SignatureAlgorithm.TryParse(alg, out var signatureAlgorithm))
                                                 {
-                                                    current.Add(new JwtProperty(signatureAlgorithm));
+                                                    header.SignatureAlgorithm = signatureAlgorithm;
                                                 }
                                                 else if (KeyManagementAlgorithm.TryParse(alg, out var keyManagementAlgorithm))
                                                 {
-                                                    current.Add(new JwtProperty(keyManagementAlgorithm));
+                                                    header.KeyManagementAlgorithm = keyManagementAlgorithm;
                                                 }
                                                 else
                                                 {
@@ -89,7 +90,7 @@ namespace JsonWebToken
                                                 var enc = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
                                                 if (EncryptionAlgorithm.TryParse(enc, out var encryptionAlgorithm))
                                                 {
-                                                    current.Add(new JwtProperty(encryptionAlgorithm));
+                                                    header.EncryptionAlgorithm = encryptionAlgorithm;
                                                 }
                                                 else
                                                 {

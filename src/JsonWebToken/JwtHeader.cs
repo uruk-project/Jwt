@@ -15,6 +15,9 @@ namespace JsonWebToken
     public sealed class JwtHeader
     {
         private readonly JwtObject _inner;
+        private SignatureAlgorithm _signatureAlgorithm;
+        private KeyManagementAlgorithm _keyManagementAlgorithm;
+        private EncryptionAlgorithm _encryptionAlgorithm;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtHeader"/> class.
@@ -28,34 +31,42 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtHeader"/> class.
         /// </summary>
-        /// <param name="json"></param>
-        public JwtHeader(string json)
-        {
-            _inner = JsonHeaderParser.ReadHeader(Encoding.UTF8.GetBytes(json));
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JwtHeader"/> class.
-        /// </summary>
         public JwtHeader()
         {
             _inner = new JwtObject();
         }
 
         /// <summary>
-        /// Gets the signature algorithm that was used to create the signature.
+        /// Initializes a new instance of the <see cref="JwtHeader"/> class.
         /// </summary>
-        public ReadOnlySpan<byte> Alg => _inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (byte[])property.Value : default;
+        /// <param name="json"></param>   
+        public static JwtHeader FromJson(string json)
+        {
+            return JsonHeaderParser.ReadHeader(Encoding.UTF8.GetBytes(json));
+        }
 
         /// <summary>
         /// Gets the signature algorithm that was used to create the signature.
         /// </summary>
-        public SignatureAlgorithm SignatureAlgorithm => _inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (SignatureAlgorithm)property.Value : null;
+        public ReadOnlySpan<byte> Alg => _signatureAlgorithm.Utf8Name ?? _keyManagementAlgorithm.Utf8Name ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (byte[])property.Value : default);
 
         /// <summary>
-        /// Gets the signature algorithm that was used to create the signature.
+        /// Gets the signature algorithm (alg) that was used to create the signature.
         /// </summary>
-        public KeyManagementAlgorithm KeyManagementAlgorithm => _inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (KeyManagementAlgorithm)property.Value : null;
+        public SignatureAlgorithm SignatureAlgorithm
+        {
+            get => _signatureAlgorithm ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (SignatureAlgorithm)property.Value : null);
+            set => _signatureAlgorithm = value;
+        }
+
+        /// <summary>
+        /// Gets the key management algorithm (alg).
+        /// </summary>
+        public KeyManagementAlgorithm KeyManagementAlgorithm
+        {
+            get => _keyManagementAlgorithm ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (KeyManagementAlgorithm)property.Value : null);
+            set => _keyManagementAlgorithm = value;
+        }
 
         /// <summary>
         /// Gets the content type (Cty) of the token.
@@ -63,9 +74,18 @@ namespace JsonWebToken
         public ReadOnlySpan<byte> Cty => _inner.TryGetValue(WellKnownProperty.Cty, out var property) ? (byte[])property.Value : default;
 
         /// <summary>
-        /// Gets the encryption algorithm (Enc) of the token.
+        /// Gets the encryption algorithm (enc) of the token.
         /// </summary>
-        public EncryptionAlgorithm Enc => _inner.TryGetValue(WellKnownProperty.Enc, out var property) ? (EncryptionAlgorithm)property.Value : default;
+        public ReadOnlySpan<byte> Enc => _inner.TryGetValue(WellKnownProperty.Enc, out var property) ? (byte[])property.Value : default;
+        
+        /// <summary>
+        /// Gets the encryption algorithm (enc) of the token.
+        /// </summary>
+        public EncryptionAlgorithm EncryptionAlgorithm
+        {
+            get => _encryptionAlgorithm ?? (_inner.TryGetValue(WellKnownProperty.Enc, out var property) ? (EncryptionAlgorithm)property.Value : null);
+            set => _encryptionAlgorithm = value;
+        }
 
         /// <summary>
         /// Gets the key identifier for the key used to sign the token.

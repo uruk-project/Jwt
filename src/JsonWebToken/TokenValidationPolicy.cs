@@ -73,11 +73,6 @@ namespace JsonWebToken
         /// <returns></returns>
         public TokenValidationResult TryValidate(CriticalHeaderValidationContext context)
         {
-            if (context == null)
-            {
-                Errors. ThrowArgumentNullException(ExceptionArgument.context);
-            }
-
             if (_ignoreCriticalHeader)
             {
                 goto Success;

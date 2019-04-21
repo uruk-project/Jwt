@@ -6,7 +6,7 @@ namespace JsonWebToken
     /// <summary>
     /// Represents the validation context for the critical header 'crit'.
     /// </summary>
-    public sealed class CriticalHeaderValidationContext
+    public struct CriticalHeaderValidationContext
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CriticalHeaderValidationContext"/> class.

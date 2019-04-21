@@ -337,7 +337,7 @@ namespace JsonWebToken
             TokenSegment authenticationTagSegment,
             JwtHeader header)
         {
-            var enc = header.Enc;
+            var enc = header.EncryptionAlgorithm;
             if (enc is null)
             {
                 return TokenValidationResult.MissingEncryptionAlgorithm();
@@ -350,9 +350,7 @@ namespace JsonWebToken
             }
 
             var rawInitializationVector = utf8Buffer.Slice(ivSegment.Start, ivSegment.Length);
-
             var rawCiphertext = utf8Buffer.Slice(ciphertextSegment.Start, ciphertextSegment.Length);
-
             var rawAuthenticationTag = utf8Buffer.Slice(authenticationTagSegment.Start, authenticationTagSegment.Length);
 
             int decryptedLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length);
@@ -384,7 +382,11 @@ namespace JsonWebToken
                 bool compressed;
                 ReadOnlySequence<byte> decompressedBytes = default;
                 var zip = (CompressionAlgorithm)header.Zip;
-                if (!(zip is null))
+                if (zip is null)
+                {
+                    compressed = false;
+                }
+                else
                 {
                     Compressor compressor = zip.Compressor;
                     if (compressor == null)
@@ -401,10 +403,6 @@ namespace JsonWebToken
                     {
                         return TokenValidationResult.DecompressionFailed(e);
                     }
-                }
-                else
-                {
-                    compressed = false;
                 }
 
                 Jwt jwe;
@@ -567,8 +565,8 @@ namespace JsonWebToken
                 try
                 {
                     Span<char> utf8Header = header.Length < Constants.MaxStackallocBytes
-                    ? stackalloc char[header.Length]
-                    : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(header.Length)).AsSpan(0, header.Length);
+                        ? stackalloc char[header.Length]
+                        : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(header.Length)).AsSpan(0, header.Length);
 
                     Encoding.UTF8.GetChars(rawHeader, utf8Header);
                     Encoding.ASCII.GetBytes(utf8Header, header);
