@@ -679,10 +679,9 @@ namespace JsonWebToken
                 return TokenValidationResult.MissingSignature(jwt);
             }
 
-            int signatureBytesLength;
             try
             {
-                signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(signatureSegment.Length);
+                int signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(signatureSegment.Length);
                 Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
                 Base64Url.Decode(signatureSegment, signatureBytes, out int byteConsumed, out int bytesWritten);
                 Debug.Assert(bytesWritten == signatureBytes.Length);
