@@ -708,8 +708,7 @@ namespace JsonWebToken
                 for (int i = 0; i < keySet.Length; i++)
                 {
                     var key = keySet[i];
-                    if ((key.Use == null || JwkUseNames.Sig.SequenceEqual(key.Use)) &&
-                        (key.Alg == null || jwt.Header.SignatureAlgorithm.Utf8Name.SequenceEqual(key.Alg)))
+                    if (key.CanUseForSignature(jwt.Header.SignatureAlgorithm))
                     {
                         var alg = signatureValidationContext.Algorithm ?? key.Alg;
                         if (TryValidateSignature(contentBytes, signatureBytes, key, alg))

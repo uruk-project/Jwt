@@ -21,6 +21,8 @@ namespace JsonWebToken
     public abstract class Jwk
     {
         private List<Jwk> _certificateChain;
+        private bool? _isSigningKey;
+        private SignatureAlgorithm _signatureAlgorithm;
 
         /// <summary>
         /// Gets or sets the 'alg' (KeyType).
@@ -100,6 +102,37 @@ namespace JsonWebToken
                 }
 
                 return _certificateChain;
+            }
+        }
+
+        public bool IsSigningKey
+        {
+            get
+            {
+                if (!_isSigningKey.HasValue)
+                {
+                    var use = Use;
+                    _isSigningKey = use == null || JwkUseNames.Sig.SequenceEqual(use);
+                }
+
+                return _isSigningKey.Value;
+            }
+        }
+
+        private SignatureAlgorithm SignatureAlgorithm
+        {
+            get
+            {
+                if (_signatureAlgorithm != null)
+                {
+                    var alg = Alg;
+                    if (alg != null)
+                    {
+                        SignatureAlgorithm.TryParse(alg, out _signatureAlgorithm);
+                    }
+                }
+
+                return _signatureAlgorithm;
             }
         }
 
@@ -643,6 +676,11 @@ namespace JsonWebToken
                 var input = bufferWriter.WrittenSpan;
                 return Encoding.UTF8.GetString(input.ToArray());
             }
+        }
+
+        internal bool CanUseForSignature(SignatureAlgorithm signatureAlgorithm)
+        {
+            return IsSigningKey && signatureAlgorithm == SignatureAlgorithm;
         }
     }
 }
