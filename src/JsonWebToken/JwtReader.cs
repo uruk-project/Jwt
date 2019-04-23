@@ -183,7 +183,7 @@ namespace JsonWebToken
             {
                 return TryReadToken(utf8Token.First.Span, policy);
             }
-     
+
             return TryReadToken(utf8Token.ToArray(), policy);
         }
 
@@ -683,52 +683,43 @@ namespace JsonWebToken
             try
             {
                 signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(signatureSegment.Length);
-            }
-            catch (FormatException e)
-            {
-                return TokenValidationResult.MalformedSignature(jwt, e);
-            }
-
-            Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
-            try
-            {
+                Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
                 Base64Url.Decode(signatureSegment, signatureBytes, out int byteConsumed, out int bytesWritten);
                 Debug.Assert(bytesWritten == signatureBytes.Length);
+                bool keysTried = false;
+
+                var keySet = signatureValidationContext.KeyProvider.GetKeys(jwt.Header);
+                if (keySet != null)
+                {
+                    for (int i = 0; i < keySet.Length; i++)
+                    {
+                        var key = keySet[i];
+                        if ((key.Use == null || JwkUseNames.Sig.SequenceEqual(key.Use)) &&
+                            (key.Alg == null || jwt.Header.SignatureAlgorithm.Utf8Name.SequenceEqual(key.Alg)))
+                        {
+                            var alg = signatureValidationContext.Algorithm ?? key.Alg;
+                            if (TryValidateSignature(contentBytes, signatureBytes, key, alg))
+                            {
+                                jwt.SigningKey = key;
+                                goto Success;
+                            }
+
+                            keysTried = true;
+                        }
+                    }
+                }
+
+                if (keysTried)
+                {
+                    return TokenValidationResult.InvalidSignature(jwt);
+                }
+
+                return TokenValidationResult.SignatureKeyNotFound(jwt);
             }
             catch (FormatException e)
             {
                 return TokenValidationResult.MalformedSignature(jwt, e);
             }
-
-            bool keysTried = false;
-
-            var keySet = signatureValidationContext.KeyProvider.GetKeys(jwt.Header);
-            if (keySet != null)
-            {
-                for (int i = 0; i < keySet.Length; i++)
-                {
-                    var key = keySet[i];
-                    if ((key.Use == null || JwkUseNames.Sig.SequenceEqual(key.Use)) &&
-                        (key.Alg == null || jwt.Header.SignatureAlgorithm.Utf8Name.SequenceEqual(key.Alg)))
-                    {
-                        var alg = signatureValidationContext.Algorithm ?? key.Alg;
-                        if (TryValidateSignature(contentBytes, signatureBytes, key, alg))
-                        {
-                            jwt.SigningKey = key;
-                            goto Success;
-                        }
-
-                        keysTried = true;
-                    }
-                }
-            }
-
-            if (keysTried)
-            {
-                return TokenValidationResult.InvalidSignature(jwt);
-            }
-
-            return TokenValidationResult.SignatureKeyNotFound(jwt);
 
         Success:
             return TokenValidationResult.Success(jwt);
