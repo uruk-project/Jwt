@@ -123,8 +123,8 @@ namespace JsonWebToken
         /// </summary>
         public string Type
         {
-            get => GetHeaderParameter<string>(HeaderParameters.TypUtf8);
-            set => SetHeaderParameter(HeaderParameters.TypUtf8, value);
+            get => Encoding.UTF8.GetString(GetHeaderParameter<byte[]>(HeaderParameters.TypUtf8));
+            set => SetHeaderParameter(HeaderParameters.TypUtf8, Encoding.UTF8.GetBytes(value));
         }
 
         /// <summary>

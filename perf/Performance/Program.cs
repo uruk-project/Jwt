@@ -42,7 +42,8 @@ namespace Performance
             _writer.EnableHeaderCaching = false;
             while (true)
             {
-                var result = _reader.TryReadToken(jwt.AsSpan(), TokenValidationPolicy.NoValidation);
+                //var result = _reader.TryReadToken(jwt.AsSpan(), TokenValidationPolicy.NoValidation);
+                _writer.WriteToken(jws);
             }
         }
     }
