@@ -23,6 +23,9 @@ namespace JsonWebToken
         private List<Jwk> _certificateChain;
         private bool? _isSigningKey;
         private SignatureAlgorithm _signatureAlgorithm;
+        private bool? _isEncryptionKey;
+        private KeyManagementAlgorithm _keyManagementAlgorithm;
+        private byte[] _use;
 
         /// <summary>
         /// Gets or sets the 'alg' (KeyType).
@@ -48,7 +51,16 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'use' (Public Key Use).
         /// </summary>
-        public byte[] Use { get; set; }
+        public byte[] Use
+        {
+            get => _use;
+            set
+            {
+                _use = value;
+                _isSigningKey = value == null || JwkUseNames.Sig.SequenceEqual(value);
+                _isEncryptionKey = value == null || JwkUseNames.Enc.SequenceEqual(value);
+            }
+        }
 
         /// <summary>
         /// Gets the 'x5c' collection (X.509 Certificate Chain).
@@ -105,7 +117,7 @@ namespace JsonWebToken
             }
         }
 
-        public bool IsSigningKey
+        internal bool IsSigningKey
         {
             get
             {
@@ -119,11 +131,11 @@ namespace JsonWebToken
             }
         }
 
-        private SignatureAlgorithm SignatureAlgorithm
+        internal SignatureAlgorithm SignatureAlgorithm
         {
             get
             {
-                if (_signatureAlgorithm != null)
+                if (_signatureAlgorithm == null)
                 {
                     var alg = Alg;
                     if (alg != null)
@@ -133,6 +145,37 @@ namespace JsonWebToken
                 }
 
                 return _signatureAlgorithm;
+            }
+        }
+
+        internal bool IsEncryptionKey
+        {
+            get
+            {
+                if (!_isEncryptionKey.HasValue)
+                {
+                    var use = Use;
+                    _isEncryptionKey = use == null || JwkUseNames.Enc.SequenceEqual(use);
+                }
+
+                return _isEncryptionKey.Value;
+            }
+        }
+
+        internal KeyManagementAlgorithm KeyManagementAlgorithm
+        {
+            get
+            {
+                if (_keyManagementAlgorithm == null)
+                {
+                    var alg = Alg;
+                    if (alg != null)
+                    {
+                        KeyManagementAlgorithm.TryParse(alg, out _keyManagementAlgorithm);
+                    }
+                }
+
+                return _keyManagementAlgorithm;
             }
         }
 
@@ -680,7 +723,24 @@ namespace JsonWebToken
 
         internal bool CanUseForSignature(SignatureAlgorithm signatureAlgorithm)
         {
-            return IsSigningKey && signatureAlgorithm == SignatureAlgorithm;
+            if (IsSigningKey)
+            {
+                var algorithm = SignatureAlgorithm;
+                return algorithm is null || algorithm == signatureAlgorithm;
+            }
+
+            return false;
+        }
+
+        internal bool CanUseForKeyWrapping(KeyManagementAlgorithm keyManagementAlgorithm)
+        {
+            if (IsEncryptionKey)
+            {
+                var algorithm = KeyManagementAlgorithm;
+                return algorithm is null || keyManagementAlgorithm == algorithm;
+            }
+
+            return false;
         }
     }
 }

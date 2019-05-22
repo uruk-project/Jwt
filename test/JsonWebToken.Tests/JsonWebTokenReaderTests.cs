@@ -119,7 +119,7 @@ namespace JsonWebToken.Tests
                     .RequireAudience("636C69656E745F6964")
                     .RequireIssuer("https://idp.example.com/")
                     .Build();
-            Tokens.SigningKey.ToString();
+
             var result = reader.TryReadToken(jwt, policy);
             Assert.Equal(expectedStatus, result.Status);
         }

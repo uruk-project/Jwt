@@ -613,7 +613,7 @@ namespace JsonWebToken
         {
             var alg = header.KeyManagementAlgorithm;
             var keys = ResolveDecryptionKey(header, alg);
-            var keyManamagementAlg = (KeyManagementAlgorithm)alg;
+            var keyManamagementAlg = alg;
             if (keyManamagementAlg == KeyManagementAlgorithm.Direct)
             {
                 return keys;
@@ -650,8 +650,7 @@ namespace JsonWebToken
                 for (int j = 0; j < keySet.Length; j++)
                 {
                     var key = keySet[j];
-                    if ((key.Use == null || JwkUseNames.Enc.SequenceEqual(key.Use)) &&
-                        (key.Alg == null || alg.Utf8Name.SequenceEqual(key.Alg)))
+                    if (key.CanUseForKeyWrapping(alg))
                     {
                         keys.Add(key);
                     }
@@ -695,7 +694,7 @@ namespace JsonWebToken
                         var key = keySet[i];
                         if (key.CanUseForSignature(jwt.Header.SignatureAlgorithm))
                         {
-                            var alg = signatureValidationContext.Algorithm ?? key.Alg;
+                            var alg = signatureValidationContext.Algorithm ?? key.SignatureAlgorithm;
                             if (TryValidateSignature(contentBytes, signatureBytes, key, alg))
                             {
                                 jwt.SigningKey = key;
