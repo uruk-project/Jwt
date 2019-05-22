@@ -302,12 +302,11 @@ namespace JsonWebToken
                 malformedException = formatException;
                 goto Malformed;
             }
-            catch (JsonReaderException readerException)
+            catch (JsonException readerException)
             {
                 malformedException = readerException;
                 goto Malformed;
             }
-
             var headerValidationResult = policy.TryValidate(new CriticalHeaderValidationContext(header));
             if (!headerValidationResult.Succedeed)
             {
@@ -457,7 +456,7 @@ namespace JsonWebToken
                 malformedException = formatException;
                 goto Malformed;
             }
-            catch (JsonReaderException readerException)
+            catch (JsonException readerException)
             {
                 malformedException = readerException;
                 goto Malformed;

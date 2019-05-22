@@ -671,10 +671,10 @@ namespace JsonWebToken
                     writer.WriteNumber(Utf8Name, (double)Value);
                     break;
                 case JwtTokenType.String:
-                    writer.WriteString(Utf8Name, (string)Value, false);
+                    writer.WriteString(Utf8Name, (string)Value);
                     break;
                 case JwtTokenType.Utf8String:
-                    writer.WriteString(Utf8Name, (byte[])Value, false);
+                    writer.WriteString(Utf8Name, (byte[])Value);
                     break;
                 case JwtTokenType.Boolean:
                     writer.WriteBoolean(Utf8Name, (bool)Value);
@@ -692,7 +692,7 @@ namespace JsonWebToken
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
+                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true });
 
                 writer.WriteStartObject();
                 WriteTo(ref writer);

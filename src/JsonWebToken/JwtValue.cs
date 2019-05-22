@@ -160,10 +160,10 @@ namespace JsonWebToken
                     writer.WriteNumberValue((double)Value);
                     break;
                 case JwtTokenType.String:
-                    writer.WriteStringValue((string)Value, false);
+                    writer.WriteStringValue((string)Value);
                     break;
                 case JwtTokenType.Utf8String:
-                    writer.WriteStringValue((byte[])Value, false);
+                    writer.WriteStringValue((byte[])Value);
                     break;
                 case JwtTokenType.Boolean:
                     writer.WriteBooleanValue((bool)Value);
@@ -181,7 +181,7 @@ namespace JsonWebToken
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterState(new JsonWriterOptions { Indented = true }));
+                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true });
 
                 WriteTo(ref writer);
                 writer.Flush();
