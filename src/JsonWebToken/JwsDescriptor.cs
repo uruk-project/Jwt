@@ -425,7 +425,7 @@ namespace JsonWebToken
         public override void Encode(EncodingContext context, IBufferWriter<byte> output)
         {
             Signer signer = null;
-            var alg = (Algorithm ?? Key?.Alg) ?? SignatureAlgorithm.None;
+            var alg = (Algorithm ?? Key?.SignatureAlgorithm) ?? SignatureAlgorithm.None;
             if (Key != null)
             {
                 signer = context.SignatureFactory.Create(Key, alg, willCreateSignatures: true);

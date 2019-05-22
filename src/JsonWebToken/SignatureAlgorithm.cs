@@ -284,7 +284,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public static implicit operator SignatureAlgorithm(byte[] value)
         {
-            return Encoding.UTF8.GetString(value);
+            return (ReadOnlySpan<byte>)value;
         }
 
         /// <summary>
@@ -330,7 +330,7 @@ namespace JsonWebToken
                                     algorithm = HmacSha384;
                                     return true;
                                 case (byte)'R':
-                                    algorithm = RsaSsaPssSha384;
+                                    algorithm = RsaSha384;
                                     return true;
                                 case (byte)'E':
                                     algorithm = EcdsaSha384;
@@ -347,7 +347,7 @@ namespace JsonWebToken
                                     algorithm = HmacSha512;
                                     return true;
                                 case (byte)'R':
-                                    algorithm = RsaSsaPssSha512;
+                                    algorithm = RsaSha512;
                                     return true;
                                 case (byte)'E':
                                     algorithm = EcdsaSha512;
@@ -406,7 +406,7 @@ namespace JsonWebToken
                                 case (byte)'H':
                                     return HmacSha384;
                                 case (byte)'R':
-                                    return RsaSsaPssSha384;
+                                    return RsaSha384;
                                 case (byte)'E':
                                     return EcdsaSha384;
                                 case (byte)'P':
@@ -419,7 +419,7 @@ namespace JsonWebToken
                                 case (byte)'H':
                                     return HmacSha512;
                                 case (byte)'R':
-                                    return RsaSsaPssSha512;
+                                    return RsaSha512;
                                 case (byte)'E':
                                     return EcdsaSha512;
                                 case (byte)'P':
