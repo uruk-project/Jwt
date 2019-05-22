@@ -21,6 +21,11 @@ namespace JsonWebToken
     public abstract class Jwk
     {
         private List<Jwk> _certificateChain;
+        private bool? _isSigningKey;
+        private SignatureAlgorithm _signatureAlgorithm;
+        private bool? _isEncryptionKey;
+        private KeyManagementAlgorithm _keyManagementAlgorithm;
+        private byte[] _use;
 
         /// <summary>
         /// Gets or sets the 'alg' (KeyType).
@@ -46,7 +51,16 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'use' (Public Key Use).
         /// </summary>
-        public byte[] Use { get; set; }
+        public byte[] Use
+        {
+            get => _use;
+            set
+            {
+                _use = value;
+                _isSigningKey = value == null || JwkUseNames.Sig.SequenceEqual(value);
+                _isEncryptionKey = value == null || JwkUseNames.Enc.SequenceEqual(value);
+            }
+        }
 
         /// <summary>
         /// Gets the 'x5c' collection (X.509 Certificate Chain).
@@ -100,6 +114,68 @@ namespace JsonWebToken
                 }
 
                 return _certificateChain;
+            }
+        }
+
+        internal bool IsSigningKey
+        {
+            get
+            {
+                if (!_isSigningKey.HasValue)
+                {
+                    var use = Use;
+                    _isSigningKey = use == null || JwkUseNames.Sig.SequenceEqual(use);
+                }
+
+                return _isSigningKey.Value;
+            }
+        }
+
+        internal SignatureAlgorithm SignatureAlgorithm
+        {
+            get
+            {
+                if (_signatureAlgorithm == null)
+                {
+                    var alg = Alg;
+                    if (alg != null)
+                    {
+                        SignatureAlgorithm.TryParse(alg, out _signatureAlgorithm);
+                    }
+                }
+
+                return _signatureAlgorithm;
+            }
+        }
+
+        internal bool IsEncryptionKey
+        {
+            get
+            {
+                if (!_isEncryptionKey.HasValue)
+                {
+                    var use = Use;
+                    _isEncryptionKey = use == null || JwkUseNames.Enc.SequenceEqual(use);
+                }
+
+                return _isEncryptionKey.Value;
+            }
+        }
+
+        internal KeyManagementAlgorithm KeyManagementAlgorithm
+        {
+            get
+            {
+                if (_keyManagementAlgorithm == null)
+                {
+                    var alg = Alg;
+                    if (alg != null)
+                    {
+                        KeyManagementAlgorithm.TryParse(alg, out _keyManagementAlgorithm);
+                    }
+                }
+
+                return _keyManagementAlgorithm;
             }
         }
 
@@ -643,6 +719,28 @@ namespace JsonWebToken
                 var input = bufferWriter.WrittenSpan;
                 return Encoding.UTF8.GetString(input.ToArray());
             }
+        }
+
+        internal bool CanUseForSignature(SignatureAlgorithm signatureAlgorithm)
+        {
+            if (IsSigningKey)
+            {
+                var algorithm = SignatureAlgorithm;
+                return algorithm is null || algorithm == signatureAlgorithm;
+            }
+
+            return false;
+        }
+
+        internal bool CanUseForKeyWrapping(KeyManagementAlgorithm keyManagementAlgorithm)
+        {
+            if (IsEncryptionKey)
+            {
+                var algorithm = KeyManagementAlgorithm;
+                return algorithm is null || keyManagementAlgorithm == algorithm;
+            }
+
+            return false;
         }
     }
 }
