@@ -19,19 +19,15 @@ namespace JsonWebToken.Tests
 
         private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256);
 
-#if NETCOREAPP3_0
-        [Theory]
-        [MemberData(nameof(GetNotSupportedAlgorithms))]
-        public void Encode_Decode_NotSuppoted(string enc, byte[] alg)
+        [Fact]
+        public void Encode_Decode_NotSupported()
         {
             var writer = new JwtWriter();
-            var encryptionKey = SelectKey(enc, alg);
 
             var descriptor = new JweDescriptor
             {
-                Key = encryptionKey,
-                EncryptionAlgorithm = (EncryptionAlgorithm)enc,
-                Algorithm = (KeyManagementAlgorithm)alg,
+                EncryptionAlgorithm = new EncryptionAlgorithm(-99, "unsupported", 0, SignatureAlgorithm.None, 0, EncryptionType.Undefined),
+                Algorithm = KeyManagementAlgorithm.Direct,
                 Payload = new JwsDescriptor
                 {
                     Key = _signingKey,
@@ -44,17 +40,7 @@ namespace JsonWebToken.Tests
             {
                 var token = writer.WriteToken(descriptor);
             });
-
-            //var reader = new JsonWebTokenReader(encryptionKey);
-            //var policy = new TokenValidationPolicyBuilder()
-            //    .RequireSignature(_signingKey)
-            //    .Build();
-
-            //var result = reader.TryReadToken(token, policy);
-            //Assert.Equal(TokenValidationStatus.Success, result.Status);
-            //Assert.Equal("Alice", result.Token.Subject);
         }
-#endif
 
         [Theory]
         [MemberData(nameof(GetSupportedAlgorithms))]
@@ -123,38 +109,28 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetSupportedAlgorithms()
         {
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes128CbcHmacSha256.Name, KeyManagementAlgorithm.Aes128KW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes128CbcHmacSha256.Name, KeyManagementAlgorithm.Aes192KW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes128CbcHmacSha256.Name, KeyManagementAlgorithm.Aes256KW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes128CbcHmacSha256.Name, KeyManagementAlgorithm.Direct.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes192CbcHmacSha384.Name, KeyManagementAlgorithm.Aes128KW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes192CbcHmacSha384.Name, KeyManagementAlgorithm.Aes192KW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes192CbcHmacSha384.Name, KeyManagementAlgorithm.Aes256KW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes192CbcHmacSha384.Name, KeyManagementAlgorithm.Direct.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes256CbcHmacSha512.Name, KeyManagementAlgorithm.Aes128KW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes256CbcHmacSha512.Name, KeyManagementAlgorithm.Aes192KW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes256CbcHmacSha512.Name, KeyManagementAlgorithm.Aes256KW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes256CbcHmacSha512.Name, KeyManagementAlgorithm.Direct.Utf8Name };
-                                       
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes128CbcHmacSha256.Name, KeyManagementAlgorithm.Aes128GcmKW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes128CbcHmacSha256.Name, KeyManagementAlgorithm.Aes192GcmKW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes128CbcHmacSha256.Name, KeyManagementAlgorithm.Aes256GcmKW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes192CbcHmacSha384.Name, KeyManagementAlgorithm.Aes128GcmKW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes192CbcHmacSha384.Name, KeyManagementAlgorithm.Aes192GcmKW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes192CbcHmacSha384.Name, KeyManagementAlgorithm.Aes256GcmKW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes256CbcHmacSha512.Name, KeyManagementAlgorithm.Aes128GcmKW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes256CbcHmacSha512.Name, KeyManagementAlgorithm.Aes192GcmKW.Utf8Name };
-            yield return new object[] { (EncryptionAlgorithm)EncryptionAlgorithm.Aes256CbcHmacSha512.Name, KeyManagementAlgorithm.Aes256GcmKW.Utf8Name };
-        }
+            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes128KW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes192KW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes256KW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Direct.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes128KW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes192KW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes256KW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Direct.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes128KW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes192KW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes256KW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Direct.Utf8Name };
 
-        public static IEnumerable<object[]> GetNotSupportedAlgorithms()
-        {
-#if NETCOREAPP3_0
-            yield return new object[] { EncryptionAlgorithm.Aes128Gcm.Name, KeyManagementAlgorithm.Direct.Utf8Name };
-            yield return new object[] { EncryptionAlgorithm.Aes192Gcm.Name, KeyManagementAlgorithm.Direct.Utf8Name };
-            yield return new object[] { EncryptionAlgorithm.Aes256Gcm.Name, KeyManagementAlgorithm.Direct.Utf8Name };
-#endif
-            yield break;
+            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes128GcmKW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes192GcmKW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes256GcmKW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes128GcmKW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes192GcmKW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes256GcmKW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes128GcmKW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes192GcmKW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes256GcmKW.Utf8Name };
         }
     }
 }

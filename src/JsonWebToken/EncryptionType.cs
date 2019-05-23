@@ -8,6 +8,12 @@ namespace JsonWebToken
     /// </summary>
     public enum EncryptionType
     {
+
+        /// <summary>
+        /// Undefined encryption.
+        /// </summary>
+        Undefined = 0,
+
         /// <summary>
         /// AES-HMAC encryption.
         /// </summary>

@@ -76,7 +76,7 @@ namespace JsonWebToken.Internal
 
             try
             {
-                using (var aes = new AesGcm(_key.ToByteArray()))
+                using (var aes = new AesGcm(_key.K))
                 {
                     aes.Decrypt(nonce, ciphertext, authenticationTag, plaintext, associatedData);
                     bytesWritten = plaintext.Length;
