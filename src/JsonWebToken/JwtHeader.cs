@@ -48,7 +48,14 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the signature algorithm that was used to create the signature.
         /// </summary>
-        public ReadOnlySpan<byte> Alg => _signatureAlgorithm.Utf8Name ?? _keyManagementAlgorithm.Utf8Name ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (byte[])property.Value : default);
+        public ReadOnlySpan<byte> Alg
+        {
+            get
+            {
+                byte[] v = (_inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (byte[])property.Value : default);
+                return _signatureAlgorithm.Utf8Name ?? _keyManagementAlgorithm.Utf8Name ?? v;
+            }
+        }
 
         /// <summary>
         /// Gets the signature algorithm (alg) that was used to create the signature.

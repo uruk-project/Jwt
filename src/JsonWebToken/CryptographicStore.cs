@@ -1,9 +1,9 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace JsonWebToken
 {
@@ -21,7 +21,7 @@ namespace JsonWebToken
         /// </summary>
         public CryptographicStore()
         {
-            _store = new ConcurrentDictionary<CryptographicFactoryKey, TCrypto>();
+            _store = new ConcurrentDictionary<CryptographicFactoryKey, TCrypto>(new Comparer());
         }
 
         /// <summary>
@@ -67,6 +67,21 @@ namespace JsonWebToken
                 }
 
                 _disposed = true;
+            }
+        }
+
+        private class Comparer : IEqualityComparer<CryptographicFactoryKey>
+        {
+            public bool Equals(CryptographicFactoryKey x, CryptographicFactoryKey y)
+            {
+                // No null-check 
+                return x.Equals(y);
+            }
+
+            public int GetHashCode(CryptographicFactoryKey obj)
+            {
+                // No null-check 
+                return obj.GetHashCode();
             }
         }
     }

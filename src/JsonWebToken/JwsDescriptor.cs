@@ -16,6 +16,8 @@ namespace JsonWebToken
     /// </summary>
     public partial class JwsDescriptor : JwtDescriptor<JwtObject>
     {
+        private JwtProperty _alg;
+
         /// <summary>
         /// Initializes a new instance of <see cref="JwsDescriptor"/>.
         /// </summary>
@@ -37,8 +39,21 @@ namespace JsonWebToken
         /// </summary>
         public SignatureAlgorithm Algorithm
         {
-            get => GetHeaderParameter<byte[]>(HeaderParameters.AlgUtf8);
-            set => SetHeaderParameter(HeaderParameters.AlgUtf8, (byte[])value);
+            get
+            {
+                if (_alg.IsEmpty && Header.TryGetValue(HeaderParameters.AlgUtf8, out var value))
+                {
+                    _alg = value;
+                }
+
+                return (byte[])_alg.Value;
+            }
+
+            set
+            {
+                SetHeaderParameter(HeaderParameters.AlgUtf8, (byte[])value);
+                _alg = default;
+            }
         }
 
         /// <summary>
@@ -551,6 +566,15 @@ namespace JsonWebToken
             }
 
             Errors.ThrowClaimMustBeOfType(utf8Name, types);
+        }
+
+        /// <inheritsdoc />
+        protected override void OnKeyChanged(Jwk key)
+        {
+            if (key != null && key.Alg != null)
+            {
+                Algorithm = key.Alg;
+            }
         }
     }
 }

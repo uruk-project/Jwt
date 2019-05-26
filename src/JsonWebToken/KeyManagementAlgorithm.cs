@@ -330,7 +330,12 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public static explicit operator KeyManagementAlgorithm(byte[] value)
         {
-            return (KeyManagementAlgorithm)Encoding.UTF8.GetString(value ?? Array.Empty<byte>());
+            if (value == null)
+            {
+                return null;
+            }
+
+            return (KeyManagementAlgorithm)new ReadOnlySpan<byte>(value);
         }
 
         /// <summary>
@@ -380,7 +385,7 @@ namespace JsonWebToken
                                 return Aes256KW;
                         }
                         break;
-                    case 6 when *(uint*)pValue == 826364754u && *(ushort*)pValue == 12639u  /* RSA1_5 */:
+                    case 6 when *(uint*)pValue == 826364754u && *(ushort*)(pValue + 4) == 13663u  /* RSA1_5 */:
                         return RsaPkcs1;
                     case 7 when *(uint*)pValue == 1212433221u && *(uint*)(pValue + 3) == 1397042504u /* ECDH-ES */ :
                         return EcdhEs;
@@ -397,7 +402,7 @@ namespace JsonWebToken
                                 return Aes256GcmKW;
                         }
                         break;
-                    case 12 when *(ulong*)pValue == 5784101104744747858u:
+                    case 12 when *(ulong*)pValue == 5784101104744747858u: /* RSA-OAEP */
                         switch (*(uint*)(pValue + 8))
                         {
                             case 909455917u:
@@ -408,7 +413,7 @@ namespace JsonWebToken
                                 return RsaOaep512;
                         }
                         break;
-                    case 14 when *(ulong*)pValue == 5784101104744747858u /* ECDH-ES+ */ :
+                    case 14 when *(ulong*)pValue == 3121915027486163781u /* ECDH-ES+ */ :
                         switch (*(ulong*)(pValue + 6))
                         {
                             case 6290183092778904403u:

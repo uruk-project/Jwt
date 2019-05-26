@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -18,11 +19,10 @@ namespace JsonWebToken
         /// </summary>
         public static ReadOnlySpan<byte> P256Name => new byte[] { (byte)'P', (byte)'-', (byte)'2', (byte)'5', (byte)'6' };
 
-
         /// <summary>
         /// 'P-256'.
         /// </summary>
-        public static EllipticalCurve P256 => new EllipticalCurve(ECCurve.NamedCurves.nistP256, P256Name.ToArray(), 256, 64);
+        public static EllipticalCurve P256 => new EllipticalCurve(1, ECCurve.NamedCurves.nistP256, P256Name.ToArray(), 256, 64);
 
         /// <summary>
         /// 'P-384'.
@@ -32,7 +32,7 @@ namespace JsonWebToken
         /// <summary>
         /// 'P-384'.
         /// </summary>
-        public static EllipticalCurve P384 => new EllipticalCurve(ECCurve.NamedCurves.nistP384, P384Name.ToArray(), 384, 96);
+        public static EllipticalCurve P384 => new EllipticalCurve(2, ECCurve.NamedCurves.nistP384, P384Name.ToArray(), 384, 96);
 
         /// <summary>
         /// 'P-521'.
@@ -42,17 +42,19 @@ namespace JsonWebToken
         /// <summary>
         /// 'P-521'.
         /// </summary>    
-        public static EllipticalCurve P521 => new EllipticalCurve(ECCurve.NamedCurves.nistP521, P521Name.ToArray(), 521, 132);
+        public static EllipticalCurve P521 => new EllipticalCurve(3, ECCurve.NamedCurves.nistP521, P521Name.ToArray(), 521, 132);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EllipticalCurve"/> struct.
         /// </summary>
+        /// <param name="id"></param>
         /// <param name="namedCurve"></param>
         /// <param name="name"></param>
         /// <param name="keySizeInBits"></param>
         /// <param name="hashSize"></param>
-        public EllipticalCurve(ECCurve namedCurve, byte[] name, int keySizeInBits, int hashSize)
+        public EllipticalCurve(byte id, ECCurve namedCurve, byte[] name, int keySizeInBits, int hashSize)
         {
+            Id = id;
             KeySizeInBits = keySizeInBits;
             Name = name;
             CurveParameters = namedCurve;
@@ -63,6 +65,11 @@ namespace JsonWebToken
         /// The name of the curve.
         /// </summary>
         public readonly byte[] Name;
+
+        /// <summary>
+        /// The internal id of the curve.
+        /// </summary>
+        public readonly byte Id;
 
         /// <summary>
         /// The size of the key, in bits
@@ -107,17 +114,21 @@ namespace JsonWebToken
         /// <returns></returns>
         public static EllipticalCurve FromSpan(ReadOnlySpan<byte> crv)
         {
-            if (crv.SequenceEqual(P256Name))
+            if (crv.Length == 5 && crv[0] == (byte)'P')
             {
-                return P256;
-            }
-            else if (crv.SequenceEqual(P384Name))
-            {
-                return P384;
-            }
-            else if (crv.SequenceEqual(P521Name))
-            {
-                return P521;
+                var crvSuffix = Unsafe.ReadUnaligned<uint>(ref Unsafe.AsRef(crv[1]));
+                if (crvSuffix == 909455917u /* -256 */ )
+                {
+                    return P256;
+                }
+                if (crvSuffix == 876098349u /* -384 */ )
+                {
+                    return P384;
+                }
+                if (crvSuffix == 825373997u /* -521 */ )
+                {
+                    return P521;
+                }
             }
 
             Errors.ThrowNotSupportedCurve(Encoding.UTF8.GetString(crv.ToArray()));

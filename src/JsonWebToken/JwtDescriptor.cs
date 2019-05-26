@@ -61,8 +61,16 @@ namespace JsonWebToken
                         KeyId = value.Kid;
                     }
                 }
+
+                OnKeyChanged(value);
             }
         }
+
+        /// <summary>
+        /// Called when the key is set.
+        /// </summary>
+        /// <param name="key"></param>
+        protected abstract void OnKeyChanged(Jwk key);
 
         /// <summary>
         /// Gets or sets the key identifier header parameter.

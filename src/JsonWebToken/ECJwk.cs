@@ -4,8 +4,8 @@
 using JsonWebToken.Internal;
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -52,12 +52,8 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="ECJwk"/>.
         /// </summary>
         public ECJwk(in EllipticalCurve crv, byte[] d, byte[] x, byte[] y)
+            : base(d)
         {
-            if (d == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.d);
-            }
-
             if (x == null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.x);
@@ -69,7 +65,6 @@ namespace JsonWebToken
             }
 
             Crv = crv;
-            D = d;
             X = x;
             Y = y;
         }
@@ -78,13 +73,8 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="ECJwk"/>.
         /// </summary>
         public ECJwk(in EllipticalCurve crv, string d, string x, string y)
+            : base(d)
         {
-
-            if (d == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.d);
-            }
-
             if (x == null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.x);
@@ -96,7 +86,6 @@ namespace JsonWebToken
             }
 
             Crv = crv;
-            D = Base64Url.Decode(d);
             X = Base64Url.Decode(x);
             Y = Base64Url.Decode(y);
         }
@@ -154,17 +143,17 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'crv' (Curve).
         /// </summary>
-        public EllipticalCurve Crv { get; set; }
+        public EllipticalCurve Crv { get; private set; }
 
         /// <summary>
         /// Gets or sets the 'x' (X Coordinate).
         /// </summary>
-        public byte[] X { get; set; }
+        public byte[] X { get; private set; }
 
         /// <summary>
         /// Gets or sets the 'y' (Y Coordinate).
         /// </summary>
-        public byte[] Y { get; set; }
+        public byte[] Y { get; private set; }
 
         /// <inheritdoc />
         public override bool HasPrivateKey => D != null;
@@ -341,7 +330,7 @@ namespace JsonWebToken
             var key = new ECJwk(parameters);
             if (computeThumbprint)
             {
-                key.Kid = key.ComputeThumbprint();
+                key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
             }
 
             if (algorithm != null)
@@ -424,7 +413,7 @@ namespace JsonWebToken
                             switch (reader.TokenType)
                             {
                                 case JsonTokenType.StartObject:
-                                    PopulateObject(ref reader, pPropertyName, propertyName.Length, key);
+                                    PopulateObject(ref reader);
                                     break;
                                 case JsonTokenType.StartArray:
                                     PopulateArray(ref reader, pPropertyName, propertyName.Length, key);
@@ -533,6 +522,65 @@ namespace JsonWebToken
             if (D != null)
             {
                 writer.WriteString(JwkParameterNames.DUtf8, Base64Url.Encode(D));
+            }
+        }
+
+        /// <inheritsdoc />
+        public override bool Equals(Jwk other)
+        {
+            if (!(other is ECJwk key))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Crv.Id == Crv.Id &&
+                X.AsSpan().SequenceEqual(key.X) &&
+                Y.AsSpan().SequenceEqual(key.Y);
+        }
+
+        /// <inheritsdoc />
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                const int p = 16777619;
+
+                int hash = ((int)2166136261 ^ Crv.Id) * p;
+
+                var x = X;
+                int length = Math.Min(x.Length, sizeof(int));
+                if (length >= sizeof(int))
+                {
+                    hash = (hash ^ Unsafe.ReadUnaligned<int>(ref x[0])) * p;
+                }
+                else
+                {
+                    for (int i = 0; i < length; i++)
+                    {
+                        hash = (hash ^ x[i]) * p;
+                    }
+                }
+
+                var y = Y;
+                length = Math.Min(y.Length, sizeof(int));
+                if (length >= sizeof(int))
+                {
+                    hash = (hash ^ Unsafe.ReadUnaligned<int>(ref y[0])) * p;
+                }
+                else
+                {
+                    for (int i = 0; i < length; i++)
+                    {
+                        hash = (hash ^ y[i]) * p;
+                    }
+                }
+
+                return hash;
             }
         }
     }
