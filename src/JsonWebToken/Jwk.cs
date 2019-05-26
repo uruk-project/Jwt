@@ -595,11 +595,20 @@ namespace JsonWebToken
 
         internal static unsafe void PopulateArray(ref Utf8JsonReader reader, byte* pPropertyName, int propertyLength, Jwk key)
         {
-            if (propertyLength == 7 && *((uint*)pPropertyName) == 1601791339u /* key_ */ && *((uint*)pPropertyName + 3) == 1936748383 /* _ops */)
+            if (propertyLength == 7 && *(uint*)pPropertyName == 1601791339u /* key_ */ && *(uint*)(pPropertyName + 3) == 1936748383 /* _ops */)
             {
+                /* key_ops */
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                 {
                     key.KeyOps.Add(reader.GetString());
+                }
+            }
+            else if (propertyLength == 3 && *pPropertyName == (byte)'x' && *(ushort*)(pPropertyName + 1) == 25397u)
+            {
+                /* x5c */
+                while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+                {
+                    key.X5c.Add(Convert.FromBase64String(reader.GetString()));
                 }
             }
             else
@@ -629,14 +638,6 @@ namespace JsonWebToken
                 /* use */
                 case (byte)'u' when *pPropertyNameShort == 25971:
                     key.Use = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray();
-                    break;
-                /* x5c */
-                case (byte)'x' when *pPropertyNameShort == 25397:
-                    while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
-                    {
-                        var x5xItem = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                        key.X5c.Add(Base64Url.Decode(x5xItem));
-                    }
                     break;
                 /* x5t */
                 case (byte)'x' when *pPropertyNameShort == 29749:
