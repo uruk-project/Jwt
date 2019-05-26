@@ -159,46 +159,52 @@ namespace JsonWebToken
 #endif
         }
 
-        /// <inheritsdoc />
-        public override Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
+        /// <inheritdoc />
+        public override Signer CreateSignerForSignature(SignatureAlgorithm algorithm)
         {
-            if (algorithm is null)
+            return CreateSigner(algorithm);
+        }
+
+        /// <inheritdoc />
+        public override Signer CreateSignerForValidation(SignatureAlgorithm algorithm)
+        {
+            return CreateSigner(algorithm);
+        }
+
+        /// <inheritsdoc />
+        private Signer CreateSigner(SignatureAlgorithm algorithm)
+        {
+            if (!(algorithm is null))
             {
-                goto NotSupported;
+                if (IsSupported(algorithm))
+                {
+                    return new SymmetricSigner(this, algorithm);
+                }
             }
 
-            if (IsSupported(algorithm))
-            {
-                return new SymmetricSigner(this, algorithm);
-            }
-
-        NotSupported:
             return null;
         }
 
         /// <inheritsdoc />
         public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
-            if (contentEncryptionAlgorithm is null)
+            if (!(contentEncryptionAlgorithm is null))
             {
-                goto NotSupported;
-            }
-
-            if (IsSupported(contentEncryptionAlgorithm))
-            {
-                if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
+                if (IsSupported(contentEncryptionAlgorithm))
                 {
-                    return new AesKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-                }
+                    if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
+                    {
+                        return new AesKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                    }
 #if NETCOREAPP3_0
-                else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
-                {
-                    return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-                }
+                    else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
+                    {
+                        return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                    }
 #endif
+                }
             }
 
-        NotSupported:
             return null;
         }
 

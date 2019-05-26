@@ -443,7 +443,7 @@ namespace JsonWebToken
             var alg = (Algorithm ?? Key?.SignatureAlgorithm) ?? SignatureAlgorithm.None;
             if (Key != null)
             {
-                signer = context.SignatureFactory.Create(Key, alg, willCreateSignatures: true);
+                signer = context.SignatureFactory.CreateForSignature(Key, alg);
                 if (signer == null)
                 {
                     Errors.ThrowNotSupportedSignatureAlgorithm(alg, Key);

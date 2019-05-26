@@ -11,9 +11,8 @@ namespace JsonWebToken.Internal
         /// </summary>
         /// <param name="key">The key used for signature.</param>
         /// <param name="algorithm">The signature algorithm.</param>
-        /// <param name="willCreateSignatures">Defines whether the <see cref="Signer"/> will be used for signature of for validation.</param>
         /// <returns></returns>
-        public override Signer Create(Jwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public override Signer CreateForSignature(Jwk key, SignatureAlgorithm algorithm)
         {
             ThrowIfDisposed();
 
@@ -22,7 +21,7 @@ namespace JsonWebToken.Internal
                 goto NotSupported;
             }
 
-            var signers = willCreateSignatures ? VerificationSigners : CreationSigners;
+            var signers = CreationSigners;
             var factoryKey = new CryptographicFactoryKey(key, algorithm.Id);
             if (signers.TryGetValue(factoryKey, out var cachedSigner))
             {
@@ -31,7 +30,39 @@ namespace JsonWebToken.Internal
 
             if (key.IsSupported(algorithm))
             {
-                var signer = key.CreateSigner(algorithm, willCreateSignatures);
+                var signer = key.CreateSignerForSignature(algorithm);
+                return signers.AddValue(factoryKey, signer);
+            }
+
+        NotSupported:
+            return null;
+        }
+
+        /// <summary>
+        /// Creates a <see cref="Signer"/>.
+        /// </summary>
+        /// <param name="key">The key used for signature.</param>
+        /// <param name="algorithm">The signature algorithm.</param>
+        /// <returns></returns>
+        public override Signer CreateForValidation(Jwk key, SignatureAlgorithm algorithm)
+        {
+            ThrowIfDisposed();
+
+            if (algorithm is null)
+            {
+                goto NotSupported;
+            }
+
+            var signers = VerificationSigners;
+            var factoryKey = new CryptographicFactoryKey(key, algorithm.Id);
+            if (signers.TryGetValue(factoryKey, out var cachedSigner))
+            {
+                return cachedSigner;
+            }
+
+            if (key.IsSupported(algorithm))
+            {
+                var signer = key.CreateSignerForValidation(algorithm);
                 return signers.AddValue(factoryKey, signer);
             }
 

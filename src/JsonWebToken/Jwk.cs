@@ -389,8 +389,13 @@ namespace JsonWebToken
         /// Creates a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
-        /// <param name="willCreateSignatures">Determines if the <see cref="Signer"/> will create or only verify signatures.</param>
-        public abstract Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures);
+        public abstract Signer CreateSignerForSignature(SignatureAlgorithm algorithm);
+
+        /// <summary>
+        /// Creates a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
+        /// </summary>
+        /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
+        public abstract Signer CreateSignerForValidation(SignatureAlgorithm algorithm);
 
         /// <summary>
         /// Creates a <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.
