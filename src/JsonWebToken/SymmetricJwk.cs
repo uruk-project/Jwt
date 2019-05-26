@@ -4,6 +4,7 @@
 using JsonWebToken.Internal;
 using System;
 using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -101,7 +102,7 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes);
             if (computeThumbprint)
             {
-                key.Kid = key.ComputeThumbprint();
+                key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
             }
 
             return key;
@@ -130,7 +131,7 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes);
             if (computeThumbprint)
             {
-                key.Kid = key.ComputeThumbprint();
+                key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
             }
 
             return key;
@@ -240,7 +241,7 @@ namespace JsonWebToken
             var key = new SymmetricJwk(k);
             if (computeThumbprint)
             {
-                key.Kid = key.ComputeThumbprint();
+                key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
             }
 
             return key;
@@ -343,7 +344,7 @@ namespace JsonWebToken
                             switch (reader.TokenType)
                             {
                                 case JsonTokenType.StartObject:
-                                    PopulateObject(ref reader, pPropertyName, propertyName.Length, key);
+                                    PopulateObject(ref reader);
                                     break;
                                 case JsonTokenType.StartArray:
                                     PopulateArray(ref reader, pPropertyName, propertyName.Length, key);
@@ -442,6 +443,46 @@ namespace JsonWebToken
         internal override void WriteComplementTo(ref Utf8JsonWriter writer)
         {
             writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(K));
+        }
+
+        /// <inheritsdoc />
+        public override bool Equals(Jwk other)
+        {
+            if (!(other is SymmetricJwk key))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return K.SequenceEqual(key._k);
+        }
+
+        /// <inheritsdoc />
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int length = Math.Min(_k.Length, 16);
+                if (length >= sizeof(int))
+                {
+                    return Unsafe.ReadUnaligned<int>(ref _k[0]);
+                }
+                else
+                {
+                    const int p = 16777619;
+                    int hash = (int)2166136261;
+                    for (int i = 0; i < length; i++)
+                    {
+                        hash = (hash ^ _k[i]) * p;
+                    }
+
+                    return hash;
+                }
+            }
         }
     }
 }

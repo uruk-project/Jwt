@@ -216,5 +216,14 @@ namespace JsonWebToken
             bytesWritten = Base64Url.Encode(input, destination);
             return bytesWritten == destination.Length;
         }
+
+        /// <inheritsdoc />
+        protected override void OnKeyChanged(Jwk key)
+        {
+            if (key != null && key.Alg != null)
+            {
+                Algorithm = (KeyManagementAlgorithm)key.Alg;
+            }
+        }
     }
 }

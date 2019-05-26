@@ -2,14 +2,13 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 
 namespace JsonWebToken
 {
     /// <summary>
     /// Represents a key used by the <see cref="CryptographicStore{TCrypto}"/>.
     /// </summary>
-    public readonly struct CryptographicFactoryKey
+    public readonly struct CryptographicFactoryKey : IEquatable<CryptographicFactoryKey>
     {
         /// <summary>
         /// The <see cref="Jwk"/>.
@@ -40,22 +39,26 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override bool Equals(object obj)
         {
-            if (!(obj is CryptographicFactoryKey))
+            if (obj is CryptographicFactoryKey key)
             {
-                return false;
+                return Algorithm == key.Algorithm && Key.Equals(key.Key);
             }
 
-            var key = (CryptographicFactoryKey)obj;
-            return EqualityComparer<Jwk>.Default.Equals(Key, key.Key) &&
-                   Algorithm == key.Algorithm;
+            return false;
+        }
+
+        /// <inheritsdoc />
+        public bool Equals(CryptographicFactoryKey other)
+        {
+            return Algorithm == other.Algorithm && Key.Equals(other.Key);
         }
 
         /// <inheritsdoc />
         public override int GetHashCode()
         {
             var hashCode = -733196298;
-            hashCode = hashCode * -1521134295 + EqualityComparer<Jwk>.Default.GetHashCode(Key);
-            hashCode = hashCode * -1521134295 + Algorithm.GetHashCode();
+            hashCode = hashCode * -1521134295 + Key.GetHashCode();
+            hashCode = hashCode * -1521134295 + Algorithm;
             return hashCode;
         }
     }

@@ -4,7 +4,9 @@
 using JsonWebToken.Internal;
 using System;
 using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -26,12 +28,8 @@ namespace JsonWebToken
             byte[] dp,
             byte[] dq,
             byte[] qi)
+            : base(d)
         {
-            if (d == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.d);
-            }
-
             if (dp == null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.dp);
@@ -67,7 +65,6 @@ namespace JsonWebToken
                 Errors.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
-            D = d;
             DP = dp;
             DQ = dq;
             QI = qi;
@@ -89,12 +86,8 @@ namespace JsonWebToken
             string qi,
             string e,
             string n)
+            : base(d)
         {
-            if (d == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.d);
-            }
-
             if (dp == null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.dp);
@@ -130,7 +123,6 @@ namespace JsonWebToken
                 Errors.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
-            D = Base64Url.Decode(d);
             DP = Base64Url.Decode(dp);
             DQ = Base64Url.Decode(dq);
             QI = Base64Url.Decode(qi);
@@ -188,7 +180,7 @@ namespace JsonWebToken
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.n);
             }
-            
+
             E = Base64Url.Decode(e);
             N = Base64Url.Decode(n);
         }
@@ -283,37 +275,37 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'dp' (First Factor CRT Exponent).
         /// </summary>
-        public byte[] DP { get; set; }
+        public byte[] DP { get; private set; }
 
         /// <summary>
         /// Gets or sets the 'dq' (Second Factor CRT Exponent).
         /// </summary>
-        public byte[] DQ { get; set; }
+        public byte[] DQ { get; private set; }
 
         /// <summary>
         /// Gets or sets the 'e' ( Exponent).
         /// </summary>
-        public byte[] E { get; set; }
+        public byte[] E { get; private set; }
 
         /// <summary>
         /// Gets or sets the 'n' (Modulus).
         /// </summary>
-        public byte[] N { get; set; }
+        public byte[] N { get; private set; }
 
         /// <summary>
         /// Gets or sets the 'p' (First Prime Factor).
         /// </summary>
-        public byte[] P { get; set; }
+        public byte[] P { get; private set; }
 
         /// <summary>
         /// Gets or sets the 'q' (Second  Prime Factor).
         /// </summary>
-        public byte[] Q { get; set; }
+        public byte[] Q { get; private set; }
 
         /// <summary>
         /// Gets or sets the 'qi' (First CRT Coefficient).
         /// </summary>
-        public byte[] QI { get; set; }
+        public byte[] QI { get; private set; }
 
         /// <summary>
         /// Generates a new RSA key.
@@ -361,7 +353,7 @@ namespace JsonWebToken
             var key = new RsaJwk(parameters);
             if (computeThumbprint)
             {
-                key.Kid = key.ComputeThumbprint();
+                key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
             }
 
             return key;
@@ -475,7 +467,7 @@ namespace JsonWebToken
                             switch (reader.TokenType)
                             {
                                 case JsonTokenType.StartObject:
-                                    PopulateObject(ref reader, pPropertyName, propertyName.Length, key);
+                                    PopulateObject(ref reader);
                                     break;
                                 case JsonTokenType.StartArray:
                                     PopulateArray(ref reader, pPropertyName, propertyName.Length, key);
@@ -575,6 +567,66 @@ namespace JsonWebToken
             if (QI != null)
             {
                 writer.WriteString(JwkParameterNames.QIUtf8, Base64Url.Encode(QI));
+            }
+        }
+
+        /// <inheritsdoc />
+        public override bool Equals(Jwk other)
+        {
+            if (!(other is RsaJwk key))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return
+                E.AsSpan().SequenceEqual(key.E) &&
+                N.AsSpan().SequenceEqual(key.N);
+        }
+
+
+        /// <inheritsdoc />
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                const int p = 16777619;
+
+                int hash = (int)2166136261;
+
+                var e = E;
+                int length = Math.Min(e.Length, sizeof(int));
+                if (length >= sizeof(int))
+                {
+                    hash = (hash ^ Unsafe.ReadUnaligned<int>(ref e[0])) * p;
+                }
+                else
+                {
+                    for (int i = 0; i < length; i++)
+                    {
+                        hash = (hash ^ e[i]) * p;
+                    }
+                }
+
+                var n = N;
+                length = Math.Min(n.Length, sizeof(int));
+                if (length >= sizeof(int))
+                {
+                    hash = (hash ^ Unsafe.ReadUnaligned<int>(ref n[0])) * p;
+                }
+                else
+                {
+                    for (int i = 0; i < length; i++)
+                    {
+                        hash = (hash ^ n[i]) * p;
+                    }
+                }
+
+                return hash;
             }
         }
     }

@@ -18,7 +18,7 @@ namespace JsonWebToken
     /// Represents a JSON Web Key as defined in http://tools.ietf.org/html/rfc7517.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
-    public abstract class Jwk
+    public abstract class Jwk : IEquatable<Jwk>
     {
         private List<Jwk> _certificateChain;
         private bool? _isSigningKey;
@@ -416,31 +416,26 @@ namespace JsonWebToken
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
         /// <returns></returns>
-        public string ComputeThumbprint()
+        public byte[] ComputeThumbprint()
         {
             using (var hashAlgorithm = SHA256.Create())
             {
                 Span<byte> hash = stackalloc byte[hashAlgorithm.HashSize >> 3];
                 hashAlgorithm.TryComputeHash(Canonicalize(), hash, out int bytesWritten);
                 Debug.Assert(bytesWritten == hashAlgorithm.HashSize >> 3);
-                var thumbprint = Base64Url.Encode(hash);
-#if !NETSTANDARD2_0
-                return Encoding.UTF8.GetString(thumbprint);
-#else
-                return EncodingHelper.GetUtf8String(thumbprint);
-#endif
+                return Base64Url.Encode(hash);
             }
         }
 #else
         /// <summary>
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
-        public string ComputeThumbprint()
+        public byte[] ComputeThumbprint()
         {
             using (var hashAlgorithm = SHA256.Create())
             {
                 var hash = hashAlgorithm.ComputeHash(Canonicalize());
-                return Encoding.UTF8.GetString(Base64Url.Encode(hash));
+                return Base64Url.Encode(hash);
             }
         }
 #endif
@@ -510,7 +505,7 @@ namespace JsonWebToken
             if (key != null)
             {
                 key.X5t = certificate.GetCertHash();
-                key.Kid = key.ComputeThumbprint();
+                key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
                 return key;
             }
 
@@ -608,7 +603,7 @@ namespace JsonWebToken
             }
         }
 
-        internal static unsafe void PopulateObject(ref Utf8JsonReader reader, byte* pPropertyName, int propertyLength, Jwk key)
+        internal static unsafe void PopulateObject(ref Utf8JsonReader reader)
         {
             JsonParser.ConsumeJsonObject(ref reader);
         }
@@ -742,5 +737,8 @@ namespace JsonWebToken
 
             return false;
         }
+
+        /// <inheritsdoc />
+        public abstract bool Equals(Jwk other);
     }
 }

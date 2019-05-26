@@ -63,7 +63,7 @@ namespace JsonWebToken.Tests
 
             var thumbprint = key.ComputeThumbprint();
 
-            Assert.Equal("NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs", thumbprint);
+            Assert.Equal(Encoding.UTF8.GetBytes("NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs"), thumbprint);
         }
     }
 }
