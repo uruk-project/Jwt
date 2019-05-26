@@ -503,6 +503,10 @@ namespace JsonWebToken
                                             {
                                                 key.Q = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
+                                            else if (*pPropertyName == (byte)'d')
+                                            {
+                                                key.D = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                            }
                                             break;
 
                                         case 2:

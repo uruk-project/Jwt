@@ -448,7 +448,7 @@ namespace JsonWebToken
                                             break;
 
                                         case 3:
-                                            if (*pPropertyName == (byte)'c' && *((short*)pPropertyName + 1) == 30322)
+                                            if (*pPropertyName == (byte)'c' && *((short*)(pPropertyName + 1)) == 30322)
                                             {
                                                 key.Crv = EllipticalCurve.FromSpan(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }

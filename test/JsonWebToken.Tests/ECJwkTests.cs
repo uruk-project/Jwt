@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using JsonWebToken.Internal;
+using System;
+using System.Collections.Generic;
+using System.Text;
 using Xunit;
 
 namespace JsonWebToken.Tests
 {
-    public class ECJwkTests : JwkTests
+    public class ECJwkTests : JwkTestsBase
     {
         [Theory]
         [MemberData(nameof(GetWrappingKeys))]
@@ -99,6 +102,24 @@ namespace JsonWebToken.Tests
             yield return new object[] { _privateEcc521Key, SignatureAlgorithm.EcdsaSha256 };
             yield return new object[] { _privateEcc521Key, SignatureAlgorithm.EcdsaSha384 };
             yield return new object[] { _privateEcc521Key, SignatureAlgorithm.EcdsaSha512 };
+        }
+
+        [Theory]
+        [InlineData("{\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4\",\"y\":\"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM\",\"use\":\"enc\",\"kid\":\"1\"}")]
+        [InlineData("{\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4\",\"y\":\"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM\",\"use\":\"enc\",\"kid\":\"1\"}")]
+        public override void FromJson(string json)
+        {
+            // https://tools.ietf.org/html/rfc7517#appendix-A.1
+            var key = Jwk.FromJson(json);
+            Assert.NotNull(key);
+            var jwk = Assert.IsType<ECJwk>(key);
+
+            Assert.Equal("1", jwk.Kid);
+            Assert.True(JwkUseNames.Enc.SequenceEqual(jwk.Use));
+
+            Assert.Equal(Encoding.UTF8.GetBytes("P-256"), jwk.Crv.Name);
+            Assert.Equal(jwk.X, Base64Url.Decode("MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4"));
+            Assert.Equal(jwk.Y, Base64Url.Decode("4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM"));
         }
 
         private static readonly ECJwk _privateEcc256Key = new ECJwk
