@@ -588,7 +588,6 @@ namespace JsonWebToken
                 N.AsSpan().SequenceEqual(key.N);
         }
 
-
         /// <inheritsdoc />
         public override int GetHashCode()
         {

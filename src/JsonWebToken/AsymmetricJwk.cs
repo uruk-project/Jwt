@@ -38,7 +38,7 @@ namespace JsonWebToken
                 Errors.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
-            D = Base64Url.Decode(d); ;
+            D = Base64Url.Decode(d);
         }
         /// <summary>
         /// Gets or sets the 'd' (ECC - Private Key OR RSA - Private Exponent).
