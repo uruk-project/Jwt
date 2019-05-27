@@ -469,7 +469,7 @@ namespace JsonWebToken
                 Payload.Serialize(payloadBufferWriter);
                 var payloadJson = payloadBufferWriter.WrittenSpan;
                 int length = Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
-                           + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signer.HashSizeInBytes))
+                           + (Key is null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signer.HashSizeInBytes))
                            + (Constants.JwsSegmentCount - 1);
                 ReadOnlySpan<byte> headerJson = default;
                 var headerCache = context.HeaderCache;

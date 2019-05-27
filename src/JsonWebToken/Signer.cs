@@ -17,7 +17,7 @@ namespace JsonWebToken
         /// <param name="algorithm">The signature algorithm to apply.</param>
         protected Signer(Jwk key, SignatureAlgorithm algorithm)
         {
-            if (key == null)
+            if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }

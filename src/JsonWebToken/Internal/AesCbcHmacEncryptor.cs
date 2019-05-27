@@ -21,7 +21,7 @@ namespace JsonWebToken.Internal
 
         public AesCbcHmacEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (key == null)
+            if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }

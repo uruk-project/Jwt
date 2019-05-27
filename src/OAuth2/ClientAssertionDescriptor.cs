@@ -27,7 +27,7 @@ namespace JsonWebToken
 
         public override void Validate()
         {
-            if (Key == null)
+            if (Key is null)
             {
                 throw new JwtDescriptorException("No key is defined.");
             }

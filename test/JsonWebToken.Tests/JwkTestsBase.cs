@@ -92,5 +92,9 @@ namespace JsonWebToken.Tests
         }
 
         public abstract void FromJson(string json);
+
+        public abstract void FromJson_WithProperties(string json);
+
+        public abstract void WriteTo();
     }
 }

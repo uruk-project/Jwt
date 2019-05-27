@@ -29,7 +29,7 @@ namespace JsonWebToken.Internal
         public SymmetricSigner(SymmetricJwk key, SignatureAlgorithm algorithm)
             : base(key, algorithm)
         {
-            if (key == null)
+            if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }

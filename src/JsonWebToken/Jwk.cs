@@ -26,6 +26,7 @@ namespace JsonWebToken
         private bool? _isEncryptionKey;
         private KeyManagementAlgorithm _keyManagementAlgorithm;
         private byte[] _use;
+        private IList<string> _keyOps;
 
         /// <summary>
         /// Gets or sets the 'alg' (KeyType).
@@ -35,8 +36,18 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the 'key_ops' (Key Operations).
         /// </summary>
-        public IList<string> KeyOps { get; private set; } = new List<string>();
+        public IList<string> KeyOps
+        {
+            get
+            {
+                if (_keyOps == null)
+                {
+                    _keyOps = new List<string>();
+                }
 
+                return _keyOps;
+            }
+        }
         /// <summary>
         /// Gets or sets the 'kid' (Key ID).
         /// </summary>
@@ -261,15 +272,17 @@ namespace JsonWebToken
                                             case (byte)'a' when *pNameShort == 26476:
                                             /* use */
                                             case (byte)'u' when *pNameShort == 25971:
+                                                jwk.Add(new JwtProperty(name, reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray()));
+                                                continue;
                                             /* x5t */
                                             case (byte)'x' when *pNameShort == 29749:
-                                                jwk.Add(new JwtProperty(name, reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray()));
+                                                jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray())));
                                                 continue;
                                         }
                                     }
                                     else if (name.Length == 8 && name.SequenceEqual(JwkParameterNames.X5tS256Utf8))
                                     {
-                                        jwk.Add(new JwtProperty(name, reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray()));
+                                        jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray())));
                                         continue;
                                     }
                                 }
@@ -306,6 +319,16 @@ namespace JsonWebToken
                                 }
                                 break;
                             case JsonTokenType.StartArray:
+                                fixed (byte* pName = name)
+                                {
+                                    // x5c
+                                    if (name.Length == 3 && *pName == (byte)'x' && *(ushort*)(pName + 1) == 25397u)
+                                    {
+                                        jwk.Add(new JwtProperty(name, ReadBase64StringJsonArray(ref reader)));
+                                        break;
+                                    }
+                                }
+
                                 var array = JsonParser.ReadJsonArray(ref reader);
                                 jwk.Add(new JwtProperty(name, array));
                                 break;
@@ -322,6 +345,29 @@ namespace JsonWebToken
 
             Errors.ThrowMalformedKey();
             return null;
+        }
+
+        private static unsafe JwtArray ReadBase64StringJsonArray(ref Utf8JsonReader reader)
+        {
+            var array = new JwtArray(new List<JwtValue>(2));
+            while (reader.Read())
+            {
+                switch (reader.TokenType)
+                {
+                    case JsonTokenType.EndArray:
+                        return array;
+                    case JsonTokenType.String:
+                        var value = reader.GetString();
+                        array.Add(new JwtValue(Convert.FromBase64String(value)));
+                        break;
+                    default:
+                        JwtThrowHelper.FormatMalformedJson();
+                        break;
+                }
+            }
+
+            JwtThrowHelper.FormatMalformedJson();
+            return array;
         }
 
         private static Jwk FromJwtObject(JwtObject jwk)
@@ -378,6 +424,19 @@ namespace JsonWebToken
                 var input = bufferWriter.WrittenSpan;
                 return Encoding.UTF8.GetString(input.ToArray());
             }
+        }
+
+        /// <summary>
+        /// Serializes the <see cref="Jwk"/> into its JSON representation.
+        /// </summary>
+        /// <param name="bufferWriter"></param>
+        public void Serialize(IBufferWriter<byte> bufferWriter)
+        {
+            Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = false, SkipValidation = true });
+            writer.WriteStartObject();
+            WriteTo(ref writer);
+            writer.WriteEndObject();
+            writer.Flush();
         }
 
         /// <summary>
@@ -682,11 +741,11 @@ namespace JsonWebToken
             }
             if (X5t != null)
             {
-                writer.WriteString(JwkParameterNames.X5tUtf8, X5t);
+                writer.WriteString(JwkParameterNames.X5tUtf8, Base64Url.Encode(X5t));
             }
             if (X5tS256 != null)
             {
-                writer.WriteString(JwkParameterNames.X5tS256Utf8, X5tS256);
+                writer.WriteString(JwkParameterNames.X5tS256Utf8, Base64Url.Encode(X5tS256));
             }
             if (X5u != null)
             {
@@ -697,7 +756,7 @@ namespace JsonWebToken
                 writer.WriteStartArray(JwkParameterNames.X5cUtf8);
                 for (int i = 0; i < X5c.Count; i++)
                 {
-                    writer.WriteStringValue(Base64Url.Encode(X5c[i]));
+                    writer.WriteStringValue(Convert.ToBase64String(X5c[i]));
                 }
 
                 writer.WriteEndArray();

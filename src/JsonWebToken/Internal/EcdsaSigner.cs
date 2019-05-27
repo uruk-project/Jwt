@@ -16,7 +16,7 @@ namespace JsonWebToken.Internal
         public EcdsaSigner(ECJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
             : base(key, algorithm)
         {
-            if (key == null)
+            if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }

@@ -27,7 +27,7 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         public CryptographicFactoryKey(Jwk key, int algorithm)
         {
-            if (key == null)
+            if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }

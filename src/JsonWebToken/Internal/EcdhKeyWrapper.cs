@@ -66,7 +66,7 @@ namespace JsonWebToken.Internal
             }
 
             var epk = header.Epk;
-            if (header.Epk == null)
+            if (header.Epk is null)
             {
                 return Errors.TryWriteError(out bytesWritten);
             }
@@ -110,7 +110,7 @@ namespace JsonWebToken.Internal
             var partyVInfo = GetPartyInfo(header, HeaderParameters.ApvUtf8);
             var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
             byte[] exchangeHash;
-            using (var ephemeralKey = (staticKey == null) ? ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256) : ECDiffieHellman.Create(((ECJwk)staticKey).ExportParameters(true)))
+            using (var ephemeralKey = (staticKey is null) ? ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256) : ECDiffieHellman.Create(((ECJwk)staticKey).ExportParameters(true)))
             using (var otherPartyKey = ECDiffieHellman.Create(((ECJwk)Key).ExportParameters()))
             {
                 exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);

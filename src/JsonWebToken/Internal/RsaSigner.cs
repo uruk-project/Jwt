@@ -19,7 +19,7 @@ namespace JsonWebToken
         public RsaSigner(RsaJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
             : base(key, algorithm)
         {
-            if (key == null)
+            if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }

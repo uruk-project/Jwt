@@ -22,7 +22,7 @@ namespace JsonWebToken.Internal
                 Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
             }
 
-            if (key == null)
+            if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }

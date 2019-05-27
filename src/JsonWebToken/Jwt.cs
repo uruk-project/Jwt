@@ -69,7 +69,7 @@ namespace JsonWebToken
                 Errors.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
-            if (encryptionKey == null)
+            if (encryptionKey is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.encryptionKey);
             }
