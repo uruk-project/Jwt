@@ -20,13 +20,13 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class Jwk : IEquatable<Jwk>
     {
-        private List<Jwk> _certificateChain;
         private bool? _isSigningKey;
         private SignatureAlgorithm _signatureAlgorithm;
         private bool? _isEncryptionKey;
         private KeyManagementAlgorithm _keyManagementAlgorithm;
         private byte[] _use;
         private IList<string> _keyOps;
+        private List<byte[]> _x5c;
 
         /// <summary>
         /// Gets or sets the 'alg' (KeyType).
@@ -76,7 +76,18 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the 'x5c' collection (X.509 Certificate Chain).
         /// </summary>
-        public List<byte[]> X5c { get; private set; } = new List<byte[]>();
+        public List<byte[]> X5c
+        {
+            get
+            {
+                if (_x5c == null)
+                {
+                    _x5c = new List<byte[]>();
+                }
+
+                return _x5c;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the 'x5t' (X.509 Certificate SHA-1 thumbprint).
@@ -105,26 +116,23 @@ namespace JsonWebToken
         {
             get
             {
-                if (X5c == null)
+                if (_x5c == null)
                 {
                     return null;
                 }
 
-                if (_certificateChain == null)
+                var certificateChain = new List<Jwk>(_x5c.Count);
+                foreach (var certString in _x5c)
                 {
-                    _certificateChain = new List<Jwk>(X5c.Count);
-                    foreach (var certString in X5c)
+                    using (var certificate = new X509Certificate2(certString))
                     {
-                        using (var certificate = new X509Certificate2(certString))
-                        {
-                            var key = FromX509Certificate(certificate, false);
-                            key.Kid = Kid;
-                            _certificateChain.Add(key);
-                        }
+                        var key = FromX509Certificate(certificate, false);
+                        key.Kid = Kid;
+                        certificateChain.Add(key);
                     }
                 }
 
-                return _certificateChain;
+                return certificateChain;
             }
         }
 
@@ -265,18 +273,24 @@ namespace JsonWebToken
                                 {
                                     if (name.Length == 3)
                                     {
-                                        short* pNameShort = (short*)(pName + 1);
+                                        ushort* pNameShort = (ushort*)(pName + 1);
                                         switch (name[0])
                                         {
                                             /* alg */
-                                            case (byte)'a' when *pNameShort == 26476:
+                                            case (byte)'a' when *pNameShort == 26476u:
+                                                jwk.Add(new JwtProperty(WellKnownProperty.Alg, reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray()));
+                                                break;
                                             /* use */
-                                            case (byte)'u' when *pNameShort == 25971:
+                                            case (byte)'u' when *pNameShort == 25971u:
                                                 jwk.Add(new JwtProperty(name, reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray()));
                                                 continue;
                                             /* x5t */
-                                            case (byte)'x' when *pNameShort == 29749:
+                                            case (byte)'x' when *pNameShort == 29749u:
                                                 jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray())));
+                                                continue;
+                                            /* kid */
+                                            case (byte)'k' when *pNameShort == 25705u:
+                                                jwk.Add(new JwtProperty(WellKnownProperty.Kid, reader.GetString()));
                                                 continue;
                                         }
                                     }
@@ -610,16 +624,18 @@ namespace JsonWebToken
         {
             if (name.SequenceEqual(JwkParameterNames.X5cUtf8))
             {
+                _x5c = new List<byte[]>(value.Count);
                 for (int i = 0; i < value.Count; i++)
                 {
-                    X5c.Add((byte[])value[i].Value);
+                    _x5c.Add((byte[])value[i].Value);
                 }
             }
             else if (name.SequenceEqual(JwkParameterNames.KeyOpsUtf8))
             {
+                _keyOps = new List<string>(value.Count); 
                 for (int i = 0; i < value.Count; i++)
                 {
-                    KeyOps.Add((string)value[i].Value);
+                    _keyOps.Add((string)value[i].Value);
                 }
             }
         }
@@ -657,17 +673,19 @@ namespace JsonWebToken
             if (propertyLength == 7 && *(uint*)pPropertyName == 1601791339u /* key_ */ && *(uint*)(pPropertyName + 3) == 1936748383 /* _ops */)
             {
                 /* key_ops */
+                key._keyOps = new List<string>();
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                 {
-                    key.KeyOps.Add(reader.GetString());
+                    key._keyOps.Add(reader.GetString());
                 }
             }
             else if (propertyLength == 3 && *pPropertyName == (byte)'x' && *(ushort*)(pPropertyName + 1) == 25397u)
             {
                 /* x5c */
+                key._x5c = new List<byte[]>();
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                 {
-                    key.X5c.Add(Convert.FromBase64String(reader.GetString()));
+                    key._x5c.Add(Convert.FromBase64String(reader.GetString()));
                 }
             }
             else
@@ -683,27 +701,27 @@ namespace JsonWebToken
 
         internal static unsafe void PopulateThree(ref Utf8JsonReader reader, byte* pPropertytName, Jwk key)
         {
-            short* pPropertyNameShort = (short*)(pPropertytName + 1);
+            ushort* pPropertyNameShort = (ushort*)(pPropertytName + 1);
             switch (*pPropertytName)
             {
                 /* alg */
-                case (byte)'a' when *pPropertyNameShort == 26476:
+                case (byte)'a' when *pPropertyNameShort == 26476u:
                     key.Alg = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray();
                     break;
                 /* kid */
-                case (byte)'k' when *pPropertyNameShort == 25705:
+                case (byte)'k' when *pPropertyNameShort == 25705u:
                     key.Kid = reader.GetString();
                     break;
                 /* use */
-                case (byte)'u' when *pPropertyNameShort == 25971:
+                case (byte)'u' when *pPropertyNameShort == 25971u:
                     key.Use = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray();
                     break;
                 /* x5t */
-                case (byte)'x' when *pPropertyNameShort == 29749:
+                case (byte)'x' when *pPropertyNameShort == 29749u:
                     key.X5t = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                     break;
                 /* x5u */
-                case (byte)'x' when *pPropertyNameShort == 30005:
+                case (byte)'x' when *pPropertyNameShort == 30005u:
                     key.X5u = reader.GetString();
                     break;
 
@@ -729,12 +747,12 @@ namespace JsonWebToken
             {
                 writer.WriteString(JwkParameterNames.AlgUtf8, Alg);
             }
-            if (KeyOps.Count > 0)
+            if (_keyOps?.Count > 0)
             {
                 writer.WriteStartArray(JwkParameterNames.KeyOpsUtf8);
-                for (int i = 0; i < KeyOps.Count; i++)
+                for (int i = 0; i < _keyOps.Count; i++)
                 {
-                    writer.WriteStringValue(KeyOps[i]);
+                    writer.WriteStringValue(_keyOps[i]);
                 }
 
                 writer.WriteEndArray();
@@ -751,12 +769,12 @@ namespace JsonWebToken
             {
                 writer.WriteString(JwkParameterNames.X5uUtf8, X5u);
             }
-            if (X5c.Count > 0)
+            if (_x5c != null && _x5c.Count > 0)
             {
                 writer.WriteStartArray(JwkParameterNames.X5cUtf8);
-                for (int i = 0; i < X5c.Count; i++)
+                for (int i = 0; i < _x5c.Count; i++)
                 {
-                    writer.WriteStringValue(Convert.ToBase64String(X5c[i]));
+                    writer.WriteStringValue(Convert.ToBase64String(_x5c[i]));
                 }
 
                 writer.WriteEndArray();

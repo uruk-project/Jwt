@@ -478,6 +478,7 @@ namespace JsonWebToken
             }
 
             return TokenValidationResult.Success(jws);
+
         Malformed:
             return TokenValidationResult.MalformedToken(exception: malformedException);
         }
