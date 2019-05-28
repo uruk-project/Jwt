@@ -143,6 +143,7 @@ namespace JsonWebToken.Tests
             Assert.Equal("https://example.com", jwk.X5u);
         }
 
+        [Fact]
         public override void WriteTo()
         {
             var key = ECJwk.GenerateKey(EllipticalCurve.P256, true, SignatureAlgorithm.EcdsaSha256);

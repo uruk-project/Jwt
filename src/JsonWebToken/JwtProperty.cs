@@ -31,12 +31,20 @@ namespace JsonWebToken
                     return Claims.JtiUtf8;
                 case WellKnownProperty.Nbf:
                     return Claims.NbfUtf8;
+                case WellKnownProperty.Sub:
+                    return Claims.SubUtf8;
+                case WellKnownProperty.Typ:
+                    return HeaderParameters.TypUtf8;
+                case WellKnownProperty.Zip:
+                    return HeaderParameters.ZipUtf8;
                 case WellKnownProperty.Kid:
                     return HeaderParameters.KidUtf8;
                 case WellKnownProperty.Alg:
                     return HeaderParameters.AlgUtf8;
                 case WellKnownProperty.Enc:
                     return HeaderParameters.EncUtf8;
+                case WellKnownProperty.Cty:
+                    return HeaderParameters.CtyUtf8;
                 default:
                     throw new NotSupportedException();
             }
@@ -50,42 +58,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the <see cref="JwtProperty"/> in its UTF-8 representation.
         /// </summary>
-        public ReadOnlySpan<byte> Utf8Name => WellKnownName == 0 ? _utf8Name.Span : GetWellKnowName();
-
-        private ReadOnlySpan<byte> GetWellKnowName()
-        {
-            switch (WellKnownName)
-            {
-                case WellKnownProperty.None:
-                    return _utf8Name.Span;
-                case WellKnownProperty.Exp:
-                    return Claims.ExpUtf8;
-                case WellKnownProperty.Aud:
-                    return Claims.AudUtf8;
-                case WellKnownProperty.Iat:
-                    return Claims.IatUtf8;
-                case WellKnownProperty.Iss:
-                    return Claims.IssUtf8;
-                case WellKnownProperty.Jti:
-                    return Claims.JtiUtf8;
-                case WellKnownProperty.Nbf:
-                    return Claims.NbfUtf8;
-                case WellKnownProperty.Kid:
-                    return HeaderParameters.KidUtf8;
-                case WellKnownProperty.Alg:
-                    return HeaderParameters.AlgUtf8;
-                case WellKnownProperty.Enc:
-                    return HeaderParameters.EncUtf8;
-                case WellKnownProperty.Typ:
-                    return HeaderParameters.TypUtf8;
-                case WellKnownProperty.Zip:
-                    return HeaderParameters.ZipUtf8;
-                case WellKnownProperty.Cty:
-                    return HeaderParameters.CtyUtf8;
-                default:
-                    return _utf8Name.Span;
-            }
-        }
+        public ReadOnlySpan<byte> Utf8Name => WellKnownName == 0 ? _utf8Name.Span : GetWellKnowName(WellKnownName);
 
         /// <summary>
         /// Gets the <see cref="JwtTokenType"/> of the <see cref="JwtProperty"/>.
@@ -468,7 +441,7 @@ namespace JsonWebToken
             Type = JwtTokenType.Integer;
             WellKnownName = 0;
             _utf8Name = Encoding.UTF8.GetBytes(name);
-            Value = value;
+            Value = (long)value; // cast to long required due to boxing
         }
 
         /// <summary>

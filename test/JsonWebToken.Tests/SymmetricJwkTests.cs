@@ -56,14 +56,14 @@ namespace JsonWebToken.Tests
         [MemberData(nameof(GetWrappingKeys))]
         public override void IsSupportedKeyWrapping_Success(Jwk key, EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
-            Assert.True(key.IsSupported(alg));
+            base.IsSupportedKeyWrapping_Success(key, enc, alg);
         }
 
         [Theory]
         [MemberData(nameof(GetSignatureCreationKeys))]
         public override void IsSupportedSignature_Success(Jwk key, SignatureAlgorithm alg)
         {
-            Assert.True(key.IsSupported(alg));
+            base.IsSupportedSignature_Success(key, alg);
         }
 
         public static IEnumerable<object[]> GetEncryptionKeys()
