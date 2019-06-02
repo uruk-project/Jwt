@@ -44,7 +44,7 @@ namespace JsonWebToken.Internal
 
             using (var aes = new AesGcm(_key.K))
             {
-                aes.Encrypt(plaintext, nonce, ciphertext, authenticationTag, associatedData);
+                aes.Encrypt(nonce, plaintext, ciphertext, authenticationTag, associatedData);
             }
         }
 

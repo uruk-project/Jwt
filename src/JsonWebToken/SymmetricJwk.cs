@@ -140,7 +140,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override bool IsSupported(KeyManagementAlgorithm algorithm)
         {
-            return algorithm.Category == AlgorithmCategory.Aes && algorithm.RequiredKeySizeInBits == KeySizeInBits;
+            return (algorithm.Category & AlgorithmCategory.Aes) != 0 && algorithm.RequiredKeySizeInBits == KeySizeInBits;
         }
 
         /// <inheritsdoc />
@@ -192,12 +192,12 @@ namespace JsonWebToken
             {
                 if (IsSupported(contentEncryptionAlgorithm))
                 {
-                    if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
+                    if (contentEncryptionAlgorithm.Category == AlgorithmCategory.Aes)
                     {
                         return new AesKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
                     }
 #if NETCOREAPP3_0
-                    else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
+                    else if (contentEncryptionAlgorithm.Category == AlgorithmCategory.AesGcm)
                     {
                         return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
                     }
@@ -412,7 +412,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override byte[] ToByteArray()
+        public override ReadOnlySpan<byte> AsSpan()
         {
             return _k;
         }

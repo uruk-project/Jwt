@@ -456,7 +456,7 @@ namespace JsonWebToken
         /// <summary>
         /// Provides the binary representation of the key.
         /// </summary>
-        public abstract byte[] ToByteArray();
+        public abstract ReadOnlySpan<byte> AsSpan();
 
         /// <summary>
         /// Creates a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.

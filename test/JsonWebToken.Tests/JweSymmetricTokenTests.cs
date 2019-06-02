@@ -91,14 +91,17 @@ namespace JsonWebToken.Tests
                     switch (enc)
                     {
                         case "A128CBC-HS256":
-                        case "A128GCM":
                             return _symmetric256Key;
+                        case "A128GCM":
+                            return _symmetric128Key;
                         case "A192CBC-HS384":
-                        case "A192GCM":
                             return _symmetric384Key;
+                        case "A192GCM":
+                            return _symmetric192Key;
                         case "A256CBC-HS512":
-                        case "A256GCM":
                             return _symmetric512Key;
+                        case "A256GCM":
+                            return _symmetric256Key;
                     }
                     break;
             }
@@ -122,15 +125,12 @@ namespace JsonWebToken.Tests
             yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes256KW.Utf8Name };
             yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Direct.Utf8Name };
 
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes128GcmKW.Utf8Name };
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes192GcmKW.Utf8Name };
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes256GcmKW.Utf8Name };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes128GcmKW.Utf8Name };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes192GcmKW.Utf8Name };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes256GcmKW.Utf8Name };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes128GcmKW.Utf8Name };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes192GcmKW.Utf8Name };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes256GcmKW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.Aes128GcmKW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.Aes192GcmKW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Aes256GcmKW.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.Direct.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.Direct.Utf8Name };
+            yield return new object[] { EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Direct.Utf8Name };
         }
     }
 }

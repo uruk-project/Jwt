@@ -99,7 +99,7 @@ namespace JsonWebToken
                     Errors.ThrowKeyWrapFailed();
                 }
 
-                encryptor = cek.CreateAuthenticatedEncryptor(encryptionAlgorithm);
+                encryptor = context.AuthenticatedEncryptionFactory.Create(cek, encryptionAlgorithm);
             }
 
             if (encryptor == null)

@@ -6,6 +6,7 @@ using Xunit;
 
 namespace JsonWebToken.Tests
 {
+
     public class ECJwkTests : JwkTestsBase
     {
         [Theory]

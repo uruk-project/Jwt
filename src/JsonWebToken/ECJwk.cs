@@ -267,6 +267,36 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Generates a private <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curve"></param>
+        /// <returns></returns>
+        public static ECJwk GeneratePrivateKey(in EllipticalCurve curve) => GenerateKey(curve, true, algorithm: null);
+
+        /// <summary>
+        /// Generates a private <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curve"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static ECJwk GeneratePrivateKey(in EllipticalCurve curve, string algorithm) => GenerateKey(curve, true, algorithm: algorithm);
+
+        /// <summary>
+        /// Generates a public <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curve"></param>
+        /// <returns></returns>
+        public static ECJwk GeneratePublicKey(in EllipticalCurve curve) => GenerateKey(curve, false, algorithm: null);
+
+        /// <summary>
+        /// Generates a public <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curve"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static ECJwk GeneratePublicKey(in EllipticalCurve curve, string algorithm) => GenerateKey(curve, false, algorithm: algorithm);
+
+        /// <summary>
         /// Generates a <see cref="ECJwk"/>.
         /// </summary>
         /// <param name="curve"></param>
@@ -368,7 +398,7 @@ namespace JsonWebToken
         public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint) => FromParameters(parameters, (byte[])null, computeThumbprint);
 
         /// <inheritdoc />
-        public override byte[] ToByteArray()
+        public override ReadOnlySpan<byte> AsSpan()
         {
 #if !NETSTANDARD2_0
             using (var ecdh = ECDiffieHellman.Create(ExportParameters()))

@@ -53,6 +53,12 @@ namespace JsonWebToken.Internal
             }
             else
             {
+#if NETCOREAPP3_0
+                if (EncryptionAlgorithm.Category == EncryptionType.AesGcm)
+                {
+                    return _keySizeInBytes + 8;
+                }
+#endif
                 return EncryptionAlgorithm.KeyWrappedSizeInBytes;
             }
         }
@@ -118,9 +124,9 @@ namespace JsonWebToken.Internal
                 header.Add(new JwtProperty(HeaderParameters.EpkUtf8, epk.AsJwtObject()));
             }
 
+            var kek = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
             if (Algorithm.ProduceEncryptionKey)
             {
-                var kek = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
                 using (KeyWrapper keyWrapper = kek.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
                 {
                     return keyWrapper.TryWrapKey(null, header, destination, out contentEncryptionKey, out bytesWritten);
@@ -128,8 +134,8 @@ namespace JsonWebToken.Internal
             }
             else
             {
-                contentEncryptionKey = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
-                bytesWritten = 0;
+                contentEncryptionKey = kek;
+                bytesWritten = _keySizeInBytes;
                 return true;
             }
         }
