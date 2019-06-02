@@ -61,7 +61,6 @@ namespace JsonWebToken.Internal
             return (plaintextSize + 16) & ~15;
         }
 
-
         /// <inheritdoc />
         public override int GetNonceSize()
         {
