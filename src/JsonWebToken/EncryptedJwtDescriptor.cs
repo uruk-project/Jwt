@@ -72,8 +72,6 @@ namespace JsonWebToken
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
             var key = Key;
             KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)(Algorithm ?? key?.Alg);
-            bool isDirectEncryption = contentEncryptionAlgorithm == KeyManagementAlgorithm.Direct;
-
             KeyWrapper keyWrapper = context.KeyWrapFactory.Create(key, encryptionAlgorithm, contentEncryptionAlgorithm);
             if (keyWrapper == null)
             {
@@ -127,11 +125,10 @@ namespace JsonWebToken
                             {
                                 Errors.ThrowNotSupportedCompressionAlgorithm(compressionAlgorithm);
                             }
-                        }
-
-                        if (compressor != null)
-                        {
-                            payload = compressor.Compress(payload);
+                            else
+                            {
+                                payload = compressor.Compress(payload);
+                            }
                         }
 
                         int ciphertextLength = encryptor.GetCiphertextSize(payload.Length);
@@ -154,19 +151,13 @@ namespace JsonWebToken
                             + Base64Url.GetArraySizeRequiredToEncode(ciphertext.Length)
                             + Base64Url.GetArraySizeRequiredToEncode(tag.Length)
                             + (Constants.JweSegmentCount - 1);
-                        if (wrappedKey != null)
-                        {
-                            encryptionLength += Base64Url.GetArraySizeRequiredToEncode(wrappedKey.Length);
-                        }
+                        encryptionLength += Base64Url.GetArraySizeRequiredToEncode(wrappedKey.Length);
 
                         Span<byte> encryptedToken = output.GetSpan(encryptionLength).Slice(0, encryptionLength);
 
                         base64EncodedHeader.CopyTo(encryptedToken);
                         encryptedToken[bytesWritten++] = Constants.ByteDot;
-                        if (wrappedKey != null)
-                        {
-                            bytesWritten += Base64Url.Encode(wrappedKey, encryptedToken.Slice(bytesWritten));
-                        }
+                        bytesWritten += Base64Url.Encode(wrappedKey, encryptedToken.Slice(bytesWritten));
 
                         encryptedToken[bytesWritten++] = Constants.ByteDot;
                         bytesWritten += Base64Url.Encode(nonce, encryptedToken.Slice(bytesWritten));
