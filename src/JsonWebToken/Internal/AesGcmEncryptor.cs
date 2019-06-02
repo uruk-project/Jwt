@@ -61,9 +61,21 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritdoc />
+        public override int GetBase64NonceSize()
+        {
+            return 16;
+        }
+
+        /// <inheritdoc />
         public override int GetTagSize()
         {
             return 16;
+        }
+
+        /// <inheritdoc />
+        public override int GetBase64TagSize()
+        {
+            return 22;
         }
 
         /// <inheritdoc />

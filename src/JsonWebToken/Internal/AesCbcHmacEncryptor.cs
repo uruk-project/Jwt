@@ -61,6 +61,19 @@ namespace JsonWebToken.Internal
             return (plaintextSize + 16) & ~15;
         }
 
+
+        /// <inheritdoc />
+        public override int GetNonceSize()
+        {
+            return 16;
+        }
+
+        /// <inheritdoc />
+        public override int GetBase64NonceSize()
+        {
+            return 22;
+        }
+
         /// <inheritdoc />
         public override int GetTagSize()
         {
@@ -68,9 +81,9 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritdoc />
-        public override int GetNonceSize()
+        public override int GetBase64TagSize()
         {
-            return 16;
+            return Base64Url.GetArraySizeRequiredToEncode(_signer.HashSizeInBytes);
         }
 
         /// <inheritdoc />

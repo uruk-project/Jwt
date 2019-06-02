@@ -147,9 +147,9 @@ namespace JsonWebToken
 
                         int encryptionLength =
                             base64EncodedHeader.Length
-                            + Base64Url.GetArraySizeRequiredToEncode(nonce.Length)
+                            + encryptor.GetBase64NonceSize()
                             + Base64Url.GetArraySizeRequiredToEncode(ciphertext.Length)
-                            + Base64Url.GetArraySizeRequiredToEncode(tag.Length)
+                            + encryptor.GetBase64TagSize()
                             + (Constants.JweSegmentCount - 1);
                         encryptionLength += Base64Url.GetArraySizeRequiredToEncode(wrappedKey.Length);
 
