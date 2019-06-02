@@ -16,67 +16,67 @@ namespace JsonWebToken
         /// <summary>
         /// 'none'
         /// </summary>
-        public static readonly SignatureAlgorithm None = new SignatureAlgorithm(id: Algorithm.None, "none", AlgorithmCategory.None, requiredKeySizeInBits: 0, new HashAlgorithmName());
+        public static readonly SignatureAlgorithm None = new SignatureAlgorithm(id: JsonWebToken.Algorithms.None, "none", AlgorithmCategory.None, requiredKeySizeInBits: 0, new HashAlgorithmName());
 
         /// <summary>
         /// 'HS256'
         /// </summary>
-        public static readonly SignatureAlgorithm HmacSha256 = new SignatureAlgorithm(id: Algorithm.HmacSha256, "HS256", AlgorithmCategory.Hmac, requiredKeySizeInBits: 128/*?*/, HashAlgorithmName.SHA256);
+        public static readonly SignatureAlgorithm HmacSha256 = new SignatureAlgorithm(id: JsonWebToken.Algorithms.HmacSha256, "HS256", AlgorithmCategory.Hmac, requiredKeySizeInBits: 128/*?*/, HashAlgorithmName.SHA256);
 
         /// <summary>
         /// 'HS384'
         /// </summary>
-        public static readonly SignatureAlgorithm HmacSha384 = new SignatureAlgorithm(id: Algorithm.HmacSha384, "HS384", AlgorithmCategory.Hmac, requiredKeySizeInBits: 192/*?*/, HashAlgorithmName.SHA384);
+        public static readonly SignatureAlgorithm HmacSha384 = new SignatureAlgorithm(id: JsonWebToken.Algorithms.HmacSha384, "HS384", AlgorithmCategory.Hmac, requiredKeySizeInBits: 192/*?*/, HashAlgorithmName.SHA384);
 
         /// <summary>
         /// 'HS512'
         /// </summary>
-        public static readonly SignatureAlgorithm HmacSha512 = new SignatureAlgorithm(id: Algorithm.HmacSha512, "HS512", AlgorithmCategory.Hmac, requiredKeySizeInBits: 256/*?*/, HashAlgorithmName.SHA512);
+        public static readonly SignatureAlgorithm HmacSha512 = new SignatureAlgorithm(id: JsonWebToken.Algorithms.HmacSha512, "HS512", AlgorithmCategory.Hmac, requiredKeySizeInBits: 256/*?*/, HashAlgorithmName.SHA512);
 
         /// <summary>
         /// 'RS256'
         /// </summary>
-        public static readonly SignatureAlgorithm RsaSha256 = new SignatureAlgorithm(id: Algorithm.RsaSha256, "RS256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA256);
+        public static readonly SignatureAlgorithm RsaSha256 = new SignatureAlgorithm(id: JsonWebToken.Algorithms.RsaSha256, "RS256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA256);
 
         /// <summary>
         /// 'RS384'
         /// </summary>
-        public static readonly SignatureAlgorithm RsaSha384 = new SignatureAlgorithm(id: Algorithm.RsaSha384, "RS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA384);
+        public static readonly SignatureAlgorithm RsaSha384 = new SignatureAlgorithm(id: JsonWebToken.Algorithms.RsaSha384, "RS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA384);
 
         /// <summary>
         /// 'RS512'
         /// </summary>
-        public static readonly SignatureAlgorithm RsaSha512 = new SignatureAlgorithm(id: Algorithm.RsaSha512, "RS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA512);
+        public static readonly SignatureAlgorithm RsaSha512 = new SignatureAlgorithm(id: JsonWebToken.Algorithms.RsaSha512, "RS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA512);
 
         /// <summary>
         /// 'ES256'
         /// </summary>
-        public static readonly SignatureAlgorithm EcdsaSha256 = new SignatureAlgorithm(id: Algorithm.EcdsaSha256, "ES256", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 256, HashAlgorithmName.SHA256);
+        public static readonly SignatureAlgorithm EcdsaSha256 = new SignatureAlgorithm(id: JsonWebToken.Algorithms.EcdsaSha256, "ES256", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 256, HashAlgorithmName.SHA256);
 
         /// <summary>
         /// 'ES384'
         /// </summary>
-        public static readonly SignatureAlgorithm EcdsaSha384 = new SignatureAlgorithm(id: Algorithm.EcdsaSha384, "ES384", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 384, HashAlgorithmName.SHA384);
+        public static readonly SignatureAlgorithm EcdsaSha384 = new SignatureAlgorithm(id: JsonWebToken.Algorithms.EcdsaSha384, "ES384", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 384, HashAlgorithmName.SHA384);
 
         /// <summary>
         /// 'ES512'
         /// </summary>
-        public static readonly SignatureAlgorithm EcdsaSha512 = new SignatureAlgorithm(id: Algorithm.EcdsaSha512, "ES512", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 521, HashAlgorithmName.SHA512);
+        public static readonly SignatureAlgorithm EcdsaSha512 = new SignatureAlgorithm(id: JsonWebToken.Algorithms.EcdsaSha512, "ES512", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 521, HashAlgorithmName.SHA512);
 
         /// <summary>
         /// 'PS256'
         /// </summary>
-        public static readonly SignatureAlgorithm RsaSsaPssSha256 = new SignatureAlgorithm(id: Algorithm.RsaSsaPssSha256, "PS256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA256);
+        public static readonly SignatureAlgorithm RsaSsaPssSha256 = new SignatureAlgorithm(id: JsonWebToken.Algorithms.RsaSsaPssSha256, "PS256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA256);
 
         /// <summary>
         /// 'PS384'
         /// </summary>
-        public static readonly SignatureAlgorithm RsaSsaPssSha384 = new SignatureAlgorithm(id: Algorithm.RsaSsaPssSha384, "PS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA384);
+        public static readonly SignatureAlgorithm RsaSsaPssSha384 = new SignatureAlgorithm(id: JsonWebToken.Algorithms.RsaSsaPssSha384, "PS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA384);
 
         /// <summary>
         /// 'PS512'
         /// </summary>
-        public static readonly SignatureAlgorithm RsaSsaPssSha512 = new SignatureAlgorithm(id: Algorithm.RsaSsaPssSha512, "PS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA512);
+        public static readonly SignatureAlgorithm RsaSsaPssSha512 = new SignatureAlgorithm(id: JsonWebToken.Algorithms.RsaSsaPssSha512, "PS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA512);
 
         private readonly int _id;
         private readonly string _name;

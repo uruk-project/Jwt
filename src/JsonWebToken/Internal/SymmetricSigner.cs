@@ -52,15 +52,15 @@ namespace JsonWebToken.Internal
 
             _hashSizeInBytes = Algorithm.RequiredKeySizeInBits >> 2;
             _base64HashSizeInBytes = Base64Url.GetArraySizeRequiredToEncode(_hashSizeInBytes);
-            switch (Algorithm.Name)
+            switch (Algorithm.Id)
             {
-                case "HS256":
+                case Algorithms.HmacSha256:
                     _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha256ObjectPoolPolicy(key.ToArray()));
                     break;
-                case "HS384":
+                case Algorithms.HmacSha384:
                     _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha384ObjectPoolPolicy(key.ToArray()));
                     break;
-                case "HS512":
+                case Algorithms.HmacSha512:
                     _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha512ObjectPoolPolicy(key.ToArray()));
                     break;
                 default:

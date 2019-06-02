@@ -3,7 +3,7 @@
 
 namespace JsonWebToken
 {
-    internal static class Algorithm
+    internal static class Algorithms
     {
         /// <summary>
         /// 'none'
