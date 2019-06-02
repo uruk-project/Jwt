@@ -11,12 +11,13 @@ namespace JsonWebToken.Internal
         private readonly ObjectPool<ECDsa> _hashAlgorithmPool;
         private readonly int _hashSize;
         private readonly HashAlgorithmName _hashAlgorithm;
+        private readonly int _base64HashSize;
         private bool _disposed;
 
         public EcdsaSigner(ECJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
             : base(key, algorithm)
         {
-            if (key == null)
+            if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
@@ -33,12 +34,15 @@ namespace JsonWebToken.Internal
 
             _hashAlgorithm = algorithm.HashAlgorithm;
             _hashSize = key.Crv.HashSize;
+            _base64HashSize = Base64Url.GetArraySizeRequiredToEncode(_hashSize);
 
             _hashAlgorithmPool = new ObjectPool<ECDsa>(new ECDsaObjectPoolPolicy(key, algorithm, willCreateSignatures));
         }
 
         /// <inheritsdoc />
         public override int HashSizeInBytes => _hashSize;
+
+        public override int Base64HashSizeInBytes => _base64HashSize;
 
         /// <inheritsdoc />
         public override bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)

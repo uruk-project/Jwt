@@ -87,9 +87,9 @@ namespace JsonWebToken.Internal
 
             contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
 #if !NETSTANDARD2_0
-            return _rsa.TryEncrypt(contentEncryptionKey.ToByteArray(), destination, _padding, out bytesWritten);
+            return _rsa.TryEncrypt(contentEncryptionKey.AsSpan(), destination, _padding, out bytesWritten);
 #else
-            var result = _rsa.Encrypt(contentEncryptionKey.ToByteArray(), _padding);
+            var result = _rsa.Encrypt(contentEncryptionKey.AsSpan().ToArray(), _padding);
             result.CopyTo(destination);
             bytesWritten = result.Length;
             return true;

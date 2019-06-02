@@ -240,7 +240,18 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public override Signer CreateSignerForSignature(SignatureAlgorithm algorithm)
+        {
+            return CreateSigner(algorithm, willCreateSignatures: true);
+        }
+
+        /// <inheritsdoc />
+        public override Signer CreateSignerForValidation(SignatureAlgorithm algorithm)
+        {
+            return CreateSigner(algorithm, willCreateSignatures: false);
+        }
+
+        private Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (algorithm is null)
             {
@@ -308,6 +319,36 @@ namespace JsonWebToken
         public byte[] QI { get; private set; }
 
         /// <summary>
+        /// Generates a new random private <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static RsaJwk GeneratePrivateKey(int sizeInBits, byte[] algorithm) => GenerateKey(sizeInBits, true, algorithm);
+
+        /// <summary>
+        /// Generates a new random private <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <returns></returns>
+        public static RsaJwk GeneratePrivateKey(int sizeInBits) => GenerateKey(sizeInBits, true, null);
+
+        /// <summary>
+        /// Generates a new random public <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static RsaJwk GeneratePublicKey(int sizeInBits, byte[] algorithm) => GenerateKey(sizeInBits, false, algorithm);
+
+        /// <summary>
+        /// Generates a new random private <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <returns></returns>
+        public static RsaJwk GeneratePublicKey(int sizeInBits) => GenerateKey(sizeInBits, false, null);
+
+        /// <summary>
         /// Generates a new RSA key.
         /// </summary>
         /// <param name="sizeInBits">The key size in bits.</param>
@@ -325,12 +366,11 @@ namespace JsonWebToken
         public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, byte[] algorithm)
         {
 #if NETSTANDARD2_0
-            using (RSA rsa = new RSACng())
+            using (RSA rsa = new RSACng(sizeInBits))
 #else
-            using (RSA rsa = RSA.Create())
+            using (RSA rsa = RSA.Create(sizeInBits))
 #endif
             {
-                rsa.KeySize = sizeInBits;
                 RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
 
                 var key = FromParameters(rsaParameters, false);
@@ -383,7 +423,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override byte[] ToByteArray()
+        public override ReadOnlySpan<byte> AsSpan()
         {
             throw new NotImplementedException();
         }
@@ -492,6 +532,10 @@ namespace JsonWebToken
                                             {
                                                 key.Q = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
+                                            else if (*pPropertyName == (byte)'d')
+                                            {
+                                                key.D = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                            }
                                             break;
 
                                         case 2:
@@ -598,28 +642,26 @@ namespace JsonWebToken
                 int hash = (int)2166136261;
 
                 var e = E;
-                int length = Math.Min(e.Length, sizeof(int));
-                if (length >= sizeof(int))
+                if (e.Length >= sizeof(int))
                 {
                     hash = (hash ^ Unsafe.ReadUnaligned<int>(ref e[0])) * p;
                 }
                 else
                 {
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < e.Length; i++)
                     {
                         hash = (hash ^ e[i]) * p;
                     }
                 }
 
                 var n = N;
-                length = Math.Min(n.Length, sizeof(int));
-                if (length >= sizeof(int))
+                if (n.Length >= sizeof(int))
                 {
                     hash = (hash ^ Unsafe.ReadUnaligned<int>(ref n[0])) * p;
                 }
                 else
                 {
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < n.Length; i++)
                     {
                         hash = (hash ^ n[i]) * p;
                     }

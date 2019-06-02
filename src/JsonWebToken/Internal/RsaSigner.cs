@@ -13,13 +13,13 @@ namespace JsonWebToken
         private readonly HashAlgorithmName _hashAlgorithm;
         private readonly int _hashSizeInBytes;
         private readonly RSASignaturePadding _signaturePadding;
-
+        private readonly int _base64HashSizeInBytes;
         private bool _disposed;
 
         public RsaSigner(RsaJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
             : base(key, algorithm)
         {
-            if (key == null)
+            if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
@@ -61,10 +61,13 @@ namespace JsonWebToken
             }
 
             _hashSizeInBytes = key.KeySizeInBits >> 3;
+            _base64HashSizeInBytes = Base64Url.GetArraySizeRequiredToEncode(_hashSizeInBytes);
             _hashAlgorithmPool = new ObjectPool<RSA>(new RsaObjectPoolPolicy(key.ExportParameters()));
         }
 
         public override int HashSizeInBytes => _hashSizeInBytes;
+
+        public override int Base64HashSizeInBytes => _base64HashSizeInBytes;
 
         public override bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
         {

@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
 {
+
     internal sealed class AesGcmKeyWrapper : KeyWrapper
     {
         private const int IVSize = 12;
@@ -16,18 +17,22 @@ namespace JsonWebToken.Internal
         public AesGcmKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
+            if (algorithm.Category != AlgorithmCategory.AesGcm)
+            {
+                Errors.ThrowNotSupportedAlgorithmForKeyWrap(algorithm);
+            }
         }
 
         /// <inheritsdoc />
         public override int GetKeyUnwrapSize(int wrappedKeySize)
         {
-            return wrappedKeySize - 8;
+            return wrappedKeySize;
         }
 
         /// <inheritsdoc />
         public override int GetKeyWrapSize()
         {
-            return EncryptionAlgorithm.KeyWrappedSizeInBytes;
+            return Key.KeySizeInBits >> 3;
         }
 
         /// <inheritsdoc />
@@ -44,7 +49,7 @@ namespace JsonWebToken.Internal
             {
                 Base64Url.Decode(header.IV, nonce);
                 Base64Url.Decode(header.Tag, tag);
-                using (var aesGcm = new AesGcm(Key.ToByteArray()))
+                using (var aesGcm = new AesGcm(Key.AsSpan()))
                 {
                     aesGcm.Decrypt(nonce, keyBytes, tag, destination);
                     bytesWritten = destination.Length;
@@ -72,9 +77,9 @@ namespace JsonWebToken.Internal
 
             try
             {
-                using (var aesGcm = new AesGcm(Key.ToByteArray()))
+                using (var aesGcm = new AesGcm(Key.AsSpan()))
                 {
-                    aesGcm.Encrypt(nonce, contentEncryptionKey.ToByteArray(), destination, tag);
+                    aesGcm.Encrypt(nonce, contentEncryptionKey.AsSpan(), destination, tag);
                     bytesWritten = destination.Length;
 
                     header.Add(new JwtProperty(HeaderParameters.IVUtf8, Base64Url.Encode(nonce)));

@@ -21,7 +21,7 @@ namespace JsonWebToken.Internal
 
         public AesCbcHmacEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (key == null)
+            if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
@@ -48,7 +48,7 @@ namespace JsonWebToken.Internal
             var hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
 
             _aesPool = new ObjectPool<Aes>(new AesPooledPolicy(aesKey));
-            _signer = hmacKey.CreateSigner(encryptionAlgorithm.SignatureAlgorithm, true) as SymmetricSigner;
+            _signer = hmacKey.CreateSignerForSignature(encryptionAlgorithm.SignatureAlgorithm) as SymmetricSigner;
             if (_signer == null)
             {
                 Errors.ThrowNotSupportedSignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
@@ -62,15 +62,27 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritdoc />
+        public override int GetNonceSize()
+        {
+            return 16;
+        }
+
+        /// <inheritdoc />
+        public override int GetBase64NonceSize()
+        {
+            return 22;
+        }
+
+        /// <inheritdoc />
         public override int GetTagSize()
         {
             return _signer.HashSizeInBytes;
         }
 
         /// <inheritdoc />
-        public override int GetNonceSize()
+        public override int GetBase64TagSize()
         {
-            return 16;
+            return _signer.Base64HashSizeInBytes;
         }
 
         /// <inheritdoc />

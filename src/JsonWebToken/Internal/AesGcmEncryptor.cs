@@ -22,7 +22,7 @@ namespace JsonWebToken.Internal
                 Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
             }
 
-            if (key == null)
+            if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
@@ -44,7 +44,7 @@ namespace JsonWebToken.Internal
 
             using (var aes = new AesGcm(_key.K))
             {
-                aes.Encrypt(plaintext, nonce, ciphertext, authenticationTag, associatedData);
+                aes.Encrypt(nonce, plaintext, ciphertext, authenticationTag, associatedData);
             }
         }
 
@@ -61,9 +61,21 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritdoc />
+        public override int GetBase64NonceSize()
+        {
+            return 16;
+        }
+
+        /// <inheritdoc />
         public override int GetTagSize()
         {
             return 16;
+        }
+
+        /// <inheritdoc />
+        public override int GetBase64TagSize()
+        {
+            return 22;
         }
 
         /// <inheritdoc />
@@ -76,7 +88,7 @@ namespace JsonWebToken.Internal
 
             try
             {
-                using (var aes = new AesGcm(_key.ToByteArray()))
+                using (var aes = new AesGcm(_key.K))
                 {
                     aes.Decrypt(nonce, ciphertext, authenticationTag, plaintext, associatedData);
                     bytesWritten = plaintext.Length;

@@ -439,15 +439,11 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override void Encode(EncodingContext context, IBufferWriter<byte> output)
         {
-            Signer signer = null;
             var alg = (Algorithm ?? Key?.SignatureAlgorithm) ?? SignatureAlgorithm.None;
-            if (Key != null)
+            Signer signer = context.SignatureFactory.CreateForSignature(Key, alg);
+            if (signer == null)
             {
-                signer = context.SignatureFactory.Create(Key, alg, willCreateSignatures: true);
-                if (signer == null)
-                {
-                    Errors.ThrowNotSupportedSignatureAlgorithm(alg, Key);
-                }
+                Errors.ThrowNotSupportedSignatureAlgorithm(alg, Key);
             }
 
             if (context.TokenLifetimeInMinutes != 0 || context.GenerateIssuedTime)
@@ -469,7 +465,7 @@ namespace JsonWebToken
                 Payload.Serialize(payloadBufferWriter);
                 var payloadJson = payloadBufferWriter.WrittenSpan;
                 int length = Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
-                           + (Key == null ? 0 : Base64Url.GetArraySizeRequiredToEncode(signer.HashSizeInBytes))
+                           + signer.Base64HashSizeInBytes
                            + (Constants.JwsSegmentCount - 1);
                 ReadOnlySpan<byte> headerJson = default;
                 var headerCache = context.HeaderCache;
@@ -503,16 +499,12 @@ namespace JsonWebToken
                     buffer[headerBytesWritten] = Constants.ByteDot;
                     int payloadBytesWritten = Base64Url.Encode(payloadJson, buffer.Slice(headerBytesWritten + 1));
                     buffer[payloadBytesWritten + headerBytesWritten + 1] = Constants.ByteDot;
-                    int bytesWritten = 0;
-                    if (signer != null)
-                    {
-                        Span<byte> signature = stackalloc byte[signer.HashSizeInBytes];
-                        bool success = signer.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signatureBytesWritten);
-                        Debug.Assert(success);
-                        Debug.Assert(signature.Length == signatureBytesWritten);
+                    Span<byte> signature = stackalloc byte[signer.HashSizeInBytes];
+                    bool success = signer.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signatureBytesWritten);
+                    Debug.Assert(success);
+                    Debug.Assert(signature.Length == signatureBytesWritten);
 
-                        bytesWritten = Base64Url.Encode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)));
-                    }
+                    int bytesWritten = Base64Url.Encode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)));
 
                     Debug.Assert(length == payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten);
                     output.Advance(length);

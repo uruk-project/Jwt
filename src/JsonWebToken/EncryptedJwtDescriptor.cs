@@ -70,46 +70,30 @@ namespace JsonWebToken
         protected void EncryptToken(EncodingContext context, ReadOnlySpan<byte> payload, IBufferWriter<byte> output)
         {
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
-            KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)(Algorithm ?? Key?.Alg);
-            bool isDirectEncryption = contentEncryptionAlgorithm == KeyManagementAlgorithm.Direct;
-
-            AuthenticatedEncryptor encryptor = null;
-            KeyWrapper keyWrapper = null;
-            if (isDirectEncryption)
+            var key = Key;
+            KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)(Algorithm ?? key?.Alg);
+            KeyWrapper keyWrapper = context.KeyWrapFactory.Create(key, encryptionAlgorithm, contentEncryptionAlgorithm);
+            if (keyWrapper == null)
             {
-                encryptor = context.AuthenticatedEncryptionFactory.Create(Key, encryptionAlgorithm);
-            }
-            else
-            {
-                keyWrapper = context.KeyWrapFactory.Create(Key, encryptionAlgorithm, contentEncryptionAlgorithm);
-                if (keyWrapper == null)
-                {
-                    Errors.ThrowNotSuportedAlgorithmForKeyWrap(encryptionAlgorithm);
-                }
+                Errors.ThrowNotSuportedAlgorithmForKeyWrap(encryptionAlgorithm);
             }
 
             var header = Header;
-            Span<byte> wrappedKey = contentEncryptionAlgorithm.ProduceEncryptionKey
-                                        ? stackalloc byte[keyWrapper.GetKeyWrapSize()]
-                                        : null;
-            if (!isDirectEncryption)
+            Span<byte> wrappedKey = stackalloc byte[keyWrapper.GetKeyWrapSize()];
+            if (!keyWrapper.TryWrapKey(null, header, wrappedKey, out var cek, out var keyWrappedBytesWritten))
             {
-                if (!keyWrapper.TryWrapKey(null, header, wrappedKey, out var cek, out var keyWrappedBytesWritten))
-                {
-                    Errors.ThrowKeyWrapFailed();
-                }
-
-                encryptor = cek.CreateAuthenticatedEncryptor(encryptionAlgorithm);
+                Errors.ThrowKeyWrapFailed();
             }
 
+            AuthenticatedEncryptor encryptor = context.AuthenticatedEncryptionFactory.Create(cek, encryptionAlgorithm);
             if (encryptor == null)
             {
                 Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
             }
 
-            if (header.ContainsKey(WellKnownProperty.Kid) && Key.Kid != null)
+            if (header.ContainsKey(WellKnownProperty.Kid) && key.Kid != null)
             {
-                header.Replace(new JwtProperty(WellKnownProperty.Kid, Key.Kid));
+                header.Replace(new JwtProperty(WellKnownProperty.Kid, key.Kid));
             }
 
             try
@@ -141,11 +125,10 @@ namespace JsonWebToken
                             {
                                 Errors.ThrowNotSupportedCompressionAlgorithm(compressionAlgorithm);
                             }
-                        }
-
-                        if (compressor != null)
-                        {
-                            payload = compressor.Compress(payload);
+                            else
+                            {
+                                payload = compressor.Compress(payload);
+                            }
                         }
 
                         int ciphertextLength = encryptor.GetCiphertextSize(payload.Length);
@@ -164,23 +147,17 @@ namespace JsonWebToken
 
                         int encryptionLength =
                             base64EncodedHeader.Length
-                            + Base64Url.GetArraySizeRequiredToEncode(nonce.Length)
+                            + encryptor.GetBase64NonceSize()
                             + Base64Url.GetArraySizeRequiredToEncode(ciphertext.Length)
-                            + Base64Url.GetArraySizeRequiredToEncode(tag.Length)
+                            + encryptor.GetBase64TagSize()
                             + (Constants.JweSegmentCount - 1);
-                        if (wrappedKey != null)
-                        {
-                            encryptionLength += Base64Url.GetArraySizeRequiredToEncode(wrappedKey.Length);
-                        }
+                        encryptionLength += Base64Url.GetArraySizeRequiredToEncode(wrappedKey.Length);
 
                         Span<byte> encryptedToken = output.GetSpan(encryptionLength).Slice(0, encryptionLength);
 
                         base64EncodedHeader.CopyTo(encryptedToken);
                         encryptedToken[bytesWritten++] = Constants.ByteDot;
-                        if (wrappedKey != null)
-                        {
-                            bytesWritten += Base64Url.Encode(wrappedKey, encryptedToken.Slice(bytesWritten));
-                        }
+                        bytesWritten += Base64Url.Encode(wrappedKey, encryptedToken.Slice(bytesWritten));
 
                         encryptedToken[bytesWritten++] = Constants.ByteDot;
                         bytesWritten += Base64Url.Encode(nonce, encryptedToken.Slice(bytesWritten));
@@ -207,7 +184,7 @@ namespace JsonWebToken
             }
             catch (Exception ex)
             {
-                Errors.ThrowEncryptionFailed(encryptionAlgorithm, Key, ex);
+                Errors.ThrowEncryptionFailed(encryptionAlgorithm, key, ex);
             }
         }
 

@@ -140,7 +140,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override bool IsSupported(KeyManagementAlgorithm algorithm)
         {
-            return algorithm.Category == AlgorithmCategory.Aes && algorithm.RequiredKeySizeInBits == KeySizeInBits;
+            return ((algorithm.Category & AlgorithmCategory.Aes) != 0 && algorithm.RequiredKeySizeInBits == KeySizeInBits) || (algorithm == KeyManagementAlgorithm.Direct);
         }
 
         /// <inheritsdoc />
@@ -152,49 +152,63 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override bool IsSupported(EncryptionAlgorithm algorithm)
         {
+#if NETCOREAPP3_0
+            return algorithm.Category == EncryptionType.AesHmac || algorithm.Category == EncryptionType.AesGcm;
+#else
             return algorithm.Category == EncryptionType.AesHmac;
+#endif
+        }
+
+        /// <inheritdoc />
+        public override Signer CreateSignerForSignature(SignatureAlgorithm algorithm)
+        {
+            return CreateSigner(algorithm);
+        }
+
+        /// <inheritdoc />
+        public override Signer CreateSignerForValidation(SignatureAlgorithm algorithm)
+        {
+            return CreateSigner(algorithm);
         }
 
         /// <inheritsdoc />
-        public override Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
+        private Signer CreateSigner(SignatureAlgorithm algorithm)
         {
-            if (algorithm is null)
+            if (!(algorithm is null))
             {
-                goto NotSupported;
+                if (IsSupported(algorithm))
+                {
+                    return new SymmetricSigner(this, algorithm);
+                }
             }
 
-            if (IsSupported(algorithm))
-            {
-                return new SymmetricSigner(this, algorithm);
-            }
-
-        NotSupported:
             return null;
         }
 
         /// <inheritsdoc />
         public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
-            if (contentEncryptionAlgorithm is null)
+            if (!(contentEncryptionAlgorithm is null))
             {
-                goto NotSupported;
-            }
-
-            if (IsSupported(contentEncryptionAlgorithm))
-            {
-                if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
+                if (IsSupported(contentEncryptionAlgorithm))
                 {
-                    return new AesKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-                }
+                    if (contentEncryptionAlgorithm.Category == AlgorithmCategory.Aes)
+                    {
+                        return new AesKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                    }
 #if NETCOREAPP3_0
-                else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
-                {
-                    return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-                }
+                    else if (contentEncryptionAlgorithm.Category == AlgorithmCategory.AesGcm)
+                    {
+                        return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                    }
 #endif
+                    else if (!contentEncryptionAlgorithm.ProduceEncryptionKey)
+                    {
+                        return new DirectKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                    }
+                }
             }
 
-        NotSupported:
             return null;
         }
 
@@ -402,7 +416,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override byte[] ToByteArray()
+        public override ReadOnlySpan<byte> AsSpan()
         {
             return _k;
         }
@@ -466,18 +480,18 @@ namespace JsonWebToken
         {
             unchecked
             {
-                int length = Math.Min(_k.Length, 16);
-                if (length >= sizeof(int))
+                var k = _k;
+                if (k.Length >= sizeof(int))
                 {
-                    return Unsafe.ReadUnaligned<int>(ref _k[0]);
+                    return Unsafe.ReadUnaligned<int>(ref k[0]);
                 }
                 else
                 {
                     const int p = 16777619;
                     int hash = (int)2166136261;
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < k.Length; i++)
                     {
-                        hash = (hash ^ _k[i]) * p;
+                        hash = (hash ^ k[i]) * p;
                     }
 
                     return hash;

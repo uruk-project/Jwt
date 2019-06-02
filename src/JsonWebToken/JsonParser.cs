@@ -168,7 +168,7 @@ namespace JsonWebToken
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.EndObject:
-                        if (objectCount != 1)
+                        if (objectCount != 0)
                         {
                             objectCount--;
                             break;

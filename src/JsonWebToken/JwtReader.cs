@@ -478,6 +478,7 @@ namespace JsonWebToken
             }
 
             return TokenValidationResult.Success(jws);
+
         Malformed:
             return TokenValidationResult.MalformedToken(exception: malformedException);
         }
@@ -723,7 +724,7 @@ namespace JsonWebToken
 
         private bool TryValidateSignature(ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signature, Jwk key, SignatureAlgorithm algorithm)
         {
-            var signer = _signatureFactory.Create(key, algorithm, willCreateSignatures: false);
+            var signer = _signatureFactory.CreateForValidation(key, algorithm);
             if (signer == null)
             {
                 return false;

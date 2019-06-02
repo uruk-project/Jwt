@@ -6,7 +6,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines the well known JWT properties.
     /// </summary>
-    public enum WellKnownProperty
+    public enum WellKnownProperty : byte
     {
         /// <summary>
         /// None.

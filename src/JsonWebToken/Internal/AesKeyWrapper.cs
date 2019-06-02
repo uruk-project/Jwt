@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
@@ -26,6 +25,11 @@ namespace JsonWebToken.Internal
         public AesKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
+            if (algorithm.Category != AlgorithmCategory.Aes)
+            {
+                Errors.ThrowNotSupportedAlgorithmForKeyWrap(algorithm);
+            }
+
             _aes = GetSymmetricAlgorithm(key, algorithm);
             _encryptorPool = new ObjectPool<ICryptoTransform>(new PooledEncryptorPolicy(_aes));
             _decryptorPool = new ObjectPool<ICryptoTransform>(new PooledDecryptorPolicy(_aes));
@@ -188,7 +192,7 @@ namespace JsonWebToken.Internal
             contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
             try
             {
-                return TryWrapKeyPrivate(contentEncryptionKey.ToByteArray(), destination, out bytesWritten);
+                return TryWrapKeyPrivate(contentEncryptionKey.AsSpan(), destination, out bytesWritten);
             }
             catch (Exception)
             {

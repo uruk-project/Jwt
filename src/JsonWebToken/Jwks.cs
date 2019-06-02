@@ -86,7 +86,7 @@ namespace JsonWebToken
         /// <param name="key"></param>
         public void Add(Jwk key)
         {
-            if (key == null)
+            if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
@@ -100,7 +100,7 @@ namespace JsonWebToken
         /// <param name="key"></param>
         public void Remove(Jwk key)
         {
-            if (key == null)
+            if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }

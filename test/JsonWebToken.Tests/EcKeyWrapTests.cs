@@ -36,7 +36,7 @@ namespace JsonWebToken.Tests
             Assert.True(wrapped);
 
             var expected = new byte[] { 86, 170, 141, 234, 248, 35, 109, 32, 92, 34, 40, 205, 113, 167, 16, 26 };
-            Assert.Equal(expected, cek.ToByteArray());
+            Assert.Equal(expected, cek.AsSpan().ToArray());
         }
 
         [Fact]

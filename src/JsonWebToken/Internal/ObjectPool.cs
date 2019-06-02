@@ -57,7 +57,7 @@ namespace JsonWebToken.Internal
         {
             var item = _firstItem;
 
-            if (item == null || Interlocked.CompareExchange(ref _firstItem, null, item) != item)
+            if (item is null || Interlocked.CompareExchange(ref _firstItem, null, item) != item)
             {
                 item = GetViaScan();
             }

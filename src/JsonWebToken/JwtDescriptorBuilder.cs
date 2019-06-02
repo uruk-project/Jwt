@@ -550,7 +550,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder SignWith(Jwk key)
         {
-            if (key == null)
+            if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
@@ -566,7 +566,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder EncryptWith(Jwk key)
         {
-            if (key == null)
+            if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }

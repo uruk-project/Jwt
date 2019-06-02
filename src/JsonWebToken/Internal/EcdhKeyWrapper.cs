@@ -13,7 +13,7 @@ namespace JsonWebToken.Internal
     {
         private static readonly byte[] _secretPreprend = { 0x0, 0x0, 0x0, 0x1 };
 
-        private readonly string _algorithmName;
+        private readonly byte[] _algorithmName;
         private readonly int _algorithmNameLength;
         private readonly int _keySizeInBytes;
         private readonly HashAlgorithmName _hashAlgorithm;
@@ -25,16 +25,16 @@ namespace JsonWebToken.Internal
         {
             if (contentEncryptionAlgorithm == KeyManagementAlgorithm.EcdhEs)
             {
-                _algorithmName = encryptionAlgorithm.Name;
+                _algorithmName = encryptionAlgorithm.Utf8Name;
                 _keySizeInBytes = encryptionAlgorithm.RequiredKeySizeInBytes;
             }
             else
             {
-                _algorithmName = contentEncryptionAlgorithm.Name;
+                _algorithmName = contentEncryptionAlgorithm.Utf8Name;
                 _keySizeInBytes = contentEncryptionAlgorithm.WrappedAlgorithm.RequiredKeySizeInBits >> 3;
             }
 
-            _algorithmNameLength = Encoding.ASCII.GetByteCount(_algorithmName);
+            _algorithmNameLength = _algorithmName.Length;
             _hashAlgorithm = GetHashAlgorithm(encryptionAlgorithm);
         }
 
@@ -53,6 +53,12 @@ namespace JsonWebToken.Internal
             }
             else
             {
+#if NETCOREAPP3_0
+                if (EncryptionAlgorithm.Category == EncryptionType.AesGcm)
+                {
+                    return _keySizeInBytes + 8;
+                }
+#endif
                 return EncryptionAlgorithm.KeyWrappedSizeInBytes;
             }
         }
@@ -66,7 +72,7 @@ namespace JsonWebToken.Internal
             }
 
             var epk = header.Epk;
-            if (header.Epk == null)
+            if (header.Epk is null)
             {
                 return Errors.TryWriteError(out bytesWritten);
             }
@@ -110,7 +116,7 @@ namespace JsonWebToken.Internal
             var partyVInfo = GetPartyInfo(header, HeaderParameters.ApvUtf8);
             var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
             byte[] exchangeHash;
-            using (var ephemeralKey = (staticKey == null) ? ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256) : ECDiffieHellman.Create(((ECJwk)staticKey).ExportParameters(true)))
+            using (var ephemeralKey = (staticKey is null) ? ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256) : ECDiffieHellman.Create(((ECJwk)staticKey).ExportParameters(true)))
             using (var otherPartyKey = ECDiffieHellman.Create(((ECJwk)Key).ExportParameters()))
             {
                 exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
@@ -118,9 +124,9 @@ namespace JsonWebToken.Internal
                 header.Add(new JwtProperty(HeaderParameters.EpkUtf8, epk.AsJwtObject()));
             }
 
+            var kek = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
             if (Algorithm.ProduceEncryptionKey)
             {
-                var kek = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
                 using (KeyWrapper keyWrapper = kek.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
                 {
                     return keyWrapper.TryWrapKey(null, header, destination, out contentEncryptionKey, out bytesWritten);
@@ -128,8 +134,8 @@ namespace JsonWebToken.Internal
             }
             else
             {
-                contentEncryptionKey = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
-                bytesWritten = 0;
+                contentEncryptionKey = kek;
+                bytesWritten = _keySizeInBytes;
                 return true;
             }
         }
@@ -184,7 +190,7 @@ namespace JsonWebToken.Internal
         private void WriteAlgorithmId(Span<byte> destination)
         {
             BinaryPrimitives.WriteInt32BigEndian(destination, _algorithmNameLength);
-            Encoding.ASCII.GetBytes(_algorithmName, destination.Slice(sizeof(int)));
+            _algorithmName.CopyTo( destination.Slice(sizeof(int)));
         }
 
         private byte[] BuildSecretAppend(byte[] apu, byte[] apv)

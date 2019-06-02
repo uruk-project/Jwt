@@ -68,7 +68,6 @@ namespace JsonWebToken.Internal
         {
             int start;
             var span = token;
-            //int last = (int)span.LastIndexOf(ByteDot);
             int end = (int)span.IndexOf(Constants.ByteDot);
             if (end < 0)
             {

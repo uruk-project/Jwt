@@ -203,7 +203,18 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
-        public override Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public override Signer CreateSignerForSignature(SignatureAlgorithm algorithm)
+        {
+            return CreateSigner(algorithm, willCreateSignatures: true);
+        }
+
+        /// <inheritdoc />
+        public override Signer CreateSignerForValidation(SignatureAlgorithm algorithm)
+        {
+            return CreateSigner(algorithm, willCreateSignatures: false);
+        }
+
+        private Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
             if (algorithm is null)
             {
@@ -254,6 +265,36 @@ namespace JsonWebToken
 
             return parameters;
         }
+
+        /// <summary>
+        /// Generates a private <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curve"></param>
+        /// <returns></returns>
+        public static ECJwk GeneratePrivateKey(in EllipticalCurve curve) => GenerateKey(curve, true, algorithm: null);
+
+        /// <summary>
+        /// Generates a private <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curve"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static ECJwk GeneratePrivateKey(in EllipticalCurve curve, string algorithm) => GenerateKey(curve, true, algorithm: algorithm);
+
+        /// <summary>
+        /// Generates a public <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curve"></param>
+        /// <returns></returns>
+        public static ECJwk GeneratePublicKey(in EllipticalCurve curve) => GenerateKey(curve, false, algorithm: null);
+
+        /// <summary>
+        /// Generates a public <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curve"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static ECJwk GeneratePublicKey(in EllipticalCurve curve, string algorithm) => GenerateKey(curve, false, algorithm: algorithm);
 
         /// <summary>
         /// Generates a <see cref="ECJwk"/>.
@@ -319,7 +360,7 @@ namespace JsonWebToken
         /// </summary>
         public static ECJwk FromParameters(ECParameters parameters, string algorithm, bool computeThumbprint)
         {
-            return FromParameters(parameters, Encoding.UTF8.GetBytes(algorithm), computeThumbprint);
+            return FromParameters(parameters, algorithm == null ? null : Encoding.UTF8.GetBytes(algorithm), computeThumbprint);
         }
 
         /// <summary>
@@ -357,7 +398,7 @@ namespace JsonWebToken
         public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint) => FromParameters(parameters, (byte[])null, computeThumbprint);
 
         /// <inheritdoc />
-        public override byte[] ToByteArray()
+        public override ReadOnlySpan<byte> AsSpan()
         {
 #if !NETSTANDARD2_0
             using (var ecdh = ECDiffieHellman.Create(ExportParameters()))
@@ -437,7 +478,7 @@ namespace JsonWebToken
                                             break;
 
                                         case 3:
-                                            if (*pPropertyName == (byte)'c' && *((short*)pPropertyName + 1) == 30322)
+                                            if (*pPropertyName == (byte)'c' && *((short*)(pPropertyName + 1)) == 30322)
                                             {
                                                 key.Crv = EllipticalCurve.FromSpan(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                             }
@@ -553,28 +594,26 @@ namespace JsonWebToken
                 int hash = ((int)2166136261 ^ Crv.Id) * p;
 
                 var x = X;
-                int length = Math.Min(x.Length, sizeof(int));
-                if (length >= sizeof(int))
+                if (x.Length >= sizeof(int))
                 {
                     hash = (hash ^ Unsafe.ReadUnaligned<int>(ref x[0])) * p;
                 }
                 else
                 {
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < x.Length; i++)
                     {
                         hash = (hash ^ x[i]) * p;
                     }
                 }
 
                 var y = Y;
-                length = Math.Min(y.Length, sizeof(int));
-                if (length >= sizeof(int))
+                if (y.Length >= sizeof(int))
                 {
                     hash = (hash ^ Unsafe.ReadUnaligned<int>(ref y[0])) * p;
                 }
                 else
                 {
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < y.Length; i++)
                     {
                         hash = (hash ^ y[i]) * p;
                     }

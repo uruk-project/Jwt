@@ -40,6 +40,16 @@ namespace JsonWebToken
         public abstract int GetTagSize();
 
         /// <summary>
+        /// Gets the required size of the  base64-URL nonce.
+        /// </summary>
+        public abstract int GetBase64NonceSize();
+
+        /// <summary>
+        /// Gets the size of the base64-URL authentication tag.
+        /// </summary>
+        public abstract int GetBase64TagSize();
+
+        /// <summary>
         /// Try to decrypt the <paramref name="ciphertext"/>. 
         /// </summary>
         /// <param name="ciphertext">The ciphertext to decrypt.</param>
