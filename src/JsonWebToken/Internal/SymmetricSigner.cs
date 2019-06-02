@@ -24,6 +24,7 @@ namespace JsonWebToken.Internal
         public static readonly int DefaultMinimumSymmetricKeySizeInBits = 128;
 
         private readonly int _hashSizeInBytes;
+        private readonly int _base64HashSizeInBytes;
         private int _minimumKeySizeInBits = DefaultMinimumSymmetricKeySizeInBits;
 
         public SymmetricSigner(SymmetricJwk key, SignatureAlgorithm algorithm)
@@ -50,6 +51,7 @@ namespace JsonWebToken.Internal
             }
 
             _hashSizeInBytes = Algorithm.RequiredKeySizeInBits >> 2;
+            _base64HashSizeInBytes = Base64Url.GetArraySizeRequiredToEncode(_hashSizeInBytes);
             switch (Algorithm.Name)
             {
                 case "HS256":
@@ -69,6 +71,8 @@ namespace JsonWebToken.Internal
 
         /// <inheritsdoc />
         public override int HashSizeInBytes => _hashSizeInBytes;
+
+        public override int Base64HashSizeInBytes => _base64HashSizeInBytes;
 
         /// <summary>
         /// Gets or sets the minimum <see cref="SymmetricJwk"/>.KeySize. />.

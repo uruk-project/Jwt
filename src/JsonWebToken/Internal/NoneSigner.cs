@@ -17,6 +17,8 @@ namespace JsonWebToken
 
         public override int HashSizeInBytes => 0;
 
+        public override int Base64HashSizeInBytes => 0;
+
         public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {
             bytesWritten = 0;

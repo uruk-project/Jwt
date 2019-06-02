@@ -37,9 +37,14 @@ namespace JsonWebToken
         public SignatureAlgorithm Algorithm { get; }
 
         /// <summary>
-        /// Gets the hash size in bits of the key.
+        /// Gets the hash size in bytes of the key.
         /// </summary>
         public abstract int HashSizeInBytes { get; }
+
+        /// <summary>
+        /// Gets the base64-URL hash size in bits of the key.
+        /// </summary>
+        public abstract int Base64HashSizeInBytes { get; }
 
         /// <summary>
         /// This must be overridden to produce a signature over the 'input'.

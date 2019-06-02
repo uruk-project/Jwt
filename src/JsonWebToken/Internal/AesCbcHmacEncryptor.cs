@@ -82,7 +82,7 @@ namespace JsonWebToken.Internal
         /// <inheritdoc />
         public override int GetBase64TagSize()
         {
-            return Base64Url.GetArraySizeRequiredToEncode(_signer.HashSizeInBytes);
+            return _signer.Base64HashSizeInBytes;
         }
 
         /// <inheritdoc />
