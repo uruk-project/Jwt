@@ -17,7 +17,7 @@ namespace JsonWebToken
         /// <summary>
         /// 'dir'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, "dir", AlgorithmCategory.Aes, produceEncryptedKey: false);
+        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, "dir", AlgorithmCategory.None, produceEncryptedKey: false);
 
         /// <summary>
         /// 'A128KW'

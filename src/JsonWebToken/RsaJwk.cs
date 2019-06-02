@@ -642,28 +642,26 @@ namespace JsonWebToken
                 int hash = (int)2166136261;
 
                 var e = E;
-                int length = Math.Min(e.Length, sizeof(int));
-                if (length >= sizeof(int))
+                if (e.Length >= sizeof(int))
                 {
                     hash = (hash ^ Unsafe.ReadUnaligned<int>(ref e[0])) * p;
                 }
                 else
                 {
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < e.Length; i++)
                     {
                         hash = (hash ^ e[i]) * p;
                     }
                 }
 
                 var n = N;
-                length = Math.Min(n.Length, sizeof(int));
-                if (length >= sizeof(int))
+                if (n.Length >= sizeof(int))
                 {
                     hash = (hash ^ Unsafe.ReadUnaligned<int>(ref n[0])) * p;
                 }
                 else
                 {
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < n.Length; i++)
                     {
                         hash = (hash ^ n[i]) * p;
                     }

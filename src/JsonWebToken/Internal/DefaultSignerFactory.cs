@@ -21,6 +21,11 @@ namespace JsonWebToken.Internal
                 goto NotSupported;
             }
 
+            if (key is null)
+            {
+                return NoneSigner.Default;
+            }
+
             var signers = CreationSigners;
             var factoryKey = new CryptographicFactoryKey(key, algorithm.Id);
             if (signers.TryGetValue(factoryKey, out var cachedSigner))

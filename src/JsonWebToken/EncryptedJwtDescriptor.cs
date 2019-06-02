@@ -70,46 +70,32 @@ namespace JsonWebToken
         protected void EncryptToken(EncodingContext context, ReadOnlySpan<byte> payload, IBufferWriter<byte> output)
         {
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
-            KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)(Algorithm ?? Key?.Alg);
+            var key = Key;
+            KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)(Algorithm ?? key?.Alg);
             bool isDirectEncryption = contentEncryptionAlgorithm == KeyManagementAlgorithm.Direct;
 
-            AuthenticatedEncryptor encryptor = null;
-            KeyWrapper keyWrapper = null;
-            if (isDirectEncryption)
+            KeyWrapper keyWrapper = context.KeyWrapFactory.Create(key, encryptionAlgorithm, contentEncryptionAlgorithm);
+            if (keyWrapper == null)
             {
-                encryptor = context.AuthenticatedEncryptionFactory.Create(Key, encryptionAlgorithm);
-            }
-            else
-            {
-                keyWrapper = context.KeyWrapFactory.Create(Key, encryptionAlgorithm, contentEncryptionAlgorithm);
-                if (keyWrapper == null)
-                {
-                    Errors.ThrowNotSuportedAlgorithmForKeyWrap(encryptionAlgorithm);
-                }
+                Errors.ThrowNotSuportedAlgorithmForKeyWrap(encryptionAlgorithm);
             }
 
             var header = Header;
-            Span<byte> wrappedKey = contentEncryptionAlgorithm.ProduceEncryptionKey
-                                        ? stackalloc byte[keyWrapper.GetKeyWrapSize()]
-                                        : null;
-            if (!isDirectEncryption)
+            Span<byte> wrappedKey = stackalloc byte[keyWrapper.GetKeyWrapSize()];
+            if (!keyWrapper.TryWrapKey(null, header, wrappedKey, out var cek, out var keyWrappedBytesWritten))
             {
-                if (!keyWrapper.TryWrapKey(null, header, wrappedKey, out var cek, out var keyWrappedBytesWritten))
-                {
-                    Errors.ThrowKeyWrapFailed();
-                }
-
-                encryptor = context.AuthenticatedEncryptionFactory.Create(cek, encryptionAlgorithm);
+                Errors.ThrowKeyWrapFailed();
             }
 
+            AuthenticatedEncryptor encryptor = context.AuthenticatedEncryptionFactory.Create(cek, encryptionAlgorithm);
             if (encryptor == null)
             {
                 Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
             }
 
-            if (header.ContainsKey(WellKnownProperty.Kid) && Key.Kid != null)
+            if (header.ContainsKey(WellKnownProperty.Kid) && key.Kid != null)
             {
-                header.Replace(new JwtProperty(WellKnownProperty.Kid, Key.Kid));
+                header.Replace(new JwtProperty(WellKnownProperty.Kid, key.Kid));
             }
 
             try
@@ -207,7 +193,7 @@ namespace JsonWebToken
             }
             catch (Exception ex)
             {
-                Errors.ThrowEncryptionFailed(encryptionAlgorithm, Key, ex);
+                Errors.ThrowEncryptionFailed(encryptionAlgorithm, key, ex);
             }
         }
 

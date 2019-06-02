@@ -140,7 +140,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override bool IsSupported(KeyManagementAlgorithm algorithm)
         {
-            return (algorithm.Category & AlgorithmCategory.Aes) != 0 && algorithm.RequiredKeySizeInBits == KeySizeInBits;
+            return ((algorithm.Category & AlgorithmCategory.Aes) != 0 && algorithm.RequiredKeySizeInBits == KeySizeInBits) || (algorithm == KeyManagementAlgorithm.Direct);
         }
 
         /// <inheritsdoc />
@@ -202,6 +202,10 @@ namespace JsonWebToken
                         return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
                     }
 #endif
+                    else if (!contentEncryptionAlgorithm.ProduceEncryptionKey)
+                    {
+                        return new DirectKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+                    }
                 }
             }
 
@@ -476,18 +480,18 @@ namespace JsonWebToken
         {
             unchecked
             {
-                int length = Math.Min(_k.Length, 16);
-                if (length >= sizeof(int))
+                var k = _k;
+                if (k.Length >= sizeof(int))
                 {
-                    return Unsafe.ReadUnaligned<int>(ref _k[0]);
+                    return Unsafe.ReadUnaligned<int>(ref k[0]);
                 }
                 else
                 {
                     const int p = 16777619;
                     int hash = (int)2166136261;
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < k.Length; i++)
                     {
-                        hash = (hash ^ _k[i]) * p;
+                        hash = (hash ^ k[i]) * p;
                     }
 
                     return hash;

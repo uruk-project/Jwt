@@ -594,28 +594,26 @@ namespace JsonWebToken
                 int hash = ((int)2166136261 ^ Crv.Id) * p;
 
                 var x = X;
-                int length = Math.Min(x.Length, sizeof(int));
-                if (length >= sizeof(int))
+                if (x.Length >= sizeof(int))
                 {
                     hash = (hash ^ Unsafe.ReadUnaligned<int>(ref x[0])) * p;
                 }
                 else
                 {
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < x.Length; i++)
                     {
                         hash = (hash ^ x[i]) * p;
                     }
                 }
 
                 var y = Y;
-                length = Math.Min(y.Length, sizeof(int));
-                if (length >= sizeof(int))
+                if (y.Length >= sizeof(int))
                 {
                     hash = (hash ^ Unsafe.ReadUnaligned<int>(ref y[0])) * p;
                 }
                 else
                 {
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < y.Length; i++)
                     {
                         hash = (hash ^ y[i]) * p;
                     }
