@@ -14,19 +14,12 @@ namespace JsonWebToken.Internal
         {
             ThrowIfDisposed();
 
-            var factoryKey = new CryptographicFactoryKey(key, encryptionAlgorithm.Id);
-            if (Encryptors.TryGetValue(factoryKey, out var cachedEncryptor))
+            if (key is null)
             {
-                return cachedEncryptor;
+                return null;
             }
 
-            if (key.IsSupported(encryptionAlgorithm))
-            {
-                var encryptor = key.CreateAuthenticatedEncryptor(encryptionAlgorithm);
-                return Encryptors.AddValue(factoryKey, encryptor);
-            }
-
-            return null;
+            return key.CreateAuthenticatedEncryptor(encryptionAlgorithm);
         }
     }
 }

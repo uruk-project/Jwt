@@ -240,41 +240,15 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override Signer CreateSignerForSignature(SignatureAlgorithm algorithm)
+        protected override Signer CreateNewSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
-            return CreateSigner(algorithm, willCreateSignatures: true);
+            return new RsaSigner(this, algorithm, willCreateSignatures);
         }
 
         /// <inheritsdoc />
-        public override Signer CreateSignerForValidation(SignatureAlgorithm algorithm)
+        protected override KeyWrapper CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
-            return CreateSigner(algorithm, willCreateSignatures: false);
-        }
-
-        private Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
-        {
-            if (algorithm is null)
-            {
-                return null;
-            }
-
-            if (IsSupported(algorithm))
-            {
-                return new RsaSigner(this, algorithm, willCreateSignatures);
-            }
-
-            return null;
-        }
-
-        /// <inheritsdoc />
-        public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
-        {
-            if (IsSupported(contentEncryptionAlgorithm))
-            {
-                return new RsaKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-            }
-
-            return null;
+            return new RsaKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
         }
 
         /// <inheritsdoc />

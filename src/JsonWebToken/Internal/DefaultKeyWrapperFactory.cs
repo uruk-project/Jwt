@@ -15,26 +15,12 @@ namespace JsonWebToken.Internal
         {
             ThrowIfDisposed();
 
-            if (encryptionAlgorithm is null || contentEncryptionAlgorithm is null)
+            if (key is null)
             {
-                goto NotSupported;
+                return null;
             }
 
-            var algorithmKey = (encryptionAlgorithm.Id << 8) | (byte)contentEncryptionAlgorithm.Id;
-            var factoryKey = new CryptographicFactoryKey(key, algorithmKey);
-            if (KeyWrappers.TryGetValue(factoryKey, out var cachedKeyWrapper))
-            {
-                return cachedKeyWrapper;
-            }
-
-            if (key.IsSupported(contentEncryptionAlgorithm))
-            {
-                var keyWrapper = key.CreateKeyWrapper(encryptionAlgorithm, contentEncryptionAlgorithm);
-                return KeyWrappers.AddValue(factoryKey, keyWrapper);
-            }
-
-        NotSupported:
-            return null;
+            return key.CreateKeyWrapper(encryptionAlgorithm, contentEncryptionAlgorithm);
         }
     }
 }

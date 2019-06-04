@@ -4,6 +4,7 @@
 using JsonWebToken.Internal;
 using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -17,6 +18,8 @@ namespace JsonWebToken
     public sealed class SymmetricJwk : Jwk
     {
         private byte[] _k;
+        private readonly ConcurrentDictionary<int, SymmetricSigner> _signers = new ConcurrentDictionary<int, SymmetricSigner>();
+        private readonly ConcurrentDictionary<int, AuthenticatedEncryptor> _encryptors = new ConcurrentDictionary<int, AuthenticatedEncryptor>();
 
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
@@ -174,39 +177,43 @@ namespace JsonWebToken
         /// <inheritsdoc />
         private Signer CreateSigner(SignatureAlgorithm algorithm)
         {
-            if (!(algorithm is null))
+            if (algorithm is null)
             {
-                if (IsSupported(algorithm))
-                {
-                    return new SymmetricSigner(this, algorithm);
-                }
+                return null;
+            }
+
+            var signers = _signers;
+            if (signers.TryGetValue(algorithm.Id, out var cachedSigner))
+            {
+                return cachedSigner;
+            }
+
+            if (IsSupported(algorithm))
+            {
+                var signer = new SymmetricSigner(this, algorithm);
+                signers.TryAdd(algorithm.Id, signer);
+                return signer;
             }
 
             return null;
         }
 
         /// <inheritsdoc />
-        public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+        protected override KeyWrapper CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
-            if (!(contentEncryptionAlgorithm is null))
+            if (algorithm.Category == AlgorithmCategory.Aes)
             {
-                if (IsSupported(contentEncryptionAlgorithm))
-                {
-                    if (contentEncryptionAlgorithm.Category == AlgorithmCategory.Aes)
-                    {
-                        return new AesKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-                    }
+                return new AesKeyWrapper(this, encryptionAlgorithm, algorithm);
+            }
 #if NETCOREAPP3_0
-                    else if (contentEncryptionAlgorithm.Category == AlgorithmCategory.AesGcm)
-                    {
-                        return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-                    }
+            else if (algorithm.Category == AlgorithmCategory.AesGcm)
+            {
+                return new AesGcmKeyWrapper(this, encryptionAlgorithm, algorithm);
+            }
 #endif
-                    else if (!contentEncryptionAlgorithm.ProduceEncryptionKey)
-                    {
-                        return new DirectKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-                    }
-                }
+            else if (!algorithm.ProduceEncryptionKey)
+            {
+                return new DirectKeyWrapper(this, encryptionAlgorithm, algorithm);
             }
 
             return null;
@@ -215,20 +222,38 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (IsSupported(encryptionAlgorithm))
+            if (!(encryptionAlgorithm is null))
             {
-                if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
+                var algorithmKey = encryptionAlgorithm.Id;
+                if (_encryptors.TryGetValue(algorithmKey, out var cachedEncryptor))
                 {
-                    return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+                    return cachedEncryptor;
                 }
-#if NETCOREAPP3_0
-                else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
+
+                if (IsSupported(encryptionAlgorithm))
                 {
-                    return new AesGcmEncryptor(this, encryptionAlgorithm);
+                    var encryptor = CreateNewAuthenticatedEncryptor(encryptionAlgorithm);
+                    _encryptors.TryAdd(algorithmKey, encryptor);
+                    return encryptor;
                 }
-#endif
             }
 
+            return null;
+        }
+
+        /// <inheritsdoc />
+        protected override AuthenticatedEncryptor CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+        {
+            if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
+            {
+                return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+            }
+#if NETCOREAPP3_0
+            else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
+            {
+                return new AesGcmEncryptor(this, encryptionAlgorithm);
+            }
+#endif
             return null;
         }
 

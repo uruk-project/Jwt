@@ -203,40 +203,15 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
-        public override Signer CreateSignerForSignature(SignatureAlgorithm algorithm)
+        protected override Signer CreateNewSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
         {
-            return CreateSigner(algorithm, willCreateSignatures: true);
+            return new EcdsaSigner(this, algorithm, willCreateSignatures);
         }
 
         /// <inheritdoc />
-        public override Signer CreateSignerForValidation(SignatureAlgorithm algorithm)
+        protected override KeyWrapper CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
-            return CreateSigner(algorithm, willCreateSignatures: false);
-        }
-
-        private Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
-        {
-            if (algorithm is null)
-            {
-                return null;
-            }
-
-            if (IsSupported(algorithm))
-            {
-                return new EcdsaSigner(this, algorithm, willCreateSignatures);
-            }
-
-            return null;
-        }
-
-        /// <inheritdoc />
-        public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
-        {
-#if !NETSTANDARD2_0
-            return new EcdhKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-#else
-            return null;
-#endif
+            return new EcdhKeyWrapper(this, encryptionAlgorithm, algorithm);
         }
 
         /// <summary>

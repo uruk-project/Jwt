@@ -4,6 +4,7 @@
 using JsonWebToken.Internal;
 using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -20,6 +21,8 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class Jwk : IEquatable<Jwk>
     {
+        private readonly ConcurrentDictionary<int, KeyWrapper> _keyWrappers = new ConcurrentDictionary<int, KeyWrapper>();
+
         private bool? _isSigningKey;
         private SignatureAlgorithm _signatureAlgorithm;
         private bool? _isEncryptionKey;
@@ -475,13 +478,46 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
-        public abstract KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
+        public virtual KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        {
+            if (encryptionAlgorithm is null || algorithm is null)
+            {
+                return null;
+            }
 
+            var algorithmKey = (encryptionAlgorithm.Id << 8) | (byte)algorithm.Id;
+            if (_keyWrappers.TryGetValue(algorithmKey, out var cachedKeyWrapper))
+            {
+                return cachedKeyWrapper;
+            }
+
+            if (IsSupported(algorithm))
+            {
+                var keyWrapper = CreateNewKeyWrapper(encryptionAlgorithm, algorithm);
+                _keyWrappers.TryAdd(algorithmKey, keyWrapper);
+                return keyWrapper;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Creates a fresh new <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.
+        /// </summary>
+        /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
+        /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
+        protected abstract KeyWrapper CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
         /// <summary>
         /// Creates a <see cref="AuthenticatedEncryptor"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
         public abstract AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm);
+
+        /// <summary>
+        /// Creates a fresh new <see cref="AuthenticatedEncryptor"/> with the current <see cref="Jwk"/> as key.
+        /// </summary>
+        /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
+        protected abstract AuthenticatedEncryptor CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm);
 
         /// <summary>
         /// Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2

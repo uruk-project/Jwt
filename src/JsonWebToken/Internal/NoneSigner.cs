@@ -96,6 +96,16 @@ namespace JsonWebToken
             {
                 throw new NotImplementedException();
             }
+
+            protected override KeyWrapper CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override AuthenticatedEncryptor CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
