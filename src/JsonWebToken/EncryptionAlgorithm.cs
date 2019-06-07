@@ -362,5 +362,15 @@ namespace JsonWebToken
         {
             return Name;
         }
+
+        /// <summary>
+        /// Computes a unique key for the combinaison of the <see cref="EncryptionAlgorithm"/> and the <see cref="KeyManagementAlgorithm"/>.
+        /// </summary>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public int ComputeKey(KeyManagementAlgorithm algorithm)
+        {
+            return (Id << 8) | (byte)algorithm.Id;
+        }
     }
 }

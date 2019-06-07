@@ -240,9 +240,9 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        protected override Signer CreateNewSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
+        protected override Signer CreateNewSigner(SignatureAlgorithm algorithm)
         {
-            return new RsaSigner(this, algorithm, willCreateSignatures);
+            return new RsaSigner(this, algorithm);
         }
 
         /// <inheritsdoc />

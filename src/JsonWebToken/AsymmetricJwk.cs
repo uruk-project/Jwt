@@ -10,17 +10,13 @@ namespace JsonWebToken
     /// </summary>
     public abstract class AsymmetricJwk : Jwk
     {
-        // Lazy?
-        private readonly ConcurrentDictionary<int, Signer> _creationSigners = new ConcurrentDictionary<int, Signer>();
-        private readonly ConcurrentDictionary<int, Signer> _verificationSigners = new ConcurrentDictionary<int, Signer>();
-
         /// <summary>
         /// Initializes a new instance of the <see cref="AsymmetricJwk"/> class.
         /// </summary>
         protected AsymmetricJwk()
         {
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AsymmetricJwk"/> class.
         /// </summary>
@@ -62,53 +58,11 @@ namespace JsonWebToken
         {
             return null;
         }
-
+        
         /// <inheritsdoc />
-        public override Signer CreateSignerForSignature(SignatureAlgorithm algorithm)
+        public override void Release(AuthenticatedEncryptor encryptor)
         {
-            return CreateSigner(algorithm, _creationSigners, willCreateSignatures: true);
         }
-
-        /// <inheritsdoc />
-        public override Signer CreateSignerForValidation(SignatureAlgorithm algorithm)
-        {
-            return CreateSigner(algorithm, _verificationSigners, willCreateSignatures: false);
-        }
-
-        /// <summary>
-        /// Creates a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
-        /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
-        /// <param name="signers"></param>
-        /// <param name="willCreateSignatures"></param>
-        protected Signer CreateSigner(SignatureAlgorithm algorithm, ConcurrentDictionary<int, Signer> signers, bool willCreateSignatures)
-        {
-            if (algorithm is null)
-            {
-                return null;
-            }
-
-            if (signers.TryGetValue(algorithm.Id, out var cachedSigner))
-            {
-                return cachedSigner;
-            }
-
-            if (IsSupported(algorithm))
-            {
-                var signer = CreateNewSigner(algorithm, willCreateSignatures);
-                signers.TryAdd(algorithm.Id, signer);
-                return signer;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Creates a fresh new <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
-        /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
-        /// <param name="willCreateSignatures"></param>
-        protected abstract Signer CreateNewSigner(SignatureAlgorithm algorithm, bool willCreateSignatures);
 
         /// <inheritsdoc />
         protected override AuthenticatedEncryptor CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)

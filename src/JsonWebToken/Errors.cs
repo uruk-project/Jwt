@@ -136,6 +136,11 @@ namespace JsonWebToken
             throw new JwtDescriptorException($"The header parameter '{value}' is required.");
         }
 
+        internal static void ThrowInvalidOperationException_ConcurrentOperationsNotSupported()
+        {
+            throw new InvalidOperationException("Operations that change non-concurrent collections must have exclusive access. A concurrent update was performed on this collection and corrupted its state. The collection's state is no longer correct.");
+        }
+
         internal static void ThrowMustBeGreaterOrEqualToZero(ExceptionArgument argument, int value)
         {
             var name = GetArgumentName(argument);

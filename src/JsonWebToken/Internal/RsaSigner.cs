@@ -16,7 +16,7 @@ namespace JsonWebToken
         private readonly int _base64HashSizeInBytes;
         private bool _disposed;
 
-        public RsaSigner(RsaJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public RsaSigner(RsaJwk key, SignatureAlgorithm algorithm)
             : base(key, algorithm)
         {
             if (key is null)
@@ -24,34 +24,29 @@ namespace JsonWebToken
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            if (willCreateSignatures && !key.HasPrivateKey)
-            {
-                Errors.ThrowMissingPrivateKey(key);
-            }
-
             if (!key.IsSupported(algorithm))
             {
                 Errors.ThrowNotSupportedSignatureAlgorithm(algorithm, key);
             }
 
-            var minKeySize = willCreateSignatures ? 2048 : 1024;
+            var minKeySize = key.HasPrivateKey ? 2048 : 1024;
             if (key.KeySizeInBits < minKeySize)
             {
                 Errors.ThrowSigningKeyTooSmall(key, minKeySize);
             }
 
             _hashAlgorithm = algorithm.HashAlgorithm;
-            switch (algorithm.Name)
+            switch (algorithm.Id)
             {
-                case "RS256":
-                case "RS384":
-                case "RS512":
+                case Algorithms.RsaSha256:
+                case Algorithms.RsaSha384:
+                case Algorithms.RsaSha512:
                     _signaturePadding = RSASignaturePadding.Pkcs1;
                     break;
 
-                case "PS256":
-                case "PS384":
-                case "PS512":
+                case Algorithms.RsaSsaPssSha256:
+                case Algorithms.RsaSsaPssSha384:
+                case Algorithms.RsaSsaPssSha512:
                     _signaturePadding = RSASignaturePadding.Pss;
                     break;
 

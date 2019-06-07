@@ -724,7 +724,7 @@ namespace JsonWebToken
 
         private bool TryValidateSignature(ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signature, Jwk key, SignatureAlgorithm algorithm)
         {
-            var signer = _signatureFactory.CreateForValidation(key, algorithm);
+            var signer = _signatureFactory.Create(key, algorithm);
             if (signer == null)
             {
                 return false;

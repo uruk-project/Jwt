@@ -10,29 +10,11 @@ namespace JsonWebToken
     /// </summary>
     public abstract class KeyWrapperFactory : IDisposable
     {
-        private bool _disposed;
-
-        /// <summary>
-        /// Gets the store of <see cref="KeyWrapper"/> used for key wrapping. 
-        /// </summary>
-        protected CryptographicStore<KeyWrapper> KeyWrappers { get; } = new CryptographicStore<KeyWrapper>();
-
         /// <summary>
         /// Dispose the managed resources.
         /// </summary>
         /// <param name="disposing"></param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    KeyWrappers.Dispose();
-                }
-
-                _disposed = true;
-            }
-        }
+        protected abstract void Dispose(bool disposing);
 
         /// <summary>
         /// Dispose the managed resources.
@@ -40,17 +22,6 @@ namespace JsonWebToken
         public void Dispose()
         {
             Dispose(true);
-        }
-
-        /// <summary>
-        /// Throw if the current <see cref="KeyWrapperFactory"/> is already disposed.
-        /// </summary>
-        protected void ThrowIfDisposed()
-        {
-            if (_disposed)
-            {
-                Errors.ThrowObjectDisposed(GetType());
-            }
         }
 
         /// <summary>

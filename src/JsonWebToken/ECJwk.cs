@@ -203,9 +203,9 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
-        protected override Signer CreateNewSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
+        protected override Signer CreateNewSigner(SignatureAlgorithm algorithm)
         {
-            return new EcdsaSigner(this, algorithm, willCreateSignatures);
+            return new EcdsaSigner(this, algorithm);
         }
 
         /// <inheritdoc />

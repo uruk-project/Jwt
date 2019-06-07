@@ -62,12 +62,7 @@ namespace JsonWebToken
                 throw new NotImplementedException();
             }
 
-            public override Signer CreateSignerForSignature(SignatureAlgorithm algorithm)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override Signer CreateSignerForValidation(SignatureAlgorithm algorithm)
+            public override Signer CreateSigner(SignatureAlgorithm algorithm)
             {
                 throw new NotImplementedException();
             }
@@ -103,6 +98,21 @@ namespace JsonWebToken
             }
 
             protected override AuthenticatedEncryptor CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Release(Signer signer)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Release(AuthenticatedEncryptor encryptor)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override Signer CreateNewSigner(SignatureAlgorithm algorithm)
             {
                 throw new NotImplementedException();
             }

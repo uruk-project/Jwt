@@ -18,8 +18,7 @@ namespace JsonWebToken
     public sealed class SymmetricJwk : Jwk
     {
         private byte[] _k;
-        private readonly ConcurrentDictionary<int, SymmetricSigner> _signers = new ConcurrentDictionary<int, SymmetricSigner>();
-        private readonly ConcurrentDictionary<int, AuthenticatedEncryptor> _encryptors = new ConcurrentDictionary<int, AuthenticatedEncryptor>();
+        private readonly CryptographicStore<AuthenticatedEncryptor> _encryptors = new CryptographicStore<AuthenticatedEncryptor>();
 
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
@@ -71,12 +70,7 @@ namespace JsonWebToken
         public ReadOnlySpan<byte> K => _k;
 
         /// <inheritsdoc />
-        public override int KeySizeInBits => K.Length != 0 ? K.Length << 3 : 0;
-
-        private void SetKeyValue(byte[] k)
-        {
-            _k = k;
-        }
+        public override int KeySizeInBits => _k.Length != 0 ? _k.Length << 3 : 0;
 
         /// <summary>
         /// Creates a new <see cref="SymmetricJwk"/> from the <paramref name="bytes"/>.
@@ -163,39 +157,15 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
-        public override Signer CreateSignerForSignature(SignatureAlgorithm algorithm)
+        protected override Signer CreateNewSigner(SignatureAlgorithm algorithm)
         {
-            return CreateSigner(algorithm);
-        }
-
-        /// <inheritdoc />
-        public override Signer CreateSignerForValidation(SignatureAlgorithm algorithm)
-        {
-            return CreateSigner(algorithm);
+            return new SymmetricSigner(this, algorithm);
         }
 
         /// <inheritsdoc />
-        private Signer CreateSigner(SignatureAlgorithm algorithm)
+        public override void Release(AuthenticatedEncryptor encryptor)
         {
-            if (algorithm is null)
-            {
-                return null;
-            }
-
-            var signers = _signers;
-            if (signers.TryGetValue(algorithm.Id, out var cachedSigner))
-            {
-                return cachedSigner;
-            }
-
-            if (IsSupported(algorithm))
-            {
-                var signer = new SymmetricSigner(this, algorithm);
-                signers.TryAdd(algorithm.Id, signer);
-                return signer;
-            }
-
-            return null;
+            _encryptors.TryRemove(encryptor.EncryptionAlgorithm.Id);
         }
 
         /// <inheritsdoc />
@@ -225,16 +195,26 @@ namespace JsonWebToken
             if (!(encryptionAlgorithm is null))
             {
                 var algorithmKey = encryptionAlgorithm.Id;
-                if (_encryptors.TryGetValue(algorithmKey, out var cachedEncryptor))
+                if (_encryptors.TryGetValue(algorithmKey, out var encryptor))
                 {
-                    return cachedEncryptor;
+                    return encryptor;
                 }
 
                 if (IsSupported(encryptionAlgorithm))
                 {
-                    var encryptor = CreateNewAuthenticatedEncryptor(encryptionAlgorithm);
-                    _encryptors.TryAdd(algorithmKey, encryptor);
-                    return encryptor;
+                    encryptor = CreateNewAuthenticatedEncryptor(encryptionAlgorithm);
+                    if (_encryptors.TryAdd(algorithmKey, encryptor))
+                    {
+                        return encryptor;
+                    }
+
+                    encryptor.Dispose();
+                    if (_encryptors.TryGetValue(encryptionAlgorithm.Id, out encryptor))
+                    {
+                        return encryptor;
+                    }
+
+                    Errors.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
                 }
             }
 
@@ -349,7 +329,7 @@ namespace JsonWebToken
             var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
             if (algorithm != null)
             {
-                key.Alg = (byte[])algorithm;
+                key.Alg = algorithm;
             }
 
             return key;
@@ -431,7 +411,7 @@ namespace JsonWebToken
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = false, SkipValidation = true });
                 writer.WriteStartObject();
-                writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(K));
+                writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
                 writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
                 writer.WriteEndObject();
                 writer.Flush();
@@ -481,7 +461,7 @@ namespace JsonWebToken
 
         internal override void WriteComplementTo(ref Utf8JsonWriter writer)
         {
-            writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(K));
+            writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
         }
 
         /// <inheritsdoc />
@@ -497,7 +477,7 @@ namespace JsonWebToken
                 return true;
             }
 
-            return K.SequenceEqual(key._k);
+            return _k.AsSpan().SequenceEqual(key._k);
         }
 
         /// <inheritsdoc />
@@ -512,11 +492,10 @@ namespace JsonWebToken
                 }
                 else
                 {
-                    const int p = 16777619;
                     int hash = (int)2166136261;
                     for (int i = 0; i < k.Length; i++)
                     {
-                        hash = (hash ^ k[i]) * p;
+                        hash = (hash ^ k[i]) * 16777619;
                     }
 
                     return hash;

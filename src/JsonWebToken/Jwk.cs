@@ -21,7 +21,8 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class Jwk : IEquatable<Jwk>
     {
-        private readonly ConcurrentDictionary<int, KeyWrapper> _keyWrappers = new ConcurrentDictionary<int, KeyWrapper>();
+        private readonly CryptographicStore<Signer> _signers = new CryptographicStore<Signer>();
+        private readonly CryptographicStore<KeyWrapper> _keyWrappers = new CryptographicStore<KeyWrapper>();
 
         private bool? _isSigningKey;
         private SignatureAlgorithm _signatureAlgorithm;
@@ -462,16 +463,71 @@ namespace JsonWebToken
         public abstract ReadOnlySpan<byte> AsSpan();
 
         /// <summary>
-        /// Creates a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
+        /// Creates a fresh new <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
-        public abstract Signer CreateSignerForSignature(SignatureAlgorithm algorithm);
+        protected abstract Signer CreateNewSigner(SignatureAlgorithm algorithm);
 
         /// <summary>
         /// Creates a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
-        public abstract Signer CreateSignerForValidation(SignatureAlgorithm algorithm);
+        public virtual Signer CreateSigner(SignatureAlgorithm algorithm)
+        {
+            if (algorithm is null)
+            {
+                return null;
+            }
+
+            var signers = _signers;
+            if (signers.TryGetValue(algorithm.Id, out var signer))
+            {
+                return signer;
+            }
+
+            if (IsSupported(algorithm))
+            {
+                signer = CreateNewSigner(algorithm);
+                if (signers.TryAdd(algorithm.Id, signer))
+                {
+                    return signer;
+                }
+
+                signer.Dispose();
+                if (signers.TryGetValue(algorithm.Id, out signer))
+                {
+                    return signer;
+                }
+
+                Errors.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Releases the <see cref="Signer"/>.
+        /// </summary>
+        /// <param name="signer"></param>
+        public virtual void Release(Signer signer)
+        {
+            _signers.TryRemove(signer.Algorithm.Id);
+        }
+
+        /// <summary>
+        /// Releases the <see cref="KeyWrapper"/>.
+        /// </summary>
+        /// <param name="keyWrapper"></param>
+        public virtual void Release(KeyWrapper keyWrapper)
+        {
+            _keyWrappers.TryRemove(keyWrapper.EncryptionAlgorithm.ComputeKey(keyWrapper.Algorithm));
+        }
+
+        /// <summary>
+        /// Releases the <see cref="AuthenticatedEncryptor"/>.
+        /// </summary>
+        /// <param name="encryptor"></param>
+        public abstract void Release(AuthenticatedEncryptor encryptor);
 
         /// <summary>
         /// Creates a <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.
@@ -485,7 +541,7 @@ namespace JsonWebToken
                 return null;
             }
 
-            var algorithmKey = (encryptionAlgorithm.Id << 8) | (byte)algorithm.Id;
+            var algorithmKey = encryptionAlgorithm.ComputeKey(algorithm);
             if (_keyWrappers.TryGetValue(algorithmKey, out var cachedKeyWrapper))
             {
                 return cachedKeyWrapper;
@@ -494,8 +550,18 @@ namespace JsonWebToken
             if (IsSupported(algorithm))
             {
                 var keyWrapper = CreateNewKeyWrapper(encryptionAlgorithm, algorithm);
-                _keyWrappers.TryAdd(algorithmKey, keyWrapper);
-                return keyWrapper;
+                if (_keyWrappers.TryAdd(algorithmKey, keyWrapper))
+                {
+                    return keyWrapper;
+                }
+
+                keyWrapper.Dispose();
+                if (_keyWrappers.TryGetValue(algorithmKey, out keyWrapper))
+                {
+                    return keyWrapper;
+                }
+
+                Errors.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
             }
 
             return null;
@@ -507,6 +573,7 @@ namespace JsonWebToken
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
         protected abstract KeyWrapper CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
+
         /// <summary>
         /// Creates a <see cref="AuthenticatedEncryptor"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
@@ -668,7 +735,7 @@ namespace JsonWebToken
             }
             else if (name.SequenceEqual(JwkParameterNames.KeyOpsUtf8))
             {
-                _keyOps = new List<string>(value.Count); 
+                _keyOps = new List<string>(value.Count);
                 for (int i = 0; i < value.Count; i++)
                 {
                     _keyOps.Add((string)value[i].Value);

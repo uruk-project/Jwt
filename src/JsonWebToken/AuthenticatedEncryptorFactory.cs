@@ -1,7 +1,9 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using JsonWebToken.Internal;
 using System;
+using System.Collections.Generic;
 
 namespace JsonWebToken
 {
@@ -10,29 +12,16 @@ namespace JsonWebToken
     /// </summary>
     public abstract class AuthenticatedEncryptorFactory : IDisposable
     {
-        private bool _disposed;
-
         /// <summary>
         /// Gets the store of <see cref="AuthenticatedEncryptor"/>.
         /// </summary>
-        protected CryptographicStore<AuthenticatedEncryptor> Encryptors { get; } = new CryptographicStore<AuthenticatedEncryptor>();
+        protected HashSet<AuthenticatedEncryptor> Encryptors { get; } = new HashSet<AuthenticatedEncryptor>();
 
         /// <summary>
         /// Release managed resources.
         /// </summary>
         /// <param name="disposing"></param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    Encryptors.Dispose();
-                }
-
-                _disposed = true;
-            }
-        }
+        protected abstract void Dispose(bool disposing);
 
         /// <summary>
         /// Release manged resources.
@@ -41,18 +30,7 @@ namespace JsonWebToken
         {
             Dispose(true);
         }
-
-        /// <summary>
-        /// Thow an <see cref="ObjectDisposedException"/> if this object is already disposed.
-        /// </summary>
-        protected void ThrowIfDisposed()
-        {
-            if (_disposed)
-            {
-                Errors.ThrowObjectDisposed(GetType());
-            }
-        }
-
+        
         /// <summary>
         /// Creates an <see cref="AuthenticatedEncryptor"/>.
         /// </summary>

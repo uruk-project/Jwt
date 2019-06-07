@@ -18,16 +18,10 @@ namespace JsonWebToken.Tests
 
         [Theory]
         [MemberData(nameof(GetSignatureValidationKeys))]
-        public override Signer CreateSignerForValidation_Succeed(Jwk key, SignatureAlgorithm alg)
-        {
-            return base.CreateSignerForValidation_Succeed(key, alg);
-        }
-
-        [Theory]
         [MemberData(nameof(GetSignatureCreationKeys))]
-        public override Signer CreateSignerForSignature_Succeed(Jwk key, SignatureAlgorithm alg)
+        public override Signer CreateSigner_Succeed(Jwk key, SignatureAlgorithm alg)
         {
-            return base.CreateSignerForSignature_Succeed(key, alg);
+            return base.CreateSigner_Succeed(key, alg);
         }
 
         [Fact]

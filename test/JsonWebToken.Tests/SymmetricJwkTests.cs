@@ -24,17 +24,10 @@ namespace JsonWebToken.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetSignatureValidationKeys))]
-        public override Signer CreateSignerForValidation_Succeed(Jwk key, SignatureAlgorithm alg)
+        [MemberData(nameof(GetSignatureKeys))]
+        public override Signer CreateSigner_Succeed(Jwk key, SignatureAlgorithm alg)
         {
-            return base.CreateSignerForValidation_Succeed(key, alg);
-        }
-
-        [Theory]
-        [MemberData(nameof(GetSignatureCreationKeys))]
-        public override Signer CreateSignerForSignature_Succeed(Jwk key, SignatureAlgorithm alg)
-        {
-            return base.CreateSignerForSignature_Succeed(key, alg);
+            return base.CreateSigner_Succeed(key, alg);
         }
 
         [Fact]
@@ -60,7 +53,7 @@ namespace JsonWebToken.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetSignatureCreationKeys))]
+        [MemberData(nameof(GetSignatureKeys))]
         public override void IsSupportedSignature_Success(Jwk key, SignatureAlgorithm alg)
         {
             base.IsSupportedSignature_Success(key, alg);
@@ -93,28 +86,7 @@ namespace JsonWebToken.Tests
 #endif
         }
 
-        public static IEnumerable<object[]> GetSignatureValidationKeys()
-        {
-            yield return new object[] { _symmetric128Key, SignatureAlgorithm.HmacSha256 };
-            yield return new object[] { _symmetric192Key, SignatureAlgorithm.HmacSha256 };
-            yield return new object[] { _symmetric256Key, SignatureAlgorithm.HmacSha256 };
-            yield return new object[] { _symmetric384Key, SignatureAlgorithm.HmacSha256 };
-            yield return new object[] { _symmetric512Key, SignatureAlgorithm.HmacSha256 };
-
-            yield return new object[] { _symmetric128Key, SignatureAlgorithm.HmacSha384 };
-            yield return new object[] { _symmetric192Key, SignatureAlgorithm.HmacSha384 };
-            yield return new object[] { _symmetric256Key, SignatureAlgorithm.HmacSha384 };
-            yield return new object[] { _symmetric384Key, SignatureAlgorithm.HmacSha384 };
-            yield return new object[] { _symmetric512Key, SignatureAlgorithm.HmacSha384 };
-
-            yield return new object[] { _symmetric128Key, SignatureAlgorithm.HmacSha512 };
-            yield return new object[] { _symmetric192Key, SignatureAlgorithm.HmacSha512 };
-            yield return new object[] { _symmetric256Key, SignatureAlgorithm.HmacSha512 };
-            yield return new object[] { _symmetric384Key, SignatureAlgorithm.HmacSha512 };
-            yield return new object[] { _symmetric512Key, SignatureAlgorithm.HmacSha512 };
-        }
-
-        public static IEnumerable<object[]> GetSignatureCreationKeys()
+        public static IEnumerable<object[]> GetSignatureKeys()
         {
             yield return new object[] { _symmetric128Key, SignatureAlgorithm.HmacSha256 };
             yield return new object[] { _symmetric192Key, SignatureAlgorithm.HmacSha256 };
