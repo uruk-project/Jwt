@@ -380,19 +380,22 @@ namespace JsonWebToken
         public static RsaJwk FromParameters(RSAParameters parameters) => FromParameters(parameters, false);
 
         /// <inheritdoc />
-        public override byte[] Canonicalize()
+        protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
-            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            var reusableWriter = ReusableUtf8JsonWriter.Get(bufferWriter);
+            try
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = false, SkipValidation = true });
+                var writer = reusableWriter.GetJsonWriter();
                 writer.WriteStartObject();
                 writer.WriteString(JwkParameterNames.EUtf8, Base64Url.Encode(E));
                 writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
                 writer.WriteString(JwkParameterNames.NUtf8, Base64Url.Encode(N));
                 writer.WriteEndObject();
                 writer.Flush();
-
-                return bufferWriter.WrittenSpan.ToArray();
+            }
+            finally
+            {
+                ReusableUtf8JsonWriter.Return(reusableWriter);
             }
         }
 
@@ -553,7 +556,7 @@ namespace JsonWebToken
             return null;
         }
 
-        internal override void WriteComplementTo(ref Utf8JsonWriter writer)
+        internal override void WriteComplementTo(Utf8JsonWriter writer)
         {
             writer.WriteString(JwkParameterNames.NUtf8, Base64Url.Encode(N));
             writer.WriteString(JwkParameterNames.EUtf8, Base64Url.Encode(E));
@@ -642,7 +645,7 @@ namespace JsonWebToken
                 }
 
                 return hash;
-            }            
+            }
         }
 
         /// <inheritsdoc />

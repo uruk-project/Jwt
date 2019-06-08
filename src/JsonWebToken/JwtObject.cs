@@ -334,30 +334,39 @@ namespace JsonWebToken
         /// <param name="bufferWriter"></param>
         public void Serialize(IBufferWriter<byte> bufferWriter)
         {
-            Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = false, SkipValidation = true });
-            WriteTo(ref writer);
-            writer.Flush();
+            var reusableWriter = ReusableUtf8JsonWriter.Get(bufferWriter);
+            try
+            {
+                var writer = reusableWriter.GetJsonWriter();
+
+                WriteTo(writer);
+                writer.Flush();
+            }
+            finally
+            {
+                ReusableUtf8JsonWriter.Return(reusableWriter);
+            }
         }
 
-        internal void WriteTo(ref Utf8JsonWriter writer)
+        internal void WriteTo(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
             var properties = _properties;
             for (int i = 0; i < properties.Count; i++)
             {
-                properties[i].WriteTo(ref writer);
+                properties[i].WriteTo(writer);
             }
 
             writer.WriteEndObject();
         }
 
-        internal void WriteTo(ref Utf8JsonWriter writer, ReadOnlySpan<byte> utf8Name)
+        internal void WriteTo(Utf8JsonWriter writer, ReadOnlySpan<byte> utf8Name)
         {
             writer.WriteStartObject(utf8Name);
             var properties = _properties;
             for (int i = 0; i < properties.Count; i++)
             {
-                properties[i].WriteTo(ref writer);
+                properties[i].WriteTo(writer);
             }
 
             writer.WriteEndObject();
@@ -373,10 +382,11 @@ namespace JsonWebToken
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true });
-
-                WriteTo(ref writer);
-                writer.Flush();
+                using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
+                {
+                    WriteTo(writer);
+                    writer.Flush();
+                }
 
                 var input = bufferWriter.WrittenSpan;
                 return Encoding.UTF8.GetString(input.ToArray());

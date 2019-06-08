@@ -14,6 +14,61 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
+    internal sealed class ReusableUtf8JsonWriter
+    {
+        [ThreadStatic]
+        private static ReusableUtf8JsonWriter _cachedInstance;
+
+        private readonly Utf8JsonWriter _writer;
+
+#if DEBUG
+        private bool _inUse;
+#endif
+
+        public ReusableUtf8JsonWriter(IBufferWriter<byte> stream)
+        {
+            _writer = new Utf8JsonWriter(stream, new JsonWriterOptions() { SkipValidation = true });
+        }
+
+        public static ReusableUtf8JsonWriter Get(IBufferWriter<byte> stream)
+        {
+            var writer = _cachedInstance;
+            if (writer == null)
+            {
+                writer = new ReusableUtf8JsonWriter(stream);
+            }
+
+            // Taken off the thread static
+            _cachedInstance = null;
+#if DEBUG
+            if (writer._inUse)
+            {
+                throw new InvalidOperationException("The writer wasn't returned!");
+            }
+
+            writer._inUse = true;
+#endif
+            writer._writer.Reset(stream);
+            return writer;
+        }
+
+        public static void Return(ReusableUtf8JsonWriter writer)
+        {
+            _cachedInstance = writer;
+
+            writer._writer.Reset();
+
+#if DEBUG
+            writer._inUse = false;
+#endif
+        }
+
+        public Utf8JsonWriter GetJsonWriter()
+        {
+            return _writer;
+        }
+    }
+
     /// <summary>
     /// Represents a JSON Web Key as defined in http://tools.ietf.org/html/rfc7517.
     /// </summary>
@@ -437,12 +492,13 @@ namespace JsonWebToken
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true });
-
-                writer.WriteStartObject();
-                WriteTo(ref writer);
-                writer.WriteEndObject();
-                writer.Flush();
+                using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
+                {
+                    writer.WriteStartObject();
+                    WriteTo(writer);
+                    writer.WriteEndObject();
+                    writer.Flush();
+                }
 
                 var input = bufferWriter.WrittenSpan;
                 return Encoding.UTF8.GetString(input.ToArray());
@@ -455,11 +511,20 @@ namespace JsonWebToken
         /// <param name="bufferWriter"></param>
         public void Serialize(IBufferWriter<byte> bufferWriter)
         {
-            Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = false, SkipValidation = true });
-            writer.WriteStartObject();
-            WriteTo(ref writer);
-            writer.WriteEndObject();
-            writer.Flush();
+            var reusableWriter = ReusableUtf8JsonWriter.Get(bufferWriter);
+            try
+            {
+                var writer = reusableWriter.GetJsonWriter();
+
+                writer.WriteStartObject();
+                WriteTo(writer);
+                writer.WriteEndObject();
+                writer.Flush();
+            }
+            finally
+            {
+                ReusableUtf8JsonWriter.Return(reusableWriter);
+            }
         }
 
         /// <summary>
@@ -642,7 +707,20 @@ namespace JsonWebToken
         /// Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
         /// </summary>
         /// <returns></returns>
-        public abstract byte[] Canonicalize();
+        public byte[] Canonicalize()
+        {
+            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            {
+                Canonicalize(bufferWriter);
+                return bufferWriter.WrittenSpan.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
+        /// </summary>
+        /// <returns></returns>
+        protected abstract void Canonicalize(IBufferWriter<byte> bufferWriter);
 
 #if !NETSTANDARD2_0
         /// <summary>
@@ -654,9 +732,13 @@ namespace JsonWebToken
             using (var hashAlgorithm = SHA256.Create())
             {
                 Span<byte> hash = stackalloc byte[hashAlgorithm.HashSize >> 3];
-                hashAlgorithm.TryComputeHash(Canonicalize(), hash, out int bytesWritten);
-                Debug.Assert(bytesWritten == hashAlgorithm.HashSize >> 3);
-                return Base64Url.Encode(hash);
+                using (var bufferWriter = new ArrayBufferWriter<byte>())
+                {
+                    Canonicalize(bufferWriter);
+                    hashAlgorithm.TryComputeHash(bufferWriter.WrittenSpan, hash, out int bytesWritten);
+                    Debug.Assert(bytesWritten == hashAlgorithm.HashSize >> 3);
+                    return Base64Url.Encode(hash);
+                }
             }
         }
 #else
@@ -885,9 +967,9 @@ namespace JsonWebToken
             }
         }
 
-        internal abstract void WriteComplementTo(ref Utf8JsonWriter writer);
+        internal abstract void WriteComplementTo(Utf8JsonWriter writer);
 
-        internal void WriteTo(ref Utf8JsonWriter writer)
+        internal void WriteTo(Utf8JsonWriter writer)
         {
             writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
             if (Kid != null)
@@ -935,19 +1017,20 @@ namespace JsonWebToken
                 writer.WriteEndArray();
             }
 
-            WriteComplementTo(ref writer);
+            WriteComplementTo(writer);
         }
 
         private string DebuggerDisplay()
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true });
-
-                writer.WriteStartObject();
-                WriteTo(ref writer);
-                writer.WriteEndObject();
-                writer.Flush();
+                using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
+                {
+                    writer.WriteStartObject();
+                    WriteTo(writer);
+                    writer.WriteEndObject();
+                    writer.Flush();
+                }
 
                 var input = bufferWriter.WrittenSpan;
                 return Encoding.UTF8.GetString(input.ToArray());
@@ -1009,18 +1092,17 @@ namespace JsonWebToken
 
         internal class NullJwk : Jwk
         {
-            public override ReadOnlySpan<byte> Kty => new byte[0];
+            public override ReadOnlySpan<byte> Kty => ReadOnlySpan<byte>.Empty;
 
             public override int KeySizeInBits => 0;
 
             public override ReadOnlySpan<byte> AsSpan()
             {
-                return Array.Empty<byte>();
+                return ReadOnlySpan<byte>.Empty;
             }
 
-            public override byte[] Canonicalize()
+            protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
             {
-                return Array.Empty<byte>();
             }
 
             public override bool Equals(Jwk other)
@@ -1043,7 +1125,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            internal override void WriteComplementTo(ref Utf8JsonWriter writer)
+            internal override void WriteComplementTo(Utf8JsonWriter writer)
             {
             }
 

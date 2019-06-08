@@ -41,10 +41,11 @@ namespace JsonWebToken
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = false, SkipValidation = true });
-
-                _inner.WriteTo(ref writer);
-                writer.Flush();
+                using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = false, SkipValidation = true }))
+                {
+                    _inner.WriteTo(writer);
+                    writer.Flush();
+                }
 
                 var input = bufferWriter.WrittenSpan;
                 return input.ToArray();

@@ -102,25 +102,25 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void Add(double value) => _inner.Add(new JwtValue(value));
 
-        internal void WriteTo(ref Utf8JsonWriter writer)
+        internal void WriteTo(Utf8JsonWriter writer)
         {
             var inner = _inner;
             writer.WriteStartArray();
             for (int i = 0; i < inner.Count; i++)
             {
-                inner[i].WriteTo(ref writer);
+                inner[i].WriteTo(writer);
             }
 
             writer.WriteEndArray();
         }
 
-        internal void WriteTo(ref Utf8JsonWriter writer, ReadOnlySpan<byte> utf8Name)
+        internal void WriteTo(Utf8JsonWriter writer, ReadOnlySpan<byte> utf8Name)
         {
             var inner = _inner;
             writer.WriteStartArray(utf8Name);
             for (int i = 0; i < inner.Count; i++)
             {
-                inner[i].WriteTo(ref writer);
+                inner[i].WriteTo(writer);
             }
 
             writer.WriteEndArray();
@@ -130,10 +130,11 @@ namespace JsonWebToken
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true });
-
-                WriteTo(ref writer);
-                writer.Flush();
+                using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
+                {
+                    WriteTo(writer);
+                    writer.Flush();
+                }
 
                 var input = bufferWriter.WrittenSpan;
                 return Encoding.UTF8.GetString(input.ToArray());

@@ -143,15 +143,15 @@ namespace JsonWebToken
             Value = value;
         }
 
-        internal void WriteTo(ref Utf8JsonWriter writer)
+        internal void WriteTo(Utf8JsonWriter writer)
         {
             switch (Type)
             {
                 case JwtTokenType.Object:
-                    ((JwtObject)Value).WriteTo(ref writer);
+                    ((JwtObject)Value).WriteTo(writer);
                     break;
                 case JwtTokenType.Array:
-                    ((JwtArray)Value).WriteTo(ref writer);
+                    ((JwtArray)Value).WriteTo(writer);
                     break;
                 case JwtTokenType.Integer:
                     writer.WriteNumberValue((long)Value);
@@ -181,10 +181,11 @@ namespace JsonWebToken
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true });
-
-                WriteTo(ref writer);
-                writer.Flush();
+                using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
+                {
+                    WriteTo(writer);
+                    writer.Flush();
+                }
 
                 var input = bufferWriter.WrittenSpan;
                 return Encoding.UTF8.GetString(input.ToArray());
