@@ -116,11 +116,14 @@ namespace JsonWebToken
                 using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
                 {
                     WriteTo(writer);
-                    writer.Flush();
                 }
 
                 var input = bufferWriter.WrittenSpan;
+#if NETSTANDARD2_0
                 return Encoding.UTF8.GetString(input.ToArray());
+#else
+                return Encoding.UTF8.GetString(input);
+#endif
             }
         }
 
@@ -143,11 +146,14 @@ namespace JsonWebToken
                 using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
                 {
                     WriteTo(writer);
-                    writer.Flush();
                 }
 
                 var input = bufferWriter.WrittenSpan;
+#if NETSTANDARD2_0
                 return Encoding.UTF8.GetString(input.ToArray());
+#else
+                return Encoding.UTF8.GetString(input);
+#endif
             }
         }
 

@@ -14,61 +14,6 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
-    internal sealed class ReusableUtf8JsonWriter
-    {
-        [ThreadStatic]
-        private static ReusableUtf8JsonWriter _cachedInstance;
-
-        private readonly Utf8JsonWriter _writer;
-
-#if DEBUG
-        private bool _inUse;
-#endif
-
-        public ReusableUtf8JsonWriter(IBufferWriter<byte> stream)
-        {
-            _writer = new Utf8JsonWriter(stream, new JsonWriterOptions() { SkipValidation = true });
-        }
-
-        public static ReusableUtf8JsonWriter Get(IBufferWriter<byte> stream)
-        {
-            var writer = _cachedInstance;
-            if (writer == null)
-            {
-                writer = new ReusableUtf8JsonWriter(stream);
-            }
-
-            // Taken off the thread static
-            _cachedInstance = null;
-#if DEBUG
-            if (writer._inUse)
-            {
-                throw new InvalidOperationException("The writer wasn't returned!");
-            }
-
-            writer._inUse = true;
-#endif
-            writer._writer.Reset(stream);
-            return writer;
-        }
-
-        public static void Return(ReusableUtf8JsonWriter writer)
-        {
-            _cachedInstance = writer;
-
-            writer._writer.Reset();
-
-#if DEBUG
-            writer._inUse = false;
-#endif
-        }
-
-        public Utf8JsonWriter GetJsonWriter()
-        {
-            return _writer;
-        }
-    }
-
     /// <summary>
     /// Represents a JSON Web Key as defined in http://tools.ietf.org/html/rfc7517.
     /// </summary>
@@ -492,16 +437,19 @@ namespace JsonWebToken
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
+                using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
                 {
                     writer.WriteStartObject();
                     WriteTo(writer);
                     writer.WriteEndObject();
-                    writer.Flush();
                 }
 
                 var input = bufferWriter.WrittenSpan;
+#if NETSTANDARD2_0
                 return Encoding.UTF8.GetString(input.ToArray());
+#else
+                return Encoding.UTF8.GetString(input);
+#endif
             }
         }
 
@@ -511,19 +459,11 @@ namespace JsonWebToken
         /// <param name="bufferWriter"></param>
         public void Serialize(IBufferWriter<byte> bufferWriter)
         {
-            var reusableWriter = ReusableUtf8JsonWriter.Get(bufferWriter);
-            try
-            {
-                var writer = reusableWriter.GetJsonWriter();
-
+            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
+            { 
                 writer.WriteStartObject();
                 WriteTo(writer);
                 writer.WriteEndObject();
-                writer.Flush();
-            }
-            finally
-            {
-                ReusableUtf8JsonWriter.Return(reusableWriter);
             }
         }
 
@@ -1024,16 +964,19 @@ namespace JsonWebToken
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
+                using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
                 {
                     writer.WriteStartObject();
                     WriteTo(writer);
                     writer.WriteEndObject();
-                    writer.Flush();
                 }
 
                 var input = bufferWriter.WrittenSpan;
+#if NETSTANDARD2_0
                 return Encoding.UTF8.GetString(input.ToArray());
+#else
+                return Encoding.UTF8.GetString(input);
+#endif
             }
         }
 

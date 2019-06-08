@@ -299,22 +299,14 @@ namespace JsonWebToken
         /// <inheritdoc />
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
-            var reusableWriter = ReusableUtf8JsonWriter.Get(bufferWriter);
-            try
+            using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
             {
-                var writer = reusableWriter.GetJsonWriter();
-
                 writer.WriteStartObject();
                 writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
                 writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
                 writer.WriteString(JwkParameterNames.XUtf8, Base64Url.Encode(X));
                 writer.WriteString(JwkParameterNames.YUtf8, Base64Url.Encode(Y));
                 writer.WriteEndObject();
-                writer.Flush();
-            }
-            finally
-            {
-                ReusableUtf8JsonWriter.Return(reusableWriter);
             }
         }
 

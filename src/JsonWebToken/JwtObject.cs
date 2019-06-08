@@ -334,17 +334,9 @@ namespace JsonWebToken
         /// <param name="bufferWriter"></param>
         public void Serialize(IBufferWriter<byte> bufferWriter)
         {
-            var reusableWriter = ReusableUtf8JsonWriter.Get(bufferWriter);
-            try
+            using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
             {
-                var writer = reusableWriter.GetJsonWriter();
-
                 WriteTo(writer);
-                writer.Flush();
-            }
-            finally
-            {
-                ReusableUtf8JsonWriter.Return(reusableWriter);
             }
         }
 
@@ -382,14 +374,17 @@ namespace JsonWebToken
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
+                using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
                 {
                     WriteTo(writer);
-                    writer.Flush();
                 }
 
                 var input = bufferWriter.WrittenSpan;
+#if NETSTANDARD2_0
                 return Encoding.UTF8.GetString(input.ToArray());
+#else
+                return Encoding.UTF8.GetString(input);
+#endif
             }
         }
     }

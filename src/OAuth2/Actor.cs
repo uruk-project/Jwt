@@ -41,10 +41,9 @@ namespace JsonWebToken
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = false, SkipValidation = true }))
+                using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
                 {
                     _inner.WriteTo(writer);
-                    writer.Flush();
                 }
 
                 var input = bufferWriter.WrittenSpan;

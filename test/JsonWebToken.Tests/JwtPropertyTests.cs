@@ -47,7 +47,6 @@ namespace JsonWebToken.Tests
                     writer.WriteStartObject();
                     property.WriteTo(writer);
                     writer.WriteEndObject();
-                    writer.Flush();
                 }
 
                 Assert.Equal(expected, Encoding.UTF8.GetString(bufferWriter.WrittenSpan));
