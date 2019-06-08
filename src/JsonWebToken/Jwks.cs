@@ -113,22 +113,27 @@ namespace JsonWebToken
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true });
-                WriteTo(ref writer);
-                writer.Flush();
+                using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
+                {
+                    WriteTo(writer);
+                }
 
                 var input = bufferWriter.WrittenSpan;
+#if NETSTANDARD2_0
                 return Encoding.UTF8.GetString(input.ToArray());
+#else
+                return Encoding.UTF8.GetString(input);
+#endif
             }
         }
 
-        internal void WriteTo(ref Utf8JsonWriter writer)
+        internal void WriteTo(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
             writer.WriteStartObject(JwksParameterNames.KeysUtf8);
             for (int i = 0; i < Keys.Count; i++)
             {
-                Keys[i].WriteTo(ref writer);
+                Keys[i].WriteTo(writer);
             }
 
             writer.WriteEndObject();
@@ -138,13 +143,17 @@ namespace JsonWebToken
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true });
-
-                WriteTo(ref writer);
-                writer.Flush();
+                using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
+                {
+                    WriteTo(writer);
+                }
 
                 var input = bufferWriter.WrittenSpan;
+#if NETSTANDARD2_0
                 return Encoding.UTF8.GetString(input.ToArray());
+#else
+                return Encoding.UTF8.GetString(input);
+#endif
             }
         }
 

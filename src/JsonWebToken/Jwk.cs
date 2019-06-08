@@ -437,15 +437,19 @@ namespace JsonWebToken
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true });
-
-                writer.WriteStartObject();
-                WriteTo(ref writer);
-                writer.WriteEndObject();
-                writer.Flush();
+                using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
+                {
+                    writer.WriteStartObject();
+                    WriteTo(writer);
+                    writer.WriteEndObject();
+                }
 
                 var input = bufferWriter.WrittenSpan;
+#if NETSTANDARD2_0
                 return Encoding.UTF8.GetString(input.ToArray());
+#else
+                return Encoding.UTF8.GetString(input);
+#endif
             }
         }
 
@@ -455,11 +459,12 @@ namespace JsonWebToken
         /// <param name="bufferWriter"></param>
         public void Serialize(IBufferWriter<byte> bufferWriter)
         {
-            Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = false, SkipValidation = true });
-            writer.WriteStartObject();
-            WriteTo(ref writer);
-            writer.WriteEndObject();
-            writer.Flush();
+            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
+            { 
+                writer.WriteStartObject();
+                WriteTo(writer);
+                writer.WriteEndObject();
+            }
         }
 
         /// <summary>
@@ -642,7 +647,20 @@ namespace JsonWebToken
         /// Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
         /// </summary>
         /// <returns></returns>
-        public abstract byte[] Canonicalize();
+        public byte[] Canonicalize()
+        {
+            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            {
+                Canonicalize(bufferWriter);
+                return bufferWriter.WrittenSpan.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
+        /// </summary>
+        /// <returns></returns>
+        protected abstract void Canonicalize(IBufferWriter<byte> bufferWriter);
 
 #if !NETSTANDARD2_0
         /// <summary>
@@ -654,9 +672,13 @@ namespace JsonWebToken
             using (var hashAlgorithm = SHA256.Create())
             {
                 Span<byte> hash = stackalloc byte[hashAlgorithm.HashSize >> 3];
-                hashAlgorithm.TryComputeHash(Canonicalize(), hash, out int bytesWritten);
-                Debug.Assert(bytesWritten == hashAlgorithm.HashSize >> 3);
-                return Base64Url.Encode(hash);
+                using (var bufferWriter = new ArrayBufferWriter<byte>())
+                {
+                    Canonicalize(bufferWriter);
+                    hashAlgorithm.TryComputeHash(bufferWriter.WrittenSpan, hash, out int bytesWritten);
+                    Debug.Assert(bytesWritten == hashAlgorithm.HashSize >> 3);
+                    return Base64Url.Encode(hash);
+                }
             }
         }
 #else
@@ -885,9 +907,9 @@ namespace JsonWebToken
             }
         }
 
-        internal abstract void WriteComplementTo(ref Utf8JsonWriter writer);
+        internal abstract void WriteComplementTo(Utf8JsonWriter writer);
 
-        internal void WriteTo(ref Utf8JsonWriter writer)
+        internal void WriteTo(Utf8JsonWriter writer)
         {
             writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
             if (Kid != null)
@@ -935,22 +957,26 @@ namespace JsonWebToken
                 writer.WriteEndArray();
             }
 
-            WriteComplementTo(ref writer);
+            WriteComplementTo(writer);
         }
 
         private string DebuggerDisplay()
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true });
-
-                writer.WriteStartObject();
-                WriteTo(ref writer);
-                writer.WriteEndObject();
-                writer.Flush();
+                using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
+                {
+                    writer.WriteStartObject();
+                    WriteTo(writer);
+                    writer.WriteEndObject();
+                }
 
                 var input = bufferWriter.WrittenSpan;
+#if NETSTANDARD2_0
                 return Encoding.UTF8.GetString(input.ToArray());
+#else
+                return Encoding.UTF8.GetString(input);
+#endif
             }
         }
 
@@ -1009,18 +1035,17 @@ namespace JsonWebToken
 
         internal class NullJwk : Jwk
         {
-            public override ReadOnlySpan<byte> Kty => new byte[0];
+            public override ReadOnlySpan<byte> Kty => ReadOnlySpan<byte>.Empty;
 
             public override int KeySizeInBits => 0;
 
             public override ReadOnlySpan<byte> AsSpan()
             {
-                return Array.Empty<byte>();
+                return ReadOnlySpan<byte>.Empty;
             }
 
-            public override byte[] Canonicalize()
+            protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
             {
-                return Array.Empty<byte>();
             }
 
             public override bool Equals(Jwk other)
@@ -1043,7 +1068,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            internal override void WriteComplementTo(ref Utf8JsonWriter writer)
+            internal override void WriteComplementTo(Utf8JsonWriter writer)
             {
             }
 

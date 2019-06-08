@@ -365,19 +365,15 @@ namespace JsonWebToken
             return null;
         }
 
-        /// <inheritdoc />
-        public override byte[] Canonicalize()
+        /// <inheritdoc />      
+        protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
-            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = false, SkipValidation = true });
                 writer.WriteStartObject();
                 writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
                 writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
                 writer.WriteEndObject();
-                writer.Flush();
-
-                return bufferWriter.WrittenSpan.ToArray();
             }
         }
 
@@ -420,7 +416,7 @@ namespace JsonWebToken
             return key;
         }
 
-        internal override void WriteComplementTo(ref Utf8JsonWriter writer)
+        internal override void WriteComplementTo(Utf8JsonWriter writer)
         {
             writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
         }
@@ -468,7 +464,7 @@ namespace JsonWebToken
         public override void Dispose()
         {
             base.Dispose();
-            if(_k != null)
+            if (_k != null)
             {
                 CryptographicOperations.ZeroMemory(_k);
             }

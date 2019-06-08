@@ -42,11 +42,13 @@ namespace JsonWebToken.Tests
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                var writer = new Utf8JsonWriter(bufferWriter);
-                writer.WriteStartObject();
-                property.WriteTo(ref writer);
-                writer.WriteEndObject();
-                writer.Flush();
+                using (var writer = new Utf8JsonWriter(bufferWriter))
+                {
+                    writer.WriteStartObject();
+                    property.WriteTo(writer);
+                    writer.WriteEndObject();
+                }
+
                 Assert.Equal(expected, Encoding.UTF8.GetString(bufferWriter.WrittenSpan));
             }
         }

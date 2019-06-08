@@ -297,20 +297,16 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
-        public override byte[] Canonicalize()
+        protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
-            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = false, SkipValidation = true });
                 writer.WriteStartObject();
                 writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
                 writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
                 writer.WriteString(JwkParameterNames.XUtf8, Base64Url.Encode(X));
                 writer.WriteString(JwkParameterNames.YUtf8, Base64Url.Encode(Y));
                 writer.WriteEndObject();
-                writer.Flush();
-
-                return bufferWriter.WrittenSpan.ToArray();
             }
         }
 
@@ -530,7 +526,7 @@ namespace JsonWebToken
             return key;
         }
 
-        internal override void WriteComplementTo(ref Utf8JsonWriter writer)
+        internal override void WriteComplementTo(Utf8JsonWriter writer)
         {
             writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
             writer.WriteString(JwkParameterNames.XUtf8, Base64Url.Encode(X));

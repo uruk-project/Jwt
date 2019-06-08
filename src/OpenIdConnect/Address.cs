@@ -99,19 +99,19 @@ namespace JsonWebToken
         {
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = false, SkipValidation = true });
-
-                writer.WriteStartObject();
-                WriteTo(ref writer);
-                writer.WriteEndObject();
-                writer.Flush();
+                using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
+                {
+                    writer.WriteStartObject();
+                    WriteTo(writer);
+                    writer.WriteEndObject();
+                }
 
                 var input = bufferWriter.WrittenSpan;
                 return input.ToArray();
             }
         }
 
-        internal void WriteTo(ref Utf8JsonWriter writer)
+        internal void WriteTo(Utf8JsonWriter writer)
         {
             if (Formatted != null)
             {
