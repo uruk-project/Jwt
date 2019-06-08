@@ -29,6 +29,10 @@ namespace JsonWebToken.Internal
             public TValue value;         // Value of entry
         }
 
+        public int Count => _count;
+
+        public TValue this[int index] => _entries[index].value;
+
         private int Initialize(int capacity)
         {
             int size = GetPrime(capacity);
@@ -52,7 +56,6 @@ namespace JsonWebToken.Internal
             value = default;
             return false;
         }
-
 
         private int FindEntry(int key)
         {

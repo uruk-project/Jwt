@@ -13,32 +13,11 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of the <see cref="EncodingContext"/> class.
         /// </summary>
-        /// <param name="signatureFactory"></param>
-        /// <param name="keyWrapFactory"></param>
-        /// <param name="authenticatedEncryptionFactory"></param>
         /// <param name="headerCache"></param>
         /// <param name="tokenLifetimeInMinutes"></param>
         /// <param name="generateIssuedTime"></param>
-        public EncodingContext(SignerFactory signatureFactory, KeyWrapperFactory keyWrapFactory, AuthenticatedEncryptorFactory authenticatedEncryptionFactory, JsonHeaderCache headerCache, int tokenLifetimeInMinutes, bool generateIssuedTime)
+        public EncodingContext(JsonHeaderCache headerCache, int tokenLifetimeInMinutes, bool generateIssuedTime)
         {
-            if (signatureFactory == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.signatureFactory);
-            }
-
-            if (keyWrapFactory == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.keyWrapFactory);
-            }
-
-            if (authenticatedEncryptionFactory == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.authenticatedEncryptionFactory);
-            }
-
-            SignatureFactory = signatureFactory;
-            KeyWrapFactory = keyWrapFactory;
-            AuthenticatedEncryptionFactory = authenticatedEncryptionFactory;
             HeaderCache = headerCache;
             TokenLifetimeInMinutes = tokenLifetimeInMinutes;
             GenerateIssuedTime = generateIssuedTime;
@@ -48,21 +27,6 @@ namespace JsonWebToken
         /// Gets the JSON header cache.
         /// </summary>
         public JsonHeaderCache HeaderCache { get; }
-
-        /// <summary>
-        /// The <see cref="SignatureFactory"/>.
-        /// </summary>
-        public SignerFactory SignatureFactory { get; }
-
-        /// <summary>
-        /// The <see cref="KeyWrapperFactory"/>.
-        /// </summary>
-        public KeyWrapperFactory KeyWrapFactory { get; }
-
-        /// <summary>
-        /// The <see cref="AuthenticatedEncryptorFactory"/>.
-        /// </summary>
-        public AuthenticatedEncryptorFactory AuthenticatedEncryptionFactory { get; }
 
         /// <summary>
         /// Gets the token lifetime, in minutes.

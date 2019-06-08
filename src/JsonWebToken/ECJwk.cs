@@ -597,5 +597,16 @@ namespace JsonWebToken
                 return hash;
             }
         }
+
+        /// <inheritsdoc />
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (D != null)
+            {
+                CryptographicOperations.ZeroMemory(D);
+
+            }
+        }
     }
 }

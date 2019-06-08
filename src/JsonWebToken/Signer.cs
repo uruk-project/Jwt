@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -10,6 +11,11 @@ namespace JsonWebToken
     /// </summary>
     public abstract class Signer : IDisposable
     {
+        /// <summary>
+        /// Defines a <see cref="Signer"/> that do nothing.
+        /// </summary>
+        public static readonly Signer None = new NoneSigner();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Signer"/> class used to create and verify signatures.
         /// </summary>
@@ -20,6 +26,11 @@ namespace JsonWebToken
             if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
+            }
+
+            if (algorithm is null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.algorithm);
             }
 
             Key = key;
@@ -77,5 +88,32 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer</param>     
         protected abstract void Dispose(bool disposing);
+
+        private class NoneSigner : Signer
+        {
+            public NoneSigner()
+                : base(Jwk.Empty, SignatureAlgorithm.None)
+            {
+            }
+
+            public override int HashSizeInBytes => 0;
+
+            public override int Base64HashSizeInBytes => 0;
+
+            public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
+            {
+                bytesWritten = 0;
+                return true;
+            }
+
+            public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
+            {
+                return true;
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+            }
+        }
     }
 }

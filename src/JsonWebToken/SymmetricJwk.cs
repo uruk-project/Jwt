@@ -18,7 +18,6 @@ namespace JsonWebToken
     public sealed class SymmetricJwk : Jwk
     {
         private byte[] _k;
-        private readonly CryptographicStore<AuthenticatedEncryptor> _encryptors = new CryptographicStore<AuthenticatedEncryptor>();
 
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
@@ -163,12 +162,6 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override void Release(AuthenticatedEncryptor encryptor)
-        {
-            _encryptors.TryRemove(encryptor.EncryptionAlgorithm.Id);
-        }
-
-        /// <inheritsdoc />
         protected override KeyWrapper CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
             if (algorithm.Category == AlgorithmCategory.Aes)
@@ -184,38 +177,6 @@ namespace JsonWebToken
             else if (!algorithm.ProduceEncryptionKey)
             {
                 return new DirectKeyWrapper(this, encryptionAlgorithm, algorithm);
-            }
-
-            return null;
-        }
-
-        /// <inheritsdoc />
-        public override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
-        {
-            if (!(encryptionAlgorithm is null))
-            {
-                var algorithmKey = encryptionAlgorithm.Id;
-                if (_encryptors.TryGetValue(algorithmKey, out var encryptor))
-                {
-                    return encryptor;
-                }
-
-                if (IsSupported(encryptionAlgorithm))
-                {
-                    encryptor = CreateNewAuthenticatedEncryptor(encryptionAlgorithm);
-                    if (_encryptors.TryAdd(algorithmKey, encryptor))
-                    {
-                        return encryptor;
-                    }
-
-                    encryptor.Dispose();
-                    if (_encryptors.TryGetValue(encryptionAlgorithm.Id, out encryptor))
-                    {
-                        return encryptor;
-                    }
-
-                    Errors.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
-                }
             }
 
             return null;
@@ -500,6 +461,16 @@ namespace JsonWebToken
 
                     return hash;
                 }
+            }
+        }
+
+        /// <inheritsdoc />
+        public override void Dispose()
+        {
+            base.Dispose();
+            if(_k != null)
+            {
+                CryptographicOperations.ZeroMemory(_k);
             }
         }
     }

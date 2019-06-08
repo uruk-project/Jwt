@@ -170,7 +170,7 @@ namespace JsonWebToken.Tests
             }
         }
 
-        private static readonly ECJwk _privateEcc256Key = new ECJwk
+        private static ECJwk _privateEcc256Key => new ECJwk
         (
             crv: EllipticalCurve.P256,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
@@ -178,14 +178,14 @@ namespace JsonWebToken.Tests
             d: "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
         );
 
-        private static readonly ECJwk _publicEcc256Key = new ECJwk
+        private static ECJwk _publicEcc256Key => new ECJwk
         (
             crv: EllipticalCurve.P256,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
             y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck"
         );
 
-        private static readonly ECJwk _publicEcc384Key = new ECJwk
+        private static ECJwk _publicEcc384Key => new ECJwk
         (
             crv: EllipticalCurve.P384,
             d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
@@ -193,7 +193,7 @@ namespace JsonWebToken.Tests
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         );
 
-        private static readonly ECJwk _privateEcc384Key = new ECJwk
+        private static ECJwk _privateEcc384Key => new ECJwk
         (
             crv: EllipticalCurve.P384,
             d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
@@ -201,7 +201,7 @@ namespace JsonWebToken.Tests
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         );
 
-        private static readonly ECJwk _privateEcc521Key = new ECJwk
+        private static ECJwk _privateEcc521Key => new ECJwk
         (
             crv: EllipticalCurve.P521,
             d: "Adri8PbGJBWN5upp_67cKF8E0ADCF-w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HISTMh_RSmFFhTfBH",
@@ -209,7 +209,7 @@ namespace JsonWebToken.Tests
             y: "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y"
         );
 
-        private static readonly ECJwk _publicEcc521Key = new ECJwk
+        private static ECJwk _publicEcc521Key => new ECJwk
         (
             crv: EllipticalCurve.P521,
             x: "AEeo_Y06znu6MVjyvJW2_SX_JKK2DxbxF3QjAqkZhMTvwgLc3Z073vFwwiCHKcOwK2b5H8H4a7PDN6DGJ6YJjpN0",

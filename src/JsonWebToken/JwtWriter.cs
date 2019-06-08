@@ -11,71 +11,25 @@ namespace JsonWebToken
     /// <summary>
     /// Writes a JWT.
     /// </summary>
-    public sealed class JwtWriter : IDisposable
+    public sealed class JwtWriter
     {
-        private readonly SignerFactory _signatureFactory;
-        private readonly KeyWrapperFactory _keyWrapFactory;
-        private readonly AuthenticatedEncryptorFactory _authenticatedEncryptionFactory;
         private readonly JsonHeaderCache _headerCache;
-        private readonly bool _disposeFactories;
-
         private int _tokenLifetimeInMinutes;
-        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwtWriter"/>.
         /// </summary>
         public JwtWriter() :
-            this(new DefaultSignerFactory(), new DefaultKeyWrapperFactory(), new DefaultAuthenticatedEncryptorFactory(), new JsonHeaderCache())
-        {
-            _disposeFactories = true;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwtWriter"/>.
-        /// </summary>
-        /// <param name="signerFactory"></param>
-        /// <param name="keyWrapperFactory"></param>
-        /// <param name="authenticatedEncryptorFactory"></param>
-        public JwtWriter(
-            SignerFactory signerFactory,
-            KeyWrapperFactory keyWrapperFactory,
-            AuthenticatedEncryptorFactory authenticatedEncryptorFactory)
-            : this(signerFactory, keyWrapperFactory, authenticatedEncryptorFactory, null)
+            this(null)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwtWriter"/>.
         /// </summary>
-        /// <param name="signerFactory"></param>
-        /// <param name="keyWrapperFactory"></param>
-        /// <param name="authenticatedEncryptorFactory"></param>
         /// <param name="headerCache"></param>
-        public JwtWriter(
-            SignerFactory signerFactory,
-            KeyWrapperFactory keyWrapperFactory,
-            AuthenticatedEncryptorFactory authenticatedEncryptorFactory,
-            JsonHeaderCache headerCache)
+        public JwtWriter(JsonHeaderCache headerCache)
         {
-            if (signerFactory == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.signerFactory);
-            }
-
-            if (keyWrapperFactory == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.keyWrapperFactory);
-            }
-
-            if (authenticatedEncryptorFactory == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.authenticatedEncryptorFactory);
-            }
-
-            _signatureFactory = signerFactory;
-            _keyWrapFactory = keyWrapperFactory;
-            _authenticatedEncryptionFactory = authenticatedEncryptorFactory;
             _headerCache = headerCache ?? new JsonHeaderCache();
         }
 
@@ -143,18 +97,13 @@ namespace JsonWebToken
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.descriptor);
             }
-
-            if (_disposed)
-            {
-                Errors.ThrowObjectDisposed(GetType());
-            }
-
+            
             if (!IgnoreTokenValidation)
             {
                 descriptor.Validate();
             }
 
-            var encodingContext = new EncodingContext(_signatureFactory, _keyWrapFactory, _authenticatedEncryptionFactory, EnableHeaderCaching ? _headerCache : null, TokenLifetimeInMinutes, GenerateIssuedTime);
+            var encodingContext = new EncodingContext(EnableHeaderCaching ? _headerCache : null, TokenLifetimeInMinutes, GenerateIssuedTime);
             descriptor.Encode(encodingContext, output);
         }
 
@@ -166,20 +115,6 @@ namespace JsonWebToken
         public string WriteTokenString(JwtDescriptor descriptor)
         {
             return Encoding.UTF8.GetString(WriteToken(descriptor));
-        }
-
-        /// <summary>
-        /// Release the managed resources.
-        /// </summary>
-        public void Dispose()
-        {
-            if (!_disposed && _disposeFactories)
-            {
-                _authenticatedEncryptionFactory.Dispose();
-                _signatureFactory.Dispose();
-                _keyWrapFactory.Dispose();
-                _disposed = true;
-            }
         }
     }
 }
