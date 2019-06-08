@@ -1,6 +1,8 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using System.Collections.Concurrent;
+
 namespace JsonWebToken
 {
     /// <summary>
@@ -14,7 +16,7 @@ namespace JsonWebToken
         protected AsymmetricJwk()
         {
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AsymmetricJwk"/> class.
         /// </summary>
@@ -52,7 +54,7 @@ namespace JsonWebToken
         public abstract bool HasPrivateKey { get; }
 
         /// <inheritsdoc />
-        public override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm algorithm)
+        protected override AuthenticatedEncryptor CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
             return null;
         }

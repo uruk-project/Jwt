@@ -440,7 +440,7 @@ namespace JsonWebToken
         public override void Encode(EncodingContext context, IBufferWriter<byte> output)
         {
             var alg = (Algorithm ?? Key?.SignatureAlgorithm) ?? SignatureAlgorithm.None;
-            Signer signer = context.SignatureFactory.CreateForSignature(Key, alg);
+            Signer signer = Key?.CreateSigner(alg);
             if (signer == null)
             {
                 Errors.ThrowNotSupportedSignatureAlgorithm(alg, Key);

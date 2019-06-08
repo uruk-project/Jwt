@@ -45,7 +45,7 @@ namespace JsonWebToken
         /// </summary>
         public Jwk Key
         {
-            get => _key;
+            get => _key ?? Jwk.Empty;
             set
             {
                 _key = value;

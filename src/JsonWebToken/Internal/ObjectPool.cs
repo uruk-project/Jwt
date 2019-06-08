@@ -114,7 +114,11 @@ namespace JsonWebToken.Internal
 
             for (var i = 0; i < items.Length; i++)
             {
-                items[i].Element?.Dispose();
+                var item = Interlocked.Exchange(ref items[i].Element, null);
+                if (item != null)
+                {
+                    item.Dispose();
+                }
             }
         }
 

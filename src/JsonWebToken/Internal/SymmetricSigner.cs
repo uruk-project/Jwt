@@ -30,16 +30,6 @@ namespace JsonWebToken.Internal
         public SymmetricSigner(SymmetricJwk key, SignatureAlgorithm algorithm)
             : base(key, algorithm)
         {
-            if (key is null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
-            if (algorithm is null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.algorithm);
-            }
-
             if (key.KeySizeInBits < MinimumKeySizeInBits)
             {
                 Errors.ThrowAlgorithmRequireMinimumKeySize(key, algorithm.Name, MinimumKeySizeInBits, key.KeySizeInBits);

@@ -16,15 +16,11 @@ namespace JsonWebToken.Internal
         private bool _disposed;
 
         public AesGcmEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
+            : base(key, encryptionAlgorithm)
         {
             if (encryptionAlgorithm.Category != EncryptionType.AesGcm)
             {
                 Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
-            }
-
-            if (key is null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             _key = key;

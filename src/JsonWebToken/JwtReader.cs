@@ -15,83 +15,34 @@ namespace JsonWebToken
     /// <summary>
     /// Reads and validates a JWT.
     /// </summary>
-    public sealed partial class JwtReader : IDisposable
+    public sealed partial class JwtReader
     {
         private readonly IKeyProvider[] _encryptionKeyProviders;
         private readonly JwtHeaderCache _headerCache;
-        private readonly KeyWrapperFactory _keyWrapFactory;
-        private readonly SignerFactory _signatureFactory;
-        private readonly AuthenticatedEncryptorFactory _authenticatedEncryptionFactory;
-        private readonly bool _disposeFactories;
-
-        private bool _disposed;
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwtReader"/>.
-        /// </summary>
-        /// <param name="encryptionKeyProviders"></param>
-        /// <param name="signerFactory"></param>
-        /// <param name="keyWrapperFactory"></param>
-        /// <param name="authenticatedEncryptorFactory"></param>
-        public JwtReader(
-            ICollection<IKeyProvider> encryptionKeyProviders,
-            SignerFactory signerFactory,
-            KeyWrapperFactory keyWrapperFactory,
-            AuthenticatedEncryptorFactory authenticatedEncryptorFactory)
-            : this(encryptionKeyProviders, signerFactory, keyWrapperFactory, authenticatedEncryptorFactory, null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwtReader"/>.
-        /// </summary>
-        /// <param name="encryptionKeyProviders"></param>
-        /// <param name="signerFactory"></param>
-        /// <param name="keyWrapperFactory"></param>
-        /// <param name="authenticatedEncryptorFactory"></param>
-        /// <param name="headerCache"></param>
-        public JwtReader(
-                  ICollection<IKeyProvider> encryptionKeyProviders,
-                  SignerFactory signerFactory,
-                  KeyWrapperFactory keyWrapperFactory,
-                  AuthenticatedEncryptorFactory authenticatedEncryptorFactory,
-                  JwtHeaderCache headerCache)
-        {
-            if (encryptionKeyProviders == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.encryptionKeyProviders);
-            }
-
-            if (signerFactory == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.signerFactory);
-            }
-
-            if (keyWrapperFactory == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.keyWrapperFactory);
-            }
-
-            if (authenticatedEncryptorFactory == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.authenticatedEncryptorFactory);
-            }
-
-            _encryptionKeyProviders = encryptionKeyProviders.Where(p => p != null).ToArray();
-            _signatureFactory = signerFactory;
-            _keyWrapFactory = keyWrapperFactory;
-            _authenticatedEncryptionFactory = authenticatedEncryptorFactory;
-            _headerCache = headerCache ?? new JwtHeaderCache();
-        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwtReader"/>.
         /// </summary>
         /// <param name="encryptionKeyProviders"></param>
         public JwtReader(ICollection<IKeyProvider> encryptionKeyProviders)
-            : this(encryptionKeyProviders, new DefaultSignerFactory(), new DefaultKeyWrapperFactory(), new DefaultAuthenticatedEncryptorFactory())
+            : this(encryptionKeyProviders, null)
         {
-            _disposeFactories = true;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtReader"/>.
+        /// </summary>
+        /// <param name="encryptionKeyProviders"></param>
+        /// <param name="headerCache"></param>
+        public JwtReader(ICollection<IKeyProvider> encryptionKeyProviders, JwtHeaderCache headerCache)
+        {
+            if (encryptionKeyProviders == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.encryptionKeyProviders);
+            }
+
+            _encryptionKeyProviders = encryptionKeyProviders.Where(p => p != null).ToArray();
+            _headerCache = headerCache ?? new JwtHeaderCache();
         }
 
         /// <summary>
@@ -198,12 +149,7 @@ namespace JsonWebToken
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.policy);
             }
-
-            if (_disposed)
-            {
-                Errors.ThrowObjectDisposed(typeof(JwtReader));
-            }
-
+            
             if (token.IsEmpty)
             {
                 return TokenValidationResult.MalformedToken();
@@ -247,11 +193,6 @@ namespace JsonWebToken
             if (policy == null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.policy);
-            }
-
-            if (_disposed)
-            {
-                Errors.ThrowObjectDisposed(typeof(JwtReader));
             }
 
             string malformedMessage = null;
@@ -535,7 +476,7 @@ namespace JsonWebToken
             Span<byte> decryptedBytes,
             out int bytesWritten)
         {
-            var decryptor = _authenticatedEncryptionFactory.Create(key, encryptionAlgorithm);
+            var decryptor = key.CreateAuthenticatedEncryptor(encryptionAlgorithm);
             if (decryptor == null)
             {
                 return Errors.TryWriteError(out bytesWritten);
@@ -627,7 +568,7 @@ namespace JsonWebToken
             for (int i = 0; i < keys.Count; i++)
             {
                 var key = keys[i];
-                KeyWrapper kwp = _keyWrapFactory.Create(key, enc, keyManamagementAlg);
+                KeyWrapper kwp = key.CreateKeyWrapper(enc, keyManamagementAlg);
                 if (kwp != null)
                 {
                     Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length)];
@@ -724,27 +665,13 @@ namespace JsonWebToken
 
         private bool TryValidateSignature(ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signature, Jwk key, SignatureAlgorithm algorithm)
         {
-            var signer = _signatureFactory.CreateForValidation(key, algorithm);
+            var signer = key.CreateSigner(algorithm);
             if (signer == null)
             {
                 return false;
             }
 
             return signer.Verify(contentBytes, signature);
-        }
-
-        /// <summary>
-        /// Releases managed reources.
-        /// </summary>
-        public void Dispose()
-        {
-            if (!_disposed && _disposeFactories)
-            {
-                _signatureFactory.Dispose();
-                _keyWrapFactory.Dispose();
-                _authenticatedEncryptionFactory.Dispose();
-                _disposed = true;
-            }
         }
     }
 }

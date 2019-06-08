@@ -18,8 +18,17 @@ namespace JsonWebToken
     /// Represents a JSON Web Key as defined in http://tools.ietf.org/html/rfc7517.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
-    public abstract class Jwk : IEquatable<Jwk>
+    public abstract class Jwk : IEquatable<Jwk>, IDisposable
     {
+        /// <summary>
+        /// An empty <see cref="Jwk"/>.
+        /// </summary>
+        public static Jwk Empty = new NullJwk();
+
+        private CryptographicStore<Signer> _signers;
+        private CryptographicStore<KeyWrapper> _keyWrappers;
+        private CryptographicStore<AuthenticatedEncryptor> _encryptors;
+
         private bool? _isSigningKey;
         private SignatureAlgorithm _signatureAlgorithm;
         private bool? _isEncryptionKey;
@@ -459,29 +468,175 @@ namespace JsonWebToken
         public abstract ReadOnlySpan<byte> AsSpan();
 
         /// <summary>
-        /// Creates a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
+        /// Creates a fresh new <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
-        public abstract Signer CreateSignerForSignature(SignatureAlgorithm algorithm);
+        protected abstract Signer CreateNewSigner(SignatureAlgorithm algorithm);
 
         /// <summary>
         /// Creates a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
-        public abstract Signer CreateSignerForValidation(SignatureAlgorithm algorithm);
+        public Signer CreateSigner(SignatureAlgorithm algorithm)
+        {
+            if (algorithm is null)
+            {
+                return null;
+            }
+
+            if (_signers == null)
+            {
+                _signers = new CryptographicStore<Signer>();
+            }
+
+            var signers = _signers;
+            if (signers.TryGetValue(algorithm.Id, out var signer))
+            {
+                return signer;
+            }
+
+            if (IsSupported(algorithm))
+            {
+                signer = CreateNewSigner(algorithm);
+                if (signers.TryAdd(algorithm.Id, signer))
+                {
+                    return signer;
+                }
+
+                signer.Dispose();
+                if (signers.TryGetValue(algorithm.Id, out signer))
+                {
+                    return signer;
+                }
+
+                Errors.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Releases the <see cref="Signer"/>.
+        /// </summary>
+        /// <param name="signer"></param>
+        public void Release(Signer signer)
+        {
+            _signers.TryRemove(signer.Algorithm.Id);
+        }
 
         /// <summary>
         /// Creates a <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
-        public abstract KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
+        public KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        {
+            if (encryptionAlgorithm is null || algorithm is null)
+            {
+                return null;
+            }
+
+            if (_keyWrappers == null)
+            {
+                _keyWrappers = new CryptographicStore<KeyWrapper>();
+            }
+
+            var algorithmKey = encryptionAlgorithm.ComputeKey(algorithm);
+            if (_keyWrappers.TryGetValue(algorithmKey, out var cachedKeyWrapper))
+            {
+                return cachedKeyWrapper;
+            }
+
+            if (IsSupported(algorithm))
+            {
+                var keyWrapper = CreateNewKeyWrapper(encryptionAlgorithm, algorithm);
+                if (_keyWrappers.TryAdd(algorithmKey, keyWrapper))
+                {
+                    return keyWrapper;
+                }
+
+                keyWrapper.Dispose();
+                if (_keyWrappers.TryGetValue(algorithmKey, out keyWrapper))
+                {
+                    return keyWrapper;
+                }
+
+                Errors.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Creates a fresh new <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.
+        /// </summary>
+        /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
+        /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
+        protected abstract KeyWrapper CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
+
+        /// <summary>
+        /// Releases the <see cref="KeyWrapper"/>.
+        /// </summary>
+        /// <param name="keyWrapper"></param>
+        public void Release(KeyWrapper keyWrapper)
+        {
+            _keyWrappers.TryRemove(keyWrapper.EncryptionAlgorithm.ComputeKey(keyWrapper.Algorithm));
+        }
 
         /// <summary>
         /// Creates a <see cref="AuthenticatedEncryptor"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
-        public abstract AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm);
+        public AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+        {
+            if (!(encryptionAlgorithm is null))
+            {
+                if (_encryptors == null)
+                {
+                    _encryptors = new CryptographicStore<AuthenticatedEncryptor>();
+                }
+
+                var algorithmKey = encryptionAlgorithm.Id;
+                if (_encryptors.TryGetValue(algorithmKey, out var encryptor))
+                {
+                    return encryptor;
+                }
+
+                if (IsSupported(encryptionAlgorithm))
+                {
+                    encryptor = CreateNewAuthenticatedEncryptor(encryptionAlgorithm);
+                    if (_encryptors.TryAdd(algorithmKey, encryptor))
+                    {
+                        return encryptor;
+                    }
+
+                    encryptor.Dispose();
+                    if (_encryptors.TryGetValue(encryptionAlgorithm.Id, out encryptor))
+                    {
+                        return encryptor;
+                    }
+
+                    Errors.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Creates a fresh new <see cref="AuthenticatedEncryptor"/> with the current <see cref="Jwk"/> as key.
+        /// </summary>
+        /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
+        protected abstract AuthenticatedEncryptor CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm);
+
+        /// <summary>
+        /// Releases the <see cref="AuthenticatedEncryptor"/>.
+        /// </summary>
+        /// <param name="encryptor"></param>
+        public void Release(AuthenticatedEncryptor encryptor)
+        {
+            _encryptors.TryRemove(encryptor.EncryptionAlgorithm.Id);
+        }
 
         /// <summary>
         /// Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
@@ -632,7 +787,7 @@ namespace JsonWebToken
             }
             else if (name.SequenceEqual(JwkParameterNames.KeyOpsUtf8))
             {
-                _keyOps = new List<string>(value.Count); 
+                _keyOps = new List<string>(value.Count);
                 for (int i = 0; i < value.Count; i++)
                 {
                     _keyOps.Add((string)value[i].Value);
@@ -694,7 +849,7 @@ namespace JsonWebToken
             }
         }
 
-        internal static unsafe void PopulateObject(ref Utf8JsonReader reader)
+        internal static void PopulateObject(ref Utf8JsonReader reader)
         {
             JsonParser.ConsumeJsonObject(ref reader);
         }
@@ -739,9 +894,9 @@ namespace JsonWebToken
             {
                 writer.WriteString(JwkParameterNames.KidUtf8, Kid);
             }
-            if (Use != null)
+            if (_use != null)
             {
-                writer.WriteString(JwkParameterNames.UseUtf8, Use);
+                writer.WriteString(JwkParameterNames.UseUtf8, _use);
             }
             if (Alg != null)
             {
@@ -823,5 +978,89 @@ namespace JsonWebToken
 
         /// <inheritsdoc />
         public abstract bool Equals(Jwk other);
+
+        /// <inheritsdoc />
+        public virtual void Dispose()
+        {
+            if (_signers != null)
+            {
+                for (int i = 0; i < _signers.Count; i++)
+                {
+                    _signers[i].Dispose();
+                }
+            }
+
+            if (_keyWrappers != null)
+            {
+                for (int i = 0; i < _keyWrappers.Count; i++)
+                {
+                    _keyWrappers[i].Dispose();
+                }
+            }
+
+            if (_encryptors != null)
+            {
+                for (int i = 0; i < _encryptors.Count; i++)
+                {
+                    _encryptors[i].Dispose();
+                }
+            }
+        }
+
+        internal class NullJwk : Jwk
+        {
+            public override ReadOnlySpan<byte> Kty => new byte[0];
+
+            public override int KeySizeInBits => 0;
+
+            public override ReadOnlySpan<byte> AsSpan()
+            {
+                return Array.Empty<byte>();
+            }
+
+            public override byte[] Canonicalize()
+            {
+                return Array.Empty<byte>();
+            }
+
+            public override bool Equals(Jwk other)
+            {
+                return true;
+            }
+
+            public override bool IsSupported(SignatureAlgorithm algorithm)
+            {
+                return algorithm == SignatureAlgorithm.None;
+            }
+
+            public override bool IsSupported(KeyManagementAlgorithm algorithm)
+            {
+                return false;
+            }
+
+            public override bool IsSupported(EncryptionAlgorithm algorithm)
+            {
+                return false;
+            }
+
+            internal override void WriteComplementTo(ref Utf8JsonWriter writer)
+            {
+            }
+
+            protected override KeyWrapper CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+            {
+                return null;
+            }
+
+            protected override AuthenticatedEncryptor CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+            {
+                return null;
+            }
+
+            protected override Signer CreateNewSigner(SignatureAlgorithm algorithm)
+            {
+                return Signer.None;
+            }
+        }
     }
 }

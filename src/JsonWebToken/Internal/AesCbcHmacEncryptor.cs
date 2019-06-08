@@ -20,17 +20,8 @@ namespace JsonWebToken.Internal
         private bool _disposed;
 
         public AesCbcHmacEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
+            : base(key, encryptionAlgorithm)
         {
-            if (key is null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
-            if (encryptionAlgorithm is null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
-            }
-
             if (encryptionAlgorithm.Category != EncryptionType.AesHmac)
             {
                 Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
@@ -48,7 +39,7 @@ namespace JsonWebToken.Internal
             var hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
 
             _aesPool = new ObjectPool<Aes>(new AesPooledPolicy(aesKey));
-            _signer = hmacKey.CreateSignerForSignature(encryptionAlgorithm.SignatureAlgorithm) as SymmetricSigner;
+            _signer = hmacKey.CreateSigner(encryptionAlgorithm.SignatureAlgorithm) as SymmetricSigner;
             if (_signer == null)
             {
                 Errors.ThrowNotSupportedSignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
@@ -232,7 +223,7 @@ namespace JsonWebToken.Internal
                 _disposed = true;
             }
         }
-        
+
         private static unsafe int Transform(ICryptoTransform transform, ReadOnlySpan<byte> input, int inputOffset, int inputLength, Span<byte> output)
         {
             fixed (byte* buffer = output)

@@ -4,6 +4,7 @@
 using JsonWebToken.Internal;
 using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -68,12 +69,7 @@ namespace JsonWebToken
         public ReadOnlySpan<byte> K => _k;
 
         /// <inheritsdoc />
-        public override int KeySizeInBits => K.Length != 0 ? K.Length << 3 : 0;
-
-        private void SetKeyValue(byte[] k)
-        {
-            _k = k;
-        }
+        public override int KeySizeInBits => _k.Length != 0 ? _k.Length << 3 : 0;
 
         /// <summary>
         /// Creates a new <see cref="SymmetricJwk"/> from the <paramref name="bytes"/>.
@@ -160,75 +156,45 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
-        public override Signer CreateSignerForSignature(SignatureAlgorithm algorithm)
+        protected override Signer CreateNewSigner(SignatureAlgorithm algorithm)
         {
-            return CreateSigner(algorithm);
-        }
-
-        /// <inheritdoc />
-        public override Signer CreateSignerForValidation(SignatureAlgorithm algorithm)
-        {
-            return CreateSigner(algorithm);
+            return new SymmetricSigner(this, algorithm);
         }
 
         /// <inheritsdoc />
-        private Signer CreateSigner(SignatureAlgorithm algorithm)
+        protected override KeyWrapper CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
-            if (!(algorithm is null))
+            if (algorithm.Category == AlgorithmCategory.Aes)
             {
-                if (IsSupported(algorithm))
-                {
-                    return new SymmetricSigner(this, algorithm);
-                }
+                return new AesKeyWrapper(this, encryptionAlgorithm, algorithm);
+            }
+#if NETCOREAPP3_0
+            else if (algorithm.Category == AlgorithmCategory.AesGcm)
+            {
+                return new AesGcmKeyWrapper(this, encryptionAlgorithm, algorithm);
+            }
+#endif
+            else if (!algorithm.ProduceEncryptionKey)
+            {
+                return new DirectKeyWrapper(this, encryptionAlgorithm, algorithm);
             }
 
             return null;
         }
 
         /// <inheritsdoc />
-        public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+        protected override AuthenticatedEncryptor CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (!(contentEncryptionAlgorithm is null))
+            if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
-                if (IsSupported(contentEncryptionAlgorithm))
-                {
-                    if (contentEncryptionAlgorithm.Category == AlgorithmCategory.Aes)
-                    {
-                        return new AesKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-                    }
-#if NETCOREAPP3_0
-                    else if (contentEncryptionAlgorithm.Category == AlgorithmCategory.AesGcm)
-                    {
-                        return new AesGcmKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-                    }
-#endif
-                    else if (!contentEncryptionAlgorithm.ProduceEncryptionKey)
-                    {
-                        return new DirectKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-                    }
-                }
+                return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
             }
-
-            return null;
-        }
-
-        /// <inheritsdoc />
-        public override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
-        {
-            if (IsSupported(encryptionAlgorithm))
+#if NETCOREAPP3_0
+            else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
             {
-                if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
-                {
-                    return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
-                }
-#if NETCOREAPP3_0
-                else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
-                {
-                    return new AesGcmEncryptor(this, encryptionAlgorithm);
-                }
-#endif
+                return new AesGcmEncryptor(this, encryptionAlgorithm);
             }
-
+#endif
             return null;
         }
 
@@ -324,7 +290,7 @@ namespace JsonWebToken
             var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
             if (algorithm != null)
             {
-                key.Alg = (byte[])algorithm;
+                key.Alg = algorithm;
             }
 
             return key;
@@ -406,7 +372,7 @@ namespace JsonWebToken
             {
                 Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = false, SkipValidation = true });
                 writer.WriteStartObject();
-                writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(K));
+                writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
                 writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
                 writer.WriteEndObject();
                 writer.Flush();
@@ -456,7 +422,7 @@ namespace JsonWebToken
 
         internal override void WriteComplementTo(ref Utf8JsonWriter writer)
         {
-            writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(K));
+            writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
         }
 
         /// <inheritsdoc />
@@ -472,7 +438,7 @@ namespace JsonWebToken
                 return true;
             }
 
-            return K.SequenceEqual(key._k);
+            return _k.AsSpan().SequenceEqual(key._k);
         }
 
         /// <inheritsdoc />
@@ -487,15 +453,24 @@ namespace JsonWebToken
                 }
                 else
                 {
-                    const int p = 16777619;
                     int hash = (int)2166136261;
                     for (int i = 0; i < k.Length; i++)
                     {
-                        hash = (hash ^ k[i]) * p;
+                        hash = (hash ^ k[i]) * 16777619;
                     }
 
                     return hash;
                 }
+            }
+        }
+
+        /// <inheritsdoc />
+        public override void Dispose()
+        {
+            base.Dispose();
+            if(_k != null)
+            {
+                CryptographicOperations.ZeroMemory(_k);
             }
         }
     }

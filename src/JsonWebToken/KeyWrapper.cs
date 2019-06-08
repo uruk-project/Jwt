@@ -27,6 +27,22 @@ namespace JsonWebToken
         public EncryptionAlgorithm EncryptionAlgorithm { get; }
 
         /// <summary>
+        /// Creates a <see cref="KeyWrapper"/>.
+        /// </summary>
+        /// <param name="key">the key used for key wrapping.</param>
+        /// <param name="encryptionAlgorithm">The encryption algorithm.</param>
+        /// <param name="contentEncryptionAlgorithm">The content encryption algorithm.</param>
+        public static KeyWrapper Create(Jwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+        {
+            if (key is null)
+            {
+                return null;
+            }
+
+            return key.CreateKeyWrapper(encryptionAlgorithm, contentEncryptionAlgorithm);
+        }
+
+        /// <summary>
         /// Initializes a new instances of <see cref="KeyWrapper"/>.
         /// </summary>
         /// <param name="key"></param>

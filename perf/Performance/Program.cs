@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using JsonWebToken;
 using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
@@ -33,13 +34,14 @@ namespace Performance
                 //ExpirationTime = expires,
                 //Issuer = "https://idp.example.com/",
                 //Audience = "636C69656E745F6964",
-                Key = SharedKey, 
+                Key = SharedKey,
                 Algorithm = SharedKey.Alg
             };
 
             var jwt = _writer.WriteToken(jws);
             _reader.EnableHeaderCaching = false;
             _writer.EnableHeaderCaching = false;
+
             while (true)
             {
                 //var result = _reader.TryReadToken(jwt.AsSpan(), TokenValidationPolicy.NoValidation);

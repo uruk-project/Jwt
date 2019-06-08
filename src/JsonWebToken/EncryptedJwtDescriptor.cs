@@ -72,7 +72,7 @@ namespace JsonWebToken
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
             var key = Key;
             KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)(Algorithm ?? key?.Alg);
-            KeyWrapper keyWrapper = context.KeyWrapFactory.Create(key, encryptionAlgorithm, contentEncryptionAlgorithm);
+            KeyWrapper keyWrapper = key?.CreateKeyWrapper(encryptionAlgorithm, contentEncryptionAlgorithm);
             if (keyWrapper == null)
             {
                 Errors.ThrowNotSuportedAlgorithmForKeyWrap(encryptionAlgorithm);
@@ -85,7 +85,7 @@ namespace JsonWebToken
                 Errors.ThrowKeyWrapFailed();
             }
 
-            AuthenticatedEncryptor encryptor = context.AuthenticatedEncryptionFactory.Create(cek, encryptionAlgorithm);
+            AuthenticatedEncryptor encryptor = cek.CreateAuthenticatedEncryptor(encryptionAlgorithm);
             if (encryptor == null)
             {
                 Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);

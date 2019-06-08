@@ -14,17 +14,12 @@ namespace JsonWebToken.Internal
         private readonly int _base64HashSize;
         private bool _disposed;
 
-        public EcdsaSigner(ECJwk key, SignatureAlgorithm algorithm, bool willCreateSignatures)
+        public EcdsaSigner(ECJwk key, SignatureAlgorithm algorithm)
             : base(key, algorithm)
         {
             if (key is null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
-            if (willCreateSignatures && !key.HasPrivateKey)
-            {
-                Errors.ThrowMissingPrivateKey(key);
             }
 
             if (key.KeySizeInBits < 256)
@@ -36,7 +31,7 @@ namespace JsonWebToken.Internal
             _hashSize = key.Crv.HashSize;
             _base64HashSize = Base64Url.GetArraySizeRequiredToEncode(_hashSize);
 
-            _hashAlgorithmPool = new ObjectPool<ECDsa>(new ECDsaObjectPoolPolicy(key, algorithm, willCreateSignatures));
+            _hashAlgorithmPool = new ObjectPool<ECDsa>(new ECDsaObjectPoolPolicy(key, algorithm));
         }
 
         /// <inheritsdoc />
@@ -114,11 +109,11 @@ namespace JsonWebToken.Internal
             private readonly SignatureAlgorithm _algorithm;
             private readonly bool _usePrivateKey;
 
-            public ECDsaObjectPoolPolicy(ECJwk key, SignatureAlgorithm algorithm, bool usePrivateKey)
+            public ECDsaObjectPoolPolicy(ECJwk key, SignatureAlgorithm algorithm)
             {
                 _key = key;
                 _algorithm = algorithm;
-                _usePrivateKey = usePrivateKey;
+                _usePrivateKey = key.HasPrivateKey;
             }
 
             public override ECDsa Create()

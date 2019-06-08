@@ -240,41 +240,15 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override Signer CreateSignerForSignature(SignatureAlgorithm algorithm)
+        protected override Signer CreateNewSigner(SignatureAlgorithm algorithm)
         {
-            return CreateSigner(algorithm, willCreateSignatures: true);
+            return new RsaSigner(this, algorithm);
         }
 
         /// <inheritsdoc />
-        public override Signer CreateSignerForValidation(SignatureAlgorithm algorithm)
+        protected override KeyWrapper CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
-            return CreateSigner(algorithm, willCreateSignatures: false);
-        }
-
-        private Signer CreateSigner(SignatureAlgorithm algorithm, bool willCreateSignatures)
-        {
-            if (algorithm is null)
-            {
-                return null;
-            }
-
-            if (IsSupported(algorithm))
-            {
-                return new RsaSigner(this, algorithm, willCreateSignatures);
-            }
-
-            return null;
-        }
-
-        /// <inheritsdoc />
-        public override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
-        {
-            if (IsSupported(contentEncryptionAlgorithm))
-            {
-                return new RsaKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
-            }
-
-            return null;
+            return new RsaKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
         }
 
         /// <inheritsdoc />
@@ -668,6 +642,36 @@ namespace JsonWebToken
                 }
 
                 return hash;
+            }            
+        }
+
+        /// <inheritsdoc />
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (DP != null)
+            {
+                CryptographicOperations.ZeroMemory(DP);
+            }
+
+            if (DQ != null)
+            {
+                CryptographicOperations.ZeroMemory(DQ);
+            }
+
+            if (QI != null)
+            {
+                CryptographicOperations.ZeroMemory(QI);
+            }
+
+            if (P != null)
+            {
+                CryptographicOperations.ZeroMemory(P);
+            }
+
+            if (Q != null)
+            {
+                CryptographicOperations.ZeroMemory(Q);
             }
         }
     }

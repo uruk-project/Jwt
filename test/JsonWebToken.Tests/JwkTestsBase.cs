@@ -24,19 +24,11 @@ namespace JsonWebToken.Tests
             _disposables.Add(keyWrapper);
             Assert.NotNull(keyWrapper);
             return keyWrapper;
-        }
 
-        public virtual Signer CreateSignerForValidation_Succeed(Jwk key, SignatureAlgorithm alg)
-        {
-            var signer = key.CreateSignerForValidation(alg);
-            _disposables.Add(signer);
-            Assert.NotNull(signer);
-            return signer;
         }
-
-        public virtual Signer CreateSignerForSignature_Succeed(Jwk key, SignatureAlgorithm alg)
+        public virtual Signer CreateSigner_Succeed(Jwk key, SignatureAlgorithm alg)
         {
-            var signer = key.CreateSignerForSignature(alg);
+            var signer = key.CreateSigner(alg);
             _disposables.Add(signer);
             Assert.NotNull(signer);
             return signer;

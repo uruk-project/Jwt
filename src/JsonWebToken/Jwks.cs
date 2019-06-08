@@ -14,7 +14,7 @@ namespace JsonWebToken
     /// <summary>
     /// Contains a collection of <see cref="Jwk"/>.
     /// </summary>
-    public sealed class Jwks
+    public sealed class Jwks : IDisposable
     {
         private Jwk[] _unidentifiedKeys;
         private Dictionary<string, List<Jwk>> _identifiedKeys;
@@ -232,7 +232,7 @@ namespace JsonWebToken
             //   "keys": [
             //   { jwk1 },
             //   { jwk2 },
-            //   ???
+            //   ...
             //   ]
             // }
             var jwks = new Jwks();
@@ -269,6 +269,16 @@ namespace JsonWebToken
 
             Errors.ThrowMalformedJwks();
             return null;
+        }
+
+        /// <inheritsdoc />
+        public void Dispose()
+        {
+            IList<Jwk> keys = Keys;
+            for (int i = 0; i < keys.Count; i++)
+            {
+                keys[i].Dispose();
+            }
         }
     }
 }
