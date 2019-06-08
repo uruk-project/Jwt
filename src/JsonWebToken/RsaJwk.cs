@@ -382,13 +382,20 @@ namespace JsonWebToken
         /// <inheritdoc />
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
-            using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
+            var reusableWriter = ReusableUtf8JsonWriter.Get(bufferWriter);
+            try
             {
+                var writer = reusableWriter.GetJsonWriter();
                 writer.WriteStartObject();
                 writer.WriteString(JwkParameterNames.EUtf8, Base64Url.Encode(E));
                 writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
                 writer.WriteString(JwkParameterNames.NUtf8, Base64Url.Encode(N));
                 writer.WriteEndObject();
+                writer.Flush();
+            }
+            finally
+            {
+                ReusableUtf8JsonWriter.Return(reusableWriter);
             }
         }
 

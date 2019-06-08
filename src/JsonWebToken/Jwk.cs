@@ -459,11 +459,18 @@ namespace JsonWebToken
         /// <param name="bufferWriter"></param>
         public void Serialize(IBufferWriter<byte> bufferWriter)
         {
-            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
-            { 
+            var reusableWriter = ReusableUtf8JsonWriter.Get(bufferWriter);
+            try
+            {
+                var writer = reusableWriter.GetJsonWriter();
                 writer.WriteStartObject();
                 WriteTo(writer);
                 writer.WriteEndObject();
+                writer.Flush();
+            }
+            finally
+            {
+                ReusableUtf8JsonWriter.Return(reusableWriter);
             }
         }
 

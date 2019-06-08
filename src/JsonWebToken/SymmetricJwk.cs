@@ -4,7 +4,6 @@
 using JsonWebToken.Internal;
 using System;
 using System.Buffers;
-using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -368,12 +367,18 @@ namespace JsonWebToken
         /// <inheritdoc />      
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
-            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
+            var reusableWriter = ReusableUtf8JsonWriter.Get(bufferWriter);
+            try
             {
-                writer.WriteStartObject();
+                var writer = reusableWriter.GetJsonWriter(); writer.WriteStartObject();
                 writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
                 writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
                 writer.WriteEndObject();
+                writer.Flush();
+            }
+            finally
+            {
+                ReusableUtf8JsonWriter.Return(reusableWriter);
             }
         }
 
