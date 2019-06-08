@@ -6,18 +6,21 @@ using System.Diagnostics;
 
 namespace JsonWebToken.Internal
 {
+    /// <summary>
+    /// Represent a store of cryptographics elements. 
+    /// It is a specialized implementation of the <see cref="System.Collections.Generic.Dictionary{TKey, TValue}"/>.
+    /// </summary>
+    /// <typeparam name="TValue"></typeparam>
     public sealed class CryptographicStore<TValue>
     {
         private const int HashCollisionThreshold = 100;
+        private const int StartOfFreeList = -3;
 
         private int[] _buckets;
         private Entry[] _entries;
-
         private int _count;
         private int _freeList;
         private int _freeCount;
-
-        private const int StartOfFreeList = -3;
 
         private struct Entry
         {
@@ -29,8 +32,16 @@ namespace JsonWebToken.Internal
             public TValue value;         // Value of entry
         }
 
+        /// <summary>
+        /// Gets the count of elements.
+        /// </summary>
         public int Count => _count;
 
+        /// <summary>
+        /// Gets the element at index <paramref name="index"/>.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public TValue this[int index] => _entries[index].value;
 
         private int Initialize(int capacity)
@@ -44,6 +55,12 @@ namespace JsonWebToken.Internal
             return size;
         }
 
+        /// <summary>
+        /// Tries to get the <paramref name="value"/> withe the <paramref name="key"/> as key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public bool TryGetValue(int key, out TValue value)
         {
             int i = FindEntry(key);
@@ -92,6 +109,12 @@ namespace JsonWebToken.Internal
             return i;
         }
 
+        /// <summary>
+        /// Tries to add the <paramref name="value"/> with <paramref name="key"/> as key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public bool TryAdd(int key, TValue value)
         {
             if (_buckets == null)
@@ -181,6 +204,11 @@ namespace JsonWebToken.Internal
             return true;
         }
 
+        /// <summary>
+        /// Tries to remove the <paramref name="key"/>.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public bool TryRemove(int key)
         {
             int[] buckets = _buckets;
@@ -213,11 +241,7 @@ namespace JsonWebToken.Internal
                         Debug.Assert((StartOfFreeList - _freeList) < 0, "shouldn't underflow because max hashtable length is MaxPrimeArrayLength = 0x7FEFFFFD(2146435069) _freelist underflow threshold 2147483646");
 
                         entry.next = StartOfFreeList - _freeList;
-
-                        //if (RuntimeHelpers.IsReferenceOrContainsReferences<TValue>())
-                        {
-                            entry.value = default;
-                        }
+                        entry.value = default;
                         _freeList = i;
                         _freeCount++;
                         return true;
@@ -275,14 +299,15 @@ namespace JsonWebToken.Internal
             187751, 225307, 270371, 324449, 389357, 467237, 560689, 672827, 807403, 968897, 1162687, 1395263,
             1674319, 2009191, 2411033, 2893249, 3471899, 4166287, 4999559, 5999471, 7199369 };
 
-
         private static int GetPrime(int min)
         {
             for (int i = 0; i < primes.Length; i++)
             {
                 int prime = primes[i];
                 if (prime >= min)
+                {
                     return prime;
+                }
             }
 
             //outside of our predefined table. 
@@ -290,12 +315,14 @@ namespace JsonWebToken.Internal
             for (int i = (min | 1); i < int.MaxValue; i += 2)
             {
                 if (IsPrime(i) && ((i - 1) % HashPrime != 0))
+                {
                     return i;
+                }
             }
+
             return min;
         }
 
-        // Returns size of hashtable to grow to.
         private static int ExpandPrime(int oldSize)
         {
             int newSize = 2 * oldSize;
@@ -319,12 +346,15 @@ namespace JsonWebToken.Internal
                 for (int divisor = 3; divisor <= limit; divisor += 2)
                 {
                     if ((candidate % divisor) == 0)
+                    {
                         return false;
+                    }
                 }
+
                 return true;
             }
+
             return (candidate == 2);
         }
-
     }
 }
