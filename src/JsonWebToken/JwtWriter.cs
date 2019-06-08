@@ -78,7 +78,7 @@ namespace JsonWebToken
         /// <returns>The array of <see cref="byte"/> representation of the JWT.</returns>
         public byte[] WriteToken(JwtDescriptor descriptor)
         {
-            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            using (var bufferWriter = new ArrayBufferWriter())
             {
                 WriteToken(descriptor, bufferWriter);
                 return bufferWriter.WrittenSpan.ToArray();

@@ -38,7 +38,7 @@ namespace JsonWebToken.Performance
         protected static readonly Dictionary<string, Dictionary<string, object>> DictionaryPayloads = CreateDictionaryDescriptors();
         protected static readonly Dictionary<string, SecurityTokenDescriptor> WilsonPayloads = CreateWilsonDescriptors();
 
-        private static readonly ArrayBufferWriter<byte> _output = new ArrayBufferWriter<byte>();
+        private static readonly ArrayBufferWriter _output = new ArrayBufferWriter();
 
         static WriteToken()
         {

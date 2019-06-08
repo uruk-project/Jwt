@@ -321,7 +321,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public byte[] Serialize()
         {
-            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            using (var bufferWriter = new ArrayBufferWriter())
             {
                 Serialize(bufferWriter);
                 return bufferWriter.WrittenSpan.ToArray();
@@ -379,7 +379,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override string ToString()
         {
-            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            using (var bufferWriter = new ArrayBufferWriter())
             {
                 using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
                 {

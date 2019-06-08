@@ -39,7 +39,7 @@ namespace JsonWebToken
 
         public byte[] Serialize()
         {
-            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            using (var bufferWriter = new ArrayBufferWriter())
             {
                 using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
                 {

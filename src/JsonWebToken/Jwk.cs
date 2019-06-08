@@ -435,7 +435,7 @@ namespace JsonWebToken
         /// </summary>
         public override string ToString()
         {
-            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            using (var bufferWriter = new ArrayBufferWriter())
             {
                 using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
                 {
@@ -656,7 +656,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public byte[] Canonicalize()
         {
-            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            using (var bufferWriter = new ArrayBufferWriter())
             {
                 Canonicalize(bufferWriter);
                 return bufferWriter.WrittenSpan.ToArray();
@@ -679,7 +679,7 @@ namespace JsonWebToken
             using (var hashAlgorithm = SHA256.Create())
             {
                 Span<byte> hash = stackalloc byte[hashAlgorithm.HashSize >> 3];
-                using (var bufferWriter = new ArrayBufferWriter<byte>())
+                using (var bufferWriter = new ArrayBufferWriter())
                 {
                     Canonicalize(bufferWriter);
                     hashAlgorithm.TryComputeHash(bufferWriter.WrittenSpan, hash, out int bytesWritten);
@@ -969,7 +969,7 @@ namespace JsonWebToken
 
         private string DebuggerDisplay()
         {
-            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            using (var bufferWriter = new ArrayBufferWriter())
             {
                 using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
                 {

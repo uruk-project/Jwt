@@ -460,7 +460,7 @@ namespace JsonWebToken
                 }
             }
 
-            using (var payloadBufferWriter = new ArrayBufferWriter<byte>())
+            using (var payloadBufferWriter = new ArrayBufferWriter())
             {
                 Payload.Serialize(payloadBufferWriter);
                 var payloadJson = payloadBufferWriter.WrittenSpan;
@@ -470,7 +470,7 @@ namespace JsonWebToken
                 ReadOnlySpan<byte> headerJson = default;
                 var headerCache = context.HeaderCache;
                 byte[] cachedHeader = null;
-                using (var headerBufferWriter = new ArrayBufferWriter<byte>())
+                using (var headerBufferWriter = new ArrayBufferWriter())
                 {
                     if (headerCache != null && headerCache.TryGetHeader(Header, alg, out cachedHeader))
                     {

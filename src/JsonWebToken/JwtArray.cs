@@ -128,7 +128,7 @@ namespace JsonWebToken
 
         private string DebuggerDisplay()
         {
-            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            using (var bufferWriter = new ArrayBufferWriter())
             {
                 using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
                 {
