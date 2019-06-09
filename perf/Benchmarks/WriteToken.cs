@@ -45,6 +45,12 @@ namespace JsonWebToken.Performance
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
         }
 
+        [BenchmarkDotNet.Attributes.IterationCleanup]
+        public void Clean()
+        {
+            _output.Clear();
+        }
+
         public WriteToken()
         {
             JwtCore("JWT-empty");
@@ -56,7 +62,6 @@ namespace JsonWebToken.Performance
 
         protected byte[] JwtCore(string payload)
         {
-            _output.Clear();
             Writer.WriteToken(JwtPayloads[payload], _output);
             return Array.Empty<byte>();
         }
