@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -460,55 +461,56 @@ namespace JsonWebToken
                 }
             }
 
-            using (var payloadBufferWriter = new ArrayBufferWriter<byte>())
+            using (var bufferWriter = new ArrayBufferWriter())
             {
-                Payload.Serialize(payloadBufferWriter);
-                var payloadJson = payloadBufferWriter.WrittenSpan;
-                int length = Base64Url.GetArraySizeRequiredToEncode(payloadJson.Length)
+                var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true });
+                Payload.WriteTo(writer);
+                //writer.Flush();
+                //int payloadLength = bufferWriter.WrittenCount;
+                int payloadLength = (int)writer.BytesCommitted + writer.BytesPending;
+                int length = Base64Url.GetArraySizeRequiredToEncode(payloadLength)
                            + signer.Base64HashSizeInBytes
                            + (Constants.JwsSegmentCount - 1);
                 ReadOnlySpan<byte> headerJson = default;
                 var headerCache = context.HeaderCache;
                 byte[] cachedHeader = null;
-                using (var headerBufferWriter = new ArrayBufferWriter<byte>())
+                if (headerCache != null && headerCache.TryGetHeader(Header, alg, out cachedHeader))
                 {
-                    if (headerCache != null && headerCache.TryGetHeader(Header, alg, out cachedHeader))
-                    {
-                        length += cachedHeader.Length;
-                    }
-                    else
-                    {
-                        Header.Serialize(headerBufferWriter);
-                        headerJson = headerBufferWriter.WrittenSpan;
-                        length += Base64Url.GetArraySizeRequiredToEncode(headerJson.Length);
-                    }
-
-                    var buffer = output.GetSpan(length).Slice(0, length);
-                    int headerBytesWritten;
-                    if (cachedHeader != null)
-                    {
-                        cachedHeader.CopyTo(buffer);
-                        headerBytesWritten = cachedHeader.Length;
-                    }
-                    else
-                    {
-                        headerBytesWritten = Base64Url.Encode(headerJson, buffer);
-                        headerCache?.AddHeader(Header, alg, buffer.Slice(0, headerBytesWritten));
-                    }
-
-                    buffer[headerBytesWritten] = Constants.ByteDot;
-                    int payloadBytesWritten = Base64Url.Encode(payloadJson, buffer.Slice(headerBytesWritten + 1));
-                    buffer[payloadBytesWritten + headerBytesWritten + 1] = Constants.ByteDot;
-                    Span<byte> signature = stackalloc byte[signer.HashSizeInBytes];
-                    bool success = signer.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signatureBytesWritten);
-                    Debug.Assert(success);
-                    Debug.Assert(signature.Length == signatureBytesWritten);
-
-                    int bytesWritten = Base64Url.Encode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)));
-
-                    Debug.Assert(length == payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten);
-                    output.Advance(length);
+                    length += cachedHeader.Length;
                 }
+                else
+                {
+                    Header.WriteTo(writer);
+                    writer.Flush();
+                    headerJson = bufferWriter.WrittenSpan.Slice(payloadLength + 1);
+                    length += Base64Url.GetArraySizeRequiredToEncode(headerJson.Length);
+                }
+
+                var buffer = output.GetSpan(length).Slice(0, length);
+                int headerBytesWritten;
+                if (cachedHeader != null)
+                {
+                    cachedHeader.CopyTo(buffer);
+                    headerBytesWritten = cachedHeader.Length;
+                }
+                else
+                {
+                    headerBytesWritten = Base64Url.Encode(headerJson, buffer);
+                    headerCache?.AddHeader(Header, alg, buffer.Slice(0, headerBytesWritten));
+                }
+
+                buffer[headerBytesWritten] = Constants.ByteDot;
+                int payloadBytesWritten = Base64Url.Encode(bufferWriter.WrittenSpan.Slice(0, payloadLength), buffer.Slice(headerBytesWritten + 1));
+                buffer[payloadBytesWritten + headerBytesWritten + 1] = Constants.ByteDot;
+                Span<byte> signature = stackalloc byte[signer.HashSizeInBytes];
+                bool success = signer.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signatureBytesWritten);
+                Debug.Assert(success);
+                Debug.Assert(signature.Length == signatureBytesWritten);
+
+                int bytesWritten = Base64Url.Encode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)));
+
+                Debug.Assert(length == payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten);
+                output.Advance(length);
             }
         }
 

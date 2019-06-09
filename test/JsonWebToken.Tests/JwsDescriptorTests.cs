@@ -10,7 +10,7 @@ namespace JsonWebToken.Tests
         {
             var descriptor = new JwsDescriptor();
             var context = new EncodingContext(new JsonHeaderCache(), 1, true);
-            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            using (var bufferWriter = new ArrayBufferWriter())
             {
                 descriptor.Encode(context, bufferWriter);
 

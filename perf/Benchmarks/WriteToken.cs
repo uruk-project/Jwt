@@ -38,11 +38,17 @@ namespace JsonWebToken.Performance
         protected static readonly Dictionary<string, Dictionary<string, object>> DictionaryPayloads = CreateDictionaryDescriptors();
         protected static readonly Dictionary<string, SecurityTokenDescriptor> WilsonPayloads = CreateWilsonDescriptors();
 
-        private static readonly ArrayBufferWriter<byte> _output = new ArrayBufferWriter<byte>();
+        private static readonly ArrayBufferWriter _output = new ArrayBufferWriter();
 
         static WriteToken()
         {
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
+        }
+
+        [BenchmarkDotNet.Attributes.IterationCleanup]
+        public void Clean()
+        {
+            _output.Clear();
         }
 
         public WriteToken()
@@ -56,7 +62,6 @@ namespace JsonWebToken.Performance
 
         protected byte[] JwtCore(string payload)
         {
-            _output.Clear();
             Writer.WriteToken(JwtPayloads[payload], _output);
             return Array.Empty<byte>();
         }

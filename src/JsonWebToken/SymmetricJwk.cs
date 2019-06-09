@@ -4,7 +4,6 @@
 using JsonWebToken.Internal;
 using System;
 using System.Buffers;
-using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -374,6 +373,7 @@ namespace JsonWebToken
                 writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
                 writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
                 writer.WriteEndObject();
+                writer.Flush();
             }
         }
 

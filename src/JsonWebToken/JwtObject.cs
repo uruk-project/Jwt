@@ -321,7 +321,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public byte[] Serialize()
         {
-            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            using (var bufferWriter = new ArrayBufferWriter())
             {
                 Serialize(bufferWriter);
                 return bufferWriter.WrittenSpan.ToArray();
@@ -334,10 +334,21 @@ namespace JsonWebToken
         /// <param name="bufferWriter"></param>
         public void Serialize(IBufferWriter<byte> bufferWriter)
         {
-            using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
-            {
+            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
+            { 
                 WriteTo(writer);
+                writer.Flush();
             }
+        }
+
+        /// <summary>
+        /// Serializes the <see cref="JwtObject"/> into it JSON representation.
+        /// </summary>
+        /// <param name="writer"></param>
+        public void Serialize(Utf8JsonWriter writer)
+        {
+                WriteTo(writer);
+                writer.Flush();
         }
 
         internal void WriteTo(Utf8JsonWriter writer)
@@ -372,7 +383,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override string ToString()
         {
-            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            using (var bufferWriter = new ArrayBufferWriter())
             {
                 using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
                 {
