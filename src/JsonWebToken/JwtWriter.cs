@@ -114,7 +114,15 @@ namespace JsonWebToken
         /// <returns>The <see cref="string"/> retpresention of the JWT.</returns>
         public string WriteTokenString(JwtDescriptor descriptor)
         {
-            return Encoding.UTF8.GetString(WriteToken(descriptor));
+            using (var bufferWriter = new ArrayBufferWriter())
+            {
+                WriteToken(descriptor, bufferWriter);
+#if NETSTANDARD2_0
+                return Encoding.UTF8.GetString(bufferWriter.WrittenSpan.ToArray());
+#else
+                return Encoding.UTF8.GetString(bufferWriter.WrittenSpan);
+#endif
+            }
         }
     }
 }
