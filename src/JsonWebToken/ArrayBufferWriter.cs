@@ -150,7 +150,6 @@ namespace JsonWebToken
             if (sizeHint > availableSpace)
             {
                 int growBy = Math.Max(sizeHint, bufferLength);
-
                 int newSize = checked(bufferLength + growBy);
 
                 byte[] oldBuffer = _rentedBuffer;
@@ -162,8 +161,7 @@ namespace JsonWebToken
 
                 Span<byte> previousBuffer = oldBuffer.AsSpan(0, _index);
                 previousBuffer.CopyTo(_rentedBuffer);
-                previousBuffer.Clear();
-                ArrayPool<byte>.Shared.Return(oldBuffer);
+                ArrayPool<byte>.Shared.Return(oldBuffer, true);
             }
 
             Debug.Assert(_rentedBuffer.Length - _index > 0);
