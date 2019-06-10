@@ -47,7 +47,7 @@ namespace JsonWebToken.Tests
         public void Encode_Decode(EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
             var writer = new JwtWriter();
-            var encryptionKey = SelectKey(enc, alg);
+            var encryptionKey = SelectKey(enc.Name, alg.Name);
 
             var descriptor = new JweDescriptor
             {
@@ -74,9 +74,9 @@ namespace JsonWebToken.Tests
             Assert.Equal("Alice", result.Token.Subject);
         }
 
-        private SymmetricJwk SelectKey(string enc, byte[] alg)
+        private SymmetricJwk SelectKey(string enc, string alg)
         {
-            switch (Encoding.UTF8.GetString(alg))
+            switch (alg)
             {
                 case "A128KW":
                 case "A128GCMKW":

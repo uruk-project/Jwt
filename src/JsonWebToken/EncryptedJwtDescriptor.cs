@@ -71,7 +71,7 @@ namespace JsonWebToken
         {
             EncryptionAlgorithm encryptionAlgorithm = EncryptionAlgorithm;
             var key = Key;
-            KeyManagementAlgorithm contentEncryptionAlgorithm = (KeyManagementAlgorithm)(Algorithm ?? key?.Alg);
+            KeyManagementAlgorithm contentEncryptionAlgorithm = Algorithm ?? key?.KeyManagementAlgorithm;
             KeyWrapper keyWrapper = key?.CreateKeyWrapper(encryptionAlgorithm, contentEncryptionAlgorithm);
             if (keyWrapper == null)
             {

@@ -51,7 +51,7 @@ namespace JsonWebToken
                     break;
 
                 default:
-                    Errors.ThrowNotSupportedAlgorithm(algorithm);
+                    Errors.ThrowNotSupportedAlgorithm(algorithm.Name);
                     break;
             }
 

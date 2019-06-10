@@ -20,7 +20,7 @@ namespace JsonWebToken.Tests
             qi: "eNho5yRBEBxhGBtQRww9QirZsB66TrfFReG_CcteI1aCneT0ELGhYlRlCtUkTRclIfuEPmNsNDPbLoLqqCVznFbvdB7x-Tl-m0l_eFTj2KiqwGqE9PZB9nNTwMVvH3VRRSLWACvPnSiwP8N5Usy-WRXS-V7TbpxIhvepTfE0NNo"
         )
         {
-            Alg = KeyManagementAlgorithm.RsaPkcs1
+            Alg = KeyManagementAlgorithm.RsaPkcs1.Utf8Name
         };
 
         [Theory]
@@ -96,7 +96,7 @@ namespace JsonWebToken.Tests
                  qi: "eNho5yRBEBxhGBtQRww9QirZsB66TrfFReG_CcteI1aCneT0ELGhYlRlCtUkTRclIfuEPmNsNDPbLoLqqCVznFbvdB7x-Tl-m0l_eFTj2KiqwGqE9PZB9nNTwMVvH3VRRSLWACvPnSiwP8N5Usy-WRXS-V7TbpxIhvepTfE0NNo"
             )
             {
-                Alg = KeyManagementAlgorithm.RsaPkcs1
+                Alg = KeyManagementAlgorithm.RsaPkcs1.Utf8Name
             };
 
             var descriptor = new BinaryJweDescriptor(data);

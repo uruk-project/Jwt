@@ -160,7 +160,7 @@ namespace JsonWebToken.Performance
                 var descriptor = new JwsDescriptor()
                 {
                     Key = signingKey,
-                    Algorithm = signingKey.Alg
+                    Algorithm = (SignatureAlgorithm)signingKey.Alg
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -186,7 +186,7 @@ namespace JsonWebToken.Performance
                 var descriptor = new JwsDescriptor()
                 {
                     Key = signingKey,
-                    Algorithm = signingKey.Alg
+                    Algorithm = (SignatureAlgorithm)signingKey.Alg
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -221,7 +221,7 @@ namespace JsonWebToken.Performance
                 var descriptor = new JwsDescriptor()
                 {
                     Key = signingKey,
-                    Algorithm = signingKey.Alg
+                    Algorithm = (SignatureAlgorithm)signingKey.Alg
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -421,7 +421,7 @@ namespace JsonWebToken.Performance
         private static TokenState CreateInvalidToken(Jwk signingKey, TokenValidationStatus status, JwsDescriptor descriptor, string claim = null)
         {
             descriptor.Key = signingKey;
-            descriptor.Algorithm = signingKey.Alg;
+            descriptor.Algorithm = (SignatureAlgorithm)signingKey.Alg;
 
             return CreateInvalidToken(status, descriptor);
         }

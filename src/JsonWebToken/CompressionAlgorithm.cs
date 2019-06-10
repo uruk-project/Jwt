@@ -180,7 +180,7 @@ namespace JsonWebToken
                 if (value.Length == 5)
                 {
                     // DEF
-                    if (*pValue == (byte)'D' && *(ushort*)(pValue+1) == 17989u)
+                    if (*pValue == (byte)'D' && *(ushort*)(pValue + 1) == 17989u)
                     {
                         algorithm = Deflate;
                         return true;
@@ -191,34 +191,6 @@ namespace JsonWebToken
                 return false;
             }
         }
-
-        ///// <summary>
-        ///// Cast the <see cref="CompressionAlgorithm"/> into its <see cref="string"/> representation.
-        ///// </summary>
-        ///// <param name="value"></param>
-        //public static implicit operator string(CompressionAlgorithm value)
-        //{
-        //    return value?.Name;
-        //}
-
-        ///// <summary>
-        ///// Cast the <see cref="string"/> into its <see cref="CompressionAlgorithm"/> representation.
-        ///// </summary>
-        ///// <param name="value"></param>
-        //public static explicit operator CompressionAlgorithm(string value)
-        //{
-        //    if (value == null)
-        //    {
-        //        return null;
-        //    }
-
-        //    if (!Algorithms.TryGetValue(value, out var algorithm))
-        //    {
-        //        Errors.ThrowNotSupportedAlgorithm(value);
-        //    }
-
-        //    return algorithm;
-        //}
 
         /// <summary>
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="CompressionAlgorithm"/> representation.
@@ -266,7 +238,7 @@ namespace JsonWebToken
         /// Cast the <see cref="CompressionAlgorithm"/> into its <see cref="long"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static implicit operator long(CompressionAlgorithm value)
+        public static explicit operator long(CompressionAlgorithm value)
         {
             if (value is null)
             {
@@ -280,7 +252,7 @@ namespace JsonWebToken
         /// Cast the <see cref="CompressionAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
-        public static implicit operator byte[] (CompressionAlgorithm value)
+        public static explicit operator byte[](CompressionAlgorithm value)
         {
             if (value is null)
             {

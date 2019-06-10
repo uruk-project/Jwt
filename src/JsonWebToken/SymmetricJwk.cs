@@ -272,7 +272,7 @@ namespace JsonWebToken
             var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
             if (algorithm != null)
             {
-                key.Alg = algorithm;
+                key.Alg = algorithm.Utf8Name;
             }
 
             return key;
@@ -289,7 +289,7 @@ namespace JsonWebToken
             var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
             if (algorithm != null)
             {
-                key.Alg = algorithm;
+                key.Alg = algorithm.Utf8Name;
             }
 
             return key;

@@ -89,7 +89,7 @@ namespace JsonWebToken.Tests
 
             var reader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
-                .RequireSignature(validationKey, alg)
+                .RequireSignature(validationKey, (SignatureAlgorithm)alg)
                 .Build();
 
             var result = reader.TryReadToken(token, policy);
