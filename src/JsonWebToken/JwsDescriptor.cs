@@ -47,7 +47,7 @@ namespace JsonWebToken
                     _alg = value;
                 }
 
-                return (byte[])_alg.Value;
+                return (SignatureAlgorithm)(byte[])_alg.Value;
             }
 
             set
@@ -567,7 +567,7 @@ namespace JsonWebToken
         {
             if (key != null && key.Alg != null)
             {
-                Algorithm = key.Alg;
+                Algorithm = (SignatureAlgorithm)key.Alg;
             }
         }
     }

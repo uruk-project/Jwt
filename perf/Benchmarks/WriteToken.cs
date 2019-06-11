@@ -30,7 +30,7 @@ namespace JsonWebToken.Performance
         public static readonly JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler();
         public static readonly JsonWebTokenHandler Handler2 = new JsonWebTokenHandler();
 
-        public static readonly SigningCredentials signingCredentials = new SigningCredentials(WilsonSharedKey, (SignatureAlgorithm)SigningKey.Alg);
+        public static readonly SigningCredentials signingCredentials = new SigningCredentials(WilsonSharedKey, ((SignatureAlgorithm)SigningKey.Alg).Name);
 
         public static readonly JwtWriter Writer = new JwtWriter() { EnableHeaderCaching = false };
 
@@ -225,7 +225,7 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new SecurityTokenDescriptor()
                 {
-                    SigningCredentials = new SigningCredentials(WilsonSharedKey, (SignatureAlgorithm)SigningKey.Alg),
+                    SigningCredentials = new SigningCredentials(WilsonSharedKey, ((SignatureAlgorithm)SigningKey.Alg).Name),
                     Subject = new ClaimsIdentity(),
                     Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
                     IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
@@ -252,8 +252,8 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new SecurityTokenDescriptor()
                 {
-                    SigningCredentials = new SigningCredentials(WilsonSharedKey,(SignatureAlgorithm) SigningKey.Alg),
-                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256),
+                    SigningCredentials = new SigningCredentials(WilsonSharedKey,((SignatureAlgorithm) SigningKey.Alg).Name),
+                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.Aes128KW.Name, EncryptionAlgorithm.Aes128CbcHmacSha256.Name),
                     Subject = new ClaimsIdentity(),
                     Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
                     IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),

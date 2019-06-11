@@ -88,7 +88,7 @@ namespace JsonWebToken.Performance
                 var descriptor = new JwsDescriptor()
                 {
                     Key = SigningKey,
-                    Algorithm = SigningKey.Alg
+                    Algorithm = (SignatureAlgorithm)SigningKey.Alg
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -116,7 +116,7 @@ namespace JsonWebToken.Performance
                     var descriptor = new JwsDescriptor()
                     {
                         Key = SigningKey,
-                        Algorithm = SigningKey.Alg
+                        Algorithm = (SignatureAlgorithm)SigningKey.Alg
                     };
 
                     foreach (var property in payload.Value.Properties())

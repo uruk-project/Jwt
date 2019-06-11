@@ -254,7 +254,7 @@ namespace JsonWebToken
         /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="string"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static implicit operator string(SignatureAlgorithm value)
+        public static explicit operator string(SignatureAlgorithm value)
         {
             return value?._name;
         }
@@ -263,7 +263,7 @@ namespace JsonWebToken
         /// Cast the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static implicit operator SignatureAlgorithm(string value)
+        public static explicit operator SignatureAlgorithm(string value)
         {
             if (value == null)
             {
@@ -282,9 +282,9 @@ namespace JsonWebToken
         /// Cast the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static implicit operator SignatureAlgorithm(byte[] value)
+        public static explicit operator SignatureAlgorithm(byte[] value)
         {
-            return (ReadOnlySpan<byte>)value;
+            return (SignatureAlgorithm)(ReadOnlySpan<byte>)value;
         }
 
         /// <summary>
@@ -374,74 +374,26 @@ namespace JsonWebToken
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public unsafe static implicit operator SignatureAlgorithm(ReadOnlySpan<byte> value)
+        public unsafe static explicit operator SignatureAlgorithm(ReadOnlySpan<byte> value)
         {
             if (value.IsEmpty)
             {
                 return null;
             }
 
-            fixed (byte* pValue = value)
+            if (!TryParse(value, out var algorithm))
             {
-                if (value.Length == 5)
-                {
-                    switch (*(int*)(pValue + 1))
-                    {
-                        case 909455955 /* S256 */:
-                            switch (value[0])
-                            {
-                                case (byte)'H':
-                                    return HmacSha256;
-                                case (byte)'R':
-                                    return RsaSha256;
-                                case (byte)'E':
-                                    return EcdsaSha256;
-                                case (byte)'P':
-                                    return RsaSsaPssSha256;
-                            }
-                            break;
-                        case 876098387 /* S384 */:
-                            switch (value[0])
-                            {
-                                case (byte)'H':
-                                    return HmacSha384;
-                                case (byte)'R':
-                                    return RsaSha384;
-                                case (byte)'E':
-                                    return EcdsaSha384;
-                                case (byte)'P':
-                                    return RsaSsaPssSha384;
-                            }
-                            break;
-                        case 842085715 /* S512 */:
-                            switch (value[0])
-                            {
-                                case (byte)'H':
-                                    return HmacSha512;
-                                case (byte)'R':
-                                    return RsaSha512;
-                                case (byte)'E':
-                                    return EcdsaSha512;
-                                case (byte)'P':
-                                    return RsaSsaPssSha512;
-                            }
-                            break;
-                    }
-                }
-                else if (value.Length == 4 && *(int*)pValue == 1701736302/* none */)
-                {
-                    return None;
-                }
-
-                return value.ToArray();
+                Errors.ThrowNotSupportedAlgorithm(Encoding.UTF8.GetString(value.ToArray()));
             }
+
+            return algorithm;
         }
 
         /// <summary>
         /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="long"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static implicit operator long(SignatureAlgorithm value)
+        public static explicit operator long(SignatureAlgorithm value)
         {
             if (value is null)
             {
@@ -455,7 +407,7 @@ namespace JsonWebToken
         /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
-        public static implicit operator byte[] (SignatureAlgorithm value)
+        public static explicit operator byte[] (SignatureAlgorithm value)
         {
             if (value is null)
             {

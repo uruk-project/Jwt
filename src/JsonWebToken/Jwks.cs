@@ -5,6 +5,7 @@ using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -14,6 +15,7 @@ namespace JsonWebToken
     /// <summary>
     /// Contains a collection of <see cref="Jwk"/>.
     /// </summary>
+    [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public sealed class Jwks : IDisposable
     {
         private Jwk[] _unidentifiedKeys;

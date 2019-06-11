@@ -18,6 +18,8 @@ namespace JsonWebToken.Internal
     public sealed class ObjectPool<T> : IDisposable
         where T : class, IDisposable
     {
+        private volatile bool _isDisposed;
+
         private readonly ObjectWrapper[] _items;
         private readonly PooledObjectFactory<T> _policy;
         private T _firstItem;
@@ -55,32 +57,33 @@ namespace JsonWebToken.Internal
         /// <returns></returns>
         public T Get()
         {
-            var item = _firstItem;
-
-            if (item is null || Interlocked.CompareExchange(ref _firstItem, null, item) != item)
+            if (_isDisposed)
             {
-                item = GetViaScan();
+                ThrowObjectDisposedException();
+            }
+
+            var item = _firstItem;
+            if (item == null || Interlocked.CompareExchange(ref _firstItem, null, item) != item)
+            {
+                var items = _items;
+                for (var i = 0; i < items.Length; i++)
+                {
+                    item = items[i].Element;
+                    if (item != null && Interlocked.CompareExchange(ref items[i].Element, null, item) == item)
+                    {
+                        return item;
+                    }
+                }
+
+                item = _policy.Create();
             }
 
             return item;
-        }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private T GetViaScan()
-        {
-            var items = _items;
-
-            for (var i = 0; i < items.Length; i++)
+            void ThrowObjectDisposedException()
             {
-                var item = items[i].Element;
-
-                if (item != null && Interlocked.CompareExchange(ref items[i].Element, null, item) == item)
-                {
-                    return item;
-                }
+                throw new ObjectDisposedException(GetType().Name);
             }
-
-            return _policy.Create();
         }
 
         /// <summary>
@@ -89,20 +92,30 @@ namespace JsonWebToken.Internal
         /// <param name="pooledObject"></param>
         public void Return(T pooledObject)
         {
-            if (_firstItem != null || Interlocked.CompareExchange(ref _firstItem, pooledObject, null) != null)
+            // When the pool is disposed or the obj is not returned to the pool, dispose it
+            if (_isDisposed || !ReturnCore(pooledObject))
             {
-                ReturnViaScan(pooledObject);
+                DisposeItem(pooledObject);
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ReturnViaScan(T pooledObject)
+        private bool ReturnCore(T obj)
         {
-            ObjectWrapper[] items = _items;
+            bool returnedTooPool = false;
 
-            for (var i = 0; i < items.Length && Interlocked.CompareExchange(ref items[i].Element, pooledObject, null) != null; ++i)
+            if (_firstItem == null && Interlocked.CompareExchange(ref _firstItem, obj, null) == null)
             {
+                returnedTooPool = true;
             }
+            else
+            {
+                var items = _items;
+                for (var i = 0; i < items.Length && !(returnedTooPool = Interlocked.CompareExchange(ref items[i].Element, obj, null) == null); i++)
+                {
+                }
+            }
+
+            return returnedTooPool;
         }
 
         /// <summary>
@@ -110,15 +123,24 @@ namespace JsonWebToken.Internal
         /// </summary>
         public void Dispose()
         {
-            var items = _items;
+            _isDisposed = true;
 
+            DisposeItem(_firstItem);
+            _firstItem = null;
+
+            ObjectWrapper[] items = _items;
             for (var i = 0; i < items.Length; i++)
             {
-                var item = Interlocked.Exchange(ref items[i].Element, null);
-                if (item != null)
-                {
-                    item.Dispose();
-                }
+                DisposeItem(items[i].Element);
+                items[i].Element = null;
+            }
+        }
+
+        private void DisposeItem(T item)
+        {
+            if (item is IDisposable disposable)
+            {
+                disposable.Dispose();
             }
         }
 

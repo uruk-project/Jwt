@@ -132,7 +132,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public override void WriteTo()
         {
-            var key = RsaJwk.GenerateKey(2048, true, SignatureAlgorithm.RsaSha256);
+            var key = RsaJwk.GenerateKey(2048, true, SignatureAlgorithm.RsaSha256.Utf8Name);
             key.Kid = "kid-rsa";
             key.KeyOps.Add("sign");
             key.Use = JwkUseNames.Sig.ToArray();

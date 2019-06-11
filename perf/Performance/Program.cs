@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using JsonWebToken;
+﻿using JsonWebToken;
 using JsonWebToken.Internal;
-using Newtonsoft.Json.Linq;
+using System;
 
 namespace Performance
 {
@@ -14,7 +10,7 @@ namespace Performance
         {
             Use = JwkUseNames.Sig.ToArray(),
             Kid = "kid-hs256",
-            Alg = SignatureAlgorithm.HmacSha256
+            Alg = SignatureAlgorithm.HmacSha256.Utf8Name
         };
         private static readonly Jwk EncryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithm.Aes256KW);
         private static readonly JwtReader _reader = new JwtReader(SharedKey, EncryptionKey);
@@ -35,7 +31,7 @@ namespace Performance
                 //Issuer = "https://idp.example.com/",
                 //Audience = "636C69656E745F6964",
                 Key = SharedKey,
-                Algorithm = SharedKey.Alg
+                Algorithm = (SignatureAlgorithm)SharedKey.Alg
             };
 
             var jwt = _writer.WriteToken(jws);
@@ -44,8 +40,8 @@ namespace Performance
 
             while (true)
             {
-                //var result = _reader.TryReadToken(jwt.AsSpan(), TokenValidationPolicy.NoValidation);
-                _writer.WriteToken(jws);
+                var result = _reader.TryReadToken(jwt.AsSpan(), TokenValidationPolicy.NoValidation);
+                //_writer.WriteToken(jws);
             }
         }
     }

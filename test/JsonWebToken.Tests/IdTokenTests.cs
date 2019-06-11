@@ -42,7 +42,7 @@ namespace JsonWebToken.Tests
             )
             {
                 Kid = "1e9gdk7",
-                Alg = SignatureAlgorithm.RsaSha256
+                Alg = SignatureAlgorithm.RsaSha256.Utf8Name
             };
             var reader = new JwtReader();
 

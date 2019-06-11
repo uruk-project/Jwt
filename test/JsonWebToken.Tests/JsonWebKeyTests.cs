@@ -58,7 +58,7 @@ namespace JsonWebToken.Tests
             )
             {
                 Kid = "2011-04-29",
-                Alg = (SignatureAlgorithm)"RS256"
+                Alg = ((SignatureAlgorithm)"RS256").Utf8Name
             };
 
             var thumbprint = key.ComputeThumbprint();

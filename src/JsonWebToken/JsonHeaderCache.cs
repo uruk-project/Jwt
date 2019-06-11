@@ -99,7 +99,7 @@ namespace JsonWebToken
                 return -1;
             }
 
-            return alg;
+            return alg.Id;
         }
 
         /// <summary>

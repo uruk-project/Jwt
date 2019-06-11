@@ -142,23 +142,23 @@ namespace JsonWebToken
                             return true;
                         case 3261523411586069057u when *(ulong*)(pValue + 5) == 3616730607564702530u:
                             algorithm = Aes256CbcHmacSha512;
-                            return true;                          
+                            return true;
                     }
                 }
 #if NETCOREAPP3_0
                 else if (value.Length == 7)
                 {
-                    switch(*(uint*)pValue)
+                    switch (*(uint*)pValue)
                     {
-                        case 942813505u when * (uint*)(pValue + 3) == 1296254776u:
+                        case 942813505u when *(uint*)(pValue + 3) == 1296254776u:
                             algorithm = Aes128Gcm;
-                        return true;
+                            return true;
                         case 842608961u when *(uint*)(pValue + 3) == 1296254770u:
                             algorithm = Aes192Gcm;
-                        return true;
+                            return true;
                         case 909455937u when *(uint*)(pValue + 3) == 1296254774u:
                             algorithm = Aes256Gcm;
-                        return true;
+                            return true;
                     }
                 }
 #endif
@@ -265,7 +265,7 @@ namespace JsonWebToken
         /// Cast the <see cref="EncryptionAlgorithm"/> into its <see cref="string"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static implicit operator string(EncryptionAlgorithm value)
+        public static explicit operator string(EncryptionAlgorithm value)
         {
             return value?.Name;
         }
@@ -274,7 +274,7 @@ namespace JsonWebToken
         /// Cast the <see cref="EncryptionAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
-        public static implicit operator byte[] (EncryptionAlgorithm value)
+        public static explicit operator byte[](EncryptionAlgorithm value)
         {
             if (value is null)
             {
@@ -288,16 +288,26 @@ namespace JsonWebToken
         /// Cast the <see cref="string"/> into its <see cref="EncryptionAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static implicit operator EncryptionAlgorithm(byte[] value)
+        public static explicit operator EncryptionAlgorithm(byte[] value)
         {
-            return Encoding.UTF8.GetString(value);
+            if (value == null)
+            {
+                return null;
+            }
+
+            if (!TryParse(value, out var algorithm))
+            {
+                Errors.ThrowNotSupportedAlgorithm(Encoding.UTF8.GetString(value));
+            }
+
+            return algorithm;
         }
 
         /// <summary>
         /// Cast the <see cref="string"/> into its <see cref="EncryptionAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static implicit operator EncryptionAlgorithm(string value)
+        public static explicit operator EncryptionAlgorithm(string value)
         {
             if (value == null)
             {
@@ -310,51 +320,6 @@ namespace JsonWebToken
             }
 
             return algorithm;
-        }
-
-        /// <summary>
-        /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="EncryptionAlgorithm"/> representation.
-        /// </summary>
-        /// <param name="value"></param>
-        /// 
-        public unsafe static implicit operator EncryptionAlgorithm(ReadOnlySpan<byte> value)
-        {
-            if (value.IsEmpty)
-            {
-                return null;
-            }
-
-            fixed (byte* pValue = value)
-            {
-                if (value.Length == 13 && *pValue == (byte)'A')
-                {
-                    switch (*(long*)(pValue + 1))
-                    {
-                        case 5200887096557449777 when *(int*)(pValue + 9) == 909455955 /* A128CBC-HS256 */:
-                            return Aes128CbcHmacSha256;
-                        case 5200887096557058353 when *(int*)(pValue + 9) == 876098387 /* A128CBC-HS256 */:
-                            return Aes192CbcHmacSha384;
-                        case 5200887096557319474 when *(int*)(pValue + 9) == 842085715 /* A128CBC-HS256 */:
-                            return Aes256CbcHmacSha512;
-                    }
-                }
-#if NETCOREAPP3_0
-                else if (value.Length == 7 && *pValue == (byte)'A' && *(short*)(pValue + 5) == 19779)
-                {
-                    switch (*(int*)(pValue + 1))
-                    {
-                        case 1194865201 /* A128GCM */:
-                            return Aes128Gcm;
-                        case 1194473777 /* A192GCM */:
-                            return Aes192Gcm;
-                        case 1194734898 /* A256GCM */:
-                            return Aes256Gcm;
-                    }
-                }
-#endif
-
-                return (EncryptionAlgorithm)Encoding.UTF8.GetString(value.ToArray());
-            }
         }
 
         /// <inheritsddoc />
