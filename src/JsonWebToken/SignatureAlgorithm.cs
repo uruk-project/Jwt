@@ -79,7 +79,7 @@ namespace JsonWebToken
         public static readonly SignatureAlgorithm RsaSsaPssSha512 = new SignatureAlgorithm(id: JsonWebToken.Algorithms.RsaSsaPssSha512, "PS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA512);
 
         private readonly int _id;
-        private readonly string _name;
+        private readonly byte[] _utf8Name;
         private readonly AlgorithmCategory _category;
         private readonly ushort _requiredKeySizeInBits;
         private readonly HashAlgorithmName _hashAlgorithm;
@@ -110,13 +110,13 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the signature algorithm.
         /// </summary>
-        public string Name => _name;
+        public string Name => Encoding.UTF8.GetString(_utf8Name);
 
         /// <summary>
         /// Gets the name of the signature algorithm.
         /// </summary>
-        public byte[] Utf8Name => Encoding.UTF8.GetBytes(_name);
-        
+        public byte[] Utf8Name => _utf8Name;
+
         /// <summary>
         /// Gets the algorithm category.
         /// </summary>
@@ -148,7 +148,7 @@ namespace JsonWebToken
         public SignatureAlgorithm(int id, string name, AlgorithmCategory category, ushort requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
         {
             _id = id;
-            _name = name;
+            _utf8Name = Encoding.UTF8.GetBytes(name);
             _category = category;
             _requiredKeySizeInBits = requiredKeySizeInBits;
             _hashAlgorithm = hashAlgorithm;
@@ -256,7 +256,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public static explicit operator string(SignatureAlgorithm value)
         {
-            return value?._name;
+            return value?.Name;
         }
 
         /// <summary>
@@ -407,7 +407,7 @@ namespace JsonWebToken
         /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator byte[] (SignatureAlgorithm value)
+        public static explicit operator byte[](SignatureAlgorithm value)
         {
             if (value is null)
             {
@@ -420,7 +420,7 @@ namespace JsonWebToken
         /// <inheritsddoc />
         public override string ToString()
         {
-            return _name;
+            return Name;
         }
     }
 }

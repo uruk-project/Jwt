@@ -26,6 +26,12 @@ namespace JsonWebToken
         /// 'A256CBC-HS512'
         /// </summary>
         public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(id: 13, "A256CBC-HS512", requiredKeySizeInBytes: 64, SignatureAlgorithm.HmacSha512, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesHmac);
+        private readonly sbyte _id;
+        private readonly EncryptionType _category;
+        private readonly ushort _requiredKeySizeInBytes;
+        private readonly ushort _keyWrappedSizeInBytes;
+        private readonly SignatureAlgorithm _signatureAlgorithm;
+        private readonly byte[] _utf8Name;
 
 #if NETCOREAPP3_0
         /// <summary>
@@ -42,43 +48,42 @@ namespace JsonWebToken
         /// 'A256GCM'
         /// </summary>
         public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, "A256GCM", requiredKeySizeInBytes: 32, null, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesGcm);
-#endif  
+#endif
 
-        // TODO : Verify the pertinence
         /// <summary>
         /// Gets the algorithm identifier. 
         /// </summary>
-        public sbyte Id { get; }
+        public sbyte Id => _id;
 
         /// <summary>
         /// Gets the algorithm category.
         /// </summary>
-        public EncryptionType Category { get; }
-
+        public EncryptionType Category => _category;
+        
         /// <summary>
         /// Gets the required key size, in bits.
         /// </summary>
-        public ushort RequiredKeySizeInBytes { get; }
-
+        public ushort RequiredKeySizeInBytes => _requiredKeySizeInBytes;
+        
         /// <summary>
         /// Gets the wrapped key size, in bits.
         /// </summary>
-        public ushort KeyWrappedSizeInBytes { get; }
-
+        public ushort KeyWrappedSizeInBytes => _keyWrappedSizeInBytes;
+        
         /// <summary>
         /// Gets the <see cref="SignatureAlgorithm"/>.
         /// </summary>
-        public SignatureAlgorithm SignatureAlgorithm { get; }
+        public SignatureAlgorithm SignatureAlgorithm => _signatureAlgorithm;
 
         /// <summary>
         /// Gets the name of the encryption algorithm.
         /// </summary>
-        public string Name { get; }
+        public string Name => Encoding.UTF8.GetString(_utf8Name);
 
         /// <summary>
         /// Gets the name of the signature algorithm.
         /// </summary>
-        public byte[] Utf8Name => Encoding.UTF8.GetBytes(Name);
+        public byte[] Utf8Name => _utf8Name;
 
         /// <summary>
         /// Gets the <see cref="EncryptionAlgorithm"/> list; 
@@ -106,12 +111,12 @@ namespace JsonWebToken
         /// <param name="category"></param>
         public EncryptionAlgorithm(sbyte id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm hashAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionType category)
         {
-            Id = id;
-            Name = name;
-            RequiredKeySizeInBytes = requiredKeySizeInBytes;
-            SignatureAlgorithm = hashAlgorithm;
-            KeyWrappedSizeInBytes = requiredKeyWrappedSizeInBytes;
-            Category = category;
+            _id = id;
+            _utf8Name= Encoding.UTF8.GetBytes(name);
+            _requiredKeySizeInBytes = requiredKeySizeInBytes;
+            _signatureAlgorithm = hashAlgorithm;
+            _keyWrappedSizeInBytes = requiredKeyWrappedSizeInBytes;
+            _category = category;
         }
 
 
@@ -197,7 +202,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            return Id == other.Id;
+            return _id == other._id;
         }
 
         /// <summary>
@@ -206,7 +211,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public override int GetHashCode()
         {
-            return Id.GetHashCode();
+            return _id.GetHashCode();
         }
 
         /// <summary>
@@ -232,7 +237,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            return x.Id == y.Id;
+            return x._id == y._id;
         }
 
         /// <summary>
@@ -258,7 +263,7 @@ namespace JsonWebToken
                 return true;
             }
 
-            return x.Id != y.Id;
+            return x._id != y._id;
         }
 
         /// <summary>
@@ -281,7 +286,7 @@ namespace JsonWebToken
                 return Array.Empty<byte>();
             }
 
-            return value.Utf8Name;
+            return value._utf8Name;
         }
 
         /// <summary>
@@ -335,7 +340,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public int ComputeKey(KeyManagementAlgorithm algorithm)
         {
-            return (Id << 8) | (byte)algorithm.Id;
+            return (_id << 8) | (byte)algorithm.Id;
         }
     }
 }
