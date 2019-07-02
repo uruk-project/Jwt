@@ -12,8 +12,6 @@ namespace JsonWebToken
     /// </summary>
     public sealed class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>
     {
-        private static ReadOnlySpan<byte> Dir => new[] { (byte)'d', (byte)'i', (byte)'r' };
-
         /// <summary>
         /// 'dir'
         /// </summary>
@@ -94,46 +92,13 @@ namespace JsonWebToken
         /// </summary>
         public static readonly KeyManagementAlgorithm EcdhEsAes256KW = new KeyManagementAlgorithm(id: 53, "ECDH-ES+A256KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes256KW);
 
-        // TODO : Verify the pertinence
-        /// <summary>
-        /// Gets the algorithm identifier. 
-        /// </summary>
-        public sbyte Id { get; }
-
-        /// <summary>
-        /// Gets the required key size, in bits.
-        /// </summary>
-        public ushort RequiredKeySizeInBits { get; }
-
-        /// <summary>
-        /// Gets the algorithm category.
-        /// </summary>
-        public AlgorithmCategory Category { get; }
-
-        /// <summary>
-        /// Gets the wrapped algorithm.
-        /// </summary>
-        public KeyManagementAlgorithm WrappedAlgorithm { get; }
-
-        /// <summary>
-        /// Gets the name of the key management algorithm.
-        /// </summary>
-        public string Name { get; }
-
-        /// <summary>
-        /// Gets the name of the key management algorithm.
-        /// </summary>
-        public byte[] Utf8Name => Encoding.UTF8.GetBytes(Name);
-
-        /// <summary>
-        /// Gets whether the algorithm produce an encryption key.
-        /// </summary>
-        public bool ProduceEncryptionKey { get; }
-
-        /// <summary>
-        /// Gets the <see cref="SignatureAlgorithm"/> list; 
-        /// </summary>
-        public static Dictionary<string, KeyManagementAlgorithm> Algorithms { get; } = new Dictionary<string, KeyManagementAlgorithm>
+        private readonly byte _id;
+        private readonly ushort _requiredKeySizeInBits;
+        private readonly AlgorithmCategory _category;
+        private readonly KeyManagementAlgorithm _wrappedAlgorithm;
+        private readonly byte[] _utf8Name;
+        private readonly bool _produceEncryptionKey;
+        private static readonly Dictionary<string, KeyManagementAlgorithm> _algorithms = new Dictionary<string, KeyManagementAlgorithm>
         {
             { EcdhEsAes128KW.Name, EcdhEsAes128KW },
             { EcdhEsAes192KW.Name, EcdhEsAes192KW },
@@ -154,12 +119,52 @@ namespace JsonWebToken
         };
 
         /// <summary>
+        /// Gets the algorithm identifier. 
+        /// </summary>
+        public byte Id => _id;
+
+        /// <summary>
+        /// Gets the required key size, in bits.
+        /// </summary>
+        public ushort RequiredKeySizeInBits => _requiredKeySizeInBits;
+
+        /// <summary>
+        /// Gets the algorithm category.
+        /// </summary>
+        public AlgorithmCategory Category => _category;
+
+        /// <summary>
+        /// Gets the wrapped algorithm.
+        /// </summary>
+        public KeyManagementAlgorithm WrappedAlgorithm => _wrappedAlgorithm;
+
+        /// <summary>
+        /// Gets the name of the key management algorithm.
+        /// </summary>
+        public string Name => Encoding.UTF8.GetString(_utf8Name);
+
+        /// <summary>
+        /// Gets the name of the key management algorithm.
+        /// </summary>
+        public byte[] Utf8Name => _utf8Name;
+
+        /// <summary>
+        /// Gets whether the algorithm produce an encryption key.
+        /// </summary>
+        public bool ProduceEncryptionKey => _produceEncryptionKey;
+
+        /// <summary>
+        /// Gets the <see cref="SignatureAlgorithm"/> list; 
+        /// </summary>
+        public static Dictionary<string, KeyManagementAlgorithm> Algorithms => _algorithms;
+
+        /// <summary>
         /// Initializes a new instance of <see cref="KeyManagementAlgorithm"/>. 
         /// </summary>
         /// <param name="id"></param>
         /// <param name="name"></param>
         /// <param name="keyType"></param>
-        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType)
+        public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType)
             : this(id, name, keyType, 0, null, true)
         {
         }
@@ -171,7 +176,7 @@ namespace JsonWebToken
         /// <param name="name"></param>
         /// <param name="keyType"></param>
         /// <param name="wrappedAlgorithm"></param>
-        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, KeyManagementAlgorithm wrappedAlgorithm)
+        public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType, KeyManagementAlgorithm wrappedAlgorithm)
                 : this(id, name, keyType, 0, wrappedAlgorithm, true)
         {
         }
@@ -183,7 +188,7 @@ namespace JsonWebToken
         /// <param name="name"></param>
         /// <param name="keyType"></param>
         /// <param name="requiredKeySizeInBits"></param>
-        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits)
+        public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits)
             : this(id, name, keyType, requiredKeySizeInBits, null, true)
         {
         }
@@ -195,7 +200,7 @@ namespace JsonWebToken
         /// <param name="name"></param>
         /// <param name="keyType"></param>
         /// <param name="produceEncryptedKey"></param>
-        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, bool produceEncryptedKey)
+        public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType, bool produceEncryptedKey)
             : this(id, name, keyType, 0, null, produceEncryptedKey)
         {
         }
@@ -209,14 +214,14 @@ namespace JsonWebToken
         /// <param name="requiredKeySizeInBits"></param>
         /// <param name="wrappedAlgorithm"></param>
         /// <param name="produceEncryptedKey"></param>
-        public KeyManagementAlgorithm(sbyte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, KeyManagementAlgorithm wrappedAlgorithm, bool produceEncryptedKey)
+        public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, KeyManagementAlgorithm wrappedAlgorithm, bool produceEncryptedKey)
         {
-            Id = id;
-            Name = name;
-            Category = keyType;
-            RequiredKeySizeInBits = requiredKeySizeInBits;
-            WrappedAlgorithm = wrappedAlgorithm;
-            ProduceEncryptionKey = produceEncryptedKey;
+            _id = id;
+            _utf8Name = Encoding.UTF8.GetBytes(name);
+            _category = keyType;
+            _requiredKeySizeInBits = requiredKeySizeInBits;
+            _wrappedAlgorithm = wrappedAlgorithm;
+            _produceEncryptionKey = produceEncryptedKey;
         }
 
         /// <summary>
@@ -247,7 +252,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            return Id == other.Id;
+            return _id == other._id;
         }
 
         /// <summary>
@@ -256,7 +261,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public override int GetHashCode()
         {
-            return Id.GetHashCode();
+            return _id.GetHashCode();
         }
 
         /// <summary>
@@ -282,7 +287,7 @@ namespace JsonWebToken
                 goto NotEqual;
             }
 
-            return x.Id == y.Id;
+            return x._id == y._id;
         NotEqual:
             return false;
         }
@@ -310,7 +315,7 @@ namespace JsonWebToken
                 goto Equal;
             }
 
-            return x.Id != y.Id;
+            return x._id != y._id;
         Equal:
             return true;
         }
@@ -335,7 +340,12 @@ namespace JsonWebToken
                 return null;
             }
 
-            return (KeyManagementAlgorithm)new ReadOnlySpan<byte>(value);
+            if (!TryParse(value, out var algorithm))
+            {
+                Errors.ThrowNotSupportedAlgorithm(Encoding.UTF8.GetString(value));
+            }
+
+            return algorithm;
         }
 
         /// <summary>
@@ -358,93 +368,17 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
-        /// </summary>
-        /// <param name="value"></param>
-        public unsafe static explicit operator KeyManagementAlgorithm(ReadOnlySpan<byte> value)
-        {
-            if (value.IsEmpty)
-            {
-                return null;
-            }
-
-            fixed (byte* pValue = value)
-            {
-                switch (value.Length)
-                {
-                    case 3 when *(ushort*)pValue == 26980u && *(pValue + 2) == (byte)'r' /* dir */:
-                        return Direct;
-                    case 6 when *(ushort*)(pValue + 4) == 22347u:
-                        switch (*(uint*)pValue)
-                        {
-                            case 942813505u:
-                                return Aes128KW;
-                            case 842608961u:
-                                return Aes192KW;
-                            case 909455937u:
-                                return Aes256KW;
-                        }
-                        break;
-                    case 6 when *(uint*)pValue == 826364754u && *(ushort*)(pValue + 4) == 13663u  /* RSA1_5 */:
-                        return RsaPkcs1;
-                    case 7 when *(uint*)pValue == 1212433221u && *(uint*)(pValue + 3) == 1397042504u /* ECDH-ES */ :
-                        return EcdhEs;
-                    case 8 when *(ulong*)pValue == 5784101104744747858u:
-                        return RsaOaep;
-                    case 9 when *(pValue + 4) == (byte)'G' && *(uint*)(pValue + 5) == 1464552771u /* CMKW */ :
-                        switch (*(uint*)pValue)
-                        {
-                            case 942813505u:
-                                return Aes128GcmKW;
-                            case 842608961u:
-                                return Aes192GcmKW;
-                            case 909455937u:
-                                return Aes256GcmKW;
-                        }
-                        break;
-                    case 12 when *(ulong*)pValue == 5784101104744747858u: /* RSA-OAEP */
-                        switch (*(uint*)(pValue + 8))
-                        {
-                            case 909455917u:
-                                return RsaOaep256;
-                            case 876098349u:
-                                return RsaOaep384;
-                            case 842085677u:
-                                return RsaOaep512;
-                        }
-                        break;
-                    case 14 when *(ulong*)pValue == 3121915027486163781u /* ECDH-ES+ */ :
-                        switch (*(ulong*)(pValue + 6))
-                        {
-                            case 6290183092778904403u:
-                                return EcdhEsAes128KW;
-                            case 6290176525773908819u:
-                                return EcdhEsAes192KW;
-                            case 6290180906657327955u:
-                                return EcdhEsAes256KW;
-                        }
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Cast the <see cref="KeyManagementAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator byte[] (KeyManagementAlgorithm value)
+        public static explicit operator byte[](KeyManagementAlgorithm value)
         {
             if (value is null)
             {
                 return Array.Empty<byte>();
             }
 
-            return value.Utf8Name;
+            return value._utf8Name;
         }
 
         /// <inheritsddoc />
@@ -524,7 +458,7 @@ namespace JsonWebToken
                                 return true;
                         }
                         break;
-                    case 14 when *(ulong*)pValue == 5784101104744747858u /* ECDH-ES+ */ :
+                    case 14 when *(ulong*)pValue == 3121915027486163781u /* ECDH-ES+ */ :
                         switch (*(ulong*)(pValue + 6))
                         {
                             case 6290183092778904403u:

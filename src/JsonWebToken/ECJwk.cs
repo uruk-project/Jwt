@@ -324,7 +324,7 @@ namespace JsonWebToken
         /// </summary>
         public static ECJwk FromParameters(ECParameters parameters, SignatureAlgorithm algorithm, bool computeThumbprint)
         {
-            return FromParameters(parameters, algorithm.Name, computeThumbprint);
+            return FromParameters(parameters, algorithm.Utf8Name, computeThumbprint);
         }
 
         /// <summary>
