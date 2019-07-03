@@ -353,8 +353,6 @@ namespace JsonWebToken
             return this;
         }
 
-
-
         /// <summary>
         /// Requires a specific algorithm.
         /// </summary>

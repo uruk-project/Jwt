@@ -79,7 +79,6 @@ namespace JsonWebToken
             D = Base64Url.Decode(d);
         }
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="AsymmetricJwk"/> class.
         /// </summary>

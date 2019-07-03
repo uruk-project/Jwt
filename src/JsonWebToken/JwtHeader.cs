@@ -213,7 +213,6 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool TryGetValue(ReadOnlySpan<byte> key, out JwtProperty value) => _inner.TryGetValue(key, out value);
 
-
         /// <summary>
         ///  Gets the claim for a specified key in the current <see cref="JwtPayload"/>.
         /// </summary>
