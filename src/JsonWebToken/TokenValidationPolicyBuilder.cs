@@ -154,7 +154,15 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(Jwk key) => RequireSignature(key, null);
+        public TokenValidationPolicyBuilder RequireSignature(Jwk key)
+        {
+            if (key.SignatureAlgorithm == null)
+            {
+                throw new InvalidOperationException($"The key does not define an 'alg' parameter. Use the method {nameof(RequireSignature)} with a {nameof(Jwk)} and a {nameof(SignatureAlgorithm)}.");
+            }
+
+            return RequireSignature(key, null);
+        }
 
         /// <summary>
         /// Requires a valid signature.
@@ -342,6 +350,24 @@ namespace JsonWebToken
         public TokenValidationPolicyBuilder IgnoreCriticalHeader()
         {
             _ignoreCriticalHeader = true;
+            return this;
+        }
+
+
+
+        /// <summary>
+        /// Requires a specific algorithm.
+        /// </summary>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder RequireAlgorithm(string algorithm)
+        {
+            if (string.IsNullOrEmpty(algorithm))
+            {
+                throw new ArgumentNullException(nameof(algorithm));
+            }
+
+            AddValidator(new AlgorithmValidation(algorithm));
             return this;
         }
 

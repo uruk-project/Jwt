@@ -193,7 +193,7 @@ namespace JsonWebToken
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryGetValue(ReadOnlyMemory<byte> key, out JwtProperty value) => TryGetValue(key.Span, out value);
+        public bool TryGetValue(byte[] key, out JwtProperty value) => TryGetValue(key.AsSpan(), out value);
 
         /// <summary>
         /// Gets the <see cref="JwtProperty"/> associated with the specified key.

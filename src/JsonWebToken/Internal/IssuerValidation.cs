@@ -22,7 +22,7 @@ namespace JsonWebToken.Internal
         public TokenValidationResult TryValidate(in TokenValidationContext context)
         {
             var jwt = context.Jwt;
-            if(!jwt.Payload.TryGetValue(Claims.IssUtf8, out var property))
+            if (!jwt.Payload.TryGetValue(Claims.IssUtf8, out var property))
             {
                 return TokenValidationResult.MissingClaim(jwt, Claims.IssUtf8);
             }

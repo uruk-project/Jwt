@@ -63,7 +63,11 @@ namespace JsonWebToken
         public SignatureAlgorithm SignatureAlgorithm
         {
             get => _signatureAlgorithm ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (SignatureAlgorithm)property.Value : null);
-            set => _signatureAlgorithm = value;
+            set
+            {
+                _signatureAlgorithm = value;
+                _inner.Add(new JwtProperty(WellKnownProperty.Alg, value.Utf8Name));
+            }
         }
 
         /// <summary>
@@ -72,7 +76,11 @@ namespace JsonWebToken
         public KeyManagementAlgorithm KeyManagementAlgorithm
         {
             get => _keyManagementAlgorithm ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (KeyManagementAlgorithm)property.Value : null);
-            set => _keyManagementAlgorithm = value;
+            set
+            {
+                _keyManagementAlgorithm = value;
+                _inner.Add(new JwtProperty(WellKnownProperty.Alg, value.Utf8Name));
+            }
         }
 
         /// <summary>
@@ -84,7 +92,7 @@ namespace JsonWebToken
         /// Gets the encryption algorithm (enc) of the token.
         /// </summary>
         public ReadOnlySpan<byte> Enc => _inner.TryGetValue(WellKnownProperty.Enc, out var property) ? (byte[])property.Value : default;
-        
+
         /// <summary>
         /// Gets the encryption algorithm (enc) of the token.
         /// </summary>
@@ -198,6 +206,15 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Gets the <see cref="JwtProperty"/> associated with the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public bool TryGetValue(ReadOnlySpan<byte> key, out JwtProperty value) => _inner.TryGetValue(key, out value);
+
+
+        /// <summary>
         ///  Gets the claim for a specified key in the current <see cref="JwtPayload"/>.
         /// </summary>
         /// <param name="key"></param>
@@ -218,6 +235,12 @@ namespace JsonWebToken
         public bool ContainsKey(string key)
         {
             return _inner.ContainsKey(Encoding.UTF8.GetBytes(key));
+        }
+
+        /// <inheritsdoc />
+        public override string ToString()
+        {
+            return _inner.ToString();
         }
     }
 }
