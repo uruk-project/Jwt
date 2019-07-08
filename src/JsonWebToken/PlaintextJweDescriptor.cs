@@ -32,6 +32,14 @@ namespace JsonWebToken
             : base(payload)
         {
         }
+        
+        /// <summary>
+        /// Initializes a new instance of <see cref="PlaintextJweDescriptor"/>.
+        /// </summary>
+        public PlaintextJweDescriptor()
+            : base()
+        {
+        }
 
         /// <inheritsdoc />
         public override void Encode(EncodingContext context, IBufferWriter<byte> output)

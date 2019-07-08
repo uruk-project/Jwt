@@ -44,13 +44,27 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Initializes a new instance of <see cref="JwtDescriptor{TPayload}"/>.
+        /// </summary>
+        public JwtDescriptor()
+            : base()
+        {
+        }
+
+        /// <summary>
         /// Gets or sets the payload.
         /// </summary>
         public TPayload Payload { get; set; }
 
         private string DebuggerDisplay()
         {
-            return Header.Serialize() + "." + typeof(TPayload).FullName;
+            return ToString();
+        }
+
+        /// <inheritsdoc />
+        public override string ToString()
+        {
+            return Header?.ToString() + Environment.NewLine + "." + Environment.NewLine + Payload?.ToString();
         }
     }
 }

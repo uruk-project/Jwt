@@ -149,7 +149,7 @@ namespace JsonWebToken
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.policy);
             }
-            
+
             if (token.IsEmpty)
             {
                 return TokenValidationResult.MalformedToken();
@@ -346,24 +346,24 @@ namespace JsonWebToken
                 }
 
                 Jwt jwe;
-                var cty = header.Cty;
-                if (!cty.IsEmpty && ContentTypeValues.JwtUtf8.SequenceEqual(cty))
+                var decryptionResult = compressed 
+                    ? TryReadToken(decompressedBytes, policy)
+                    : TryReadToken(decryptedBytes, policy);
+                if (!decryptionResult.Succedeed)
                 {
-                    var decryptionResult = compressed
-                        ? TryReadToken(decompressedBytes, policy)
-                        : TryReadToken(decryptedBytes, policy);
-                    if (!decryptionResult.Succedeed)
+                    if (decryptionResult.Status == TokenValidationStatus.MalformedToken)
+                    {
+                        // The decrypted payload is not a nested JWT
+                        jwe = new Jwt(header, compressed ? decompressedBytes.ToArray() : decryptedBytes.ToArray(), decryptionKey);
+                    }
+                    else
                     {
                         return decryptionResult;
                     }
-
-                    var decryptedJwt = decryptionResult.Token;
-                    jwe = new Jwt(header, decryptedJwt, decryptionKey);
                 }
                 else
                 {
-                    // The decrypted payload is not a nested JWT
-                    jwe = new Jwt(header, compressed ? decompressedBytes.ToArray() : decryptedBytes.ToArray(), decryptionKey);
+                    jwe = new Jwt(header, decryptionResult.Token, decryptionKey);
                 }
 
                 return TokenValidationResult.Success(jwe);

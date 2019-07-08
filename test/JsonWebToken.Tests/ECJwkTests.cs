@@ -141,7 +141,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public override void WriteTo()
         {
-            var key = ECJwk.GenerateKey(EllipticalCurve.P256, true, SignatureAlgorithm.EcdsaSha256.Name);
+            var key = ECJwk.GenerateKey(EllipticalCurve.P256, true, SignatureAlgorithm.EcdsaSha256);
             key.Kid = "kid-ec";
             key.KeyOps.Add("sign");
             key.Use = JwkUseNames.Sig.ToArray();

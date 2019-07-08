@@ -38,6 +38,51 @@ namespace JsonWebToken
         private List<byte[]> _x5c;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="Jwk"/> class.
+        /// </summary>
+        public Jwk()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Jwk"/> class.
+        /// </summary>
+        /// <param name="alg"></param>
+        public Jwk(SignatureAlgorithm alg)
+        {
+            Alg = alg.Utf8Name;
+            _signatureAlgorithm = alg;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Jwk"/> class.
+        /// </summary>
+        /// <param name="alg"></param>
+        public Jwk(KeyManagementAlgorithm alg)
+        {
+            Alg = alg.Utf8Name;
+            _keyManagementAlgorithm = alg;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Jwk"/> class.
+        /// </summary>
+        /// <param name="alg"></param>
+        public Jwk(byte[] alg)
+        {
+            Alg = alg;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Jwk"/> class.
+        /// </summary>
+        /// <param name="alg"></param>
+        public Jwk(string alg)
+        {
+            Alg = Encoding.UTF8.GetBytes(alg);
+        }
+
+        /// <summary>
         /// Gets or sets the 'alg' (KeyType).
         /// </summary>
         public byte[] Alg { get; set; }

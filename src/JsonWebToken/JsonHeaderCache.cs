@@ -45,19 +45,11 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool TryGetHeader(JwtObject header, SignatureAlgorithm alg, out byte[] base64UrlHeader)
         {
-            if (!IsSimpleHeader(header, alg))
+            if (header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty)
+                && kidProperty.Type == JwtTokenType.String
+                && !(alg is null)
+                && header.Count == 2)
             {
-                goto NotFound;
-            }
-
-            if (header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty) && kidProperty.Type == JwtTokenType.String)
-            {
-                var key = ComputeHeaderKey(header, alg);
-                if (key == -1)
-                {
-                    goto NotFound;
-                }
-
                 var kid = (string)kidProperty.Value;
                 var keyId = kid.AsSpan();
                 var node = _head;
@@ -65,7 +57,7 @@ namespace JsonWebToken
                 {
                     if (keyId.SequenceEqual(node.Kid.AsSpan()))
                     {
-                        if (node.Entries.TryGetValue(key, out var entry))
+                        if (node.Entries.TryGetValue(alg.Id, out var entry))
                         {
                             base64UrlHeader = entry;
                             if (node != _head)
@@ -90,16 +82,7 @@ namespace JsonWebToken
 
         private static long ComputeHeaderKey(JwtObject header, SignatureAlgorithm alg)
         {
-            if (alg is null
-                || !header.TryGetValue(HeaderParameters.CtyUtf8, out var cty)
-                || cty.Type != JwtTokenType.Utf8String 
-                && !ContentTypeValues.JwtUtf8.SequenceEqual(((byte[])cty.Value)))
-            {
-                // only support 'cty': 'JWT' or not cty
-                return -1;
-            }
-
-            return alg.Id;
+            return (alg is null) ? -1 : alg.Id;
         }
 
         /// <summary>
@@ -110,112 +93,75 @@ namespace JsonWebToken
         /// <param name="base6UrlHeader"></param>
         public void AddHeader(JwtObject header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
         {
-            if (!header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty) && kidProperty.Type == JwtTokenType.String)
+            if (header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty) 
+                && kidProperty.Type == JwtTokenType.String
+                && !(alg is null) 
+                && header.Count == 2)
             {
-                return;
-            }
-
-            if (!IsSimpleHeader(header, alg))
-            {
-                return;
-            }
-
-            var kid = (string)kidProperty.Value;
-            bool lockTaken = false;
-            try
-            {
-                _spinLock.Enter(ref lockTaken);
-
-                var node = _head;
-                while (node != null)
+                var kid = (string)kidProperty.Value;
+                bool lockTaken = false;
+                try
                 {
-                    if (string.Equals(node.Kid, kid, StringComparison.Ordinal))
+                    _spinLock.Enter(ref lockTaken);
+
+                    var node = _head;
+                    while (node != null)
                     {
-                        break;
+                        if (string.Equals(node.Kid, kid, StringComparison.Ordinal))
+                        {
+                            break;
+                        }
+
+                        node = node.Next;
                     }
 
-                    node = node.Next;
-                }
+                    var key = alg.Id;
 
-                var key = ComputeHeaderKey(header, alg);
-                if (key == -1)
-                {
-                    return;
-                }
+                    if (node == null)
+                    {
+                        node = new Bucket
+                        {
+                            Kid = kid,
+                            Next = _head,
+                            Entries = new Dictionary<long, byte[]>(1) { { key, base6UrlHeader.ToArray() } }
+                        };
+                    }
+                    else
+                    {
+                        if (node.Entries.ContainsKey(key))
+                        {
+                            node.Entries[key] = base6UrlHeader.ToArray();
+                        }
+                    }
 
-                if (node == null)
-                {
-                    node = new Bucket
+                    if (_count >= MaxSize)
                     {
-                        Kid = (string)kid,
-                        Next = _head,
-                        Entries = new Dictionary<long, byte[]>(1) { { key, base6UrlHeader.ToArray() } }
-                    };
-                }
-                else
-                {
-                    if (node.Entries.ContainsKey(key))
+                        RemoveLeastRecentlyUsed();
+                    }
+                    else
                     {
-                        node.Entries[key] = base6UrlHeader.ToArray();
+                        _count++;
+                    }
+
+                    if (_head != null)
+                    {
+                        _head.Previous = node;
+                    }
+
+                    _head = node;
+                    if (_tail == null)
+                    {
+                        _tail = node;
                     }
                 }
-
-                if (_count >= MaxSize)
+                finally
                 {
-                    RemoveLeastRecentlyUsed();
-                }
-                else
-                {
-                    _count++;
-                }
-
-                if (_head != null)
-                {
-                    _head.Previous = node;
-                }
-
-                _head = node;
-                if (_tail == null)
-                {
-                    _tail = node;
+                    if (lockTaken)
+                    {
+                        _spinLock.Exit();
+                    }
                 }
             }
-            finally
-            {
-                if (lockTaken)
-                {
-                    _spinLock.Exit();
-                }
-            }
-        }
-
-        private static bool IsSimpleHeader(JwtObject header, SignatureAlgorithm alg)
-        {
-            if (!header.ContainsKey(HeaderParameters.KidUtf8))
-            {
-                goto NotSimple;
-            }
-
-            int simpleHeaders = 1;
-            if (!(alg is null))
-            {
-                simpleHeaders++;
-            }
-
-            if (header.TryGetValue(HeaderParameters.CtyUtf8, out var cty))
-            {
-                if (cty.Type == JwtTokenType.Utf8String && !ContentTypeValues.JwtUtf8.SequenceEqual(((byte[])cty.Value)))
-                {
-                    goto NotSimple;
-                }
-
-                simpleHeaders++;
-            }
-
-            return header.Count == simpleHeaders;
-
-        NotSimple:
-            return false;
         }
 
         private void MoveToHead(Bucket node)

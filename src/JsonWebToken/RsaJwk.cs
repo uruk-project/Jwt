@@ -30,6 +30,185 @@ namespace JsonWebToken
             byte[] qi)
             : base(d)
         {
+            Initialize(n, e, p, q, dp, dq, qi);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(
+            string d,
+            string p,
+            string q,
+            string dp,
+            string dq,
+            string qi,
+            string e,
+            string n)
+            : base(d)
+        {
+            Initialize(p, q, dp, dq, qi, e, n);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(RSAParameters rsaParameters)
+        {
+            Initialize(rsaParameters);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(byte[] e, byte[] n)
+        {
+            Initialize(e, n);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(string e, string n)
+        {
+            Initialize(e, n);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(
+            byte[] n,
+            byte[] e,
+            byte[] d,
+            byte[] p,
+            byte[] q,
+            byte[] dp,
+            byte[] dq,
+            byte[] qi,
+            SignatureAlgorithm alg)
+            : base(d, alg)
+        {
+            Initialize(n, e, p, q, dp, dq, qi);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(
+            string d,
+            string p,
+            string q,
+            string dp,
+            string dq,
+            string qi,
+            string e,
+            string n,
+            SignatureAlgorithm alg)
+            : base(d, alg)
+        {
+            Initialize(p, q, dp, dq, qi, e, n);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(RSAParameters rsaParameters, SignatureAlgorithm alg)
+            : base(alg)
+        {
+            Initialize(rsaParameters);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(byte[] e, byte[] n, SignatureAlgorithm alg)
+            : base(alg)
+        {
+            Initialize(e, n);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(string e, string n, SignatureAlgorithm alg)
+            : base(alg)
+        {
+            Initialize(e, n);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(
+            byte[] n,
+            byte[] e,
+            byte[] d,
+            byte[] p,
+            byte[] q,
+            byte[] dp,
+            byte[] dq,
+            byte[] qi,
+            KeyManagementAlgorithm alg)
+            : base(d, alg)
+        {
+            Initialize(n, e, p, q, dp, dq, qi);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(
+            string d,
+            string p,
+            string q,
+            string dp,
+            string dq,
+            string qi,
+            string e,
+            string n,
+            KeyManagementAlgorithm alg)
+            : base(d, alg)
+        {
+            Initialize(p, q, dp, dq, qi, e, n);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(RSAParameters rsaParameters, KeyManagementAlgorithm alg)
+            : base(alg)
+        {
+            Initialize(rsaParameters);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(byte[] e, byte[] n, KeyManagementAlgorithm alg)
+            : base(alg)
+        {
+            Initialize(e, n);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public RsaJwk(string e, string n, KeyManagementAlgorithm alg)
+            : base(alg)
+        {
+            Initialize(e, n);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        private RsaJwk()
+        {
+        }
+
+        private void Initialize(byte[] n, byte[] e, byte[] p, byte[] q, byte[] dp, byte[] dq, byte[] qi)
+        {
             if (dp == null)
             {
                 Errors.ThrowArgumentNullException(ExceptionArgument.dp);
@@ -74,19 +253,7 @@ namespace JsonWebToken
             N = n;
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        public RsaJwk(
-            string d,
-            string p,
-            string q,
-            string dp,
-            string dq,
-            string qi,
-            string e,
-            string n)
-            : base(d)
+        private void Initialize(string p, string q, string dp, string dq, string qi, string e, string n)
         {
             if (dp == null)
             {
@@ -132,10 +299,7 @@ namespace JsonWebToken
             N = Base64Url.Decode(n);
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        public RsaJwk(RSAParameters rsaParameters)
+        private void Initialize(RSAParameters rsaParameters)
         {
             D = rsaParameters.D;
             DP = rsaParameters.DP;
@@ -147,29 +311,7 @@ namespace JsonWebToken
             N = rsaParameters.Modulus;
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        public RsaJwk(byte[] e, byte[] n)
-        {
-            if (e == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.e);
-            }
-
-            if (n == null)
-            {
-                Errors.ThrowArgumentNullException(ExceptionArgument.n);
-            }
-
-            E = e;
-            N = n;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        public RsaJwk(string e, string n)
+        private void Initialize(string e, string n)
         {
             if (e == null)
             {
@@ -185,11 +327,20 @@ namespace JsonWebToken
             N = Base64Url.Decode(n);
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        public RsaJwk()
+        private void Initialize(byte[] e, byte[] n)
         {
+            if (e == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.e);
+            }
+
+            if (n == null)
+            {
+                Errors.ThrowArgumentNullException(ExceptionArgument.n);
+            }
+
+            E = e;
+            N = n;
         }
 
         /// <inheritsdoc />
@@ -304,8 +455,24 @@ namespace JsonWebToken
         /// Generates a new random private <see cref="RsaJwk"/>.
         /// </summary>
         /// <param name="sizeInBits"></param>
+        /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static RsaJwk GeneratePrivateKey(int sizeInBits) => GenerateKey(sizeInBits, true, null);
+        public static RsaJwk GeneratePrivateKey(int sizeInBits, SignatureAlgorithm algorithm) => GenerateKey(sizeInBits, true, algorithm?.Utf8Name);
+
+        /// <summary>
+        /// Generates a new random private <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static RsaJwk GeneratePrivateKey(int sizeInBits, KeyManagementAlgorithm algorithm) => GenerateKey(sizeInBits, true, algorithm?.Utf8Name);
+        
+        /// <summary>
+        /// Generates a new random private <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <returns></returns>
+        public static RsaJwk GeneratePrivateKey(int sizeInBits) => GenerateKey(sizeInBits, true, (byte[])null);
 
         /// <summary>
         /// Generates a new random public <see cref="RsaJwk"/>.
@@ -316,11 +483,27 @@ namespace JsonWebToken
         public static RsaJwk GeneratePublicKey(int sizeInBits, byte[] algorithm) => GenerateKey(sizeInBits, false, algorithm);
 
         /// <summary>
+        /// Generates a new random public <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static RsaJwk GeneratePublicKey(int sizeInBits, SignatureAlgorithm algorithm) => GenerateKey(sizeInBits, false, algorithm?.Utf8Name);
+
+        /// <summary>
+        /// Generates a new random public <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static RsaJwk GeneratePublicKey(int sizeInBits, KeyManagementAlgorithm algorithm) => GenerateKey(sizeInBits, false, algorithm?.Utf8Name);
+        
+        /// <summary>
         /// Generates a new random private <see cref="RsaJwk"/>.
         /// </summary>
         /// <param name="sizeInBits"></param>
         /// <returns></returns>
-        public static RsaJwk GeneratePublicKey(int sizeInBits) => GenerateKey(sizeInBits, false, null);
+        public static RsaJwk GeneratePublicKey(int sizeInBits) => GenerateKey(sizeInBits, false, (byte[])null);
 
         /// <summary>
         /// Generates a new RSA key.
@@ -328,8 +511,26 @@ namespace JsonWebToken
         /// <param name="sizeInBits">The key size in bits.</param>
         /// <param name="withPrivateKey"></param>
         /// <returns></returns>
-        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey) => GenerateKey(sizeInBits, withPrivateKey, null);
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey) => GenerateKey(sizeInBits, withPrivateKey, (byte[])null);
 
+        /// <summary>
+        /// Generates a new random <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="withPrivateKey"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, SignatureAlgorithm algorithm) => GenerateKey(sizeInBits, withPrivateKey, algorithm?.Utf8Name);
+
+        /// <summary>
+        /// Generates a new random <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="withPrivateKey"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, KeyManagementAlgorithm algorithm) => GenerateKey(sizeInBits, withPrivateKey, algorithm?.Utf8Name);
+        
         /// <summary>
         /// Generates a new random <see cref="RsaJwk"/>.
         /// </summary>
