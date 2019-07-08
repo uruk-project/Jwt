@@ -10,15 +10,12 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JweDescriptor : JweDescriptor<JwsDescriptor>
     {
-        private static readonly JwtProperty Cty = new JwtProperty(WellKnownProperty.Cty, ContentTypeValues.Jwt);
-
         /// <summary>
         /// Initializes an new instance of <see cref="JweDescriptor{TDescriptor}"/>.
         /// </summary>
         public JweDescriptor()
             : base()
         {
-            Header.Add(Cty);
         }
 
         /// <summary>
@@ -29,7 +26,6 @@ namespace JsonWebToken
         public JweDescriptor(JwtObject header, JwsDescriptor payload)
             : base(header, payload)
         {
-            Header.Add(Cty);
         }
 
         /// <summary>
@@ -39,7 +35,6 @@ namespace JsonWebToken
         public JweDescriptor(JwsDescriptor payload)
             : base(new JwtObject(), payload)
         {
-            Header.Add(Cty);
         }
 
         /// <inheritsdoc />

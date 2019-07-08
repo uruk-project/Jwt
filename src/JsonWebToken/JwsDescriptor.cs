@@ -465,8 +465,6 @@ namespace JsonWebToken
             {
                 var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true });
                 Payload.WriteTo(writer);
-                //writer.Flush();
-                //int payloadLength = bufferWriter.WrittenCount;
                 int payloadLength = (int)writer.BytesCommitted + writer.BytesPending;
                 int length = Base64Url.GetArraySizeRequiredToEncode(payloadLength)
                            + signer.Base64HashSizeInBytes

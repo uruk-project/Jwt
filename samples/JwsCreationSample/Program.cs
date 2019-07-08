@@ -1,7 +1,7 @@
 ﻿using System;
 using JsonWebToken;
 
-namespace JwtCreationSample
+namespace JwsCreationSample
 {
     class Program
     {

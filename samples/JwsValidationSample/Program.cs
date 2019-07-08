@@ -1,7 +1,7 @@
-﻿using JsonWebToken;
-using System;
+﻿using System;
+using JsonWebToken;
 
-namespace JwtValidationSample
+namespace JwsValidationSample
 {
     class Program
     {

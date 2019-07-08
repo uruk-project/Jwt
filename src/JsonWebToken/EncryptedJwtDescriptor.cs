@@ -36,6 +36,14 @@ namespace JsonWebToken
             : base(payload)
         {
         }
+        
+        /// <summary>
+        /// Initializes a new instance of <see cref="EncryptedJwtDescriptor{TPayload}"/>.
+        /// </summary>
+        public EncryptedJwtDescriptor()
+            : base()
+        {
+        }
 
         /// <summary>
         /// Gets or sets the algorithm header.

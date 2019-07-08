@@ -37,24 +37,23 @@ namespace JsonWebToken.Tests
 
             var jwt = result.Token;
 
-            var jwsPayload = descriptor as JwsDescriptor;
-            if (jwsPayload != null)
+            if (!(descriptor is JwsDescriptor jwsPayload))
             {
-                Assert.Equal(jwsPayload.IssuedAt, jwt.IssuedAt);
-                Assert.Equal(jwsPayload.ExpirationTime, jwt.ExpirationTime);
-                Assert.Equal(jwsPayload.Issuer, jwt.Issuer);
-                Assert.Equal(jwsPayload.Audiences?.FirstOrDefault(), jwt.Audiences?.FirstOrDefault());
-                Assert.Equal(jwsPayload.JwtId, jwt.Id);
+                if (!(descriptor is JweDescriptor jwePayload))
+                {
+                    throw new Xunit.Sdk.IsNotTypeException(typeof(JwtDescriptor), descriptor);
+                }
+
+                jwsPayload = jwePayload.Payload;
             }
-            else
-            {
-                var jwePayload = descriptor as JweDescriptor;
-                Assert.Equal(jwePayload.IssuedAt, jwt.IssuedAt);
-                Assert.Equal(jwePayload.ExpirationTime, jwt.ExpirationTime);
-                Assert.Equal(jwePayload.Issuer, jwt.Issuer);
-                Assert.Equal(jwePayload.Audiences?.FirstOrDefault(), jwt.Audiences?.FirstOrDefault());
-                Assert.Equal(jwePayload.JwtId, jwt.Id);
-            }
+
+            Assert.NotNull(jwsPayload);
+
+            Assert.Equal(jwsPayload.IssuedAt, jwt.IssuedAt);
+            Assert.Equal(jwsPayload.ExpirationTime, jwt.ExpirationTime);
+            Assert.Equal(jwsPayload.Issuer, jwt.Issuer);
+            Assert.Equal(jwsPayload.Audiences?.FirstOrDefault(), jwt.Audiences?.FirstOrDefault());
+            Assert.Equal(jwsPayload.JwtId, jwt.Id);
         }
 
         [Fact]
