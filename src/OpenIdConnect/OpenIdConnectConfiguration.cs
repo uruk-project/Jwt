@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,7 +17,7 @@ namespace JsonWebToken
         public OpenIdConnectConfiguration()
         {
         }
-        
+
         public static OpenIdConnectConfiguration FromJson(string json)
         {
             if (string.IsNullOrEmpty(json))
@@ -287,7 +286,6 @@ namespace JsonWebToken
             return list;
         }
 
-
         /// <summary>
         /// When deserializing from JSON any properties that are not defined will be placed here.
         /// </summary>
@@ -498,7 +496,6 @@ namespace JsonWebToken
         /// </summary>
         public ICollection<string> UserInfoSigningAlgValuesSupported { get; private set; } = new Collection<string>();
 
-
         /// <summary>
         /// Gets or sets the 'revocation_endpoint'.
         /// </summary>
@@ -513,7 +510,7 @@ namespace JsonWebToken
         /// Gets the collection of 'revocation_endpoint_auth_signing_alg_values_supported'
         /// </summary>
         public ICollection<string> RevocationEndpointAuthSigningAlgValuesSupported { get; private set; } = new Collection<string>();
-        
+
         /// <summary>
         /// Gets or sets the 'introspection_endpoint'.
         /// </summary>
@@ -533,9 +530,5 @@ namespace JsonWebToken
         /// Gets the collection of 'code_challenge_methods_supported'
         /// </summary>
         public ICollection<string> CodeChallengeMethodsSupported { get; private set; } = new Collection<string>();
-
-
-
-
     }
 }
