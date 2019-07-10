@@ -244,6 +244,10 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentException_InvalidRsaKey(Jwk key) => new ArgumentException($"Invalid RSA key: '{key.Kid}'. Both modulus (N) and exponent (E) must be present.", nameof(key));
 
+        internal static void ThrowArgumentException_StaticKeyNotSupported() => throw CreateArgumentException_StaticKeyNotSupported();
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateArgumentException_StaticKeyNotSupported() => new ArgumentException("DIrect encryption does not support the use of static key.", "staticKey");
+
         internal static void ThrowInvalidOperationException_InvalidCertificate() => throw CreateInvalidOperationException_InvalidCertificate();
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateInvalidOperationException_InvalidCertificate() => new InvalidOperationException("The certificate does not contains RSA key material or ECDsa key material.");
@@ -338,7 +342,6 @@ namespace JsonWebToken
                 case ExceptionArgument.base64url: return "base64url";
                 case ExceptionArgument.descriptor: return "descriptor";
                 case ExceptionArgument.context: return "context";
-                case ExceptionArgument.staticKey: return "staticKey";
 
                 default:
                     Debug.Fail("The enum value is not defined, please check the ExceptionArgument Enum.");
@@ -399,7 +402,6 @@ namespace JsonWebToken
         capacity,
         base64url,
         descriptor,
-        context,
-        staticKey
+        context
     }
 }
