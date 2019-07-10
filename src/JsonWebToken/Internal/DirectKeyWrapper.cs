@@ -32,7 +32,7 @@ namespace JsonWebToken.Internal
         {
             if (staticKey != null)
             {
-                throw new NotSupportedException();
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.staticKey);
             }
 
             ReadOnlySpan<byte> bytes = Key.AsSpan();

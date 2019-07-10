@@ -83,20 +83,20 @@ namespace JsonWebToken
             KeyWrapper keyWrapper = key?.CreateKeyWrapper(encryptionAlgorithm, contentEncryptionAlgorithm);
             if (keyWrapper == null)
             {
-                Errors.ThrowNotSuportedAlgorithmForKeyWrap(encryptionAlgorithm);
+                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(encryptionAlgorithm);
             }
 
             var header = Header;
             Span<byte> wrappedKey = stackalloc byte[keyWrapper.GetKeyWrapSize()];
             if (!keyWrapper.TryWrapKey(null, header, wrappedKey, out var cek, out var keyWrappedBytesWritten))
             {
-                Errors.ThrowKeyWrapFailed();
+                ThrowHelper.ThrowCryptographicException_KeyWrapFailed();
             }
 
             AuthenticatedEncryptor encryptor = cek.CreateAuthenticatedEncryptor(encryptionAlgorithm);
             if (encryptor == null)
             {
-                Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
+                ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
             }
 
             if (header.ContainsKey(WellKnownProperty.Kid) && key.Kid != null)
@@ -131,7 +131,7 @@ namespace JsonWebToken
                             compressor = compressionAlgorithm.Compressor;
                             if (compressor == null)
                             {
-                                Errors.ThrowNotSupportedCompressionAlgorithm(compressionAlgorithm);
+                                ThrowHelper.ThrowNotSupportedException_CompressionAlgorithm(compressionAlgorithm);
                             }
                             else
                             {
@@ -192,7 +192,7 @@ namespace JsonWebToken
             }
             catch (Exception ex)
             {
-                Errors.ThrowEncryptionFailed(encryptionAlgorithm, key, ex);
+                ThrowHelper.ThrowCryptographicException_EncryptionFailed(encryptionAlgorithm, key, ex);
             }
         }
 

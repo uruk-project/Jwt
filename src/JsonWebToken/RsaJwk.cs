@@ -211,37 +211,37 @@ namespace JsonWebToken
         {
             if (dp == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.dp);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.dp);
             }
 
             if (dq == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.dq);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.dq);
             }
 
             if (q == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.q);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.q);
             }
 
             if (qi == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.qi);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.qi);
             }
 
             if (p == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.p);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.p);
             }
 
             if (e == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.e);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
             if (n == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.n);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
             DP = dp;
@@ -257,37 +257,37 @@ namespace JsonWebToken
         {
             if (dp == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.dp);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.dp);
             }
 
             if (dq == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.dq);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.dq);
             }
 
             if (q == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.q);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.q);
             }
 
             if (qi == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.qi);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.qi);
             }
 
             if (p == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.p);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.p);
             }
 
             if (e == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.e);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
             if (n == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.n);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
             DP = Base64Url.Decode(dp);
@@ -315,12 +315,12 @@ namespace JsonWebToken
         {
             if (e == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.e);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
             if (n == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.n);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
             E = Base64Url.Decode(e);
@@ -331,12 +331,12 @@ namespace JsonWebToken
         {
             if (e == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.e);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
             if (n == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.n);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
             E = e;
@@ -354,7 +354,7 @@ namespace JsonWebToken
         {
             if (N == null || E == null)
             {
-                Errors.ThrowInvalidRsaKey(this);
+                ThrowHelper.ThrowArgumentException_InvalidRsaKey(this);
             }
 
             RSAParameters parameters = new RSAParameters
@@ -747,7 +747,7 @@ namespace JsonWebToken
                 }
             }
 
-            Errors.ThrowMalformedKey();
+            ThrowHelper.ThrowArgumentException_MalformedKey();
             return null;
         }
 

@@ -42,7 +42,7 @@ namespace JsonWebToken.Internal
         {
             if (policy == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.policy);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
             _policy = policy;
@@ -82,7 +82,7 @@ namespace JsonWebToken.Internal
 
             void ThrowObjectDisposedException()
             {
-                throw new ObjectDisposedException(GetType().Name);
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
         }
 

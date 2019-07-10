@@ -19,12 +19,12 @@ namespace JsonWebToken
         {
             if (key is null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.key);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             if (encryptionAlgorithm is null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
             }
 
             Key = key;

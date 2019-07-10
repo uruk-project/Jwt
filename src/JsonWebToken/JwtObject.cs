@@ -312,7 +312,7 @@ namespace JsonWebToken
                 }
             }
 
-            Errors.ThrowKeyNotFound();
+            ThrowHelper.ThrowKeyNotFoundException();
         }
 
         /// <summary>

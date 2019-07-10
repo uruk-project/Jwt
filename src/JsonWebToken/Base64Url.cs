@@ -27,7 +27,7 @@ namespace JsonWebToken
         {
             if (data == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.data);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
             return Decode(Encoding.UTF8.GetBytes(data));
@@ -58,7 +58,7 @@ namespace JsonWebToken
         {
             if (base64Url == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.base64url);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.base64url);
             }
 
             return Decode(base64Url.AsSpan(), data);
@@ -107,7 +107,7 @@ namespace JsonWebToken
             var status = Decode(base64Url, data, out _, out int bytesWritten);
             if (status != OperationStatus.Done)
             {
-                JwtThrowHelper.ThrowOperationNotDone(status);
+                ThrowHelper.ThrowOperationNotDoneException(status);
             }
 
             return bytesWritten;
@@ -144,7 +144,7 @@ namespace JsonWebToken
             var status = _base64.Encode(utf8Data, base64Url, out _, out var bytesWritten);
             if (status != OperationStatus.Done)
             {
-                JwtThrowHelper.ThrowOperationNotDone(status);
+                ThrowHelper.ThrowOperationNotDoneException(status);
             }
 
             return bytesWritten;
@@ -177,7 +177,7 @@ namespace JsonWebToken
         {
             if (data == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.data);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
             return Encode(data.AsSpan());

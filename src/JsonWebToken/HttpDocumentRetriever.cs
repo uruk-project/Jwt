@@ -52,12 +52,12 @@ namespace JsonWebToken
 
             if (!IsHttps(address) && RequireHttps)
             {
-                Errors.ThrowRequireHttps(address);
+                ThrowHelper.ThrowArgumentException_RequireHttpsException(address);
             }
 
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             using (HttpResponseMessage response = _httpClient.GetAsync(address, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult().EnsureSuccessStatusCode())

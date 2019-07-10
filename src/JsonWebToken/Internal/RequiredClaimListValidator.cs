@@ -27,12 +27,12 @@ namespace JsonWebToken.Internal
         {
             if (claim == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.claim);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.claim);
             }
 
             if (values == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.values);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.values);
             }
 
             _claim = claim;

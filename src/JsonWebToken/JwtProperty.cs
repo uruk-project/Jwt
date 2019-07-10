@@ -46,7 +46,8 @@ namespace JsonWebToken
                 case WellKnownProperty.Cty:
                     return HeaderParameters.CtyUtf8;
                 default:
-                    throw new NotSupportedException();
+                    ThrowHelper.ThrowArgumentOutOfRangeException_WellKnowProperty(wellKnownName);
+                    return default;
             }
         }
 
@@ -99,7 +100,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.value);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.Object;
@@ -117,7 +118,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.value);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.String;
@@ -238,7 +239,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.value);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.Object;
@@ -256,7 +257,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.value);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.String;
@@ -378,7 +379,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.value);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.Object;
@@ -396,7 +397,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.value);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.String;
@@ -504,7 +505,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.value);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.String;
@@ -522,7 +523,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.value);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.Utf8String;
@@ -539,7 +540,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.value);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.EncryptionAlgorithm;
@@ -556,7 +557,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.value);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.SignatureAlgorithm;
@@ -573,7 +574,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.value);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.KeyManagementAlgorithm;
@@ -590,7 +591,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.value);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.CompressionAlgorithm;
@@ -656,7 +657,7 @@ namespace JsonWebToken
                     writer.WriteNull(Utf8Name);
                     break;
                 default:
-                    Errors.ThrowNotSupportedJsonType(Type);
+                    ThrowHelper.ThrowInvalidOperationException_NotSupportedJsonType(Type);
                     break;
             }
         }

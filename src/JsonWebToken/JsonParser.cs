@@ -23,7 +23,7 @@ namespace JsonWebToken
             Utf8JsonReader reader = new Utf8JsonReader(buffer, true, default);
             if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
             {
-                JwtThrowHelper.FormatMalformedJson();
+                ThrowHelper.ThrowFormatException_MalformedJson();
             }
 
             return ReadJsonObject(ref reader);
@@ -81,22 +81,22 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        JwtThrowHelper.FormatNotSupportedNumber(name);
+                                        ThrowHelper.ThrowFormatException_NotSUpportedNumberValue(name);
                                     }
                                 }
                                 break;
                             default:
-                                JwtThrowHelper.FormatMalformedJson();
+                                ThrowHelper.ThrowFormatException_MalformedJson();
                                 break;
                         }
                         break;
                     default:
-                        JwtThrowHelper.FormatMalformedJson();
+                        ThrowHelper.ThrowFormatException_MalformedJson();
                         break;
                 }
             }
 
-            JwtThrowHelper.FormatMalformedJson();
+            ThrowHelper.ThrowFormatException_MalformedJson();
             return null;
         }
 
@@ -133,7 +133,7 @@ namespace JsonWebToken
                             }
                             else
                             {
-                                JwtThrowHelper.FormatMalformedJson();
+                                ThrowHelper.ThrowFormatException_MalformedJson();
                             }
                         }
 
@@ -156,7 +156,7 @@ namespace JsonWebToken
             }
 
             // If we are here, we are missing a closing brace.
-            JwtThrowHelper.FormatMalformedJson();
+            ThrowHelper.ThrowFormatException_MalformedJson();
             return default;
         }
 
@@ -199,7 +199,7 @@ namespace JsonWebToken
             }
 
             // If we are here, we are missing a closing brace.
-            JwtThrowHelper.FormatMalformedJson();
+            ThrowHelper.ThrowFormatException_MalformedJson();
         }
 
         /// <summary>
@@ -227,7 +227,7 @@ namespace JsonWebToken
             }
 
             // If we are here, we are missing a closing bracket.
-            JwtThrowHelper.FormatMalformedJson();
+            ThrowHelper.ThrowFormatException_MalformedJson();
         }
     }
 }

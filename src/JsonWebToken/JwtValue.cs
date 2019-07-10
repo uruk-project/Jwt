@@ -56,7 +56,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.value);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.Object;
@@ -71,7 +71,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.value);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.String;
@@ -86,7 +86,7 @@ namespace JsonWebToken
         {
             if (value == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.value);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
             Type = JwtTokenType.Utf8String;
@@ -172,7 +172,7 @@ namespace JsonWebToken
                     writer.WriteNullValue();
                     break;
                 default:
-                    Errors.ThrowNotSupportedJsonType(Type);
+                    ThrowHelper.ThrowInvalidOperationException_NotSupportedJsonType(Type);
                     break;
             }
         }

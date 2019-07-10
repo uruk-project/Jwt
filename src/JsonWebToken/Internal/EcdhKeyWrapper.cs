@@ -68,13 +68,13 @@ namespace JsonWebToken.Internal
         {
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             var epk = header.Epk;
             if (header.Epk is null)
             {
-                return Errors.TryWriteError(out bytesWritten);
+                return ThrowHelper.TryWriteError(out bytesWritten);
             }
 
             var apu = header.Apu == null ? null : Encoding.UTF8.GetBytes(header.Apu);
@@ -109,7 +109,7 @@ namespace JsonWebToken.Internal
         {
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             var partyUInfo = GetPartyInfo(header, HeaderParameters.ApuUtf8);

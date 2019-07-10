@@ -288,7 +288,7 @@ namespace JsonWebToken
                                             return ECJwk.FromJsonReaderFast(ref reader);
                                         }
 
-                                        Errors.ThrowNotSupportedJwk(valueSpan);
+                                        ThrowHelper.ThrowNotSupportedException_Jwk(valueSpan);
                                         break;
                                     case 3:
                                         switch (*pKtyShort)
@@ -300,12 +300,12 @@ namespace JsonWebToken
                                             case 25455 when *(pKty + 2) == (byte)'t':
                                                 return SymmetricJwk.FromJsonReaderFast(ref reader);
                                             default:
-                                                Errors.ThrowNotSupportedJwk(valueSpan);
+                                                ThrowHelper.ThrowNotSupportedException_Jwk(valueSpan);
                                                 break;
                                         }
                                         break;
                                     default:
-                                        Errors.ThrowNotSupportedJwk(valueSpan);
+                                        ThrowHelper.ThrowNotSupportedException_Jwk(valueSpan);
                                         break;
                                 }
                             }
@@ -382,7 +382,7 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        JwtThrowHelper.FormatNotSupportedNumber(name);
+                                        ThrowHelper.ThrowFormatException_NotSUpportedNumberValue(name);
                                     }
                                 }
                                 break;
@@ -401,17 +401,17 @@ namespace JsonWebToken
                                 jwk.Add(new JwtProperty(name, array));
                                 break;
                             default:
-                                JwtThrowHelper.FormatMalformedJson();
+                                ThrowHelper.ThrowFormatException_MalformedJson();
                                 break;
                         }
                         break;
                     default:
-                        JwtThrowHelper.FormatMalformedJson();
+                        ThrowHelper.ThrowFormatException_MalformedJson();
                         break;
                 }
             }
 
-            Errors.ThrowMalformedKey();
+            ThrowHelper.ThrowArgumentException_MalformedKey();
             return null;
         }
 
@@ -429,12 +429,12 @@ namespace JsonWebToken
                         array.Add(new JwtValue(Convert.FromBase64String(value)));
                         break;
                     default:
-                        JwtThrowHelper.FormatMalformedJson();
+                        ThrowHelper.ThrowFormatException_MalformedJson();
                         break;
                 }
             }
 
-            JwtThrowHelper.FormatMalformedJson();
+            ThrowHelper.ThrowFormatException_MalformedJson();
             return array;
         }
 
@@ -457,7 +457,7 @@ namespace JsonWebToken
                 }
             }
 
-            Errors.ThrowMalformedKey();
+            ThrowHelper.ThrowArgumentException_MalformedKey();
             return null;
         }
 
@@ -560,7 +560,7 @@ namespace JsonWebToken
                     return signer;
                 }
 
-                Errors.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+                ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
             }
 
             return null;
@@ -612,7 +612,7 @@ namespace JsonWebToken
                     return keyWrapper;
                 }
 
-                Errors.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+                ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
             }
 
             return null;
@@ -667,7 +667,7 @@ namespace JsonWebToken
                         return encryptor;
                     }
 
-                    Errors.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+                    ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
                 }
             }
 
@@ -750,7 +750,7 @@ namespace JsonWebToken
         {
             if (certificate == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.certificate);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.certificate);
             }
 
             AsymmetricJwk key = null;
@@ -810,7 +810,7 @@ namespace JsonWebToken
                 return key;
             }
 
-            Errors.ThrowInvalidCertificate();
+            ThrowHelper.ThrowInvalidOperationException_InvalidCertificate();
             return null;
         }
 
@@ -827,7 +827,7 @@ namespace JsonWebToken
                 return FromJsonReader(ref reader);
             }
 
-            Errors.ThrowMalformedKey();
+            ThrowHelper.ThrowArgumentException_MalformedKey();
             return null;
         }
 

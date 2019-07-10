@@ -38,7 +38,7 @@ namespace JsonWebToken
         {
             if (encryptionKeyProviders == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.encryptionKeyProviders);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionKeyProviders);
             }
 
             _encryptionKeyProviders = encryptionKeyProviders.Where(p => p != null).ToArray();
@@ -112,12 +112,12 @@ namespace JsonWebToken
         {
             if (token == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.token);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.token);
             }
 
             if (policy == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.policy);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
             return TryReadToken(token.AsSpan(), policy);
@@ -147,7 +147,7 @@ namespace JsonWebToken
         {
             if (policy == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.policy);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
             if (token.IsEmpty)
@@ -192,7 +192,7 @@ namespace JsonWebToken
         {
             if (policy == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.policy);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
             string malformedMessage = null;
@@ -479,7 +479,7 @@ namespace JsonWebToken
             var decryptor = key.CreateAuthenticatedEncryptor(encryptionAlgorithm);
             if (decryptor == null)
             {
-                return Errors.TryWriteError(out bytesWritten);
+                return ThrowHelper.TryWriteError(out bytesWritten);
             }
 
             int ciphertextLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length);

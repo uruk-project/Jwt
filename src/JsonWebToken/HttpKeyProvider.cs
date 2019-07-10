@@ -69,7 +69,7 @@ namespace JsonWebToken
         {
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             var kid = header.Kid;
@@ -101,7 +101,7 @@ namespace JsonWebToken
 
             if (_currentKeys == null)
             {
-                Errors.ThrowUnableToObtainKeys(metadataAddress);
+                ThrowHelper.ThrowInvalidOperationException_UnableToObtainKeysException(metadataAddress);
             }
 
             return _currentKeys.GetKeys(kid);
