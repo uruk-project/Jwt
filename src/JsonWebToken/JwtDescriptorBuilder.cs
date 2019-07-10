@@ -337,7 +337,7 @@ namespace JsonWebToken
             }
             else if (!_noSignature)
             {
-                Errors.ThrowNoSigningKeyDefined();
+                ThrowHelper.ThrowInvalidOperationException_NoSigningKeyDefined();
             }
 
             return jws;
@@ -370,7 +370,7 @@ namespace JsonWebToken
                 }
                 else if (!_noSignature)
                 {
-                    Errors.ThrowNoSigningKeyDefined();
+                    ThrowHelper.ThrowInvalidOperationException_NoSigningKeyDefined();
                 }
 
                 var jwe = new JweDescriptor(_header, jws)
@@ -552,7 +552,7 @@ namespace JsonWebToken
         {
             if (key is null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.key);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             _signingKey = key;
@@ -568,7 +568,7 @@ namespace JsonWebToken
         {
             if (key is null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.key);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             _encryptionKey = key;

@@ -102,7 +102,7 @@ namespace JsonWebToken
                 case "P-521":
                     return P521;
                 default:
-                    Errors.ThrowNotSupportedCurve(crv);
+                    ThrowHelper.ThrowNotSupportedException_Curve(crv);
                     return default;
             }
         }
@@ -131,7 +131,7 @@ namespace JsonWebToken
                 }
             }
 
-            Errors.ThrowNotSupportedCurve(Encoding.UTF8.GetString(crv.ToArray()));
+            ThrowHelper.ThrowNotSupportedException_Curve(Encoding.UTF8.GetString(crv.ToArray()));
             return default;
         }
     }

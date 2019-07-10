@@ -183,7 +183,7 @@ namespace JsonWebToken
                     Crv = EllipticalCurve.P521;
                     break;
                 default:
-                    Errors.ThrowNotSupportedCurve(parameters.Curve.Oid.FriendlyName);
+                    ThrowHelper.ThrowNotSupportedException_Curve(parameters.Curve.Oid.FriendlyName);
                     break;
             }
         }
@@ -192,12 +192,12 @@ namespace JsonWebToken
         {
             if (x == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.x);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.x);
             }
 
             if (y == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.y);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.y);
             }
 
             Crv = crv;
@@ -209,12 +209,12 @@ namespace JsonWebToken
         {
             if (x == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.x);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.x);
             }
 
             if (y == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.y);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.y);
             }
 
             Crv = crv;
@@ -254,7 +254,7 @@ namespace JsonWebToken
             int validKeySize = ValidKeySize(algorithm);
             if (KeySizeInBits != validKeySize)
             {
-                Errors.ThrowInvalidEcdsaKeySize(this, algorithm, validKeySize, KeySizeInBits);
+                ThrowHelper.ThrowArgumentOutOfRangeException_InvalidEcdsaKeySize(this, algorithm, validKeySize, KeySizeInBits);
             }
 
             return ECDsa.Create(ExportParameters(usePrivateKey));
@@ -543,7 +543,7 @@ namespace JsonWebToken
                 }
             }
 
-            Errors.ThrowMalformedKey();
+            ThrowHelper.ThrowArgumentException_MalformedKey();
             return null;
         }
 

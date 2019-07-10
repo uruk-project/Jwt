@@ -23,7 +23,7 @@ namespace JsonWebToken.Tests
         public void TryWrapKey_WithStaticKey_Throws(EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
             var contentEncryptionKey = SymmetricJwk.GenerateKey(enc.RequiredKeySizeInBytes * 8);
-            Assert.Throws<NotSupportedException>(() => TryWrapKey_Success(contentEncryptionKey, enc, alg));
+            Assert.Throws<ArgumentException>(() => TryWrapKey_Success(contentEncryptionKey, enc, alg));
         }
 
         public static IEnumerable<object[]> GetAesWrappingAlgorithms()

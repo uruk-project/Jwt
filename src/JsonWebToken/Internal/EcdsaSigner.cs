@@ -19,12 +19,12 @@ namespace JsonWebToken.Internal
         {
             if (key is null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.key);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             if (key.KeySizeInBits < 256)
             {
-                Errors.ThrowSigningKeyTooSmall(key, 256);
+                ThrowHelper.ThrowArgumentOutOfRangeException_SigningKeyTooSmall(key, 256);
             }
 
             _hashAlgorithm = algorithm.HashAlgorithm;
@@ -44,12 +44,12 @@ namespace JsonWebToken.Internal
         {
             if (data.IsEmpty)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.data);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             var ecdsa = _hashAlgorithmPool.Get();
@@ -68,17 +68,17 @@ namespace JsonWebToken.Internal
         {
             if (data.IsEmpty)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.data);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
             if (signature.IsEmpty)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.signature);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.signature);
             }
 
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             var ecdsa = _hashAlgorithmPool.Get();

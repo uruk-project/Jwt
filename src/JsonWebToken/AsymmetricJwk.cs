@@ -24,7 +24,7 @@ namespace JsonWebToken
         {
             if (d == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.d);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
             D = d;
@@ -37,7 +37,7 @@ namespace JsonWebToken
         {
             if (d == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.d);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
             D = Base64Url.Decode(d);
@@ -59,7 +59,7 @@ namespace JsonWebToken
         {
             if (d == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.d);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
             D = d;
@@ -73,7 +73,7 @@ namespace JsonWebToken
         {
             if (d == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.d);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
             D = Base64Url.Decode(d);
@@ -95,7 +95,7 @@ namespace JsonWebToken
         {
             if (d == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.d);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
             D = d;
@@ -109,7 +109,7 @@ namespace JsonWebToken
         {
             if (d == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.d);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
             D = Base64Url.Decode(d);

@@ -33,7 +33,7 @@ namespace JsonWebToken.Tests
         [InlineData(WellKnownProperty.None)]
         public void GetWellKnowName_NotSupported(WellKnownProperty unknownProperty)
         {
-            Assert.Throws<NotSupportedException>(() => JwtProperty.GetWellKnowName(unknownProperty));
+            Assert.Throws<ArgumentOutOfRangeException>(() => JwtProperty.GetWellKnowName(unknownProperty));
         }
 
         [Theory]

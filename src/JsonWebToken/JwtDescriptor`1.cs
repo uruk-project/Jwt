@@ -22,7 +22,7 @@ namespace JsonWebToken
         {
             if (payload == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.payload);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.payload);
             }
 
             Payload = payload;
@@ -37,7 +37,7 @@ namespace JsonWebToken
         {
             if (payload == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.payload);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.payload);
             }
 
             Payload = payload;

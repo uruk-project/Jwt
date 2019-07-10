@@ -21,7 +21,7 @@ namespace JsonWebToken
             Utf8JsonReader reader = new Utf8JsonReader(buffer, true, default);
             if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
             {
-                JwtThrowHelper.FormatMalformedJson();
+                ThrowHelper.ThrowFormatException_MalformedJson();
             }
 
             return new JwtPayload(JsonParser.ReadJsonObject(ref reader));

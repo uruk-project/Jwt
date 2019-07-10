@@ -25,7 +25,7 @@ namespace JsonWebToken
         {
             if (k == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.k);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
             _k = k;
@@ -38,7 +38,7 @@ namespace JsonWebToken
         {
             if (k == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.k);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
             _k = Base64Url.Decode(k);
@@ -59,7 +59,7 @@ namespace JsonWebToken
         {
             if (k == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.k);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
             _k = k;
@@ -73,7 +73,7 @@ namespace JsonWebToken
         {
             if (k == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.k);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
             _k = Base64Url.Decode(k);
@@ -95,7 +95,7 @@ namespace JsonWebToken
         {
             if (k == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.k);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
             _k = k;
@@ -109,7 +109,7 @@ namespace JsonWebToken
         {
             if (k == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.k);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
             _k = Base64Url.Decode(k);
@@ -155,7 +155,7 @@ namespace JsonWebToken
         {
             if (bytes == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.bytes);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.bytes);
             }
 
             var key = new SymmetricJwk(bytes);
@@ -184,7 +184,7 @@ namespace JsonWebToken
         {
             if (bytes == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.bytes);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.bytes);
             }
 
             var key = new SymmetricJwk(bytes.ToArray());
@@ -278,7 +278,7 @@ namespace JsonWebToken
         {
             if (k == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.k);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
             var key = new SymmetricJwk(k);
@@ -397,7 +397,7 @@ namespace JsonWebToken
                 }
             }
 
-            Errors.ThrowMalformedKey();
+            ThrowHelper.ThrowArgumentException_MalformedKey();
             return null;
         }
 

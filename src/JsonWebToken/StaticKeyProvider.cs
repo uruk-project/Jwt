@@ -21,7 +21,7 @@ namespace JsonWebToken
         {
             if (jwks == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.jwks);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwks);
             }
 
             _jwks = jwks;

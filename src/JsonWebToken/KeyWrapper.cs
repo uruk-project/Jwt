@@ -52,22 +52,22 @@ namespace JsonWebToken
         {
             if (key is null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.key);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             if (!key.IsSupported(algorithm))
             {
-                Errors.ThrowNotSupportedAlgorithmForKeyWrap(algorithm);
+                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
             }
 
             if (algorithm == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.algorithm);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.algorithm);
             }
 
             if (encryptionAlgorithm == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
             }
 
             Algorithm = algorithm;

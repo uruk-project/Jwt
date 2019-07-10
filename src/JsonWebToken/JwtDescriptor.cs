@@ -302,12 +302,12 @@ namespace JsonWebToken
         {
             if (!Header.TryGetValue(utf8Name, out var token) || token.Type == JwtTokenType.Null)
             {
-                Errors.ThrowHeaderIsRequired(utf8Name);
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(utf8Name);
             }
 
             if (token.Type != type)
             {
-                Errors.ThrowHeaderMustBeOfType(utf8Name, type);
+                ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(utf8Name, type);
             }
         }
 
@@ -320,12 +320,12 @@ namespace JsonWebToken
         {
             if (!Header.TryGetValue(wellKnownName, out var token) || token.Type == JwtTokenType.Null)
             {
-                Errors.ThrowHeaderIsRequired(JwtProperty.GetWellKnowName(wellKnownName));
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(JwtProperty.GetWellKnowName(wellKnownName));
             }
 
             if (token.Type != type)
             {
-                Errors.ThrowHeaderMustBeOfType(JwtProperty.GetWellKnowName(wellKnownName), type);
+                ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(JwtProperty.GetWellKnowName(wellKnownName), type);
             }
         }
 
@@ -338,7 +338,7 @@ namespace JsonWebToken
         {
             if (!Header.TryGetValue(utf8Name, out var token) || token.Type == JwtTokenType.Null)
             {
-                Errors.ThrowHeaderIsRequired(utf8Name);
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(utf8Name);
             }
 
             for (int i = 0; i < types.Length; i++)
@@ -349,7 +349,7 @@ namespace JsonWebToken
                 }
             }
 
-            Errors.ThrowHeaderMustBeOfType(utf8Name, types);
+            ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(utf8Name, types);
         }
     }
 }

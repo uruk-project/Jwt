@@ -33,17 +33,17 @@ namespace JsonWebToken
         {
             if (header == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.header);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
             if (nestedToken == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.nestedToken);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.nestedToken);
             }
 
             if (encryptionKey == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.encryptionKey);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionKey);
             }
 
             Header = header;
@@ -61,17 +61,17 @@ namespace JsonWebToken
         {
             if (header == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.header);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
             if (data == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.data);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
             if (encryptionKey is null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.encryptionKey);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionKey);
             }
 
             Header = header;
@@ -88,12 +88,12 @@ namespace JsonWebToken
         {
             if (header == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.header);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
             if (payload == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.payload);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.payload);
             }
 
             Header = header;

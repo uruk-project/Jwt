@@ -34,7 +34,7 @@ namespace JsonWebToken.Internal
         {
             if (claim == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.claim);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.claim);
             }
 
             _claim = claim;

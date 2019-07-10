@@ -58,12 +58,12 @@ namespace JsonWebToken
             Id = id;
             if (name == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.name);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.name);
             }
 
             if (compressor == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.compressor);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.compressor);
             }
 
             Name = name;
@@ -214,7 +214,7 @@ namespace JsonWebToken
             var key = Encoding.UTF8.GetString(value.ToArray());
             if (!Algorithms.TryGetValue(key, out var algorithm))
             {
-                Errors.ThrowNotSupportedAlgorithm(key);
+                ThrowHelper.ThrowNotSupportedException_Algorithm(key);
             }
 
             return algorithm;

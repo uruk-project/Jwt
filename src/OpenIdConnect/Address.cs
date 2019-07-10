@@ -76,12 +76,12 @@ namespace JsonWebToken
                         }
                         break;
                     default:
-                        JwtThrowHelper.FormatMalformedJson();
+                        ThrowHelper.ThrowFormatException_MalformedJson();
                         break;
                 }
             }
 
-            JwtThrowHelper.FormatMalformedJson();
+            ThrowHelper.ThrowFormatException_MalformedJson();
             return null;
         }
 

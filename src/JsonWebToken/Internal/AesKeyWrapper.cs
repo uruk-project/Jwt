@@ -27,7 +27,7 @@ namespace JsonWebToken.Internal
         {
             if (algorithm.Category != AlgorithmCategory.Aes)
             {
-                Errors.ThrowNotSupportedAlgorithmForKeyWrap(algorithm);
+                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
             }
 
             _aes = GetSymmetricAlgorithm(key, algorithm);
@@ -54,7 +54,7 @@ namespace JsonWebToken.Internal
         {
             if (algorithm.RequiredKeySizeInBits != key.KeySizeInBits)
             {
-                Errors.ThrowKeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, key, key.KeySizeInBits);
+                ThrowHelper.ThrowArgumentOutOfRangeException_KeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, key, key.KeySizeInBits);
             }
 
             byte[] keyBytes = key.ToArray();
@@ -81,7 +81,7 @@ namespace JsonWebToken.Internal
                     aes.Dispose();
                 }
 
-                Errors.ThrowCreateSymmetricAlgorithmFailed(key, algorithm, ex);
+                ThrowHelper.ThrowCryptographicException_CreateSymmetricAlgorithmFailed(key, algorithm, ex);
                 return null;
             }
         }
@@ -90,17 +90,17 @@ namespace JsonWebToken.Internal
         {
             if (key.IsEmpty)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.key);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             if (key.Length % 8 != 0)
             {
-                Errors.ThrowKeySizeMustBeMultipleOf64(key);
+                ThrowHelper.ThrowArgumentException_KeySizeMustBeMultipleOf64(key);
             }
 
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             return TryUnwrapKeyPrivate(key, destination, out bytesWritten);
@@ -163,7 +163,7 @@ namespace JsonWebToken.Internal
                             return true;
                         }
 
-                        return Errors.TryWriteError(out bytesWritten);
+                        return ThrowHelper.TryWriteError(out bytesWritten);
                     }
                 }
             }
@@ -186,7 +186,7 @@ namespace JsonWebToken.Internal
         {
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
@@ -197,7 +197,7 @@ namespace JsonWebToken.Internal
             catch (Exception)
             {
                 contentEncryptionKey = null;
-                return Errors.TryWriteError(out bytesWritten);
+                return ThrowHelper.TryWriteError(out bytesWritten);
             }
         }
 

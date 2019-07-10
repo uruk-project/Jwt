@@ -44,7 +44,7 @@ namespace JsonWebToken
         {
             if (keys == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.keys);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.keys);
             }
 
             for (int i = 0; i < keys.Count; i++)
@@ -90,7 +90,7 @@ namespace JsonWebToken
         {
             if (key is null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.key);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             Keys.Add(key);
@@ -104,7 +104,7 @@ namespace JsonWebToken
         {
             if (key is null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.key);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             Keys.Remove(key);
@@ -225,7 +225,7 @@ namespace JsonWebToken
         {
             if (json == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.json);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.json);
             }
 
             return FromJson(Encoding.UTF8.GetBytes(json));
@@ -278,7 +278,7 @@ namespace JsonWebToken
                 }
             }
 
-            Errors.ThrowMalformedJwks();
+            ThrowHelper.ThrowInvalidOperationException_MalformedJwks();
             return null;
         }
 

@@ -272,7 +272,7 @@ namespace JsonWebToken
 
             if (!Algorithms.TryGetValue(value, out var algorithm))
             {
-                Errors.ThrowNotSupportedAlgorithm(value);
+                ThrowHelper.ThrowNotSupportedException_Algorithm(value);
             }
 
             return algorithm;
@@ -383,7 +383,7 @@ namespace JsonWebToken
 
             if (!TryParse(value, out var algorithm))
             {
-                Errors.ThrowNotSupportedAlgorithm(Encoding.UTF8.GetString(value.ToArray()));
+                ThrowHelper.ThrowNotSupportedException_Algorithm(Encoding.UTF8.GetString(value.ToArray()));
             }
 
             return algorithm;
