@@ -275,7 +275,7 @@ namespace JsonWebToken
             }
         }
 
-        internal static void ThrowFormatException_NotSUpportedNumberValue(ReadOnlySpan<byte> name) => throw CreateFormatException_NotSUpportedNumberValue(name);
+        internal static void ThrowFormatException_NotSupportedNumberValue(ReadOnlySpan<byte> name) => throw CreateFormatException_NotSUpportedNumberValue(name);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateFormatException_NotSUpportedNumberValue(ReadOnlySpan<byte> name) => new FormatException($"The claim '{Encoding.UTF8.GetString(name.ToArray())}' is not a supported Number value.");
 

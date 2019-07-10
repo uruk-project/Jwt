@@ -382,7 +382,7 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        ThrowHelper.ThrowFormatException_NotSUpportedNumberValue(name);
+                                        ThrowHelper.ThrowFormatException_NotSupportedNumberValue(name);
                                     }
                                 }
                                 break;
