@@ -38,7 +38,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentOutOfRangeException_NeedNonNegNum(ExceptionArgument argument) => new ArgumentOutOfRangeException(GetArgumentName(argument), "Non-negative number required.");
 
-        internal static Exception ThrowArgumentNullException(ExceptionArgument argument) => CreateArgumentNullException(argument);
+        internal static Exception ThrowArgumentNullException(ExceptionArgument argument) => throw CreateArgumentNullException(argument);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentNullException(ExceptionArgument argument) => new ArgumentNullException(GetArgumentName(argument));
 
