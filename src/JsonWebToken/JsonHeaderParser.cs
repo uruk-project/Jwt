@@ -40,7 +40,7 @@ namespace JsonWebToken
 
         internal unsafe static JwtHeader ReadJwtHeader(ref Utf8JsonReader reader)
         {
-            var current = new JwtObject();
+            var current = new JwtObject(3);
             var header = new JwtHeader(current);
             while (reader.Read())
             {

@@ -16,7 +16,23 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public sealed class JwtObject
     {
-        private readonly List<JwtProperty> _properties = new List<JwtProperty>(6);
+        private readonly List<JwtProperty> _properties;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtObject"/> class.
+        /// </summary>
+        public JwtObject()
+        {
+            _properties = new List<JwtProperty>(6);
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtObject"/> class.
+        /// </summary>
+        public JwtObject(int capacity)
+        {
+            _properties = new List<JwtProperty>(capacity);
+        }
 
         /// <summary>
         /// Gets the number of <see cref="JwtProperty"/>.
