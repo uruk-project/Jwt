@@ -334,8 +334,8 @@ namespace JsonWebToken
         /// <param name="bufferWriter"></param>
         public void Serialize(IBufferWriter<byte> bufferWriter)
         {
-            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
-            {
+            using (var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation))
+            { 
                 WriteTo(writer);
                 writer.Flush();
             }

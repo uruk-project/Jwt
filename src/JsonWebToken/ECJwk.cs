@@ -381,7 +381,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
-            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
+            using (var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation ))
             {
                 writer.WriteStartObject();
                 writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
