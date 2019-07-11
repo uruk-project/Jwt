@@ -32,12 +32,12 @@ namespace JsonWebToken.Internal
         {
             if (key.KeySizeInBits < MinimumKeySizeInBits)
             {
-                Errors.ThrowAlgorithmRequireMinimumKeySize(key, algorithm.Name, MinimumKeySizeInBits, key.KeySizeInBits);
+                ThrowHelper.ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(key, algorithm.Name, MinimumKeySizeInBits, key.KeySizeInBits);
             }
 
             if (algorithm.Category != AlgorithmCategory.Hmac)
             {
-                Errors.ThrowNotSupportedSignatureAlgorithm(algorithm);
+                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(algorithm);
             }
 
             _hashSizeInBytes = Algorithm.RequiredKeySizeInBits >> 2;
@@ -54,7 +54,7 @@ namespace JsonWebToken.Internal
                     _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha512ObjectPoolPolicy(key.ToArray()));
                     break;
                 default:
-                    Errors.ThrowNotSupportedKeyedHashAlgorithm(algorithm);
+                    ThrowHelper.ThrowNotSupportedException_KeyedHashAlgorithm(algorithm);
                     break;
             }
         }
@@ -78,7 +78,7 @@ namespace JsonWebToken.Internal
             {
                 if (value < DefaultMinimumSymmetricKeySizeInBits)
                 {
-                    Errors.ThrowMustBeAtLeast(ExceptionArgument.value, DefaultMinimumSymmetricKeySizeInBits);
+                    ThrowHelper.ThrowArgumentOutOfRangeException_MustBeAtLeast(ExceptionArgument.value, DefaultMinimumSymmetricKeySizeInBits);
                 }
 
                 _minimumKeySizeInBits = value;
@@ -90,7 +90,7 @@ namespace JsonWebToken.Internal
         {
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             var keyedHash = _hashAlgorithmPool.Get();
@@ -108,7 +108,7 @@ namespace JsonWebToken.Internal
                 }
                 catch
                 {
-                    return Errors.TryWriteError(out bytesWritten);
+                    return ThrowHelper.TryWriteError(out bytesWritten);
                 }
 #endif
             }
@@ -123,7 +123,7 @@ namespace JsonWebToken.Internal
         {
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             var keyedHash = _hashAlgorithmPool.Get();

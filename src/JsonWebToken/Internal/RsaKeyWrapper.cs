@@ -44,7 +44,7 @@ namespace JsonWebToken.Internal
             }
             else
             {
-                Errors.ThrowNotSupportedAlgorithmForKeyWrap(contentEncryptionAlgorithm);
+                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(contentEncryptionAlgorithm);
             }
         }
 
@@ -53,17 +53,17 @@ namespace JsonWebToken.Internal
         {
             if (key.IsEmpty)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.key);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             if (header == null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.header);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
 #if !NETSTANDARD2_0
@@ -82,7 +82,7 @@ namespace JsonWebToken.Internal
         {
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);

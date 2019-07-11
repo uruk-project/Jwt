@@ -312,7 +312,7 @@ namespace JsonWebToken
                 }
             }
 
-            Errors.ThrowKeyNotFound();
+            ThrowHelper.ThrowKeyNotFoundException();
         }
 
         /// <summary>
@@ -347,8 +347,8 @@ namespace JsonWebToken
         /// <param name="writer"></param>
         public void Serialize(Utf8JsonWriter writer)
         {
-                WriteTo(writer);
-                writer.Flush();
+            WriteTo(writer);
+            writer.Flush();
         }
 
         internal void WriteTo(Utf8JsonWriter writer)

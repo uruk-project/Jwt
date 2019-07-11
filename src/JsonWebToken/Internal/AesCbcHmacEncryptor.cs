@@ -24,12 +24,12 @@ namespace JsonWebToken.Internal
         {
             if (encryptionAlgorithm.Category != EncryptionType.AesHmac)
             {
-                Errors.ThrowNotSupportedEncryptionAlgorithm(encryptionAlgorithm);
+                ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
             }
 
             if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBytes << 3)
             {
-                Errors.ThrowEncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
+                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
             }
 
             int keyLength = encryptionAlgorithm.RequiredKeySizeInBytes >> 1;
@@ -42,7 +42,7 @@ namespace JsonWebToken.Internal
             _signer = hmacKey.CreateSigner(encryptionAlgorithm.SignatureAlgorithm) as SymmetricSigner;
             if (_signer == null)
             {
-                Errors.ThrowNotSupportedSignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
+                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
             }
         }
 
@@ -86,17 +86,17 @@ namespace JsonWebToken.Internal
         {
             if (plaintext.IsEmpty)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.plaintext);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.plaintext);
             }
 
             if (associatedData.IsEmpty)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.associatedData);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.associatedData);
             }
 
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             byte[] arrayToReturnToPool = null;
@@ -142,27 +142,27 @@ namespace JsonWebToken.Internal
         {
             if (ciphertext.IsEmpty)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.ciphertext);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.ciphertext);
             }
 
             if (associatedData.IsEmpty)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.associatedData);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.associatedData);
             }
 
             if (nonce.IsEmpty)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.nonce);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.nonce);
             }
 
             if (authenticationTag.IsEmpty)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.authenticationTag);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.authenticationTag);
             }
 
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             byte[] byteArrayToReturnToPool = null;
@@ -179,7 +179,7 @@ namespace JsonWebToken.Internal
                 if (!_signer.Verify(macBytes, authenticationTag))
                 {
                     plaintext.Clear();
-                    return Errors.TryWriteError(out bytesWritten);
+                    return ThrowHelper.TryWriteError(out bytesWritten);
                 }
 
                 Aes aes = _aesPool.Get();
@@ -201,7 +201,7 @@ namespace JsonWebToken.Internal
             catch
             {
                 plaintext.Clear();
-                return Errors.TryWriteError(out bytesWritten);
+                return ThrowHelper.TryWriteError(out bytesWritten);
             }
             finally
             {

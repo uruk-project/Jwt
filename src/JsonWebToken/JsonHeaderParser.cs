@@ -32,7 +32,7 @@ namespace JsonWebToken
             Utf8JsonReader reader = new Utf8JsonReader(buffer, isFinalBlock: true, state: default);
             if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
             {
-                JwtThrowHelper.FormatMalformedJson();
+                ThrowHelper.ThrowFormatException_MalformedJson();
             }
 
             return ReadJwtHeader(ref reader);
@@ -157,22 +157,22 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        JwtThrowHelper.FormatNotSupportedNumber(name);
+                                        ThrowHelper.ThrowFormatException_NotSupportedNumberValue(name);
                                     }
                                 }
                                 break;
                             default:
-                                JwtThrowHelper.FormatMalformedJson();
+                                ThrowHelper.ThrowFormatException_MalformedJson();
                                 break;
                         }
                         break;
                     default:
-                        JwtThrowHelper.FormatMalformedJson();
+                        ThrowHelper.ThrowFormatException_MalformedJson();
                         break;
                 }
             }
 
-            JwtThrowHelper.FormatMalformedJson();
+            ThrowHelper.ThrowFormatException_MalformedJson();
             return null;
         }
     }

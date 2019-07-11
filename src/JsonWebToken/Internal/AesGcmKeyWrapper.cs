@@ -19,7 +19,7 @@ namespace JsonWebToken.Internal
         {
             if (algorithm.Category != AlgorithmCategory.AesGcm)
             {
-                Errors.ThrowNotSupportedAlgorithmForKeyWrap(algorithm);
+                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
             }
         }
 
@@ -40,7 +40,7 @@ namespace JsonWebToken.Internal
         {
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.IV.Length)];
@@ -59,7 +59,7 @@ namespace JsonWebToken.Internal
             }
             catch
             {
-                return Errors.TryWriteError(out bytesWritten);
+                return ThrowHelper.TryWriteError(out bytesWritten);
             }
         }
 
@@ -68,7 +68,7 @@ namespace JsonWebToken.Internal
         {
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
@@ -91,7 +91,7 @@ namespace JsonWebToken.Internal
             catch
             {
                 contentEncryptionKey = null;
-                return Errors.TryWriteError(out bytesWritten);
+                return ThrowHelper.TryWriteError(out bytesWritten);
             }
         }
 

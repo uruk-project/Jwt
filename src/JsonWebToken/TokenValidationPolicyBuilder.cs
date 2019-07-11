@@ -64,7 +64,7 @@ namespace JsonWebToken
         {
             if (size <= 0)
             {
-                Errors.ThrowMustBeGreaterThanZero(ExceptionArgument.size, size);
+                ThrowHelper.ThrowArgumentOutOfRangeException_MustBeGreaterThanZero(ExceptionArgument.size, size);
             }
 
             _maximumTokenSizeInBytes = size;
@@ -255,7 +255,7 @@ namespace JsonWebToken
         {
             if (clockSkew <= 0)
             {
-                Errors.ThrowMustBeGreaterThanTimeSpanZero(ExceptionArgument.clockSkew, clockSkew);
+                ThrowHelper.ThrowArgumentOutOfRangeException_MustBeGreaterThanTimeSpanZero(ExceptionArgument.clockSkew, clockSkew);
             }
 
             RemoveValidator<LifetimeValidator>();
@@ -373,7 +373,7 @@ namespace JsonWebToken
         {
             if (!_hasSignatureValidation)
             {
-                Errors.ThrowPolicyBuilderRequireSignature();
+                ThrowHelper.ThrowInvalidOperationException_PolicyBuilderRequireSignature();
             }
         }
 

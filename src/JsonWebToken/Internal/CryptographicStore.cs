@@ -100,7 +100,7 @@ namespace JsonWebToken.Internal
                     {
                         // The chain of entries forms a loop; which means a concurrent update has happened.
                         // Break out of the loop and throw, rather than looping forever.
-                        Errors.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+                        ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
                     }
                     collisionCount++;
                 } while (true);
@@ -153,7 +153,7 @@ namespace JsonWebToken.Internal
                 {
                     // The chain of entries forms a loop; which means a concurrent update has happened.
                     // Break out of the loop and throw, rather than looping forever.
-                    Errors.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+                    ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
                 }
 
                 collisionCount++;
@@ -253,7 +253,7 @@ namespace JsonWebToken.Internal
                     {
                         // The chain of entries forms a loop; which means a concurrent update has happened.
                         // Break out of the loop and throw, rather than looping forever.
-                        Errors.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+                        ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
                     }
                     collisionCount++;
                 }

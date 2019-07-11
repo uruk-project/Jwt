@@ -444,7 +444,7 @@ namespace JsonWebToken
             Signer signer = Key?.CreateSigner(alg);
             if (signer == null)
             {
-                Errors.ThrowNotSupportedSignatureAlgorithm(alg, Key);
+                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(alg, Key);
             }
 
             if (context.TokenLifetimeInMinutes != 0 || context.GenerateIssuedTime)
@@ -528,12 +528,12 @@ namespace JsonWebToken
         {
             if (!Payload.TryGetValue(utf8Name, out var claim) || claim.Type == JwtTokenType.Null)
             {
-                Errors.ThrowClaimIsRequired(utf8Name);
+                ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
             }
 
             if (claim.Type != type)
             {
-                Errors.ThrowClaimMustBeOfType(utf8Name, type);
+                ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, type);
             }
         }
 
@@ -546,7 +546,7 @@ namespace JsonWebToken
         {
             if (!Payload.TryGetValue(utf8Name, out var claim) || claim.Type == JwtTokenType.Null)
             {
-                Errors.ThrowClaimIsRequired(utf8Name);
+                ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
             }
 
             for (int i = 0; i < types.Length; i++)
@@ -557,7 +557,7 @@ namespace JsonWebToken
                 }
             }
 
-            Errors.ThrowClaimMustBeOfType(utf8Name, types);
+            ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, types);
         }
 
         /// <inheritsdoc />

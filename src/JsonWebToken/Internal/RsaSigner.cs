@@ -21,18 +21,18 @@ namespace JsonWebToken
         {
             if (key is null)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.key);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
             if (!key.IsSupported(algorithm))
             {
-                Errors.ThrowNotSupportedSignatureAlgorithm(algorithm, key);
+                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(algorithm, key);
             }
 
             var minKeySize = key.HasPrivateKey ? 2048 : 1024;
             if (key.KeySizeInBits < minKeySize)
             {
-                Errors.ThrowSigningKeyTooSmall(key, minKeySize);
+                ThrowHelper.ThrowArgumentOutOfRangeException_SigningKeyTooSmall(key, minKeySize);
             }
 
             _hashAlgorithm = algorithm.HashAlgorithm;
@@ -51,7 +51,7 @@ namespace JsonWebToken
                     break;
 
                 default:
-                    Errors.ThrowNotSupportedAlgorithm(algorithm.Name);
+                    ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm.Name);
                     break;
             }
 
@@ -68,12 +68,12 @@ namespace JsonWebToken
         {
             if (data.IsEmpty)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.data);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             var rsa = _hashAlgorithmPool.Get();
@@ -91,7 +91,7 @@ namespace JsonWebToken
                 }
                 catch
                 {
-                    return Errors.TryWriteError(out bytesWritten);
+                    return ThrowHelper.TryWriteError(out bytesWritten);
                 }
 #endif
             }
@@ -105,17 +105,17 @@ namespace JsonWebToken
         {
             if (data.IsEmpty)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.data);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
             if (signature.IsEmpty)
             {
-                Errors.ThrowArgumentNullException(ExceptionArgument.signature);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.signature);
             }
 
             if (_disposed)
             {
-                Errors.ThrowObjectDisposed(GetType());
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             var rsa = _hashAlgorithmPool.Get();
