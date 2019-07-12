@@ -33,7 +33,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="payload"></param>
         public JweDescriptor(JwsDescriptor payload)
-            : base(new JwtObject(), payload)
+            : base(new JwtObject(3), payload)
         {
         }
 

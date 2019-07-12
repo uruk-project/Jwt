@@ -33,7 +33,7 @@ namespace JsonWebToken
         /// </summary>
         public JwtHeader()
         {
-            _inner = new JwtObject();
+            _inner = new JwtObject(3);
         }
 
         /// <summary>

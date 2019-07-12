@@ -22,7 +22,7 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="JwtDescriptor"/>.
         /// </summary>
         protected JwtDescriptor()
-            : this(new JwtObject())
+            : this(new JwtObject(3))
         {
         }
 

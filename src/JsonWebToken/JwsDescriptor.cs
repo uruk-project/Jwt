@@ -23,7 +23,7 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="JwsDescriptor"/>.
         /// </summary>
         public JwsDescriptor()
-            : base(new JwtObject(), new JwtObject())
+            : base(new JwtObject(3), new JwtObject())
         {
         }
 
