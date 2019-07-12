@@ -26,10 +26,10 @@ namespace Performance
             var issuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc);
             var jws = new JwsDescriptor()
             {
-                //IssuedAt = issuedAt,
-                //ExpirationTime = expires,
-                //Issuer = "https://idp.example.com/",
-                //Audience = "636C69656E745F6964",
+                IssuedAt = issuedAt,
+                ExpirationTime = expires,
+                Issuer = "https://idp.example.com/",
+                Audience = "636C69656E745F6964",
                 Key = SharedKey,
                 Algorithm = (SignatureAlgorithm)SharedKey.Alg
             };
@@ -38,10 +38,11 @@ namespace Performance
             _reader.EnableHeaderCaching = false;
             _writer.EnableHeaderCaching = false;
 
+            var span = jwt.AsSpan();
             while (true)
             {
-                var result = _reader.TryReadToken(jwt.AsSpan(), TokenValidationPolicy.NoValidation);
-                //_writer.WriteToken(jws);
+                //var result = _reader.TryReadToken(span, TokenValidationPolicy.NoValidation);
+                _writer.WriteToken(jws);
             }
         }
     }
