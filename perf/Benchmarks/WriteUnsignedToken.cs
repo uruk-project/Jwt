@@ -7,7 +7,8 @@ namespace JsonWebToken.Performance
     [BenchmarkCategory("CI-CD")]
     public class WriteUnsignedToken : WriteToken
     {
-        public WriteUnsignedToken()
+        [GlobalSetup]
+        public void Setup()
         {
             Jwt("JWT-empty");
             Wilson("JWT-empty");
