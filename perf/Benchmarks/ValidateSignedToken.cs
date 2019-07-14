@@ -1,6 +1,6 @@
-﻿using BenchmarkDotNet.Attributes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Security.Claims;
+using BenchmarkDotNet.Attributes;
 
 namespace JsonWebToken.Performance
 {
@@ -10,9 +10,9 @@ namespace JsonWebToken.Performance
     {
         public ValidateSignedToken()
         {
-            Jwt("JWT-empty");
-            Wilson("JWT-empty");
-            WilsonJwt("JWT-empty");
+            Jwt("JWS-empty");
+            Wilson("JWS-empty");
+            WilsonJwt("JWS-empty");
         }
 
         [Benchmark(Baseline = true)]
