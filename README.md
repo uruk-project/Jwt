@@ -15,8 +15,8 @@ See the [samples](https://github.com/ycrumeyrolle/Jwt/tree/master/samples) for m
 
 ### JWT validation
 ````
-	var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
-	var policy = new TokenValidationPolicyBuilder()
+    var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
+    var policy = new TokenValidationPolicyBuilder()
 					.RequireSignature(key, SignatureAlgorithm.HmacSha256)
 					.RequireAudience("636C69656E745F6964")
 					.RequireIssuer("https://idp.example.com/")
@@ -39,28 +39,28 @@ See the [samples](https://github.com/ycrumeyrolle/Jwt/tree/master/samples) for m
 
 ### JWT creation
 ````
-	// Creates a symmetric key defined for the 'HS256' algorithm
-	var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU", SignatureAlgorithm.HmacSha256);
+    // Creates a symmetric key defined for the 'HS256' algorithm
+    var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU", SignatureAlgorithm.HmacSha256);
 
-	// Creates a JWS descriptor with all its properties
-	var descriptor = new JwsDescriptor()
-	{
-		Key = key,
-		IssuedAt = DateTime.UtcNow,
-		ExpirationTime = DateTime.UtcNow.AddHours(1),
-		Issuer = "https://idp.example.com/",
-		Audience = "636C69656E745F6964"
-	};
+    // Creates a JWS descriptor with all its properties
+    var descriptor = new JwsDescriptor()
+    {
+        Key = key,
+        IssuedAt = DateTime.UtcNow,
+        ExpirationTime = DateTime.UtcNow.AddHours(1),
+        Issuer = "https://idp.example.com/",
+        Audience = "636C69656E745F6964"
+    };        
 
-	// Generates the UTF-8 string representation of the JWT
-	var writer = new JwtWriter();
-	var token = writer.WriteTokenString(descriptor);
+    // Generates the UTF-8 string representation of the JWT
+    var writer = new JwtWriter();
+    var token = writer.WriteTokenString(descriptor);
 
-	Console.WriteLine("The JWT is:");
-	Console.WriteLine(descriptor);
-	Console.WriteLine();
-	Console.WriteLine("Its compact form is:");
-	Console.WriteLine(token);
+    Console.WriteLine("The JWT is:");
+    Console.WriteLine(descriptor);
+    Console.WriteLine();
+    Console.WriteLine("Its compact form is:");
+    Console.WriteLine(token);
 ````
 ## Performances
 See [benchmarks](Benchmark.md) for details. 
