@@ -1,4 +1,5 @@
-﻿using Jose;
+﻿using BenchmarkDotNet.Attributes;
+using Jose;
 using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;
@@ -43,6 +44,14 @@ namespace JsonWebToken.Performance
         static WriteToken()
         {
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
+        }
+
+        [GlobalSetup]
+        public void Setup()
+        {
+            Jwt("JWS-empty");
+            Wilson("JWS-empty");
+            WilsonJwt("JWS-empty");
         }
 
         [BenchmarkDotNet.Attributes.IterationCleanup]
