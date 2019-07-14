@@ -30,7 +30,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\JsonWebToken\JsonWebToken.csproj" />
-    <ProjectReference Include="..\Performance\Performance.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="resources\payloads.json">

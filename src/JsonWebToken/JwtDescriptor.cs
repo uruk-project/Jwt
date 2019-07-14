@@ -51,11 +51,6 @@ namespace JsonWebToken
                 _key = value;
                 if (value != null)
                 {
-                    //if (value.Alg != null)
-                    //{
-                    //    Algorithm = value.Alg;
-                    //}
-
                     if (value.Kid != null)
                     {
                         KeyId = value.Kid;

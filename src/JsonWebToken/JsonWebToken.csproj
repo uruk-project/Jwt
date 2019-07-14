@@ -25,10 +25,6 @@
     <None Remove="JsonWebToken.xml" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.IO.Pipelines" Version="4.5.3" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="System.Memory" Version="4.5.3" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />

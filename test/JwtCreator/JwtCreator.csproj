@@ -15,7 +15,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\JsonWebToken\JsonWebToken.csproj" />
-    <ProjectReference Include="..\..\perf\Performance\Performance.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="descriptors.json">
