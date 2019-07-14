@@ -13,55 +13,65 @@ This library aims to propose performant JWT primitives.
 ## Usage
 ### JWT validation
 ````
-    var key = new SymmetricJwk { K = "R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU" };
-    var validationParameters = new TokenValidationBuilder()
-				   .RequireSignature(key)
-                                   .RequireAudience("valid_audience>")
-				   .RequireIssuer("<valid_issuer>")
-				   .Build()
+	var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
+	var policy = new TokenValidationPolicyBuilder()
+					.RequireSignature(key, SignatureAlgorithm.HmacSha256)
+					.RequireAudience("636C69656E745F6964")
+					.RequireIssuer("https://idp.example.com/")
+					.Build();
 
-    using (var reader = new JwtReader())
+    var reader = new JwtReader();
+    var result = reader.TryReadToken("eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MDAwMDcyMDAsImlhdCI6MjAwMDAwNzIwMCwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiYXVkIjoiNjM2QzY5NjU2RTc0NUY2OTY0In0.YrrT1Ddp1ampsDd2GwYZoTz_bUnLt_h--f16wsWBedk", policy);
+          
+    var reader = new JwtReader();
+    var result = reader.TryReadToken("eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MDAwMDcyMDAsImlhdCI6MjAwMDAwNzIwMCwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiYXVkIjoiNjM2QzY5NjU2RTc0NUY2OTY0In0.YrrT1Ddp1ampsDd2GwYZoTz_bUnLt_h--f16wsWBedk", policy);
+    if (result.Success)
     {
-      var result = reader.TryReadToken("eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI3NTZFNjk3MTc1NjUyMDY5NjQ2NTZFNzQ2OTY2Njk2NTcyIiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiaWF0IjoxNTA4MTg0ODQ1LCJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJleHAiOjE2MjgxODQ4NDV9.2U33urP5-MPw1ipbwEP4nqvEqlZiyUG9Hxi8YS_RQVk");
-      if (result.Success)
-      {
-        Console.WriteLine("The token is " + result.Token);
-      }
-      else
-      {      
-        Console.WriteLine("Failed to read the token. Reason: " + result.Status);
-      }
+		Console.WriteLine("The token is " + result.Token);
+    }
+    else
+    {      
+		Console.WriteLine("Failed to read the token. Reason: " + result.Status);
     }
 ````
 
 ### JWT creation
 ````
-    var descriptor = new JwsDescriptor()
-    {
-      Key = new SymmetricJwk { K = "R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU", Alg = "HS256" };,
-      ExpirationTime = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc),
-      IssuedAt = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc),
-      Issuer = "https://idp.example.com/",
-      Audience = "636C69656E745F6964"
-    };
+	// Creates a symmetric key defined for the 'HS256' algorithm
+	var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU", SignatureAlgorithm.HmacSha256);
 
-    using (var writer = new JwtWriter())
-    {
-      byte[] token = writer.WriteToken(descriptor);
-    }
+	// Creates a JWS descriptor with all its properties
+	var descriptor = new JwsDescriptor()
+	{
+		Key = key,
+		IssuedAt = DateTime.UtcNow,
+		ExpirationTime = DateTime.UtcNow.AddHours(1),
+		Issuer = "https://idp.example.com/",
+		Audience = "636C69656E745F6964"
+	};
+
+	// Generates the UTF-8 string representation of the JWT
+	var writer = new JwtWriter();
+	var token = writer.WriteTokenString(descriptor);
+
+	Console.WriteLine("The JWT is:");
+	Console.WriteLine(descriptor);
+	Console.WriteLine();
+	Console.WriteLine("Its compact form is:");
+	Console.WriteLine(token);
 ````
 ## Performances
 See [benchmarks](Benchmark.md) for details. 
-This library is about **3x to 6.5x** faster than the Microsoft.IdentityModel.Tokens.Jwt when decoding and validating the token, and **2x** faster when writing a JWS of common size, with only 1/4 of memory allocation. (values on netcoreapp3.0)
+This library is about **8x** faster than the Microsoft.IdentityModel.Tokens.Jwt when decoding and validating the token, and **3x** faster when writing a JWS of common size, with only 1/4 of memory allocation. (values on netcoreapp3.0)
 
 The main reason of the speed of this library is the usage of the new API provided in .NET Core 2.0, 2.1 & 3.0, like the new Span API and the new JSON API.
 
 ## Supported JWT
-* [JWS](https://tools.ietf.org/html/rfc7515) 
-* [Nested JWT](https://tools.ietf.org/html/rfc7519#appendix-A.2): JWE with JWS as payload (know as JWE or Encrypted JWS)
-* [Plaintext JWE](https://tools.ietf.org/html/rfc7519#appendix-A.1): JWE with plaintext as payload
-* Binary JWE: JWE with binary as payload
-* [Unsecure JWT](https://tools.ietf.org/html/rfc7515#appendix-A.5): JWS without signature
+* [JWS](https://tools.ietf.org/html/rfc7515). See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/JwsCreationSample/Program.cs).
+* [Nested JWT](https://tools.ietf.org/html/rfc7519#appendix-A.2): JWE with JWS as payload (know as JWE or Encrypted JWS). See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/JweCreationSample/Program.cs).
+* [Plaintext JWE](https://tools.ietf.org/html/rfc7519#appendix-A.1): JWE with plaintext as payload. See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/PlaintextJwtCreationSample/Program.cs).
+* Binary JWE: JWE with binary as payload. See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/BinaryJwtCreationSample/Program.cs).
+* [Unsecure JWT](https://tools.ietf.org/html/rfc7515#appendix-A.5): JWS without signature. See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/UnsecureJwtCreationSample/Program.cs).
 
 ## Supported algorithms
 ### JWS signing algorithms
