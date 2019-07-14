@@ -49,12 +49,12 @@ namespace JsonWebToken.Performance
         [GlobalSetup]
         public void Setup()
         {
-            Jwt("JWS-empty");
-            Wilson("JWS-empty");
-            WilsonJwt("JWS-empty");
+            Jwt("JWT-empty");
+            Wilson("JWT-empty");
+            WilsonJwt("JWT-empty");
         }
 
-        [BenchmarkDotNet.Attributes.IterationCleanup]
+        [IterationCleanup]
         public void Clean()
         {
             _output.Clear();
