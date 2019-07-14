@@ -1,19 +1,16 @@
 ﻿using System;
 using JsonWebToken;
 
-namespace JwtCreationSample
+namespace UnsecureJwtCreationSample
 {
     class Program
     {
         static void Main()
         {
-            // Creates a symmetric key defined for the 'HS256' algorithm
-            var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU", SignatureAlgorithm.HmacSha256);
-
             // Creates a JWS descriptor with all its properties
             var descriptor = new JwsDescriptor()
             {
-                Key = key,
+                Algorithm = SignatureAlgorithm.None,
                 IssuedAt = DateTime.UtcNow,
                 ExpirationTime = DateTime.UtcNow.AddHours(1),
                 Issuer = "https://idp.example.com/",
