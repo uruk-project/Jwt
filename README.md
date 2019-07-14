@@ -15,8 +15,8 @@ See the [samples](https://github.com/ycrumeyrolle/Jwt/tree/master/samples) for m
 
 ### JWT validation
 ````
-	var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
-	var policy = new TokenValidationPolicyBuilder()
+    var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
+    var policy = new TokenValidationPolicyBuilder()
 					.RequireSignature(key, SignatureAlgorithm.HmacSha256)
 					.RequireAudience("636C69656E745F6964")
 					.RequireIssuer("https://idp.example.com/")
@@ -39,34 +39,35 @@ See the [samples](https://github.com/ycrumeyrolle/Jwt/tree/master/samples) for m
 
 ### JWT creation
 ````
-	// Creates a symmetric key defined for the 'HS256' algorithm
-	var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU", SignatureAlgorithm.HmacSha256);
+    // Creates a symmetric key defined for the 'HS256' algorithm
+    var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU", SignatureAlgorithm.HmacSha256);
 
-	// Creates a JWS descriptor with all its properties
-	var descriptor = new JwsDescriptor()
-	{
-		Key = key,
-		IssuedAt = DateTime.UtcNow,
-		ExpirationTime = DateTime.UtcNow.AddHours(1),
-		Issuer = "https://idp.example.com/",
-		Audience = "636C69656E745F6964"
-	};
+    // Creates a JWS descriptor with all its properties
+    var descriptor = new JwsDescriptor()
+    {
+        Key = key,
+        IssuedAt = DateTime.UtcNow,
+        ExpirationTime = DateTime.UtcNow.AddHours(1),
+        Issuer = "https://idp.example.com/",
+        Audience = "636C69656E745F6964"
+    };        
 
-	// Generates the UTF-8 string representation of the JWT
-	var writer = new JwtWriter();
-	var token = writer.WriteTokenString(descriptor);
+    // Generates the UTF-8 string representation of the JWT
+    var writer = new JwtWriter();
+    var token = writer.WriteTokenString(descriptor);
 
-	Console.WriteLine("The JWT is:");
-	Console.WriteLine(descriptor);
-	Console.WriteLine();
-	Console.WriteLine("Its compact form is:");
-	Console.WriteLine(token);
+    Console.WriteLine("The JWT is:");
+    Console.WriteLine(descriptor);
+    Console.WriteLine();
+    Console.WriteLine("Its compact form is:");
+    Console.WriteLine(token);
 ````
 ## Performances
 See [benchmarks](Benchmark.md) for details. 
-This library is about **8x** faster than the Microsoft.IdentityModel.Tokens.Jwt when decoding and validating the token, and **3x** faster when writing a JWS of common size, with only 1/4 of memory allocation. (values on netcoreapp3.0)
+This library is about **8x** faster than the Microsoft.IdentityModel.Tokens.Jwt when decoding and validating the token, with less than **5-10% memory allocation**.
+It is about **3x faster** when writing a JWS of common size, with less than **1-2% memory allocation**.
 
-The main reason of the speed of this library is the usage of the new API provided in .NET Core 2.0, 2.1 & 3.0, like the new Span API and the new JSON API.
+The main reason of the eficiency of this library is the usage of the new API provided in .NET Core 2.0, 2.1 & 3.0, like the new Span API and the new JSON API.
 
 ## Supported JWT
 * [JWS](https://tools.ietf.org/html/rfc7515). See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/JwsCreationSample/Program.cs).
