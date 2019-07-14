@@ -11,6 +11,8 @@ This library aims to propose performant JWT primitives.
 [![NuGet](https://img.shields.io/nuget/v/JsonWebToken.svg?style=flat)](https://www.nuget.org/packages/JsonWebToken/)
 
 ## Usage
+See the [samples](https://github.com/ycrumeyrolle/Jwt/tree/master/samples) for more details.
+
 ### JWT validation
 ````
 	var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
