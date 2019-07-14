@@ -3,9 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Xunit;
 #if NETCOREAPP3_0
 using System.Text.Json;
