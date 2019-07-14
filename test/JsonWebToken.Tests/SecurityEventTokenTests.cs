@@ -13,7 +13,7 @@ namespace JsonWebToken.Tests
 {
     public class SecurityEventTokenTests
     {
-        [Fact(/*Skip = "Utf8JsonWriter badly escape the '+' character in 'secevent+jwt'."*/)]
+        [Fact(Skip = "Renable when the escaping will be fixed with https://github.com/dotnet/corefx/pull/39415.")]
         public void Write()
         {
             var descriptor = new SecurityEventTokenDescriptor();

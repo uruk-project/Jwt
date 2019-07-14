@@ -1,14 +1,14 @@
-﻿using JsonWebToken.Internal;
-using System;
+﻿using System;
 using System.Linq;
 using System.Text;
+using JsonWebToken.Internal;
 using Xunit;
 
 namespace JsonWebToken.Tests
 {
     public class IdTokenTests
     {
-        [Fact(/*Skip = "Renable when the escaping will be fixed with https://github.com/dotnet/corefx/pull/39415."*/)]
+        [Fact(Skip = "Renable when the escaping will be fixed with https://github.com/dotnet/corefx/pull/39415.")]
         public void Create()
         {
             var descriptor = new IdTokenDescriptor();
