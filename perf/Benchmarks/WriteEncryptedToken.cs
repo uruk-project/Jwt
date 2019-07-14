@@ -7,7 +7,8 @@ namespace JsonWebToken.Performance
     [BenchmarkCategory("CI-CD")]
     public class WriteEncryptedToken : WriteToken
     {
-        public WriteEncryptedToken()
+        [GlobalSetup]
+        public void Setup()
         {
             Jwt("JWE-empty");
             Wilson("JWE-empty");

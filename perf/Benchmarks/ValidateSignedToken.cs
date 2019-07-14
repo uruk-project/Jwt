@@ -8,7 +8,8 @@ namespace JsonWebToken.Performance
     [BenchmarkCategory("CI-CD")]
     public class ValidateSignedToken : ValidateToken
     {
-        public ValidateSignedToken()
+        [GlobalSetup]
+        public void Setup()
         {
             Jwt("JWS-empty");
             Wilson("JWS-empty");
