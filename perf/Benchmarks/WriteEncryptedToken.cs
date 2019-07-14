@@ -9,9 +9,9 @@ namespace JsonWebToken.Performance
     {
         public WriteEncryptedToken()
         {
-            JwtCore("JWE-empty");
-            WilsonCore("JWE-empty");
-            WilsonJwtCore("JWE-empty");
+            Jwt("JWE-empty");
+            Wilson("JWE-empty");
+            WilsonJwt("JWE-empty");
         }
 
         [Benchmark(Baseline = true)]
