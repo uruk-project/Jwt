@@ -34,13 +34,6 @@ namespace JsonWebToken.Performance
         protected static readonly TokenValidationParameters wilsonParameters = new TokenValidationParameters() { IssuerSigningKey = WilsonSharedKey, ValidateAudience = false, ValidateIssuer = false, ValidateLifetime = false, TokenDecryptionKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(Tokens.EncryptionKey.ToString()) };
         protected static readonly TokenValidationParameters wilsonParametersWithouSignature = new TokenValidationParameters() { ValidateAudience = false, ValidateIssuer = false, ValidateLifetime = false, RequireSignedTokens = false };
 
-        public ValidateToken()
-        {
-            JwtCore("JWT-empty", TokenValidationPolicy.NoValidation);
-            WilsonCore("JWT-empty", wilsonParametersWithouSignature);
-            WilsonJwtCore("JWT-empty", wilsonParametersWithouSignature);
-        }
-
         public abstract TokenValidationResult Jwt(string token);
 
         protected TokenValidationResult JwtCore(string token, TokenValidationPolicy policy)

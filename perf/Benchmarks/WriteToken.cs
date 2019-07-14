@@ -51,13 +51,6 @@ namespace JsonWebToken.Performance
             _output.Clear();
         }
 
-        public WriteToken()
-        {
-            JwtCore("JWT-empty");
-            WilsonCore("JWT-empty");
-            WilsonJwtCore("JWT-empty");
-        }
-
         public abstract byte[] Jwt(string payload);
 
         protected byte[] JwtCore(string payload)

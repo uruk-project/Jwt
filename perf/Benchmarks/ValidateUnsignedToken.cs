@@ -1,7 +1,6 @@
-﻿using BenchmarkDotNet.Attributes;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Security.Claims;
+using BenchmarkDotNet.Attributes;
 
 namespace JsonWebToken.Performance
 {
@@ -9,6 +8,13 @@ namespace JsonWebToken.Performance
     [BenchmarkCategory("CI-CD")]
     public class ValidateUnsignedToken : ValidateToken
     {
+        public ValidateUnsignedToken()
+        {
+            Jwt("JWT-empty");
+            Wilson("JWT-empty");
+            WilsonJwt("JWT-empty");
+        }
+
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetTokens))]
         public override TokenValidationResult Jwt(string token)
