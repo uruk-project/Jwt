@@ -8,6 +8,13 @@ namespace JsonWebToken.Performance
     [BenchmarkCategory("CI-CD")]
     public class ValidateSignedToken : ValidateToken
     {
+        public ValidateSignedToken()
+        {
+            Jwt("JWT-empty");
+            Wilson("JWT-empty");
+            WilsonJwt("JWT-empty");
+        }
+
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetTokens))]
         public override TokenValidationResult Jwt(string token)

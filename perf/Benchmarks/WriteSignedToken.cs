@@ -7,6 +7,13 @@ namespace JsonWebToken.Performance
     [BenchmarkCategory("CI-CD")]
     public class WriteSignedToken : WriteToken
     {
+        public WriteSignedToken()
+        {
+            JwtCore("JWT-empty");
+            WilsonCore("JWT-empty");
+            WilsonJwtCore("JWT-empty");
+        }
+
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetPayloads))]
         public override byte[] Jwt(string payload)
