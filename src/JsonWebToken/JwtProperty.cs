@@ -535,6 +535,32 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
         /// </summary>
+        /// <param name="wellKnown"></param>
+        /// <param name="value"></param>
+        public JwtProperty(WellKnownProperty wellKnown, long value)
+        {
+            Type = JwtTokenType.Integer;
+            WellKnownName = wellKnown;
+            _utf8Name = default;
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
+        /// <param name="wellKnown"></param>
+        /// <param name="value"></param>
+        public JwtProperty(WellKnownProperty wellKnown, double value)
+        {
+            Type = JwtTokenType.Integer;
+            WellKnownName = wellKnown;
+            _utf8Name = default;
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
         /// <param name="value"></param>
         public JwtProperty(EncryptionAlgorithm value)
         {
