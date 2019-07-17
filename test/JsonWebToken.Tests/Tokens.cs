@@ -159,7 +159,7 @@ namespace JsonWebToken.Tests
             {
                 var descriptor = new JwsDescriptor()
                 {
-                    Key = signingKey,
+                    SigningKey = signingKey,
                     Algorithm = (SignatureAlgorithm)signingKey.Alg
                 };
 
@@ -185,7 +185,7 @@ namespace JsonWebToken.Tests
             {
                 var descriptor = new JwsDescriptor()
                 {
-                    Key = signingKey,
+                    SigningKey = signingKey,
                     Algorithm = (SignatureAlgorithm)signingKey.Alg
                 };
 
@@ -207,7 +207,7 @@ namespace JsonWebToken.Tests
                 var jwe = new JweDescriptor
                 {
                     Payload = descriptor,
-                    Key = encryptionKey,
+                    EncryptionKey = encryptionKey,
                     EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
                     Algorithm = KeyManagementAlgorithm.Aes128KW,
                     ContentType = "JWT"
@@ -220,7 +220,7 @@ namespace JsonWebToken.Tests
             {
                 var descriptor = new JwsDescriptor()
                 {
-                    Key = signingKey,
+                    SigningKey = signingKey,
                     Algorithm = (SignatureAlgorithm)signingKey.Alg
                 };
 
@@ -242,7 +242,7 @@ namespace JsonWebToken.Tests
                 var jwe = new JweDescriptor
                 {
                     Payload = descriptor,
-                    Key = encryptionKey,
+                    EncryptionKey = encryptionKey,
                     EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
                     Algorithm = KeyManagementAlgorithm.Aes128KW,
                     ContentType = "JWT",
@@ -420,7 +420,7 @@ namespace JsonWebToken.Tests
 
         private static TokenState CreateInvalidToken(Jwk signingKey, TokenValidationStatus status, JwsDescriptor descriptor, string claim = null)
         {
-            descriptor.Key = signingKey;
+            descriptor.SigningKey = signingKey;
             descriptor.Algorithm = (SignatureAlgorithm)signingKey.Alg;
 
             return CreateInvalidToken(status, descriptor);
@@ -428,8 +428,8 @@ namespace JsonWebToken.Tests
 
         private static TokenState CreateInvalidToken(Jwk signingKey, Jwk encryptionKey, TokenValidationStatus status, JweDescriptor descriptor, string claim = null)
         {
-            descriptor.Payload.Key = SigningKey;
-            descriptor.Key = encryptionKey;
+            descriptor.Payload.SigningKey = SigningKey;
+            descriptor.EncryptionKey = encryptionKey;
             descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
 
             return CreateInvalidToken(status, descriptor);

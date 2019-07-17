@@ -23,12 +23,12 @@ namespace JsonWebToken.Tests
 
             var descriptor = new JweDescriptor
             {
-                Key = _bobKey,
+                EncryptionKey = _bobKey,
                 EncryptionAlgorithm = (EncryptionAlgorithm)enc,
                 Algorithm = (KeyManagementAlgorithm)alg,
                 Payload = new JwsDescriptor
                 {
-                    Key = _signingKey,
+                    SigningKey = _signingKey,
                     Algorithm = SignatureAlgorithm.HmacSha256,
                     Subject = "Alice"
                 }

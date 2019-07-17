@@ -61,7 +61,7 @@ namespace JsonWebToken.Tests
             var plaintext = "Live long and prosper.";
 
             var descriptor = new PlaintextJweDescriptor(plaintext);
-            descriptor.Key = RsaKey;
+            descriptor.EncryptionKey = RsaKey;
             descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
             descriptor.Algorithm = KeyManagementAlgorithm.RsaPkcs1;
 
@@ -98,7 +98,7 @@ namespace JsonWebToken.Tests
             };
 
             var descriptor = new BinaryJweDescriptor(data);
-            descriptor.Key = key;
+            descriptor.EncryptionKey = key;
             descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
             descriptor.Algorithm = KeyManagementAlgorithm.RsaPkcs1;
 
@@ -132,7 +132,7 @@ namespace JsonWebToken.Tests
             var plaintext = "Live long and prosper.".PadRight(992 * 100, 'X');
 
             var descriptor = new PlaintextJweDescriptor(plaintext);
-            descriptor.Key = RsaKey;
+            descriptor.EncryptionKey = RsaKey;
             descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
             descriptor.Algorithm = KeyManagementAlgorithm.RsaPkcs1;
             descriptor.CompressionAlgorithm = CompressionAlgorithm.Deflate;

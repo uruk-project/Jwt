@@ -13,7 +13,7 @@ namespace BinaryJwtCreationSample
             // Creates a JWE descriptor with all its properties
             var descriptor = new BinaryJweDescriptor()
             {
-                Key = encryptionKey,
+                EncryptionKey = encryptionKey,
                 EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
                 Algorithm = KeyManagementAlgorithm.Aes128KW,
                 Payload = new byte[] { 76, 105, 102, 101, 32, 108, 111, 110, 103, 32, 97, 110, 100, 32, 112, 114, 111, 115, 112, 101, 114, 46 }

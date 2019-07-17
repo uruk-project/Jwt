@@ -80,7 +80,7 @@ namespace JsonWebToken.Tests
             var writer = new JwtWriter();
             var descriptor = new JwsDescriptor
             {
-                Key = signingKey,
+                SigningKey = signingKey,
                 Algorithm = (SignatureAlgorithm)alg,
                 Subject = "Alice"
             };

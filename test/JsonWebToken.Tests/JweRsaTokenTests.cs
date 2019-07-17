@@ -33,12 +33,12 @@ namespace JsonWebToken.Tests
 
             var descriptor = new JweDescriptor
             {
-                Key = _publicRsa2048Key,
+                EncryptionKey = _publicRsa2048Key,
                 EncryptionAlgorithm = (EncryptionAlgorithm) enc,
                 Algorithm = (KeyManagementAlgorithm)alg,
                 Payload = new JwsDescriptor
                 {
-                    Key = _signingKey,
+                   SigningKey = _signingKey,
                     Algorithm = SignatureAlgorithm.HmacSha256,
                     Subject = "Alice"
                 }

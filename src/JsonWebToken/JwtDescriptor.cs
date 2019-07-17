@@ -43,7 +43,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the <see cref="Jwt"/> used.
         /// </summary>
-        public Jwk Key
+        protected Jwk Key
         {
             get => _key ?? Jwk.Empty;
             set

@@ -13,7 +13,7 @@ namespace PlaintextJwtCreationSample
             // Creates a JWE descriptor with all its properties
             var descriptor = new PlaintextJweDescriptor()
             {
-                Key = encryptionKey,
+                EncryptionKey = encryptionKey,
                 EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
                 Algorithm = KeyManagementAlgorithm.Aes128KW,
                 Payload = "Life long and prosper.hello.world"
