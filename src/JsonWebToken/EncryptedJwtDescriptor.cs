@@ -73,6 +73,15 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Gets the <see cref="Jwt"/> used.
+        /// </summary>
+        public Jwk EncryptionKey
+        {
+            get => Key;
+            set => Key = value;
+        }
+
+        /// <summary>
         /// Encrypt the token.
         /// </summary>
         protected void EncryptToken(EncodingContext context, ReadOnlySpan<byte> payload, IBufferWriter<byte> output)

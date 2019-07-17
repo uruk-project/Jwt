@@ -16,12 +16,12 @@ namespace JweCreationSample
             // Creates a JWE descriptor with all its properties
             var descriptor = new JweDescriptor<JwsDescriptor>()
             {
-                Key = encryptionKey,
+                EncryptionKey = encryptionKey,
                 EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
                 Algorithm = KeyManagementAlgorithm.Aes128KW,
                 Payload = new JwsDescriptor
                 {
-                    Key = signatureKey,
+                    SigningKey = signatureKey,
                     Algorithm = SignatureAlgorithm.HmacSha256,
                     IssuedAt = DateTime.UtcNow,
                     ExpirationTime = DateTime.UtcNow.AddHours(1),

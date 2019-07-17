@@ -13,7 +13,7 @@ namespace JwsCreationSample
             // Creates a JWS descriptor with all its properties
             var descriptor = new JwsDescriptor()
             {
-                Key = key,
+                SigningKey = key,
                 IssuedAt = DateTime.UtcNow,
                 ExpirationTime = DateTime.UtcNow.AddHours(1),
                 Issuer = "https://idp.example.com/",

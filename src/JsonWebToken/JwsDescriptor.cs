@@ -58,6 +58,15 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Gets the <see cref="Jwt"/> used.
+        /// </summary>
+        public Jwk SigningKey
+        {
+            get => Key;
+            set => Key = value;
+        }
+
+        /// <summary>
         /// Gets or sets the value of the 'sub' claim.
         /// </summary>
         public string Subject

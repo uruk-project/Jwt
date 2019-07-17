@@ -333,7 +333,7 @@ namespace JsonWebToken
             var jws = new JwsDescriptor(_header, _jsonPayload);
             if (_signingKey != null)
             {
-                jws.Key = _signingKey;
+                jws.SigningKey = _signingKey;
             }
             else if (!_noSignature)
             {
@@ -349,7 +349,7 @@ namespace JsonWebToken
             {
                 var jwe = new BinaryJweDescriptor(_header, _binaryPayload)
                 {
-                    Key = _encryptionKey
+                    EncryptionKey = _encryptionKey
                 };
                 return jwe;
             }
@@ -357,7 +357,7 @@ namespace JsonWebToken
             {
                 var jwe = new PlaintextJweDescriptor(_header, _textPayload)
                 {
-                    Key = _encryptionKey
+                    EncryptionKey = _encryptionKey
                 };
                 return jwe;
             }
@@ -366,7 +366,7 @@ namespace JsonWebToken
                 var jws = new JwsDescriptor(new JwtObject(3), _jsonPayload);
                 if (_signingKey != null)
                 {
-                    jws.Key = _signingKey;
+                    jws.SigningKey = _signingKey;
                 }
                 else if (!_noSignature)
                 {
@@ -375,7 +375,7 @@ namespace JsonWebToken
 
                 var jwe = new JweDescriptor(_header, jws)
                 {
-                    Key = _encryptionKey
+                    EncryptionKey = _encryptionKey
                 };
 
                 return jwe;

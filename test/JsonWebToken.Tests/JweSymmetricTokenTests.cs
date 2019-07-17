@@ -30,7 +30,7 @@ namespace JsonWebToken.Tests
                 Algorithm = KeyManagementAlgorithm.Direct,
                 Payload = new JwsDescriptor
                 {
-                    Key = _signingKey,
+                    SigningKey = _signingKey,
                     Algorithm = SignatureAlgorithm.HmacSha256,
                     Subject = "Alice"
                 }
@@ -51,12 +51,12 @@ namespace JsonWebToken.Tests
 
             var descriptor = new JweDescriptor
             {
-                Key = encryptionKey,
+                EncryptionKey = encryptionKey,
                 EncryptionAlgorithm = enc,
                 Algorithm = alg,
                 Payload = new JwsDescriptor
                 {
-                    Key = _signingKey,
+                    SigningKey = _signingKey,
                     Algorithm = SignatureAlgorithm.HmacSha256,
                     Subject = "Alice"
                 }
