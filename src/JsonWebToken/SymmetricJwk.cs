@@ -135,6 +135,11 @@ namespace JsonWebToken
         public override int KeySizeInBits => _k.Length != 0 ? _k.Length << 3 : 0;
 
         /// <summary>
+        /// Gets or sets whether the key is ephemeral, and should not try to reuse internal objects.
+        /// </summary>
+        public bool Ephemeral { get; set; }
+
+        /// <summary>
         /// Creates a new <see cref="SymmetricJwk"/> from the <paramref name="bytes"/>.
         /// </summary>
         /// <param name="bytes"></param>

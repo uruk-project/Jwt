@@ -38,7 +38,7 @@ namespace JsonWebToken.Internal
             var aesKey = keyBytes.Slice(keyLength).ToArray();
             var hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
 
-            _aesPool = new ObjectPool<Aes>(new AesPooledPolicy(aesKey));
+            _aesPool = key.Ephemeral ? new ObjectPool<Aes>(new AesPooledPolicy(aesKey), 1) : new ObjectPool<Aes>(new AesPooledPolicy(aesKey));
             _signer = hmacKey.CreateSigner(encryptionAlgorithm.SignatureAlgorithm) as SymmetricSigner;
             if (_signer == null)
             {
