@@ -19,7 +19,7 @@ namespace JsonWebToken
     public sealed class Jwks : IDisposable
     {
         private Jwk[] _unidentifiedKeys;
-        private Dictionary<string, List<Jwk>> _identifiedKeys;
+        private Dictionary<string, Jwk[]> _identifiedKeys;
 
         /// <summary>
         /// Initializes an new instance of <see cref="Jwks"/>.
@@ -174,7 +174,7 @@ namespace JsonWebToken
             }
         }
 
-        private Dictionary<string, List<Jwk>> IdentifiedKeys
+        private Dictionary<string, Jwk[]> IdentifiedKeys
         {
             get
             {
@@ -183,7 +183,7 @@ namespace JsonWebToken
                     _identifiedKeys = Keys
                                         .Where(jwk => jwk.Kid != null)
                                         .GroupBy(k => k.Kid)
-                                        .ToDictionary(k => k.Key, k => k.Concat(UnidentifiedKeys).ToList());
+                                        .ToDictionary(k => k.Key, k => k.Concat(UnidentifiedKeys).ToArray());
                 }
 
                 return _identifiedKeys;
