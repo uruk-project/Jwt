@@ -10,7 +10,7 @@ namespace JsonWebToken.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Jwk CreateSymmetricKey(EncryptionAlgorithm encryptionAlgorithm, Jwk staticKey)
         {
-            return staticKey ?? SymmetricJwk.GenerateKey(encryptionAlgorithm.RequiredKeySizeInBytes << 3);
+            return staticKey ?? SymmetricJwk.GenerateKey(encryptionAlgorithm.RequiredKeySizeInBits);
         }
     }
 }

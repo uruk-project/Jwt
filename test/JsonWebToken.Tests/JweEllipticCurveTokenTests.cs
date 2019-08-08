@@ -48,13 +48,13 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetSupportedAlgorithm()
         {
-            yield return new object[] { (string)EncryptionAlgorithm.Aes128CbcHmacSha256.Name, (byte[])KeyManagementAlgorithm.EcdhEs };
-            yield return new object[] { (string)EncryptionAlgorithm.Aes192CbcHmacSha384.Name, (byte[])KeyManagementAlgorithm.EcdhEs };
-            yield return new object[] { (string)EncryptionAlgorithm.Aes256CbcHmacSha512.Name, (byte[])KeyManagementAlgorithm.EcdhEs };
+            yield return new object[] { (string)EncryptionAlgorithm.Aes128CbcHmacSha256, (byte[])KeyManagementAlgorithm.EcdhEs };
+            yield return new object[] { (string)EncryptionAlgorithm.Aes192CbcHmacSha384, (byte[])KeyManagementAlgorithm.EcdhEs };
+            yield return new object[] { (string)EncryptionAlgorithm.Aes256CbcHmacSha512, (byte[])KeyManagementAlgorithm.EcdhEs };
 #if NETCOREAPP3_0
-            yield return new object[] { (string)EncryptionAlgorithm.Aes128CbcHmacSha256.Name, (byte[])KeyManagementAlgorithm.EcdhEsAes128KW };
-            yield return new object[] { (string)EncryptionAlgorithm.Aes128CbcHmacSha256.Name, (byte[])KeyManagementAlgorithm.EcdhEsAes192KW };
-            yield return new object[] { (string)EncryptionAlgorithm.Aes128CbcHmacSha256.Name, (byte[])KeyManagementAlgorithm.EcdhEsAes256KW };
+            yield return new object[] { (string)EncryptionAlgorithm.Aes128CbcHmacSha256, (byte[])KeyManagementAlgorithm.EcdhEsAes128KW };
+            yield return new object[] { (string)EncryptionAlgorithm.Aes128CbcHmacSha256, (byte[])KeyManagementAlgorithm.EcdhEsAes192KW };
+            yield return new object[] { (string)EncryptionAlgorithm.Aes128CbcHmacSha256, (byte[])KeyManagementAlgorithm.EcdhEsAes256KW };
 #endif
             yield break;
         }

@@ -24,7 +24,7 @@ namespace JsonWebToken.Internal
             }
 
             _key = key;
-            if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBytes << 3)
+            if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBits)
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
             }

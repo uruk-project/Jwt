@@ -216,11 +216,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override bool IsSupported(EncryptionAlgorithm algorithm)
         {
-#if NETCOREAPP3_0
             return algorithm.Category == EncryptionType.AesHmac || algorithm.Category == EncryptionType.AesGcm;
-#else
-            return algorithm.Category == EncryptionType.AesHmac;
-#endif
         }
 
         /// <inheritdoc />
@@ -236,12 +232,10 @@ namespace JsonWebToken
             {
                 return new AesKeyWrapper(this, encryptionAlgorithm, algorithm);
             }
-#if NETCOREAPP3_0
             else if (algorithm.Category == AlgorithmCategory.AesGcm)
             {
                 return new AesGcmKeyWrapper(this, encryptionAlgorithm, algorithm);
             }
-#endif
             else if (!algorithm.ProduceEncryptionKey)
             {
                 return new DirectKeyWrapper(this, encryptionAlgorithm, algorithm);
@@ -255,14 +249,19 @@ namespace JsonWebToken
         {
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
-                return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+                if (KeySizeInBits >= encryptionAlgorithm.RequiredKeySizeInBits)
+                {
+                    return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+                }
             }
-#if NETCOREAPP3_0
             else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
             {
-                return new AesGcmEncryptor(this, encryptionAlgorithm);
+                if (KeySizeInBits >= encryptionAlgorithm.RequiredKeySizeInBits)
+                {
+                    return new AesGcmEncryptor(this, encryptionAlgorithm);
+                }
             }
-#endif
+
             return null;
         }
 

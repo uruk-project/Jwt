@@ -6,7 +6,6 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
 {
-
     internal sealed class AesGcmKeyWrapper : KeyWrapper
     {
         private const int IVSize = 12;
@@ -30,10 +29,9 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override int GetKeyWrapSize()
-        {
-            return Key.KeySizeInBits >> 3;
-        }
+        public override int GetKeyWrapSize() => GetKeyWrapSize(EncryptionAlgorithm);
+
+        public static int GetKeyWrapSize(EncryptionAlgorithm encryptionAlgorithm) => encryptionAlgorithm.RequiredKeySizeInBytes;
 
         /// <inheritsdoc />
         public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
@@ -64,35 +62,27 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override bool TryWrapKey(Jwk staticKey, JwtObject header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override void WrapKey(Jwk staticKey, JwtObject header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
             {
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
+            var cek = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
             Span<byte> nonce = stackalloc byte[IVSize];
             Span<byte> tag = stackalloc byte[TagSize];
 
-            try
+            using (var aesGcm = new AesGcm(Key.AsSpan()))
             {
-                using (var aesGcm = new AesGcm(Key.AsSpan()))
-                {
-                    aesGcm.Encrypt(nonce, contentEncryptionKey.AsSpan(), destination, tag);
-                    bytesWritten = destination.Length;
+                aesGcm.Encrypt(nonce, cek.AsSpan(), destination, tag);
 
-                    header.Add(new JwtProperty(HeaderParameters.IVUtf8, Base64Url.Encode(nonce)));
-                    header.Add(new JwtProperty(HeaderParameters.TagUtf8, Base64Url.Encode(tag)));
+                header.Add(new JwtProperty(HeaderParameters.IVUtf8, Base64Url.Encode(nonce)));
+                header.Add(new JwtProperty(HeaderParameters.TagUtf8, Base64Url.Encode(tag)));
+            }
 
-                    return true;
-                }
-            }
-            catch
-            {
-                contentEncryptionKey = null;
-                return ThrowHelper.TryWriteError(out bytesWritten);
-            }
+            bytesWritten = destination.Length;
+            contentEncryptionKey = cek;
         }
 
         /// <inheritsdoc />

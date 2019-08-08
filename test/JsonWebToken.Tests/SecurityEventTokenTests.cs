@@ -11,8 +11,15 @@ using System.Text.Json;
 
 namespace JsonWebToken.Tests
 {
-    public class SecurityEventTokenTests
+    public class SecurityEventTokenTests : IClassFixture<KeyFixture>
     {
+        private readonly KeyFixture _keys;
+
+        public SecurityEventTokenTests(KeyFixture keys)
+        {
+            _keys = keys;
+        }
+
         [Fact(Skip = "Renable when the escaping will be fixed with https://github.com/dotnet/corefx/pull/39415.")]
         public void Write()
         {
@@ -62,7 +69,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Read()
         {
-            var reader = new JwtReader(Keys.Jwks);
+            var reader = new JwtReader(_keys.Jwks);
 
             var policy = new TokenValidationPolicyBuilder()
                                 .AcceptUnsecureToken()

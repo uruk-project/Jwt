@@ -1,5 +1,7 @@
 ﻿using JsonWebToken.Internal;
+using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -10,7 +12,7 @@ namespace JsonWebToken.Tests
         {
             var keyEncryptionKey = RsaJwk.GeneratePrivateKey(alg.RequiredKeySizeInBits);
             var wrapper = new RsaKeyWrapper(keyEncryptionKey, enc, alg);
-            var cek = TryWrapKey(wrapper, keyToWrap, out var header);
+            var cek = WrapKey(wrapper, keyToWrap, out var header);
 
             Assert.Equal(0, header.Count);
             return cek;
@@ -20,7 +22,7 @@ namespace JsonWebToken.Tests
         [MemberData(nameof(GetRsaWrappingAlgorithms))]
         public void TryWrapKey_WithStaticKey_Success(EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
-            var contentEncryptionKey = SymmetricJwk.GenerateKey(enc.RequiredKeySizeInBytes * 8);
+            var contentEncryptionKey = SymmetricJwk.GenerateKey(enc.RequiredKeySizeInBits);
             Jwk cek = TryWrapKey_Success(contentEncryptionKey, enc, alg);
             Assert.Equal(contentEncryptionKey, cek);
         }
@@ -55,13 +57,17 @@ namespace JsonWebToken.Tests
         [Fact]
         public void WrapKey_Failure()
         {
-            var keyEncryptionKey = SymmetricJwk.GenerateKey(128);
-            var wrapper = new AesKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes128KW);
+            var keyEncryptionKey = RsaJwk.GenerateKey(2048, true);
+            var wrapper = new RsaKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.RsaOaep);
             var destination = new byte[0];
             var header = new JwtObject();
-            bool wrapped = wrapper.TryWrapKey(null, header, destination, out var cek, out int bytesWritten);
 
-            Assert.False(wrapped);
+            int bytesWritten = 0;
+            Jwk cek = null;
+            Assert.Throws<CryptographicException>(() => wrapper.WrapKey(null, header, destination, out cek, out bytesWritten));
+            wrapper.Dispose();
+            Assert.Throws<ObjectDisposedException>(() => wrapper.WrapKey(null, header, destination, out cek, out bytesWritten));
+
             Assert.Equal(0, bytesWritten);
             Assert.Equal(0, header.Count);
             Assert.Null(cek);

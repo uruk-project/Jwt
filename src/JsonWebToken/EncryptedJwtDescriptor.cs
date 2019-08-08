@@ -12,7 +12,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines an encrypted JWT with a <typeparamref name="TPayload"/> payload.
     /// </summary>
-    public abstract class EncryptedJwtDescriptor<TPayload> : JwtDescriptor<TPayload> where TPayload : class
+    public abstract class EncryptedJwtDescriptor<TPayload> : JwtDescriptor<TPayload>
     {
 #if NETSTANDARD2_0
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
@@ -97,10 +97,7 @@ namespace JsonWebToken
 
             var header = Header;
             Span<byte> wrappedKey = stackalloc byte[keyWrapper.GetKeyWrapSize()];
-            if (!keyWrapper.TryWrapKey(null, header, wrappedKey, out var cek, out var keyWrappedBytesWritten))
-            {
-                ThrowHelper.ThrowCryptographicException_KeyWrapFailed();
-            }
+            keyWrapper.WrapKey(null, header, wrappedKey, out var cek, out var keyWrappedBytesWritten);
 
             AuthenticatedEncryptor encryptor = cek.CreateAuthenticatedEncryptor(encryptionAlgorithm);
             if (encryptor == null)

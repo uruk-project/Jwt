@@ -26,29 +26,28 @@ namespace JsonWebToken
         /// 'A256CBC-HS512'
         /// </summary>
         public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(id: 13, "A256CBC-HS512", requiredKeySizeInBytes: 64, SignatureAlgorithm.HmacSha512, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesHmac);
+
+        /// <summary>
+        /// 'A128GCM'
+        /// </summary>
+        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 21, "A128GCM", requiredKeySizeInBytes: 16, null, requiredKeyWrappedSizeInBytes: 24, EncryptionType.AesGcm);
+
+        /// <summary>
+        /// 'A192GCM'
+        /// </summary>
+        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 22, "A192GCM", requiredKeySizeInBytes: 24, null, requiredKeyWrappedSizeInBytes: 32, EncryptionType.AesGcm);
+
+        /// <summary>
+        /// 'A256GCM'
+        /// </summary>
+        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, "A256GCM", requiredKeySizeInBytes: 32, null, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
+
         private readonly sbyte _id;
         private readonly EncryptionType _category;
         private readonly ushort _requiredKeySizeInBytes;
         private readonly ushort _keyWrappedSizeInBytes;
         private readonly SignatureAlgorithm _signatureAlgorithm;
         private readonly byte[] _utf8Name;
-
-#if NETCOREAPP3_0
-        /// <summary>
-        /// 'A128GCM'
-        /// </summary>
-        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 21, "A128GCM", requiredKeySizeInBytes: 16, null, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
-
-        /// <summary>
-        /// 'A192GCM'
-        /// </summary>
-        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 22, "A192GCM", requiredKeySizeInBytes: 24, null, requiredKeyWrappedSizeInBytes: 56, EncryptionType.AesGcm);
-
-        /// <summary>
-        /// 'A256GCM'
-        /// </summary>
-        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, "A256GCM", requiredKeySizeInBytes: 32, null, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesGcm);
-#endif
 
         /// <summary>
         /// Gets the algorithm identifier. 
@@ -59,17 +58,22 @@ namespace JsonWebToken
         /// Gets the algorithm category.
         /// </summary>
         public EncryptionType Category => _category;
-        
+
+        /// <summary>
+        /// Gets the required key size, in bytes.
+        /// </summary>
+        public ushort RequiredKeySizeInBytes => _requiredKeySizeInBytes;
+
         /// <summary>
         /// Gets the required key size, in bits.
         /// </summary>
-        public ushort RequiredKeySizeInBytes => _requiredKeySizeInBytes;
-        
+        public int RequiredKeySizeInBits => _requiredKeySizeInBytes << 3;
+
         /// <summary>
         /// Gets the wrapped key size, in bits.
         /// </summary>
         public ushort KeyWrappedSizeInBytes => _keyWrappedSizeInBytes;
-        
+
         /// <summary>
         /// Gets the <see cref="SignatureAlgorithm"/>.
         /// </summary>
@@ -93,11 +97,9 @@ namespace JsonWebToken
             { Aes128CbcHmacSha256.Name, Aes128CbcHmacSha256 },
             { Aes192CbcHmacSha384.Name, Aes192CbcHmacSha384 },
             { Aes256CbcHmacSha512.Name, Aes256CbcHmacSha512 },
-#if NETCOREAPP3_0
             { Aes128Gcm.Name, Aes128Gcm },
             { Aes192Gcm.Name, Aes192Gcm },
             { Aes256Gcm.Name, Aes256Gcm },
-#endif
         };
 
         /// <summary>
@@ -112,7 +114,7 @@ namespace JsonWebToken
         public EncryptionAlgorithm(sbyte id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm hashAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionType category)
         {
             _id = id;
-            _utf8Name= Encoding.UTF8.GetBytes(name);
+            _utf8Name = Encoding.UTF8.GetBytes(name);
             _requiredKeySizeInBytes = requiredKeySizeInBytes;
             _signatureAlgorithm = hashAlgorithm;
             _keyWrappedSizeInBytes = requiredKeyWrappedSizeInBytes;
@@ -150,7 +152,6 @@ namespace JsonWebToken
                             return true;
                     }
                 }
-#if NETCOREAPP3_0
                 else if (value.Length == 7)
                 {
                     switch (*(uint*)pValue)
@@ -166,7 +167,6 @@ namespace JsonWebToken
                             return true;
                     }
                 }
-#endif
 
                 algorithm = null;
                 return false;

@@ -15,6 +15,7 @@ namespace JsonWebToken.Internal
     /// </summary>
     internal sealed class AesCbcHmacEncryptor : AuthenticatedEncryptor
     {
+        private readonly SymmetricJwk _hmacKey;
         private readonly SymmetricSigner _signer;
         private readonly ObjectPool<Aes> _aesPool;
         private bool _disposed;
@@ -27,19 +28,19 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
             }
 
-            if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBytes << 3)
+            if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBits)
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
             }
 
-            int keyLength = encryptionAlgorithm.RequiredKeySizeInBytes >> 1;
+            int keyLength = encryptionAlgorithm.RequiredKeySizeInBits >> 4;
 
             var keyBytes = key.K;
             var aesKey = keyBytes.Slice(keyLength).ToArray();
-            var hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
+            _hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
 
             _aesPool = key.Ephemeral ? new ObjectPool<Aes>(new AesPooledPolicy(aesKey), 1) : new ObjectPool<Aes>(new AesPooledPolicy(aesKey));
-            _signer = hmacKey.CreateSigner(encryptionAlgorithm.SignatureAlgorithm) as SymmetricSigner;
+            _signer = _hmacKey.CreateSigner(encryptionAlgorithm.SignatureAlgorithm) as SymmetricSigner;
             if (_signer == null)
             {
                 ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
@@ -217,7 +218,7 @@ namespace JsonWebToken.Internal
         {
             if (!_disposed)
             {
-                _signer.Dispose();
+                _hmacKey.Dispose();
                 _aesPool.Dispose();
 
                 _disposed = true;

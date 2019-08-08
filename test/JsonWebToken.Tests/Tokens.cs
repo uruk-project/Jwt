@@ -8,24 +8,21 @@ using System.Text;
 
 namespace JsonWebToken.Tests
 {
-    public static class Tokens
+    public class TokenFixture : IDisposable
     {
-        public static IDictionary<string, string> ValidTokens { get; }
-        public static IDictionary<string, byte[]> ValidBinaryTokens { get; }
-        public static IEnumerable<TokenState> InvalidTokens { get; }
+        private readonly KeyFixture _keyFixture;
 
-        public static SymmetricJwk SigningKey { get; }
+        public IDictionary<string, string> ValidTokens { get; }
+        public IDictionary<string, byte[]> ValidBinaryTokens { get; }
+        public IEnumerable<TokenState> InvalidTokens { get; }
+        public IDictionary<string, JObject> Payloads { get; }
+        public IDictionary<string, JwtDescriptor> Descriptors { get; }
 
-        public static SymmetricJwk EncryptionKey { get; }
-
-        public static IDictionary<string, JObject> Payloads { get; }
-
-        public static IDictionary<string, JwtDescriptor> Descriptors { get; }
-
-        static Tokens()
+        public TokenFixture()
         {
-            var signingKey = CreateSigningKey();
-            var encryptionKey = CreateEncryptionKey();
+            _keyFixture = new KeyFixture();
+            var signingKey = _keyFixture.SigningKey;
+            var encryptionKey = _keyFixture.EncryptionKey;
             var payloads = CreatePayloads();
             var descriptors = CreateDescriptors(payloads, signingKey, encryptionKey);
             Descriptors = descriptors;
@@ -33,8 +30,6 @@ namespace JsonWebToken.Tests
             ValidBinaryTokens = CreateBinaryTokens(ValidTokens);
             InvalidTokens = CreateInvalidToken(signingKey, payloads["small"]);
             Payloads = payloads;
-            SigningKey = signingKey;
-            EncryptionKey = encryptionKey;
         }
 
         private static IDictionary<string, byte[]> CreateBinaryTokens(IDictionary<string, string> validTokens)
@@ -46,16 +41,6 @@ namespace JsonWebToken.Tests
             }
 
             return result;
-        }
-
-        private static SymmetricJwk CreateSigningKey()
-        {
-            return SymmetricJwk.GenerateKey(128, SignatureAlgorithm.HmacSha256);
-        }
-
-        private static SymmetricJwk CreateEncryptionKey()
-        {
-            return SymmetricJwk.GenerateKey(128, KeyManagementAlgorithm.Aes128KW);
         }
 
         private static IDictionary<string, JObject> CreatePayloads()
@@ -160,7 +145,7 @@ namespace JsonWebToken.Tests
                 var descriptor = new JwsDescriptor()
                 {
                     SigningKey = signingKey,
-                    Algorithm = (SignatureAlgorithm)signingKey.Alg
+                    Algorithm = signingKey.SignatureAlgorithm
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -186,7 +171,7 @@ namespace JsonWebToken.Tests
                 var descriptor = new JwsDescriptor()
                 {
                     SigningKey = signingKey,
-                    Algorithm = (SignatureAlgorithm)signingKey.Alg
+                    Algorithm = signingKey.SignatureAlgorithm
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -221,7 +206,7 @@ namespace JsonWebToken.Tests
                 var descriptor = new JwsDescriptor()
                 {
                     SigningKey = signingKey,
-                    Algorithm = (SignatureAlgorithm)signingKey.Alg
+                    Algorithm = signingKey.SignatureAlgorithm
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -377,7 +362,7 @@ namespace JsonWebToken.Tests
             return new JwsDescriptor(new JwtObject(), ToJwtObject(payload));
         }
 
-        private static TokenState CreateInvalidToken(TokenValidationStatus status, JwtDescriptor descriptor, string claim = null)
+        private static TokenState CreateInvalidToken(TokenValidationStatus status, JwtDescriptor descriptor)
         {
             switch (status)
             {
@@ -391,7 +376,7 @@ namespace JsonWebToken.Tests
 
             var token = descriptor;
             var writer = new JwtWriter();
-            writer.IgnoreTokenValidation = true;
+            //writer.IgnoreTokenValidation = true;
             var jwt = writer.WriteTokenString(token);
 
             switch (status)
@@ -421,16 +406,7 @@ namespace JsonWebToken.Tests
         private static TokenState CreateInvalidToken(Jwk signingKey, TokenValidationStatus status, JwsDescriptor descriptor, string claim = null)
         {
             descriptor.SigningKey = signingKey;
-            descriptor.Algorithm = (SignatureAlgorithm)signingKey.Alg;
-
-            return CreateInvalidToken(status, descriptor);
-        }
-
-        private static TokenState CreateInvalidToken(Jwk signingKey, Jwk encryptionKey, TokenValidationStatus status, JweDescriptor descriptor, string claim = null)
-        {
-            descriptor.Payload.SigningKey = SigningKey;
-            descriptor.EncryptionKey = encryptionKey;
-            descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
+            descriptor.Algorithm = signingKey.SignatureAlgorithm;
 
             return CreateInvalidToken(status, descriptor);
         }
@@ -509,6 +485,11 @@ namespace JsonWebToken.Tests
             }
 
             return new JwtArray(list);
+        }
+
+        public void Dispose()
+        {
+            _keyFixture.Dispose();
         }
     }
 
