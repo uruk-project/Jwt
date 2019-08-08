@@ -77,7 +77,6 @@ namespace JsonWebToken.Internal
 
             return true;
 #endif
-
             }
             catch (CryptographicException)
             {

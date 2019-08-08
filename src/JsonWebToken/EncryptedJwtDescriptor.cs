@@ -216,14 +216,5 @@ namespace JsonWebToken
                 Algorithm = (KeyManagementAlgorithm)key.Alg;
             }
         }
-
-        /// <inheritsdoc />
-        public override void Validate()
-        {
-            //if (Algorithm.)
-            {
-
-            }
-        }
     }
 }
