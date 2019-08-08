@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -11,8 +12,17 @@ using Xunit;
 
 namespace JsonWebToken.Tests
 {
-    public class JsonWebTokenReaderTests
+    public class JsonWebTokenReaderTests : IClassFixture<KeyFixture>, IClassFixture<TokenFixture>
     {
+        private readonly KeyFixture _keys;
+        private readonly TokenFixture _tokens;
+
+        public JsonWebTokenReaderTests(KeyFixture keys, TokenFixture tokens)
+        {
+            _keys = keys;
+            _tokens = tokens;
+        }
+
         private class TokenSegment<T> : ReadOnlySequenceSegment<T>
         {
             public TokenSegment(ReadOnlyMemory<T> memory) => Memory = memory;
@@ -28,10 +38,10 @@ namespace JsonWebToken.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetValidTokens))]
+        [ClassData(typeof(ValidTokenTestData))]
         public void ReadJwt_ValidMultipleSequence(string token, bool signed)
         {
-            var jwt = Tokens.ValidTokens[token];
+            var jwt = _tokens.ValidTokens[token];
             var utf8Jwt = Encoding.UTF8.GetBytes(jwt);
 
             TokenSegment<byte> firstSegment = new TokenSegment<byte>(utf8Jwt.AsMemory(0, 10));
@@ -39,14 +49,14 @@ namespace JsonWebToken.Tests
             var thirdSegment = secondSegment.Add(utf8Jwt.AsMemory(20));
             ReadOnlySequence<byte> sequence = new ReadOnlySequence<byte>(firstSegment, 0, thirdSegment, thirdSegment.Memory.Length);
 
-            var reader = new JwtReader(Keys.Jwks);
+            var reader = new JwtReader(_keys.Jwks);
             var builder = new TokenValidationPolicyBuilder()
                     .AddLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
                     .RequireIssuer("https://idp.example.com/");
             if (signed)
             {
-                builder.RequireSignature(Keys.Jwks);
+                builder.RequireSignature(_keys.Jwks);
             }
             else
             {
@@ -58,22 +68,22 @@ namespace JsonWebToken.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetValidTokens))]
+        [ClassData(typeof(ValidTokenTestData))]
         public void ReadJwt_ValidSingleSequence(string token, bool signed)
         {
-            var jwt = Tokens.ValidTokens[token];
+            var jwt = _tokens.ValidTokens[token];
             var utf8Jwt = Encoding.UTF8.GetBytes(jwt);
 
             ReadOnlySequence<byte> sequence = new ReadOnlySequence<byte>(utf8Jwt);
 
-            var reader = new JwtReader(Keys.Jwks);
+            var reader = new JwtReader(_keys.Jwks);
             var builder = new TokenValidationPolicyBuilder()
                     .AddLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
                     .RequireIssuer("https://idp.example.com/");
             if (signed)
             {
-                builder.RequireSignature(Keys.Jwks);
+                builder.RequireSignature(_keys.Jwks);
             }
             else
             {
@@ -85,18 +95,18 @@ namespace JsonWebToken.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetValidTokens))]
+        [ClassData(typeof(ValidTokenTestData))]
         public void ReadJwt_Valid(string token, bool signed)
         {
-            var jwt = Tokens.ValidTokens[token];
-            var reader = new JwtReader(Keys.Jwks);
+            var jwt = _tokens.ValidTokens[token];
+            var reader = new JwtReader(_keys.Jwks);
             var builder = new TokenValidationPolicyBuilder()
                     .AddLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
                     .RequireIssuer("https://idp.example.com/");
             if (signed)
             {
-                builder.RequireSignature(Keys.Jwks);
+                builder.RequireSignature(_keys.Jwks);
             }
             else
             {
@@ -108,18 +118,19 @@ namespace JsonWebToken.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetInvalidTokens))]
+        [ClassData(typeof(InvalidTokenTestData))]
         public void ReadJwt_Invalid(string jwt, TokenValidationStatus expectedStatus)
         {
-            var reader = new JwtReader(Keys.Jwks);
+            var reader = new JwtReader(_keys.Jwks);
             var policy = new TokenValidationPolicyBuilder()
-                    .RequireSignature(Keys.Jwks)
+                    .RequireSignature(_keys.SigningKey)
                     .AddLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
                     .RequireIssuer("https://idp.example.com/")
                     .Build();
 
             var result = reader.TryReadToken(jwt, policy);
+
             Assert.Equal(expectedStatus, result.Status);
         }
 
@@ -130,7 +141,7 @@ namespace JsonWebToken.Tests
             {
                 Sender = BackchannelRequestToken
             };
-            var reader = new JwtReader(Keys.Jwks);
+            var reader = new JwtReader(_keys.Jwks);
             var policy = new TokenValidationPolicyBuilder()
                     .RequireSignature("https://demo.identityserver.io/.well-known/openid-configuration/jwks", handler: httpHandler)
                     .Build();
@@ -151,7 +162,7 @@ namespace JsonWebToken.Tests
         [InlineData("")]
         public void ReadJwt_Malformed(string jwt)
         {
-            var reader = new JwtReader(Keys.Jwks);
+            var reader = new JwtReader(_keys.Jwks);
             var policy = new TokenValidationPolicyBuilder()
                     .AcceptUnsecureToken()
                     .Build();
@@ -180,22 +191,6 @@ namespace JsonWebToken.Tests
             Assert.Equal(expected, result.Status);
         }
 
-        public static IEnumerable<object[]> GetValidTokens()
-        {
-            foreach (var item in Tokens.ValidTokens.Where(t => !t.Key.EndsWith("empty")))
-            {
-                yield return new object[] { item.Key, !item.Key.StartsWith("JWT") };
-            }
-        }
-
-        public static IEnumerable<object[]> GetInvalidTokens()
-        {
-            foreach (var item in Tokens.InvalidTokens)
-            {
-                yield return new object[] { item.Jwt, item.Status };
-            }
-        }
-
         private HttpResponseMessage BackchannelRequestToken(HttpRequestMessage req)
         {
             if (req.RequestUri.AbsoluteUri == "https://demo.identityserver.io/.well-known/openid-configuration/jwks")
@@ -209,6 +204,46 @@ namespace JsonWebToken.Tests
             }
             throw new NotImplementedException(req.RequestUri.AbsoluteUri);
         }
+    }
+
+    public class ValidTokenTestData : IEnumerable<object[]>
+    {
+        private readonly TokenFixture _tokens;
+
+        public ValidTokenTestData()
+        {
+            _tokens = new TokenFixture();
+        }
+
+        public IEnumerator<object[]> GetEnumerator()
+        {
+            foreach (var item in _tokens.ValidTokens.Where(t => !t.Key.EndsWith("empty")))
+            {
+                yield return new object[] { item.Key, !item.Key.StartsWith("JWT") };
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    public class InvalidTokenTestData : IEnumerable<object[]>
+    {
+        private readonly TokenFixture _tokens;
+
+        public InvalidTokenTestData()
+        {
+            _tokens = new TokenFixture();
+        }
+
+        public IEnumerator<object[]> GetEnumerator()
+        {
+            foreach (var item in _tokens.InvalidTokens)
+            {
+                yield return new object[] { item.Jwt, item.Status };
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     public class TestHttpMessageHandler : HttpMessageHandler

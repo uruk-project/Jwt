@@ -763,7 +763,6 @@ namespace JsonWebToken
                         var rsaParameters = rsa.ExportParameters(false);
                         key = new RsaJwk(rsaParameters);
                     }
-#if !NETSTANDARD2_0
                     else
                     {
                         using (var ecdsa = certificate.GetECDsaPrivateKey())
@@ -775,7 +774,6 @@ namespace JsonWebToken
                             }
                         }
                     }
-#endif
                 }
             }
             else
@@ -787,7 +785,6 @@ namespace JsonWebToken
                         var rsaParameters = rsa.ExportParameters(false);
                         key = new RsaJwk(rsaParameters);
                     }
-#if !NETSTANDARD2_0
                     else
                     {
                         using (var ecdsa = certificate.GetECDsaPublicKey())
@@ -799,7 +796,6 @@ namespace JsonWebToken
                             }
                         }
                     }
-#endif
                 }
             }
 
@@ -1056,26 +1052,17 @@ namespace JsonWebToken
         {
             if (_signers != null)
             {
-                for (int i = 0; i < _signers.Count; i++)
-                {
-                    _signers[i].Dispose();
-                }
+                _signers.Dispose();
             }
 
             if (_keyWrappers != null)
             {
-                for (int i = 0; i < _keyWrappers.Count; i++)
-                {
-                    _keyWrappers[i].Dispose();
-                }
+                _keyWrappers.Dispose();
             }
 
             if (_encryptors != null)
             {
-                for (int i = 0; i < _encryptors.Count; i++)
-                {
-                    _encryptors[i].Dispose();
-                }
+                _encryptors.Dispose();
             }
         }
 

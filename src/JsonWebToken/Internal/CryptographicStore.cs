@@ -11,7 +11,7 @@ namespace JsonWebToken.Internal
     /// It is a specialized implementation of the <see cref="System.Collections.Generic.Dictionary{TKey, TValue}"/>.
     /// </summary>
     /// <typeparam name="TValue"></typeparam>
-    public sealed class CryptographicStore<TValue>
+    public sealed class CryptographicStore<TValue> : IDisposable where TValue : IDisposable
     {
         private const int HashCollisionThreshold = 100;
         private const int StartOfFreeList = -3;
@@ -288,6 +288,16 @@ namespace JsonWebToken.Internal
 
             _buckets = buckets;
             _entries = entries;
+        }
+
+        /// <inheritsdoc />
+        public void Dispose()
+        {
+            var entries = _entries;
+            for (int i = 0; i < _count; i++)
+            {
+                entries[i].value?.Dispose();
+            }
         }
 
         private const int MaxPrimeArrayLength = 0x7FEFFFFD;

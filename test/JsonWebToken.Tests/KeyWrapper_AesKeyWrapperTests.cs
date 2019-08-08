@@ -1,4 +1,5 @@
 ﻿using JsonWebToken.Internal;
+using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -10,7 +11,7 @@ namespace JsonWebToken.Tests
         {
             var keyEncryptionKey = SymmetricJwk.GenerateKey(alg.RequiredKeySizeInBits);
             var wrapper = new AesKeyWrapper(keyEncryptionKey, enc, alg);
-            var cek = TryWrapKey(wrapper, keyToWrap, out var header);
+            var cek = WrapKey(wrapper, keyToWrap, out var header);
 
             Assert.Equal(0, header.Count);
             return cek;
@@ -20,7 +21,7 @@ namespace JsonWebToken.Tests
         [MemberData(nameof(GetAesWrappingAlgorithms))]
         public void TryWrapKey_WithStaticKey_Success(EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
-            var contentEncryptionKey = SymmetricJwk.GenerateKey(enc.RequiredKeySizeInBytes * 8);
+            var contentEncryptionKey = SymmetricJwk.GenerateKey(enc.RequiredKeySizeInBits);
             Jwk cek = TryWrapKey_Success(contentEncryptionKey, enc, alg);
             Assert.Equal(contentEncryptionKey, cek);
         }
@@ -54,9 +55,10 @@ namespace JsonWebToken.Tests
             var wrapper = new AesKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes128KW);
             var destination = new byte[0];
             var header = new JwtObject();
-            bool wrapped = wrapper.TryWrapKey(null, header, destination, out var cek, out int bytesWritten);
+            Jwk cek = null;
+            int bytesWritten = 0;
+            Assert.Throws<ArgumentException>(() => wrapper.WrapKey(null, header, destination, out cek, out bytesWritten));
 
-            Assert.False(wrapped);
             Assert.Equal(0, bytesWritten);
             Assert.Equal(0, header.Count);
             Assert.Null(cek);

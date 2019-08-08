@@ -181,28 +181,24 @@ namespace JsonWebToken.Internal
         /// <param name="destination"></param>
         /// <param name="contentEncryptionKey"></param>
         /// <param name="bytesWritten"></param>
-        /// <returns>A wrapped key</returns>
-        public override bool TryWrapKey(Jwk staticKey, JwtObject header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override void WrapKey(Jwk staticKey, JwtObject header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
             {
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
+            if (destination.Length < GetKeyWrapSize())
+            {
+                ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, GetKeyWrapSize());
+            }
+
             contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
-            try
-            {
-                return TryWrapKeyPrivate(contentEncryptionKey.AsSpan(), destination, out bytesWritten);
-            }
-            catch (Exception)
-            {
-                contentEncryptionKey = null;
-                return ThrowHelper.TryWriteError(out bytesWritten);
-            }
+            WrapKeyPrivate(contentEncryptionKey.AsSpan(), destination, out bytesWritten);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe bool TryWrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, Span<byte> destination, out int bytesWritten)
+        private unsafe void WrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, Span<byte> destination, out int bytesWritten)
         {
             var encryptor = _encryptorPool.Get();
             try
@@ -253,7 +249,6 @@ namespace JsonWebToken.Internal
                 }
 
                 bytesWritten = (n + 1) << 3;
-                return true;
             }
             finally
             {

@@ -10,7 +10,7 @@ namespace JsonWebToken
     /// Defines an JWT with a <typeparamref name="TPayload"/> payload.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
-    public abstract class JwtDescriptor<TPayload> : JwtDescriptor where TPayload : class
+    public abstract class JwtDescriptor<TPayload> : JwtDescriptor
     {
         /// <summary>
         /// Initializes a new instance of <see cref="JwtDescriptor{TPayload}"/>.

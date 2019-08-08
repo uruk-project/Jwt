@@ -66,6 +66,8 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
+            try
+            {
 #if !NETSTANDARD2_0
             return _rsa.TryDecrypt(key, destination, _padding, out bytesWritten);
 #else
@@ -75,33 +77,44 @@ namespace JsonWebToken.Internal
 
             return true;
 #endif
+
+            }
+            catch (CryptographicException)
+            {
+                bytesWritten = 0;
+                return false;
+            }
         }
 
         /// <inheritsdoc />
-        public override bool TryWrapKey(Jwk staticKey, JwtObject header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override void WrapKey(Jwk staticKey, JwtObject header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
         {
             if (_disposed)
             {
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
+            var cek = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
 #if !NETSTANDARD2_0
-            return _rsa.TryEncrypt(contentEncryptionKey.AsSpan(), destination, _padding, out bytesWritten);
+            if (!_rsa.TryEncrypt(cek.AsSpan(), destination, _padding, out bytesWritten))
+            {
+                ThrowHelper.ThrowCryptographicException_KeyWrapFailed();
+            }
 #else
-            var result = _rsa.Encrypt(contentEncryptionKey.AsSpan().ToArray(), _padding);
+            var result = _rsa.Encrypt(cek.AsSpan().ToArray(), _padding);
             result.CopyTo(destination);
             bytesWritten = result.Length;
-            return true;
 #endif
+
+            contentEncryptionKey = cek;
         }
 
         /// <inheritsdoc />
         public override int GetKeyUnwrapSize(int wrappedKeySize)
         {
             int unwrapSize = GetKeyWrapSize();
-            return unwrapSize > EncryptionAlgorithm.RequiredKeySizeInBytes 
-                ? Key.KeySizeInBits >> 3 
+            return unwrapSize > EncryptionAlgorithm.RequiredKeySizeInBytes
+                ? Key.KeySizeInBits >> 3
                 : EncryptionAlgorithm.RequiredKeySizeInBytes;
         }
 

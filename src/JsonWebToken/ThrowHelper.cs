@@ -243,6 +243,10 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentException_InvalidRsaKey(Jwk key) => new ArgumentException($"Invalid RSA key: '{key.Kid}'. Both modulus (N) and exponent (E) must be present.", nameof(key));
 
+        internal static void ThrowArgumentException_DestinationTooSmall(int size, int requiredSize) => throw CreateArgumentException_DestinationTooSmall(size, requiredSize);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateArgumentException_DestinationTooSmall(int size, int requiredSize) => new ArgumentException($"destination is too small. Required: {requiredSize}. Current: {size}.", "destination");
+
         internal static void ThrowArgumentException_StaticKeyNotSupported() => throw CreateArgumentException_StaticKeyNotSupported();
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentException_StaticKeyNotSupported() => new ArgumentException("DIrect encryption does not support the use of static key.", "staticKey");

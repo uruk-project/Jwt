@@ -1,4 +1,5 @@
 ﻿using JsonWebToken.Internal;
+using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -10,7 +11,7 @@ namespace JsonWebToken.Tests
         {
             var keyEncryptionKey = ECJwk.GeneratePrivateKey(EllipticalCurve.P256);
             var wrapper = new EcdhKeyWrapper(keyEncryptionKey, enc, alg);
-            var cek = TryWrapKey(wrapper, keyToWrap, out var header);
+            var cek = WrapKey(wrapper, keyToWrap, out var header);
 
             Assert.Equal(1, header.Count);
             Assert.True(header.ContainsKey("epk"));
@@ -30,17 +31,17 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetEcdhWrappingAlgorithms()
         {
-            foreach (var enc in new[] {
-                EncryptionAlgorithm.Aes128CbcHmacSha256,
-                EncryptionAlgorithm.Aes192CbcHmacSha384,
-                EncryptionAlgorithm.Aes256CbcHmacSha512
-            })
-            {
-                yield return new object[] { enc, KeyManagementAlgorithm.EcdhEs };
-                yield return new object[] { enc, KeyManagementAlgorithm.EcdhEsAes128KW };
-                yield return new object[] { enc, KeyManagementAlgorithm.EcdhEsAes192KW };
-                yield return new object[] { enc, KeyManagementAlgorithm.EcdhEsAes256KW };
-            }
+            //foreach (var enc in new[] {
+            //    EncryptionAlgorithm.Aes128CbcHmacSha256,
+            //    EncryptionAlgorithm.Aes192CbcHmacSha384,
+            //    EncryptionAlgorithm.Aes256CbcHmacSha512
+            //})
+            //{
+            //    yield return new object[] { enc, KeyManagementAlgorithm.EcdhEs };
+            //    yield return new object[] { enc, KeyManagementAlgorithm.EcdhEsAes128KW };
+            //    yield return new object[] { enc, KeyManagementAlgorithm.EcdhEsAes192KW };
+            //    yield return new object[] { enc, KeyManagementAlgorithm.EcdhEsAes256KW };
+            //}
 
             yield return new object[] { EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.EcdhEsAes128KW };
             yield return new object[] { EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.EcdhEsAes192KW };
@@ -58,13 +59,16 @@ namespace JsonWebToken.Tests
         [Fact]
         public void WrapKey_Failure()
         {
-            var keyEncryptionKey = SymmetricJwk.GenerateKey(128);
-            var wrapper = new AesKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes128KW);
+            var keyEncryptionKey = ECJwk.GenerateKey(EllipticalCurve.P256, true);
+            var wrapper = new EcdhKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs);
             var destination = new byte[0];
             var header = new JwtObject();
-            bool wrapped = wrapper.TryWrapKey(null, header, destination, out var cek, out int bytesWritten);
+            Jwk cek = null;
+            int bytesWritten = 0;
+            Assert.Throws<ArgumentNullException>(() => wrapper.WrapKey(null, null, destination, out cek, out bytesWritten));
+            wrapper.Dispose();
+            Assert.Throws<ObjectDisposedException>(() => wrapper.WrapKey(null, header, destination, out cek, out bytesWritten));
 
-            Assert.False(wrapped);
             Assert.Equal(0, bytesWritten);
             Assert.Equal(0, header.Count);
             Assert.Null(cek);

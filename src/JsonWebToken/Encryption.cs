@@ -20,7 +20,6 @@ namespace JsonWebToken
         /// </summary>
         public const int Aes256CbcHmacSha512 = 15;
 
-#if NETCOREAPP3_0
         /// <summary>
         /// 'A128GCM'
         /// </summary>
@@ -35,6 +34,5 @@ namespace JsonWebToken
         /// 'A256GCM'
         /// </summary>
         public const int Aes256Gcm = 3;
-#endif
     }
 }

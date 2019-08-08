@@ -181,11 +181,11 @@ namespace JsonWebToken
         {
             if (value != null)
             {
-                Header.Add(new JwtProperty(utf8Name, value));
+                Header.Replace(new JwtProperty(utf8Name, value));
             }
             else
             {
-                Header.Add(new JwtProperty(utf8Name));
+                Header.Replace(new JwtProperty(utf8Name));
             }
         }
 
@@ -198,11 +198,11 @@ namespace JsonWebToken
         {
             if (value != null)
             {
-                Header.Add(new JwtProperty(utf8Name, value));
+                Header.Replace(new JwtProperty(utf8Name, value));
             }
             else
             {
-                Header.Add(new JwtProperty(utf8Name));
+                Header.Replace(new JwtProperty(utf8Name));
             }
         }
 
@@ -215,11 +215,11 @@ namespace JsonWebToken
         {
             if (!value.IsEmpty)
             {
-                Header.Add(new JwtProperty(utf8Name, value.ToArray()));
+                Header.Replace(new JwtProperty(utf8Name, value.ToArray()));
             }
             else
             {
-                Header.Add(new JwtProperty(utf8Name));
+                Header.Replace(new JwtProperty(utf8Name));
             }
         }
 
@@ -242,11 +242,11 @@ namespace JsonWebToken
         {
             if (value != null)
             {
-                Header.Add(new JwtProperty(utf8Name, new JwtArray(value)));
+                Header.Replace(new JwtProperty(utf8Name, new JwtArray(value)));
             }
             else
             {
-                Header.Add(new JwtProperty(utf8Name));
+                Header.Replace(new JwtProperty(utf8Name));
             }
         }
 

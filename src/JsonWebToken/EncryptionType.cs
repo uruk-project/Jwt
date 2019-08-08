@@ -18,11 +18,9 @@ namespace JsonWebToken
         /// </summary>
         AesHmac,
 
-#if NETCOREAPP3_0
         /// <summary>
         /// AES-GCM encryption.
         /// </summary>
         AesGcm
-#endif
     }
 }

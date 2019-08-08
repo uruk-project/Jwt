@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -5,8 +6,17 @@ using Xunit;
 
 namespace JsonWebToken.Tests
 {
-    public class JsonWebTokenWriterTests
+    public class JsonWebTokenWriterTests : IClassFixture<KeyFixture>, IClassFixture<TokenFixture>
     {
+        private readonly KeyFixture _keys;
+        private readonly TokenFixture _tokens;
+
+        public JsonWebTokenWriterTests(KeyFixture keys, TokenFixture tokens)
+        {
+            _keys=keys;
+            _tokens = tokens;
+        }
+
         private readonly RsaJwk RsaKey = new RsaJwk
         (
             n: "sXchDaQebHnPiGvyDOAT4saGEUetSyo9MKLOoWFsueri23bOdgWp4Dy1WlUzewbgBHod5pcM9H95GQRV3JDXboIRROSBigeC5yjU1hGzHHyXss8UDprecbAYxknTcQkhslANGRUZmdTOQ5qTRsLAt6BTYuyvVRdhS8exSZEy_c4gs_7svlJJQ4H9_NxsiIoLwAEk7-Q3UXERGYw_75IDrGA84-lA_-Ct4eTlXHBIY2EaV7t7LjJaynVJCpkv4LKjTTAumiGUIuQhrNhZLuF_RJLqHpM2kgWFLU7-VTdL1VbC2tejvcI2BlMkEpk1BzBZI0KQB0GaDWFLN-aEAw3vRw",
@@ -23,14 +33,14 @@ namespace JsonWebToken.Tests
         };
 
         [Theory]
-        [MemberData(nameof(GetDescriptors))]
+        [ClassData(typeof(DescriptorTestData))]
         public void Write_Valid(string token)
         {
-            var descriptor = Tokens.Descriptors[token];
+            var descriptor = _tokens.Descriptors[token];
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader(Keys.Jwks);
+            var reader = new JwtReader(_keys.Jwks);
             var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
 
@@ -149,12 +159,25 @@ namespace JsonWebToken.Tests
             Assert.Equal(plaintext, jwt.Plaintext);
         }
 
-        public static IEnumerable<object[]> GetDescriptors()
+        public class DescriptorTestData : IEnumerable<object[]>
         {
-            foreach (var item in Tokens.Descriptors)
+            private readonly TokenFixture _tokens;
+
+            public DescriptorTestData()
             {
-                yield return new object[] { item.Key };
+                _tokens = new TokenFixture();
             }
+
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                foreach (var item in _tokens.Descriptors)
+                {
+                    yield return new object[] { item.Key };
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
+
     }
 }

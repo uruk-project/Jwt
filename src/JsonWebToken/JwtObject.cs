@@ -328,7 +328,7 @@ namespace JsonWebToken
                 }
             }
 
-            ThrowHelper.ThrowKeyNotFoundException();
+            _properties.Add(property);
         }
 
         /// <summary>
