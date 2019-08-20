@@ -335,7 +335,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public static explicit operator KeyManagementAlgorithm?(byte[]? value)
         {
-            if (value == null)
+            if (value is null)
             {
                 return null;
             }
@@ -354,7 +354,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public static explicit operator KeyManagementAlgorithm?(string? value)
         {
-            if (value == null)
+            if (value is null)
             {
                 return null;
             }

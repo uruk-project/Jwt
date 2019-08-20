@@ -78,7 +78,7 @@ namespace JsonWebToken
         /// </summary>
         public KeyManagementAlgorithm? KeyManagementAlgorithm
         {
-            get => _keyManagementAlgorithm ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (KeyManagementAlgorithm?)property.Value : null);
+            get => _keyManagementAlgorithm ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (KeyManagementAlgorithm?)(byte[]?)property.Value : null);
             set
             {
                 _keyManagementAlgorithm = value;

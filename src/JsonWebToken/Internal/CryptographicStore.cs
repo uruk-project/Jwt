@@ -54,7 +54,7 @@ namespace JsonWebToken.Internal
         public bool TryGetValue(int key, [NotNullWhen(true)] out TValue? value)
         {
             value = FindValue(key);
-            return value is null;
+            return !(value is null);
         }
 
         private TValue? FindValue(int key)
