@@ -259,7 +259,6 @@ namespace JsonWebToken
             return false;
         }
 
-
         /// <summary>
         /// Gets the <see cref="JwtProperty"/> associated with the specified key.
         /// </summary>

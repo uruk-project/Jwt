@@ -127,7 +127,6 @@ namespace JsonWebToken
             return _rentedBuffer.AsSpan(_index);
         }
 
-
         /// <inheritsdoc />
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
