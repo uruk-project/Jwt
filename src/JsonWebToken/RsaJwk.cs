@@ -209,37 +209,37 @@ namespace JsonWebToken
 
         private void Initialize(byte[] n, byte[] e, byte[] p, byte[] q, byte[] dp, byte[] dq, byte[] qi)
         {
-            if (dp == null)
+            if (dp is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.dp);
             }
 
-            if (dq == null)
+            if (dq is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.dq);
             }
 
-            if (q == null)
+            if (q is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.q);
             }
 
-            if (qi == null)
+            if (qi is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.qi);
             }
 
-            if (p == null)
+            if (p is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.p);
             }
 
-            if (e == null)
+            if (e is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
-            if (n == null)
+            if (n is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
@@ -249,54 +249,54 @@ namespace JsonWebToken
             QI = qi;
             P = p;
             Q = q;
-            E = e;
-            N = n;
+            E = e!;
+            N = n!;
         }
 
         private void Initialize(string p, string q, string dp, string dq, string qi, string e, string n)
         {
-            if (dp == null)
+            if (dp is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.dp);
             }
 
-            if (dq == null)
+            if (dq is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.dq);
             }
 
-            if (q == null)
+            if (q is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.q);
             }
 
-            if (qi == null)
+            if (qi is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.qi);
             }
 
-            if (p == null)
+            if (p is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.p);
             }
 
-            if (e == null)
+            if (e is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
-            if (n == null)
+            if (n is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
-            DP = Base64Url.Decode(dp);
-            DQ = Base64Url.Decode(dq);
-            QI = Base64Url.Decode(qi);
-            P = Base64Url.Decode(p);
-            Q = Base64Url.Decode(q);
-            E = Base64Url.Decode(e);
-            N = Base64Url.Decode(n);
+            DP = Base64Url.Decode(dp!);
+            DQ = Base64Url.Decode(dq!);
+            QI = Base64Url.Decode(qi!);
+            P = Base64Url.Decode(p!);
+            Q = Base64Url.Decode(q!);
+            E = Base64Url.Decode(e!);
+            N = Base64Url.Decode(n!);
         }
 
         private void Initialize(RSAParameters rsaParameters)
@@ -311,36 +311,39 @@ namespace JsonWebToken
             N = rsaParameters.Modulus;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Initialize(string e, string n)
         {
-            if (e == null)
+            if (e is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
-            if (n == null)
+            if (n is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
-            E = Base64Url.Decode(e);
-            N = Base64Url.Decode(n);
+            E = Base64Url.Decode(e!);
+            N = Base64Url.Decode(n!);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Initialize(byte[] e, byte[] n)
         {
-            if (e == null)
+
+            if (e is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
-            if (n == null)
+            if (n is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
-            E = e;
-            N = n;
+            E = e!;
+            N = n!;
         }
 
         /// <inheritsdoc />
@@ -406,17 +409,17 @@ namespace JsonWebToken
         public override bool HasPrivateKey => D != null && DP != null && DQ != null && P != null && Q != null && QI != null;
 
         /// <inheritsdoc />
-        public override int KeySizeInBits => N?.Length != 0 ? N.Length << 3 : 0;
+        public override int KeySizeInBits => N.Length != 0 ? N.Length << 3 : 0;
 
         /// <summary>
         /// Gets or sets the 'dp' (First Factor CRT Exponent).
         /// </summary>
-        public byte[] DP { get; private set; }
+        public byte[]? DP { get; private set; }
 
         /// <summary>
         /// Gets or sets the 'dq' (Second Factor CRT Exponent).
         /// </summary>
-        public byte[] DQ { get; private set; }
+        public byte[]? DQ { get; private set; }
 
         /// <summary>
         /// Gets or sets the 'e' ( Exponent).
@@ -431,17 +434,17 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'p' (First Prime Factor).
         /// </summary>
-        public byte[] P { get; private set; }
+        public byte[]? P { get; private set; }
 
         /// <summary>
         /// Gets or sets the 'q' (Second  Prime Factor).
         /// </summary>
-        public byte[] Q { get; private set; }
+        public byte[]? Q { get; private set; }
 
         /// <summary>
         /// Gets or sets the 'qi' (First CRT Coefficient).
         /// </summary>
-        public byte[] QI { get; private set; }
+        public byte[]? QI { get; private set; }
 
         /// <summary>
         /// Generates a new random private <see cref="RsaJwk"/>.
@@ -466,13 +469,13 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         /// <returns></returns>
         public static RsaJwk GeneratePrivateKey(int sizeInBits, KeyManagementAlgorithm algorithm) => GenerateKey(sizeInBits, true, algorithm?.Utf8Name);
-        
+
         /// <summary>
         /// Generates a new random private <see cref="RsaJwk"/>.
         /// </summary>
         /// <param name="sizeInBits"></param>
         /// <returns></returns>
-        public static RsaJwk GeneratePrivateKey(int sizeInBits) => GenerateKey(sizeInBits, true, (byte[])null);
+        public static RsaJwk GeneratePrivateKey(int sizeInBits) => GenerateKey(sizeInBits, true, (byte[]?)null);
 
         /// <summary>
         /// Generates a new random public <see cref="RsaJwk"/>.
@@ -497,13 +500,13 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         /// <returns></returns>
         public static RsaJwk GeneratePublicKey(int sizeInBits, KeyManagementAlgorithm algorithm) => GenerateKey(sizeInBits, false, algorithm?.Utf8Name);
-        
+
         /// <summary>
         /// Generates a new random private <see cref="RsaJwk"/>.
         /// </summary>
         /// <param name="sizeInBits"></param>
         /// <returns></returns>
-        public static RsaJwk GeneratePublicKey(int sizeInBits) => GenerateKey(sizeInBits, false, (byte[])null);
+        public static RsaJwk GeneratePublicKey(int sizeInBits) => GenerateKey(sizeInBits, false, (byte[]?)null);
 
         /// <summary>
         /// Generates a new RSA key.
@@ -511,7 +514,7 @@ namespace JsonWebToken
         /// <param name="sizeInBits">The key size in bits.</param>
         /// <param name="withPrivateKey"></param>
         /// <returns></returns>
-        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey) => GenerateKey(sizeInBits, withPrivateKey, (byte[])null);
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey) => GenerateKey(sizeInBits, withPrivateKey, (byte[]?)null);
 
         /// <summary>
         /// Generates a new random <see cref="RsaJwk"/>.
@@ -530,7 +533,7 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         /// <returns></returns>
         public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, KeyManagementAlgorithm algorithm) => GenerateKey(sizeInBits, withPrivateKey, algorithm?.Utf8Name);
-        
+
         /// <summary>
         /// Generates a new random <see cref="RsaJwk"/>.
         /// </summary>
@@ -538,7 +541,7 @@ namespace JsonWebToken
         /// <param name="withPrivateKey"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, byte[] algorithm)
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, byte[]? algorithm)
         {
 #if NETSTANDARD2_0
             using (RSA rsa = new RSACng(sizeInBits))
@@ -606,56 +609,59 @@ namespace JsonWebToken
             for (int i = 0; i < @object.Count; i++)
             {
                 var property = @object[i];
-                var name = property.Utf8Name;
-                switch (property.Type)
+                if (!(property.Value is null))
                 {
-                    case JwtTokenType.Array:
-                        key.Populate(name, (JwtArray)property.Value);
-                        break;
-                    case JwtTokenType.String:
-                        string value = (string)property.Value;
-                        if (name.SequenceEqual(JwkParameterNames.NUtf8))
-                        {
-                            key.N = Base64Url.Decode(value);
-                        }
-                        else if (name.SequenceEqual(JwkParameterNames.EUtf8))
-                        {
-                            key.E = Base64Url.Decode(value);
-                        }
-                        else if (name.SequenceEqual(JwkParameterNames.DUtf8))
-                        {
-                            key.D = Base64Url.Decode(value);
-                        }
-                        else if (name.SequenceEqual(JwkParameterNames.DPUtf8))
-                        {
-                            key.DP = Base64Url.Decode(value);
-                        }
-                        else if (name.SequenceEqual(JwkParameterNames.DQUtf8))
-                        {
-                            key.DQ = Base64Url.Decode(value);
-                        }
-                        else if (name.SequenceEqual(JwkParameterNames.PUtf8))
-                        {
-                            key.P = Base64Url.Decode(value);
-                        }
-                        else if (name.SequenceEqual(JwkParameterNames.QUtf8))
-                        {
-                            key.Q = Base64Url.Decode(value);
-                        }
-                        else if (name.SequenceEqual(JwkParameterNames.QIUtf8))
-                        {
-                            key.QI = Base64Url.Decode(value);
-                        }
-                        else
-                        {
-                            key.Populate(name, value);
-                        }
-                        break;
-                    case JwtTokenType.Utf8String:
-                        key.Populate(name, (byte[])property.Value);
-                        break;
-                    default:
-                        break;
+                    var name = property.Utf8Name;
+                    switch (property.Type)
+                    {
+                        case JwtTokenType.Array:
+                            key.Populate(name, (JwtArray)property.Value);
+                            break;
+                        case JwtTokenType.String:
+                            string value = (string)property.Value;
+                            if (name.SequenceEqual(JwkParameterNames.NUtf8))
+                            {
+                                key.N = Base64Url.Decode(value);
+                            }
+                            else if (name.SequenceEqual(JwkParameterNames.EUtf8))
+                            {
+                                key.E = Base64Url.Decode(value);
+                            }
+                            else if (name.SequenceEqual(JwkParameterNames.DUtf8))
+                            {
+                                key.D = Base64Url.Decode(value);
+                            }
+                            else if (name.SequenceEqual(JwkParameterNames.DPUtf8))
+                            {
+                                key.DP = Base64Url.Decode(value);
+                            }
+                            else if (name.SequenceEqual(JwkParameterNames.DQUtf8))
+                            {
+                                key.DQ = Base64Url.Decode(value);
+                            }
+                            else if (name.SequenceEqual(JwkParameterNames.PUtf8))
+                            {
+                                key.P = Base64Url.Decode(value);
+                            }
+                            else if (name.SequenceEqual(JwkParameterNames.QUtf8))
+                            {
+                                key.Q = Base64Url.Decode(value);
+                            }
+                            else if (name.SequenceEqual(JwkParameterNames.QIUtf8))
+                            {
+                                key.QI = Base64Url.Decode(value);
+                            }
+                            else
+                            {
+                                key.Populate(name, value);
+                            }
+                            break;
+                        case JwtTokenType.Utf8String:
+                            key.Populate(name, (byte[])property.Value);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
 
@@ -668,87 +674,86 @@ namespace JsonWebToken
 
             while (reader.Read())
             {
-                switch (reader.TokenType)
+                if (!(reader.TokenType is JsonTokenType.PropertyName))
                 {
-                    case JsonTokenType.PropertyName:
+                    break;
+                }
 
-                        var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                        fixed (byte* pPropertyName = propertyName)
-                        {
-                            reader.Read();
-                            switch (reader.TokenType)
+                var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                fixed (byte* pPropertyName = propertyName)
+                {
+                    reader.Read();
+                    switch (reader.TokenType)
+                    {
+                        case JsonTokenType.StartObject:
+                            PopulateObject(ref reader);
+                            break;
+                        case JsonTokenType.StartArray:
+                            PopulateArray(ref reader, pPropertyName, propertyName.Length, key);
+                            break;
+                        case JsonTokenType.String:
+                            switch (propertyName.Length)
                             {
-                                case JsonTokenType.StartObject:
-                                    PopulateObject(ref reader);
-                                    break;
-                                case JsonTokenType.StartArray:
-                                    PopulateArray(ref reader, pPropertyName, propertyName.Length, key);
-                                    break;
-                                case JsonTokenType.String:
-                                    switch (propertyName.Length)
+                                case 1:
+                                    if (*pPropertyName == (byte)'e')
                                     {
-                                        case 1:
-                                            if (*pPropertyName == (byte)'e')
-                                            {
-                                                key.E = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                            }
-                                            else if (*pPropertyName == (byte)'n')
-                                            {
-                                                key.N = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                            }
-                                            else if (*pPropertyName == (byte)'p')
-                                            {
-                                                key.P = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                            }
-                                            else if (*pPropertyName == (byte)'q')
-                                            {
-                                                key.Q = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                            }
-                                            else if (*pPropertyName == (byte)'d')
-                                            {
-                                                key.D = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                            }
-                                            break;
-
-                                        case 2:
-                                            var pKtyShort = (short*)pPropertyName;
-                                            if (*pKtyShort == 26993u)
-                                            {
-                                                key.QI = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                            }
-                                            else if (*pKtyShort == 28772u)
-                                            {
-                                                key.DP = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                            }
-                                            else if (*pKtyShort == 29028u)
-                                            {
-                                                key.DQ = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                            }
-                                            break;
-                                        case 3:
-                                            PopulateThree(ref reader, pPropertyName, key);
-                                            break;
-                                        case 8:
-                                            PopulateEight(ref reader, pPropertyName, key);
-                                            break;
-                                        default:
-                                            break;
+                                        key.E = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                     }
+                                    else if (*pPropertyName == (byte)'n')
+                                    {
+                                        key.N = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                    }
+                                    else if (*pPropertyName == (byte)'p')
+                                    {
+                                        key.P = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                    }
+                                    else if (*pPropertyName == (byte)'q')
+                                    {
+                                        key.Q = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                    }
+                                    else if (*pPropertyName == (byte)'d')
+                                    {
+                                        key.D = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                    }
+                                    break;
+
+                                case 2:
+                                    var pKtyShort = (short*)pPropertyName;
+                                    if (*pKtyShort == 26993u)
+                                    {
+                                        key.QI = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                    }
+                                    else if (*pKtyShort == 28772u)
+                                    {
+                                        key.DP = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                    }
+                                    else if (*pKtyShort == 29028u)
+                                    {
+                                        key.DQ = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                    }
+                                    break;
+                                case 3:
+                                    PopulateThree(ref reader, pPropertyName, key);
+                                    break;
+                                case 8:
+                                    PopulateEight(ref reader, pPropertyName, key);
                                     break;
                                 default:
                                     break;
                             }
-                        }
-                        break;
-                    case JsonTokenType.EndObject:
-                        return key;
-                    default:
-                        break;
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
 
-            ThrowHelper.ThrowArgumentException_MalformedKey();
-            return null;
+            if (!(reader.TokenType is JsonTokenType.EndObject))
+            {
+                ThrowHelper.ThrowArgumentException_MalformedKey();
+            }
+
+            return key;
         }
 
         internal override void WriteComplementTo(Utf8JsonWriter writer)
@@ -787,7 +792,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override bool Equals(Jwk other)
+        public override bool Equals(Jwk? other)
         {
             if (!(other is RsaJwk key))
             {

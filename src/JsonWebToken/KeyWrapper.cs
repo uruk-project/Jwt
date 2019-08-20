@@ -27,22 +27,6 @@ namespace JsonWebToken
         public EncryptionAlgorithm EncryptionAlgorithm { get; }
 
         /// <summary>
-        /// Creates a <see cref="KeyWrapper"/>.
-        /// </summary>
-        /// <param name="key">the key used for key wrapping.</param>
-        /// <param name="encryptionAlgorithm">The encryption algorithm.</param>
-        /// <param name="contentEncryptionAlgorithm">The content encryption algorithm.</param>
-        public static KeyWrapper Create(Jwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
-        {
-            if (key is null)
-            {
-                return null;
-            }
-
-            return key.CreateKeyWrapper(encryptionAlgorithm, contentEncryptionAlgorithm);
-        }
-
-        /// <summary>
         /// Initializes a new instances of <see cref="KeyWrapper"/>.
         /// </summary>
         /// <param name="key"></param>
@@ -55,23 +39,23 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            if (!key.IsSupported(algorithm))
+            if (!key!.IsSupported(algorithm))
             {
                 ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
             }
 
-            if (algorithm == null)
+            if (algorithm is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.algorithm);
             }
 
-            if (encryptionAlgorithm == null)
+            if (encryptionAlgorithm is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
             }
 
-            Algorithm = algorithm;
-            EncryptionAlgorithm = encryptionAlgorithm;
+            Algorithm = algorithm!;
+            EncryptionAlgorithm = encryptionAlgorithm!;
             Key = key;
         }
 
@@ -106,9 +90,7 @@ namespace JsonWebToken
         /// <param name="staticKey">The key to be wrapped. If <c>null</c>, the key will be ephemeral and generated within this method.</param>
         /// <param name="header">The key-values representing the JWT header.</param>
         /// <param name="destination">The destination span.</param>
-        /// <param name="contentEncryptionKey">The generated content encryption key.</param>
-        /// <param name="bytesWritten">The count of bytes written.</param>
-        public abstract void WrapKey(Jwk staticKey, JwtObject header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten);
+        public abstract Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination);
 
         /// <summary>
         /// Gets the size of the unwrapped key.

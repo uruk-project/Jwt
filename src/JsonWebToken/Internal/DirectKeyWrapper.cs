@@ -28,7 +28,7 @@ namespace JsonWebToken.Internal
             return true;
         }
 
-        public override void WrapKey(Jwk staticKey, JwtObject header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
         {
             if (staticKey != null)
             {
@@ -36,9 +36,7 @@ namespace JsonWebToken.Internal
             }
 
             ReadOnlySpan<byte> bytes = Key.AsSpan();
-            contentEncryptionKey = SymmetricJwk.FromSpan(bytes, false);
-
-            bytesWritten = bytes.Length;
+            return SymmetricJwk.FromSpan(bytes, false);
         }
 
         protected override void Dispose(bool disposing)

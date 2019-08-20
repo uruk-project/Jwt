@@ -192,12 +192,12 @@ namespace JsonWebToken
         {
             if (x == null)
             {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.x);
+                throw new ArgumentNullException(nameof(x));
             }
 
             if (y == null)
             {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.y);
+                throw new ArgumentNullException(nameof(y));
             }
 
             Crv = crv;
@@ -207,14 +207,14 @@ namespace JsonWebToken
 
         private void Initialize(EllipticalCurve crv, byte[] x, byte[] y)
         {
-            if (x == null)
+            if (x is null)
             {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.x);
+                throw new ArgumentNullException(nameof(x));
             }
 
-            if (y == null)
+            if (y is null)
             {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.y);
+                throw new ArgumentNullException(nameof(y));
             }
 
             Crv = crv;
@@ -294,7 +294,7 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
-        protected override KeyWrapper CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        protected override KeyWrapper? CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
             return new EcdhKeyWrapper(this, encryptionAlgorithm, algorithm);
         }
@@ -331,14 +331,14 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="curve"></param>
         /// <returns></returns>
-        public static ECJwk GeneratePrivateKey(in EllipticalCurve curve) => GenerateKey(curve, true, algorithm: (SignatureAlgorithm)null);
+        public static ECJwk GeneratePrivateKey(in EllipticalCurve curve) => GenerateKey(curve, true, algorithm: (SignatureAlgorithm?)null);
 
         /// <summary>
         /// Generates a public <see cref="ECJwk"/>.
         /// </summary>
         /// <param name="curve"></param>
         /// <returns></returns>
-        public static ECJwk GeneratePublicKey(in EllipticalCurve curve) => GenerateKey(curve, false, algorithm: (SignatureAlgorithm)null);
+        public static ECJwk GeneratePublicKey(in EllipticalCurve curve) => GenerateKey(curve, false, algorithm: (SignatureAlgorithm?)null);
 
         /// <summary>
         /// Generates a <see cref="ECJwk"/>.
@@ -346,7 +346,7 @@ namespace JsonWebToken
         /// <param name="curve"></param>
         /// <param name="withPrivateKey"></param>
         /// <returns></returns>
-        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey) => GenerateKey(curve, withPrivateKey, algorithm: (SignatureAlgorithm)null);
+        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey) => GenerateKey(curve, withPrivateKey, algorithm: (SignatureAlgorithm?)null);
 
         /// <summary>
         /// Generates a <see cref="ECJwk"/>.
@@ -355,7 +355,7 @@ namespace JsonWebToken
         /// <param name="withPrivateKey"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, SignatureAlgorithm algorithm)
+        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, SignatureAlgorithm? algorithm)
             => GenerateKey(curve, withPrivateKey, algorithm?.Utf8Name);
 
         /// <summary>
@@ -365,10 +365,10 @@ namespace JsonWebToken
         /// <param name="withPrivateKey"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, KeyManagementAlgorithm algorithm)
+        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, KeyManagementAlgorithm? algorithm)
             => GenerateKey(curve, withPrivateKey, algorithm?.Utf8Name);
 
-        private static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, byte[] algorithm)
+        private static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, byte[]? algorithm)
         {
             using (var ecdsa = ECDsa.Create())
             {
@@ -381,7 +381,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
-            using (var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation ))
+            using (var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation))
             {
                 writer.WriteStartObject();
                 writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
@@ -408,7 +408,7 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public static ECJwk FromParameters(ECParameters parameters, byte[] algorithm, bool computeThumbprint)
+        public static ECJwk FromParameters(ECParameters parameters, byte[]? algorithm, bool computeThumbprint)
         {
             var key = new ECJwk(parameters);
             if (computeThumbprint)
@@ -427,12 +427,12 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public static ECJwk FromParameters(ECParameters parameters) => FromParameters(parameters, (byte[])null, false);
+        public static ECJwk FromParameters(ECParameters parameters) => FromParameters(parameters, (byte[]?)null, false);
 
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint) => FromParameters(parameters, (byte[])null, computeThumbprint);
+        public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint) => FromParameters(parameters, (byte[]?)null, computeThumbprint);
 
         /// <inheritdoc />
         public override ReadOnlySpan<byte> AsSpan()
@@ -453,15 +453,22 @@ namespace JsonWebToken
         internal static ECJwk FromJwtObject(JwtObject jwtObject)
         {
             Debug.Assert(jwtObject.Count == 3);
-            var key = new ECJwk
+            if (!jwtObject.TryGetValue(JwkParameterNames.CrvUtf8, out var crv) || crv.Value is null)
             {
-                Y = Base64Url.Decode(jwtObject.TryGetValue(JwkParameterNames.YUtf8, out var property) ? (string)property.Value : null),
-                X = Base64Url.Decode(jwtObject.TryGetValue(JwkParameterNames.XUtf8, out property) ? (string)property.Value : null),
-                Crv = EllipticalCurve.FromString(jwtObject.TryGetValue(JwkParameterNames.CrvUtf8, out property) ? (string)property.Value : null)
-            };
+                ThrowHelper.ThrowArgumentException_MalformedKey();
+            }
 
+            if (!jwtObject.TryGetValue(JwkParameterNames.XUtf8, out var x) || x.Value is null)
+            {
+                ThrowHelper.ThrowArgumentException_MalformedKey();
+            }
 
-            return key;
+            if (!jwtObject.TryGetValue(JwkParameterNames.YUtf8, out var y) || y.Value is null)
+            {
+                ThrowHelper.ThrowArgumentException_MalformedKey();
+            }
+
+            return new ECJwk(EllipticalCurve.FromString((string)crv.Value!), (string)x.Value!, (string)y.Value!);
         }
 
         internal JwtObject AsJwtObject()
@@ -478,73 +485,59 @@ namespace JsonWebToken
         {
             var key = new ECJwk();
 
-            while (reader.Read())
+            while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
-                switch (reader.TokenType)
+                var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                fixed (byte* pPropertyName = propertyName)
                 {
-                    case JsonTokenType.PropertyName:
-
-                        var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                        fixed (byte* pPropertyName = propertyName)
-                        {
-                            reader.Read();
-                            switch (reader.TokenType)
+                    reader.Read();
+                    switch (reader.TokenType)
+                    {
+                        case JsonTokenType.StartObject:
+                            PopulateObject(ref reader);
+                            break;
+                        case JsonTokenType.StartArray:
+                            PopulateArray(ref reader, pPropertyName, propertyName.Length, key);
+                            break;
+                        case JsonTokenType.String:
+                            switch (propertyName.Length)
                             {
-                                case JsonTokenType.StartObject:
-                                    PopulateObject(ref reader);
+                                case 1 when *pPropertyName == (byte)'x':
+                                    key.X = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                     break;
-                                case JsonTokenType.StartArray:
-                                    PopulateArray(ref reader, pPropertyName, propertyName.Length, key);
+                                case 1 when *pPropertyName == (byte)'y':
+                                    key.Y = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
                                     break;
-                                case JsonTokenType.String:
-                                    switch (propertyName.Length)
-                                    {
-                                        case 1:
-                                            if (*pPropertyName == (byte)'x')
-                                            {
-                                                key.X = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                            }
-                                            else if (*pPropertyName == (byte)'y')
-                                            {
-                                                key.Y = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                            }
-                                            else if (*pPropertyName == (byte)'d')
-                                            {
-                                                key.D = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                            }
-                                            break;
+                                case 1 when *pPropertyName == (byte)'d':
+                                    key.D = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                    break;
 
-                                        case 3:
-                                            if (*pPropertyName == (byte)'c' && *((short*)(pPropertyName + 1)) == 30322)
-                                            {
-                                                key.Crv = EllipticalCurve.FromSpan(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                            }
-                                            else
-                                            {
-                                                PopulateThree(ref reader, pPropertyName, key);
-                                            }
-                                            break;
-                                        case 8:
-                                            PopulateEight(ref reader, pPropertyName, key);
-                                            break;
-                                        default:
-                                            break;
-                                    }
+                                case 3 when *pPropertyName == (byte)'c' && *((short*)(pPropertyName + 1)) == 30322u:
+                                    key.Crv = EllipticalCurve.FromSpan(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                    break;
+                                case 3:
+                                    PopulateThree(ref reader, pPropertyName, key);
+                                    break;
+
+                                case 8:
+                                    PopulateEight(ref reader, pPropertyName, key);
                                     break;
                                 default:
                                     break;
                             }
-                        }
-                        break;
-                    case JsonTokenType.EndObject:
-                        return key;
-                    default:
-                        break;
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
 
-            ThrowHelper.ThrowArgumentException_MalformedKey();
-            return null;
+            if (!(reader.TokenType is JsonTokenType.EndObject))
+            {
+                ThrowHelper.ThrowArgumentException_MalformedKey();
+            }
+
+            return key;
         }
 
         internal static ECJwk Populate(JwtObject @object)
@@ -557,32 +550,32 @@ namespace JsonWebToken
                 switch (property.Type)
                 {
                     case JwtTokenType.Array:
-                        key.Populate(name, (JwtArray)property.Value);
+                        key.Populate(name, (JwtArray)property.Value!);
                         break;
                     case JwtTokenType.String:
                         if (name.SequenceEqual(JwkParameterNames.CrvUtf8))
                         {
-                            key.Crv = EllipticalCurve.FromString((string)property.Value);
+                            key.Crv = EllipticalCurve.FromString((string)property.Value!);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.XUtf8))
                         {
-                            key.X = Base64Url.Decode((string)property.Value);
+                            key.X = Base64Url.Decode((string)property.Value!);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.YUtf8))
                         {
-                            key.Y = Base64Url.Decode((string)property.Value);
+                            key.Y = Base64Url.Decode((string)property.Value!);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.DUtf8))
                         {
-                            key.D = Base64Url.Decode((string)property.Value);
+                            key.D = Base64Url.Decode((string)property.Value!);
                         }
                         else
                         {
-                            key.Populate(name, (string)property.Value);
+                            key.Populate(name, (string)property.Value!);
                         }
                         break;
                     case JwtTokenType.Utf8String:
-                        key.Populate(name, (byte[])property.Value);
+                        key.Populate(name, (byte[])property.Value!);
                         break;
                     default:
                         break;
@@ -604,7 +597,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override bool Equals(Jwk other)
+        public override bool Equals(Jwk? other)
         {
             if (!(other is ECJwk key))
             {

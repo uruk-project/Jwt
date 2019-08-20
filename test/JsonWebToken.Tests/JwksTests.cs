@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -14,8 +15,29 @@ namespace JsonWebToken.Tests
             Assert.Equal(count, jwks.Keys.Count);
         }
 
+        [Theory]
+        [MemberData(nameof(GetInvalidJwks))]
+        public void ReadJwks_Invalid(string origin, string json)
+        {
+            try
+            {
+                Jwks.FromJson(json);
+                Assert.False(true, "Expected to throw an exception.");
+            }
+            catch (Exception e)
+            {
+                Assert.IsAssignableFrom<Exception>(e);
+            }
+        }
+
         public static IEnumerable<object[]> GetJwks()
         {
+            yield return new object[]
+           {
+               "empty", 0,
+               @"{""keys"":[]}"
+           };
+
             yield return new object[]
             {
                 "https://login.salesforce.com/id/keys", 3,
@@ -100,6 +122,87 @@ namespace JsonWebToken.Tests
       ""n"": ""3MdFK4pXPvehMipDL_COfqn6o9soHgSaq_V1o8U_5gTZ-j9DxO9PV7BVncXBgHFctnp3JQ1QTDF7txeHeuLOS4KziRw5r4ohaj2WoOTqXh7lqVMR2YDAcBK46asS177NpkQ1CqHIsy3kNfqhXLwTaKfdlwdA_XUfRbKORWbq0kDxV35egx35nHl5qJ6aP6fcpsnnPvHf7KWO0zkdvwuR-IX79HjqUAEg5UERd5FK4y06PRbxuXHjAgVhHu_sk4reNXNp1HRuTYtQ26DFbVaIjsWb8-nQC8-7FkTjlw9FteAwLVGOm9sTLFp73jAf0pWLh7sJ02pBxZKjsxLO1Lvg7w""
     }
   ]
+}"
+            };
+        }
+
+
+        public static IEnumerable<object[]> GetInvalidJwks()
+        {
+            yield return new object[]
+            {
+                "No 'keys' property",
+                @"{""keysx"":[]}"
+            };
+            yield return new object[]
+            {
+                "Malformed JSON - Missing closing square bracket.",
+@"{
+ ""keys"": [
+  {
+   ""kty"": ""RSA"",
+   ""alg"": ""RS256"",
+   ""use"": ""sig"",
+   ""kid"": ""16e6c7334cf754186f877ff1f4a0bc128e1c97ca"",
+   ""n"": ""ALk6-zOoZqVpGNvuEcJWBzDsPdwGwxl8M-c2acIMFkqPPdP9IJt0W3KUd5fHdyl1v_pO05kzQPGkKfgTrAL6X0dD2_48xzkkLN2ieiemc-DcfN971XX5Z0ITprPM1BiofYx_h_pJMiydHLQSJ485oyt0ZHPGysHa8w00x7D1OtqMToxfiwFsxcCyBlcPMOs7aijVWz7NGZxpgTb8OJZmOzVF0oVIhjek0oqXIQzQRlivBLhU4yYPnGdQ1g0Lcj5lkry5sZrNVijqn2E3yHDgiBSk-mKhLhCNwj3pQ4EfP42Kv_o-Gg-l2FRqQ1M0DJMcZiYv_vCteJY-HLpClS-BeF8"",
+   ""e"": ""AQAB""
+  },
+  {
+   ""kty"": ""RSA"",
+   ""alg"": ""RS256"",
+   ""use"": ""sig"",
+   ""kid"": ""f75b64243cd5243febeb9540c3afd7b7ad15f291"",
+   ""n"": ""AIqA49-acaWGnxQf-U9VCaMsPVkzd4Qw3DocPRmtP-L1jVNV_Dm7FCFsg3jfF0uCSw9C6o9vSkmhtOKRUHwKG34AZuwK9XmcwFTVtXIzxRR8f1y30x7bygTWyEEa4NlENQuXiLXFVqpgKRD6iegusuuyglnAPJsAefDXiBBsuzIP607YDmmGMYWq__FjDpkzvN1v-6GcqmMMDmIeT_qUuEh6uTzzA1DJNj3GBSeDCGmUabaPt8UMhBqkrg-w3WW6zFC4JJfNxLEbMHDvLCKIukp9hH0apZVkX8NPo_NX3Kn9HatoFXXVbquPIGsnCz1DB_EB4Il3aPyXgZoMKhsB3b0"",
+   ""e"": ""AQAB""
+  }
+}"
+            };
+            yield return new object[]
+            {
+                "Malformed JSON - Missing closing curly bracket.",
+@"{
+ ""keys"": [
+  {
+   ""kty"": ""RSA"",
+   ""alg"": ""RS256"",
+   ""use"": ""sig"",
+   ""kid"": ""16e6c7334cf754186f877ff1f4a0bc128e1c97ca"",
+   ""n"": ""ALk6-zOoZqVpGNvuEcJWBzDsPdwGwxl8M-c2acIMFkqPPdP9IJt0W3KUd5fHdyl1v_pO05kzQPGkKfgTrAL6X0dD2_48xzkkLN2ieiemc-DcfN971XX5Z0ITprPM1BiofYx_h_pJMiydHLQSJ485oyt0ZHPGysHa8w00x7D1OtqMToxfiwFsxcCyBlcPMOs7aijVWz7NGZxpgTb8OJZmOzVF0oVIhjek0oqXIQzQRlivBLhU4yYPnGdQ1g0Lcj5lkry5sZrNVijqn2E3yHDgiBSk-mKhLhCNwj3pQ4EfP42Kv_o-Gg-l2FRqQ1M0DJMcZiYv_vCteJY-HLpClS-BeF8"",
+   ""e"": ""AQAB""
+  },
+  {
+   ""kty"": ""RSA"",
+   ""alg"": ""RS256"",
+   ""use"": ""sig"",
+   ""kid"": ""f75b64243cd5243febeb9540c3afd7b7ad15f291"",
+   ""n"": ""AIqA49-acaWGnxQf-U9VCaMsPVkzd4Qw3DocPRmtP-L1jVNV_Dm7FCFsg3jfF0uCSw9C6o9vSkmhtOKRUHwKG34AZuwK9XmcwFTVtXIzxRR8f1y30x7bygTWyEEa4NlENQuXiLXFVqpgKRD6iegusuuyglnAPJsAefDXiBBsuzIP607YDmmGMYWq__FjDpkzvN1v-6GcqmMMDmIeT_qUuEh6uTzzA1DJNj3GBSeDCGmUabaPt8UMhBqkrg-w3WW6zFC4JJfNxLEbMHDvLCKIukp9hH0apZVkX8NPo_NX3Kn9HatoFXXVbquPIGsnCz1DB_EB4Il3aPyXgZoMKhsB3b0"",
+   ""e"": ""AQAB""
+  }
+ ]
+"
+            };
+            yield return new object[]
+            {
+                "Malformed JSON - invalid key.",
+@"{
+ ""keys"": [
+  {
+   ""kty"": ""RSAX"",
+   ""alg"": ""RS256"",
+   ""use"": ""sig"",
+   ""kid"": ""16e6c7334cf754186f877ff1f4a0bc128e1c97ca"",
+   ""n"": ""ALk6-zOoZqVpGNvuEcJWBzDsPdwGwxl8M-c2acIMFkqPPdP9IJt0W3KUd5fHdyl1v_pO05kzQPGkKfgTrAL6X0dD2_48xzkkLN2ieiemc-DcfN971XX5Z0ITprPM1BiofYx_h_pJMiydHLQSJ485oyt0ZHPGysHa8w00x7D1OtqMToxfiwFsxcCyBlcPMOs7aijVWz7NGZxpgTb8OJZmOzVF0oVIhjek0oqXIQzQRlivBLhU4yYPnGdQ1g0Lcj5lkry5sZrNVijqn2E3yHDgiBSk-mKhLhCNwj3pQ4EfP42Kv_o-Gg-l2FRqQ1M0DJMcZiYv_vCteJY-HLpClS-BeF8"",
+   ""e"": ""AQAB""
+  },
+  {
+   ""kty"": ""RSA"",
+   ""alg"": ""RS256"",
+   ""use"": ""sig"",
+   ""kid"": ""f75b64243cd5243febeb9540c3afd7b7ad15f291"",
+   ""n"": ""AIqA49-acaWGnxQf-U9VCaMsPVkzd4Qw3DocPRmtP-L1jVNV_Dm7FCFsg3jfF0uCSw9C6o9vSkmhtOKRUHwKG34AZuwK9XmcwFTVtXIzxRR8f1y30x7bygTWyEEa4NlENQuXiLXFVqpgKRD6iegusuuyglnAPJsAefDXiBBsuzIP607YDmmGMYWq__FjDpkzvN1v-6GcqmMMDmIeT_qUuEh6uTzzA1DJNj3GBSeDCGmUabaPt8UMhBqkrg-w3WW6zFC4JJfNxLEbMHDvLCKIukp9hH0apZVkX8NPo_NX3Kn9HatoFXXVbquPIGsnCz1DB_EB4Il3aPyXgZoMKhsB3b0"",
+   ""e"": ""AQAB""
+  }
+ ]
 }"
             };
         }

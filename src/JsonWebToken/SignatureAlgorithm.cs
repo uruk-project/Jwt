@@ -160,7 +160,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is SignatureAlgorithm alg)
             {
@@ -175,7 +175,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public bool Equals(SignatureAlgorithm other)
+        public bool Equals(SignatureAlgorithm? other)
         {
             if (other is null)
             {
@@ -200,7 +200,7 @@ namespace JsonWebToken
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public static bool operator ==(SignatureAlgorithm x, SignatureAlgorithm y)
+        public static bool operator ==(SignatureAlgorithm? x, SignatureAlgorithm? y)
         {
             if (x is null && y is null)
             {
@@ -228,7 +228,7 @@ namespace JsonWebToken
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public static bool operator !=(SignatureAlgorithm x, SignatureAlgorithm y)
+        public static bool operator !=(SignatureAlgorithm? x, SignatureAlgorithm? y)
         {
             if (x is null && y is null)
             {
@@ -254,7 +254,7 @@ namespace JsonWebToken
         /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="string"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator string(SignatureAlgorithm value)
+        public static explicit operator string?(SignatureAlgorithm? value)
         {
             return value?.Name;
         }
@@ -263,7 +263,7 @@ namespace JsonWebToken
         /// Cast the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator SignatureAlgorithm(string value)
+        public static explicit operator SignatureAlgorithm?(string? value)
         {
             if (value == null)
             {
@@ -282,9 +282,9 @@ namespace JsonWebToken
         /// Cast the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator SignatureAlgorithm(byte[] value)
+        public static explicit operator SignatureAlgorithm?(byte[]? value)
         {
-            return (SignatureAlgorithm)(ReadOnlySpan<byte>)value;
+            return (SignatureAlgorithm?)(ReadOnlySpan<byte>)value;
         }
 
         /// <summary>
@@ -292,7 +292,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="value"></param>
         /// <param name="algorithm"></param>
-        public unsafe static bool TryParse(ReadOnlySpan<byte> value, out SignatureAlgorithm algorithm)
+        public unsafe static bool TryParse(ReadOnlySpan<byte> value, out SignatureAlgorithm? algorithm)
         {
             if (value.IsEmpty)
             {
@@ -374,7 +374,7 @@ namespace JsonWebToken
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public unsafe static explicit operator SignatureAlgorithm(ReadOnlySpan<byte> value)
+        public unsafe static explicit operator SignatureAlgorithm?(ReadOnlySpan<byte> value)
         {
             if (value.IsEmpty)
             {
@@ -393,7 +393,7 @@ namespace JsonWebToken
         /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="long"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator long(SignatureAlgorithm value)
+        public static explicit operator long(SignatureAlgorithm? value)
         {
             if (value is null)
             {
@@ -407,7 +407,7 @@ namespace JsonWebToken
         /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator byte[](SignatureAlgorithm value)
+        public static explicit operator byte[](SignatureAlgorithm? value)
         {
             if (value is null)
             {

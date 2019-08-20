@@ -1,8 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using System;
-
 namespace JsonWebToken
 {
     /// <summary>
@@ -16,7 +14,7 @@ namespace JsonWebToken
         /// <param name="headerCache"></param>
         /// <param name="tokenLifetimeInMinutes"></param>
         /// <param name="generateIssuedTime"></param>
-        public EncodingContext(JsonHeaderCache headerCache, int tokenLifetimeInMinutes, bool generateIssuedTime)
+        public EncodingContext(JsonHeaderCache? headerCache, int tokenLifetimeInMinutes, bool generateIssuedTime)
         {
             HeaderCache = headerCache;
             TokenLifetimeInMinutes = tokenLifetimeInMinutes;
@@ -26,7 +24,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the JSON header cache.
         /// </summary>
-        public JsonHeaderCache HeaderCache { get; }
+        public JsonHeaderCache? HeaderCache { get; }
 
         /// <summary>
         /// Gets the token lifetime, in minutes.

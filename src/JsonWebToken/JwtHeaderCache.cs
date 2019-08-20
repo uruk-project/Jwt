@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace JsonWebToken
@@ -15,11 +16,18 @@ namespace JsonWebToken
         {
             public JwtHeader Header;
 
-            public Node Next;
+            public Node? Next;
 
-            public Node Previous;
+            public Node? Previous;
 
             public byte[] Key;
+
+            public Node(byte[] key, JwtHeader header, Node? next)
+            {
+                Key = key;
+                Header = header;
+                Next = next;
+            }
         }
 
         private SpinLock _spinLock = new SpinLock();
@@ -31,18 +39,18 @@ namespace JsonWebToken
         /// </summary>
         public int MaxSize { get; set; } = 10;
 
-        private Node _head = null;
-        private Node _tail = null;
+        private Node? _head = null;
+        private Node? _tail = null;
 
         /// <summary>
         /// The heade of the cache.
         /// </summary>
-        public JwtHeader Head => _head.Header;
+        public JwtHeader? Head => _head?.Header;
 
         /// <summary>
         /// The tail of the cache.
         /// </summary>
-        public JwtHeader Tail => _tail.Header;
+        public JwtHeader? Tail => _tail?.Header;
 
         /// <summary>
         /// Try to get the <see cref="JwtHeader"/>.
@@ -50,7 +58,7 @@ namespace JsonWebToken
         /// <param name="buffer"></param>
         /// <param name="header"></param>
         /// <returns></returns>
-        public bool TryGetHeader(ReadOnlySpan<byte> buffer, out JwtHeader header)
+        public bool TryGetHeader(ReadOnlySpan<byte> buffer, [NotNullWhen(true)] out JwtHeader? header)
         {
             var node = _head;
             while (node != null)
@@ -80,17 +88,11 @@ namespace JsonWebToken
         /// <param name="header"></param>
         public void AddHeader(ReadOnlySpan<byte> rawHeader, JwtHeader header)
         {
-            var node = new Node
-            {
-                Key = rawHeader.ToArray(),
-                Header = header,
-                Next = _head
-            };
-
             bool lockTaken = false;
             try
             {
                 _spinLock.Enter(ref lockTaken);
+                var node = new Node(rawHeader.ToArray(), header, _head);
                 if (_count >= MaxSize)
                 {
                     RemoveLeastRecentlyUsed();
@@ -106,7 +108,7 @@ namespace JsonWebToken
                 }
 
                 _head = node;
-                if (_tail == null)
+                if (_tail is null)
                 {
                     _tail = node;
                 }
@@ -126,11 +128,12 @@ namespace JsonWebToken
             try
             {
                 _spinLock.Enter(ref lockTaken);
-                if (node != _head)
+                var head = _head;
+                if (node != head)
                 {
-                    if (_head != null)
+                    if (head != null)
                     {
-                        _head.Previous = node;
+                        head.Previous = node;
                     }
 
                     if (node == _tail)
@@ -145,8 +148,12 @@ namespace JsonWebToken
                         }
                     }
 
-                    node.Previous.Next = node.Next;
-                    node.Next = _head;
+                    if (node.Previous != null)
+                    {
+                        node.Previous.Next = node.Next;
+                    }
+
+                    node.Next = head;
                     node.Previous = null;
                     _head = node;
                 }
@@ -162,9 +169,17 @@ namespace JsonWebToken
 
         private void RemoveLeastRecentlyUsed()
         {
-            var node = _tail;
-            node.Previous.Next = null;
-            _tail = node.Previous;
+            var tail = _tail;
+            if (tail != null)
+            {
+                var previous = tail.Previous;
+                if (previous != null)
+                {
+                    previous.Next = null;
+                }
+
+                _tail = previous;
+            }
         }
 
         /// <summary>
@@ -173,23 +188,23 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool Validate()
         {
-            var node = _head;
-            while (node != null)
+            var head = _head;
+            while (head != null)
             {
-                var previous = node;
-                node = node.Next;
-                if (node != null && node.Previous != previous)
+                var previous = head;
+                head = head.Next;
+                if (head != null && !ReferenceEquals(head.Previous, previous))
                 {
                     goto Invalid;
                 }
             }
 
-            node = _tail;
-            while (node != null)
+            head = _tail;
+            while (head != null)
             {
-                var next = node;
-                node = node.Previous;
-                if (node != null && node.Next != next)
+                var next = head;
+                head = head.Previous;
+                if (head != null && head.Next != next)
                 {
                     goto Invalid;
                 }

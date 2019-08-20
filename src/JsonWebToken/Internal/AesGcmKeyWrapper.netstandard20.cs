@@ -31,7 +31,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override void WrapKey(Jwk staticKey, JwtObject header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
         {
             throw new NotSupportedException();
         }

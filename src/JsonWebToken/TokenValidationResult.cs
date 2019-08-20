@@ -20,7 +20,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets of set the <see cref="Jwt"/>.
         /// </summary>
-        public Jwt Token { get; private set; }
+        public Jwt? Token { get; private set; }
 
         /// <summary>
         /// Gets the status of the validation.
@@ -30,22 +30,17 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the claim that caused the error.
         /// </summary>
-        public string ErrorClaim { get; private set; }
+        public string? ErrorClaim { get; private set; }
 
         /// <summary>
         /// Gets the header parameter that cause the error.
         /// </summary>
-        public string ErrorHeader { get; private set; }
-
-        /// <summary>
-        /// Gets the message that cause the error, if any.
-        /// </summary>
-        public string ErrorMessage { get; private set; }
+        public string? ErrorHeader { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="Exception"/> that caused the error.
         /// </summary>
-        public Exception Exception { get; private set; }
+        public Exception? Exception { get; private set; }
 
         /// <summary>
         /// The token has expired, according to the 'nbf' claim.
@@ -129,7 +124,7 @@ namespace JsonWebToken
         /// <param name="e"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult MalformedSignature(Jwt token, Exception e = null)
+        public static TokenValidationResult MalformedSignature(Jwt token, Exception? e = null)
         {
             return new TokenValidationResult
             {
@@ -185,16 +180,14 @@ namespace JsonWebToken
         /// <summary>
         /// The token is not a JWT in compact representation, is not base64url encoded, and is not a JSON UTF-8 encoded.
         /// </summary>
-        /// <param name="message"></param>
         /// <param name="exception"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult MalformedToken(string message = null, Exception exception = null)
+        public static TokenValidationResult MalformedToken(Exception? exception = null)
         {
             return new TokenValidationResult
             {
                 Status = TokenValidationStatus.MalformedToken,
-                ErrorMessage = message,
                 Exception = exception
             };
         }
@@ -233,7 +226,7 @@ namespace JsonWebToken
         /// <param name="jwtToken"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult Success(Jwt jwtToken = null)
+        public static TokenValidationResult Success(Jwt? jwtToken = null)
         {
             return new TokenValidationResult
             {
@@ -374,7 +367,7 @@ namespace JsonWebToken
         /// <param name="exception"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult DecompressionFailed(Exception exception = null)
+        public static TokenValidationResult DecompressionFailed(Exception? exception = null)
         {
             return new TokenValidationResult
             {

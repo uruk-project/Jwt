@@ -12,8 +12,7 @@ namespace JsonWebToken.Internal
     /// Represents a <see cref="IValidator"/> verifying the JWT has a required claim.
     /// </summary>
     /// <typeparam name="TClaim"></typeparam>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public sealed class RequiredClaimListValidator<TClaim> : IValidator
+    internal sealed class RequiredClaimListValidator<TClaim> : IValidator
     {
         private readonly string _claim;
         private readonly IList<TClaim> _values;
@@ -25,33 +24,50 @@ namespace JsonWebToken.Internal
         /// <param name="values"></param>
         public RequiredClaimListValidator(string claim, IList<TClaim> values)
         {
-            if (claim == null)
+            if (claim is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.claim);
             }
 
-            if (values == null)
+            if (values is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.values);
             }
 
-            _claim = claim;
+            for (int i = 0; i < values!.Count; i++)
+            {
+                if (values[i] is null)
+                {
+                    ThrowHelper.ThrowArgumentException_MustNotContainNull(ExceptionArgument.values);
+                }
+            }
+
+            _claim = claim!;
             _values = values;
         }
 
         /// <inheritdoc />
-        public TokenValidationResult TryValidate(in TokenValidationContext context)
+        public TokenValidationResult TryValidate(Jwt jwt)
         {
-            var jwt = context.Jwt;
+            if (jwt is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
+            }
+
+            if (jwt!.Payload is null)
+            {
+                return TokenValidationResult.MalformedToken();
+            }
+
             var claim = jwt.Payload[_claim];
-            if (claim == null)
+            if (claim is null)
             {
                 return TokenValidationResult.MissingClaim(jwt, _claim);
             }
 
             for (int i = 0; i < _values.Count; i++)
             {
-                if (_values[i].Equals((TClaim)claim))
+                if (_values[i]!.Equals((TClaim)claim))
                 {
                     return TokenValidationResult.Success(jwt);
                 }

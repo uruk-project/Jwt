@@ -30,23 +30,23 @@ namespace JsonWebToken
         /// <summary>
         /// 'A128GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 21, "A128GCM", requiredKeySizeInBytes: 16, null, requiredKeyWrappedSizeInBytes: 24, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 21, "A128GCM", requiredKeySizeInBytes: 16, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 24, EncryptionType.AesGcm);
 
         /// <summary>
         /// 'A192GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 22, "A192GCM", requiredKeySizeInBytes: 24, null, requiredKeyWrappedSizeInBytes: 32, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 22, "A192GCM", requiredKeySizeInBytes: 24, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 32, EncryptionType.AesGcm);
 
         /// <summary>
         /// 'A256GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, "A256GCM", requiredKeySizeInBytes: 32, null, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, "A256GCM", requiredKeySizeInBytes: 32, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
 
         private readonly sbyte _id;
         private readonly EncryptionType _category;
         private readonly ushort _requiredKeySizeInBytes;
         private readonly ushort _keyWrappedSizeInBytes;
-        private readonly SignatureAlgorithm _signatureAlgorithm;
+        private readonly SignatureAlgorithm? _signatureAlgorithm;
         private readonly byte[] _utf8Name;
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the <see cref="SignatureAlgorithm"/>.
         /// </summary>
-        public SignatureAlgorithm SignatureAlgorithm => _signatureAlgorithm;
+        public SignatureAlgorithm? SignatureAlgorithm => _signatureAlgorithm;
 
         /// <summary>
         /// Gets the name of the encryption algorithm.
@@ -111,7 +111,7 @@ namespace JsonWebToken
         /// <param name="hashAlgorithm"></param>
         /// <param name="requiredKeyWrappedSizeInBytes"></param>
         /// <param name="category"></param>
-        public EncryptionAlgorithm(sbyte id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm hashAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionType category)
+        public EncryptionAlgorithm(sbyte id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm? hashAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionType category)
         {
             _id = id;
             _utf8Name = Encoding.UTF8.GetBytes(name);
@@ -127,7 +127,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="value"></param>
         /// <param name="algorithm"></param>
-        public unsafe static bool TryParse(ReadOnlySpan<byte> value, out EncryptionAlgorithm algorithm)
+        public unsafe static bool TryParse(ReadOnlySpan<byte> value, out EncryptionAlgorithm? algorithm)
         {
             if (value.IsEmpty)
             {
@@ -180,7 +180,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is EncryptionAlgorithm alg)
             {
@@ -195,7 +195,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public bool Equals(EncryptionAlgorithm other)
+        public bool Equals(EncryptionAlgorithm? other)
         {
             if (other is null)
             {
@@ -220,7 +220,7 @@ namespace JsonWebToken
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public static bool operator ==(EncryptionAlgorithm x, EncryptionAlgorithm y)
+        public static bool operator ==(EncryptionAlgorithm? x, EncryptionAlgorithm? y)
         {
             if (x is null && y is null)
             {
@@ -246,7 +246,7 @@ namespace JsonWebToken
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public static bool operator !=(EncryptionAlgorithm x, EncryptionAlgorithm y)
+        public static bool operator !=(EncryptionAlgorithm? x, EncryptionAlgorithm? y)
         {
             if (x is null && y is null)
             {
@@ -270,7 +270,7 @@ namespace JsonWebToken
         /// Cast the <see cref="EncryptionAlgorithm"/> into its <see cref="string"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator string(EncryptionAlgorithm value)
+        public static explicit operator string?(EncryptionAlgorithm? value)
         {
             return value?.Name;
         }
@@ -279,7 +279,7 @@ namespace JsonWebToken
         /// Cast the <see cref="EncryptionAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator byte[](EncryptionAlgorithm value)
+        public static explicit operator byte[](EncryptionAlgorithm? value)
         {
             if (value is null)
             {
@@ -293,7 +293,7 @@ namespace JsonWebToken
         /// Cast the <see cref="string"/> into its <see cref="EncryptionAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator EncryptionAlgorithm(byte[] value)
+        public static explicit operator EncryptionAlgorithm?(byte[]? value)
         {
             if (value == null)
             {
@@ -312,7 +312,7 @@ namespace JsonWebToken
         /// Cast the <see cref="string"/> into its <see cref="EncryptionAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator EncryptionAlgorithm(string value)
+        public static explicit operator EncryptionAlgorithm?(string? value)
         {
             if (value == null)
             {

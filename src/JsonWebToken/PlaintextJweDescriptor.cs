@@ -1,11 +1,10 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Text;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -32,20 +31,12 @@ namespace JsonWebToken
             : base(payload)
         {
         }
-        
-        /// <summary>
-        /// Initializes a new instance of <see cref="PlaintextJweDescriptor"/>.
-        /// </summary>
-        public PlaintextJweDescriptor()
-            : base()
-        {
-        }
-
+    
         /// <inheritsdoc />
         public override void Encode(EncodingContext context, IBufferWriter<byte> output)
         {
             int payloadLength = Payload.Length;
-            byte[] payloadToReturnToPool = null;
+            byte[]? payloadToReturnToPool = null;
             Span<byte> encodedPayload = payloadLength > Constants.MaxStackallocBytes
                              ? (payloadToReturnToPool = ArrayPool<byte>.Shared.Rent(payloadLength)).AsSpan(0, payloadLength)
                              : stackalloc byte[payloadLength];

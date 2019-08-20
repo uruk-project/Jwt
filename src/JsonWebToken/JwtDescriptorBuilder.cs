@@ -14,12 +14,12 @@ namespace JsonWebToken
     public sealed class JwtDescriptorBuilder
     {
         private readonly JwtObject _header = new JwtObject(3);
-        private JwtObject _jsonPayload;
-        private byte[] _binaryPayload;
-        private string _textPayload;
+        private JwtObject? _jsonPayload;
+        private byte[]? _binaryPayload;
+        private string? _textPayload;
 
-        private Jwk _signingKey;
-        private Jwk _encryptionKey;
+        private Jwk? _signingKey;
+        private Jwk? _encryptionKey;
         private bool _noSignature;
 
         /// <summary>
@@ -310,7 +310,7 @@ namespace JsonWebToken
         {
             if (_encryptionKey != null)
             {
-                return BuildJwe();
+                return BuildJwe(_encryptionKey);
             }
             else
             {
@@ -330,6 +330,11 @@ namespace JsonWebToken
                 throw new InvalidOperationException("A plaintext payload is defined, but not encryption key is set.");
             }
 
+            if (_jsonPayload is null)
+            {
+                throw new InvalidOperationException("Not JSON payload defined.");
+            }
+
             var jws = new JwsDescriptor(_header, _jsonPayload);
             if (_signingKey != null)
             {
@@ -343,13 +348,13 @@ namespace JsonWebToken
             return jws;
         }
 
-        private JwtDescriptor BuildJwe()
+        private JwtDescriptor BuildJwe(Jwk encryptionKey)
         {
             if (_binaryPayload != null)
             {
                 var jwe = new BinaryJweDescriptor(_header, _binaryPayload)
                 {
-                    EncryptionKey = _encryptionKey
+                    EncryptionKey = encryptionKey
                 };
                 return jwe;
             }
@@ -357,7 +362,7 @@ namespace JsonWebToken
             {
                 var jwe = new PlaintextJweDescriptor(_header, _textPayload)
                 {
-                    EncryptionKey = _encryptionKey
+                    EncryptionKey = encryptionKey
                 };
                 return jwe;
             }
@@ -375,7 +380,7 @@ namespace JsonWebToken
 
                 var jwe = new JweDescriptor(_header, jws)
                 {
-                    EncryptionKey = _encryptionKey
+                    EncryptionKey = encryptionKey
                 };
 
                 return jwe;

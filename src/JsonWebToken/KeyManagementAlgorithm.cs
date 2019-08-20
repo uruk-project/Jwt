@@ -95,7 +95,7 @@ namespace JsonWebToken
         private readonly byte _id;
         private readonly ushort _requiredKeySizeInBits;
         private readonly AlgorithmCategory _category;
-        private readonly KeyManagementAlgorithm _wrappedAlgorithm;
+        private readonly KeyManagementAlgorithm? _wrappedAlgorithm;
         private readonly byte[] _utf8Name;
         private readonly bool _produceEncryptionKey;
         private static readonly Dictionary<string, KeyManagementAlgorithm> _algorithms = new Dictionary<string, KeyManagementAlgorithm>
@@ -136,7 +136,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the wrapped algorithm.
         /// </summary>
-        public KeyManagementAlgorithm WrappedAlgorithm => _wrappedAlgorithm;
+        public KeyManagementAlgorithm? WrappedAlgorithm => _wrappedAlgorithm;
 
         /// <summary>
         /// Gets the name of the key management algorithm.
@@ -165,7 +165,7 @@ namespace JsonWebToken
         /// <param name="name"></param>
         /// <param name="keyType"></param>
         public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType)
-            : this(id, name, keyType, 0, null, true)
+            : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm: null, produceEncryptedKey: true)
         {
         }
 
@@ -176,8 +176,8 @@ namespace JsonWebToken
         /// <param name="name"></param>
         /// <param name="keyType"></param>
         /// <param name="wrappedAlgorithm"></param>
-        public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType, KeyManagementAlgorithm wrappedAlgorithm)
-                : this(id, name, keyType, 0, wrappedAlgorithm, true)
+        public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType, KeyManagementAlgorithm? wrappedAlgorithm)
+                : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm, produceEncryptedKey: true)
         {
         }
 
@@ -189,7 +189,7 @@ namespace JsonWebToken
         /// <param name="keyType"></param>
         /// <param name="requiredKeySizeInBits"></param>
         public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits)
-            : this(id, name, keyType, requiredKeySizeInBits, null, true)
+            : this(id, name, keyType, requiredKeySizeInBits, wrappedAlgorithm: null, produceEncryptedKey: true)
         {
         }
 
@@ -201,7 +201,7 @@ namespace JsonWebToken
         /// <param name="keyType"></param>
         /// <param name="produceEncryptedKey"></param>
         public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType, bool produceEncryptedKey)
-            : this(id, name, keyType, 0, null, produceEncryptedKey)
+            : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm: null, produceEncryptedKey)
         {
         }
 
@@ -214,7 +214,7 @@ namespace JsonWebToken
         /// <param name="requiredKeySizeInBits"></param>
         /// <param name="wrappedAlgorithm"></param>
         /// <param name="produceEncryptedKey"></param>
-        public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, KeyManagementAlgorithm wrappedAlgorithm, bool produceEncryptedKey)
+        public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, KeyManagementAlgorithm? wrappedAlgorithm, bool produceEncryptedKey)
         {
             _id = id;
             _utf8Name = Encoding.UTF8.GetBytes(name);
@@ -230,7 +230,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is KeyManagementAlgorithm alg)
             {
@@ -245,7 +245,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public bool Equals(KeyManagementAlgorithm other)
+        public bool Equals(KeyManagementAlgorithm? other)
         {
             if (other is null)
             {
@@ -270,7 +270,7 @@ namespace JsonWebToken
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public static bool operator ==(KeyManagementAlgorithm x, KeyManagementAlgorithm y)
+        public static bool operator ==(KeyManagementAlgorithm? x, KeyManagementAlgorithm? y)
         {
             if (x is null && y is null)
             {
@@ -298,7 +298,7 @@ namespace JsonWebToken
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public static bool operator !=(KeyManagementAlgorithm x, KeyManagementAlgorithm y)
+        public static bool operator !=(KeyManagementAlgorithm? x, KeyManagementAlgorithm? y)
         {
             if (x is null && y is null)
             {
@@ -324,7 +324,7 @@ namespace JsonWebToken
         /// Cast the <see cref="KeyManagementAlgorithm"/> into its <see cref="string"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator string(KeyManagementAlgorithm value)
+        public static explicit operator string?(KeyManagementAlgorithm? value)
         {
             return value?.Name;
         }
@@ -333,7 +333,7 @@ namespace JsonWebToken
         /// Cast the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator KeyManagementAlgorithm(byte[] value)
+        public static explicit operator KeyManagementAlgorithm?(byte[]? value)
         {
             if (value == null)
             {
@@ -352,7 +352,7 @@ namespace JsonWebToken
         /// Cast the <see cref="string"/> into its <see cref="KeyManagementAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator KeyManagementAlgorithm(string value)
+        public static explicit operator KeyManagementAlgorithm?(string? value)
         {
             if (value == null)
             {
@@ -371,7 +371,7 @@ namespace JsonWebToken
         /// Cast the <see cref="KeyManagementAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator byte[](KeyManagementAlgorithm value)
+        public static explicit operator byte[](KeyManagementAlgorithm? value)
         {
             if (value is null)
             {
@@ -392,7 +392,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="value"></param>
         /// <param name="algorithm"></param>
-        public unsafe static bool TryParse(ReadOnlySpan<byte> value, out KeyManagementAlgorithm algorithm)
+        public unsafe static bool TryParse(ReadOnlySpan<byte> value, out KeyManagementAlgorithm? algorithm)
         {
             if (value.IsEmpty)
             {

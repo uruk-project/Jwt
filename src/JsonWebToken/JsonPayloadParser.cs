@@ -41,126 +41,116 @@ namespace JsonWebToken
         {
             var current = new JwtObject(3);
             var payload = new JwtPayload(current);
-            while (reader.Read())
+            while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
-                switch (reader.TokenType)
+                var name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                reader.Read();
+                var type = reader.TokenType;
+                switch (type)
                 {
-                    case JsonTokenType.EndObject:
-                        return payload;
-                    case JsonTokenType.PropertyName:
-                        var name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                        reader.Read();
-                        var type = reader.TokenType;
-                        switch (type)
+                    case JsonTokenType.StartObject:
+                        current.Add(name, JsonParser.ReadJsonObject(ref reader));
+                        break;
+                    case JsonTokenType.StartArray:
+                        current.Add(name, JsonParser.ReadJsonArray(ref reader));
+                        break;
+                    case JsonTokenType.String:
+                        if (name.Length == 3)
                         {
-                            case JsonTokenType.StartObject:
-                                current.Add(name, JsonParser.ReadJsonObject(ref reader));
-                                break;
-                            case JsonTokenType.StartArray:
-                                current.Add(name, JsonParser.ReadJsonArray(ref reader));
-                                break;
-                            case JsonTokenType.String:
-                                if (name.Length == 3)
+                            fixed (byte* pName = name)
+                            {
+                                short nameSuffix = *(short*)(pName + 1);
+                                switch (*pName)
                                 {
-                                    fixed (byte* pName = name)
-                                    {
-                                        short nameSuffix = *(short*)(pName + 1);
-                                        switch (*pName)
+                                    case (byte)'i' when nameSuffix == 29555 /* iss */:
+                                        // TODO : Fix when the Utf8JsonReader will allow
+                                        // to read an unescaped string without allocating a string
+                                        current.Add(new JwtProperty(WellKnownProperty.Iss, reader.GetString()));
+                                        continue;
+
+                                    case (byte)'a' when nameSuffix == 25717 /* aud */:
+                                        // TODO : Fix when the Utf8JsonReader will allow
+                                        // to read an unescaped string without allocating a string
+                                        current.Add(new JwtProperty(WellKnownProperty.Aud, reader.GetString()));
+                                        continue;
+
+                                    case (byte)'j' when nameSuffix == 26996 /* jti */:
+                                        // TODO : Fix when the Utf8JsonReader will allow
+                                        // to read an unescaped string without allocating a string
+                                        current.Add(new JwtProperty(WellKnownProperty.Jti, reader.GetString()));
+                                        continue;
+
+                                    case (byte)'s' when nameSuffix == 25205 /* sub */:
+                                        // TODO : Fix when the Utf8JsonReader will allow
+                                        // to read an unescaped string without allocating a string
+                                        current.Add(new JwtProperty(WellKnownProperty.Sub, reader.GetString()));
+                                        continue;
+                                }
+                            }
+                        }
+
+                        current.Add(name, reader.GetString());
+                        break;
+                    case JsonTokenType.True:
+                        current.Add(name, true);
+                        break;
+                    case JsonTokenType.False:
+                        current.Add(name, false);
+                        break;
+                    case JsonTokenType.Null:
+                        current.Add(name);
+                        break;
+                    case JsonTokenType.Number:
+                        long longValue;
+                        if (name.Length == 3)
+                        {
+                            fixed (byte* pName = name)
+                            {
+                                short nameSuffix = *(short*)(pName + 1);
+                                switch (*pName)
+                                {
+                                    case (byte)'e' when nameSuffix == 28792 /* exp */:
+                                        if (reader.TryGetInt64(out longValue))
                                         {
-                                            case (byte)'i' when nameSuffix == 29555 /* iss */:
-                                                // TODO : Fix when the Utf8JsonReader will allow
-                                                // to read an unescaped string without allocating a string
-                                                current.Add(new JwtProperty(WellKnownProperty.Iss, reader.GetString()));
-                                                continue;
-
-                                            case (byte)'a' when nameSuffix == 25717 /* aud */:
-                                                // TODO : Fix when the Utf8JsonReader will allow
-                                                // to read an unescaped string without allocating a string
-                                                current.Add(new JwtProperty(WellKnownProperty.Aud, reader.GetString()));
-                                                continue;
-
-                                            case (byte)'j' when nameSuffix == 26996 /* jti */:
-                                                // TODO : Fix when the Utf8JsonReader will allow
-                                                // to read an unescaped string without allocating a string
-                                                current.Add(new JwtProperty(WellKnownProperty.Jti, reader.GetString()));
-                                                continue;
-
-                                            case (byte)'s' when nameSuffix == 25205 /* sub */:
-                                                // TODO : Fix when the Utf8JsonReader will allow
-                                                // to read an unescaped string without allocating a string
-                                                current.Add(new JwtProperty(WellKnownProperty.Sub, reader.GetString()));
-                                                continue;
+                                            current.Add(new JwtProperty(WellKnownProperty.Exp, longValue));
+                                            continue;
                                         }
-                                    }
-                                }
 
-                                current.Add(name, reader.GetString());
-                                break;
-                            case JsonTokenType.True:
-                                current.Add(name, true);
-                                break;
-                            case JsonTokenType.False:
-                                current.Add(name, false);
-                                break;
-                            case JsonTokenType.Null:
-                                current.Add(name);
-                                break;
-                            case JsonTokenType.Number:
-                                long longValue;
-                                if (name.Length == 3)
-                                {
-                                    fixed (byte* pName = name)
-                                    {
-                                        short nameSuffix = *(short*)(pName + 1);
-                                        switch (*pName)
+                                        break;
+                                    case (byte)'i' when nameSuffix == 29793 /* iat */:
+                                        if (reader.TryGetInt64(out longValue))
                                         {
-                                            case (byte)'e' when nameSuffix == 28792 /* exp */:
-                                                if (reader.TryGetInt64(out longValue))
-                                                {
-                                                    current.Add(new JwtProperty(WellKnownProperty.Exp, longValue));
-                                                    continue;
-                                                }
-
-                                                break;
-                                            case (byte)'i' when nameSuffix == 29793 /* iat */:
-                                                if (reader.TryGetInt64(out longValue))
-                                                {
-                                                    current.Add(new JwtProperty(WellKnownProperty.Iat, longValue));
-                                                    continue;
-                                                }
-
-                                                break;
-                                            case (byte)'n' when nameSuffix == 26210 /* nbf */:
-                                                if (reader.TryGetInt64(out longValue))
-                                                {
-                                                    current.Add(new JwtProperty(WellKnownProperty.Nbf, longValue));
-                                                    continue;
-                                                }
-
-                                                break;
+                                            current.Add(new JwtProperty(WellKnownProperty.Iat, longValue));
+                                            continue;
                                         }
-                                    }
-                                }
 
-                                if (reader.TryGetInt64(out longValue))
-                                {
-                                    current.Add(name, longValue);
+                                        break;
+                                    case (byte)'n' when nameSuffix == 26210 /* nbf */:
+                                        if (reader.TryGetInt64(out longValue))
+                                        {
+                                            current.Add(new JwtProperty(WellKnownProperty.Nbf, longValue));
+                                            continue;
+                                        }
+
+                                        break;
                                 }
-                                else
-                                {
-                                    if (reader.TryGetDouble(out double doubleValue))
-                                    {
-                                        current.Add(name, doubleValue);
-                                    }
-                                    else
-                                    {
-                                        ThrowHelper.ThrowFormatException_NotSupportedNumberValue(name);
-                                    }
-                                }
-                                break;
-                            default:
-                                ThrowHelper.ThrowFormatException_MalformedJson();
-                                break;
+                            }
+                        }
+
+                        if (reader.TryGetInt64(out longValue))
+                        {
+                            current.Add(name, longValue);
+                        }
+                        else
+                        {
+                            if (reader.TryGetDouble(out double doubleValue))
+                            {
+                                current.Add(name, doubleValue);
+                            }
+                            else
+                            {
+                                ThrowHelper.ThrowFormatException_NotSupportedNumberValue(name);
+                            }
                         }
                         break;
                     default:
@@ -169,8 +159,12 @@ namespace JsonWebToken
                 }
             }
 
-            ThrowHelper.ThrowFormatException_MalformedJson();
-            return null;
+            if (!(reader.TokenType is JsonTokenType.EndObject))
+            {
+                ThrowHelper.ThrowFormatException_MalformedJson();
+            }
+
+            return payload;
         }
     }
 }

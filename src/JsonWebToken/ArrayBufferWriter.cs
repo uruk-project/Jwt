@@ -10,7 +10,7 @@ namespace JsonWebToken
     /// </summary>
     public sealed class ArrayBufferWriter : IBufferWriter<byte>, IDisposable
     {
-        private byte[] _rentedBuffer;
+        private byte[]? _rentedBuffer;
         private int _index;
 
         private const int MinimumBufferSize = 256;

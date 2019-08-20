@@ -1,8 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using System.Collections.Concurrent;
-
 namespace JsonWebToken
 {
     /// <summary>
@@ -35,12 +33,12 @@ namespace JsonWebToken
         /// </summary>
         protected AsymmetricJwk(string d)
         {
-            if (d == null)
+            if (d is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
-            D = Base64Url.Decode(d);
+            D = Base64Url.Decode(d!); // ! => [DoesNotReturn]
         }
 
         /// <summary>
@@ -57,7 +55,7 @@ namespace JsonWebToken
         protected AsymmetricJwk(byte[] d, SignatureAlgorithm alg)
             : base(alg)
         {
-            if (d == null)
+            if (d is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
@@ -71,12 +69,12 @@ namespace JsonWebToken
         protected AsymmetricJwk(string d, SignatureAlgorithm alg)
             : base(alg)
         {
-            if (d == null)
+            if (d is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
-            D = Base64Url.Decode(d);
+            D = Base64Url.Decode(d!); // ! => [DoesNotReturn]
         }
 
         /// <summary>
@@ -93,7 +91,7 @@ namespace JsonWebToken
         protected AsymmetricJwk(byte[] d, KeyManagementAlgorithm alg)
             : base(alg)
         {
-            if (d == null)
+            if (d is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
@@ -107,18 +105,18 @@ namespace JsonWebToken
         protected AsymmetricJwk(string d, KeyManagementAlgorithm alg)
             : base(alg)
         {
-            if (d == null)
+            if (d is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
-            D = Base64Url.Decode(d);
+            D = Base64Url.Decode(d!); // ! => [DoesNotReturn]
         }
 
         /// <summary>
         /// Gets or sets the 'd' (ECC - Private Key OR RSA - Private Exponent).
         /// </summary>
-        public byte[] D { get; internal set; }
+        public byte[]? D { get; internal set; }
 
         /// <summary>
         /// Gets a bool indicating if a private key exists.
@@ -127,7 +125,7 @@ namespace JsonWebToken
         public abstract bool HasPrivateKey { get; }
 
         /// <inheritsdoc />
-        protected override AuthenticatedEncryptor CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+        protected override AuthenticatedEncryptor? CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
             return null;
         }

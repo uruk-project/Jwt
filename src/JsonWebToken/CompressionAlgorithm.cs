@@ -56,18 +56,18 @@ namespace JsonWebToken
         public CompressionAlgorithm(sbyte id, string name, Compressor compressor)
         {
             Id = id;
-            if (name == null)
+            if (name is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.name);
             }
 
-            if (compressor == null)
+            if (compressor is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.compressor);
             }
 
-            Name = name;
-            Compressor = compressor;
+            Name = name!; // ! => [DoesNotReturn]
+            Compressor = compressor!; // ! => [DoesNotReturn]
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is CompressionAlgorithm alg)
             {
@@ -91,7 +91,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public bool Equals(CompressionAlgorithm other)
+        public bool Equals(CompressionAlgorithm? other)
         {
             if (other is null)
             {
@@ -116,7 +116,7 @@ namespace JsonWebToken
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public static bool operator ==(CompressionAlgorithm x, CompressionAlgorithm y)
+        public static bool operator ==(CompressionAlgorithm? x, CompressionAlgorithm? y)
         {
             if (x is null && y is null)
             {
@@ -142,7 +142,7 @@ namespace JsonWebToken
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public static bool operator !=(CompressionAlgorithm x, CompressionAlgorithm y)
+        public static bool operator !=(CompressionAlgorithm? x, CompressionAlgorithm? y)
         {
             if (x is null && y is null)
             {
@@ -167,7 +167,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="value"></param>
         /// <param name="algorithm"></param>
-        public unsafe static bool TryParse(ReadOnlySpan<byte> value, out CompressionAlgorithm algorithm)
+        public unsafe static bool TryParse(ReadOnlySpan<byte> value, out CompressionAlgorithm? algorithm)
         {
             if (value.IsEmpty)
             {
@@ -196,7 +196,7 @@ namespace JsonWebToken
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="CompressionAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static unsafe explicit operator CompressionAlgorithm(ReadOnlySpan<byte> value)
+        public static unsafe explicit operator CompressionAlgorithm?(ReadOnlySpan<byte> value)
         {
             if (value.IsEmpty)
             {
@@ -224,21 +224,21 @@ namespace JsonWebToken
         /// Cast the array of <see cref="byte"/> into its <see cref="CompressionAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static unsafe explicit operator CompressionAlgorithm(byte[] value)
+        public static unsafe explicit operator CompressionAlgorithm?(byte[]? value)
         {
-            if (value == null)
+            if (value is null)
             {
                 return null;
             }
 
-            return (CompressionAlgorithm)new ReadOnlySpan<byte>(value);
+            return (CompressionAlgorithm?)new ReadOnlySpan<byte>(value);
         }
 
         /// <summary>
         /// Cast the <see cref="CompressionAlgorithm"/> into its <see cref="long"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator long(CompressionAlgorithm value)
+        public static explicit operator long(CompressionAlgorithm? value)
         {
             if (value is null)
             {
@@ -252,7 +252,7 @@ namespace JsonWebToken
         /// Cast the <see cref="CompressionAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator byte[](CompressionAlgorithm value)
+        public static explicit operator byte[](CompressionAlgorithm? value)
         {
             if (value is null)
             {

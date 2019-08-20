@@ -8,25 +8,20 @@ namespace JsonWebToken
 {
     public sealed class SecurityEventToken : Jwt
     {
-        private readonly Jwt _token;
         private JwtObject _events;
 
         public SecurityEventToken(Jwt token)
+            : base(token)
         {
-            _token = token ?? throw new ArgumentNullException(nameof(token));
         }
-
-        public override JwtHeader Header => _token.Header;
-
-        public override JwtPayload Payload => _token.Payload;
 
         public JwtObject Events
         {
             get
             {
-                if (_events == null)
+                if (_events is null)
                 {
-                    if (Payload == null)
+                    if (Payload is null)
                     {
                         return new JwtObject();
                     }

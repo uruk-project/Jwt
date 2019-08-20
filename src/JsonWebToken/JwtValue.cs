@@ -36,7 +36,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the value of the <see cref="JwtValue"/>.
         /// </summary>
-        public readonly object Value;
+        public readonly object? Value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtValue"/> class.
@@ -148,25 +148,25 @@ namespace JsonWebToken
             switch (Type)
             {
                 case JwtTokenType.Object:
-                    ((JwtObject)Value).WriteTo(writer);
+                    ((JwtObject)Value!).WriteTo(writer);
                     break;
                 case JwtTokenType.Array:
-                    ((JwtArray)Value).WriteTo(writer);
+                    ((JwtArray)Value!).WriteTo(writer);
                     break;
                 case JwtTokenType.Integer:
-                    writer.WriteNumberValue((long)Value);
+                    writer.WriteNumberValue((long)Value!);
                     break;
                 case JwtTokenType.Float:
-                    writer.WriteNumberValue((double)Value);
+                    writer.WriteNumberValue((double)Value!);
                     break;
                 case JwtTokenType.String:
-                    writer.WriteStringValue((string)Value);
+                    writer.WriteStringValue((string)Value!);
                     break;
                 case JwtTokenType.Utf8String:
-                    writer.WriteStringValue((byte[])Value);
+                    writer.WriteStringValue((byte[])Value!);
                     break;
                 case JwtTokenType.Boolean:
-                    writer.WriteBooleanValue((bool)Value);
+                    writer.WriteBooleanValue((bool)Value!);
                     break;
                 case JwtTokenType.Null:
                     writer.WriteNullValue();

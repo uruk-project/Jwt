@@ -43,126 +43,121 @@ namespace JsonWebToken
             var header = new JwtHeader(current);
             while (reader.Read())
             {
-                switch (reader.TokenType)
+                if (!(reader.TokenType is JsonTokenType.PropertyName))
                 {
-                    case JsonTokenType.EndObject:
-                        return header;
-                    case JsonTokenType.PropertyName:
-                        var name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                        reader.Read();
-                        var type = reader.TokenType;
-                        switch (type)
+                    break;
+                }
+
+                var name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                reader.Read();
+                var type = reader.TokenType;
+                switch (type)
+                {
+                    case JsonTokenType.StartObject:
+                        current.Add(name, JsonParser.ReadJsonObject(ref reader));
+                        break;
+                    case JsonTokenType.StartArray:
+                        current.Add(name, JsonParser.ReadJsonArray(ref reader));
+                        break;
+                    case JsonTokenType.String:
+                        if (name.Length == 3)
                         {
-                            case JsonTokenType.StartObject:
-                                current.Add(name, JsonParser.ReadJsonObject(ref reader));
-                                break;
-                            case JsonTokenType.StartArray:
-                                current.Add(name, JsonParser.ReadJsonArray(ref reader));
-                                break;
-                            case JsonTokenType.String:
-                                if (name.Length == 3)
+                            fixed (byte* pName = name)
+                            {
+                                short nameSuffix = *(short*)(pName + 1);
+                                switch (*pName)
                                 {
-                                    fixed (byte* pName = name)
-                                    {
-                                        short nameSuffix = *(short*)(pName + 1);
-                                        switch (*pName)
+                                    case (byte)'a' when nameSuffix == 26476 /* alg */:
+                                        var alg = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                                        if (SignatureAlgorithm.TryParse(alg, out var signatureAlgorithm))
                                         {
-                                            case (byte)'a' when nameSuffix == 26476 /* alg */:
-                                                var alg = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                                                if (SignatureAlgorithm.TryParse(alg, out var signatureAlgorithm))
-                                                {
-                                                    header.SignatureAlgorithm = signatureAlgorithm;
-                                                }
-                                                else if (KeyManagementAlgorithm.TryParse(alg, out var keyManagementAlgorithm))
-                                                {
-                                                    header.KeyManagementAlgorithm = keyManagementAlgorithm;
-                                                }
-                                                else
-                                                {
-                                                    // TODO : Fix when the Utf8JsonReader will allow
-                                                    // to read an unescaped string without allocating a string
-                                                    current.Add(new JwtProperty(WellKnownProperty.Alg, Encoding.UTF8.GetBytes(reader.GetString())));
-                                                }
-
-                                                continue;
-                                            case (byte)'e' when nameSuffix == 25454 /* enc */:
-                                                var enc = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                                                if (EncryptionAlgorithm.TryParse(enc, out var encryptionAlgorithm))
-                                                {
-                                                    header.EncryptionAlgorithm = encryptionAlgorithm;
-                                                }
-                                                else
-                                                {
-                                                    // TODO : Fix when the Utf8JsonReader will allow
-                                                    // to read an unescaped string without allocating a string
-                                                    current.Add(new JwtProperty(WellKnownProperty.Enc, Encoding.UTF8.GetBytes(reader.GetString())));
-                                                }
-
-                                                continue;
-                                            case (byte)'z' when nameSuffix == 28777 /* zip */:
-                                                var zip = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                                                if (CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm))
-                                                {
-                                                    current.Add(new JwtProperty(compressionAlgorithm));
-                                                }
-                                                else
-                                                {
-                                                    // TODO : Fix when the Utf8JsonReader will allow
-                                                    // to read an unescaped string without allocating a string
-                                                    current.Add(new JwtProperty(WellKnownProperty.Zip, Encoding.UTF8.GetBytes(reader.GetString())));
-                                                }
-
-                                                continue;
-                                            case (byte)'c' when nameSuffix == 31092 /* cty */:
-                                                // TODO : Fix when the Utf8JsonReader will allow
-                                                // to read an unescaped string without allocating a string
-                                                current.Add(new JwtProperty(WellKnownProperty.Cty, Encoding.UTF8.GetBytes(reader.GetString())));
-                                                continue;
-                                            case (byte)'t' when nameSuffix == 28793 /* typ */:
-                                                // TODO : Fix when the Utf8JsonReader will allow
-                                                // to read an unescaped string without allocating a string
-                                                current.Add(new JwtProperty(WellKnownProperty.Typ, Encoding.UTF8.GetBytes(reader.GetString())));
-                                                continue;
-                                            case (byte)'k' when nameSuffix == 25705 /* kid */:
-                                                // TODO : Fix when the Utf8JsonReader will allow
-                                                // to read an unescaped string without allocating a string
-                                                current.Add(new JwtProperty(WellKnownProperty.Kid, reader.GetString()));
-                                                continue;
+                                            header.SignatureAlgorithm = signatureAlgorithm;
                                         }
-                                    }
-                                }
+                                        else if (KeyManagementAlgorithm.TryParse(alg, out var keyManagementAlgorithm))
+                                        {
+                                            header.KeyManagementAlgorithm = keyManagementAlgorithm;
+                                        }
+                                        else
+                                        {
+                                            // TODO : Fix when the Utf8JsonReader will allow
+                                            // to read an unescaped string without allocating a string
+                                            current.Add(new JwtProperty(WellKnownProperty.Alg, Encoding.UTF8.GetBytes(reader.GetString())));
+                                        }
 
-                                current.Add(name, reader.GetString());
-                                break;
-                            case JsonTokenType.True:
-                                current.Add(name, true);
-                                break;
-                            case JsonTokenType.False:
-                                current.Add(name, false);
-                                break;
-                            case JsonTokenType.Null:
-                                current.Add(name);
-                                break;
-                            case JsonTokenType.Number:
-                                if (reader.TryGetInt64(out long longValue))
-                                {
-                                    current.Add(name, longValue);
+                                        continue;
+                                    case (byte)'e' when nameSuffix == 25454 /* enc */:
+                                        var enc = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                                        if (EncryptionAlgorithm.TryParse(enc, out var encryptionAlgorithm))
+                                        {
+                                            header.EncryptionAlgorithm = encryptionAlgorithm;
+                                        }
+                                        else
+                                        {
+                                            // TODO : Fix when the Utf8JsonReader will allow
+                                            // to read an unescaped string without allocating a string
+                                            current.Add(new JwtProperty(WellKnownProperty.Enc, Encoding.UTF8.GetBytes(reader.GetString())));
+                                        }
+
+                                        continue;
+                                    case (byte)'z' when nameSuffix == 28777 /* zip */:
+                                        var zip = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                                        if (CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm) && !(compressionAlgorithm is null))
+                                        {
+                                            current.Add(new JwtProperty(compressionAlgorithm));
+                                        }
+                                        else
+                                        {
+                                            // TODO : Fix when the Utf8JsonReader will allow
+                                            // to read an unescaped string without allocating a string
+                                            current.Add(new JwtProperty(WellKnownProperty.Zip, Encoding.UTF8.GetBytes(reader.GetString())));
+                                        }
+
+                                        continue;
+                                    case (byte)'c' when nameSuffix == 31092 /* cty */:
+                                        // TODO : Fix when the Utf8JsonReader will allow
+                                        // to read an unescaped string without allocating a string
+                                        current.Add(new JwtProperty(WellKnownProperty.Cty, Encoding.UTF8.GetBytes(reader.GetString())));
+                                        continue;
+                                    case (byte)'t' when nameSuffix == 28793 /* typ */:
+                                        // TODO : Fix when the Utf8JsonReader will allow
+                                        // to read an unescaped string without allocating a string
+                                        current.Add(new JwtProperty(WellKnownProperty.Typ, Encoding.UTF8.GetBytes(reader.GetString())));
+                                        continue;
+                                    case (byte)'k' when nameSuffix == 25705 /* kid */:
+                                        // TODO : Fix when the Utf8JsonReader will allow
+                                        // to read an unescaped string without allocating a string
+                                        current.Add(new JwtProperty(WellKnownProperty.Kid, reader.GetString()));
+                                        continue;
                                 }
-                                else
-                                {
-                                    if (reader.TryGetDouble(out double doubleValue))
-                                    {
-                                        current.Add(name, doubleValue);
-                                    }
-                                    else
-                                    {
-                                        ThrowHelper.ThrowFormatException_NotSupportedNumberValue(name);
-                                    }
-                                }
-                                break;
-                            default:
-                                ThrowHelper.ThrowFormatException_MalformedJson();
-                                break;
+                            }
+                        }
+
+                        current.Add(name, reader.GetString());
+                        break;
+                    case JsonTokenType.True:
+                        current.Add(name, true);
+                        break;
+                    case JsonTokenType.False:
+                        current.Add(name, false);
+                        break;
+                    case JsonTokenType.Null:
+                        current.Add(name);
+                        break;
+                    case JsonTokenType.Number:
+                        if (reader.TryGetInt64(out long longValue))
+                        {
+                            current.Add(name, longValue);
+                        }
+                        else
+                        {
+                            if (reader.TryGetDouble(out double doubleValue))
+                            {
+                                current.Add(name, doubleValue);
+                            }
+                            else
+                            {
+                                ThrowHelper.ThrowFormatException_NotSupportedNumberValue(name);
+                            }
                         }
                         break;
                     default:
@@ -171,8 +166,12 @@ namespace JsonWebToken
                 }
             }
 
-            ThrowHelper.ThrowFormatException_MalformedJson();
-            return null;
+            if (!(reader.TokenType is JsonTokenType.EndObject))
+            {
+                ThrowHelper.ThrowFormatException_MalformedJson();
+            }
+
+            return header;
         }
     }
 }

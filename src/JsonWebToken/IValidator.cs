@@ -11,6 +11,6 @@ namespace JsonWebToken
         /// <summary>
         /// Tries to validate a token.
         /// </summary>
-        TokenValidationResult TryValidate(in TokenValidationContext context);
+        TokenValidationResult TryValidate(Jwt jwt);
     }
 }

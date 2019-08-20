@@ -62,15 +62,25 @@ namespace JsonWebToken.Tests
             var destination = new byte[0];
             var header = new JwtObject();
 
-            int bytesWritten = 0;
-            Jwk cek = null;
-            Assert.Throws<CryptographicException>(() => wrapper.WrapKey(null, header, destination, out cek, out bytesWritten));
+            Assert.Throws<CryptographicException>(() => wrapper.WrapKey(null, header, destination));
             wrapper.Dispose();
-            Assert.Throws<ObjectDisposedException>(() => wrapper.WrapKey(null, header, destination, out cek, out bytesWritten));
+            Assert.Throws<ObjectDisposedException>(() => wrapper.WrapKey(null, header, destination));
 
-            Assert.Equal(0, bytesWritten);
             Assert.Equal(0, header.Count);
-            Assert.Null(cek);
+        }
+
+        [Fact]
+        public void Rsa_TryEncrypt_DestinationTooSmall()
+        {
+            var data = new byte[1024];
+            RandomNumberGenerator.Fill(data);
+            var destination = new byte[0];
+            using (var rsa = RSA.Create(512))
+            {
+                var result = rsa.TryEncrypt(data, destination, RSAEncryptionPadding.OaepSHA1, out int bytesWritten);
+
+                Assert.False(result);
+            }
         }
     }
 }

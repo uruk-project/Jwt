@@ -43,21 +43,5 @@ namespace JsonWebToken.Tests
             Jwk cek = TryWrapKey_Success(null, enc, alg);
             Assert.NotNull(cek);
         }
-
-        [Fact]
-        public void WrapKey_Failure()
-        {
-            var keyEncryptionKey = SymmetricJwk.GenerateKey(128);
-            var wrapper = new AesKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes128KW);
-            var destination = new byte[0];
-            var header = new JwtObject();
-            Jwk cek = null;
-            int bytesWritten = 0;
-            Assert.Throws<ArgumentException>(() => wrapper.WrapKey(null, header, destination, out cek, out bytesWritten));
-
-            Assert.Equal(0, bytesWritten);
-            Assert.Equal(0, header.Count);
-            Assert.Null(cek);
-        }
     }
 }

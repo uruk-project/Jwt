@@ -40,11 +40,13 @@ namespace JsonWebToken.Internal
             _hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
 
             _aesPool = key.Ephemeral ? new ObjectPool<Aes>(new AesPooledPolicy(aesKey), 1) : new ObjectPool<Aes>(new AesPooledPolicy(aesKey));
-            _signer = _hmacKey.CreateSigner(encryptionAlgorithm.SignatureAlgorithm) as SymmetricSigner;
-            if (_signer == null)
+            var signer = _hmacKey.CreateSigner(encryptionAlgorithm.SignatureAlgorithm);
+            if (signer is null)
             {
                 ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
             }
+
+            _signer = (SymmetricSigner)signer!; // ! => [DoesNotReturn]
         }
 
         /// <inheritdoc />
@@ -100,7 +102,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            byte[] arrayToReturnToPool = null;
+            byte[]? arrayToReturnToPool = null;
             Aes aes = _aesPool.Get();
             try
             {
@@ -166,7 +168,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            byte[] byteArrayToReturnToPool = null;
+            byte[]? byteArrayToReturnToPool = null;
             int macLength = associatedData.Length + nonce.Length + ciphertext.Length + sizeof(long);
             Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
                                     ? stackalloc byte[macLength]

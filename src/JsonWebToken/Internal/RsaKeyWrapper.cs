@@ -45,6 +45,7 @@ namespace JsonWebToken.Internal
             else
             {
                 ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(contentEncryptionAlgorithm);
+                _padding = RSAEncryptionPadding.CreateOaep(new HashAlgorithmName()); // will never occur
             }
         }
 
@@ -86,7 +87,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override void WrapKey(Jwk staticKey, JwtObject header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
         {
             if (_disposed)
             {
@@ -95,26 +96,22 @@ namespace JsonWebToken.Internal
 
             var cek = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
 #if !NETSTANDARD2_0
-            if (!_rsa.TryEncrypt(cek.AsSpan(), destination, _padding, out bytesWritten))
+            if (!_rsa.TryEncrypt(cek.AsSpan(), destination, _padding, out int bytesWritten) || bytesWritten != destination.Length)
             {
                 ThrowHelper.ThrowCryptographicException_KeyWrapFailed();
             }
 #else
             var result = _rsa.Encrypt(cek.AsSpan().ToArray(), _padding);
             result.CopyTo(destination);
-            bytesWritten = result.Length;
 #endif
 
-            contentEncryptionKey = cek;
+            return cek;
         }
 
         /// <inheritsdoc />
         public override int GetKeyUnwrapSize(int wrappedKeySize)
         {
-            int unwrapSize = GetKeyWrapSize();
-            return unwrapSize > EncryptionAlgorithm.RequiredKeySizeInBytes
-                ? Key.KeySizeInBits >> 3
-                : EncryptionAlgorithm.RequiredKeySizeInBytes;
+            return EncryptionAlgorithm.RequiredKeySizeInBytes;
         }
 
         /// <inheritsdoc />

@@ -28,7 +28,7 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="JwtWriter"/>.
         /// </summary>
         /// <param name="headerCache"></param>
-        public JwtWriter(JsonHeaderCache headerCache)
+        public JwtWriter(JsonHeaderCache? headerCache)
         {
             _headerCache = headerCache ?? new JsonHeaderCache();
         }
@@ -93,18 +93,18 @@ namespace JsonWebToken
         /// <returns>The array of <see cref="byte"/> representation of the JWT.</returns>
         public void WriteToken(JwtDescriptor descriptor, IBufferWriter<byte> output)
         {
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.descriptor);
             }
             
             if (!IgnoreTokenValidation)
             {
-                descriptor.Validate();
+                descriptor!.Validate();
             }
 
             var encodingContext = new EncodingContext(EnableHeaderCaching ? _headerCache : null, TokenLifetimeInMinutes, GenerateIssuedTime);
-            descriptor.Encode(encodingContext, output);
+            descriptor!.Encode(encodingContext, output);
         }
 
         /// <summary>

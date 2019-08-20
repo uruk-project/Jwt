@@ -15,10 +15,8 @@ namespace JsonWebToken.Internal
         }
         
         /// <inheritdoc />
-        public TokenValidationResult TryValidate(in TokenValidationContext context)
+        public TokenValidationResult TryValidate(Jwt jwt)
         {
-            var jwt = context.Jwt;
-
             var expires = jwt.ExpirationTime;
             if (!expires.HasValue)
             {

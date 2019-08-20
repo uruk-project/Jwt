@@ -21,7 +21,7 @@ namespace JsonWebToken.Internal
 
         private readonly ObjectWrapper[] _items;
         private readonly PooledObjectFactory<T> _policy;
-        private T _firstItem;
+        private T? _firstItem;
 
         /// <summary>
         /// Initializes a new instance of <see cref="ObjectPool{T}"/>.
@@ -39,12 +39,12 @@ namespace JsonWebToken.Internal
         /// <param name="maximumRetained"></param>
         public ObjectPool(PooledObjectFactory<T> policy, int maximumRetained)
         {
-            if (policy == null)
+            if (policy is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
-            _policy = policy;
+            _policy = policy!; // ! => [DoesNotReturn]
 
             // -1 due to _firstItem
             _items = new ObjectWrapper[maximumRetained - 1];
@@ -58,17 +58,17 @@ namespace JsonWebToken.Internal
         {
             if (_isDisposed)
             {
-                ThrowObjectDisposedException();
+                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             var item = _firstItem;
-            if (item == null || Interlocked.CompareExchange(ref _firstItem, null, item) != item)
+            if (item is null || Interlocked.CompareExchange(ref _firstItem, null, item) != item)
             {
                 var items = _items;
                 for (var i = 0; i < items.Length; i++)
                 {
                     item = items[i].Element;
-                    if (item != null && Interlocked.CompareExchange(ref items[i].Element, null, item) == item)
+                    if (!(item is null) && Interlocked.CompareExchange(ref items[i].Element, null!, item) == item)
                     {
                         return item;
                     }
@@ -78,11 +78,6 @@ namespace JsonWebToken.Internal
             }
 
             return item;
-
-            void ThrowObjectDisposedException()
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
         }
 
         /// <summary>
@@ -102,14 +97,14 @@ namespace JsonWebToken.Internal
         {
             bool returnedTooPool = false;
 
-            if (_firstItem == null && Interlocked.CompareExchange(ref _firstItem, obj, null) == null)
+            if (_firstItem is null && Interlocked.CompareExchange(ref _firstItem, obj, null) is null)
             {
                 returnedTooPool = true;
             }
             else
             {
                 var items = _items;
-                for (var i = 0; i < items.Length && !(returnedTooPool = Interlocked.CompareExchange(ref items[i].Element, obj, null) == null); i++)
+                for (var i = 0; i < items.Length && !(returnedTooPool = Interlocked.CompareExchange(ref items[i].Element, obj, null!) is null); i++)
                 {
                 }
             }
@@ -135,7 +130,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private void DisposeItem(T item)
+        private void DisposeItem(T? item)
         {
             if (item is IDisposable disposable)
             {
@@ -147,7 +142,7 @@ namespace JsonWebToken.Internal
         [DebuggerDisplay("{Element}")]
         private struct ObjectWrapper
         {
-            public T Element;
+            public T? Element;
         }
     }
 }
