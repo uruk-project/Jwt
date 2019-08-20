@@ -42,10 +42,10 @@ namespace JsonWebToken.KeyVault
 
         public Jwk[] GetKeys(JwtHeader header)
         {
-            return GetKeysAsync(header).GetAwaiter().GetResult();
+            return GetKeysAsync().GetAwaiter().GetResult();
         }
 
-        private async Task<Jwk[]> GetKeysAsync(JwtHeader header)
+        private async Task<Jwk[]> GetKeysAsync()
         {
             var keys = new List<Jwk>();
             var keyIdentifiers = await _client.GetKeysAsync(_vaultBaseUrl, MaxResults);

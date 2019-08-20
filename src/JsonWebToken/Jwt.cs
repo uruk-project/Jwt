@@ -14,13 +14,24 @@ namespace JsonWebToken
     public class Jwt
     {
         private static readonly string[] EmptyStrings = Array.Empty<string>();
-        private readonly JwtPayload _payload;
+        private readonly JwtPayload? _payload;
 
         /// <summary>
         /// Initializes a new instance of <see cref="Jwt"/>.
         /// </summary>
-        protected Jwt()
+        protected Jwt(Jwt token)
         {
+            if (token is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.token);
+            }
+
+            _payload = token!._payload;  // ! => [DoesNotReturn]
+            Header = token.Header;
+            NestedToken = token.NestedToken;
+            SigningKey = token.SigningKey;
+            EncryptionKey = token.EncryptionKey;
+            Binary = token.Binary;
         }
 
         /// <summary>
@@ -31,22 +42,22 @@ namespace JsonWebToken
         /// <param name="encryptionKey"></param>
         public Jwt(JwtHeader header, Jwt nestedToken, Jwk encryptionKey)
         {
-            if (header == null)
+            if (header is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
-            if (nestedToken == null)
+            if (nestedToken is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.nestedToken);
             }
 
-            if (encryptionKey == null)
+            if (encryptionKey is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionKey);
             }
 
-            Header = header;
+            Header = header!; // ! => [DoesNotReturn]
             NestedToken = nestedToken;
             EncryptionKey = encryptionKey;
         }
@@ -59,12 +70,12 @@ namespace JsonWebToken
         /// <param name="encryptionKey"></param>
         public Jwt(JwtHeader header, byte[] data, Jwk encryptionKey)
         {
-            if (header == null)
+            if (header is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
-            if (data == null)
+            if (data is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
             }
@@ -74,7 +85,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionKey);
             }
 
-            Header = header;
+            Header = header!; // ! => [DoesNotReturn]
             Binary = data;
             EncryptionKey = encryptionKey;
         }
@@ -86,17 +97,17 @@ namespace JsonWebToken
         /// <param name="payload"></param>
         public Jwt(JwtHeader header, JwtPayload payload)
         {
-            if (header == null)
+            if (header is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
-            if (payload == null)
+            if (payload is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.payload);
             }
 
-            Header = header;
+            Header = header!; // ! => [DoesNotReturn];
             _payload = payload;
         }
 
@@ -108,47 +119,47 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the <see cref="JwtHeader"/> associated with this instance if the token is signed.
         /// </summary>
-        public virtual JwtHeader Header { get; }
+        public JwtHeader Header { get; }
 
         /// <summary>
         /// Gets the value of the 'jti' claim.
         /// </summary>
-        public string Id => Payload?.Jti;
+        public string? Id => Payload?.Jti;
 
         /// <summary>
         /// Gets the value of the 'iss' claim.
         /// </summary>
-        public string Issuer => Payload?.Iss;
+        public string? Issuer => Payload?.Iss;
 
         /// <summary>
         /// Gets the <see cref="JwtPayload"/> associated with this instance.
         /// </summary>
-        public virtual JwtPayload Payload => NestedToken?.Payload ?? _payload;
+        public JwtPayload? Payload => NestedToken?.Payload ?? _payload;
 
         /// <summary>
         /// Gets the nested <see cref="Jwt"/> associated with this instance.
         /// </summary>
-        public Jwt NestedToken { get; }
+        public Jwt? NestedToken { get; }
 
         /// <summary>
         /// Gets the signature algorithm associated with this instance.
         /// </summary>
-        public SignatureAlgorithm SignatureAlgorithm => Header.SignatureAlgorithm;
+        public SignatureAlgorithm? SignatureAlgorithm => Header.SignatureAlgorithm;
 
         /// <summary>
         /// Gets the <see cref="Jwk"/> used for the signature of this token.
         /// </summary>
-        public Jwk SigningKey { get; set; }
+        public Jwk? SigningKey { get; set; }
 
         /// <summary>
         /// Gets the <see cref="Jwk"/> used for the encryption of this token.
         /// </summary>
-        public Jwk EncryptionKey { get; }
+        public Jwk? EncryptionKey { get; }
 
         /// <summary>
         /// Gets the value of the 'sub'.
         /// </summary>
-        public string Subject => Payload?.Sub;
+        public string? Subject => Payload?.Sub;
 
         /// <summary>
         /// Gets the'value of the 'nbf'.
@@ -169,12 +180,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the plaintext of the JWE.
         /// </summary>
-        public string Plaintext => Encoding.UTF8.GetString(Binary);
+        public string? Plaintext => Binary is null ? null : Encoding.UTF8.GetString(Binary);
 
         /// <summary>
         /// Gets the binary data of the JWE.
         /// </summary>
-        public byte[] Binary { get; }
+        public byte[]? Binary { get; }
 
         /// <inheritsdoc />
         public override string ToString()

@@ -24,7 +24,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            if (!key.IsSupported(algorithm))
+            if (!key!.IsSupported(algorithm))
             {
                 ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(algorithm, key);
             }
@@ -52,6 +52,7 @@ namespace JsonWebToken
 
                 default:
                     ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm.Name);
+                    _signaturePadding = RSASignaturePadding.Pkcs1;
                     break;
             }
 

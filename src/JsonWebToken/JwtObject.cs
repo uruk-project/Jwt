@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 
@@ -196,6 +197,29 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Gets or sets the <see cref="JwtProperty"/> at the specified key;
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public JwtProperty this[WellKnownProperty key]
+        {
+            get
+            {
+                var properties = _properties;
+                for (int i = 0; i < properties.Count; i++)
+                {
+                    var current = _properties[i];
+                    if (current.WellKnownName == key)
+                    {
+                        return current;
+                    }
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Gets the <see cref="JwtProperty"/> associated with the specified key.
         /// </summary>
         /// <param name="key"></param>
@@ -234,7 +258,6 @@ namespace JsonWebToken
             value = default;
             return false;
         }
-
 
         /// <summary>
         /// Gets the <see cref="JwtProperty"/> associated with the specified key.

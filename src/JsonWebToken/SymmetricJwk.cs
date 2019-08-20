@@ -16,21 +16,16 @@ namespace JsonWebToken
     /// </summary>
     public sealed class SymmetricJwk : Jwk
     {
-        private byte[] _k;
+        private readonly byte[] _k;
 
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         public SymmetricJwk(byte[] k)
         {
-            if (k == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
-            }
-
-            _k = k;
+            _k = k ?? throw new ArgumentNullException(nameof(k));
         }
-        
+
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
@@ -38,17 +33,103 @@ namespace JsonWebToken
         {
             if (k == null)
             {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
+                throw new ArgumentNullException(nameof(k));
             }
 
             _k = Base64Url.Decode(k);
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
-        public SymmetricJwk()
+        internal SymmetricJwk(JwtObject @object)
+#nullable enable
         {
+            for (int i = 0; i < @object.Count; i++)
+            {
+                var property = @object[i];
+                var name = property.Utf8Name;
+                switch (property.Type)
+                {
+                    case JwtTokenType.Array:
+                        Populate(name, (JwtArray)property.Value!);
+                        break;
+                    case JwtTokenType.String:
+                        if (name.SequenceEqual(JwkParameterNames.KUtf8))
+                        {
+                            _k = Base64Url.Decode((string)property.Value!);
+                        }
+                        else
+                        {
+                            Populate(name, (string)property.Value!);
+                        }
+                        break;
+                    case JwtTokenType.Utf8String:
+                        Populate(name, (byte[])property.Value!);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (_k is null)
+            {
+                ThrowHelper.ThrowFormatException_MalformedJson("Missing 'k' property.");
+            }
+        }
+
+        internal unsafe SymmetricJwk(ref Utf8JsonReader reader)
+        {
+            byte[]? k = null;
+            while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
+            {
+                var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                fixed (byte* pPropertyName = propertyName)
+                {
+                    reader.Read();
+                    switch (reader.TokenType)
+                    {
+                        case JsonTokenType.StartObject:
+                            PopulateObject(ref reader);
+                            break;
+                        case JsonTokenType.StartArray:
+                            PopulateArray(ref reader, pPropertyName, propertyName.Length, this);
+                            break;
+                        case JsonTokenType.String:
+                            switch (propertyName.Length)
+                            {
+                                case 1 when *pPropertyName == (byte)'k':
+                                    k = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                    break;
+
+                                case 3:
+                                    PopulateThree(ref reader, pPropertyName, this);
+                                    break;
+                                case 8:
+                                    PopulateEight(ref reader, pPropertyName, this);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            if (!(reader.TokenType is JsonTokenType.EndObject))
+            {
+                ThrowHelper.ThrowArgumentException_MalformedKey();
+            }
+
+            if (k is null)
+            {
+                ThrowHelper.ThrowArgumentException_MalformedKey();
+            }
+
+            _k = k!; // ! => [DoesNotReturn]
         }
 
         /// <summary>
@@ -57,12 +138,12 @@ namespace JsonWebToken
         public SymmetricJwk(byte[] k, SignatureAlgorithm alg)
             : base(alg)
         {
-            if (k == null)
+            if (k is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
-            _k = k;
+            _k = k!; // ! => [DoesNotReturn]
         }
 
         /// <summary>
@@ -71,20 +152,12 @@ namespace JsonWebToken
         public SymmetricJwk(string k, SignatureAlgorithm alg)
             : base(alg)
         {
-            if (k == null)
+            if (k is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
-            _k = Base64Url.Decode(k);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="SymmetricJwk"/>.
-        /// </summary>
-        public SymmetricJwk(SignatureAlgorithm alg)
-            : base(alg)
-        {
+            _k = Base64Url.Decode(k!); // ! => [DoesNotReturn]
         }
 
         /// <summary>
@@ -93,12 +166,12 @@ namespace JsonWebToken
         public SymmetricJwk(byte[] k, KeyManagementAlgorithm alg)
             : base(alg)
         {
-            if (k == null)
+            if (k is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
-            _k = k;
+            _k = k!; // ! => [DoesNotReturn]
         }
 
         /// <summary>
@@ -107,20 +180,12 @@ namespace JsonWebToken
         public SymmetricJwk(string k, KeyManagementAlgorithm alg)
             : base(alg)
         {
-            if (k == null)
+            if (k is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
-            _k = Base64Url.Decode(k);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="SymmetricJwk"/>.
-        /// </summary>
-        public SymmetricJwk(KeyManagementAlgorithm alg)
-            : base(alg)
-        {
+            _k = Base64Url.Decode(k!); // ! => [DoesNotReturn]
         }
 
         /// <inheritsdoc />
@@ -158,12 +223,12 @@ namespace JsonWebToken
         /// <param name="computeThumbprint"></param>
         public static SymmetricJwk FromByteArray(byte[] bytes, bool computeThumbprint)
         {
-            if (bytes == null)
+            if (bytes is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.bytes);
             }
 
-            var key = new SymmetricJwk(bytes);
+            var key = new SymmetricJwk(bytes!); // ! => [DoesNotReturn]
             if (computeThumbprint)
             {
                 key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
@@ -187,11 +252,6 @@ namespace JsonWebToken
         /// <returns></returns>
         public static SymmetricJwk FromSpan(ReadOnlySpan<byte> bytes, bool computeThumbprint)
         {
-            if (bytes == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.bytes);
-            }
-
             var key = new SymmetricJwk(bytes.ToArray());
             if (computeThumbprint)
             {
@@ -226,7 +286,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        protected override KeyWrapper CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        protected override KeyWrapper? CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
             if (algorithm.Category == AlgorithmCategory.Aes)
             {
@@ -245,7 +305,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        protected override AuthenticatedEncryptor CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+        protected override AuthenticatedEncryptor? CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
@@ -280,12 +340,12 @@ namespace JsonWebToken
         /// <returns></returns>
         public static SymmetricJwk FromBase64Url(string k, bool computeThumbprint)
         {
-            if (k == null)
+            if (k is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
-            var key = new SymmetricJwk(k);
+            var key = new SymmetricJwk(k!);
             if (computeThumbprint)
             {
                 key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
@@ -299,7 +359,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="sizeInBits"></param>
         /// <returns></returns>
-        public static SymmetricJwk GenerateKey(int sizeInBits) => GenerateKey(sizeInBits, algorithm: (byte[])null);
+        public static SymmetricJwk GenerateKey(int sizeInBits) => GenerateKey(sizeInBits, algorithm: (byte[]?)null);
 
         /// <summary>
         /// Generates a new <see cref="SymmetricJwk"/>.
@@ -307,10 +367,10 @@ namespace JsonWebToken
         /// <param name="sizeInBits"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static SymmetricJwk GenerateKey(int sizeInBits, byte[] algorithm)
+        public static SymmetricJwk GenerateKey(int sizeInBits, byte[]? algorithm)
         {
             var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
-            if (algorithm != null)
+            if (!(algorithm is null))
             {
                 key.Alg = algorithm;
             }
@@ -347,64 +407,6 @@ namespace JsonWebToken
             }
         }
 
-        internal unsafe static Jwk FromJsonReaderFast(ref Utf8JsonReader reader)
-        {
-            var key = new SymmetricJwk();
-
-            while (reader.Read())
-            {
-                switch (reader.TokenType)
-                {
-                    case JsonTokenType.PropertyName:
-
-                        var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                        fixed (byte* pPropertyName = propertyName)
-                        {
-                            reader.Read();
-                            switch (reader.TokenType)
-                            {
-                                case JsonTokenType.StartObject:
-                                    PopulateObject(ref reader);
-                                    break;
-                                case JsonTokenType.StartArray:
-                                    PopulateArray(ref reader, pPropertyName, propertyName.Length, key);
-                                    break;
-                                case JsonTokenType.String:
-                                    switch (propertyName.Length)
-                                    {
-                                        case 1:
-                                            if (*pPropertyName == (byte)'k')
-                                            {
-                                                key._k = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                            }
-                                            break;
-
-                                        case 3:
-                                            PopulateThree(ref reader, pPropertyName, key);
-                                            break;
-                                        case 8:
-                                            PopulateEight(ref reader, pPropertyName, key);
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                        break;
-                    case JsonTokenType.EndObject:
-                        return key;
-                    default:
-                        break;
-                }
-            }
-
-            ThrowHelper.ThrowArgumentException_MalformedKey();
-            return null;
-        }
-
         /// <inheritdoc />      
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
@@ -424,46 +426,13 @@ namespace JsonWebToken
             return _k;
         }
 
-        internal static SymmetricJwk Populate(JwtObject @object)
-        {
-            var key = new SymmetricJwk();
-            for (int i = 0; i < @object.Count; i++)
-            {
-                var property = @object[i];
-                var name = property.Utf8Name;
-                switch (property.Type)
-                {
-                    case JwtTokenType.Array:
-                        key.Populate(name, (JwtArray)property.Value);
-                        break;
-                    case JwtTokenType.String:
-                        if (name.SequenceEqual(JwkParameterNames.KUtf8))
-                        {
-                            key._k = Base64Url.Decode((string)property.Value);
-                        }
-                        else
-                        {
-                            key.Populate(name, (string)property.Value);
-                        }
-                        break;
-                    case JwtTokenType.Utf8String:
-                        key.Populate(name, (byte[])property.Value);
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            return key;
-        }
-
         internal override void WriteComplementTo(Utf8JsonWriter writer)
         {
             writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
         }
 
         /// <inheritsdoc />
-        public override bool Equals(Jwk other)
+        public override bool Equals(Jwk? other)
         {
             if (!(other is SymmetricJwk key))
             {

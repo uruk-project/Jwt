@@ -14,7 +14,7 @@ namespace JsonWebToken
         private readonly SemaphoreSlim _refreshLock = new SemaphoreSlim(1);
         private readonly HttpDocumentRetriever _documentRetriever;
         private long _syncAfter;
-        private Jwks _currentKeys;
+        private Jwks? _currentKeys;
         private bool _disposed;
 
         /// <summary>
@@ -99,12 +99,13 @@ namespace JsonWebToken
                 }
             }
 
-            if (_currentKeys == null)
+            if (_currentKeys != null)
             {
-                ThrowHelper.ThrowInvalidOperationException_UnableToObtainKeysException(metadataAddress);
+                return _currentKeys.GetKeys(kid);
             }
 
-            return _currentKeys.GetKeys(kid);
+            ThrowHelper.ThrowInvalidOperationException_UnableToObtainKeysException(metadataAddress);
+            return Array.Empty<Jwk>();
         }
 
         /// <summary>
@@ -119,6 +120,7 @@ namespace JsonWebToken
                 {
                     _refreshLock.Dispose();
                     _documentRetriever.Dispose();
+                    _currentKeys?.Dispose();
                 }
 
                 _disposed = true;

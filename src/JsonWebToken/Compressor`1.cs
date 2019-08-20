@@ -64,14 +64,14 @@ namespace JsonWebToken
                 using (var compressionStream = CreateDecompressionStream(inputStream))
                 {
                     var buffer = new byte[Constants.DecompressionBufferLength];
-                    DecompressionSegment firstSegment = null;
-                    DecompressionSegment segment = null;
+                    DecompressionSegment? firstSegment = null;
+                    DecompressionSegment? segment = null;
                     int uncompressedLength = 0;
                     int readData;
                     while ((readData = compressionStream.Read(buffer, 0, Constants.DecompressionBufferLength)) != 0)
                     {
                         uncompressedLength += readData;
-                        if (firstSegment == null)
+                        if (firstSegment is null)
                         {
                             firstSegment = new DecompressionSegment(buffer.AsMemory(0, readData));
                         }
@@ -88,13 +88,13 @@ namespace JsonWebToken
                         buffer = new byte[Constants.DecompressionBufferLength];
                     }
 
-                    if (segment == null)
+                    if (segment is null)
                     {
                         return new ReadOnlySequence<byte>(buffer.AsMemory(0, readData));
                     }
                     else
                     {
-                        return new ReadOnlySequence<byte>(firstSegment, 0, segment, readData);
+                        return new ReadOnlySequence<byte>(firstSegment!, 0, segment, readData);
                     }
                 }
             }

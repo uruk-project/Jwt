@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace JsonWebToken.Internal
 {
@@ -11,13 +12,13 @@ namespace JsonWebToken.Internal
     /// It is a specialized implementation of the <see cref="System.Collections.Generic.Dictionary{TKey, TValue}"/>.
     /// </summary>
     /// <typeparam name="TValue"></typeparam>
-    public sealed class CryptographicStore<TValue> : IDisposable where TValue : IDisposable
+    public sealed class CryptographicStore<TValue> : IDisposable where TValue : class, IDisposable
     {
         private const int HashCollisionThreshold = 100;
         private const int StartOfFreeList = -3;
 
-        private int[] _buckets;
-        private Entry[] _entries;
+        private int[]? _buckets;
+        private Entry[]? _entries;
         private int _count;
         private int _freeList;
         private int _freeCount;
@@ -29,7 +30,7 @@ namespace JsonWebToken.Internal
             // so -2 means end of free list, -3 means index 0 but on free list, -4 means index 1 but on free list, etc.
             public int next;
             public int key;           // Key of entry
-            public TValue value;         // Value of entry
+            public TValue? value;         // Value of entry
         }
 
         /// <summary>
@@ -42,18 +43,7 @@ namespace JsonWebToken.Internal
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public TValue this[int index] => _entries[index].value;
-
-        private int Initialize(int capacity)
-        {
-            int size = GetPrime(capacity);
-
-            _freeList = -1;
-            _buckets = new int[size];
-            _entries = new Entry[size];
-
-            return size;
-        }
+        public TValue? this[int index] => _entries?[index].value;
 
         /// <summary>
         /// Tries to get the <paramref name="value"/> withe the <paramref name="key"/> as key.
@@ -61,27 +51,21 @@ namespace JsonWebToken.Internal
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryGetValue(int key, out TValue value)
+        public bool TryGetValue(int key, [NotNullWhen(true)] out TValue? value)
         {
-            int i = FindEntry(key);
-            if (i >= 0)
-            {
-                value = _entries[i].value;
-                return true;
-            }
-
-            value = default;
-            return false;
+            value = FindValue(key);
+            return !(value is null);
         }
 
-        private int FindEntry(int key)
+        private TValue? FindValue(int key)
         {
             int i = -1;
-            int[] buckets = _buckets;
-            Entry[] entries = _entries;
-            int collisionCount = 0;
+            int[]? buckets = _buckets;
+            Entry[] entries = _entries!;
             if (buckets != null)
             {
+                int collisionCount = 0;
+
                 Debug.Assert(entries != null, "expected entries to be != null");
                 uint hashCode = (uint)key;
                 // Value in _buckets is 1-based
@@ -106,7 +90,12 @@ namespace JsonWebToken.Internal
                 } while (true);
             }
 
-            return i;
+            if (i >= 0)
+            {
+                return entries[i].value;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -117,14 +106,18 @@ namespace JsonWebToken.Internal
         /// <returns></returns>
         public bool TryAdd(int key, TValue value)
         {
-            if (_buckets == null)
+            if (_buckets is null)
             {
-                Initialize(0);
+                int size = GetPrime(0);
+
+                _freeList = -1;
+                _buckets = new int[size];
+                _entries = new Entry[size];
             }
 
             Debug.Assert(_buckets != null);
 
-            Entry[] entries = _entries;
+            Entry[] entries = _entries!;
             Debug.Assert(entries != null, "expected entries to be non-null");
 
             uint hashCode = (uint)key;
@@ -177,7 +170,7 @@ namespace JsonWebToken.Internal
 
                 index = count;
                 _count = count + 1;
-                entries = _entries;
+                entries = _entries!;
             }
 
             ref Entry entry = ref entries[index];
@@ -193,7 +186,6 @@ namespace JsonWebToken.Internal
             entry.value = value;
             // Value in _buckets is 1-based
             bucket = index + 1;
-            //_version++;
 
             // Value types never rehash
             if (collisionCount > HashCollisionThreshold) // TODO-NULLABLE: default(T) == null warning (https://github.com/dotnet/roslyn/issues/34757)
@@ -211,11 +203,12 @@ namespace JsonWebToken.Internal
         /// <returns></returns>
         public bool TryRemove(int key)
         {
-            int[] buckets = _buckets;
-            Entry[] entries = _entries;
-            int collisionCount = 0;
+            int[]? buckets = _buckets;
             if (buckets != null)
             {
+                Entry[] entries = _entries!;
+                int collisionCount = 0;
+
                 Debug.Assert(entries != null, "entries should be non-null");
                 uint hashCode = (uint)key; // TODO-NULLABLE: Remove ! when [DoesNotReturn] respected
                 uint bucket = hashCode % (uint)buckets.Length;
@@ -241,7 +234,7 @@ namespace JsonWebToken.Internal
                         Debug.Assert((StartOfFreeList - _freeList) < 0, "shouldn't underflow because max hashtable length is MaxPrimeArrayLength = 0x7FEFFFFD(2146435069) _freelist underflow threshold 2147483646");
 
                         entry.next = StartOfFreeList - _freeList;
-                        entry.value = default;
+                        entry.value = null;
                         _freeList = i;
                         _freeCount++;
                         return true;
@@ -294,9 +287,12 @@ namespace JsonWebToken.Internal
         public void Dispose()
         {
             var entries = _entries;
-            for (int i = 0; i < _count; i++)
+            if (!(entries is null))
             {
-                entries[i].value?.Dispose();
+                for (int i = 0; i < _count; i++)
+                {
+                    entries[i].value?.Dispose();
+                }
             }
         }
 

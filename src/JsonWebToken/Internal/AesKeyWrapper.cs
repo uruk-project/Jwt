@@ -58,7 +58,7 @@ namespace JsonWebToken.Internal
             }
 
             byte[] keyBytes = key.ToArray();
-            Aes aes = null;
+            Aes? aes = null;
             try
             {
                 aes = Aes.Create();
@@ -82,7 +82,7 @@ namespace JsonWebToken.Internal
                 }
 
                 ThrowHelper.ThrowCryptographicException_CreateSymmetricAlgorithmFailed(key, algorithm, ex);
-                return null;
+                throw;
             }
         }
 
@@ -179,9 +179,7 @@ namespace JsonWebToken.Internal
         /// <param name="staticKey">the key to be wrapped. If <c>null</c>, a new <see cref="SymmetricJwk"/> will be generated.</param>
         /// <param name="header"></param>
         /// <param name="destination"></param>
-        /// <param name="contentEncryptionKey"></param>
-        /// <param name="bytesWritten"></param>
-        public override void WrapKey(Jwk staticKey, JwtObject header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
         {
             if (_disposed)
             {
@@ -193,12 +191,13 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, GetKeyWrapSize());
             }
 
-            contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
-            WrapKeyPrivate(contentEncryptionKey.AsSpan(), destination, out bytesWritten);
+            var contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
+            WrapKeyPrivate(contentEncryptionKey.AsSpan(), destination);
+            return contentEncryptionKey;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe void WrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, Span<byte> destination, out int bytesWritten)
+        private unsafe void WrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, Span<byte> destination)
         {
             var encryptor = _encryptorPool.Get();
             try
@@ -248,7 +247,10 @@ namespace JsonWebToken.Internal
                     }
                 }
 
-                bytesWritten = (n + 1) << 3;
+                if(destination.Length != (n + 1) << 3)
+                {
+                    ThrowHelper.ThrowCryptographicException_KeyWrapFailed();
+                }
             }
             finally
             {

@@ -19,7 +19,7 @@ namespace JsonWebToken
         private readonly List<IValidator> _validators = new List<IValidator>();
         private int _maximumTokenSizeInBytes = DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
-        private SignatureValidationContext _signatureValidation;
+        private SignatureValidationContext? _signatureValidation;
         private bool _ignoreCriticalHeader;
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace JsonWebToken
         /// <param name="keyProvider"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider, SignatureAlgorithm algorithm)
+        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider, SignatureAlgorithm? algorithm)
         {
             _hasSignatureValidation = true;
             _signatureValidation = new SignatureValidationContext(keyProvider, supportUnsecure: false, algorithm);
@@ -146,7 +146,7 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         /// <param name="handler"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl, SignatureAlgorithm algorithm, HttpMessageHandler handler)
+        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl, SignatureAlgorithm? algorithm, HttpMessageHandler? handler)
             => RequireSignature(new JwksKeyProvider(jwksUrl, handler), algorithm);
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace JsonWebToken
         /// <param name="key"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(Jwk key, SignatureAlgorithm algorithm) => RequireSignature(new Jwks(key), algorithm);
+        public TokenValidationPolicyBuilder RequireSignature(Jwk key, SignatureAlgorithm? algorithm) => RequireSignature(new Jwks(key), algorithm);
 
         /// <summary>
         /// Requires a valid signature.
@@ -185,7 +185,7 @@ namespace JsonWebToken
         /// <param name="keys"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(IList<Jwk> keys, SignatureAlgorithm algorithm) => RequireSignature(new Jwks(keys), algorithm);
+        public TokenValidationPolicyBuilder RequireSignature(IList<Jwk> keys, SignatureAlgorithm? algorithm) => RequireSignature(new Jwks(keys), algorithm);
 
         /// <summary>
         /// Requires a valid signature.
@@ -200,7 +200,7 @@ namespace JsonWebToken
         /// <param name="keySet"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(Jwks keySet, SignatureAlgorithm algorithm) => RequireSignature(new StaticKeyProvider(keySet), algorithm);
+        public TokenValidationPolicyBuilder RequireSignature(Jwks keySet, SignatureAlgorithm? algorithm) => RequireSignature(new StaticKeyProvider(keySet), algorithm);
 
         /// <summary>
         /// Requires a valid signature.
@@ -215,7 +215,7 @@ namespace JsonWebToken
         /// <param name="keyProviders"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(IEnumerable<IKeyProvider> keyProviders, SignatureAlgorithm algorithm)
+        public TokenValidationPolicyBuilder RequireSignature(IEnumerable<IKeyProvider> keyProviders, SignatureAlgorithm? algorithm)
         {
             foreach (var keyProvider in keyProviders)
             {
@@ -385,7 +385,7 @@ namespace JsonWebToken
         {
             Validate();
 
-            var policy = new TokenValidationPolicy(_validators, _criticalHeaderHandlers, _maximumTokenSizeInBytes, _ignoreCriticalHeader, _signatureValidation);
+            var policy = new TokenValidationPolicy(_validators.ToArray(), _criticalHeaderHandlers, _maximumTokenSizeInBytes, _ignoreCriticalHeader, _signatureValidation);
             return policy;
         }
 
@@ -393,7 +393,7 @@ namespace JsonWebToken
         /// Convert the <see cref="TokenValidationPolicyBuilder"/> into a <see cref="TokenValidationPolicy"/>.
         /// </summary>
         /// <param name="builder"></param>
-        public static implicit operator TokenValidationPolicy(TokenValidationPolicyBuilder builder)
+        public static implicit operator TokenValidationPolicy?(TokenValidationPolicyBuilder builder)
         {
             return builder?.Build();
         }

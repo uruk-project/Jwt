@@ -12,9 +12,8 @@ namespace JsonWebToken
     public sealed class RequireNonceValidator : IValidator
     {
         /// <inheritdoc />
-        public TokenValidationResult TryValidate(in TokenValidationContext context)
+        public TokenValidationResult TryValidate(Jwt jwt)
         {
-            var jwt = context.Jwt;
             if (jwt.Payload.TryGetValue(OidcClaims.NonceUtf8, out var _))
             {
                 return TokenValidationResult.Success(jwt);

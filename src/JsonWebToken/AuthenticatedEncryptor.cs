@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace JsonWebToken
 {
@@ -27,8 +28,8 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
             }
 
-            Key = key;
-            EncryptionAlgorithm = encryptionAlgorithm;
+            Key = key!; // ! => [DoesNotReturn]
+            EncryptionAlgorithm = encryptionAlgorithm!; // ! => [DoesNotReturn]
         }
 
         /// <summary>

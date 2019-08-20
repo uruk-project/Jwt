@@ -17,11 +17,17 @@ namespace JsonWebToken
         {
             public Dictionary<long, byte[]> Entries;
 
-            public Bucket Next;
+            public Bucket? Next;
 
-            public Bucket Previous;
+            public Bucket? Previous;
 
             public string Kid;
+
+            public Bucket(string kid, Dictionary<long, byte[]> entries)
+            {
+                Kid = kid;
+                Entries = entries;
+            }
         }
 
         private SpinLock _spinLock = new SpinLock();
@@ -33,8 +39,8 @@ namespace JsonWebToken
         /// </summary>
         public static int MaxSize { get; set; } = 10;
 
-        private Bucket _head = null;
-        private Bucket _tail = null;
+        private Bucket? _head = null;
+        private Bucket? _tail = null;
 
         /// <summary>
         ///  Try to get the header.
@@ -43,10 +49,11 @@ namespace JsonWebToken
         /// <param name="alg"></param>
         /// <param name="base64UrlHeader"></param>
         /// <returns></returns>
-        public bool TryGetHeader(JwtObject header, SignatureAlgorithm alg, out byte[] base64UrlHeader)
+        public bool TryGetHeader(JwtObject header, SignatureAlgorithm alg, out byte[]? base64UrlHeader)
         {
             if (header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty)
                 && kidProperty.Type == JwtTokenType.String
+                && !(kidProperty.Value is null)
                 && !(alg is null)
                 && header.Count == 2)
             {
@@ -80,11 +87,6 @@ namespace JsonWebToken
             return false;
         }
 
-        private static long ComputeHeaderKey(JwtObject header, SignatureAlgorithm alg)
-        {
-            return (alg is null) ? -1 : alg.Id;
-        }
-
         /// <summary>
         /// Adds a base64url encoded header to the cache.
         /// </summary>
@@ -93,9 +95,10 @@ namespace JsonWebToken
         /// <param name="base6UrlHeader"></param>
         public void AddHeader(JwtObject header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
         {
-            if (header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty) 
+            if (header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty)
                 && kidProperty.Type == JwtTokenType.String
-                && !(alg is null) 
+                && !(kidProperty.Value is null)
+                && !(alg is null)
                 && header.Count == 2)
             {
                 var kid = (string)kidProperty.Value;
@@ -117,13 +120,11 @@ namespace JsonWebToken
 
                     var key = alg.Id;
 
-                    if (node == null)
+                    if (node is null)
                     {
-                        node = new Bucket
+                        node = new Bucket(kid, new Dictionary<long, byte[]>(1) { { key, base6UrlHeader.ToArray() } })
                         {
-                            Kid = kid,
-                            Next = _head,
-                            Entries = new Dictionary<long, byte[]>(1) { { key, base6UrlHeader.ToArray() } }
+                            Next = _head
                         };
                     }
                     else
@@ -149,7 +150,7 @@ namespace JsonWebToken
                     }
 
                     _head = node;
-                    if (_tail == null)
+                    if (_tail is null)
                     {
                         _tail = node;
                     }
@@ -196,10 +197,17 @@ namespace JsonWebToken
                 }
                 else
                 {
-                    node.Next.Previous = node.Previous;
+                    if (node.Next != null)
+                    {
+                        node.Next.Previous = node.Previous;
+                    }
                 }
 
-                node.Previous.Next = node.Next;
+                if (node.Previous != null)
+                {
+                    node.Previous.Next = node.Next;
+                }
+
                 node.Next = _head;
                 node.Previous = null;
                 _head = node;
@@ -209,8 +217,15 @@ namespace JsonWebToken
         private void RemoveLeastRecentlyUsed()
         {
             var node = _tail;
-            node.Previous.Next = null;
-            _tail = node.Previous;
+            if (node != null)
+            {
+                if (node.Previous != null)
+                {
+                    node.Previous.Next = null;
+                }
+
+                _tail = node.Previous;
+            }
         }
     }
 }

@@ -8,7 +8,7 @@ namespace JsonWebToken.OpenIDConnect.Tests
     {
         [Theory]
         [MemberData(nameof(GetJson))]
-        public void OpenIdConnectConfiguration_Deserialize(string origin, string json, OpenIdConnectConfiguration expected)
+        public void OpenIdConnectConfiguration_Deserialize(string json, OpenIdConnectConfiguration expected)
         {
             var config = OpenIdConnectConfiguration.FromJson(json);
 
@@ -64,7 +64,8 @@ namespace JsonWebToken.OpenIDConnect.Tests
 
         public static IEnumerable<object[]> GetJson()
         {
-            yield return new object[] { "https://login.salesforce.com/.well-known/openid-configuration",
+            // https://login.salesforce.com/.well-known/openid-configuration
+            yield return new object[] {
                 @"{
   ""issuer"": ""https://login.salesforce.com"",
   ""authorization_endpoint"": ""https://login.salesforce.com/services/oauth2/authorize"",
@@ -217,7 +218,9 @@ namespace JsonWebToken.OpenIDConnect.Tests
                     }
                 }
             };
-            yield return new object[] { "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration",
+
+            // https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration
+            yield return new object[] {
                 @"{
 ""authorization_endpoint"": ""https://login.microsoftonline.com/common/oauth2/v2.0/authorize"",
 ""token_endpoint"": ""https://login.microsoftonline.com/common/oauth2/v2.0/token"",
@@ -352,7 +355,9 @@ namespace JsonWebToken.OpenIDConnect.Tests
                     UserInfoEndpoint= "https://graph.microsoft.com/oidc/userinfo"
                 }
             };
-            yield return new object[] { "https://www.paypalobjects.com/.well-known/openid-configuration",
+
+            // https://www.paypalobjects.com/.well-known/openid-configuration
+            yield return new object[] {
                 @"{
   ""issuer"": ""https://www.paypal.com"",
   ""authorization_endpoint"": ""https://www.paypal.com/signin/authorize"",
@@ -463,7 +468,9 @@ namespace JsonWebToken.OpenIDConnect.Tests
   }
     }
 };
-            yield return new object[] { "https://accounts.google.com/.well-known/openid-configuration",
+
+            // https://accounts.google.com/.well-known/openid-configuration
+            yield return new object[] {
                 @"{
  ""issuer"": ""https://accounts.google.com"",
  ""authorization_endpoint"": ""https://accounts.google.com/o/oauth2/v2/auth"",

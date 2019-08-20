@@ -16,7 +16,7 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class JwtDescriptor
     {
-        private Jwk _key;
+        private Jwk? _key;
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwtDescriptor"/>.
@@ -65,12 +65,12 @@ namespace JsonWebToken
         /// Called when the key is set.
         /// </summary>
         /// <param name="key"></param>
-        protected abstract void OnKeyChanged(Jwk key);
+        protected abstract void OnKeyChanged(Jwk? key);
 
         /// <summary>
         /// Gets or sets the key identifier header parameter.
         /// </summary>
-        public string KeyId
+        public string? KeyId
         {
             get => GetHeaderParameter<string>(HeaderParameters.KidUtf8);
             set => SetHeaderParameter(HeaderParameters.KidUtf8, value);
@@ -79,7 +79,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the JWKS URL header parameter.
         /// </summary>
-        public string JwkSetUrl
+        public string? JwkSetUrl
         {
             get => GetHeaderParameter<string>(HeaderParameters.JkuUtf8);
             set => SetHeaderParameter(HeaderParameters.JkuUtf8, value);
@@ -97,7 +97,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the X509 URL header parameter.
         /// </summary>
-        public string X509Url
+        public string? X509Url
         {
             get => GetHeaderParameter<string>(HeaderParameters.X5uUtf8);
             set => SetHeaderParameter(HeaderParameters.X5uUtf8, value);
@@ -106,16 +106,16 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the X509 certification chain header.
         /// </summary>
-        public List<string> X509CertificateChain
+        public List<string>? X509CertificateChain
         {
-            get => GetHeaderParameters<string>(HeaderParameters.X5cUtf8);
+            get => GetHeaderParameters(HeaderParameters.X5cUtf8);
             set => SetHeaderParameter(HeaderParameters.X5cUtf8, value);
         }
 
         /// <summary>
         /// Gets or sets the X509 certificate SHA-1 thumbprint header parameter.
         /// </summary>
-        public string X509CertificateSha1Thumbprint
+        public string? X509CertificateSha1Thumbprint
         {
             get => GetHeaderParameter<string>(HeaderParameters.X5tUtf8);
             set => SetHeaderParameter(HeaderParameters.X5tUtf8, value);
@@ -124,16 +124,16 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the JWT type 'typ' header parameter.
         /// </summary>
-        public string Type
+        public string? Type
         {
             get => Encoding.UTF8.GetString(GetHeaderParameter<byte[]>(HeaderParameters.TypUtf8) ?? new byte[0]);
-            set => SetHeaderParameter(HeaderParameters.TypUtf8, Encoding.UTF8.GetBytes(value));
+            set => SetHeaderParameter(HeaderParameters.TypUtf8, value is null ? null : Encoding.UTF8.GetBytes(value));
         }
 
         /// <summary>
         /// Gets or sets the content type header parameter.
         /// </summary>
-        public string ContentType
+        public string? ContentType
         {
             get => GetHeaderParameter<string>(HeaderParameters.CtyUtf8);
             set => SetHeaderParameter(HeaderParameters.CtyUtf8, value);
@@ -142,9 +142,9 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the critical header parameter.
         /// </summary>
-        public List<string> Critical
+        public List<string>? Critical
         {
-            get => GetHeaderParameters<string>(HeaderParameters.CritUtf8);
+            get => GetHeaderParameters(HeaderParameters.CritUtf8);
             set => SetHeaderParameter(HeaderParameters.CritUtf8, value);
         }
 
@@ -162,11 +162,11 @@ namespace JsonWebToken
         /// <typeparam name="T"></typeparam>
         /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected T GetHeaderParameter<T>(ReadOnlySpan<byte> utf8Name)
+        protected T? GetHeaderParameter<T>(ReadOnlySpan<byte> utf8Name) where T : class
         {
             if (Header.TryGetValue(utf8Name, out var value))
             {
-                return (T)value.Value;
+                return (T?)value.Value;
             }
 
             return default;
@@ -177,7 +177,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        protected void SetHeaderParameter(ReadOnlySpan<byte> utf8Name, string value)
+        protected void SetHeaderParameter(ReadOnlySpan<byte> utf8Name, string? value)
         {
             if (value != null)
             {
@@ -194,7 +194,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        protected void SetHeaderParameter(ReadOnlySpan<byte> utf8Name, byte[] value)
+        protected void SetHeaderParameter(ReadOnlySpan<byte> utf8Name, byte[]? value)
         {
             if (value != null)
             {
@@ -238,7 +238,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        protected void SetHeaderParameter(ReadOnlySpan<byte> utf8Name, List<string> value)
+        protected void SetHeaderParameter(ReadOnlySpan<byte> utf8Name, List<string>? value)
         {
             if (value != null)
             {
@@ -265,17 +265,19 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <returns></returns>
-        protected List<T> GetHeaderParameters<T>(ReadOnlySpan<byte> utf8Name)
+        protected List<string>? GetHeaderParameters(ReadOnlySpan<byte> utf8Name)
         {
             if (Header.TryGetValue(utf8Name, out JwtProperty value))
             {
                 if (value.Type == JwtTokenType.Array)
                 {
-                    return (List<T>)value.Value;
+                    return (List<string>?)value.Value;
                 }
 
-                var list = new List<T> { (T)value.Value };
-                return list;
+                if (!(value.Value is null))
+                {
+                    return new List<string> { (string)value.Value };
+                }
             }
 
             return null;

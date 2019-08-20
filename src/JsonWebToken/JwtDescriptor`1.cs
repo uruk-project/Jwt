@@ -20,7 +20,7 @@ namespace JsonWebToken
         public JwtDescriptor(JwtObject header, TPayload payload)
             : base(header)
         {
-            if (payload == null)
+            if (payload is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.payload);
             }
@@ -35,20 +35,12 @@ namespace JsonWebToken
         public JwtDescriptor(TPayload payload)
             : base()
         {
-            if (payload == null)
+            if (payload is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.payload);
             }
 
             Payload = payload;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwtDescriptor{TPayload}"/>.
-        /// </summary>
-        public JwtDescriptor()
-            : base()
-        {
         }
 
         /// <summary>

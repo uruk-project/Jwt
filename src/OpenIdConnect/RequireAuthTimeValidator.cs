@@ -12,9 +12,8 @@ namespace JsonWebToken
     public sealed class RequireAuthTimeValidator : IValidator
     {
         /// <inheritdoc />
-        public TokenValidationResult TryValidate(in TokenValidationContext context)
+        public TokenValidationResult TryValidate(Jwt jwt)
         {
-            var jwt = context.Jwt;
             if (jwt.Payload.TryGetValue(OidcClaims.AuthTimeUtf8, out var _))
             {
                 return TokenValidationResult.Success(jwt);

@@ -76,7 +76,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the value of the <see cref="JwtProperty"/>.
         /// </summary>
-        public readonly object Value;
+        public readonly object? Value;
 
         /// <summary>
         /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
@@ -114,7 +114,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
-        public JwtProperty(ReadOnlySpan<byte> utf8Name, string value)
+        public JwtProperty(ReadOnlySpan<byte> utf8Name, string? value)
         {
             if (value == null)
             {
@@ -564,7 +564,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public JwtProperty(EncryptionAlgorithm value)
         {
-            if (value == null)
+            if (value is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
@@ -581,7 +581,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public JwtProperty(SignatureAlgorithm value)
         {
-            if (value == null)
+            if (value is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
@@ -598,7 +598,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public JwtProperty(KeyManagementAlgorithm value)
         {
-            if (value == null)
+            if (value is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
@@ -615,7 +615,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public JwtProperty(CompressionAlgorithm value)
         {
-            if (value == null)
+            if (value is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
@@ -635,7 +635,7 @@ namespace JsonWebToken
         {
             get
             {
-                if (Type == JwtTokenType.Object && ((JwtObject)Value).TryGetValue(key, out var property))
+                if (Type == JwtTokenType.Object && ((JwtObject)Value!).TryGetValue(key, out var property))
                 {
                     return property;
                 }
@@ -648,7 +648,7 @@ namespace JsonWebToken
         {
             if (Type == JwtTokenType.Object)
             {
-                return ((JwtObject)Value).ContainsKey(key);
+                return ((JwtObject)Value!).ContainsKey(key);
             }
 
             return false;
@@ -659,25 +659,25 @@ namespace JsonWebToken
             switch (Type)
             {
                 case JwtTokenType.Object:
-                    ((JwtObject)Value).WriteTo(writer, Utf8Name);
+                    ((JwtObject)Value!).WriteTo(writer, Utf8Name);
                     break;
                 case JwtTokenType.Array:
-                    ((JwtArray)Value).WriteTo(writer, Utf8Name);
+                    ((JwtArray)Value!).WriteTo(writer, Utf8Name);
                     break;
                 case JwtTokenType.Integer:
-                    writer.WriteNumber(Utf8Name, (long)Value);
+                    writer.WriteNumber(Utf8Name, (long)Value!);
                     break;
                 case JwtTokenType.Float:
-                    writer.WriteNumber(Utf8Name, (double)Value);
+                    writer.WriteNumber(Utf8Name, (double)Value!);
                     break;
                 case JwtTokenType.String:
-                    writer.WriteString(Utf8Name, (string)Value);
+                    writer.WriteString(Utf8Name, (string)Value!);
                     break;
                 case JwtTokenType.Utf8String:
-                    writer.WriteString(Utf8Name, (byte[])Value);
+                    writer.WriteString(Utf8Name, (byte[])Value!);
                     break;
                 case JwtTokenType.Boolean:
-                    writer.WriteBoolean(Utf8Name, (bool)Value);
+                    writer.WriteBoolean(Utf8Name, (bool)Value!);
                     break;
                 case JwtTokenType.Null:
                     writer.WriteNull(Utf8Name);

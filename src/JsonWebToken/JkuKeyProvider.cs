@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
+using System;
 
 namespace JsonWebToken
 {
@@ -22,6 +22,16 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override Jwk[] GetKeys(JwtHeader header)
         {
+            if (header is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
+            }
+
+            if (header!.Jku is null)
+            {
+                return Array.Empty<Jwk>();
+            }
+
             return GetKeys(header, header.Jku);
         }
 

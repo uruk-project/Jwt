@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 
 namespace JsonWebToken
 {
@@ -19,12 +18,12 @@ namespace JsonWebToken
         /// <param name="jwks"></param>
         public StaticKeyProvider(Jwks jwks)
         {
-            if (jwks == null)
+            if (jwks is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwks);
             }
 
-            _jwks = jwks;
+            _jwks = jwks!; // ! => [DoesNotReturn]
         }
 
         /// <summary>

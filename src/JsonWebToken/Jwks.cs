@@ -18,8 +18,8 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public sealed class Jwks : IDisposable
     {
-        private Jwk[] _unidentifiedKeys;
-        private Dictionary<string, Jwk[]> _identifiedKeys;
+        private Jwk[]? _unidentifiedKeys;
+        private Dictionary<string, Jwk[]>? _identifiedKeys;
 
         /// <summary>
         /// Initializes an new instance of <see cref="Jwks"/>.
@@ -42,12 +42,12 @@ namespace JsonWebToken
         /// </summary>
         public Jwks(IList<Jwk> keys)
         {
-            if (keys == null)
+            if (keys is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.keys);
             }
 
-            for (int i = 0; i < keys.Count; i++)
+            for (int i = 0; i < keys!.Count; i++) // ! => [DoesNotReturn]
             {
                 var key = keys[i];
                 if (key != null)
@@ -65,7 +65,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the first <see cref="Jwk"/> with its 'kid'.
         /// </summary>
-        public Jwk this[string kid]
+        public Jwk? this[string kid]
         {
             get
             {
@@ -93,7 +93,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            Keys.Add(key);
+            Keys.Add(key!); // ! => [DoesNotReturn]
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            Keys.Remove(key);
+            Keys.Remove(key!); // ! => [DoesNotReturn]
         }
 
         /// <inheritsdoc />
@@ -163,10 +163,10 @@ namespace JsonWebToken
         {
             get
             {
-                if (_unidentifiedKeys == null)
+                if (_unidentifiedKeys is null)
                 {
                     _unidentifiedKeys = Keys
-                                        .Where(jwk => jwk.Kid == null)
+                                        .Where(jwk => jwk.Kid is null)
                                         .ToArray();
                 }
 
@@ -178,11 +178,11 @@ namespace JsonWebToken
         {
             get
             {
-                if (_identifiedKeys == null)
+                if (_identifiedKeys is null)
                 {
                     _identifiedKeys = Keys
-                                        .Where(jwk => jwk.Kid != null)
-                                        .GroupBy(k => k.Kid)
+                                        .Where(jwk => !(jwk.Kid is null))
+                                        .GroupBy(k => k.Kid!)
                                         .ToDictionary(k => k.Key, k => k.Concat(UnidentifiedKeys).ToArray());
                 }
 
@@ -195,9 +195,9 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="kid"></param>
         /// <returns></returns>
-        public Jwk[] GetKeys(string kid)
+        public Jwk[] GetKeys(string? kid)
         {
-            if (kid == null)
+            if (kid is null)
             {
                 return Keys.ToArray();
             }
@@ -223,12 +223,12 @@ namespace JsonWebToken
         /// <returns><see cref="Jwks"/></returns>
         public static Jwks FromJson(string json)
         {
-            if (json == null)
+            if (json is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.json);
             }
 
-            return FromJson(Encoding.UTF8.GetBytes(json));
+            return FromJson(Encoding.UTF8.GetBytes(json!)); // ! => [DoesNotReturn]
         }
 
         /// <summary>
@@ -249,8 +249,10 @@ namespace JsonWebToken
             var jwks = new Jwks();
             var reader = new Utf8JsonReader(json, true, default);
 
-            reader.Read();
-            if (reader.TokenType == JsonTokenType.StartObject && reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
+            if (reader.Read()
+                && reader.TokenType is JsonTokenType.StartObject
+                && reader.Read()
+                && reader.TokenType is JsonTokenType.PropertyName)
             {
                 var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
                 if (propertyName.Length == 4)
@@ -259,18 +261,17 @@ namespace JsonWebToken
                     {
                         if (*((uint*)pPropertyName) == 1937335659u /* keys */)
                         {
-                            reader.Read();
-                            if (reader.TokenType == JsonTokenType.StartArray)
+                            if (reader.Read() && reader.TokenType is JsonTokenType.StartArray)
                             {
-                                while (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
+                                while (reader.Read() && reader.TokenType is JsonTokenType.StartObject)
                                 {
                                     Jwk jwk = Jwk.FromJsonReader(ref reader);
                                     jwks.Add(jwk);
                                 }
 
-                                if (reader.Read() && reader.TokenType == JsonTokenType.EndObject)
+                                if (!(reader.TokenType is JsonTokenType.EndArray) || !reader.Read())
                                 {
-                                    return jwks;
+                                    ThrowHelper.ThrowInvalidOperationException_MalformedJwks();
                                 }
                             }
                         }
@@ -278,8 +279,12 @@ namespace JsonWebToken
                 }
             }
 
-            ThrowHelper.ThrowInvalidOperationException_MalformedJwks();
-            return null;
+            if (!(reader.TokenType is JsonTokenType.EndObject))
+            {
+                ThrowHelper.ThrowInvalidOperationException_MalformedJwks();
+            }
+
+            return jwks;
         }
 
         /// <inheritsdoc />

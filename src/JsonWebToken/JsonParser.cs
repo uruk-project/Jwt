@@ -38,56 +38,46 @@ namespace JsonWebToken
         internal static JwtObject ReadJsonObject(ref Utf8JsonReader reader)
         {
             var current = new JwtObject();
-            while (reader.Read())
+            while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
-                switch (reader.TokenType)
+                var name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                reader.Read();
+                var type = reader.TokenType;
+                switch (type)
                 {
-                    case JsonTokenType.EndObject:
-                        return current;
-                    case JsonTokenType.PropertyName:
-                        var name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                        reader.Read();
-                        var type = reader.TokenType;
-                        switch (type)
+                    case JsonTokenType.StartObject:
+                        current.Add(name, ReadJsonObject(ref reader));
+                        break;
+                    case JsonTokenType.StartArray:
+                        current.Add(name, ReadJsonArray(ref reader));
+                        break;
+                    case JsonTokenType.String:
+                        current.Add(name, reader.GetString());
+                        break;
+                    case JsonTokenType.True:
+                        current.Add(name, true);
+                        break;
+                    case JsonTokenType.False:
+                        current.Add(name, false);
+                        break;
+                    case JsonTokenType.Null:
+                        current.Add(name);
+                        break;
+                    case JsonTokenType.Number:
+                        if (reader.TryGetInt64(out long longValue))
                         {
-                            case JsonTokenType.StartObject:
-                                current.Add(name, ReadJsonObject(ref reader));
-                                break;
-                            case JsonTokenType.StartArray:
-                                current.Add(name, ReadJsonArray(ref reader));
-                                break;
-                            case JsonTokenType.String:
-                                current.Add(name, reader.GetString());
-                                break;
-                            case JsonTokenType.True:
-                                current.Add(name, true);
-                                break;
-                            case JsonTokenType.False:
-                                current.Add(name, false);
-                                break;
-                            case JsonTokenType.Null:
-                                current.Add(name);
-                                break;
-                            case JsonTokenType.Number:
-                                if (reader.TryGetInt64(out long longValue))
-                                {
-                                    current.Add(name, longValue);
-                                }
-                                else
-                                {
-                                    if (reader.TryGetDouble(out double doubleValue))
-                                    {
-                                        current.Add(name, doubleValue);
-                                    }
-                                    else
-                                    {
-                                        ThrowHelper.ThrowFormatException_NotSupportedNumberValue(name);
-                                    }
-                                }
-                                break;
-                            default:
-                                ThrowHelper.ThrowFormatException_MalformedJson();
-                                break;
+                            current.Add(name, longValue);
+                        }
+                        else
+                        {
+                            if (reader.TryGetDouble(out double doubleValue))
+                            {
+                                current.Add(name, doubleValue);
+                            }
+                            else
+                            {
+                                ThrowHelper.ThrowFormatException_NotSupportedNumberValue(name);
+                            }
                         }
                         break;
                     default:
@@ -96,8 +86,12 @@ namespace JsonWebToken
                 }
             }
 
-            ThrowHelper.ThrowFormatException_MalformedJson();
-            return null;
+            if (!(reader.TokenType is JsonTokenType.EndObject))
+            {
+                ThrowHelper.ThrowFormatException_MalformedJson();
+            }
+
+            return current;
         }
 
         internal static JwtArray ReadJsonArray(ref Utf8JsonReader reader)

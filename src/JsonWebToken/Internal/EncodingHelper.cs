@@ -79,7 +79,7 @@ namespace JsonWebToken.Internal
 
         internal static unsafe void GetAsciiBytes(ReadOnlySpan<byte> rawHeader, Span<byte> header)
         {
-            char[] headerArrayToReturn = null;
+            char[]? headerArrayToReturn = null;
             try
             {
                 Span<char> utf8Header = header.Length < Constants.MaxStackallocBytes
@@ -105,7 +105,7 @@ namespace JsonWebToken.Internal
 
         internal static unsafe void GetAsciiBytes(in ReadOnlySequence<byte> rawHeader, Span<byte> header)
         {
-            char[] headerArrayToReturn = null;
+            char[]? headerArrayToReturn = null;
             try
             {
                 Span<char> utf8Header = header.Length < Constants.MaxStackallocBytes

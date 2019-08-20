@@ -8,9 +8,11 @@ namespace JsonWebToken
     /// </summary>
     public sealed class SignatureValidationContext
     {
+        internal static readonly SignatureValidationContext NoSignatureContext = new SignatureValidationContext(new EmptyKeyProvider(), true, null);
+
         private readonly IKeyProvider _keyProvider;
         private readonly bool _supportUnsecure;
-        private readonly SignatureAlgorithm _algorithm;
+        private readonly SignatureAlgorithm? _algorithm;
 
         /// <summary>
         /// Initailzies a new instance of the <see cref="SignatureValidationContext"/> class.
@@ -18,7 +20,7 @@ namespace JsonWebToken
         /// <param name="keyProvider"></param>
         /// <param name="supportUnsecure"></param>
         /// <param name="algorithm"></param>
-        public SignatureValidationContext(IKeyProvider keyProvider, bool supportUnsecure, SignatureAlgorithm algorithm)
+        public SignatureValidationContext(IKeyProvider keyProvider, bool supportUnsecure, SignatureAlgorithm? algorithm)
         {
             _keyProvider = keyProvider;
             _supportUnsecure = supportUnsecure;
@@ -38,6 +40,6 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the <see cref="SignatureAlgorithm"/>.
         /// </summary>
-        public SignatureAlgorithm Algorithm => _algorithm;
+        public SignatureAlgorithm? Algorithm => _algorithm;
     }
 }

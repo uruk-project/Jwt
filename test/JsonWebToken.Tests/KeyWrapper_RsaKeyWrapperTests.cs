@@ -1,7 +1,7 @@
-﻿using JsonWebToken.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using JsonWebToken.Internal;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -62,15 +62,11 @@ namespace JsonWebToken.Tests
             var destination = new byte[0];
             var header = new JwtObject();
 
-            int bytesWritten = 0;
-            Jwk cek = null;
-            Assert.Throws<CryptographicException>(() => wrapper.WrapKey(null, header, destination, out cek, out bytesWritten));
+            Assert.Throws<CryptographicException>(() => wrapper.WrapKey(null, header, destination));
             wrapper.Dispose();
-            Assert.Throws<ObjectDisposedException>(() => wrapper.WrapKey(null, header, destination, out cek, out bytesWritten));
+            Assert.Throws<ObjectDisposedException>(() => wrapper.WrapKey(null, header, destination));
 
-            Assert.Equal(0, bytesWritten);
             Assert.Equal(0, header.Count);
-            Assert.Null(cek);
         }
     }
 }

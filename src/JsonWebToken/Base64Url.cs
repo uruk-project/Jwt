@@ -25,12 +25,12 @@ namespace JsonWebToken
         /// </summary>
         public static byte[] Decode(string data)
         {
-            if (data == null)
+            if (data is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
-            return Decode(Encoding.UTF8.GetBytes(data));
+            return Decode(Encoding.UTF8.GetBytes(data!)); // ! => [DoesNotReturn];
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace JsonWebToken
         /// <returns>The number of the bytes written to <paramref name="data"/>.</returns>
         public static int Decode(string base64Url, Span<byte> data)
         {
-            if (base64Url == null)
+            if (base64Url is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.base64url);
             }
@@ -76,7 +76,7 @@ namespace JsonWebToken
                 return 0;
             }
 
-            byte[] arrayToReturn = null;
+            byte[]? arrayToReturn = null;
             var buffer = base64Url.Length > Constants.MaxStackallocBytes
                 ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(base64Url.Length)).AsSpan(0, base64Url.Length)
                 : stackalloc byte[base64Url.Length];
@@ -175,7 +175,7 @@ namespace JsonWebToken
         /// <returns>The base64-url encoded string.</returns>
         public static byte[] Encode(string data)
         {
-            if (data == null)
+            if (data is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
             }
@@ -190,7 +190,7 @@ namespace JsonWebToken
         /// <returns>The base64-url encoded string.</returns>
         public static byte[] Encode(ReadOnlySpan<char> data)
         {
-            byte[] utf8ArrayToReturn = null;
+            byte[]? utf8ArrayToReturn = null;
             try
             {
                 var utf8Data = data.Length > Constants.MaxStackallocBytes

@@ -4,6 +4,7 @@
 using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace JsonWebToken
@@ -37,7 +38,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public object this[string key]
+        public object? this[string key]
         {
             get
             {
@@ -50,7 +51,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public object this[ReadOnlySpan<byte> key]
+        public object? this[ReadOnlySpan<byte> key]
         {
             get
             {
@@ -65,7 +66,7 @@ namespace JsonWebToken
         {
             get
             {
-                if (_inner.TryGetValue(Claims.AudUtf8, out var property))
+                if (_inner.TryGetValue(Claims.AudUtf8, out var property) && !(property.Value is null))
                 {
                     if (property.Type == JwtTokenType.Array)
                     {
@@ -73,7 +74,11 @@ namespace JsonWebToken
                         var array = (JwtArray)property.Value;
                         for (int i = 0; i < array.Count; i++)
                         {
-                            list.Add((string)array[i].Value);
+                            var value = array[i].Value;
+                            if (!(value is null))
+                            {
+                                list.Add((string)value);
+                            }
                         }
 
                         return list;
@@ -96,7 +101,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the 'JWT ID' claim.
         /// </summary>
-        public string Jti => _inner.TryGetValue(Claims.JtiUtf8, out var property) ? (string)property.Value : null;
+        public string? Jti => _inner.TryGetValue(Claims.JtiUtf8, out var property) ? (string?)property.Value : null;
 
         /// <summary>
         /// Gets the 'issued at' claim.
@@ -106,7 +111,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the 'issuer' claim.
         /// </summary>
-        public string Iss => _inner.TryGetValue(Claims.IssUtf8, out var property) ? (string)property.Value : null;
+        public string? Iss => _inner.TryGetValue(Claims.IssUtf8, out var property) ? (string?)property.Value : null;
 
         /// <summary>
         /// Gets the 'not before' claim.
@@ -116,23 +121,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the 'subject' claim.
         /// </summary>
-        public string Sub => _inner.TryGetValue(Claims.SubUtf8, out var property) ? (string)property.Value : null;
-
-        /// <summary>
-        /// Gets the claim for a specified key in the current <see cref="JwtPayload"/>.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public T GetValue<T>(string key)
-        {
-            if (_inner.TryGetValue(key, out var value) && value is T tValue)
-            {
-                return tValue;
-            }
-
-            return default;
-        }
+        public string? Sub => _inner.TryGetValue(Claims.SubUtf8, out var property) ? (string?)property.Value : null;
 
         /// <summary>
         /// Determines whether the <see cref="JwtPayload"/> contains the specified key.
@@ -157,7 +146,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the value associated with the specified key.
         /// </summary>
-        public bool TryGetValue(ReadOnlySpan<byte> key, out JwtProperty value)
+        public bool TryGetValue(ReadOnlySpan<byte> key, [NotNullWhen(true)] out JwtProperty value)
         {
             return _inner.TryGetValue(key, out value);
         }

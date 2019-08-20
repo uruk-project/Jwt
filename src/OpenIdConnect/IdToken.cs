@@ -9,16 +9,10 @@ namespace JsonWebToken
 {
     public sealed class IdToken : Jwt
     {
-        private readonly Jwt _token;
-
         public IdToken(Jwt token)
+            :base(token)
         {
-            _token = token ?? throw new ArgumentNullException(nameof(token));
         }
-
-        public override JwtHeader Header => _token.Header;
-
-        public override JwtPayload Payload => _token.Payload;
 
         /// <summary>
         /// Gets or sets the time when the End-User authentication occurred.

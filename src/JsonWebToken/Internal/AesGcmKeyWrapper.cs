@@ -41,12 +41,24 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.IV.Length)];
-            Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(header.Tag.Length)];
+            var encodedIV = header.IV;
+            var encodedTag = header.Tag;
+            if (encodedIV is null)
+            {
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.IVUtf8);
+            }
+
+            if (encodedTag is null)
+            {
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.TagUtf8);
+            }
+
+            Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(encodedIV!.Length)]; // ! => [DoesNotReturn];
+            Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(encodedTag!.Length)]; // ! => [DoesNotReturn];
             try
             {
-                Base64Url.Decode(header.IV, nonce);
-                Base64Url.Decode(header.Tag, tag);
+                Base64Url.Decode(encodedIV, nonce);
+                Base64Url.Decode(encodedTag, tag);
                 using (var aesGcm = new AesGcm(Key.AsSpan()))
                 {
                     aesGcm.Decrypt(nonce, keyBytes, tag, destination);
@@ -62,7 +74,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override void WrapKey(Jwk staticKey, JwtObject header, Span<byte> destination, out Jwk contentEncryptionKey, out int bytesWritten)
+        public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
         {
             if (_disposed)
             {
@@ -81,8 +93,7 @@ namespace JsonWebToken.Internal
                 header.Add(new JwtProperty(HeaderParameters.TagUtf8, Base64Url.Encode(tag)));
             }
 
-            bytesWritten = destination.Length;
-            contentEncryptionKey = cek;
+            return cek;
         }
 
         /// <inheritsdoc />

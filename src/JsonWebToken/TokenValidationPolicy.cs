@@ -19,11 +19,11 @@ namespace JsonWebToken
                                                             .IgnoreCriticalHeader()
                                                             .Build();
 
-        private readonly IList<IValidator> _validators;
+        private readonly IValidator[] _validators;
         private readonly Dictionary<string, ICriticalHeaderHandler> _criticalHandlers;
         private readonly bool _ignoreCriticalHeader;
 
-        internal TokenValidationPolicy(List<IValidator> validators, Dictionary<string, ICriticalHeaderHandler> criticalHandlers, int maximumTokenSizeInBytes, bool ignoreCriticalHeader, SignatureValidationContext signatureValidation)
+        internal TokenValidationPolicy(IValidator[] validators, Dictionary<string, ICriticalHeaderHandler> criticalHandlers, int maximumTokenSizeInBytes, bool ignoreCriticalHeader, SignatureValidationContext? signatureValidation)
         {
             _validators = validators ?? throw new ArgumentNullException(nameof(validators));
             _criticalHandlers = criticalHandlers ?? throw new ArgumentNullException(nameof(criticalHandlers));
@@ -40,45 +40,45 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the signature validation parameters.
         /// </summary>
-        public SignatureValidationContext SignatureValidation { get; }
+        public SignatureValidationContext? SignatureValidation { get; }
 
         /// <summary>
         /// Gets whether the <see cref="TokenValidationPolicy"/> has validation.
         /// </summary>
-        public bool HasValidation => _validators.Count != 0;
+        public bool HasValidation => _validators.Length != 0;
 
         /// <summary>
-        /// Try to validate the token, according to the <paramref name="context"/>.
+        /// Try to validate the token, according to the <paramref name="jwt"/>.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="jwt"></param>
         /// <returns></returns>
-        public TokenValidationResult TryValidate(in TokenValidationContext context)
+        public TokenValidationResult TryValidate(Jwt jwt)
         {
-            for (int i = 0; i < _validators.Count; i++)
+            var validators = _validators;
+            for (int i = 0; i < validators.Length; i++)
             {
-                var result = _validators[i].TryValidate(context);
+                var result = validators[i].TryValidate(jwt);
                 if (!result.Succedeed)
                 {
                     return result;
                 }
             }
 
-            return TokenValidationResult.Success(context.Jwt);
+            return TokenValidationResult.Success(jwt);
         }
 
         /// <summary>
-        /// Try to validate the token, according to the <paramref name="context"/>.
+        /// Try to validate the token, according to the <paramref name="header"/>.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="header"></param>
         /// <returns></returns>
-        public TokenValidationResult TryValidate(CriticalHeaderValidationContext context)
+        public TokenValidationResult TryValidate(JwtHeader header)
         {
             if (_ignoreCriticalHeader)
             {
                 goto Success;
             }
 
-            var header = context.Header;
             var crit = header.Crit;
             if (crit == null || crit.Count == 0)
             {
@@ -94,9 +94,9 @@ namespace JsonWebToken
                 }
                 else
                 {
-                    if (_criticalHandlers.TryGetValue(criticalHeader, out ICriticalHeaderHandler handler))
+                    if (_criticalHandlers.TryGetValue(criticalHeader, out var handler))
                     {
-                        if (!handler.TryHandle(context, criticalHeader))
+                        if (!handler.TryHandle(header, criticalHeader))
                         {
                             return TokenValidationResult.InvalidHeader(criticalHeader);
                         }

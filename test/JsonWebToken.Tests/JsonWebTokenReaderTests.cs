@@ -270,7 +270,7 @@ namespace JsonWebToken.Tests
             this.value = value;
         }
 
-        public bool TryHandle(CriticalHeaderValidationContext context, string headerName)
+        public bool TryHandle(JwtHeader heade, string headerName)
         {
             return value;
         }

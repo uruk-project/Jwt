@@ -13,14 +13,6 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of the <see cref="BinaryJweDescriptor"/> class.
         /// </summary>
-        public BinaryJweDescriptor()
-            : base()
-        {
-        }   
-        
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryJweDescriptor"/> class.
-        /// </summary>
         /// <param name="payload"></param>
         public BinaryJweDescriptor(byte[] payload)
             : base(payload)

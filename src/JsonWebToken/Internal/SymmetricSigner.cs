@@ -42,21 +42,13 @@ namespace JsonWebToken.Internal
 
             _hashSizeInBytes = Algorithm.RequiredKeySizeInBits >> 2;
             _base64HashSizeInBytes = Base64Url.GetArraySizeRequiredToEncode(_hashSizeInBytes);
-            switch (Algorithm.Id)
+            _hashAlgorithmPool = Algorithm.Id switch
             {
-                case Algorithms.HmacSha256:
-                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha256ObjectPoolPolicy(key.ToArray()));
-                    break;
-                case Algorithms.HmacSha384:
-                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha384ObjectPoolPolicy(key.ToArray()));
-                    break;
-                case Algorithms.HmacSha512:
-                    _hashAlgorithmPool = new ObjectPool<KeyedHashAlgorithm>(new HmacSha512ObjectPoolPolicy(key.ToArray()));
-                    break;
-                default:
-                    ThrowHelper.ThrowNotSupportedException_KeyedHashAlgorithm(algorithm);
-                    break;
-            }
+                Algorithms.HmacSha256 => new ObjectPool<KeyedHashAlgorithm>(new HmacSha256ObjectPoolPolicy(key.ToArray())),
+                Algorithms.HmacSha384 => new ObjectPool<KeyedHashAlgorithm>(new HmacSha384ObjectPoolPolicy(key.ToArray())),
+                Algorithms.HmacSha512 => new ObjectPool<KeyedHashAlgorithm>(new HmacSha512ObjectPoolPolicy(key.ToArray())),
+                _ => new ObjectPool<KeyedHashAlgorithm>(new NotSupportedObjectPoolPolicy(algorithm)),
+            };
         }
 
         /// <inheritsdoc />
@@ -65,7 +57,7 @@ namespace JsonWebToken.Internal
         public override int Base64HashSizeInBytes => _base64HashSizeInBytes;
 
         /// <summary>
-        /// Gets or sets the minimum <see cref="SymmetricJwk"/>.KeySize. />.
+        /// Gets or sets the minimum <see cref="SymmetricJwk"/>.KeySize.
         /// </summary>
         public int MinimumKeySizeInBits
         {
@@ -261,6 +253,19 @@ namespace JsonWebToken.Internal
             public override KeyedHashAlgorithm Create()
             {
                 return new HMACSHA512(_keyBytes);
+            }
+        }
+
+        private sealed class NotSupportedObjectPoolPolicy : PooledObjectFactory<KeyedHashAlgorithm>
+        {
+            public NotSupportedObjectPoolPolicy(SignatureAlgorithm algorithm)
+            {
+                ThrowHelper.ThrowNotSupportedException_KeyedHashAlgorithm(algorithm);
+            }
+
+            public override KeyedHashAlgorithm Create()
+            {
+                throw new NotSupportedException();
             }
         }
     }

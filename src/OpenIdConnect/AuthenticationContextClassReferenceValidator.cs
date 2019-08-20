@@ -5,7 +5,7 @@ using System;
 
 namespace JsonWebToken
 {
-    public sealed class AuthenticationContextClassReferenceValidator : IValidator
+    internal sealed class AuthenticationContextClassReferenceValidator : IValidator
     {
         private readonly string _requiredAcr;
 
@@ -14,9 +14,8 @@ namespace JsonWebToken
             _requiredAcr = requiredAcr;
         }
 
-        public TokenValidationResult TryValidate(in TokenValidationContext context)
+        public TokenValidationResult TryValidate(Jwt jwt)
         {
-            var jwt = context.Jwt;
             if (!jwt.Payload.TryGetValue(OidcClaims.AcrUtf8, out var property))
             {
                 return TokenValidationResult.MissingClaim(jwt, OidcClaims.AcrUtf8);

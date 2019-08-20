@@ -16,11 +16,15 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public TokenValidationResult TryValidate(in TokenValidationContext context)
+        public TokenValidationResult TryValidate(Jwt jwt)
         {
-            var jwt = context.Jwt;
+            if (jwt is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
+            }
+            
             bool missingAudience = true;
-            foreach (string audience in jwt.Audiences)
+            foreach (string audience in jwt!.Audiences)
             {
                 missingAudience = false;
                 if (string.IsNullOrWhiteSpace(audience))

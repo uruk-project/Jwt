@@ -29,7 +29,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="jwksAddress"></param>
         /// <param name="handler"></param>
-        public JwksKeyProvider(string jwksAddress, HttpMessageHandler handler)
+        public JwksKeyProvider(string jwksAddress, HttpMessageHandler? handler)
             : base(new HttpDocumentRetriever(handler))
         {
             _jwksAddress = jwksAddress ?? throw new System.ArgumentNullException(nameof(jwksAddress));

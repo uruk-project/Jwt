@@ -15,15 +15,19 @@ namespace JsonWebToken.Internal
             _algorithm = Encoding.UTF8.GetBytes(algorithm ?? throw new ArgumentNullException(nameof(algorithm)));
         }
 
-        public TokenValidationResult TryValidate(in TokenValidationContext context)
+        public TokenValidationResult TryValidate(Jwt jwt)
         {
-            var jwt = context.Jwt;
-            if (!jwt.Header.TryGetValue(HeaderParameters.AlgUtf8, out var property))
+            if (jwt is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
+            }
+
+            if (!jwt!.Header.TryGetValue(HeaderParameters.AlgUtf8, out var property))
             {
                 return TokenValidationResult.MissingHeader(HeaderParameters.AlgUtf8);
             }
 
-            if (!_algorithm.AsSpan().SequenceEqual((byte[])property.Value))
+            if (!_algorithm.AsSpan().SequenceEqual(new ReadOnlySpan<byte>((byte[]?)property.Value)))
             {
                 return TokenValidationResult.InvalidHeader(HeaderParameters.AlgUtf8);
             }
