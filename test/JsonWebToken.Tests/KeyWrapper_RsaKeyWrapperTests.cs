@@ -69,18 +69,28 @@ namespace JsonWebToken.Tests
             Assert.Equal(0, header.Count);
         }
 
-        [Fact]
-        public void Rsa_TryEncrypt_DestinationTooSmall()
+        [Theory]
+        [MemberData(nameof(RsaPadding))]
+        public void Rsa_TryEncrypt_DestinationTooSmall(RSAEncryptionPadding padding)
         {
             var data = new byte[1024];
             RandomNumberGenerator.Fill(data);
             var destination = new byte[0];
             using (var rsa = RSA.Create(512))
             {
-                var result = rsa.TryEncrypt(data, destination, RSAEncryptionPadding.OaepSHA1, out int bytesWritten);
+                var result = rsa.TryEncrypt(data, destination, padding, out int bytesWritten);
 
                 Assert.False(result);
             }
+        }
+
+        public static IEnumerable<object[]> RsaPadding()
+        {
+            yield return new object[] { RSAEncryptionPadding.OaepSHA1 };
+            yield return new object[] { RSAEncryptionPadding.OaepSHA256 };
+            yield return new object[] { RSAEncryptionPadding.OaepSHA384 };
+            yield return new object[] { RSAEncryptionPadding.OaepSHA512 };
+            yield return new object[] { RSAEncryptionPadding.Pkcs1 };
         }
     }
 }
