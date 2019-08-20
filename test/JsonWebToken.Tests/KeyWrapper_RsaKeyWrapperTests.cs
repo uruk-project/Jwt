@@ -3,11 +3,19 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace JsonWebToken.Tests
 {
     public class KeyWrapper_RsaKeyWrapperTests : KeyWrapperTestsBase
     {
+        private readonly ITestOutputHelper output;
+
+        public KeyWrapper_RsaKeyWrapperTests(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
+
         private Jwk TryWrapKey_Success(SymmetricJwk keyToWrap, EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
             var keyEncryptionKey = RsaJwk.GeneratePrivateKey(alg.RequiredKeySizeInBits);
@@ -76,19 +84,19 @@ namespace JsonWebToken.Tests
             var data = new byte[1024];
             RandomNumberGenerator.Fill(data);
             var destination = new byte[0];
+            var legalKeySizes = RSA.Create(4096).LegalKeySizes;
+            output.WriteLine("RSA legal key sizes:");
+            for (int i = 0; i < legalKeySizes.Length; i++)
+            {
+                output.WriteLine(legalKeySizes[i].MinSize + "/" + legalKeySizes[i].MaxSize + "/" + legalKeySizes[i].SkipSize);
+            }
+
             using (var rsa = RSA.Create(512))
             {
                 var result = rsa.TryEncrypt(data, destination, padding, out int bytesWritten);
 
                 Assert.False(result);
             }
-        }
-        
-
-        [Fact]
-        public void Rsa_TryEncrypt_InvalidKeySize()
-        {
-            Assert.Throws<CryptographicException>(() => RSA.Create(510));
         }
 
         public static IEnumerable<object[]> RsaPadding()
