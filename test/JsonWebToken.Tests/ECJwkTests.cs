@@ -43,6 +43,7 @@ namespace JsonWebToken.Tests
         public override void IsSupportedKeyWrapping_Success(Jwk key, EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
             Assert.True(key.IsSupported(alg));
+            Assert.False(key.IsSupported(enc));
         }
 
         [Theory]

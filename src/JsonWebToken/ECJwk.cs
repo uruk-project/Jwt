@@ -12,6 +12,7 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
+#nullable disable
     /// <summary>
     /// Represents an Elliptic Curve JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
     /// </summary>
@@ -160,6 +161,7 @@ namespace JsonWebToken
         private ECJwk()
         {
         }
+#nullable enable
 
         private void Initialize(ECParameters parameters)
         {
@@ -280,11 +282,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override bool IsSupported(EncryptionAlgorithm algorithm)
         {
-#if NETCOREAPP3_0
-            return algorithm.Category == EncryptionType.AesHmac || algorithm.Category == EncryptionType.AesGcm;
-#else
-            return algorithm.Category == EncryptionType.AesHmac;
-#endif
+            return false;
         }
 
         /// <inheritdoc />

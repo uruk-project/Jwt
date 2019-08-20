@@ -39,10 +39,12 @@ namespace JsonWebToken
             _k = Base64Url.Decode(k);
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         internal SymmetricJwk(JwtObject @object)
+#nullable enable
         {
             for (int i = 0; i < @object.Count; i++)
             {

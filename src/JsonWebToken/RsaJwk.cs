@@ -16,6 +16,7 @@ namespace JsonWebToken
     /// </summary>
     public sealed class RsaJwk : AsymmetricJwk
     {
+#nullable disable
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
         /// </summary>
@@ -206,6 +207,7 @@ namespace JsonWebToken
         private RsaJwk()
         {
         }
+#nullable enable
 
         private void Initialize(byte[] n, byte[] e, byte[] p, byte[] q, byte[] dp, byte[] dq, byte[] qi)
         {

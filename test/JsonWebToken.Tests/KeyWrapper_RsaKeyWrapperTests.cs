@@ -1,9 +1,8 @@
-﻿using JsonWebToken.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using JsonWebToken.Internal;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace JsonWebToken.Tests
 {
