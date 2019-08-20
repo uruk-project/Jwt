@@ -83,6 +83,13 @@ namespace JsonWebToken.Tests
                 Assert.False(result);
             }
         }
+        
+
+        [Fact]
+        public void Rsa_TryEncrypt_InvalidKeySize()
+        {
+            Assert.Throws<CryptographicException>(() => RSA.Create(510));
+        }
 
         public static IEnumerable<object[]> RsaPadding()
         {
