@@ -9,13 +9,6 @@ namespace JsonWebToken.Tests
 {
     public class KeyWrapper_RsaKeyWrapperTests : KeyWrapperTestsBase
     {
-        private readonly ITestOutputHelper output;
-
-        public KeyWrapper_RsaKeyWrapperTests(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
-
         private Jwk TryWrapKey_Success(SymmetricJwk keyToWrap, EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
             var keyEncryptionKey = RsaJwk.GeneratePrivateKey(alg.RequiredKeySizeInBits);
@@ -75,37 +68,6 @@ namespace JsonWebToken.Tests
             Assert.Throws<ObjectDisposedException>(() => wrapper.WrapKey(null, header, destination));
 
             Assert.Equal(0, header.Count);
-        }
-
-        [Theory]
-        [MemberData(nameof(RsaPadding))]
-        public void Rsa_TryEncrypt_DestinationTooSmall(RSAEncryptionPadding padding)
-        {
-            var data = new byte[1024];
-            RandomNumberGenerator.Fill(data);
-            var destination = new byte[0];
-            var legalKeySizes = RSA.Create(4096).LegalKeySizes;
-            output.WriteLine("RSA legal key sizes:");
-            for (int i = 0; i < legalKeySizes.Length; i++)
-            {
-                output.WriteLine(legalKeySizes[i].MinSize + "/" + legalKeySizes[i].MaxSize + "/" + legalKeySizes[i].SkipSize);
-            }
-
-            using (var rsa = RSA.Create(512))
-            {
-                var result = rsa.TryEncrypt(data, destination, padding, out int bytesWritten);
-
-                Assert.False(result);
-            }
-        }
-
-        public static IEnumerable<object[]> RsaPadding()
-        {
-            yield return new object[] { RSAEncryptionPadding.OaepSHA1 };
-            yield return new object[] { RSAEncryptionPadding.OaepSHA256 };
-            yield return new object[] { RSAEncryptionPadding.OaepSHA384 };
-            yield return new object[] { RSAEncryptionPadding.OaepSHA512 };
-            yield return new object[] { RSAEncryptionPadding.Pkcs1 };
         }
     }
 }
