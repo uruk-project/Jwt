@@ -1,16 +1,132 @@
-﻿using BenchmarkDotNet.Attributes;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Text.Json;
+using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Running;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Text;
 
 namespace JsonWebToken.Performance
 {
+    [MemoryDiagnoser]
+    public class SignatureParserBenchmark
+    {
+        [Benchmark(Baseline = false, OperationsPerInvoke = 16)]
+        [ArgumentsSource(nameof(GetData))]
+        public bool New(ReadOnlySpan<byte> data)
+        {
+            var reader = new Utf8JsonReader(data);
+            reader.Read();
+            reader.Read();
+            SignatureAlgorithm.TryParse(ref reader, out var algorithm);
+            SignatureAlgorithm.TryParse(ref reader, out algorithm);
+            SignatureAlgorithm.TryParse(ref reader, out algorithm);
+            SignatureAlgorithm.TryParse(ref reader, out algorithm);
+            SignatureAlgorithm.TryParse(ref reader, out algorithm);
+            SignatureAlgorithm.TryParse(ref reader, out algorithm);
+            SignatureAlgorithm.TryParse(ref reader, out algorithm);
+            SignatureAlgorithm.TryParse(ref reader, out algorithm);
+            SignatureAlgorithm.TryParse(ref reader, out algorithm);
+            SignatureAlgorithm.TryParse(ref reader, out algorithm);
+            SignatureAlgorithm.TryParse(ref reader, out algorithm);
+            SignatureAlgorithm.TryParse(ref reader, out algorithm);
+            SignatureAlgorithm.TryParse(ref reader, out algorithm);
+            SignatureAlgorithm.TryParse(ref reader, out algorithm);
+            SignatureAlgorithm.TryParse(ref reader, out algorithm);
+            return SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        }
+
+        [Benchmark(OperationsPerInvoke = 16)]
+        [ArgumentsSource(nameof(GetData))]
+        public bool Old_WithoutUnescaping(ReadOnlySpan<byte> data)
+        {
+            var reader = new Utf8JsonReader(data);
+            reader.Read();
+            reader.Read();
+            var value = reader.ValueSpan;
+            SignatureAlgorithm.TryParse(value, out var algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            return SignatureAlgorithm.TryParse(value, out algorithm);
+        }
+
+
+        [Benchmark(OperationsPerInvoke = 16)]
+        [ArgumentsSource(nameof(GetData))]
+        public bool Old_WithEscaping(ReadOnlySpan<byte> data)
+        {
+            var reader = new Utf8JsonReader(data);
+            reader.Read();
+            reader.Read();
+            var value = Encoding.UTF8.GetBytes(reader.GetString());
+            SignatureAlgorithm.TryParse(value, out var algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            SignatureAlgorithm.TryParse(value, out algorithm);
+            return SignatureAlgorithm.TryParse(value, out algorithm);
+        }
+
+        public IEnumerable<byte[]> GetData()
+        {
+            yield return Encoding.UTF8.GetBytes("{\"alg\":\"" + SignatureAlgorithm.HmacSha256.Name + "\"");
+            //yield return Encoding.UTF8.GetBytes("{\"alg\":\"" + SignatureAlgorithm.EcdsaSha256.Name + "\"");
+            //yield return Encoding.UTF8.GetBytes("{\"alg\":\"" + SignatureAlgorithm.RsaSha256.Name + "\"");
+            //yield return Encoding.UTF8.GetBytes("{\"alg\":\"" + SignatureAlgorithm.RsaSsaPssSha256.Name + "\"");
+            //yield return Encoding.UTF8.GetBytes("{\"alg\":\"" + SignatureAlgorithm.RsaSsaPssSha384.Name + "\"");
+            //yield return Encoding.UTF8.GetBytes("{\"alg\":\"" + SignatureAlgorithm.None.Name + "\"");
+            yield return Encoding.UTF8.GetBytes("{\"alg\":\"" + "fake" + "\"");
+        }
+    }
+
+    [MemoryDiagnoser]
+    public class JsonHeaderParserBenchmark
+    {
+        [Benchmark(Baseline = false)]
+        [ArgumentsSource(nameof(GetData))]
+        public JwtHeader Old(byte[] data)
+        {
+            return JsonHeaderParser.ParseHeader(data);
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(GetData))]
+        public JwtHeader New(byte[] data)
+        {
+            return JsonHeaderParser.ParseHeader2(data);
+        }
+
+        public IEnumerable<byte[]> GetData()
+        {
+            yield return Encoding.UTF8.GetBytes("{\"alg\":\"HS256\",\"typ\":\"JWT\"}");
+            yield return Encoding.UTF8.GetBytes("{\"unk\":\"unknow value\",\"x\":123}");
+            yield return Encoding.UTF8.GetBytes("{\"alg\":\"HS256\",\"typ\":\"JWT\",\"unk\":\"unknow value\",\"x\":123}");
+        }
+    }
+
     [MemoryDiagnoser]
     public class JsonWriterBenchmark
     {
@@ -94,7 +210,7 @@ namespace JsonWebToken.Performance
         public void New2()
         {
             _output.Clear();
-            payloadMedium.Serialize(_output);            
+            payloadMedium.Serialize(_output);
         }
 
         [Benchmark]

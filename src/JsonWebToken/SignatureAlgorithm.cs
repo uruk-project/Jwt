@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -286,6 +287,107 @@ namespace JsonWebToken
         {
             return (SignatureAlgorithm?)(ReadOnlySpan<byte>)value;
         }
+
+        private static ReadOnlySpan<byte> Hs256Utf8 => new byte[] { (byte)'H', (byte)'S', (byte)'2', (byte)'5', (byte)'6' };
+        private static ReadOnlySpan<byte> Hs384Utf8 => new byte[] { (byte)'H', (byte)'S', (byte)'3', (byte)'8', (byte)'4' };
+        private static ReadOnlySpan<byte> Hs512Utf8 => new byte[] { (byte)'H', (byte)'S', (byte)'5', (byte)'1', (byte)'2' };
+
+        private static ReadOnlySpan<byte> Rs256Utf8 => new byte[] { (byte)'R', (byte)'S', (byte)'2', (byte)'5', (byte)'6' };
+        private static ReadOnlySpan<byte> Rs384Utf8 => new byte[] { (byte)'R', (byte)'S', (byte)'3', (byte)'8', (byte)'4' };
+        private static ReadOnlySpan<byte> Rs512Utf8 => new byte[] { (byte)'R', (byte)'S', (byte)'5', (byte)'1', (byte)'2' };
+
+        private static ReadOnlySpan<byte> Ps256Utf8 => new byte[] { (byte)'P', (byte)'S', (byte)'2', (byte)'5', (byte)'6' };
+        private static ReadOnlySpan<byte> Ps384Utf8 => new byte[] { (byte)'P', (byte)'S', (byte)'3', (byte)'8', (byte)'4' };
+        private static ReadOnlySpan<byte> Ps512Utf8 => new byte[] { (byte)'P', (byte)'S', (byte)'5', (byte)'1', (byte)'2' };
+
+        private static ReadOnlySpan<byte> Es256Utf8 => new byte[] { (byte)'E', (byte)'S', (byte)'2', (byte)'5', (byte)'6' };
+        private static ReadOnlySpan<byte> Es384Utf8 => new byte[] { (byte)'E', (byte)'S', (byte)'3', (byte)'8', (byte)'4' };
+        private static ReadOnlySpan<byte> Es512Utf8 => new byte[] { (byte)'E', (byte)'S', (byte)'5', (byte)'1', (byte)'2' };
+
+        private static ReadOnlySpan<byte> NoneUtf8 => new byte[] { (byte)'n', (byte)'o', (byte)'n', (byte)'e' };
+
+        /// <summary>
+        /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="algorithm"></param>
+        public static bool TryParse(ref Utf8JsonReader reader, out SignatureAlgorithm? algorithm)
+        {
+            if (reader.ValueTextEquals(Hs256Utf8))
+            {
+                algorithm = HmacSha256;
+                goto found;
+            }
+            else if (reader.ValueTextEquals(Es256Utf8))
+            {
+                algorithm = EcdsaSha256;
+                goto found;
+            }
+            else if (reader.ValueTextEquals(Rs256Utf8))
+            {
+                algorithm = RsaSha256;
+                goto found;
+            }
+            else if (reader.ValueTextEquals(Ps256Utf8))
+            {
+                algorithm = RsaSsaPssSha256;
+                goto found;
+            }
+            else if (reader.ValueTextEquals(Hs512Utf8))
+            {
+                algorithm = HmacSha512;
+                goto found;
+            }
+            else if (reader.ValueTextEquals(Es512Utf8))
+            {
+                algorithm = EcdsaSha512;
+                goto found;
+            }
+            else if (reader.ValueTextEquals(Rs512Utf8))
+            {
+                algorithm = RsaSha512;
+                goto found;
+            }
+            else if (reader.ValueTextEquals(Ps512Utf8))
+            {
+                algorithm = RsaSsaPssSha512;
+                goto found;
+            }
+            else if (reader.ValueTextEquals(Hs384Utf8))
+            {
+                algorithm = HmacSha384;
+                goto found;
+            }
+            else if (reader.ValueTextEquals(Es384Utf8))
+            {
+                algorithm = EcdsaSha384;
+                goto found;
+            }
+            else if (reader.ValueTextEquals(Rs384Utf8))
+            {
+                algorithm = RsaSha384;
+                goto found;
+            }
+            else if (reader.ValueTextEquals(Ps384Utf8))
+            {
+                algorithm = RsaSsaPssSha384;
+                goto found;
+            }
+            else if(reader .ValueTextEquals(NoneUtf8))
+            {
+                algorithm = None;
+                goto found;
+            }
+            else
+            {
+                algorithm = null;
+                return false;
+            }
+            
+            found:
+                return true;
+        }
+        
 
         /// <summary>
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
