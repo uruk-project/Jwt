@@ -387,7 +387,6 @@ namespace JsonWebToken
             found:
                 return true;
         }
-        
 
         /// <summary>
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
