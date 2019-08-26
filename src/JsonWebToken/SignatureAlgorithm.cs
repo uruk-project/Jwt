@@ -316,76 +316,73 @@ namespace JsonWebToken
             if (reader.ValueTextEquals(Hs256Utf8))
             {
                 algorithm = HmacSha256;
-                goto found;
+                return true;
             }
             else if (reader.ValueTextEquals(Es256Utf8))
             {
                 algorithm = EcdsaSha256;
-                goto found;
+                return true;
             }
             else if (reader.ValueTextEquals(Rs256Utf8))
             {
                 algorithm = RsaSha256;
-                goto found;
+                return true;
             }
             else if (reader.ValueTextEquals(Ps256Utf8))
             {
                 algorithm = RsaSsaPssSha256;
-                goto found;
+                return true;
             }
             else if (reader.ValueTextEquals(Hs512Utf8))
             {
                 algorithm = HmacSha512;
-                goto found;
+                return true;
             }
             else if (reader.ValueTextEquals(Es512Utf8))
             {
                 algorithm = EcdsaSha512;
-                goto found;
+                return true;
             }
             else if (reader.ValueTextEquals(Rs512Utf8))
             {
                 algorithm = RsaSha512;
-                goto found;
+                return true;
             }
             else if (reader.ValueTextEquals(Ps512Utf8))
             {
                 algorithm = RsaSsaPssSha512;
-                goto found;
+                return true;
             }
             else if (reader.ValueTextEquals(Hs384Utf8))
             {
                 algorithm = HmacSha384;
-                goto found;
+                return true;
             }
             else if (reader.ValueTextEquals(Es384Utf8))
             {
                 algorithm = EcdsaSha384;
-                goto found;
+                return true;
             }
             else if (reader.ValueTextEquals(Rs384Utf8))
             {
                 algorithm = RsaSha384;
-                goto found;
+                return true;
             }
             else if (reader.ValueTextEquals(Ps384Utf8))
             {
                 algorithm = RsaSsaPssSha384;
-                goto found;
+                return true;
             }
-            else if(reader .ValueTextEquals(NoneUtf8))
+            else if (reader.ValueTextEquals(NoneUtf8))
             {
                 algorithm = None;
-                goto found;
+                return true;
             }
             else
             {
                 algorithm = null;
                 return false;
             }
-            
-            found:
-                return true;
         }
 
         /// <summary>
@@ -469,6 +466,294 @@ namespace JsonWebToken
                 algorithm = null;
                 return false;
             }
+        }
+
+        public unsafe static bool TryParse2(ReadOnlySpan<byte> value, out SignatureAlgorithm? algorithm)
+        {
+            if (value.IsEmpty)
+            {
+                algorithm = null;
+                goto found;
+            }
+
+            fixed (byte* pValue = value)
+            {
+                if (value.Length == 5)
+                {
+                    switch (*(uint*)(pValue + 1))
+                    {
+                        case 909455955u /* S256 */:
+                            switch (value[0])
+                            {
+                                case (byte)'H':
+                                    algorithm = HmacSha256;
+                                    goto found;
+                                case (byte)'R':
+                                    algorithm = RsaSha256;
+                                    goto found;
+                                case (byte)'E':
+                                    algorithm = EcdsaSha256;
+                                    goto found;
+                                case (byte)'P':
+                                    algorithm = RsaSsaPssSha256;
+                                    goto found;
+                            }
+                            break;
+                        case 876098387u /* S384 */:
+                            switch (value[0])
+                            {
+                                case (byte)'H':
+                                    algorithm = HmacSha384;
+                                    goto found;
+                                case (byte)'R':
+                                    algorithm = RsaSha384;
+                                    goto found;
+                                case (byte)'E':
+                                    algorithm = EcdsaSha384;
+                                    goto found;
+                                case (byte)'P':
+                                    algorithm = RsaSsaPssSha384;
+                                    goto found;
+                            }
+                            break;
+                        case 842085715u /* S512 */:
+                            switch (value[0])
+                            {
+                                case (byte)'H':
+                                    algorithm = HmacSha512;
+                                    goto found;
+                                case (byte)'R':
+                                    algorithm = RsaSha512;
+                                    goto found;
+                                case (byte)'E':
+                                    algorithm = EcdsaSha512;
+                                    goto found;
+                                case (byte)'P':
+                                    algorithm = RsaSsaPssSha512;
+                                    goto found;
+                            }
+                            break;
+                    }
+                }
+                else if (value.Length == 4 && *(int*)pValue == 1701736302/* none */)
+                {
+                    algorithm = None;
+                    goto found;
+                }
+
+                algorithm = null;
+                return false;
+            }
+
+        found:
+            return true;
+        }
+
+        public unsafe static bool TryParse3(ReadOnlySpan<byte> value, out SignatureAlgorithm? algorithm)
+        {
+            if (value.IsEmpty)
+            {
+                algorithm = null;
+                return true;
+            }
+
+            fixed (byte* pValue = value)
+            {
+                if (value.Length == 5)
+                {
+                    switch (*(uint*)(pValue + 1))
+                    {
+                        case 909455955u /* S256 */:
+                            switch (value[0])
+                            {
+                                case (byte)'H':
+                                    algorithm = HmacSha256;
+                                    return true;
+                                case (byte)'R':
+                                    algorithm = RsaSha256;
+                                    return true;
+                                case (byte)'E':
+                                    algorithm = EcdsaSha256;
+                                    return true;
+                                case (byte)'P':
+                                    algorithm = RsaSsaPssSha256;
+                                    return true;
+                            }
+                            break;
+                        case 876098387u /* S384 */:
+                            switch (value[0])
+                            {
+                                case (byte)'H':
+                                    algorithm = HmacSha384;
+                                    return true;
+                                case (byte)'R':
+                                    algorithm = RsaSha384;
+                                    return true;
+                                case (byte)'E':
+                                    algorithm = EcdsaSha384;
+                                    return true;
+                                case (byte)'P':
+                                    algorithm = RsaSsaPssSha384;
+                                    return true;
+                            }
+                            break;
+                        case 842085715u /* S512 */:
+                            switch (value[0])
+                            {
+                                case (byte)'H':
+                                    algorithm = HmacSha512;
+                                    return true;
+                                case (byte)'R':
+                                    algorithm = RsaSha512;
+                                    return true;
+                                case (byte)'E':
+                                    algorithm = EcdsaSha512;
+                                    return true;
+                                case (byte)'P':
+                                    algorithm = RsaSsaPssSha512;
+                                    return true;
+                            }
+                            break;
+                    }
+                }
+                else if (value.Length == 4 && *(int*)pValue == 1701736302/* none */)
+                {
+                    algorithm = None;
+                    return true;
+                }
+
+                algorithm = null;
+                return false;
+            }
+        }
+        public unsafe static bool TryParse4(ReadOnlySpan<byte> value, out SignatureAlgorithm? algorithm)
+        {
+            if (value.IsEmpty)
+            {
+                algorithm = null;
+                return true;
+            }
+
+            fixed (byte* pValue = value)
+            {
+                if (value.Length == 5)
+                {
+                    var first = value[0];
+                    switch (*(uint*)(pValue + 1))
+                    {
+                        case 909455955u when first == (byte)'H':
+                            algorithm = HmacSha256;
+                            return true;
+                        case 909455955u when first == (byte)'R':
+                            algorithm = RsaSha256;
+                            return true;
+                        case 909455955u when first == (byte)'E':
+                            algorithm = EcdsaSha256;
+                            return true;
+                        case 909455955u when first == (byte)'P':
+                            algorithm = RsaSsaPssSha256;
+                            return true;
+                        case 876098387u when first == (byte)'H':
+                            algorithm = HmacSha384;
+                            return true;
+                        case 876098387u when first == (byte)'R':
+                            algorithm = RsaSha384;
+                            return true;
+                        case 876098387u when first == (byte)'E':
+                            algorithm = EcdsaSha384;
+                            return true;
+                        case 876098387u when first == (byte)'P':
+                            algorithm = RsaSsaPssSha384;
+                            return true;
+                        case 842085715u when first == (byte)'H':
+                            algorithm = HmacSha512;
+                            return true;
+                        case 842085715u when first == (byte)'R':
+                            algorithm = RsaSha512;
+                            return true;
+                        case 842085715u when first == (byte)'E':
+                            algorithm = EcdsaSha512;
+                            return true;
+                        case 842085715u when first == (byte)'P':
+                            algorithm = RsaSsaPssSha512;
+                            return true;
+                    }
+                }
+                else if (value.Length == 4 && *(int*)pValue == 1701736302/* none */)
+                {
+                    algorithm = None;
+                    return true;
+                }
+
+                algorithm = null;
+                return false;
+            }
+        }
+        public unsafe static bool TryParse5(ReadOnlySpan<byte> value, out SignatureAlgorithm? algorithm)
+        {
+            if (value.IsEmpty)
+            {
+                algorithm = null;
+                goto found;
+            }
+
+            fixed (byte* pValue = value)
+            {
+                if (value.Length == 5)
+                {
+                    var first = value[0];
+                    switch (*(uint*)(pValue + 1))
+                    {
+                        case 909455955u when first == (byte)'H':
+                            algorithm = HmacSha256;
+                            goto found;
+                        case 909455955u when first == (byte)'R':
+                            algorithm = RsaSha256;
+                            goto found;
+                        case 909455955u when first == (byte)'E':
+                            algorithm = EcdsaSha256;
+                            goto found;
+                        case 909455955u when first == (byte)'P':
+                            algorithm = RsaSsaPssSha256;
+                            goto found;
+                        case 876098387u when first == (byte)'H':
+                            algorithm = HmacSha384;
+                            goto found;
+                        case 876098387u when first == (byte)'R':
+                            algorithm = RsaSha384;
+                            goto found;
+                        case 876098387u when first == (byte)'E':
+                            algorithm = EcdsaSha384;
+                            goto found;
+                        case 876098387u when first == (byte)'P':
+                            algorithm = RsaSsaPssSha384;
+                            goto found;
+                        case 842085715u when first == (byte)'H':
+                            algorithm = HmacSha512;
+                            goto found;
+                        case 842085715u when first == (byte)'R':
+                            algorithm = RsaSha512;
+                            goto found;
+                        case 842085715u when first == (byte)'E':
+                            algorithm = EcdsaSha512;
+                            goto found;
+                        case 842085715u when first == (byte)'P':
+                            algorithm = RsaSsaPssSha512;
+                            goto found;
+                    }
+                }
+                else if (value.Length == 4 && *(int*)pValue == 1701736302/* none */)
+                {
+                    algorithm = None;
+                    goto found;
+                }
+
+                algorithm = null;
+                return false;
+            }
+
+        found:
+            return true;
         }
 
         /// <summary>
