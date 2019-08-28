@@ -26,7 +26,7 @@ namespace JsonWebToken.Tests
         {
             var name = JwtProperty.GetWellKnowName(knownProperty);
 
-            Assert.Equal(expected, Encoding.UTF8.GetString(name));
+            Assert.Equal(expected, Encoding.UTF8.GetString(name.ToArray()));
         }
 
         [Theory]
@@ -49,7 +49,7 @@ namespace JsonWebToken.Tests
                     writer.WriteEndObject();
                 }
 
-                Assert.Equal(expected, Encoding.UTF8.GetString(bufferWriter.WrittenSpan));
+                Assert.Equal(expected, Encoding.UTF8.GetString(bufferWriter.WrittenSpan.ToArray()));
             }
         }
 
