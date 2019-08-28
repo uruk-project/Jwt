@@ -133,9 +133,11 @@ namespace JsonWebToken.Tests
             yield return KeyManagementAlgorithm.Aes256KW;
             yield return KeyManagementAlgorithm.Direct;
 
+#if NETCOREAPP3_0
             yield return KeyManagementAlgorithm.Aes128GcmKW;
             yield return KeyManagementAlgorithm.Aes192GcmKW;
             yield return KeyManagementAlgorithm.Aes256GcmKW;
+#endif
 
             yield return KeyManagementAlgorithm.RsaOaep;
             yield return KeyManagementAlgorithm.RsaPkcs1;
@@ -143,7 +145,7 @@ namespace JsonWebToken.Tests
             yield return KeyManagementAlgorithm.RsaOaep384;
             yield return KeyManagementAlgorithm.RsaOaep512;
 
-#if NETCOREAPP3_0
+#if NETCOREAPP
             yield return KeyManagementAlgorithm.EcdhEs;
             yield return KeyManagementAlgorithm.EcdhEsAes128KW;
             yield return KeyManagementAlgorithm.EcdhEsAes192KW;
@@ -156,9 +158,11 @@ namespace JsonWebToken.Tests
             yield return EncryptionAlgorithm.Aes128CbcHmacSha256;
             yield return EncryptionAlgorithm.Aes192CbcHmacSha384;
             yield return EncryptionAlgorithm.Aes256CbcHmacSha512;
+#if NETCOREAPP3_0
             yield return EncryptionAlgorithm.Aes128Gcm;
             yield return EncryptionAlgorithm.Aes192Gcm;
             yield return EncryptionAlgorithm.Aes256Gcm;
+#endif
         }
     }
 }

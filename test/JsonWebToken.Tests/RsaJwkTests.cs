@@ -146,7 +146,7 @@ namespace JsonWebToken.Tests
             using (var bufferWriter = new ArrayBufferWriter())
             {
                 key.Serialize(bufferWriter);
-                var json = Encoding.UTF8.GetString(bufferWriter.WrittenSpan);
+                var json = Encoding.UTF8.GetString(bufferWriter.WrittenSpan.ToArray());
 
                 Assert.Contains("\"kid\":\"kid-rsa\"", json);
                 Assert.Contains("\"key_ops\":[\"sign\"]", json);
