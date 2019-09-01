@@ -61,7 +61,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_ClaimIsRequired(ReadOnlySpan<byte> claim)
         {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
             var value = EncodingHelper.GetUtf8String(claim);
 #else
             var value = Encoding.UTF8.GetString(claim);
@@ -75,7 +75,7 @@ namespace JsonWebToken
         private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
         {
             var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
             var value = EncodingHelper.GetUtf8String(utf8Name);
 #else
             var value = Encoding.UTF8.GetString(utf8Name);
@@ -88,7 +88,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
         {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
             var value = EncodingHelper.GetUtf8String(utf8Name);
 #else
             var value = Encoding.UTF8.GetString(utf8Name);
@@ -102,7 +102,7 @@ namespace JsonWebToken
         private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
         {
             var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
             var value = EncodingHelper.GetUtf8String(utf8Name);
 #else
             var value = Encoding.UTF8.GetString(utf8Name);
@@ -115,7 +115,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
         {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
             var value = EncodingHelper.GetUtf8String(utf8Name);
 #else
             var value = Encoding.UTF8.GetString(utf8Name);
@@ -128,7 +128,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_HeaderIsRequired(ReadOnlySpan<byte> header)
         {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
             var value = EncodingHelper.GetUtf8String(header);
 #else
             var value = Encoding.UTF8.GetString(header);

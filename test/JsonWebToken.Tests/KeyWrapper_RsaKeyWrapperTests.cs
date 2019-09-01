@@ -38,11 +38,13 @@ namespace JsonWebToken.Tests
                 EncryptionAlgorithm.Aes256Gcm
             })
             {
+                yield return new object[] { enc, KeyManagementAlgorithm.RsaPkcs1 };
                 yield return new object[] { enc, KeyManagementAlgorithm.RsaOaep };
+#if !NETFRAMEWORK
                 yield return new object[] { enc, KeyManagementAlgorithm.RsaOaep256 };
                 yield return new object[] { enc, KeyManagementAlgorithm.RsaOaep384 };
                 yield return new object[] { enc, KeyManagementAlgorithm.RsaOaep512 };
-                yield return new object[] { enc, KeyManagementAlgorithm.RsaPkcs1 };
+#endif
             }
         }
 

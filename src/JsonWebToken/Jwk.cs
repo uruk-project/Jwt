@@ -273,9 +273,11 @@ namespace JsonWebToken
                         var pKtyShort = (short*)pKty;
                         switch (valueSpan.Length)
                         {
+#if !NET461
                             /* EC */
                             case 2 when *pKtyShort == 17221u:
                                 return ECJwk.FromJsonReaderFast(ref reader);
+#endif
                             /* RSA */
                             case 3 when *pKtyShort == 21330u && *(pKty + 2) == (byte)'A':
                                 return RsaJwk.FromJsonReaderFast(ref reader);
@@ -416,10 +418,12 @@ namespace JsonWebToken
                 {
                     return new SymmetricJwk(jwk);
                 }
+#if !NET461
                 else if (kty.SequenceEqual(JwkTypeNames.EllipticCurve))
                 {
                     return ECJwk.Populate(jwk);
                 }
+#endif
                 else if (kty.SequenceEqual(JwkTypeNames.Rsa))
                 {
                     return RsaJwk.Populate(jwk);
@@ -459,7 +463,7 @@ namespace JsonWebToken
                 }
 
                 var input = bufferWriter.WrittenSpan;
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
                 return Encoding.UTF8.GetString(input.ToArray());
 #else
                 return Encoding.UTF8.GetString(input);
@@ -693,7 +697,7 @@ namespace JsonWebToken
         /// <returns></returns>
         protected abstract void Canonicalize(IBufferWriter<byte> bufferWriter);
 
-#if !NETSTANDARD2_0
+#if !NETSTANDARD2_0 && !NET461
         /// <summary>
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
@@ -748,6 +752,7 @@ namespace JsonWebToken
                         var rsaParameters = rsa.ExportParameters(false);
                         key = new RsaJwk(rsaParameters);
                     }
+#if !NET461
                     else
                     {
                         using (var ecdsa = certificate.GetECDsaPrivateKey())
@@ -759,6 +764,7 @@ namespace JsonWebToken
                             }
                         }
                     }
+#endif
                 }
             }
             else
@@ -770,6 +776,7 @@ namespace JsonWebToken
                         var rsaParameters = rsa.ExportParameters(false);
                         key = new RsaJwk(rsaParameters);
                     }
+#if !NET461
                     else
                     {
                         using (var ecdsa = certificate.GetECDsaPublicKey())
@@ -781,6 +788,7 @@ namespace JsonWebToken
                             }
                         }
                     }
+#endif
                 }
             }
 
@@ -1006,7 +1014,7 @@ namespace JsonWebToken
                 }
 
                 var input = bufferWriter.WrittenSpan;
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
                 return Encoding.UTF8.GetString(input.ToArray());
 #else
                 return Encoding.UTF8.GetString(input);

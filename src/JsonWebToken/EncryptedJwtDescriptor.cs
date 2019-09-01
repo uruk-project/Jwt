@@ -14,7 +14,7 @@ namespace JsonWebToken
     /// </summary>
     public abstract class EncryptedJwtDescriptor<TPayload> : JwtDescriptor<TPayload>
     {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 #endif
 
@@ -150,12 +150,12 @@ namespace JsonWebToken
                             Span<byte> ciphertext = ciphertextLength > Constants.MaxStackallocBytes
                                                         ? (arrayCiphertextToReturnToPool = ArrayPool<byte>.Shared.Rent(ciphertextLength)).AsSpan(0, ciphertextLength)
                                                         : stackalloc byte[ciphertextLength];
-#if !NETSTANDARD2_0
-                            Span<byte> nonce = stackalloc byte[encryptor.GetNonceSize()];
-                            RandomNumberGenerator.Fill(nonce);
-#else
+#if NETSTANDARD2_0 || NET461
                             var nonce = new byte[encryptor.GetNonceSize()];
                             _randomNumberGenerator.GetBytes(nonce);
+#else
+                            Span<byte> nonce = stackalloc byte[encryptor.GetNonceSize()];
+                            RandomNumberGenerator.Fill(nonce);
 #endif
                             encryptor.Encrypt(payload, nonce, base64EncodedHeader, ciphertext, tag);
 

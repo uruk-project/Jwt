@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_0
+﻿#if NETSTANDARD2_0 || NET461
 // Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
@@ -35,7 +35,6 @@ namespace JsonWebToken.Internal
 
         protected override void Dispose(bool disposing)
         {
-            throw new NotImplementedException();
         }
     }
 }

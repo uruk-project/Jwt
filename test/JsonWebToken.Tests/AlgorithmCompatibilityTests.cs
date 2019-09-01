@@ -96,6 +96,7 @@ namespace JsonWebToken.Tests
                 case "RSA1_5":
                     yield return _keys.PrivateRsa2048Key;
                     break;
+#if !NET461
                 case "ECDH-ES+A128KW":
                 case "ECDH-ES+A192KW":
                 case "ECDH-ES+A256KW":
@@ -108,6 +109,7 @@ namespace JsonWebToken.Tests
                     yield return _keys.PrivateEcc384Key;
                     yield return _keys.PrivateEcc512Key;
                     break;
+#endif
                 default:
                     throw new NotSupportedException();
             }
@@ -138,13 +140,13 @@ namespace JsonWebToken.Tests
             yield return KeyManagementAlgorithm.Aes192GcmKW;
             yield return KeyManagementAlgorithm.Aes256GcmKW;
 #endif
-
             yield return KeyManagementAlgorithm.RsaOaep;
             yield return KeyManagementAlgorithm.RsaPkcs1;
+#if !NETFRAMEWORK
             yield return KeyManagementAlgorithm.RsaOaep256;
             yield return KeyManagementAlgorithm.RsaOaep384;
             yield return KeyManagementAlgorithm.RsaOaep512;
-
+#endif
 #if NETCOREAPP
             yield return KeyManagementAlgorithm.EcdhEs;
             yield return KeyManagementAlgorithm.EcdhEsAes128KW;

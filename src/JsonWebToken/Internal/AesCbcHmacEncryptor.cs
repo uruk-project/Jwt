@@ -234,7 +234,7 @@ namespace JsonWebToken.Internal
                 using (var messageStream = new UnmanagedMemoryStream(buffer, output.Length, output.Length, FileAccess.Write))
                 using (CryptoStream cryptoStream = new CryptoStream(messageStream, transform, CryptoStreamMode.Write))
                 {
-#if !NETSTANDARD2_0
+#if !NETSTANDARD2_0 && !NET461
                     cryptoStream.Write(input.Slice(inputOffset, inputLength));
 #else
                     cryptoStream.Write(input.ToArray(), inputOffset, inputLength);

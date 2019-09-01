@@ -28,7 +28,7 @@ namespace JsonWebToken
             using (var outputStream = new MemoryStream())
             using (var compressionStream = CreateCompressionStream(outputStream))
             {
-#if !NETSTANDARD2_0
+#if !NETSTANDARD2_0 && !NET461
                 compressionStream.Write(ciphertext);
 #else
                 compressionStream.Write(ciphertext.ToArray(), 0, ciphertext.Length);
