@@ -178,20 +178,6 @@ namespace JsonWebToken.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/40702")]
-        public void JsonWriterTest()
-        {
-            var jsonEncodedText = "{\"test\":\"" + JsonEncodedText.Encode("value+1") + "\"}";
-            var bufferWriter = new FixedSizedBufferWriter(256);
-            Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter);
-            writer.WriteStartObject();
-            writer.WriteString("test", "value+1");
-            writer.WriteEndObject();
-            writer.Flush();
-            var result = Encoding.UTF8.GetString(bufferWriter.Formatted);
-            Assert.Equal(result, jsonEncodedText);
-        }
-
         private static ECJwk _privateEcc256Key => new ECJwk
         (
             crv: EllipticalCurve.P256,
