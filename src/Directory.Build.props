@@ -18,8 +18,8 @@
     <RepositoryUrl>https://github.com/ycrumeyrolle/Jwt</RepositoryUrl>
     <PackageTags>jwt security</PackageTags>
     <Description>
-High-performan Web Tonce JWT library.
-Provides Jsoken primitives.
+High-performance JWT library.
+Provides Json Web Token primitives.
     </Description>
     <sumary>High-performance JWT library.</sumary>
     <PackageLicense>MIT</PackageLicense>
