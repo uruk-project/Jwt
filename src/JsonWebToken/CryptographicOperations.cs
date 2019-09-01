@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace JsonWebToken
 {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
     internal static class CryptographicOperations
     {
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]

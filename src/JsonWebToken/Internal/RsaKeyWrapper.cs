@@ -18,7 +18,7 @@ namespace JsonWebToken.Internal
         public RsaKeyWrapper(RsaJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
             : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
-#if !NETSTANDARD2_0
+#if !NETSTANDARD2_0 && !NET461
             _rsa = RSA.Create(key.ExportParameters());
 #else
             _rsa = RSA.Create();
@@ -29,8 +29,11 @@ namespace JsonWebToken.Internal
             {
                 _padding = RSAEncryptionPadding.OaepSHA1;
             }
-            else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep256
-                || contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaPkcs1)
+            else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaPkcs1)
+            {
+                _padding = RSAEncryptionPadding.Pkcs1;
+            }
+            else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep256)
             {
                 _padding = RSAEncryptionPadding.OaepSHA256;
             }
@@ -69,14 +72,14 @@ namespace JsonWebToken.Internal
 
             try
             {
-#if !NETSTANDARD2_0
-            return _rsa.TryDecrypt(key, destination, _padding, out bytesWritten);
+#if !NETSTANDARD2_0 && !NET461
+                return _rsa.TryDecrypt(key, destination, _padding, out bytesWritten);
 #else
-            var result = _rsa.Decrypt(key.ToArray(), _padding);
-            bytesWritten = result.Length;
-            result.CopyTo(destination);
+                var result = _rsa.Decrypt(key.ToArray(), _padding);
+                bytesWritten = result.Length;
+                result.CopyTo(destination);
 
-            return true;
+                return true;
 #endif
             }
             catch (CryptographicException)
@@ -95,13 +98,18 @@ namespace JsonWebToken.Internal
             }
 
             var cek = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
-#if !NETSTANDARD2_0
+#if !NETSTANDARD2_0 && !NET461
             if (!_rsa.TryEncrypt(cek.AsSpan(), destination, _padding, out int bytesWritten) || bytesWritten != destination.Length)
             {
                 ThrowHelper.ThrowCryptographicException_KeyWrapFailed();
             }
 #else
             var result = _rsa.Encrypt(cek.AsSpan().ToArray(), _padding);
+            if (destination.Length < result.Length)
+            {
+                ThrowHelper.ThrowCryptographicException_KeyWrapFailed();
+            }
+
             result.CopyTo(destination);
 #endif
 

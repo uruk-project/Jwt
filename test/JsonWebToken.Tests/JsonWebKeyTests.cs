@@ -19,7 +19,10 @@ namespace JsonWebToken.Tests
             var jwk = Jwk.FromJson(json);
 
             Assert.Equal(jwk.Kid, kid);
-            Assert.Equal(Encoding.UTF8.GetString(jwk.Alg), alg);
+            if (!(jwk.Alg is null))
+            {
+                Assert.Equal(Encoding.UTF8.GetString(jwk.Alg), alg);
+            }
         }
 
         [Theory]
@@ -32,13 +35,10 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetJsonKeys()
         {
-            var location = new Uri(typeof(JsonWebKeyTests).GetTypeInfo().Assembly.CodeBase).AbsolutePath;
-            var dirPath = Path.GetDirectoryName(location);
-            var keysPath = Path.Combine(dirPath, "./resources/jwks.json"); ;
-            var keys = JArray.ReadFrom(new JsonTextReader(new StreamReader(keysPath)));
-            foreach (var key in keys["keys"])
+            var fixture = new KeyFixture();
+            foreach (var key in fixture.Jwks.Keys)
             {
-                yield return new object[] { key.ToString(), key["kid"].Value<string>(), key["alg"].Value<string>() };
+                yield return new object[] { key.ToString(), key.Kid, Encoding.UTF8.GetString(key.Alg ?? new byte[0]) };
             }
         }
 

@@ -126,7 +126,7 @@ namespace JsonWebToken.Tests
 
         private static void FillData(byte[] data)
         {
-#if NETSTANDARD2_0 || NETCOREAPP2_0
+#if NETSTANDARD2_0 || NETCOREAPP2_0 || NETFRAMEWORK
             using (var rng = RandomNumberGenerator.Create())
             {
                 rng.GetNonZeroBytes(data);

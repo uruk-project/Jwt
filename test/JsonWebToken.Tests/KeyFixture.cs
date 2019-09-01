@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace JsonWebToken.Tests
 {
@@ -12,7 +14,7 @@ namespace JsonWebToken.Tests
             var dirPath = Path.GetDirectoryName(location);
             var keysPath = Path.Combine(dirPath, "./resources/jwks.json"); ;
             var jwks = File.ReadAllText(keysPath);
-            Jwks = Jwks.FromJson(jwks);
+            Jwks = new Jwks();// Jwks.FromJson(jwks);
 
             SigningKey = CreateSigningKey();
             Jwks.Keys.Add(SigningKey);
@@ -20,9 +22,11 @@ namespace JsonWebToken.Tests
             EncryptionKey = CreateEncryptionKey();
             Jwks.Keys.Add(EncryptionKey);
             Jwks.Keys.Add(PrivateRsa2048Key);
+#if !NET461
             Jwks.Keys.Add(PrivateEcc256Key);
             Jwks.Keys.Add(PrivateEcc384Key);
             Jwks.Keys.Add(PrivateEcc512Key);
+#endif
             Jwks.Keys.Add(Symmetric128Key);
             Jwks.Keys.Add(Symmetric192Key);
             Jwks.Keys.Add(Symmetric256Key);
@@ -74,7 +78,7 @@ namespace JsonWebToken.Tests
             n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
             e: "AQAB"
         );
-
+#if !NET461
         public readonly ECJwk PrivateEcc256Key = new ECJwk
         (
             crv: EllipticalCurve.P256,
@@ -120,7 +124,7 @@ namespace JsonWebToken.Tests
             x: "AEeo_Y06znu6MVjyvJW2_SX_JKK2DxbxF3QjAqkZhMTvwgLc3Z073vFwwiCHKcOwK2b5H8H4a7PDN6DGJ6YJjpN0",
             y: "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y"
         );
-
+#endif
         public readonly SymmetricJwk Symmetric128Key = new SymmetricJwk("LxOcGxlu169Vxa1A7HyelQ");
 
         public readonly SymmetricJwk Symmetric192Key = new SymmetricJwk("kVdKe3BiLcrc7LujDzaD-3EdZCVTStnc");
@@ -130,5 +134,40 @@ namespace JsonWebToken.Tests
         public readonly SymmetricJwk Symmetric384Key = new SymmetricJwk("V4hBa9WfvqqZ4ZWfm2oIoKZaCdy_FEf9cPXMwFSSOivAUMqs931xgQ-fSjTfB9tm");
 
         public readonly SymmetricJwk Symmetric512Key = new SymmetricJwk("98TDxdDvd5mKZNFitgMCwH_z7nzKS6sk_vykNTowymsJ4e8eGviJnVWI9i-YLreuBfhHDhis3CY2aKoK1RT6sg");
+    }
+
+    internal class FixedSizedBufferWriter : IBufferWriter<byte>
+    {
+        private readonly byte[] _buffer;
+        private int _count;
+
+        public FixedSizedBufferWriter(int capacity)
+        {
+            _buffer = new byte[capacity];
+        }
+
+        public void Clear()
+        {
+            _count = 0;
+        }
+
+        public Span<byte> Free => _buffer.AsSpan(_count);
+
+        public byte[] Formatted => _buffer.AsSpan(0, _count).ToArray();
+
+        public Memory<byte> GetMemory(int minimumLength = 0) => _buffer.AsMemory(_count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Span<byte> GetSpan(int minimumLength = 0) => _buffer.AsSpan(_count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Advance(int bytes)
+        {
+            _count += bytes;
+            if (_count > _buffer.Length)
+            {
+                throw new InvalidOperationException("Cannot advance past the end of the buffer.");
+            }
+        }
     }
 }

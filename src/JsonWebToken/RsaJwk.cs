@@ -545,7 +545,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, byte[]? algorithm)
         {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
             using (RSA rsa = new RSACng(sizeInBits))
 #else
             using (RSA rsa = RSA.Create(sizeInBits))
