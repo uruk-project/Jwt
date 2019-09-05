@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace JsonWebToken
 {
@@ -101,5 +101,17 @@ namespace JsonWebToken
         /// Gets the size of the wrapped key.
         /// </summary>
         public abstract int GetKeyWrapSize();
+
+        /// <summary>
+        /// Creates a symmetric key based on the <paramref name="encryptionAlgorithm"/>, excepts if the <paramref name="staticKey"/> is defined.
+        /// </summary>
+        /// <param name="encryptionAlgorithm"></param>
+        /// <param name="staticKey"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Jwk CreateSymmetricKey(EncryptionAlgorithm encryptionAlgorithm, Jwk? staticKey)
+        {
+            return staticKey ?? SymmetricJwk.GenerateKey(encryptionAlgorithm.RequiredKeySizeInBits);
+        }
     }
 }

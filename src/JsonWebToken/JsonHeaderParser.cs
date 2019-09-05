@@ -22,7 +22,7 @@ namespace JsonWebToken
         {
             return ReadHeader(buffer);
         }
-        
+
         /// <summary>
         /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtHeader"/>.
         /// </summary>
@@ -46,7 +46,7 @@ namespace JsonWebToken
 
             return ReadJwtHeader(ref reader);
         }
-        
+
         /// <summary>
         /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtHeader"/>.
         /// </summary>
@@ -94,6 +94,14 @@ namespace JsonWebToken
                     {
                         header.KeyManagementAlgorithm = keyManagementAlgorithm;
                     }
+                    else if (SignatureAlgorithm.TryParseSlow(ref reader, out signatureAlgorithm))
+                    {
+                        header.SignatureAlgorithm = signatureAlgorithm;
+                    }
+                    else if (KeyManagementAlgorithm.TryParseSlow(ref reader, out keyManagementAlgorithm))
+                    {
+                        header.KeyManagementAlgorithm = keyManagementAlgorithm;
+                    }
                     else
                     {
                         // TODO : Fix when the Utf8JsonReader will allow
@@ -110,6 +118,10 @@ namespace JsonWebToken
 
                     var enc = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
                     if (EncryptionAlgorithm.TryParse(enc, out var encryptionAlgorithm))
+                    {
+                        header.EncryptionAlgorithm = encryptionAlgorithm;
+                    }
+                    else if (EncryptionAlgorithm.TryParseSlow(ref reader, out encryptionAlgorithm))
                     {
                         header.EncryptionAlgorithm = encryptionAlgorithm;
                     }
@@ -155,7 +167,11 @@ namespace JsonWebToken
                     }
 
                     var zip = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                    if (CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm) && !(compressionAlgorithm is null))
+                    if (CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm))
+                    {
+                        current.Add(new JwtProperty(compressionAlgorithm));
+                    }
+                    else if (CompressionAlgorithm.TryParseSlow(ref reader, out compressionAlgorithm))
                     {
                         current.Add(new JwtProperty(compressionAlgorithm));
                     }
@@ -262,6 +278,14 @@ namespace JsonWebToken
                                         {
                                             header.KeyManagementAlgorithm = keyManagementAlgorithm;
                                         }
+                                        else if (SignatureAlgorithm.TryParseSlow(ref reader, out signatureAlgorithm))
+                                        {
+                                            header.KeyManagementAlgorithm = keyManagementAlgorithm;
+                                        }
+                                        else if (KeyManagementAlgorithm.TryParseSlow(ref reader, out keyManagementAlgorithm))
+                                        {
+                                            header.KeyManagementAlgorithm = keyManagementAlgorithm;
+                                        }
                                         else
                                         {
                                             // TODO : Fix when the Utf8JsonReader will allow
@@ -276,6 +300,10 @@ namespace JsonWebToken
                                         {
                                             header.EncryptionAlgorithm = encryptionAlgorithm;
                                         }
+                                        else if (EncryptionAlgorithm.TryParseSlow(ref reader, out encryptionAlgorithm))
+                                        {
+                                            header.EncryptionAlgorithm = encryptionAlgorithm;
+                                        }
                                         else
                                         {
                                             // TODO : Fix when the Utf8JsonReader will allow
@@ -286,7 +314,11 @@ namespace JsonWebToken
                                         continue;
                                     case (byte)'z' when nameSuffix == 28777 /* zip */:
                                         var zip = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                                        if (CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm) && !(compressionAlgorithm is null))
+                                        if (CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm))
+                                        {
+                                            current.Add(new JwtProperty(compressionAlgorithm));
+                                        }
+                                        else if (CompressionAlgorithm.TryParseSlow(ref reader, out compressionAlgorithm))
                                         {
                                             current.Add(new JwtProperty(compressionAlgorithm));
                                         }

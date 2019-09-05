@@ -2,8 +2,9 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -98,25 +99,6 @@ namespace JsonWebToken
         private readonly KeyManagementAlgorithm? _wrappedAlgorithm;
         private readonly byte[] _utf8Name;
         private readonly bool _produceEncryptionKey;
-        private static readonly Dictionary<string, KeyManagementAlgorithm> _algorithms = new Dictionary<string, KeyManagementAlgorithm>
-        {
-            { EcdhEsAes128KW.Name, EcdhEsAes128KW },
-            { EcdhEsAes192KW.Name, EcdhEsAes192KW },
-            { EcdhEsAes256KW.Name, EcdhEsAes256KW },
-            { EcdhEs.Name, EcdhEs },
-            { Aes128KW.Name, Aes128KW },
-            { Aes192KW.Name, Aes192KW },
-            { Aes256KW.Name, Aes256KW },
-            { Aes128GcmKW.Name, Aes128GcmKW },
-            { Aes192GcmKW.Name, Aes192GcmKW },
-            { Aes256GcmKW.Name, Aes256GcmKW },
-            { Direct.Name, Direct },
-            { RsaOaep.Name, RsaOaep},
-            { RsaOaep256.Name, RsaOaep256},
-            { RsaOaep384.Name, RsaOaep384},
-            { RsaOaep512.Name, RsaOaep512},
-            { RsaPkcs1.Name, RsaPkcs1 }
-        };
 
         /// <summary>
         /// Gets the algorithm identifier. 
@@ -153,10 +135,25 @@ namespace JsonWebToken
         /// </summary>
         public bool ProduceEncryptionKey => _produceEncryptionKey;
 
-        /// <summary>
-        /// Gets the <see cref="SignatureAlgorithm"/> list; 
-        /// </summary>
-        public static Dictionary<string, KeyManagementAlgorithm> Algorithms => _algorithms;
+        private static readonly KeyManagementAlgorithm[] _algorithms = new[]
+        {
+            EcdhEsAes128KW,
+            EcdhEsAes192KW,
+            EcdhEsAes256KW,
+            EcdhEs,
+            Aes128KW,
+            Aes192KW,
+            Aes256KW,
+            Aes128GcmKW,
+            Aes192GcmKW,
+            Aes256GcmKW,
+            Direct,
+            RsaOaep,
+            RsaOaep256,
+            RsaOaep384,
+            RsaOaep512,
+            RsaPkcs1
+        };
 
         /// <summary>
         /// Initializes a new instance of <see cref="KeyManagementAlgorithm"/>. 
@@ -359,7 +356,7 @@ namespace JsonWebToken
                 return null;
             }
 
-            if (!Algorithms.TryGetValue(value, out var algorithm))
+            if (!TryParse(Encoding.UTF8.GetBytes(value), out var algorithm))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(value);
             }
@@ -388,18 +385,33 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Parse the current value of the <see cref="Utf8JsonReader"/> into its <see cref="KeyManagementAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="algorithm"></param>
+        public static bool TryParseSlow(ref Utf8JsonReader reader, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
+        {
+            var algorithms = _algorithms;
+            for (int i = 0; i < algorithms.Length; i++)
+            {
+                if (reader.ValueTextEquals(algorithms[i]._utf8Name))
+                {
+                    algorithm = algorithms[i];
+                    return true;
+                }
+            }
+
+            algorithm = null;
+            return false;
+        }
+
+        /// <summary>
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="KeyManagementAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
         /// <param name="algorithm"></param>
-        public unsafe static bool TryParse(ReadOnlySpan<byte> value, out KeyManagementAlgorithm? algorithm)
+        public unsafe static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
         {
-            if (value.IsEmpty)
-            {
-                algorithm = null;
-                return true;
-            }
-
             fixed (byte* pValue = value)
             {
                 switch (value.Length)
@@ -430,16 +442,19 @@ namespace JsonWebToken
                     case 8 when *(ulong*)pValue == 5784101104744747858u  /* RSA-OAEP */ :
                         algorithm = RsaOaep;
                         return true;
-                    case 9 when *(pValue + 4) == (byte)'G' && *(uint*)(pValue + 5) == 1464552771u /* CMKW */ :
-                        switch (*(uint*)pValue)
+                    case 9 when *pValue == (byte)'A':
+                        switch (*(ulong*)(pValue + 1))
                         {
-                            case 942813505u /* A128 */ :
+                            /* A128GCMKW */
+                            case 6290206255906042417u:
                                 algorithm = Aes128GcmKW;
                                 return true;
-                            case 842608961u /* A192 */ :
+                            /* A192GCMKW */
+                            case 6290206255905650993u:
                                 algorithm = Aes192GcmKW;
                                 return true;
-                            case 909455937u /* A256 */ :
+                            /* A256GCMKW */
+                            case 6290206255905912114u:
                                 algorithm = Aes256GcmKW;
                                 return true;
                         }
@@ -473,7 +488,7 @@ namespace JsonWebToken
                         }
                         break;
 
-                    // Special case for ECDH-ES\u002bAxxxKW 
+                    // Special case for escaped 'ECDH-ES\u002bAxxxKW' 
                     case 19 when *(ulong*)pValue == 6652737135344632645u /* ECDH-ES\ */ :
                         switch (*(ulong*)(pValue + 8))
                         {
@@ -489,8 +504,6 @@ namespace JsonWebToken
                         }
                         break;
 
-                    default:
-                        break;
                 }
 
                 algorithm = null;

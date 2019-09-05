@@ -191,7 +191,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, GetKeyWrapSize());
             }
 
-            var contentEncryptionKey = SymmetricKeyHelper.CreateSymmetricKey(EncryptionAlgorithm, staticKey);
+            var contentEncryptionKey = CreateSymmetricKey(EncryptionAlgorithm, staticKey);
             WrapKeyPrivate(contentEncryptionKey.AsSpan(), destination);
             return contentEncryptionKey;
         }
