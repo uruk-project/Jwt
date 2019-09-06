@@ -81,8 +81,8 @@ namespace JsonWebToken
         /// </summary>
         public KeyManagementAlgorithm? KeyManagementAlgorithm
         {
-            get => _keyManagementAlgorithm ??
-                (_inner.TryGetValue(WellKnownProperty.Alg, out var property)
+            get => _keyManagementAlgorithm
+                ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property)
                 ? (KeyManagementAlgorithm.TryParse((byte[]?)property.Value, out var alg) ? alg : null)
                 : null);
             set
@@ -103,7 +103,8 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the encryption algorithm (enc) of the token.
         /// </summary>
-        public ReadOnlySpan<byte> Enc => _encryptionAlgorithm?.Utf8Name ?? (_inner.TryGetValue(WellKnownProperty.Enc, out var property) ? (byte[]?)property.Value : default);
+        public ReadOnlySpan<byte> Enc => _encryptionAlgorithm?.Utf8Name
+            ?? (_inner.TryGetValue(WellKnownProperty.Enc, out var property) ? (byte[]?)property.Value : default);
 
         /// <summary>
         /// Gets the encryption algorithm (enc) of the token.
@@ -142,7 +143,8 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the algorithm used to compress the token.
         /// </summary>
-        public ReadOnlySpan<byte> Zip => _compressionAlgorithm?.Utf8Name ?? (_inner.TryGetValue(WellKnownProperty.Zip, out var property) ? (byte[]?)property.Value : null);
+        public ReadOnlySpan<byte> Zip => _compressionAlgorithm?.Utf8Name
+            ?? (_inner.TryGetValue(WellKnownProperty.Zip, out var property) ? (byte[]?)property.Value : null);
 
         /// <summary>
         /// Gets the compression algorithm (zip) of the token.
