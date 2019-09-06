@@ -1,7 +1,7 @@
-﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
-using System;
+﻿using System;
 using System.Security.Cryptography;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Diagnosers;
 
 namespace JsonWebToken.Performance
 {

@@ -37,7 +37,7 @@ namespace JsonWebToken.Tests
                 var token = writer.WriteToken(descriptor);
 
                 var reader = new JwtReader(_keys.Jwks);
-                    
+
                 var policy = new TokenValidationPolicyBuilder()
                     .RequireSignature(_signingKey)
                         .Build();

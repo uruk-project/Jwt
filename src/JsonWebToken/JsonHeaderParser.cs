@@ -280,7 +280,7 @@ namespace JsonWebToken
                                         }
                                         else if (SignatureAlgorithm.TryParseSlow(ref reader, out signatureAlgorithm))
                                         {
-                                            header.KeyManagementAlgorithm = keyManagementAlgorithm;
+                                            header.SignatureAlgorithm = signatureAlgorithm;
                                         }
                                         else if (KeyManagementAlgorithm.TryParseSlow(ref reader, out keyManagementAlgorithm))
                                         {
@@ -313,14 +313,15 @@ namespace JsonWebToken
 
                                         continue;
                                     case (byte)'z' when nameSuffix == 28777 /* zip */:
+                                        var sig = header.SignatureAlgorithm;
                                         var zip = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
                                         if (CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm))
                                         {
-                                            current.Add(new JwtProperty(compressionAlgorithm));
+                                            header.CompressionAlgorithm = compressionAlgorithm;
                                         }
                                         else if (CompressionAlgorithm.TryParseSlow(ref reader, out compressionAlgorithm))
                                         {
-                                            current.Add(new JwtProperty(compressionAlgorithm));
+                                            header.CompressionAlgorithm = compressionAlgorithm;
                                         }
                                         else
                                         {

@@ -179,6 +179,7 @@ namespace JsonWebToken
             return false;
         }
 
+        private const uint mask3 = 0x00ffffff;
 
         /// <summary>
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
@@ -189,8 +190,15 @@ namespace JsonWebToken
         {
             fixed (byte* pValue = value)
             {
-                if (value.Length == 5)
+                if (value.Length == 3)
                 {
+                    // DEF
+                    if ((*((uint*)pValue) & mask3) == 4605252u)
+                    {
+                        algorithm = Deflate;
+                        return true;
+                    }
+
                     // DEF
                     if (*pValue == (byte)'D' && *(ushort*)(pValue + 1) == 17989u)
                     {
@@ -205,35 +213,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="CompressionAlgorithm"/> representation.
-        /// </summary>
-        /// <param name="value"></param>
-        public static unsafe explicit operator CompressionAlgorithm?(ReadOnlySpan<byte> value)
-        {
-            if (value.IsEmpty)
-            {
-                return null;
-            }
-
-            fixed (byte* pValue = value)
-            {
-                if (value.Length == 3 && *(short*)pValue == 17732 && *(pValue + 2) == (byte)'F' /* DEF */)
-                {
-                    return Deflate;
-                }
-            }
-
-            var key = Encoding.UTF8.GetString(value.ToArray());
-            if (!Algorithms.TryGetValue(key, out var algorithm))
-            {
-                ThrowHelper.ThrowNotSupportedException_Algorithm(key);
-            }
-
-            return algorithm;
-        }
-
-        /// <summary>
-        /// Cast the array of <see cref="byte"/> into its <see cref="CompressionAlgorithm"/> representation.
+        /// Cast the array of <see cref="byte"/>s into its <see cref="CompressionAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
         public static unsafe explicit operator CompressionAlgorithm?(byte[]? value)
@@ -243,9 +223,14 @@ namespace JsonWebToken
                 return null;
             }
 
-            return (CompressionAlgorithm?)new ReadOnlySpan<byte>(value);
-        }
+            if (!TryParse(value, out var algorithm))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(Encoding.UTF8.GetString(value));
+            }
 
+            return algorithm;
+        }
+        
         /// <summary>
         /// Cast the <see cref="CompressionAlgorithm"/> into its <see cref="long"/> representation.
         /// </summary>

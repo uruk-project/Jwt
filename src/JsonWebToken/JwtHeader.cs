@@ -18,6 +18,7 @@ namespace JsonWebToken
         private SignatureAlgorithm? _signatureAlgorithm;
         private KeyManagementAlgorithm? _keyManagementAlgorithm;
         private EncryptionAlgorithm? _encryptionAlgorithm;
+        private CompressionAlgorithm? _compressionAlgorithm;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtHeader"/> class.
@@ -52,8 +53,7 @@ namespace JsonWebToken
         {
             get
             {
-                byte[]? v = (_inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (byte[]?)property.Value : default);
-                return _signatureAlgorithm?.Utf8Name ?? _keyManagementAlgorithm?.Utf8Name ?? v;
+                return _signatureAlgorithm?.Utf8Name ?? _keyManagementAlgorithm?.Utf8Name ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (byte[]?)property.Value : default);
             }
         }
 
@@ -62,7 +62,10 @@ namespace JsonWebToken
         /// </summary>
         public SignatureAlgorithm? SignatureAlgorithm
         {
-            get => _signatureAlgorithm ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (SignatureAlgorithm?)property.Value : null);
+            get => _signatureAlgorithm
+                ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property)
+                ? (SignatureAlgorithm.TryParse((byte[]?)property.Value, out var alg) ? alg : null)
+                : null);
             set
             {
                 _signatureAlgorithm = value;
@@ -78,7 +81,10 @@ namespace JsonWebToken
         /// </summary>
         public KeyManagementAlgorithm? KeyManagementAlgorithm
         {
-            get => _keyManagementAlgorithm ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (KeyManagementAlgorithm?)(byte[]?)property.Value : null);
+            get => _keyManagementAlgorithm ??
+                (_inner.TryGetValue(WellKnownProperty.Alg, out var property)
+                ? (KeyManagementAlgorithm.TryParse((byte[]?)property.Value, out var alg) ? alg : null)
+                : null);
             set
             {
                 _keyManagementAlgorithm = value;
@@ -97,7 +103,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the encryption algorithm (enc) of the token.
         /// </summary>
-        public ReadOnlySpan<byte> Enc => _inner.TryGetValue(WellKnownProperty.Enc, out var property) ? (byte[]?)property.Value : default;
+        public ReadOnlySpan<byte> Enc => _encryptionAlgorithm?.Utf8Name ?? (_inner.TryGetValue(WellKnownProperty.Enc, out var property) ? (byte[]?)property.Value : default);
 
         /// <summary>
         /// Gets the encryption algorithm (enc) of the token.
@@ -136,8 +142,16 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the algorithm used to compress the token.
         /// </summary>
-        public ReadOnlySpan<byte> Zip => _inner.TryGetValue(WellKnownProperty.Zip, out var property) ? (byte[]?)property.Value : null;
+        public ReadOnlySpan<byte> Zip => _compressionAlgorithm?.Utf8Name ?? (_inner.TryGetValue(WellKnownProperty.Zip, out var property) ? (byte[]?)property.Value : null);
 
+        /// <summary>
+        /// Gets the compression algorithm (zip) of the token.
+        /// </summary>
+        public CompressionAlgorithm? CompressionAlgorithm
+        {
+            get => _compressionAlgorithm ?? (_inner.TryGetValue(WellKnownProperty.Zip, out var property) ? (CompressionAlgorithm?)property.Value : null);
+            set => _compressionAlgorithm = value;
+        }
         /// <summary>
         /// Gets the Initialization Vector used for AES GCM encryption.
         /// </summary>

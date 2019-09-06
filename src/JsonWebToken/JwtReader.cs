@@ -322,7 +322,7 @@ namespace JsonWebToken
 
                 bool compressed;
                 ReadOnlySequence<byte> decompressedBytes = default;
-                var zip = (CompressionAlgorithm?)header.Zip;
+                var zip = header.CompressionAlgorithm;
                 if (zip is null)
                 {
                     compressed = false;

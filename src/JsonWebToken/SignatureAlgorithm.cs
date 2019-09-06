@@ -300,9 +300,14 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public static explicit operator SignatureAlgorithm?(byte[]? value)
         {
+            if (value is null)
+            {
+                return null;
+            }
+
             if (!TryParse(value, out var algorithm))
             {
-                ThrowHelper.ThrowNotSupportedException_Algorithm(value is null ? string.Empty : Encoding.UTF8.GetString(value));
+                ThrowHelper.ThrowNotSupportedException_Algorithm(Encoding.UTF8.GetString(value));
             }
 
             return algorithm;
