@@ -86,6 +86,13 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
+        public void Add(string name, bool value) => Add(new JwtProperty(name, value));
+
+        /// <summary>
+        /// Adds a <see cref="double"/> property to the end of the <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         public void Add(string name, double value) => Add(new JwtProperty(name, value));
 
         /// <summary>

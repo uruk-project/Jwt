@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Text;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -26,6 +27,15 @@ namespace JsonWebToken
         /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtHeader"/>.
         /// </summary>
         /// <param name="buffer"></param>
+        public static unsafe JwtHeader ParseHeader2(ReadOnlySpan<byte> buffer)
+        {
+            return ReadHeader2(buffer);
+        }
+
+        /// <summary>
+        /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtHeader"/>.
+        /// </summary>
+        /// <param name="buffer"></param>
         internal static unsafe JwtHeader ReadHeader(ReadOnlySpan<byte> buffer)
         {
             Utf8JsonReader reader = new Utf8JsonReader(buffer, isFinalBlock: true, state: default);
@@ -37,6 +47,197 @@ namespace JsonWebToken
             return ReadJwtHeader(ref reader);
         }
 
+        /// <summary>
+        /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtHeader"/>.
+        /// </summary>
+        /// <param name="buffer"></param>
+        internal static unsafe JwtHeader ReadHeader2(ReadOnlySpan<byte> buffer)
+        {
+            Utf8JsonReader reader = new Utf8JsonReader(buffer, isFinalBlock: true, state: default);
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+            {
+                ThrowHelper.ThrowFormatException_MalformedJson();
+            }
+
+#if NETCOREAPP3_0
+            return ReadJwtHeader2(ref reader);
+#else
+            return ReadJwtHeader(ref reader);
+#endif
+        }
+
+#if NETCOREAPP3_0
+        internal unsafe static JwtHeader ReadJwtHeader2(ref Utf8JsonReader reader)
+        {
+            var current = new JwtObject(3);
+            var header = new JwtHeader(current);
+            while (reader.Read())
+            {
+                if (!(reader.TokenType is JsonTokenType.PropertyName))
+                {
+                    break;
+                }
+
+                if (reader.ValueTextEquals(HeaderParameters.AlgUtf8) && reader.Read())
+                {
+                    if (!(reader.TokenType is JsonTokenType.String))
+                    {
+                        break;
+                    }
+
+                    var alg = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                    if (SignatureAlgorithm.TryParse(alg, out var signatureAlgorithm))
+                    {
+                        header.SignatureAlgorithm = signatureAlgorithm;
+                    }
+                    else if (KeyManagementAlgorithm.TryParse(alg, out var keyManagementAlgorithm))
+                    {
+                        header.KeyManagementAlgorithm = keyManagementAlgorithm;
+                    }
+                    else if (SignatureAlgorithm.TryParseSlow(ref reader, out signatureAlgorithm))
+                    {
+                        header.SignatureAlgorithm = signatureAlgorithm;
+                    }
+                    else if (KeyManagementAlgorithm.TryParseSlow(ref reader, out keyManagementAlgorithm))
+                    {
+                        header.KeyManagementAlgorithm = keyManagementAlgorithm;
+                    }
+                    else
+                    {
+                        // TODO : Fix when the Utf8JsonReader will allow
+                        // to read an unescaped string without allocating a string
+                        current.Add(new JwtProperty(WellKnownProperty.Alg, Encoding.UTF8.GetBytes(reader.GetString())));
+                    }
+                }
+                else if (reader.ValueTextEquals(HeaderParameters.EncUtf8) && reader.Read())
+                {
+                    if (!(reader.TokenType is JsonTokenType.String))
+                    {
+                        break;
+                    }
+
+                    var enc = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                    if (EncryptionAlgorithm.TryParse(enc, out var encryptionAlgorithm))
+                    {
+                        header.EncryptionAlgorithm = encryptionAlgorithm;
+                    }
+                    else if (EncryptionAlgorithm.TryParseSlow(ref reader, out encryptionAlgorithm))
+                    {
+                        header.EncryptionAlgorithm = encryptionAlgorithm;
+                    }
+                    else
+                    {
+                        // TODO : Fix when the Utf8JsonReader will allow
+                        // to read an unescaped string without allocating a string
+                        current.Add(new JwtProperty(WellKnownProperty.Enc, Encoding.UTF8.GetBytes(reader.GetString())));
+                    }
+                }
+                else if (reader.ValueTextEquals(HeaderParameters.CtyUtf8) && reader.Read())
+                {
+                    if (!(reader.TokenType is JsonTokenType.String))
+                    {
+                        break;
+                    }
+
+                    current.Add(new JwtProperty(WellKnownProperty.Cty, Encoding.UTF8.GetBytes(reader.GetString())));
+                }
+                else if (reader.ValueTextEquals(HeaderParameters.TypUtf8) && reader.Read())
+                {
+                    if (!(reader.TokenType is JsonTokenType.String))
+                    {
+                        break;
+                    }
+
+                    current.Add(new JwtProperty(WellKnownProperty.Typ, Encoding.UTF8.GetBytes(reader.GetString())));
+                }
+                else if (reader.ValueTextEquals(HeaderParameters.KidUtf8) && reader.Read())
+                {
+                    if (!(reader.TokenType is JsonTokenType.String))
+                    {
+                        break;
+                    }
+
+                    current.Add(new JwtProperty(WellKnownProperty.Kid, reader.GetString()));
+                }
+                else if (reader.ValueTextEquals(HeaderParameters.ZipUtf8) && reader.Read())
+                {
+                    if (!(reader.TokenType is JsonTokenType.String))
+                    {
+                        break;
+                    }
+
+                    var zip = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                    if (CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm))
+                    {
+                        current.Add(new JwtProperty(compressionAlgorithm));
+                    }
+                    else if (CompressionAlgorithm.TryParseSlow(ref reader, out compressionAlgorithm))
+                    {
+                        current.Add(new JwtProperty(compressionAlgorithm));
+                    }
+                    else
+                    {
+                        // TODO : Fix when the Utf8JsonReader will allow
+                        // to read an unescaped string without allocating a string
+                        current.Add(new JwtProperty(WellKnownProperty.Zip, Encoding.UTF8.GetBytes(reader.GetString())));
+                    }
+                }
+                else
+                {
+                    var name = reader.GetString();
+                    reader.Read();
+                    switch (reader.TokenType)
+                    {
+                        case JsonTokenType.StartObject:
+                            current.Add(name, JsonParser.ReadJsonObject(ref reader));
+                            break;
+                        case JsonTokenType.StartArray:
+                            current.Add(name, JsonParser.ReadJsonArray(ref reader));
+                            break;
+                        case JsonTokenType.String:
+                            current.Add(name, reader.GetString());
+                            break;
+                        case JsonTokenType.True:
+                            current.Add(name, true);
+                            break;
+                        case JsonTokenType.False:
+                            current.Add(name, false);
+                            break;
+                        case JsonTokenType.Null:
+                            current.Add(name);
+                            break;
+                        case JsonTokenType.Number:
+                            if (reader.TryGetInt64(out long longValue))
+                            {
+                                current.Add(name, longValue);
+                            }
+                            else
+                            {
+                                if (reader.TryGetDouble(out double doubleValue))
+                                {
+                                    current.Add(name, doubleValue);
+                                }
+                                else
+                                {
+                                    ThrowHelper.ThrowFormatException_NotSupportedNumberValue(Encoding.UTF8.GetBytes(name));
+                                }
+                            }
+                            break;
+                        default:
+                            ThrowHelper.ThrowFormatException_MalformedJson();
+                            break;
+                    }
+                }
+            }
+
+            if (!(reader.TokenType is JsonTokenType.EndObject))
+            {
+                ThrowHelper.ThrowFormatException_MalformedJson();
+            }
+
+            return header;
+        }
+#endif
         internal unsafe static JwtHeader ReadJwtHeader(ref Utf8JsonReader reader)
         {
             var current = new JwtObject(3);
@@ -77,6 +278,14 @@ namespace JsonWebToken
                                         {
                                             header.KeyManagementAlgorithm = keyManagementAlgorithm;
                                         }
+                                        else if (SignatureAlgorithm.TryParseSlow(ref reader, out signatureAlgorithm))
+                                        {
+                                            header.SignatureAlgorithm = signatureAlgorithm;
+                                        }
+                                        else if (KeyManagementAlgorithm.TryParseSlow(ref reader, out keyManagementAlgorithm))
+                                        {
+                                            header.KeyManagementAlgorithm = keyManagementAlgorithm;
+                                        }
                                         else
                                         {
                                             // TODO : Fix when the Utf8JsonReader will allow
@@ -91,6 +300,10 @@ namespace JsonWebToken
                                         {
                                             header.EncryptionAlgorithm = encryptionAlgorithm;
                                         }
+                                        else if (EncryptionAlgorithm.TryParseSlow(ref reader, out encryptionAlgorithm))
+                                        {
+                                            header.EncryptionAlgorithm = encryptionAlgorithm;
+                                        }
                                         else
                                         {
                                             // TODO : Fix when the Utf8JsonReader will allow
@@ -100,10 +313,15 @@ namespace JsonWebToken
 
                                         continue;
                                     case (byte)'z' when nameSuffix == 28777 /* zip */:
+                                        var sig = header.SignatureAlgorithm;
                                         var zip = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                                        if (CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm) && !(compressionAlgorithm is null))
+                                        if (CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm))
                                         {
-                                            current.Add(new JwtProperty(compressionAlgorithm));
+                                            header.CompressionAlgorithm = compressionAlgorithm;
+                                        }
+                                        else if (CompressionAlgorithm.TryParseSlow(ref reader, out compressionAlgorithm))
+                                        {
+                                            header.CompressionAlgorithm = compressionAlgorithm;
                                         }
                                         else
                                         {

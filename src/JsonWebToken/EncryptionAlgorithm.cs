@@ -2,8 +2,9 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -41,6 +42,16 @@ namespace JsonWebToken
         /// 'A256GCM'
         /// </summary>
         public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, "A256GCM", requiredKeySizeInBytes: 32, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
+
+        private static readonly EncryptionAlgorithm[] _algorithms = new[]
+        {
+            Aes128CbcHmacSha256,
+            Aes192CbcHmacSha384,
+            Aes256CbcHmacSha512,
+            Aes128Gcm,
+            Aes192Gcm,
+            Aes256Gcm
+        };
 
         private readonly sbyte _id;
         private readonly EncryptionType _category;
@@ -90,19 +101,6 @@ namespace JsonWebToken
         public byte[] Utf8Name => _utf8Name;
 
         /// <summary>
-        /// Gets the <see cref="EncryptionAlgorithm"/> list; 
-        /// </summary>
-        public static Dictionary<string, EncryptionAlgorithm> Algorithms { get; } = new Dictionary<string, EncryptionAlgorithm>
-        {
-            { Aes128CbcHmacSha256.Name, Aes128CbcHmacSha256 },
-            { Aes192CbcHmacSha384.Name, Aes192CbcHmacSha384 },
-            { Aes256CbcHmacSha512.Name, Aes256CbcHmacSha512 },
-            { Aes128Gcm.Name, Aes128Gcm },
-            { Aes192Gcm.Name, Aes192Gcm },
-            { Aes256Gcm.Name, Aes256Gcm },
-        };
-
-        /// <summary>
         /// Initializes a new instance of <see cref="EncryptionAlgorithm"/>. 
         /// </summary>
         /// <param name="id"></param>
@@ -121,20 +119,34 @@ namespace JsonWebToken
             _category = category;
         }
 
+        /// <summary>
+        /// Parse the current value of the <see cref="Utf8JsonReader"/> into its <see cref="EncryptionAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="algorithm"></param>
+        public static bool TryParseSlow(ref Utf8JsonReader reader, [NotNullWhen(true)] out EncryptionAlgorithm? algorithm)
+        {
+            var algorithms = _algorithms;
+            for (int i = 0; i < algorithms.Length; i++)
+            {
+                if (reader.ValueTextEquals(algorithms[i]._utf8Name))
+                {
+                    algorithm = algorithms[i];
+                    return true;
+                }
+            }
+
+            algorithm = null;
+            return false;
+        }
 
         /// <summary>
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="EncryptionAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
         /// <param name="algorithm"></param>
-        public unsafe static bool TryParse(ReadOnlySpan<byte> value, out EncryptionAlgorithm? algorithm)
+        public unsafe static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out EncryptionAlgorithm? algorithm)
         {
-            if (value.IsEmpty)
-            {
-                algorithm = null;
-                return true;
-            }
-
             fixed (byte* pValue = value)
             {
                 if (value.Length == 13)
@@ -290,12 +302,12 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Cast the <see cref="string"/> into its <see cref="EncryptionAlgorithm"/> representation.
+        /// Cast the array of <see cref="byte"/>s into its <see cref="EncryptionAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
         public static explicit operator EncryptionAlgorithm?(byte[]? value)
         {
-            if (value == null)
+            if (value is null)
             {
                 return null;
             }
@@ -314,12 +326,12 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public static explicit operator EncryptionAlgorithm?(string? value)
         {
-            if (value == null)
+            if (value is null)
             {
                 return null;
             }
 
-            if (!Algorithms.TryGetValue(value, out var algorithm))
+            if (!TryParse(Encoding.UTF8.GetBytes(value), out var algorithm))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(value);
             }

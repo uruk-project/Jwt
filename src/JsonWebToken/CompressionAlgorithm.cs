@@ -1,10 +1,11 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -18,34 +19,33 @@ namespace JsonWebToken
         /// </summary>
         public static readonly CompressionAlgorithm Deflate = new CompressionAlgorithm(id: 1, "DEF", new DeflateCompressor());
 
-        // TODO : Verify the pertinence
         /// <summary>
         /// Gets the algorithm identifier. 
         /// </summary>
-        public sbyte Id { get; }
+        public sbyte Id => _id;
 
         /// <summary>
         /// Gets the name of the compression algorithm.
         /// </summary>
-        public string Name { get; }
+        public string Name => Encoding.UTF8.GetString(_utf8Name);
 
         /// <summary>
         /// Gets the name of the signature algorithm.
         /// </summary>
-        public byte[] Utf8Name => Encoding.UTF8.GetBytes(Name);
+        public byte[] Utf8Name => _utf8Name;
 
         /// <summary>
         /// Gets the <see cref="Compressor"/>.
         /// </summary>
         public Compressor Compressor { get; }
 
-        /// <summary>
-        /// Gets the <see cref="SignatureAlgorithm"/> list; 
-        /// </summary>
-        public static Dictionary<string, CompressionAlgorithm> Algorithms { get; } = new Dictionary<string, CompressionAlgorithm>
+        private static readonly CompressionAlgorithm[] _algorithms = new[]
         {
-            { Deflate.Name, Deflate }
+            Deflate
         };
+
+        private readonly sbyte _id;
+        private readonly byte[] _utf8Name;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CompressionAlgorithm"/> class.
@@ -55,7 +55,6 @@ namespace JsonWebToken
         /// <param name="compressor"></param>
         public CompressionAlgorithm(sbyte id, string name, Compressor compressor)
         {
-            Id = id;
             if (name is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.name);
@@ -66,7 +65,8 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.compressor);
             }
 
-            Name = name!; // ! => [DoesNotReturn]
+            _id = id;
+            _utf8Name = Encoding.UTF8.GetBytes(name!); // ! => [DoesNotReturn]
             Compressor = compressor!; // ! => [DoesNotReturn]
         }
 
@@ -163,22 +163,42 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Parse the current value of the <see cref="Utf8JsonReader"/> into its <see cref="CompressionAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="algorithm"></param>
+        public static bool TryParseSlow(ref Utf8JsonReader reader, [NotNullWhen(true)] out CompressionAlgorithm? algorithm)
+        {
+            if (reader.ValueTextEquals(Deflate._utf8Name))
+            {
+                algorithm = Deflate;
+                return true;
+            }
+
+            algorithm = null;
+            return false;
+        }
+
+        private const uint mask3 = 0x00ffffff;
+
+        /// <summary>
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
         /// <param name="algorithm"></param>
-        public unsafe static bool TryParse(ReadOnlySpan<byte> value, out CompressionAlgorithm? algorithm)
+        public unsafe static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out CompressionAlgorithm? algorithm)
         {
-            if (value.IsEmpty)
-            {
-                algorithm = null;
-                return true;
-            }
-
             fixed (byte* pValue = value)
             {
-                if (value.Length == 5)
+                if (value.Length == 3)
                 {
+                    // DEF
+                    if ((*((uint*)pValue) & mask3) == 4605252u)
+                    {
+                        algorithm = Deflate;
+                        return true;
+                    }
+
                     // DEF
                     if (*pValue == (byte)'D' && *(ushort*)(pValue + 1) == 17989u)
                     {
@@ -193,35 +213,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="CompressionAlgorithm"/> representation.
-        /// </summary>
-        /// <param name="value"></param>
-        public static unsafe explicit operator CompressionAlgorithm?(ReadOnlySpan<byte> value)
-        {
-            if (value.IsEmpty)
-            {
-                return null;
-            }
-
-            fixed (byte* pValue = value)
-            {
-                if (value.Length == 3 && *(short*)pValue == 17732 && *(pValue + 2) == (byte)'F' /* DEF */)
-                {
-                    return Deflate;
-                }
-            }
-
-            var key = Encoding.UTF8.GetString(value.ToArray());
-            if (!Algorithms.TryGetValue(key, out var algorithm))
-            {
-                ThrowHelper.ThrowNotSupportedException_Algorithm(key);
-            }
-
-            return algorithm;
-        }
-
-        /// <summary>
-        /// Cast the array of <see cref="byte"/> into its <see cref="CompressionAlgorithm"/> representation.
+        /// Cast the array of <see cref="byte"/>s into its <see cref="CompressionAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
         public static unsafe explicit operator CompressionAlgorithm?(byte[]? value)
@@ -231,9 +223,14 @@ namespace JsonWebToken
                 return null;
             }
 
-            return (CompressionAlgorithm?)new ReadOnlySpan<byte>(value);
-        }
+            if (!TryParse(value, out var algorithm))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(Encoding.UTF8.GetString(value));
+            }
 
+            return algorithm;
+        }
+        
         /// <summary>
         /// Cast the <see cref="CompressionAlgorithm"/> into its <see cref="long"/> representation.
         /// </summary>
