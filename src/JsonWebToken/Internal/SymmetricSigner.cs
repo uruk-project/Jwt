@@ -88,7 +88,7 @@ namespace JsonWebToken.Internal
             var keyedHash = _hashAlgorithmPool.Get();
             try
             {
-#if !NETSTANDARD2_0
+#if !NETSTANDARD2_0 && !NET461
                 return keyedHash.TryComputeHash(input, destination, out bytesWritten);
 #else
                 try
@@ -121,14 +121,15 @@ namespace JsonWebToken.Internal
             var keyedHash = _hashAlgorithmPool.Get();
             try
             {
-#if !NETSTANDARD2_0
-                Span<byte> hash = stackalloc byte[_hashSizeInBytes];
-                bool result = keyedHash.TryComputeHash(input, hash, out int bytesWritten) && AreEqual(signature, hash);
-                Debug.Assert(hash.Length == bytesWritten);
-                return result;
+#if NETSTANDARD2_0 || NET461
+                Span<byte> hash = keyedHash.ComputeHash(input.ToArray());
 #else
-                return AreEqual(signature, keyedHash.ComputeHash(input.ToArray()));
+                Span<byte> hash = stackalloc byte[_hashSizeInBytes];
+                bool hashed = keyedHash.TryComputeHash(input, hash, out int bytesWritten);
+                Debug.Assert(hashed);
+                Debug.Assert(hash.Length == bytesWritten);
 #endif
+                return AreEqual(signature, hash);
             }
             finally
             {

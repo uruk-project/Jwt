@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
 using System;
 using System.Buffers;
 using System.ComponentModel;

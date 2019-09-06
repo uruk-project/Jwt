@@ -117,7 +117,7 @@ namespace JsonWebToken
             using (var bufferWriter = new ArrayBufferWriter())
             {
                 WriteToken(descriptor, bufferWriter);
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
                 return Encoding.UTF8.GetString(bufferWriter.WrittenSpan.ToArray());
 #else
                 return Encoding.UTF8.GetString(bufferWriter.WrittenSpan);

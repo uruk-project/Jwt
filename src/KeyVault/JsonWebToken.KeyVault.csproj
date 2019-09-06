@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netcoreapp2.1</TargetFrameworks>
-    <LangVersion>7.3</LangVersion>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netstandard2.0;netcoreapp2.1;netcoreapp3.0;net461</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.0;netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
+    <LangVersion>8.0</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     
     <PackageTags>jwt OAuth2</PackageTags>
@@ -27,7 +28,7 @@ Provides Key Vault support.
   
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.4" />
-    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.1" />
   </ItemGroup>
   
   

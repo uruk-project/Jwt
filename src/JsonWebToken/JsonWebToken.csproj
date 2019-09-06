@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netstandard2.0;netcoreapp2.1;netcoreapp3.0;net461</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.0;netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -39,10 +40,26 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.6.0-*" />
     <PackageReference Include="System.Text.Json" Version="4.6.0-preview8.19405.3" />
   </ItemGroup>
-  
+
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
     <PackageReference Include="System.Text.Json" Version="4.6.0-preview8.19405.3" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+    <PackageReference Include="System.Runtime" Version="4.3.1" />
+    <PackageReference Include="System.Memory" Version="4.5.3" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+    <PackageReference Include="System.Buffers" Version="4.5.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.6.0-preview8.19405.3" />
+    <PackageReference Include="System.Security.Cryptography.Cng" Version="4.5.0" />
+    <PackageReference Include="System.Text.Json" Version="4.6.0-preview8.19405.3" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
+    <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
+    <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE_SIGNATURE</DefineConstants>
+  </PropertyGroup>
 </Project>

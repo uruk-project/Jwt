@@ -25,7 +25,7 @@ namespace JsonWebToken.Tests
             n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
             e: "AQAB"
         );
-
+#if !NET461
         private readonly ECJwk _privateEcc256Key = new ECJwk
         (
             crv: EllipticalCurve.P256,
@@ -71,6 +71,7 @@ namespace JsonWebToken.Tests
             x: "AEeo_Y06znu6MVjyvJW2_SX_JKK2DxbxF3QjAqkZhMTvwgLc3Z073vFwwiCHKcOwK2b5H8H4a7PDN6DGJ6YJjpN0",
             y: "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y"
         );
+#endif
 
         [Theory]
         [MemberData(nameof(GetSupportedAlgorithm))]
@@ -108,12 +109,14 @@ namespace JsonWebToken.Tests
             yield return new object[] { (string)SignatureAlgorithm.RsaSsaPssSha256 };
             yield return new object[] { (string)SignatureAlgorithm.RsaSsaPssSha384 };
             yield return new object[] { (string)SignatureAlgorithm.RsaSsaPssSha512 };
+#if !NET461
             yield return new object[] { (string)SignatureAlgorithm.EcdsaSha256 };
             yield return new object[] { (string)SignatureAlgorithm.EcdsaSha384 };
             yield return new object[] { (string)SignatureAlgorithm.EcdsaSha512 };
+#endif
         }
 
-        private (Jwk, Jwk) SelectKeys(string alg)
+            private (Jwk, Jwk) SelectKeys(string alg)
         {
             switch (alg)
             {
@@ -138,12 +141,14 @@ namespace JsonWebToken.Tests
                 case "PS512":
                     return (_privateRsa2048Key, _publicRsa2048Key);
 
+#if !NET461
                 case "ES256":
                     return (_privateEcc256Key, _publicEcc256Key);
                 case "ES384":
                     return (_privateEcc384Key, _publicEcc384Key);
                 case "ES512":
                     return (_privateEcc512Key, _publicEcc512Key);
+#endif
             }
 
             throw new NotSupportedException();

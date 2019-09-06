@@ -11,7 +11,9 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using KVECParameters = Microsoft.Azure.KeyVault.WebKey.ECParameters;
+#if !NETFRAMEWORK
 using SscECParameters = System.Security.Cryptography.ECParameters;
+#endif
 
 namespace JsonWebToken.KeyVault
 {
@@ -63,11 +65,13 @@ namespace JsonWebToken.KeyVault
                     case JsonWebKeyType.RsaHsm:
                         key = new RsaJwk(kvKey.Key.ToRSAParameters());
                         break;
+#if !NETFRAMEWORK
                     case JsonWebKeyType.EllipticCurve:
                     case JsonWebKeyType.EllipticCurveHsm:
                         var parameters = kvKey.Key.ToEcParameters();
                         key = ECJwk.FromParameters(ConvertToECParameters(parameters));
                         break;
+#endif
                     default:
                         continue;
                 }
@@ -85,7 +89,8 @@ namespace JsonWebToken.KeyVault
             return keys.ToArray();
         }
 
-        private static SscECParameters ConvertToECParameters(KVECParameters inputParameters)
+ #if !NETFRAMEWORK
+       private static SscECParameters ConvertToECParameters(KVECParameters inputParameters)
         {
             ECCurve curve;
             switch (inputParameters.Curve)
@@ -114,6 +119,7 @@ namespace JsonWebToken.KeyVault
                 }                
             };
         }
+#endif
 
         private static async Task<string> GetTokenFromClientCertificate(string authority, string resource, string clientId, X509Certificate2 certificate)
         {

@@ -198,7 +198,7 @@ namespace JsonWebToken
             }
         }
 
-#if !NETSTANDARD
+#if NETCOREAPP
         /// <summary>
         /// Gets the ephemeral key used for ECDH key agreement.
         /// </summary>

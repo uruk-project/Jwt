@@ -125,12 +125,14 @@ namespace JsonWebToken.Tests
             yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes256KW.Utf8Name };
             yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Direct.Utf8Name };
 
+#if NETCOREAPP3_0
             yield return new object[] { EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.Aes128GcmKW.Utf8Name };
             yield return new object[] { EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.Aes192GcmKW.Utf8Name };
             yield return new object[] { EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Aes256GcmKW.Utf8Name };
             yield return new object[] { EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.Direct.Utf8Name };
             yield return new object[] { EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.Direct.Utf8Name };
             yield return new object[] { EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Direct.Utf8Name };
+#endif
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿#if NETCOREAPP2_1 || NETCOREAPP3_0
+﻿#if NETCOREAPP
 using System.Collections.Generic;
 using Xunit;
 

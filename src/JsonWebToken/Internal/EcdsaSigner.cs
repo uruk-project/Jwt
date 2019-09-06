@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+#if NETCOREAPP ||NETSTANDARD
 using System;
 using System.Security.Cryptography;
 
@@ -53,7 +54,7 @@ namespace JsonWebToken.Internal
             }
 
             var ecdsa = _hashAlgorithmPool.Get();
-#if !NETSTANDARD2_0
+#if !NETSTANDARD2_0 && !NET461
             return ecdsa.TrySignData(data, destination, _hashAlgorithm, out bytesWritten);
 #else
             var result = ecdsa.SignData(data.ToArray(), _hashAlgorithm);
@@ -82,10 +83,10 @@ namespace JsonWebToken.Internal
             }
 
             var ecdsa = _hashAlgorithmPool.Get();
-#if !NETSTANDARD2_0
-            return ecdsa.VerifyData(data, signature, _hashAlgorithm);
-#else
+#if NETSTANDARD2_0 || NET461
             return ecdsa.VerifyData(data.ToArray(), signature.ToArray(), _hashAlgorithm);
+#else
+            return ecdsa.VerifyData(data, signature, _hashAlgorithm);
 #endif
         }
 
@@ -123,3 +124,4 @@ namespace JsonWebToken.Internal
         }
     }
 }
+#endif

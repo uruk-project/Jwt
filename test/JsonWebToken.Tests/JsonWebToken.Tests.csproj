@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netcoreapp3.0;netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp3.0</TargetFrameworks>
 
     <IsPackable>false</IsPackable>
 
@@ -49,6 +50,10 @@
     <ProjectReference Include="..\..\src\OAuth2\JsonWebToken.OAuth2.csproj" />
     <ProjectReference Include="..\..\src\OpenIdConnect\JsonWebToken.OpenIdConnect.csproj" />
     <ProjectReference Include="..\..\src\SecurityEventTokens\JsonWebToken.SecurityEventTokens.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+    <PackageReference Include="System.Net.Http" Version="4.0.0" />
   </ItemGroup>
 
 </Project>

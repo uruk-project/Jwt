@@ -416,10 +416,10 @@ namespace JsonWebToken
             {
                 switch (value.Length)
                 {
-                    case 3 when *(ushort*)pValue == 26980u && *(pValue + 2) == (byte)'r' /* dir */:
+                    case 3 when *(ushort*)pValue == 26980u && *(pValue + 2) == (byte)'r': /* dir */
                         algorithm = Direct;
                         return true;
-                    case 6 when *(ushort*)(pValue + 4) == 22347u:
+                    case 6 when *(ushort*)(pValue + 4) == 22347u: /* A128 */
                         switch (*(uint*)pValue)
                         {
                             case 942813505u:
