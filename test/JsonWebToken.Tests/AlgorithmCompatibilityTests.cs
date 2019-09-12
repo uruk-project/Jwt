@@ -1,9 +1,165 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Text.Json;
 using Xunit;
 
 namespace JsonWebToken.Tests
 {
+    public abstract class AlgorithmTests<T> where T : class, IAlgorithm
+    {
+        public abstract bool TryParse(ReadOnlySpan<byte> value, out T algorithm);
+
+        public virtual void TryParse_Success(T expected)
+        {
+            var parsed = TryParse(expected.Utf8Name, out var algorithm);
+            Assert.True(parsed);
+            Assert.NotNull(algorithm);
+            Assert.Same(expected, algorithm);
+        }
+
+        public abstract bool TryParseSlow(ref Utf8JsonReader reader, out T algorithm);
+
+        public virtual void TryParseSlow_Success(T expected)
+        {
+            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes("\"" + expected.Name + "\""));
+            reader.Read();
+            var parsed = TryParseSlow(ref reader, out var algorithm);
+            Assert.True(parsed);
+            Assert.NotNull(algorithm);
+            Assert.Same(expected, algorithm);
+        }
+    }
+
+    public class AlgorithmFixture<T> : IEnumerable<object[]>
+    {
+        public IEnumerator<object[]> GetEnumerator()
+        {
+            var type = typeof(T);
+            var properties = type.GetFields(BindingFlags.Public | BindingFlags.Static).Where(p => p.FieldType == typeof(T));
+            foreach (var item in properties)
+            {
+                yield return new object[] { item.GetValue(null) };
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class SignatureAlgorithmTests : AlgorithmTests<SignatureAlgorithm>
+    {
+        public override bool TryParse(ReadOnlySpan<byte> value, out SignatureAlgorithm algorithm)
+        {
+            return SignatureAlgorithm.TryParse(value, out algorithm);
+        }
+
+        public override bool TryParseSlow(ref Utf8JsonReader reader, out SignatureAlgorithm algorithm)
+        {
+            return SignatureAlgorithm.TryParseSlow(ref reader, out algorithm);
+        }
+
+        [Theory]
+        [ClassData(typeof(AlgorithmFixture<SignatureAlgorithm>))]
+        public override void TryParse_Success(SignatureAlgorithm expected)
+        {
+            base.TryParse_Success(expected);
+        }
+
+        [Theory]
+        [ClassData(typeof(AlgorithmFixture<SignatureAlgorithm>))]
+        public override void TryParseSlow_Success(SignatureAlgorithm expected)
+        {
+            base.TryParseSlow_Success(expected);
+        }
+    }
+
+    public class KeyManagementAlgorithmTests : AlgorithmTests<KeyManagementAlgorithm>
+    {
+        public override bool TryParse(ReadOnlySpan<byte> value, out KeyManagementAlgorithm algorithm)
+        {
+            return KeyManagementAlgorithm.TryParse(value, out algorithm);
+        }
+
+        public override bool TryParseSlow(ref Utf8JsonReader reader, out KeyManagementAlgorithm algorithm)
+        {
+            return KeyManagementAlgorithm.TryParseSlow(ref reader, out algorithm);
+        }
+
+        [Theory]
+        [ClassData(typeof(AlgorithmFixture<KeyManagementAlgorithm>))]
+        public override void TryParse_Success(KeyManagementAlgorithm expected)
+        {
+            base.TryParse_Success(expected);
+        }
+
+        [Theory]
+        [ClassData(typeof(AlgorithmFixture<KeyManagementAlgorithm>))]
+        public override void TryParseSlow_Success(KeyManagementAlgorithm expected)
+        {
+            base.TryParseSlow_Success(expected);
+        }
+    }
+    
+    public class CompressionAlgorithmTests : AlgorithmTests<CompressionAlgorithm>
+    {
+        public override bool TryParse(ReadOnlySpan<byte> value, out CompressionAlgorithm algorithm)
+        {
+            return CompressionAlgorithm.TryParse(value, out algorithm);
+        }
+
+        public override bool TryParseSlow(ref Utf8JsonReader reader, out CompressionAlgorithm algorithm)
+        {
+            return CompressionAlgorithm.TryParseSlow(ref reader, out algorithm);
+        }
+
+        [Theory]
+        [ClassData(typeof(AlgorithmFixture<CompressionAlgorithm>))]
+        public override void TryParse_Success(CompressionAlgorithm expected)
+        {
+            base.TryParse_Success(expected);
+        }
+
+        [Theory]
+        [ClassData(typeof(AlgorithmFixture<CompressionAlgorithm>))]
+        public override void TryParseSlow_Success(CompressionAlgorithm expected)
+        {
+            base.TryParseSlow_Success(expected);
+        }
+    }
+    
+    public class EncryptionAlgorithmTests : AlgorithmTests<EncryptionAlgorithm>
+    {
+        public override bool TryParse(ReadOnlySpan<byte> value, out EncryptionAlgorithm algorithm)
+        {
+            return EncryptionAlgorithm.TryParse(value, out algorithm);
+        }
+
+        public override bool TryParseSlow(ref Utf8JsonReader reader, out EncryptionAlgorithm algorithm)
+        {
+            return EncryptionAlgorithm.TryParseSlow(ref reader, out algorithm);
+        }
+
+        [Theory]
+        [ClassData(typeof(AlgorithmFixture<EncryptionAlgorithm>))]
+        public override void TryParse_Success(EncryptionAlgorithm expected)
+        {
+            base.TryParse_Success(expected);
+        }
+
+        [Theory]
+        [ClassData(typeof(AlgorithmFixture<EncryptionAlgorithm>))]
+        public override void TryParseSlow_Success(EncryptionAlgorithm expected)
+        {
+            base.TryParseSlow_Success(expected);
+        }
+    }
+
     public class AlgorithmCompatibilityTests : IClassFixture<KeyFixture>
     {
         public AlgorithmCompatibilityTests(KeyFixture keys)

@@ -5,6 +5,7 @@ using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -681,72 +682,68 @@ namespace JsonWebToken
                     break;
                 }
 
-                var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                fixed (byte* pPropertyName = propertyName)
+                ReadOnlySpan<byte> propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                ref byte propertyNameRef = ref MemoryMarshal.GetReference(propertyName);
+                reader.Read();
+                switch (reader.TokenType)
                 {
-                    reader.Read();
-                    switch (reader.TokenType)
-                    {
-                        case JsonTokenType.StartObject:
-                            PopulateObject(ref reader);
-                            break;
-                        case JsonTokenType.StartArray:
-                            PopulateArray(ref reader, pPropertyName, propertyName.Length, key);
-                            break;
-                        case JsonTokenType.String:
-                            switch (propertyName.Length)
-                            {
-                                case 1:
-                                    if (*pPropertyName == (byte)'e')
-                                    {
+                    case JsonTokenType.StartObject:
+                        PopulateObject(ref reader);
+                        break;
+                    case JsonTokenType.StartArray:
+                        PopulateArray(ref reader, ref propertyNameRef, propertyName.Length, key);
+                        break;
+                    case JsonTokenType.String:
+                        switch (propertyName.Length)
+                        {
+                            case 1:
+                                switch (propertyNameRef)
+                                {
+                                    case (byte)'e':
                                         key.E = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                    }
-                                    else if (*pPropertyName == (byte)'n')
-                                    {
+                                        break;
+                                    case (byte)'n':
                                         key.N = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                    }
-                                    else if (*pPropertyName == (byte)'p')
-                                    {
+                                        break;
+                                    case (byte)'p':
                                         key.P = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                    }
-                                    else if (*pPropertyName == (byte)'q')
-                                    {
+                                        break;
+                                    case (byte)'q':
                                         key.Q = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                    }
-                                    else if (*pPropertyName == (byte)'d')
-                                    {
+                                        break;
+                                    case (byte)'d':
                                         key.D = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                    }
-                                    break;
+                                        break;
+                                }
+                                break;
 
-                                case 2:
-                                    var pKtyShort = (short*)pPropertyName;
-                                    if (*pKtyShort == 26993u)
-                                    {
-                                        key.QI = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                    }
-                                    else if (*pKtyShort == 28772u)
-                                    {
-                                        key.DP = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                    }
-                                    else if (*pKtyShort == 29028u)
-                                    {
-                                        key.DQ = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                    }
-                                    break;
-                                case 3:
-                                    PopulateThree(ref reader, pPropertyName, key);
-                                    break;
-                                case 8:
-                                    PopulateEight(ref reader, pPropertyName, key);
-                                    break;
-                                default:
-                                    break;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
+                            case 2:
+                                var pKtyShort = Unsafe.ReadUnaligned<ushort>(ref propertyNameRef);
+                                if (pKtyShort == 26993u)
+                                {
+                                    key.QI = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                }
+                                else if (pKtyShort == 28772u)
+                                {
+                                    key.DP = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                }
+                                else if (pKtyShort == 29028u)
+                                {
+                                    key.DQ = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                }
+                                break;
+                            case 3:
+                                PopulateThree(ref reader, ref propertyNameRef, key);
+                                break;
+                            case 8:
+                                PopulateEight(ref reader, ref propertyNameRef, key);
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
 

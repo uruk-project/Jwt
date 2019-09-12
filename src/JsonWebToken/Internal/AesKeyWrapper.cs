@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
@@ -14,7 +15,7 @@ namespace JsonWebToken.Internal
     {
         private const int BlockSizeInBytes = 8;
 
-        private static readonly ulong _defaultIV = 0XA6A6A6A6A6A6A6A6;
+        private const ulong _defaultIV = 0XA6A6A6A6A6A6A6A6;
 
         private readonly ObjectPool<ICryptoTransform> _encryptorPool;
         private readonly ObjectPool<ICryptoTransform> _decryptorPool;
@@ -106,66 +107,61 @@ namespace JsonWebToken.Internal
             return TryUnwrapKeyPrivate(key, destination, out bytesWritten);
         }
 
-        private unsafe bool TryUnwrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, Span<byte> destination, out int bytesWritten)
+        private bool TryUnwrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, Span<byte> destination, out int bytesWritten)
         {
             var decryptor = _decryptorPool.Get();
             try
             {
-                fixed (byte* input = inputBuffer)
+                ref byte input = ref MemoryMarshal.GetReference(inputBuffer);
+                ulong a = Unsafe.ReadUnaligned<ulong>(ref input);
+
+                // The number of input blocks
+                var n = (inputBuffer.Length - BlockSizeInBytes) >> 3;
+
+                // The set of input blocks
+                Span<byte> r = stackalloc byte[n << 3];
+                ref byte rRef = ref MemoryMarshal.GetReference(r);
+                for (var i = 0; i < n; i++)
                 {
-                    ulong a = *(ulong*)input;
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref rRef, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref input, (i + 1) << 3)));
+                }
 
-                    // The number of input blocks
-                    var n = (inputBuffer.Length - BlockSizeInBytes) >> 3;
-
-                    // The set of input blocks
-                    byte* r = stackalloc byte[n << 3];
-                    for (var i = 0; i < n; i++)
+                byte[] block = new byte[16];
+                ref byte blockRef = ref MemoryMarshal.GetReference((Span<byte>)block);
+                ref byte blockEndRef = ref Unsafe.Add(ref blockRef, 8);
+                Span<byte> t = stackalloc byte[8];
+                ref byte tRef = ref MemoryMarshal.GetReference(t);
+                Unsafe.WriteUnaligned(ref tRef, 0);
+                for (var j = 5; j >= 0; j--)
+                {
+                    for (var i = n; i > 0; i--)
                     {
-                        *(ulong*)(r + (i << 3)) = *(ulong*)(input + ((i + 1) << 3));
-                    }
+                        Unsafe.WriteUnaligned(ref Unsafe.Add(ref tRef, 7), (byte)((n * j) + i));
 
-                    byte[] block = new byte[16];
-                    fixed (byte* pBlock = block)
-                    {
-                        byte* t = stackalloc byte[8];
-                        *(ulong*)t = 0L;
-                        for (var j = 5; j >= 0; j--)
-                        {
-                            for (var i = n; i > 0; i--)
-                            {
-                                *(t + 7) = (byte)((n * j) + i);
-                                a ^= *(ulong*)t;
-                                *(ulong*)pBlock = a;
-                                ulong* rCurrent = (ulong*)(r + ((i - 1) << 3));
-                                *(ulong*)(pBlock + 8) = *rCurrent;
-                                fixed (byte* b = decryptor.TransformFinalBlock(block, 0, 16))
-                                {
-                                    ulong* bLong = (ulong*)b;
-                                    a = *bLong;
-                                    *rCurrent = *(bLong + 1);
-                                }
-                            }
-                        }
-
-                        if (a == _defaultIV)
-                        {
-                            fixed (byte* pDestination = destination)
-                            {
-                                ulong* keyBytes = (ulong*)pDestination;
-                                for (var i = 0; i < n; i++)
-                                {
-                                    *(keyBytes + i) = *(ulong*)(r + (i << 3));
-                                }
-                            }
-
-                            bytesWritten = n << 3;
-                            return true;
-                        }
-
-                        return ThrowHelper.TryWriteError(out bytesWritten);
+                        a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
+                        Unsafe.WriteUnaligned(ref blockRef, a);
+                        ref byte rCurrent = ref Unsafe.Add(ref rRef, (i - 1) << 3);
+                        Unsafe.WriteUnaligned(ref blockEndRef, Unsafe.ReadUnaligned<ulong>(ref rCurrent));
+                        Span<byte> b = decryptor.TransformFinalBlock(block, 0, 16);
+                        ref byte bRef = ref MemoryMarshal.GetReference(b);
+                        a = Unsafe.ReadUnaligned<ulong>(ref bRef);
+                        Unsafe.WriteUnaligned(ref rCurrent, Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref bRef, 8)));
                     }
                 }
+
+                if (a == _defaultIV)
+                {
+                    ref byte destinationRef = ref MemoryMarshal.GetReference(destination);
+                    for (var i = 0; i < n; i += 1)
+                    {
+                        Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref rRef, i << 3)));
+                    }
+
+                    bytesWritten = n << 3;
+                    return true;
+                }
+
+                return ThrowHelper.TryWriteError(out bytesWritten);
             }
             finally
             {
@@ -247,7 +243,7 @@ namespace JsonWebToken.Internal
                     }
                 }
 
-                if(destination.Length != (n + 1) << 3)
+                if (destination.Length != (n + 1) << 3)
                 {
                     ThrowHelper.ThrowCryptographicException_KeyWrapFailed();
                 }

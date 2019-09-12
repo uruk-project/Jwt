@@ -1,15 +1,14 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.KeyVault.WebKey;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Microsoft.Azure.KeyVault;
+using Microsoft.Azure.KeyVault.WebKey;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using KVECParameters = Microsoft.Azure.KeyVault.WebKey.ECParameters;
 #if !NETFRAMEWORK
 using SscECParameters = System.Security.Cryptography.ECParameters;

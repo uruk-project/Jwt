@@ -1,9 +1,10 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -17,7 +18,7 @@ namespace JsonWebToken
         /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtPayload"/>.
         /// </summary>
         /// <param name="buffer"></param>
-        public static unsafe JwtPayload ParsePayload(ReadOnlySpan<byte> buffer)
+        public static JwtPayload ParsePayload(ReadOnlySpan<byte> buffer)
         {
             return ReadPayload(buffer);
         }
@@ -26,7 +27,7 @@ namespace JsonWebToken
         /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtPayload"/>.
         /// </summary>
         /// <param name="buffer"></param>
-        internal static unsafe JwtPayload ReadPayload(ReadOnlySpan<byte> buffer)
+        internal static JwtPayload ReadPayload(ReadOnlySpan<byte> buffer)
         {
             Utf8JsonReader reader = new Utf8JsonReader(buffer, isFinalBlock: true, state: default);
             if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
@@ -37,7 +38,7 @@ namespace JsonWebToken
             return ReadJwtPayload(ref reader);
         }
 
-        internal unsafe static JwtPayload ReadJwtPayload(ref Utf8JsonReader reader)
+        internal static JwtPayload ReadJwtPayload(ref Utf8JsonReader reader)
         {
             var current = new JwtObject(3);
             var payload = new JwtPayload(current);
@@ -57,35 +58,36 @@ namespace JsonWebToken
                     case JsonTokenType.String:
                         if (name.Length == 3)
                         {
-                            fixed (byte* pName = name)
+                            var refName = Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(name)) & 0x00ffffffu;
+                            switch (refName)
                             {
-                                short nameSuffix = *(short*)(pName + 1);
-                                switch (*pName)
-                                {
-                                    case (byte)'i' when nameSuffix == 29555 /* iss */:
-                                        // TODO : Fix when the Utf8JsonReader will allow
-                                        // to read an unescaped string without allocating a string
-                                        current.Add(new JwtProperty(WellKnownProperty.Iss, reader.GetString()));
-                                        continue;
+                                /* iss */
+                                case 7566185u:
+                                    // TODO : Fix when the Utf8JsonReader will allow
+                                    // to read an unescaped string without allocating a string
+                                    current.Add(new JwtProperty(WellKnownProperty.Iss, reader.GetString()));
+                                    continue;
 
-                                    case (byte)'a' when nameSuffix == 25717 /* aud */:
-                                        // TODO : Fix when the Utf8JsonReader will allow
-                                        // to read an unescaped string without allocating a string
-                                        current.Add(new JwtProperty(WellKnownProperty.Aud, reader.GetString()));
-                                        continue;
+                                /* aud */
+                                case 6583649u:
+                                    // TODO : Fix when the Utf8JsonReader will allow
+                                    // to read an unescaped string without allocating a string
+                                    current.Add(new JwtProperty(WellKnownProperty.Aud, reader.GetString()));
+                                    continue;
 
-                                    case (byte)'j' when nameSuffix == 26996 /* jti */:
-                                        // TODO : Fix when the Utf8JsonReader will allow
-                                        // to read an unescaped string without allocating a string
-                                        current.Add(new JwtProperty(WellKnownProperty.Jti, reader.GetString()));
-                                        continue;
+                                /* jti */
+                                case 6911082u:
+                                    // TODO : Fix when the Utf8JsonReader will allow
+                                    // to read an unescaped string without allocating a string
+                                    current.Add(new JwtProperty(WellKnownProperty.Jti, reader.GetString()));
+                                    continue;
 
-                                    case (byte)'s' when nameSuffix == 25205 /* sub */:
-                                        // TODO : Fix when the Utf8JsonReader will allow
-                                        // to read an unescaped string without allocating a string
-                                        current.Add(new JwtProperty(WellKnownProperty.Sub, reader.GetString()));
-                                        continue;
-                                }
+                                /* sub */
+                                case 6452595u:
+                                    // TODO : Fix when the Utf8JsonReader will allow
+                                    // to read an unescaped string without allocating a string
+                                    current.Add(new JwtProperty(WellKnownProperty.Sub, reader.GetString()));
+                                    continue;
                             }
                         }
 
@@ -104,36 +106,35 @@ namespace JsonWebToken
                         long longValue;
                         if (name.Length == 3)
                         {
-                            fixed (byte* pName = name)
+                            var refName = Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(name)) & 0x00ffffffu;
+                            switch (refName)
                             {
-                                short nameSuffix = *(short*)(pName + 1);
-                                switch (*pName)
-                                {
-                                    case (byte)'e' when nameSuffix == 28792 /* exp */:
-                                        if (reader.TryGetInt64(out longValue))
-                                        {
-                                            current.Add(new JwtProperty(WellKnownProperty.Exp, longValue));
-                                            continue;
-                                        }
+                                /* exp */
+                                case 7370853u:
+                                    if (reader.TryGetInt64(out longValue))
+                                    {
+                                        current.Add(new JwtProperty(WellKnownProperty.Exp, longValue));
+                                        continue;
+                                    }
+                                    break;
 
-                                        break;
-                                    case (byte)'i' when nameSuffix == 29793 /* iat */:
-                                        if (reader.TryGetInt64(out longValue))
-                                        {
-                                            current.Add(new JwtProperty(WellKnownProperty.Iat, longValue));
-                                            continue;
-                                        }
+                                /* iat */
+                                case 7627113u:
+                                    if (reader.TryGetInt64(out longValue))
+                                    {
+                                        current.Add(new JwtProperty(WellKnownProperty.Iat, longValue));
+                                        continue;
+                                    }
+                                    break;
 
-                                        break;
-                                    case (byte)'n' when nameSuffix == 26210 /* nbf */:
-                                        if (reader.TryGetInt64(out longValue))
-                                        {
-                                            current.Add(new JwtProperty(WellKnownProperty.Nbf, longValue));
-                                            continue;
-                                        }
-
-                                        break;
-                                }
+                                /* nbf */
+                                case 6709870u:
+                                    if (reader.TryGetInt64(out longValue))
+                                    {
+                                        current.Add(new JwtProperty(WellKnownProperty.Nbf, longValue));
+                                        continue;
+                                    }
+                                    break;
                             }
                         }
 

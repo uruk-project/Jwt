@@ -7,6 +7,8 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
@@ -257,22 +259,20 @@ namespace JsonWebToken
                 var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
                 if (propertyName.Length == 4)
                 {
-                    fixed (byte* pPropertyName = propertyName)
+                    ref byte propertyNameRef = ref MemoryMarshal.GetReference(propertyName);
+                    if (Unsafe.ReadUnaligned<uint>(ref propertyNameRef) == 1937335659u /* keys */)
                     {
-                        if (*((uint*)pPropertyName) == 1937335659u /* keys */)
+                        if (reader.Read() && reader.TokenType is JsonTokenType.StartArray)
                         {
-                            if (reader.Read() && reader.TokenType is JsonTokenType.StartArray)
+                            while (reader.Read() && reader.TokenType is JsonTokenType.StartObject)
                             {
-                                while (reader.Read() && reader.TokenType is JsonTokenType.StartObject)
-                                {
-                                    Jwk jwk = Jwk.FromJsonReader(ref reader);
-                                    jwks.Add(jwk);
-                                }
+                                Jwk jwk = Jwk.FromJsonReader(ref reader);
+                                jwks.Add(jwk);
+                            }
 
-                                if (!(reader.TokenType is JsonTokenType.EndArray) || !reader.Read())
-                                {
-                                    ThrowHelper.ThrowInvalidOperationException_MalformedJwks();
-                                }
+                            if (!(reader.TokenType is JsonTokenType.EndArray) || !reader.Read())
+                            {
+                                ThrowHelper.ThrowInvalidOperationException_MalformedJwks();
                             }
                         }
                     }

@@ -7,6 +7,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
@@ -208,11 +209,12 @@ namespace JsonWebToken
 
             var pSegments = stackalloc TokenSegment[Constants.JweSegmentCount];
             var segmentCount = Tokenizer.Tokenize(utf8Token, pSegments);
+            //Span<TokenSegment> segments = stackalloc TokenSegment[Constants.JweSegmentCount];
+            //var segmentCount = Tokenizer.Tokenize(utf8Token, ref MemoryMarshal.GetReference(segments));
             if (segmentCount < Constants.JwsSegmentCount)
             {
                 goto Malformed;
             }
-
             var segments = new ReadOnlySpan<TokenSegment>(pSegments, segmentCount);
             var headerSegment = segments[0];
             if (headerSegment.IsEmpty)
