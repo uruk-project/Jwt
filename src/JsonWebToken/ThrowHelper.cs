@@ -20,6 +20,7 @@ namespace JsonWebToken
     [StackTraceHidden]
     internal static class ThrowHelper
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool TryWriteError(out int bytesWritten)
         {
             bytesWritten = 0;

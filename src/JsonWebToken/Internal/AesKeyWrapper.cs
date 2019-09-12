@@ -116,16 +116,13 @@ namespace JsonWebToken.Internal
                 ulong a = Unsafe.ReadUnaligned<ulong>(ref input);
 
                 // The number of input blocks
-                var n = (inputBuffer.Length - BlockSizeInBytes) >> 3;
+                var n2 = (inputBuffer.Length - BlockSizeInBytes);
+                var n = n2 >> 3;
 
                 // The set of input blocks
-                Span<byte> r = stackalloc byte[n << 3];
+                Span<byte> r = stackalloc byte[n2];
                 ref byte rRef = ref MemoryMarshal.GetReference(r);
-                for (var i = 0; i < n; i++)
-                {
-                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref rRef, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref input, (i + 1) << 3)));
-                }
-
+                Unsafe.CopyBlockUnaligned(ref rRef, ref Unsafe.Add(ref input, 8), (uint)n2);
                 byte[] block = new byte[16];
                 ref byte blockRef = ref MemoryMarshal.GetReference((Span<byte>)block);
                 ref byte blockEndRef = ref Unsafe.Add(ref blockRef, 8);
@@ -152,12 +149,8 @@ namespace JsonWebToken.Internal
                 if (a == _defaultIV)
                 {
                     ref byte destinationRef = ref MemoryMarshal.GetReference(destination);
-                    for (var i = 0; i < n; i += 1)
-                    {
-                        Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref rRef, i << 3)));
-                    }
-
-                    bytesWritten = n << 3;
+                    Unsafe.CopyBlockUnaligned(ref destinationRef, ref rRef, (uint)n2);
+                    bytesWritten = n2;
                     return true;
                 }
 
