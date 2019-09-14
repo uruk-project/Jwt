@@ -228,14 +228,7 @@ namespace JsonWebToken.Internal
             Unsafe.WriteUnaligned(ref keyBytes, a);
             Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref keyBytes, 8), ref rRef, (uint)n);
 
-
             return contentEncryptionKey;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void WrapKeyPrivate(ReadOnlySpan<byte> inputBuffer, Span<byte> destination)
-        {
-
         }
 
         public override int GetKeyUnwrapSize(int wrappedKeySize)
