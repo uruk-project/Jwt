@@ -23,7 +23,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetData))]
         public JwtHeader New(byte[] data)
         {
-            return JsonHeaderParser.ParseHeader2(data);
+            return JsonHeaderParser.ParseHeaderSlow(data);
         }
 
         public IEnumerable<byte[]> GetData()

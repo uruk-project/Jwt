@@ -5,6 +5,7 @@ using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -79,43 +80,41 @@ namespace JsonWebToken
             }
         }
 
-        internal unsafe SymmetricJwk(ref Utf8JsonReader reader)
+        internal SymmetricJwk(ref Utf8JsonReader reader)
         {
             byte[]? k = null;
             while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
                 var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                fixed (byte* pPropertyName = propertyName)
+                ref byte propertyNameRef = ref MemoryMarshal.GetReference(propertyName);
+                reader.Read();
+                switch (reader.TokenType)
                 {
-                    reader.Read();
-                    switch (reader.TokenType)
-                    {
-                        case JsonTokenType.StartObject:
-                            PopulateObject(ref reader);
-                            break;
-                        case JsonTokenType.StartArray:
-                            PopulateArray(ref reader, pPropertyName, propertyName.Length, this);
-                            break;
-                        case JsonTokenType.String:
-                            switch (propertyName.Length)
-                            {
-                                case 1 when *pPropertyName == (byte)'k':
-                                    k = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
-                                    break;
+                    case JsonTokenType.StartObject:
+                        PopulateObject(ref reader);
+                        break;
+                    case JsonTokenType.StartArray:
+                        PopulateArray(ref reader, ref propertyNameRef, propertyName.Length, this);
+                        break;
+                    case JsonTokenType.String:
+                        switch (propertyName.Length)
+                        {
+                            case 1 when propertyNameRef == (byte)'k':
+                                k = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                break;
 
-                                case 3:
-                                    PopulateThree(ref reader, pPropertyName, this);
-                                    break;
-                                case 8:
-                                    PopulateEight(ref reader, pPropertyName, this);
-                                    break;
-                                default:
-                                    break;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
+                            case 3:
+                                PopulateThree(ref reader, ref propertyNameRef, this);
+                                break;
+                            case 8:
+                                PopulateEight(ref reader, ref propertyNameRef, this);
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
 

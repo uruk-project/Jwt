@@ -3,6 +3,8 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using JsonWebToken.Internal;
@@ -12,7 +14,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines compression algorithm.
     /// </summary>
-    public sealed class CompressionAlgorithm : IEquatable<CompressionAlgorithm>
+    public sealed class CompressionAlgorithm : IEquatable<CompressionAlgorithm>, IAlgorithm
     {
         /// <summary>
         /// Deflate
@@ -179,44 +181,33 @@ namespace JsonWebToken
             return false;
         }
 
-        private const uint mask3 = 0x00ffffff;
-
         /// <summary>
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
         /// <param name="algorithm"></param>
-        public unsafe static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out CompressionAlgorithm? algorithm)
+        public static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out CompressionAlgorithm? algorithm)
         {
-            fixed (byte* pValue = value)
+            if (value.Length == 3)
             {
-                if (value.Length == 3)
+                var zip = Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(value)) & 0x00ffffffu;
+                // DEF
+                if (zip == 4605252u)
                 {
-                    // DEF
-                    if ((*((uint*)pValue) & mask3) == 4605252u)
-                    {
-                        algorithm = Deflate;
-                        return true;
-                    }
-
-                    // DEF
-                    if (*pValue == (byte)'D' && *(ushort*)(pValue + 1) == 17989u)
-                    {
-                        algorithm = Deflate;
-                        return true;
-                    }
+                    algorithm = Deflate;
+                    return true;
                 }
-
-                algorithm = null;
-                return false;
             }
+
+            algorithm = null;
+            return false;
         }
 
         /// <summary>
         /// Cast the array of <see cref="byte"/>s into its <see cref="CompressionAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
-        public static unsafe explicit operator CompressionAlgorithm?(byte[]? value)
+        public static explicit operator CompressionAlgorithm?(byte[]? value)
         {
             if (value is null)
             {
@@ -230,7 +221,7 @@ namespace JsonWebToken
 
             return algorithm;
         }
-        
+
         /// <summary>
         /// Cast the <see cref="CompressionAlgorithm"/> into its <see cref="long"/> representation.
         /// </summary>

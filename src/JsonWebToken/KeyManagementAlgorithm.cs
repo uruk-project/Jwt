@@ -3,6 +3,8 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
@@ -11,7 +13,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines key management algorithm.
     /// </summary>
-    public sealed class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>
+    public sealed class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>, IAlgorithm
     {
         /// <summary>
         /// 'dir'
@@ -410,105 +412,103 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="value"></param>
         /// <param name="algorithm"></param>
-        public unsafe static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
+        public static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
         {
-            fixed (byte* pValue = value)
+            ref byte valueRef = ref MemoryMarshal.GetReference(value);
+            switch (value.Length)
             {
-                switch (value.Length)
-                {
-                    case 3 when *(ushort*)pValue == 26980u && *(pValue + 2) == (byte)'r': /* dir */
-                        algorithm = Direct;
-                        return true;
-                    case 6 when *(ushort*)(pValue + 4) == 22347u: /* A128 */
-                        switch (*(uint*)pValue)
-                        {
-                            case 942813505u:
-                                algorithm = Aes128KW;
-                                return true;
-                            case 842608961u:
-                                algorithm = Aes192KW;
-                                return true;
-                            case 909455937u:
-                                algorithm = Aes256KW;
-                                return true;
-                        }
-                        break;
-                    case 6 when *(uint*)pValue == 826364754u && *(ushort*)(pValue + 4) == 13663u  /* RSA1_5 */:
-                        algorithm = RsaPkcs1;
-                        return true;
-                    case 7 when *(uint*)pValue == 1212433221u && *(uint*)(pValue + 3) == 1397042504u /* ECDH-ES */ :
-                        algorithm = EcdhEs;
-                        return true;
-                    case 8 when *(ulong*)pValue == 5784101104744747858u  /* RSA-OAEP */ :
-                        algorithm = RsaOaep;
-                        return true;
-                    case 9 when *pValue == (byte)'A':
-                        switch (*(ulong*)(pValue + 1))
-                        {
-                            /* A128GCMKW */
-                            case 6290206255906042417u:
-                                algorithm = Aes128GcmKW;
-                                return true;
-                            /* A192GCMKW */
-                            case 6290206255905650993u:
-                                algorithm = Aes192GcmKW;
-                                return true;
-                            /* A256GCMKW */
-                            case 6290206255905912114u:
-                                algorithm = Aes256GcmKW;
-                                return true;
-                        }
-                        break;
-                    case 12 when *(ulong*)pValue == 5784101104744747858u:
-                        switch (*(uint*)(pValue + 8))
-                        {
-                            case 909455917u:
-                                algorithm = RsaOaep256;
-                                return true;
-                            case 876098349u:
-                                algorithm = RsaOaep384;
-                                return true;
-                            case 842085677u:
-                                algorithm = RsaOaep512;
-                                return true;
-                        }
-                        break;
-                    case 14 when *(ulong*)pValue == 3121915027486163781u /* ECDH-ES+ */ :
-                        switch (*(ulong*)(pValue + 6))
-                        {
-                            case 6290183092778904403u:
-                                algorithm = EcdhEsAes128KW;
-                                return true;
-                            case 6290176525773908819u:
-                                algorithm = EcdhEsAes192KW;
-                                return true;
-                            case 6290180906657327955u:
-                                algorithm = EcdhEsAes256KW;
-                                return true;
-                        }
-                        break;
+                case 3 when (Unsafe.ReadUnaligned<uint>(ref valueRef) & 0x00ffffff) == 7498084u: /* dir */
+                    algorithm = Direct;
+                    return true;
+                case 6 when Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref valueRef, 4)) == 22347u: /* A128 */
+                    switch (Unsafe.ReadUnaligned<uint>(ref valueRef))
+                    {
+                        case 942813505u:
+                            algorithm = Aes128KW;
+                            return true;
+                        case 842608961u:
+                            algorithm = Aes192KW;
+                            return true;
+                        case 909455937u:
+                            algorithm = Aes256KW;
+                            return true;
+                    }
+                    break;
+                case 6 when Unsafe.ReadUnaligned<uint>(ref valueRef) == 826364754u && Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref valueRef, 4)) == 13663u  /* RSA1_5 */:
+                    algorithm = RsaPkcs1;
+                    return true;
+                case 7 when (Unsafe.ReadUnaligned<ulong>(ref valueRef) & 0x00ffffffffffffff) == 23438483855262533u /* ECDH-ES */ :
+                    algorithm = EcdhEs;
+                    return true;
+                case 8 when Unsafe.ReadUnaligned<ulong>(ref valueRef) == 5784101104744747858u  /* RSA-OAEP */ :
+                    algorithm = RsaOaep;
+                    return true;
+                case 9 when valueRef == (byte)'A':
+                    switch (Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref valueRef, 1)))
+                    {
+                        /* A128GCMKW */
+                        case 6290206255906042417u:
+                            algorithm = Aes128GcmKW;
+                            return true;
+                        /* A192GCMKW */
+                        case 6290206255905650993u:
+                            algorithm = Aes192GcmKW;
+                            return true;
+                        /* A256GCMKW */
+                        case 6290206255905912114u:
+                            algorithm = Aes256GcmKW;
+                            return true;
+                    }
+                    break;
+                case 12 when Unsafe.ReadUnaligned<ulong>(ref valueRef) == 5784101104744747858u:
+                    switch (Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref valueRef, 8)))
+                    {
+                        case 909455917u:
+                            algorithm = RsaOaep256;
+                            return true;
+                        case 876098349u:
+                            algorithm = RsaOaep384;
+                            return true;
+                        case 842085677u:
+                            algorithm = RsaOaep512;
+                            return true;
+                    }
+                    break;
+                case 14 when Unsafe.ReadUnaligned<ulong>(ref valueRef) == 3121915027486163781u /* ECDH-ES+ */ :
+                    switch (Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref valueRef, 6)))
+                    {
+                        case 6290183092778904403u:
+                            algorithm = EcdhEsAes128KW;
+                            return true;
+                        case 6290176525773908819u:
+                            algorithm = EcdhEsAes192KW;
+                            return true;
+                        case 6290180906657327955u:
+                            algorithm = EcdhEsAes256KW;
+                            return true;
+                    }
+                    break;
 
-                    // Special case for escaped 'ECDH-ES\u002bAxxxKW' 
-                    case 19 when *(ulong*)pValue == 6652737135344632645u /* ECDH-ES\ */ :
-                        switch (*(ulong*)(pValue + 8))
-                        {
-                            case 3616743865759838325u when (*(uint*)(pValue + 15)) == 1464547378u:
-                                algorithm = EcdhEsAes128KW;
-                                return true;
-                            case 4121147024025333877u when (*(uint*)(pValue + 15)) == 1464545849u:
-                                algorithm = EcdhEsAes192KW;
-                                return true;
-                            case 3833198122850332789u when (*(uint*)(pValue + 15)) == 1464546869u:
-                                algorithm = EcdhEsAes256KW;
-                                return true;
-                        }
-                        break;
+                // Special case for escaped 'ECDH-ES\u002bAxxxKW' 
+                case 19 when Unsafe.ReadUnaligned<ulong>(ref valueRef) == 6652737135344632645u /* ECDH-ES\ */ :
+                    switch (Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref valueRef, 8)))
+                    {
+                        case 3616743865759838325u when Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref valueRef, 15)) == 1464547378u:
+                            algorithm = EcdhEsAes128KW;
+                            return true;
+                        case 4121147024025333877u when Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref valueRef, 15)) == 1464545849u:
+                            algorithm = EcdhEsAes192KW;
+                            return true;
+                        case 3833198122850332789u when Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref valueRef, 15)) == 1464546869u:
+                            algorithm = EcdhEsAes256KW;
+                            return true;
+                    }
+                    break;
 
-                }
-
-                algorithm = null;
-                return false;
             }
+
+            algorithm = null;
+            return false;
         }
     }
 }

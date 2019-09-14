@@ -10,30 +10,30 @@ namespace JsonWebToken.Performance
     [MemoryDiagnoser]
     public class SignatureParserBenchmark
     {
-        [Benchmark(Baseline = false, OperationsPerInvoke = 16)]
-        [ArgumentsSource(nameof(GetData))]
-        public bool New(ReadOnlySpan<byte> data)
-        {
-            var reader = new Utf8JsonReader(data);
-            reader.Read();
-            reader.Read();
-            SignatureAlgorithm.TryParse(ref reader, out var algorithm);
-            SignatureAlgorithm.TryParse(ref reader, out algorithm);
-            SignatureAlgorithm.TryParse(ref reader, out algorithm);
-            SignatureAlgorithm.TryParse(ref reader, out algorithm);
-            SignatureAlgorithm.TryParse(ref reader, out algorithm);
-            SignatureAlgorithm.TryParse(ref reader, out algorithm);
-            SignatureAlgorithm.TryParse(ref reader, out algorithm);
-            SignatureAlgorithm.TryParse(ref reader, out algorithm);
-            SignatureAlgorithm.TryParse(ref reader, out algorithm);
-            SignatureAlgorithm.TryParse(ref reader, out algorithm);
-            SignatureAlgorithm.TryParse(ref reader, out algorithm);
-            SignatureAlgorithm.TryParse(ref reader, out algorithm);
-            SignatureAlgorithm.TryParse(ref reader, out algorithm);
-            SignatureAlgorithm.TryParse(ref reader, out algorithm);
-            SignatureAlgorithm.TryParse(ref reader, out algorithm);
-            return SignatureAlgorithm.TryParse(ref reader, out algorithm);
-        }
+        //[Benchmark(Baseline = false, OperationsPerInvoke = 16)]
+        //[ArgumentsSource(nameof(GetData))]
+        //public bool New(ReadOnlySpan<byte> data)
+        //{
+        //    var reader = new Utf8JsonReader(data);
+        //    reader.Read();
+        //    reader.Read();
+        //    SignatureAlgorithm.TryParse(ref reader, out var algorithm);
+        //    SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        //    SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        //    SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        //    SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        //    SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        //    SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        //    SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        //    SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        //    SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        //    SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        //    SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        //    SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        //    SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        //    SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        //    return SignatureAlgorithm.TryParse(ref reader, out algorithm);
+        //}
 
         [Benchmark(OperationsPerInvoke = 16, Baseline = true)]
         [ArgumentsSource(nameof(GetData))]

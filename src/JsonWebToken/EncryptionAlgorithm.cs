@@ -3,6 +3,8 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
@@ -11,7 +13,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines encryption algorithm.
     /// </summary>
-    public sealed class EncryptionAlgorithm : IEquatable<EncryptionAlgorithm>
+    public sealed class EncryptionAlgorithm : IEquatable<EncryptionAlgorithm>, IAlgorithm
     {
         /// <summary>
         /// 'A128CBC-HS256'
@@ -145,44 +147,43 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="value"></param>
         /// <param name="algorithm"></param>
-        public unsafe static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out EncryptionAlgorithm? algorithm)
+        public static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out EncryptionAlgorithm? algorithm)
         {
-            fixed (byte* pValue = value)
+            if (value.Length == 13)
             {
-                if (value.Length == 13)
+                ref byte refValue = ref MemoryMarshal.GetReference(value);
+                ulong endValue = Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref refValue, 5));
+                switch (Unsafe.ReadUnaligned<ulong>(ref refValue))
                 {
-                    switch (*(ulong*)pValue)
-                    {
-                        case 3261523411619426625u when *(ulong*)(pValue + 5) == 3906083585088373570u:
-                            algorithm = Aes128CbcHmacSha256;
-                            return true;
-                        case 3261523411519222081u when *(ulong*)(pValue + 5) == 3762813921454277442u:
-                            algorithm = Aes192CbcHmacSha384;
-                            return true;
-                        case 3261523411586069057u when *(ulong*)(pValue + 5) == 3616730607564702530u:
-                            algorithm = Aes256CbcHmacSha512;
-                            return true;
-                    }
+                    case 3261523411619426625u when endValue == 3906083585088373570u:
+                        algorithm = Aes128CbcHmacSha256;
+                        return true;
+                    case 3261523411519222081u when endValue == 3762813921454277442u:
+                        algorithm = Aes192CbcHmacSha384;
+                        return true;
+                    case 3261523411586069057u when endValue == 3616730607564702530u:
+                        algorithm = Aes256CbcHmacSha512;
+                        return true;
                 }
-                else if (value.Length == 7)
-                {
-                    switch (*(uint*)pValue)
-                    {
-                        case 942813505u when *(uint*)(pValue + 3) == 1296254776u:
-                            algorithm = Aes128Gcm;
-                            return true;
-                        case 842608961u when *(uint*)(pValue + 3) == 1296254770u:
-                            algorithm = Aes192Gcm;
-                            return true;
-                        case 909455937u when *(uint*)(pValue + 3) == 1296254774u:
-                            algorithm = Aes256Gcm;
-                            return true;
-                    }
-                }
-
-                algorithm = null;
-                return false;
             }
+            else if (value.Length == 7)
+            {
+                switch (Unsafe.ReadUnaligned<ulong>(ref MemoryMarshal.GetReference(value)) & 0x00ffffffffffffffu)
+                {
+                    case 21747546371273025u:
+                        algorithm = Aes128Gcm;
+                        return true;
+                    case 21747546271068481u:
+                        algorithm = Aes192Gcm;
+                        return true;
+                    case 21747546337915457u:
+                        algorithm = Aes256Gcm;
+                        return true;
+                }
+            }
+
+            algorithm = null;
+            return false;
         }
 
 

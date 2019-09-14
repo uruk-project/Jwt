@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
@@ -139,62 +140,53 @@ namespace JsonWebToken.Internal
 
         // Optimized byte-based AreEqual. Inspired from https://github.com/dotnet/corefx/blob/master/src/Common/src/CoreLib/System/SpanHelpers.Byte.cs
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        private unsafe static bool AreEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
+        private static bool AreEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
         {
             int length = a.Length;
-            fixed (byte* pA = a)
-            fixed (byte* pB = b)
+            ref byte first = ref MemoryMarshal.GetReference(a);
+            ref byte second = ref MemoryMarshal.GetReference(b);
+            if (Vector.IsHardwareAccelerated && length >= Vector<byte>.Count)
             {
-                byte* first = pA;
-                byte* second = pB;
-                if (Vector.IsHardwareAccelerated && length >= Vector<byte>.Count)
+                Vector<byte> equals = new Vector<byte>();
+                ref byte firstEnd = ref Unsafe.Add(ref first, length - Vector<byte>.Count);
+                ref byte secondEnd = ref Unsafe.Add(ref second, length - Vector<byte>.Count);
+                while (Unsafe.IsAddressLessThan(ref first, ref firstEnd))
                 {
-                    Vector<byte> equals = new Vector<byte>();
-
-                    var firstEnd = first + length - Vector<byte>.Count;
-                    var secondEnd = second + length - Vector<byte>.Count;
-                    while (first < firstEnd)
-                    {
-                        equals |= Unsafe.ReadUnaligned<Vector<byte>>(first)
-                            - Unsafe.ReadUnaligned<Vector<byte>>(second);
-                        first += Vector<byte>.Count;
-                        second += Vector<byte>.Count;
-                    }
-
-                    equals |= Unsafe.ReadUnaligned<Vector<byte>>(firstEnd)
-                        - Unsafe.ReadUnaligned<Vector<byte>>(secondEnd);
-                    return equals == Vector<byte>.Zero;
+                    equals |= Unsafe.ReadUnaligned<Vector<byte>>(ref first) - Unsafe.ReadUnaligned<Vector<byte>>(ref second);
+                    first = ref Unsafe.Add(ref first, Vector<byte>.Count);
+                    second = ref Unsafe.Add(ref second, Vector<byte>.Count);
                 }
-                else if (length >= sizeof(long))
+
+                equals |= Unsafe.ReadUnaligned<Vector<byte>>(ref firstEnd) - Unsafe.ReadUnaligned<Vector<byte>>(ref secondEnd);
+                return equals == Vector<byte>.Zero;
+            }
+            else if (length >= sizeof(long))
+            {
+                long equals = 0L;
+                ref byte firstEnd = ref Unsafe.Add(ref first, length - sizeof(long));
+                ref byte secondEnd = ref Unsafe.Add(ref second, length - sizeof(long));
+                while (Unsafe.IsAddressLessThan(ref first, ref firstEnd))
                 {
-                    long equals = 0L;
-
-                    var firstEnd = first + length - sizeof(long);
-                    var secondEnd = second + length - sizeof(long);
-                    while (first < firstEnd)
-                    {
-                        equals |= *(long*)first - *(long*)second;
-                        first += sizeof(long);
-                        second += sizeof(long);
-                    }
-
-                    equals |= *(long*)firstEnd - *(long*)(secondEnd);
-                    return equals == 0L;
+                    equals |= Unsafe.ReadUnaligned<long>(ref first) - Unsafe.ReadUnaligned<long>(ref second);
+                    first = ref Unsafe.Add(ref first, sizeof(long));
+                    second = ref Unsafe.Add(ref second, sizeof(long));
                 }
-                else
+
+                equals |= Unsafe.ReadUnaligned<long>(ref firstEnd) - Unsafe.ReadUnaligned<long>(ref secondEnd);
+                return equals == 0L;
+            }
+            else
+            {
+                int equals = 0;
+                ref byte firstEnd = ref Unsafe.Add(ref first, length - sizeof(long));
+                while (Unsafe.IsAddressLessThan(ref first, ref firstEnd))
                 {
-                    int equals = 0;
-
-                    var firstEnd = first + length - sizeof(long);
-                    while (first < firstEnd)
-                    {
-                        equals |= *first - *first;
-                        first += 1;
-                        second += 1;
-                    }
-
-                    return equals == 0;
+                    equals |= first - second;
+                    first = ref Unsafe.Add(ref first, 1);
+                    second = ref Unsafe.Add(ref second, 1);
                 }
+
+                return equals == 0;
             }
         }
 
