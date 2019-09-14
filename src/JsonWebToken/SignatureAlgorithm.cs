@@ -296,6 +296,11 @@ namespace JsonWebToken
             return algorithm;
         }
 
+        /// <summary>
+        /// Reads the current value of the <paramref name="reader"/> and converts into its <see cref="SignatureAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="algorithm"></param>
         public static bool TryParseSlow(ref Utf8JsonReader reader, [NotNullWhen(true)] out SignatureAlgorithm? algorithm)
         {
             var algorithms = _algorithms;
@@ -317,7 +322,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="value"></param>
         /// <param name="algorithm"></param>
-        public unsafe static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out SignatureAlgorithm? algorithm)
+        public static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out SignatureAlgorithm? algorithm)
         {
             if (value.Length == 5)
             {

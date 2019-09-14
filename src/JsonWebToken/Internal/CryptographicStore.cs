@@ -53,12 +53,6 @@ namespace JsonWebToken.Internal
         /// <returns></returns>
         public bool TryGetValue(int key, [NotNullWhen(true)] out TValue? value)
         {
-            value = FindValue(key);
-            return !(value is null);
-        }
-
-        private TValue? FindValue(int key)
-        {
             int i = -1;
             int[]? buckets = _buckets;
             Entry[] entries = _entries!;
@@ -92,10 +86,12 @@ namespace JsonWebToken.Internal
 
             if (i >= 0)
             {
-                return entries[i].value;
+                value = entries[i].value;
+                return true;
             }
 
-            return null;
+            value = null;
+            return false;
         }
 
         /// <summary>

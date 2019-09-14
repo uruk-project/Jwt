@@ -412,7 +412,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="value"></param>
         /// <param name="algorithm"></param>
-        public unsafe static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
+        public static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
         {
             ref byte valueRef = ref MemoryMarshal.GetReference(value);
             switch (value.Length)

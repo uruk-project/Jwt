@@ -24,7 +24,6 @@ namespace JsonWebToken
         /// 'P-256'.
         /// </summary>
         public static EllipticalCurve P256 => new EllipticalCurve(1, ECCurve.NamedCurves.nistP256, P256Name.ToArray(), 256, 64);
-        public static ECCurve Curve => new ECCurve();
         /// <summary>
         /// 'P-384'.
         /// </summary>

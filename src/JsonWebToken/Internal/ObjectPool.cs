@@ -68,7 +68,7 @@ namespace JsonWebToken.Internal
                 for (var i = 0; i < items.Length; i++)
                 {
                     item = items[i].Element;
-                    if (!(item is null) && Interlocked.CompareExchange(ref items[i].Element, null!, item) == item)
+                    if (!(item is null) && Interlocked.CompareExchange(ref items[i].Element, null, item) == item)
                     {
                         return item;
                     }

@@ -80,7 +80,7 @@ namespace JsonWebToken
             }
         }
 
-        internal unsafe SymmetricJwk(ref Utf8JsonReader reader)
+        internal SymmetricJwk(ref Utf8JsonReader reader)
         {
             byte[]? k = null;
             while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)

@@ -99,7 +99,9 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="count"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable CS8614 // Nullability of reference types in type of parameter doesn't match implicitly implemented member.
         public void Advance(int count)
+#pragma warning restore CS8614 // Nullability of reference types in type of parameter doesn't match implicitly implemented member.
         {
             Debug.Assert(_rentedBuffer != null);
             Debug.Assert(count >= 0);
@@ -120,15 +122,19 @@ namespace JsonWebToken
             }
         }
 
-        /// <inheritsdoc />
+#pragma warning disable CS8614 // Nullability of reference types in type of parameter doesn't match implicitly implemented member.
+                              /// <inheritsdoc />
         public Span<byte> GetSpan(int sizeHint = 0)
+#pragma warning restore CS8614 // Nullability of reference types in type of parameter doesn't match implicitly implemented member.
         {
             CheckAndResizeBuffer(sizeHint);
             return _rentedBuffer.AsSpan(_index);
         }
 
-        /// <inheritsdoc />
+#pragma warning disable CS8614 // Nullability of reference types in type of parameter doesn't match implicitly implemented member.
+                              /// <inheritsdoc />
         public Memory<byte> GetMemory(int sizeHint = 0)
+#pragma warning restore CS8614 // Nullability of reference types in type of parameter doesn't match implicitly implemented member.
         {
             CheckAndResizeBuffer(sizeHint);
             return _rentedBuffer.AsMemory(_index);

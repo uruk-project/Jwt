@@ -238,7 +238,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
         /// <returns><see cref="Jwks"/></returns>
-        public unsafe static Jwks FromJson(ReadOnlySpan<byte> json)
+        public static Jwks FromJson(ReadOnlySpan<byte> json)
         {
             // a JWKS is :
             // {

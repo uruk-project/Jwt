@@ -512,14 +512,13 @@ namespace JsonWebToken
             }
 
             var signers = _signers;
+            Signer? signer;
             if (signers is null)
             {
                 signers = new CryptographicStore<Signer>();
                 _signers = signers;
             }
-
-            Signer? signer;
-            if (signers.TryGetValue(algorithm.Id, out signer))
+            else if (signers.TryGetValue(algorithm.Id, out signer))
             {
                 return signer;
             }
@@ -569,16 +568,18 @@ namespace JsonWebToken
             }
 
             var keyWrappers = _keyWrappers;
+            var algorithmKey = encryptionAlgorithm.ComputeKey(algorithm);
             if (keyWrappers is null)
             {
                 keyWrappers = new CryptographicStore<KeyWrapper>();
                 _keyWrappers = keyWrappers;
             }
-
-            var algorithmKey = encryptionAlgorithm.ComputeKey(algorithm);
-            if (keyWrappers.TryGetValue(algorithmKey, out var cachedKeyWrapper))
+            else
             {
-                return cachedKeyWrapper;
+                if (keyWrappers.TryGetValue(algorithmKey, out var cachedKeyWrapper))
+                {
+                    return cachedKeyWrapper;
+                }
             }
 
             if (IsSupported(algorithm))
@@ -629,17 +630,19 @@ namespace JsonWebToken
             if (!(encryptionAlgorithm is null))
             {
                 var encryptors = _encryptors;
+                var algorithmKey = encryptionAlgorithm.Id;
+                AuthenticatedEncryptor? encryptor;
                 if (encryptors is null)
                 {
                     encryptors = new CryptographicStore<AuthenticatedEncryptor>();
                     _encryptors = encryptors;
                 }
-
-                var algorithmKey = encryptionAlgorithm.Id;
-                AuthenticatedEncryptor? encryptor;
-                if (encryptors.TryGetValue(algorithmKey, out encryptor))
+                else
                 {
-                    return encryptor;
+                    if (encryptors.TryGetValue(algorithmKey, out encryptor))
+                    {
+                        return encryptor;
+                    }
                 }
 
                 if (IsSupported(encryptionAlgorithm))
@@ -932,7 +935,7 @@ namespace JsonWebToken
             JsonParser.ConsumeJsonObject(ref reader);
         }
 
-        internal static unsafe void PopulateThree(ref Utf8JsonReader reader, ref byte propertyNameRef, Jwk key)
+        internal static void PopulateThree(ref Utf8JsonReader reader, ref byte propertyNameRef, Jwk key)
         {
             uint pPropertyNameShort = Unsafe.ReadUnaligned<uint>(ref propertyNameRef) & 0x00ffffffu;
             switch (pPropertyNameShort)

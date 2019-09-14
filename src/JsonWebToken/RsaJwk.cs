@@ -671,7 +671,7 @@ namespace JsonWebToken
             return key;
         }
 
-        internal unsafe static Jwk FromJsonReaderFast(ref Utf8JsonReader reader)
+        internal static Jwk FromJsonReaderFast(ref Utf8JsonReader reader)
         {
             var key = new RsaJwk();
 
