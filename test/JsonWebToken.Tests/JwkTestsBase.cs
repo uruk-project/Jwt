@@ -28,7 +28,7 @@ namespace JsonWebToken.Tests
         }
         public virtual Signer CreateSigner_Succeed(Jwk key, SignatureAlgorithm alg)
         {
-            var signer = key.CreateSigner(alg);
+            var signer = key.TryCreateSigner(alg);
             _disposables.Add(signer);
             Assert.NotNull(signer);
             return signer;

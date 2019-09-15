@@ -6,6 +6,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -498,17 +499,19 @@ namespace JsonWebToken
         /// Creates a fresh new <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
-        protected abstract Signer? CreateNewSigner(SignatureAlgorithm algorithm);
+        protected abstract Signer CreateNewSigner(SignatureAlgorithm algorithm);
 
         /// <summary>
         /// Creates a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
-        public Signer? CreateSigner(SignatureAlgorithm? algorithm)
+        /// <param name="signer">The created <see cref="Signer"/>.</param>
+        public bool TryCreateSigner(SignatureAlgorithm? algorithm, [NotNullWhen(true)] out Signer? signer)
         {
             if (algorithm is null)
             {
-                return null;
+                signer = null;
+                return false;
             }
 
             var signers = _signers;
@@ -520,30 +523,27 @@ namespace JsonWebToken
             }
             else if (signers.TryGetValue(algorithm.Id, out signer))
             {
-                return signer;
+                return true;
             }
 
             if (IsSupported(algorithm))
             {
                 signer = CreateNewSigner(algorithm);
-                if (!(signer is null))
+                if (signers.TryAdd(algorithm.Id, signer))
                 {
-                    if (signers.TryAdd(algorithm.Id, signer))
-                    {
-                        return signer;
-                    }
-
-                    signer.Dispose();
-                    if (signers.TryGetValue(algorithm.Id, out signer))
-                    {
-                        return signer;
-                    }
-
-                    ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+                    return true;
                 }
+
+                signer.Dispose();
+                if (signers.TryGetValue(algorithm.Id, out signer))
+                {
+                    return true;
+                }
+
+                ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
             }
 
-            return null;
+            return false;
         }
 
         /// <summary>
