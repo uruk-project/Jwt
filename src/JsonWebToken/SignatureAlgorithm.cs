@@ -412,11 +412,11 @@ namespace JsonWebToken
         /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator byte[](SignatureAlgorithm? value)
+        public static explicit operator byte[]?(SignatureAlgorithm? value)
         {
             if (value is null)
             {
-                return Array.Empty<byte>();
+                return null;
             }
 
             return value.Utf8Name;

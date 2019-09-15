@@ -240,11 +240,11 @@ namespace JsonWebToken
         /// Cast the <see cref="CompressionAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator byte[](CompressionAlgorithm? value)
+        public static explicit operator byte[]?(CompressionAlgorithm? value)
         {
             if (value is null)
             {
-                return Array.Empty<byte>();
+                return null;
             }
 
             return value.Utf8Name;

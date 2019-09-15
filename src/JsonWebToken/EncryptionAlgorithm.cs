@@ -292,11 +292,11 @@ namespace JsonWebToken
         /// Cast the <see cref="EncryptionAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator byte[](EncryptionAlgorithm? value)
+        public static explicit operator byte[]?(EncryptionAlgorithm? value)
         {
             if (value is null)
             {
-                return Array.Empty<byte>();
+                return null;
             }
 
             return value._utf8Name;
