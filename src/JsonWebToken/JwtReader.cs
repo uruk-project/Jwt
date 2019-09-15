@@ -286,7 +286,7 @@ namespace JsonWebToken
                 return TokenValidationResult.MissingEncryptionAlgorithm();
             }
 
-            if(!TryGetContentEncryptionKeys(header, utf8Buffer.Slice(encryptionKeySegment.Start, encryptionKeySegment.Length), enc, out var keys))
+            if (!TryGetContentEncryptionKeys(header, utf8Buffer.Slice(encryptionKeySegment.Start, encryptionKeySegment.Length), enc, out var keys))
             {
                 return TokenValidationResult.EncryptionKeyNotFound();
             }
@@ -479,12 +479,6 @@ namespace JsonWebToken
             Span<byte> decryptedBytes,
             out int bytesWritten)
         {
-            var decryptor = key.CreateAuthenticatedEncryptor(encryptionAlgorithm);
-            if (decryptor == null)
-            {
-                return ThrowHelper.TryWriteError(out bytesWritten);
-            }
-
             int ciphertextLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length);
             int headerLength = rawHeader.Length;
             int initializationVectorLength = Base64Url.GetArraySizeRequiredToDecode(rawInitializationVector.Length);
@@ -531,16 +525,22 @@ namespace JsonWebToken
                 Base64Url.Decode(rawAuthenticationTag, authenticationTag, out int authenticationTagBytesConsumed, out int authenticationTagBytesWritten);
                 Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
 
-                if (!decryptor.TryDecrypt(
-                    ciphertext,
-                    header,
-                    initializationVector,
-                    authenticationTag,
-                    decryptedBytes,
-                    out bytesWritten))
+                bytesWritten = 0;
+                if (key.TryGetAuthenticatedEncryptor(encryptionAlgorithm, out var decryptor))
                 {
-                    return false;
+                    if (decryptor.TryDecrypt(
+                        ciphertext,
+                        header,
+                        initializationVector,
+                        authenticationTag,
+                        decryptedBytes,
+                        out bytesWritten))
+                    {
+                        return decryptedBytes != null;
+                    }
                 }
+
+                return false;
             }
             finally
             {
@@ -549,8 +549,6 @@ namespace JsonWebToken
                     ArrayPool<byte>.Shared.Return(arrayToReturn);
                 }
             }
-
-            return decryptedBytes != null;
         }
 
         private bool TryGetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc, out List<Jwk> keys)
@@ -567,11 +565,10 @@ namespace JsonWebToken
                 for (int i = 0; i < wrappedKeys.Count; i++)
                 {
                     var key = wrappedKeys[i];
-                    KeyWrapper? kwp = key.CreateKeyWrapper(enc, alg);
-                    if (kwp != null)
+                    if (key.TryGetKeyWrapper(enc, alg, out var keyWrapper))
                     {
-                        Span<byte> unwrappedKey = stackalloc byte[kwp.GetKeyUnwrapSize(encryptedKey.Length)];
-                        if (kwp.TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyWrappedBytesWritten))
+                        Span<byte> unwrappedKey = stackalloc byte[keyWrapper.GetKeyUnwrapSize(encryptedKey.Length)];
+                        if (keyWrapper.TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyWrappedBytesWritten))
                         {
                             Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
                             SymmetricJwk jwk = SymmetricJwk.FromSpan(unwrappedKey);
@@ -677,7 +674,7 @@ namespace JsonWebToken
 
         private bool TryValidateSignature(ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signature, Jwk key, SignatureAlgorithm algorithm)
         {
-            if (!key.TryCreateSigner(algorithm, out var signer))
+            if (!key.TryGetSigner(algorithm, out var signer))
             {
                 return false;
             }

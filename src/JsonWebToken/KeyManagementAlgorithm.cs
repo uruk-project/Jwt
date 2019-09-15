@@ -16,6 +16,11 @@ namespace JsonWebToken
     public sealed class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>, IAlgorithm
     {
         /// <summary>
+        /// Empty
+        /// </summary>
+        internal static readonly KeyManagementAlgorithm Empty = new KeyManagementAlgorithm(id: 0, "Empty", AlgorithmCategory.None, produceEncryptedKey: false);
+
+        /// <summary>
         /// 'dir'
         /// </summary>
         public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, "dir", AlgorithmCategory.None, produceEncryptedKey: false);

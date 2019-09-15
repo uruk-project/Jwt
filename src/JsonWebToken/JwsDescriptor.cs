@@ -463,7 +463,7 @@ namespace JsonWebToken
         {
             var key = Key;
             var alg = (Algorithm ?? key?.SignatureAlgorithm) ?? SignatureAlgorithm.None;
-            if (!(key is null) && key.TryCreateSigner(alg, out var signer))
+            if (!(key is null) && key.TryGetSigner(alg, out var signer))
             {
                 if (context.TokenLifetimeInMinutes != 0 || context.GenerateIssuedTime)
                 {

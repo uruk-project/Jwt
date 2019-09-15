@@ -125,9 +125,9 @@ namespace JsonWebToken
         public abstract bool HasPrivateKey { get; }
 
         /// <inheritsdoc />
-        protected override AuthenticatedEncryptor? CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+        protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
-            return null;
+            return AuthenticatedEncryptor.Empty;
         }
     }
 }

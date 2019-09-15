@@ -12,24 +12,27 @@ namespace JsonWebToken.Tests
 
         public virtual AuthenticatedEncryptor CreateAuthenticatedEncryptor_Succeed(Jwk key, EncryptionAlgorithm enc)
         {
-            var encryptor = key.CreateAuthenticatedEncryptor(enc);
+            var created = key.TryGetAuthenticatedEncryptor(enc, out var encryptor);
             _disposables.Add(encryptor);
+            Assert.True(created);
             Assert.NotNull(encryptor);
             return encryptor;
         }
 
         public virtual KeyWrapper CreateKeyWrapper_Succeed(Jwk key, EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
-            var keyWrapper = key.CreateKeyWrapper(enc, alg);
+            bool created = key.TryGetKeyWrapper(enc, alg, out var keyWrapper);
             _disposables.Add(keyWrapper);
+            Assert.True(created);
             Assert.NotNull(keyWrapper);
             return keyWrapper;
 
         }
         public virtual Signer CreateSigner_Succeed(Jwk key, SignatureAlgorithm alg)
         {
-            var signer = key.TryCreateSigner(alg);
+            var created = key.TryGetSigner(alg, out var signer);
             _disposables.Add(signer);
+            Assert.True(created);
             Assert.NotNull(signer);
             return signer;
         }

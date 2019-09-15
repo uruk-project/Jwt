@@ -499,50 +499,48 @@ namespace JsonWebToken
         /// Creates a fresh new <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
-        protected abstract Signer CreateNewSigner(SignatureAlgorithm algorithm);
+        protected abstract Signer CreateSigner(SignatureAlgorithm algorithm);
 
         /// <summary>
-        /// Creates a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
+        /// Tries to provide a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
         /// <param name="signer">The created <see cref="Signer"/>.</param>
-        public bool TryCreateSigner(SignatureAlgorithm? algorithm, [NotNullWhen(true)] out Signer? signer)
+        /// <returns><c>true</c> if the <paramref name="signer"/> is available for the requested <paramref name="algorithm"/>; <c>false</c> otherwise.</returns>
+        public bool TryGetSigner(SignatureAlgorithm? algorithm, [NotNullWhen(true)] out Signer? signer)
         {
-            if (algorithm is null)
+            if (!(algorithm is null))
             {
-                signer = null;
-                return false;
-            }
-
-            var signers = _signers;
-            Signer? signer;
-            if (signers is null)
-            {
-                signers = new CryptographicStore<Signer>();
-                _signers = signers;
-            }
-            else if (signers.TryGetValue(algorithm.Id, out signer))
-            {
-                return true;
-            }
-
-            if (IsSupported(algorithm))
-            {
-                signer = CreateNewSigner(algorithm);
-                if (signers.TryAdd(algorithm.Id, signer))
+                var signers = _signers;
+                if (signers is null)
+                {
+                    signers = new CryptographicStore<Signer>();
+                    _signers = signers;
+                }
+                else if (signers.TryGetValue(algorithm.Id, out signer))
                 {
                     return true;
                 }
 
-                signer.Dispose();
-                if (signers.TryGetValue(algorithm.Id, out signer))
+                if (IsSupported(algorithm))
                 {
-                    return true;
-                }
+                    signer = CreateSigner(algorithm);
+                    if (signers.TryAdd(algorithm.Id, signer))
+                    {
+                        return true;
+                    }
 
-                ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+                    signer.Dispose();
+                    if (signers.TryGetValue(algorithm.Id, out signer))
+                    {
+                        return true;
+                    }
+
+                    ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+                }
             }
 
+            signer = null;
             return false;
         }
 
@@ -556,53 +554,50 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Creates a <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.
+        /// Tries to provide a <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
-        public KeyWrapper? CreateKeyWrapper(EncryptionAlgorithm? encryptionAlgorithm, KeyManagementAlgorithm? algorithm)
+        /// <param name="keyWrapper">The provided <see cref="KeyWrapper"/>. <c>null</c> if return <c>false</c></param>
+        public bool TryGetKeyWrapper(EncryptionAlgorithm? encryptionAlgorithm, KeyManagementAlgorithm? algorithm, [NotNullWhen(true)] out KeyWrapper? keyWrapper)
         {
-            if (encryptionAlgorithm is null || algorithm is null)
+            if (!(encryptionAlgorithm is null) && !(algorithm is null))
             {
-                return null;
-            }
-
-            var keyWrappers = _keyWrappers;
-            var algorithmKey = encryptionAlgorithm.ComputeKey(algorithm);
-            if (keyWrappers is null)
-            {
-                keyWrappers = new CryptographicStore<KeyWrapper>();
-                _keyWrappers = keyWrappers;
-            }
-            else
-            {
-                if (keyWrappers.TryGetValue(algorithmKey, out var cachedKeyWrapper))
+                var keyWrappers = _keyWrappers;
+                var algorithmKey = encryptionAlgorithm.ComputeKey(algorithm);
+                if (keyWrappers is null)
                 {
-                    return cachedKeyWrapper;
+                    keyWrappers = new CryptographicStore<KeyWrapper>();
+                    _keyWrappers = keyWrappers;
                 }
-            }
-
-            if (IsSupported(algorithm))
-            {
-                var keyWrapper = CreateNewKeyWrapper(encryptionAlgorithm, algorithm);
-                if (!(keyWrapper is null))
+                else
                 {
+                    if (keyWrappers.TryGetValue(algorithmKey, out keyWrapper))
+                    {
+                        return true;
+                    }
+                }
+
+                if (IsSupported(algorithm))
+                {
+                    keyWrapper = CreateKeyWrapper(encryptionAlgorithm, algorithm);
                     if (keyWrappers.TryAdd(algorithmKey, keyWrapper))
                     {
-                        return keyWrapper;
+                        return true;
                     }
 
                     keyWrapper?.Dispose();
                     if (keyWrappers.TryGetValue(algorithmKey, out keyWrapper))
                     {
-                        return keyWrapper;
+                        return true;
                     }
 
                     ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
                 }
             }
 
-            return null;
+            keyWrapper = null;
+            return false;
         }
 
         /// <summary>
@@ -610,7 +605,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
-        protected abstract KeyWrapper? CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
+        protected abstract KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
 
         /// <summary>
         /// Releases the <see cref="KeyWrapper"/>.
@@ -625,13 +620,13 @@ namespace JsonWebToken
         /// Creates a <see cref="AuthenticatedEncryptor"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
-        public AuthenticatedEncryptor? CreateAuthenticatedEncryptor(EncryptionAlgorithm? encryptionAlgorithm)
+        /// <param name="encryptor">The provided <see cref="AuthenticatedEncryptor"/>. <c>null</c> if returns <c>false</c>.</param>
+        public bool TryGetAuthenticatedEncryptor(EncryptionAlgorithm? encryptionAlgorithm, [NotNullWhen(true)] out AuthenticatedEncryptor? encryptor)
         {
             if (!(encryptionAlgorithm is null))
             {
                 var encryptors = _encryptors;
                 var algorithmKey = encryptionAlgorithm.Id;
-                AuthenticatedEncryptor? encryptor;
                 if (encryptors is null)
                 {
                     encryptors = new CryptographicStore<AuthenticatedEncryptor>();
@@ -641,39 +636,37 @@ namespace JsonWebToken
                 {
                     if (encryptors.TryGetValue(algorithmKey, out encryptor))
                     {
-                        return encryptor;
+                        return true;
                     }
                 }
 
                 if (IsSupported(encryptionAlgorithm))
                 {
-                    encryptor = CreateNewAuthenticatedEncryptor(encryptionAlgorithm);
-                    if (!(encryptor is null))
+                    encryptor = CreateAuthenticatedEncryptor(encryptionAlgorithm);
+                    if (encryptors.TryAdd(algorithmKey, encryptor))
                     {
-                        if (encryptors.TryAdd(algorithmKey, encryptor))
-                        {
-                            return encryptor;
-                        }
-
-                        encryptor.Dispose();
-                        if (encryptors.TryGetValue(encryptionAlgorithm.Id, out encryptor))
-                        {
-                            return encryptor;
-                        }
-
-                        ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+                        return true;
                     }
+
+                    encryptor.Dispose();
+                    if (encryptors.TryGetValue(encryptionAlgorithm.Id, out encryptor))
+                    {
+                        return true;
+                    }
+
+                    ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
                 }
             }
 
-            return null;
+            encryptor = null;
+            return false;
         }
 
         /// <summary>
         /// Creates a fresh new <see cref="AuthenticatedEncryptor"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
-        protected abstract AuthenticatedEncryptor? CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm);
+        protected abstract AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm);
 
         /// <summary>
         /// Releases the <see cref="AuthenticatedEncryptor"/>.
@@ -1110,31 +1103,31 @@ namespace JsonWebToken
 
             public override bool IsSupported(KeyManagementAlgorithm algorithm)
             {
-                return false;
+                return true;
             }
 
             public override bool IsSupported(EncryptionAlgorithm algorithm)
             {
-                return false;
+                return true;
             }
 
             internal override void WriteComplementTo(Utf8JsonWriter writer)
             {
             }
 
-            protected override KeyWrapper? CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+            protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             {
-                return null;
+                return KeyWrapper.Empty;
             }
 
-            protected override AuthenticatedEncryptor? CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+            protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
             {
-                return null;
+                return AuthenticatedEncryptor.Empty;
             }
 
-            protected override Signer CreateNewSigner(SignatureAlgorithm algorithm)
+            protected override Signer CreateSigner(SignatureAlgorithm algorithm)
             {
-                return Signer.None;
+                return Signer.Empty;
             }
         }
     }

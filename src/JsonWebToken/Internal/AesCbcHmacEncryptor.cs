@@ -40,7 +40,7 @@ namespace JsonWebToken.Internal
             _hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
 
             _aesPool = key.Ephemeral ? new ObjectPool<Aes>(new AesPooledPolicy(aesKey), 1) : new ObjectPool<Aes>(new AesPooledPolicy(aesKey));
-            if(!_hmacKey.TryCreateSigner(encryptionAlgorithm.SignatureAlgorithm, out var signer))
+            if(!_hmacKey.TryGetSigner(encryptionAlgorithm.SignatureAlgorithm, out var signer))
             {
                 ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
             }

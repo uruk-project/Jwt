@@ -18,7 +18,7 @@ namespace JsonWebToken.Performance
         public Dictionary_TryGetValue()
         {
             var key = SymmetricJwk.GenerateKey(256); ;
-            var signer = key.TryCreateSigner(SignatureAlgorithm.HmacSha256);
+            key.TryGetSigner(SignatureAlgorithm.HmacSha256, out var signer);
             _dictionary.Add(signer.Algorithm.Id, signer);
             _concurrentDictionary.TryAdd(signer.Algorithm.Id, signer);
             _cryptoStore.TryAdd(signer.Algorithm.Id, signer);

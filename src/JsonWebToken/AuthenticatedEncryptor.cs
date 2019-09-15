@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace JsonWebToken
 {
@@ -11,6 +10,11 @@ namespace JsonWebToken
     /// </summary>
     public abstract class AuthenticatedEncryptor : IDisposable
     {
+        /// <summary>
+        /// Defines a <see cref="AuthenticatedEncryptor"/> that do nothing.
+        /// </summary>
+        public static readonly AuthenticatedEncryptor Empty = new EmptyAuthenticatedEncryptor();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticatedEncryptor"/> class.
         /// </summary>
@@ -92,5 +96,37 @@ namespace JsonWebToken
         /// <param name="bytesWritten">The bytes written in the <paramref name="plaintext"/>.</param>
         /// <returns></returns>
         public abstract bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten);
+
+        internal class EmptyAuthenticatedEncryptor : AuthenticatedEncryptor
+        {
+            public EmptyAuthenticatedEncryptor() 
+                : base(Jwk.Empty, EncryptionAlgorithm.Empty)
+            {
+            }
+
+            public override void Dispose()
+            {
+            }
+
+            public override void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag)
+            {
+            }
+
+            public override int GetBase64NonceSize() => 0;
+
+            public override int GetBase64TagSize() => 0;
+
+            public override int GetCiphertextSize(int plaintextSize) => 0;
+
+            public override int GetNonceSize() => 0;
+
+            public override int GetTagSize() => 0;
+
+            public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
+            {
+                bytesWritten = 0;
+                return true;
+            }
+        }
     }
 }

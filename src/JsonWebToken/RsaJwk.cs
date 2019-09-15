@@ -397,13 +397,13 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        protected override Signer CreateNewSigner(SignatureAlgorithm algorithm)
+        protected override Signer CreateSigner(SignatureAlgorithm algorithm)
         {
             return new RsaSigner(this, algorithm);
         }
 
         /// <inheritsdoc />
-        protected override KeyWrapper CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+        protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
             return new RsaKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
         }

@@ -275,17 +275,17 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override bool IsSupported(EncryptionAlgorithm algorithm)
         {
-            return algorithm.Category == EncryptionType.AesHmac || algorithm.Category == EncryptionType.AesGcm;
+            return (algorithm.Category == EncryptionType.AesHmac || algorithm.Category == EncryptionType.AesGcm) && KeySizeInBits >= algorithm.RequiredKeySizeInBits;
         }
 
         /// <inheritdoc />
-        protected override Signer CreateNewSigner(SignatureAlgorithm algorithm)
+        protected override Signer CreateSigner(SignatureAlgorithm algorithm)
         {
             return new SymmetricSigner(this, algorithm);
         }
 
         /// <inheritsdoc />
-        protected override KeyWrapper? CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
             if (algorithm.Category == AlgorithmCategory.Aes)
             {
@@ -300,28 +300,23 @@ namespace JsonWebToken
                 return new DirectKeyWrapper(this, encryptionAlgorithm, algorithm);
             }
 
-            return null;
+            ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
+            return KeyWrapper.Empty;
         }
 
         /// <inheritsdoc />
-        protected override AuthenticatedEncryptor? CreateNewAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+        protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
-                if (KeySizeInBits >= encryptionAlgorithm.RequiredKeySizeInBits)
-                {
-                    return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
-                }
+                return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
             }
             else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
             {
-                if (KeySizeInBits >= encryptionAlgorithm.RequiredKeySizeInBits)
-                {
-                    return new AesGcmEncryptor(this, encryptionAlgorithm);
-                }
+                return new AesGcmEncryptor(this, encryptionAlgorithm);
             }
 
-            return null;
+            return AuthenticatedEncryptor.Empty;
         }
 
         /// <summary>

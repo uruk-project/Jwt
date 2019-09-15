@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
-using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -14,7 +13,7 @@ namespace JsonWebToken
         /// <summary>
         /// Defines a <see cref="Signer"/> that do nothing.
         /// </summary>
-        public static readonly Signer None = new NoneSigner();
+        public static readonly Signer Empty = new NoneSigner();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Signer"/> class used to create and verify signatures.
