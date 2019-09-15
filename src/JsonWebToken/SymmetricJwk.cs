@@ -301,7 +301,7 @@ namespace JsonWebToken
             }
 
             ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-            return KeyWrapper.Empty;
+            return null!;
         }
 
         /// <inheritsdoc />
@@ -316,7 +316,8 @@ namespace JsonWebToken
                 return new AesGcmEncryptor(this, encryptionAlgorithm);
             }
 
-            return AuthenticatedEncryptor.Empty;
+            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
+            return null!;
         }
 
         /// <summary>

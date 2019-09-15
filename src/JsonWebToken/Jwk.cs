@@ -968,14 +968,17 @@ namespace JsonWebToken
             {
                 writer.WriteString(JwkParameterNames.KidUtf8, Kid);
             }
+
             if (_use != null)
             {
                 writer.WriteString(JwkParameterNames.UseUtf8, _use);
             }
+
             if (Alg != null)
             {
                 writer.WriteString(JwkParameterNames.AlgUtf8, Alg);
             }
+
             if (_keyOps?.Count > 0)
             {
                 writer.WriteStartArray(JwkParameterNames.KeyOpsUtf8);
@@ -986,18 +989,22 @@ namespace JsonWebToken
 
                 writer.WriteEndArray();
             }
+
             if (X5t != null)
             {
                 writer.WriteString(JwkParameterNames.X5tUtf8, Base64Url.Encode(X5t));
             }
+
             if (X5tS256 != null)
             {
                 writer.WriteString(JwkParameterNames.X5tS256Utf8, Base64Url.Encode(X5tS256));
             }
+
             if (X5u != null)
             {
                 writer.WriteString(JwkParameterNames.X5uUtf8, X5u);
             }
+
             if (_x5c != null && _x5c.Count > 0)
             {
                 writer.WriteStartArray(JwkParameterNames.X5cUtf8);
@@ -1093,7 +1100,7 @@ namespace JsonWebToken
 
             public override bool Equals(Jwk? other)
             {
-                return true;
+                return ReferenceEquals(this, other);
             }
 
             public override bool IsSupported(SignatureAlgorithm algorithm)
@@ -1103,12 +1110,12 @@ namespace JsonWebToken
 
             public override bool IsSupported(KeyManagementAlgorithm algorithm)
             {
-                return true;
+                return false;
             }
 
             public override bool IsSupported(EncryptionAlgorithm algorithm)
             {
-                return true;
+                return false;
             }
 
             internal override void WriteComplementTo(Utf8JsonWriter writer)
@@ -1117,17 +1124,19 @@ namespace JsonWebToken
 
             protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             {
-                return KeyWrapper.Empty;
+                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
+                return null!;
             }
 
             protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
             {
-                return AuthenticatedEncryptor.Empty;
+                ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
+                return null!;
             }
 
             protected override Signer CreateSigner(SignatureAlgorithm algorithm)
             {
-                return Signer.Empty;
+                return Signer.None;
             }
         }
     }

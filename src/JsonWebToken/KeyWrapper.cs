@@ -12,11 +12,6 @@ namespace JsonWebToken
     public abstract class KeyWrapper : IDisposable
     {
         /// <summary>
-        /// Defines a <see cref="KeyWrapper"/> that do nothing.
-        /// </summary>
-        public static readonly KeyWrapper Empty = new EmptyKeyWrapper();
-
-        /// <summary>
         /// Gets the <see cref="Jwk"/> that is being used.
         /// </summary>
         public Jwk Key { get; }
@@ -117,34 +112,6 @@ namespace JsonWebToken
         public static Jwk CreateSymmetricKey(EncryptionAlgorithm encryptionAlgorithm, Jwk? staticKey)
         {
             return staticKey ?? SymmetricJwk.GenerateKey(encryptionAlgorithm.RequiredKeySizeInBits);
-        }
-
-        internal class EmptyKeyWrapper : KeyWrapper
-        {
-            // TODO : Add Empty EncryptionAlgorithm & KeyManagementAlgorithm
-            public EmptyKeyWrapper()
-                : base(Jwk.Empty, EncryptionAlgorithm.Empty, KeyManagementAlgorithm.Empty)
-            {
-            }
-
-            public override int GetKeyUnwrapSize(int wrappedKeySize) => 0;
-
-            public override int GetKeyWrapSize() => 0;
-
-            public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
-            {
-                bytesWritten = 0;
-                return true;
-            }
-
-            public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
-            {
-                return Jwk.Empty;
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-            }
         }
     }
 }

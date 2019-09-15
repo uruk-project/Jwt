@@ -127,7 +127,8 @@ namespace JsonWebToken
         /// <inheritsdoc />
         protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
-            return AuthenticatedEncryptor.Empty;
+            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm); 
+            return null!;
         }
     }
 }

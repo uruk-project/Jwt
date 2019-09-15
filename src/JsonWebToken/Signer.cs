@@ -13,7 +13,7 @@ namespace JsonWebToken
         /// <summary>
         /// Defines a <see cref="Signer"/> that do nothing.
         /// </summary>
-        public static readonly Signer Empty = new NoneSigner();
+        public static readonly Signer None = new EmptySigner();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Signer"/> class used to create and verify signatures.
@@ -88,9 +88,9 @@ namespace JsonWebToken
         /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer</param>     
         protected abstract void Dispose(bool disposing);
 
-        private class NoneSigner : Signer
+        private class EmptySigner : Signer
         {
-            public NoneSigner()
+            public EmptySigner()
                 : base(Jwk.Empty, SignatureAlgorithm.None)
             {
             }
