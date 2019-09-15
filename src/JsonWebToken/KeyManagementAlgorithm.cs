@@ -370,11 +370,11 @@ namespace JsonWebToken
         /// Cast the <see cref="KeyManagementAlgorithm"/> into its <see cref="byte"/> array representation.
         /// </summary>
         /// <param name="value"></param>
-        public static explicit operator byte[](KeyManagementAlgorithm? value)
+        public static explicit operator byte[]?(KeyManagementAlgorithm? value)
         {
             if (value is null)
             {
-                return Array.Empty<byte>();
+                return null;
             }
 
             return value._utf8Name;
