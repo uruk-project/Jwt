@@ -197,15 +197,17 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
-            Exception? malformedException = null;
+            TokenValidationResult result;
             if (utf8Token.IsEmpty)
             {
-                goto Malformed;
+                result = TokenValidationResult.MalformedToken();
+                goto TokenAnalyzed;
             }
 
             if (utf8Token.Length > policy!.MaximumTokenSizeInBytes)
             {
-                goto Malformed;
+                result = TokenValidationResult.MalformedToken();
+                goto TokenAnalyzed;
             }
 
             Span<TokenSegment> segments = stackalloc TokenSegment[Constants.JweSegmentCount];
@@ -213,13 +215,15 @@ namespace JsonWebToken
             var segmentCount = Tokenizer.Tokenize(utf8Token, ref segmentsRef);
             if (segmentCount < Constants.JwsSegmentCount)
             {
-                goto Malformed;
+                result = TokenValidationResult.MalformedToken();
+                goto TokenAnalyzed;
             }
 
             var headerSegment = segmentsRef;
             if (headerSegment.IsEmpty)
             {
-                goto Malformed;
+                result = TokenValidationResult.MalformedToken();
+                goto TokenAnalyzed;
             }
 
             JwtHeader? header;
@@ -241,32 +245,34 @@ namespace JsonWebToken
             }
             catch (FormatException formatException)
             {
-                malformedException = formatException;
-                goto Malformed;
+                result = TokenValidationResult.MalformedToken(formatException);
+                goto TokenAnalyzed;
             }
             catch (JsonException readerException)
             {
-                malformedException = readerException;
-                goto Malformed;
+                result = TokenValidationResult.MalformedToken(readerException);
+                goto TokenAnalyzed;
             }
 
-            var headerValidationResult = policy.TryValidate(header);
-            if (!headerValidationResult.Succedeed)
+            result = policy.TryValidate(header);
+            if (result.Succedeed)
             {
-                return headerValidationResult;
+                if (segmentCount == Constants.JwsSegmentCount)
+                {
+                    result = TryReadJws(utf8Token, policy, ref segmentsRef, header);
+                }
+                else if (segmentCount == Constants.JweSegmentCount)
+                {
+                    result = TryReadJwe(utf8Token, policy, rawHeader, ref segmentsRef, header);
+                }
+                else
+                {
+                    result = TokenValidationResult.MalformedToken();
+                }
             }
 
-            if (segmentCount == Constants.JwsSegmentCount)
-            {
-                return TryReadJws(utf8Token, policy, ref segmentsRef, header);
-            }
-            else if (segmentCount == Constants.JweSegmentCount)
-            {
-                return TryReadJwe(utf8Token, policy, rawHeader, ref segmentsRef, header);
-            }
-
-        Malformed:
-            return TokenValidationResult.MalformedToken(malformedException);
+        TokenAnalyzed:
+            return result;
         }
 
         private TokenValidationResult TryReadJwe(

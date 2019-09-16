@@ -9,11 +9,12 @@ namespace JsonWebToken
 {
     internal sealed class RsaSigner : Signer
     {
-        private readonly ObjectPool<RSA> _hashAlgorithmPool;
+        private readonly ObjectPool<RSA> _rsaPool;
         private readonly HashAlgorithmName _hashAlgorithm;
         private readonly int _hashSizeInBytes;
         private readonly RSASignaturePadding _signaturePadding;
         private readonly int _base64HashSizeInBytes;
+        private readonly bool _canOnlyVerify;
         private bool _disposed;
 
         public RsaSigner(RsaJwk key, SignatureAlgorithm algorithm)
@@ -29,10 +30,23 @@ namespace JsonWebToken
                 ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(algorithm, key);
             }
 
-            var minKeySize = key.HasPrivateKey ? 2048 : 1024;
-            if (key.KeySizeInBits < minKeySize)
+            if (key.HasPrivateKey)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_SigningKeyTooSmall(key, minKeySize);
+                if (key.KeySizeInBits < 2048)
+                {
+                    ThrowHelper.ThrowArgumentOutOfRangeException_SigningKeyTooSmall(key, 2048);
+                }
+
+                _canOnlyVerify = false;
+            }
+            else
+            {
+                if (key.KeySizeInBits < 1024)
+                {
+                    ThrowHelper.ThrowArgumentOutOfRangeException_SigningKeyTooSmall(key, 1024);
+                }
+
+                _canOnlyVerify = true;
             }
 
             _hashAlgorithm = algorithm.HashAlgorithm;
@@ -58,7 +72,7 @@ namespace JsonWebToken
 
             _hashSizeInBytes = key.KeySizeInBits >> 3;
             _base64HashSizeInBytes = Base64Url.GetArraySizeRequiredToEncode(_hashSizeInBytes);
-            _hashAlgorithmPool = new ObjectPool<RSA>(new RsaObjectPoolPolicy(key.ExportParameters()));
+            _rsaPool = new ObjectPool<RSA>(new RsaObjectPoolPolicy(key.ExportParameters()));
         }
 
         public override int HashSizeInBytes => _hashSizeInBytes;
@@ -77,7 +91,12 @@ namespace JsonWebToken
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            var rsa = _hashAlgorithmPool.Get();
+            if (_canOnlyVerify)
+            {
+                ThrowHelper.ThrowInvalidOperationException_RequirePrivateKey();
+            }
+
+            var rsa = _rsaPool.Get();
             try
             {
 #if !NETSTANDARD2_0 && !NET461
@@ -91,7 +110,7 @@ namespace JsonWebToken
             }
             finally
             {
-                _hashAlgorithmPool.Return(rsa);
+                _rsaPool.Return(rsa);
             }
         }
 
@@ -112,7 +131,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            var rsa = _hashAlgorithmPool.Get();
+            var rsa = _rsaPool.Get();
             try
             {
 #if !NETSTANDARD2_0 && !NET461
@@ -123,7 +142,7 @@ namespace JsonWebToken
             }
             finally
             {
-                _hashAlgorithmPool.Return(rsa);
+                _rsaPool.Return(rsa);
             }
         }
 
@@ -133,7 +152,7 @@ namespace JsonWebToken
             {
                 if (disposing)
                 {
-                    _hashAlgorithmPool.Dispose();
+                    _rsaPool.Dispose();
                 }
 
                 _disposed = true;

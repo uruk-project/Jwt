@@ -9,10 +9,11 @@ namespace JsonWebToken.Internal
 {
     internal sealed class EcdsaSigner : Signer
     {
-        private readonly ObjectPool<ECDsa> _hashAlgorithmPool;
+        private readonly ObjectPool<ECDsa> _ecdsaPool;
         private readonly int _hashSize;
         private readonly HashAlgorithmName _hashAlgorithm;
         private readonly int _base64HashSize;
+        private readonly bool _canOnlyVerify;
         private bool _disposed;
 
         public EcdsaSigner(ECJwk key, SignatureAlgorithm algorithm)
@@ -28,11 +29,12 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentOutOfRangeException_SigningKeyTooSmall(key, 256);
             }
 
+            _canOnlyVerify = !key.HasPrivateKey;
             _hashAlgorithm = algorithm.HashAlgorithm;
             _hashSize = key.Crv.HashSize;
             _base64HashSize = Base64Url.GetArraySizeRequiredToEncode(_hashSize);
 
-            _hashAlgorithmPool = new ObjectPool<ECDsa>(new ECDsaObjectPoolPolicy(key, algorithm));
+            _ecdsaPool = new ObjectPool<ECDsa>(new ECDsaObjectPoolPolicy(key, algorithm));
         }
 
         /// <inheritsdoc />
@@ -53,7 +55,12 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            var ecdsa = _hashAlgorithmPool.Get();
+            if (_canOnlyVerify)
+            {
+                ThrowHelper.ThrowInvalidOperationException_RequirePrivateKey();
+            }
+
+            var ecdsa = _ecdsaPool.Get();
 #if !NETSTANDARD2_0 && !NET461
             return ecdsa.TrySignData(data, destination, _hashAlgorithm, out bytesWritten);
 #else
@@ -82,7 +89,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            var ecdsa = _hashAlgorithmPool.Get();
+            var ecdsa = _ecdsaPool.Get();
 #if NETSTANDARD2_0 || NET461
             return ecdsa.VerifyData(data.ToArray(), signature.ToArray(), _hashAlgorithm);
 #else
@@ -97,7 +104,7 @@ namespace JsonWebToken.Internal
             {
                 if (disposing)
                 {
-                    _hashAlgorithmPool.Dispose();
+                    _ecdsaPool.Dispose();
                 }
 
                 _disposed = true;

@@ -293,6 +293,11 @@ namespace JsonWebToken
         private static Exception CreateArgumentException_InvalidRsaKey(Jwk key) => new ArgumentException($"Invalid RSA key: '{key.Kid}'. Both modulus (N) and exponent (E) must be present.", nameof(key));
 
         [DoesNotReturn]
+        internal static void ThrowInvalidOperationException_RequirePrivateKey() => throw CreateInvalidOperationException_RequirePrivateKey();
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateInvalidOperationException_RequirePrivateKey() => new InvalidOperationException("THe operation require a private key.");
+
+        [DoesNotReturn]
         internal static void ThrowArgumentException_DestinationTooSmall(int size, int requiredSize) => throw CreateArgumentException_DestinationTooSmall(size, requiredSize);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentException_DestinationTooSmall(int size, int requiredSize) => new ArgumentException($"destination is too small. Required: {requiredSize}. Current: {size}.", "destination");
