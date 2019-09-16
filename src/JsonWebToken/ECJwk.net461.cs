@@ -41,23 +41,13 @@ namespace JsonWebToken
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter) => throw new NotImplementedException();
 
         /// <inheritsdoc />
-        protected override KeyWrapper? CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm) => throw new NotImplementedException();
+        protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm) => throw new NotImplementedException();
 
         /// <inheritsdoc />
-        protected override Signer? CreateNewSigner(SignatureAlgorithm algorithm) => throw new NotImplementedException();
+        protected override Signer CreateSigner(SignatureAlgorithm algorithm) => throw new NotImplementedException();
 
         /// <inheritsdoc />
         internal override void WriteComplementTo(Utf8JsonWriter writer) => throw new NotImplementedException();
-
-        internal string ExportParameters()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal string ExportParameters(bool v)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
 #endif

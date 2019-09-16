@@ -127,16 +127,14 @@ namespace JsonWebToken.Internal
             if (Algorithm.ProduceEncryptionKey)
             {
                 using (var key = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false))
-                using (KeyWrapper? keyWrapper = key.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
-                {
-                    if (keyWrapper is null)
+                    if (key.TryGetKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm, out var keyWrapper))
                     {
-                        bytesWritten = 0;
-                        return false;
+                        return keyWrapper.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
                     }
-
-                    return keyWrapper.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
-                }
+                    else
+                    {
+                        return ThrowHelper.TryWriteError(out bytesWritten);
+                    }
             }
             else
             {
@@ -179,14 +177,14 @@ namespace JsonWebToken.Internal
             Jwk? contentEncryptionKey;
             if (Algorithm.ProduceEncryptionKey)
             {
-                using (KeyWrapper? keyWrapper = kek.CreateKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm))
+                if (kek.TryGetKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm, out var keyWrapper))
                 {
-                    if (keyWrapper is null)
-                    {
-                        ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(Algorithm.WrappedAlgorithm);
-                    }
-
-                    contentEncryptionKey = keyWrapper!.WrapKey(null, header, destination); // ! => [DoesNotReturn]
+                    contentEncryptionKey = keyWrapper.WrapKey(null, header, destination);
+                }
+                else
+                {
+                    ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(Algorithm.WrappedAlgorithm);
+                    return Jwk.Empty;
                 }
             }
             else

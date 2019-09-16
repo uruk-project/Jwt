@@ -16,6 +16,11 @@ namespace JsonWebToken
     public sealed class EncryptionAlgorithm : IEquatable<EncryptionAlgorithm>, IAlgorithm
     {
         /// <summary>
+        /// Empty
+        /// </summary>
+        internal static readonly EncryptionAlgorithm Empty = new EncryptionAlgorithm(id: 0, "Empty", requiredKeySizeInBytes: 0, SignatureAlgorithm.None, requiredKeyWrappedSizeInBytes: 0, EncryptionType.Undefined);
+
+        /// <summary>
         /// 'A128CBC-HS256'
         /// </summary>
         public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: 11, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesHmac);

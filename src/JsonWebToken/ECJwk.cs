@@ -288,13 +288,13 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
-        protected override Signer CreateNewSigner(SignatureAlgorithm algorithm)
+        protected override Signer CreateSigner(SignatureAlgorithm algorithm)
         {
             return new EcdsaSigner(this, algorithm);
         }
 
         /// <inheritdoc />
-        protected override KeyWrapper? CreateNewKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
             return new EcdhKeyWrapper(this, encryptionAlgorithm, algorithm);
         }
