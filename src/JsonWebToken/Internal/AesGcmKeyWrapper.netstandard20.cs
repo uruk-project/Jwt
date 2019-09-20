@@ -10,30 +10,30 @@ namespace JsonWebToken.Internal
         public AesGcmKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
-            throw new NotSupportedException();
+            ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
         }
 
         /// <inheritsdoc />
         public override int GetKeyUnwrapSize(int wrappedKeySize)
         {
-            throw new NotSupportedException();
+            throw new NotImplementedException();
         }
 
         /// <inheritsdoc />
         public override int GetKeyWrapSize() => GetKeyWrapSize(EncryptionAlgorithm);
 
-        public static int GetKeyWrapSize(EncryptionAlgorithm encryptionAlgorithm) => throw new NotSupportedException();
+        public static int GetKeyWrapSize(EncryptionAlgorithm encryptionAlgorithm) => throw new NotImplementedException();
 
         /// <inheritsdoc />
         public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
-            throw new NotSupportedException();
+            throw new NotImplementedException();
         }
 
         /// <inheritsdoc />
         public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
         {
-            throw new NotSupportedException();
+            throw new NotImplementedException();
         }
 
         /// <inheritsdoc />
