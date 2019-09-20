@@ -201,9 +201,9 @@ namespace JsonWebToken
         /// <returns></returns>
         public static bool operator ==(SignatureAlgorithm? x, SignatureAlgorithm? y)
         {
-            if (x is null && y is null)
+            if (y is null)
             {
-                return true;
+                return x is null;
             }
 
             if (x is null)
@@ -229,24 +229,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public static bool operator !=(SignatureAlgorithm? x, SignatureAlgorithm? y)
         {
-            if (x is null && y is null)
-            {
-                return false;
-            }
-
-            if (x is null)
-            {
-                goto NotEqual;
-            }
-
-            if (y is null)
-            {
-                goto NotEqual;
-            }
-
-            return x._id != y._id;
-        NotEqual:
-            return true;
+            return !(x == y);
         }
 
         /// <summary>
@@ -303,12 +286,11 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         public static bool TryParseSlow(ref Utf8JsonReader reader, [NotNullWhen(true)] out SignatureAlgorithm? algorithm)
         {
-            var algorithms = _algorithms;
-            for (int i = 0; i < algorithms.Length; i++)
+            for (int i = 0; i < _algorithms.Length; i++)
             {
-                if (reader.ValueTextEquals(algorithms[i]._utf8Name))
+                if (reader.ValueTextEquals(_algorithms[i]._utf8Name))
                 {
-                    algorithm = algorithms[i];
+                    algorithm = _algorithms[i];
                     return true;
                 }
             }
@@ -326,8 +308,9 @@ namespace JsonWebToken
         {
             if (value.Length == 5)
             {
-                var first = value[0];
-                var refvalue = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref MemoryMarshal.GetReference(value), 1));
+                ref byte valueRef = ref MemoryMarshal.GetReference(value);
+                var first = valueRef;
+                var refvalue = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref valueRef, 1));
                 switch (refvalue)
                 {
                     case 909455955u when first == (byte)'H':

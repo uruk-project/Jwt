@@ -668,7 +668,14 @@ namespace JsonWebToken
                     writer.WriteNumber(Utf8Name, (long)Value!);
                     break;
                 case JwtTokenType.Float:
-                    writer.WriteNumber(Utf8Name, (double)Value!);
+                    if (Value is double)
+                    {
+                        writer.WriteNumber(Utf8Name, (double)Value!);
+                    }
+                    else
+                    {
+                        writer.WriteNumber(Utf8Name, (float)Value!);
+                    }
                     break;
                 case JwtTokenType.String:
                     writer.WriteString(Utf8Name, (string)Value!);

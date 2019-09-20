@@ -130,7 +130,7 @@ namespace JsonWebToken
         public JwtValue(float value)
         {
             Type = JwtTokenType.Float;
-            Value = value;
+            Value = (double)value;
         }
 
         /// <summary>
