@@ -33,17 +33,17 @@
     <PackageReference Include="System.Buffers" Version="4.5.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.6.0-*" />
     <PackageReference Include="System.Security.Cryptography.Cng" Version="4.5.0" />
-    <PackageReference Include="System.Text.Json" Version="4.6.0-preview8.19405.3" />
+    <PackageReference Include="System.Text.Json" Version="4.6.0-*" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.6.0-*" />
-    <PackageReference Include="System.Text.Json" Version="4.6.0-preview8.19405.3" />
+    <PackageReference Include="System.Text.Json" Version="4.6.0-*" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
-    <PackageReference Include="System.Text.Json" Version="4.6.0-preview8.19405.3" />
+    <PackageReference Include="System.Text.Json" Version="4.6.0-*" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
@@ -51,9 +51,9 @@
     <PackageReference Include="System.Memory" Version="4.5.3" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="System.Buffers" Version="4.5.0" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.6.0-preview8.19405.3" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.6.0-*" />
     <PackageReference Include="System.Security.Cryptography.Cng" Version="4.5.0" />
-    <PackageReference Include="System.Text.Json" Version="4.6.0-preview8.19405.3" />
+    <PackageReference Include="System.Text.Json" Version="4.6.0-*" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
