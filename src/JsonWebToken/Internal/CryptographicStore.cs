@@ -48,330 +48,328 @@ namespace JsonWebToken.Internal
         {
             _map.Dispose();
         }
-    }
 
-    internal abstract partial class Map<TValue> : IDisposable where TValue : class, IDisposable
-    {
-        public static Map<TValue> Empty { get; } = new EmptyMap();
-
-        public abstract int Count { get; }
-
-        public abstract Map<TValue> TryAdd(int key, TValue value, out bool success);
-
-        public abstract bool TryGetValue(int key, [NotNullWhen(true)] out TValue? value);
-
-        public abstract void Dispose();
-
-        // Instance without any key/value pairs. Used as a singleton.
-        private sealed class EmptyMap : Map<TValue>
+        private abstract partial class Map<TMapValue> : IDisposable where TMapValue : class, IDisposable
         {
-            public override int Count => 0;
+            public static Map<TMapValue> Empty { get; } = new EmptyMap();
 
-            public override void Dispose()
+            public abstract int Count { get; }
+
+            public abstract Map<TMapValue> TryAdd(int key, TMapValue value, out bool success);
+
+            public abstract bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value);
+
+            public abstract void Dispose();
+
+            // Instance without any key/value pairs. Used as a singleton.
+            private sealed class EmptyMap : Map<TMapValue>
             {
-            }
+                public override int Count => 0;
 
-            public override Map<TValue> TryAdd(int key, TValue value, out bool success)
-            {
-                // Create a new one-element map to store the key/value pair
-                success = true;
-                return new OneElementMap(key, value);
-            }
-
-            public override bool TryGetValue(int key, out TValue? value)
-            {
-                // Nothing here
-                value = null;
-                return false;
-            }
-        }
-
-        private sealed class OneElementMap : Map<TValue>
-        {
-            private readonly int _key1;
-            private readonly TValue _value1;
-
-            public OneElementMap(int key, TValue value)
-            {
-                _key1 = key;
-                _value1 = value;
-            }
-
-            public override int Count => 1;
-
-            public override void Dispose()
-            {
-                _value1.Dispose();
-            }
-
-            public override Map<TValue> TryAdd(int key, TValue value, out bool success)
-            {
-                if (key == _key1)
+                public override void Dispose()
                 {
-                    success = false;
-                    return this;
                 }
-                else
+
+                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
                 {
+                    // Create a new one-element map to store the key/value pair
                     success = true;
-                    return new TwoElementMap(_key1, _value1, key, value);
+                    return new OneElementMap(key, value);
                 }
-            }
 
-            public override bool TryGetValue(int key, out TValue? value)
-            {
-                if (key == _key1)
+                public override bool TryGetValue(int key, out TMapValue? value)
                 {
-                    value = _value1;
-                    return true;
-                }
-                else
-                {
+                    // Nothing here
                     value = null;
                     return false;
                 }
             }
-        }
 
-        private sealed class TwoElementMap : Map<TValue>
-        {
-            private readonly int _key1;
-            private readonly TValue _value1;
-            private readonly int _key2;
-            private readonly TValue _value2;
-
-            public TwoElementMap(int key1, TValue value1, int key2, TValue value2)
+            private sealed class OneElementMap : Map<TMapValue>
             {
-                _key1 = key1;
-                _value1 = value1;
-                _key2 = key2;
-                _value2 = value2;
-            }
+                private readonly int _key1;
+                private readonly TMapValue _value1;
 
-            public override int Count => 2;
-
-            public override void Dispose()
-            {
-                _value1.Dispose();
-                _value2.Dispose();
-            }
-
-            public override Map<TValue> TryAdd(int key, TValue value, out bool success)
-            {
-                if (key == _key1)
+                public OneElementMap(int key, TMapValue value)
                 {
-                    success = false;
-                    return this;
+                    _key1 = key;
+                    _value1 = value;
                 }
-                else if (key == _key2)
-                {
-                    success = false;
-                    return this;
-                }
-                else
-                {
-                    success = true;
-                    return new ThreeElementMap(_key1, _value1, _key2, _value2, key, value);
-                }
-            }
 
-            public override bool TryGetValue(int key, out TValue? value)
-            {
-                if (key == _key1)
-                {
-                    value = _value1;
-                    return true;
-                }
-                if (key == _key2)
-                {
-                    value = _value2;
-                    return true;
-                }
-                else
-                {
-                    value = null;
-                    return false;
-                }
-            }
-        }
+                public override int Count => 1;
 
-        private sealed class ThreeElementMap : Map<TValue>
-        {
-            private readonly int _key1;
-            private readonly TValue _value1;
-            private readonly int _key2;
-            private readonly TValue _value2;
-            private readonly int _key3;
-            private readonly TValue _value3;
-
-            public ThreeElementMap(int key1, TValue value1, int key2, TValue value2, int key3, TValue value3)
-            {
-                _key1 = key1;
-                _value1 = value1;
-                _key2 = key2;
-                _value2 = value2;
-                _key3 = key3;
-                _value3 = value3;
-            }
-
-            public override int Count => 3;
-
-            public override void Dispose()
-            {
-                _value1.Dispose();
-                _value2.Dispose();
-                _value3.Dispose();
-            }
-
-            public override Map<TValue> TryAdd(int key, TValue value, out bool success)
-            {
-                if (key == _key1)
+                public override void Dispose()
                 {
-                    success = false;
-                    return this;
+                    _value1.Dispose();
                 }
-                else if (key == _key2)
-                {
-                    success = false;
-                    return this;
-                }
-                else if (key == _key3)
-                {
-                    success = false;
-                    return this;
-                }
-                else
-                {
-                    success = true;
-                    var multi = new MultiElementMap(4);
-                    multi.UnsafeStore(0, _key1, _value1);
-                    multi.UnsafeStore(1, _key2, _value2);
-                    multi.UnsafeStore(2, _key3, _value3);
-                    multi.UnsafeStore(3, key, value);
-                    return multi;
-                }
-            }
 
-            public override bool TryGetValue(int key, out TValue? value)
-            {
-                if (key == _key1)
+                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
                 {
-                    value = _value1;
-                    return true;
-                }
-                if (key == _key2)
-                {
-                    value = _value2;
-                    return true;
-                }
-                else if (key == _key3)
-                {
-                    value = _value3;
-                    return true;
-                }
-                else
-                {
-                    value = null;
-                    return false;
-                }
-            }
-        }
-
-        private sealed class MultiElementMap : Map<TValue>
-        {
-            private const int MaxMultiElements = 16;
-            private readonly KeyValuePair<int, TValue>[] _keyValues;
-
-            public override int Count => _keyValues.Length;
-
-            public MultiElementMap(int count)
-            {
-                Debug.Assert(count <= MaxMultiElements);
-                _keyValues = new KeyValuePair<int, TValue>[count];
-            }
-
-            public void UnsafeStore(int index, int key, TValue value)
-            {
-                Debug.Assert(index < _keyValues.Length);
-                _keyValues[index] = new KeyValuePair<int, TValue>(key, value);
-            }
-
-            public override Map<TValue> TryAdd(int key, TValue value, out bool success)
-            {
-                for (int i = 0; i < _keyValues.Length; i++)
-                {
-                    if (key == _keyValues[i].Key)
+                    if (key == _key1)
                     {
-                        // The key is in the map. 
                         success = false;
                         return this;
                     }
-                }
-
-                // The key does not already exist in this map.
-                // We need to create a new map that has the additional key/value pair.
-                // If with the addition we can still fit in a multi map, create one.
-                if (_keyValues.Length < MaxMultiElements)
-                {
-                    var multi = new MultiElementMap(_keyValues.Length + 1);
-                    Array.Copy(_keyValues, 0, multi._keyValues, 0, _keyValues.Length);
-                    multi._keyValues[_keyValues.Length] = new KeyValuePair<int, TValue>(key, value);
-                    success = true;
-                    return multi;
-                }
-
-                // Otherwise, upgrade to a many map.
-                var many = new ManyElementMap(MaxMultiElements + 1);
-                foreach (KeyValuePair<int, TValue> pair in _keyValues)
-                {
-                    many[pair.Key] = pair.Value;
-                }
-
-                many[key] = value;
-                success = true;
-                return many;
-            }
-
-            public override bool TryGetValue(int key, out TValue? value)
-            {
-                foreach (KeyValuePair<int, TValue> pair in _keyValues)
-                {
-                    if (key == pair.Key)
+                    else
                     {
-                        value = pair.Value;
-                        return true;
+                        success = true;
+                        return new TwoElementMap(_key1, _value1, key, value);
                     }
                 }
 
-                value = null;
-                return false;
-            }
-
-            public override void Dispose()
-            {
-                foreach (KeyValuePair<int, TValue> pair in _keyValues)
+                public override bool TryGetValue(int key, out TMapValue? value)
                 {
-                    pair.Value.Dispose();
+                    if (key == _key1)
+                    {
+                        value = _value1;
+                        return true;
+                    }
+                    else
+                    {
+                        value = null;
+                        return false;
+                    }
                 }
             }
-        }
 
-        private sealed class ManyElementMap : Map<TValue>
-        {
-
-            private readonly Dictionary<int, TValue> _dictionary;
-
-            public override int Count => _dictionary.Count;
-
-            public ManyElementMap(int capacity)
+            private sealed class TwoElementMap : Map<TMapValue>
             {
-                _dictionary = new Dictionary<int, TValue>(capacity);
+                private readonly int _key1;
+                private readonly TMapValue _value1;
+                private readonly int _key2;
+                private readonly TMapValue _value2;
+
+                public TwoElementMap(int key1, TMapValue value1, int key2, TMapValue value2)
+                {
+                    _key1 = key1;
+                    _value1 = value1;
+                    _key2 = key2;
+                    _value2 = value2;
+                }
+
+                public override int Count => 2;
+
+                public override void Dispose()
+                {
+                    _value1.Dispose();
+                    _value2.Dispose();
+                }
+
+                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                {
+                    if (key == _key1)
+                    {
+                        success = false;
+                        return this;
+                    }
+                    else if (key == _key2)
+                    {
+                        success = false;
+                        return this;
+                    }
+                    else
+                    {
+                        success = true;
+                        return new ThreeElementMap(_key1, _value1, _key2, _value2, key, value);
+                    }
+                }
+
+                public override bool TryGetValue(int key, out TMapValue? value)
+                {
+                    if (key == _key1)
+                    {
+                        value = _value1;
+                        return true;
+                    }
+                    if (key == _key2)
+                    {
+                        value = _value2;
+                        return true;
+                    }
+                    else
+                    {
+                        value = null;
+                        return false;
+                    }
+                }
             }
 
-            public override Map<TValue> TryAdd(int key, TValue value, out bool success)
+            private sealed class ThreeElementMap : Map<TMapValue>
             {
+                private readonly int _key1;
+                private readonly TMapValue _value1;
+                private readonly int _key2;
+                private readonly TMapValue _value2;
+                private readonly int _key3;
+                private readonly TMapValue _value3;
+
+                public ThreeElementMap(int key1, TMapValue value1, int key2, TMapValue value2, int key3, TMapValue value3)
+                {
+                    _key1 = key1;
+                    _value1 = value1;
+                    _key2 = key2;
+                    _value2 = value2;
+                    _key3 = key3;
+                    _value3 = value3;
+                }
+
+                public override int Count => 3;
+
+                public override void Dispose()
+                {
+                    _value1.Dispose();
+                    _value2.Dispose();
+                    _value3.Dispose();
+                }
+
+                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                {
+                    if (key == _key1)
+                    {
+                        success = false;
+                        return this;
+                    }
+                    else if (key == _key2)
+                    {
+                        success = false;
+                        return this;
+                    }
+                    else if (key == _key3)
+                    {
+                        success = false;
+                        return this;
+                    }
+                    else
+                    {
+                        success = true;
+                        var multi = new MultiElementMap(4);
+                        multi.UnsafeStore(0, _key1, _value1);
+                        multi.UnsafeStore(1, _key2, _value2);
+                        multi.UnsafeStore(2, _key3, _value3);
+                        multi.UnsafeStore(3, key, value);
+                        return multi;
+                    }
+                }
+
+                public override bool TryGetValue(int key, out TMapValue? value)
+                {
+                    if (key == _key1)
+                    {
+                        value = _value1;
+                        return true;
+                    }
+                    if (key == _key2)
+                    {
+                        value = _value2;
+                        return true;
+                    }
+                    else if (key == _key3)
+                    {
+                        value = _value3;
+                        return true;
+                    }
+                    else
+                    {
+                        value = null;
+                        return false;
+                    }
+                }
+            }
+
+            private sealed class MultiElementMap : Map<TMapValue>
+            {
+                private const int MaxMultiElements = 16;
+                private readonly KeyValuePair<int, TMapValue>[] _keyValues;
+
+                public override int Count => _keyValues.Length;
+
+                public MultiElementMap(int count)
+                {
+                    Debug.Assert(count <= MaxMultiElements);
+                    _keyValues = new KeyValuePair<int, TMapValue>[count];
+                }
+
+                public void UnsafeStore(int index, int key, TMapValue value)
+                {
+                    Debug.Assert(index < _keyValues.Length);
+                    _keyValues[index] = new KeyValuePair<int, TMapValue>(key, value);
+                }
+
+                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                {
+                    for (int i = 0; i < _keyValues.Length; i++)
+                    {
+                        if (key == _keyValues[i].Key)
+                        {
+                            // The key is in the map. 
+                            success = false;
+                            return this;
+                        }
+                    }
+
+                    // The key does not already exist in this map.
+                    // We need to create a new map that has the additional key/value pair.
+                    // If with the addition we can still fit in a multi map, create one.
+                    if (_keyValues.Length < MaxMultiElements)
+                    {
+                        var multi = new MultiElementMap(_keyValues.Length + 1);
+                        Array.Copy(_keyValues, 0, multi._keyValues, 0, _keyValues.Length);
+                        multi._keyValues[_keyValues.Length] = new KeyValuePair<int, TMapValue>(key, value);
+                        success = true;
+                        return multi;
+                    }
+
+                    // Otherwise, upgrade to a many map.
+                    var many = new ManyElementMap(MaxMultiElements + 1);
+                    foreach (KeyValuePair<int, TMapValue> pair in _keyValues)
+                    {
+                        many[pair.Key] = pair.Value;
+                    }
+
+                    many[key] = value;
+                    success = true;
+                    return many;
+                }
+
+                public override bool TryGetValue(int key, out TMapValue? value)
+                {
+                    foreach (KeyValuePair<int, TMapValue> pair in _keyValues)
+                    {
+                        if (key == pair.Key)
+                        {
+                            value = pair.Value;
+                            return true;
+                        }
+                    }
+
+                    value = null;
+                    return false;
+                }
+
+                public override void Dispose()
+                {
+                    foreach (KeyValuePair<int, TMapValue> pair in _keyValues)
+                    {
+                        pair.Value.Dispose();
+                    }
+                }
+            }
+
+            private sealed class ManyElementMap : Map<TMapValue>
+            {
+                private readonly Dictionary<int, TMapValue> _dictionary;
+
+                public override int Count => _dictionary.Count;
+
+                public ManyElementMap(int capacity)
+                {
+                    _dictionary = new Dictionary<int, TMapValue>(capacity);
+                }
+
+                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                {
 #if NETCOREAPP
-                success = _dictionary.TryAdd(key, value);
+                    success = _dictionary.TryAdd(key, value);
 #else
                 success = !_dictionary.ContainsKey(key);
                 if (_dictionary.ContainsKey(key))
@@ -385,26 +383,27 @@ namespace JsonWebToken.Internal
                 }
 #endif
 
-                return this;
-            }
-
-            public override bool TryGetValue(int key, out TValue? value)
-            {
-                return _dictionary.TryGetValue(key, out value);
-            }
-
-            public override void Dispose()
-            {
-                foreach (var value in _dictionary.Values)
-                {
-                    value.Dispose();
+                    return this;
                 }
-            }
 
-            public TValue this[int key]
-            {
-                get => _dictionary[key];
-                set => _dictionary[key] = value;
+                public override bool TryGetValue(int key, out TMapValue? value)
+                {
+                    return _dictionary.TryGetValue(key, out value);
+                }
+
+                public override void Dispose()
+                {
+                    foreach (var value in _dictionary.Values)
+                    {
+                        value.Dispose();
+                    }
+                }
+
+                public TMapValue this[int key]
+                {
+                    get => _dictionary[key];
+                    set => _dictionary[key] = value;
+                }
             }
         }
     }

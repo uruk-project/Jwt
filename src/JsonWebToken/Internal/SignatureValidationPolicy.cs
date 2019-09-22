@@ -123,7 +123,7 @@ namespace JsonWebToken
         {
             public override TokenValidationResult TryValidateSignature(Jwt jwt, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
-                return contentBytes.Length == 0 && signatureSegment.Length == 0 || signatureSegment.IsEmpty && jwt.SignatureAlgorithm == SignatureAlgorithm.None
+                return (contentBytes.Length == 0 && signatureSegment.Length == 0) || (signatureSegment.IsEmpty && jwt.SignatureAlgorithm == SignatureAlgorithm.None)
                     ? TokenValidationResult.Success(jwt)
                     : TokenValidationResult.InvalidSignature(jwt);
             }
