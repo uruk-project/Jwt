@@ -15,7 +15,7 @@ namespace JsonWebToken
     public static partial class JsonParser
     {
         /// <summary>
-        /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="Dictionary{TKey, TValue}"/>.
+        /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtObject"/>.
         /// </summary>
         /// <param name="buffer"></param>
         public static JwtObject Parse(ReadOnlySpan<byte> buffer)
@@ -29,6 +29,10 @@ namespace JsonWebToken
             return ReadJsonObject(ref reader);
         }
 
+        /// <summary>
+        /// Use the <paramref name="reader"/> as JSON input and returns a <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="reader"></param>
         public static JwtObject ReadJsonObject(ref Utf8JsonReader reader)
         {
             var current = new JwtObject();
@@ -88,6 +92,10 @@ namespace JsonWebToken
             return current;
         }
 
+        /// <summary>
+        /// Use the <paramref name="reader"/> as JSON input and returns a <see cref="JwtArray"/>.
+        /// </summary>
+        /// <param name="reader"></param>
         public static JwtArray ReadJsonArray(ref Utf8JsonReader reader)
         {
             var array = new JwtArray(new List<JwtValue>(2));

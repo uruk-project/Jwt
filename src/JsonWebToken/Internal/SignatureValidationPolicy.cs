@@ -38,23 +38,23 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static SignatureValidationPolicy Create(IKeyProvider keyProvider, SignatureAlgorithm algorithm)
+        public static SignatureValidationPolicy Create(IKeyProvider keyProvider, SignatureAlgorithm? algorithm)
             => new DefaultSignatureValidationPolicy(keyProvider, algorithm);
 
         private class DefaultSignatureValidationPolicy : SignatureValidationPolicy
         {
             private readonly IKeyProvider _keyProvider;
-            private readonly SignatureAlgorithm _algorithm;
+            private readonly SignatureAlgorithm? _algorithm;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="SignatureValidationPolicy"/> class.
             /// </summary>
             /// <param name="keyProvider"></param>
             /// <param name="algorithm"></param>
-            public DefaultSignatureValidationPolicy(IKeyProvider keyProvider, SignatureAlgorithm algorithm)
+            public DefaultSignatureValidationPolicy(IKeyProvider keyProvider, SignatureAlgorithm? algorithm)
             {
                 _keyProvider = keyProvider ?? throw new ArgumentNullException(nameof(keyProvider));
-                _algorithm = algorithm ?? throw new ArgumentNullException(nameof(algorithm));
+                _algorithm = algorithm;
             }
 
             public override TokenValidationResult TryValidateSignature(Jwt jwt, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
