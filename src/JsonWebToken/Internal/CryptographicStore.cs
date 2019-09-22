@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
@@ -9,90 +10,18 @@ namespace JsonWebToken.Internal
 {
     /// <summary>
     /// Represent a store of cryptographics elements. 
-    /// It is a specialized implementation of the <see cref="System.Collections.Generic.Dictionary{TKey, TValue}"/>.
+    /// It is a specialized implementation of the <see cref="Dictionary{TKey, TValue}" />.
     /// </summary>
+    /// <remarks>Inspired from https://github.com/dotnet/coreclr/pull/8216. </remarks>
     /// <typeparam name="TValue"></typeparam>
-    public sealed class CryptographicStore<TValue> : IDisposable where TValue : class, IDisposable
+    public class CryptographicStore<TValue> : IDisposable where TValue : class, IDisposable
     {
-        private const int HashCollisionThreshold = 100;
-        private const int StartOfFreeList = -3;
-
-        private int[]? _buckets;
-        private Entry[]? _entries;
-        private int _count;
-        private int _freeList;
-        private int _freeCount;
-
-        private struct Entry
-        {
-            // 0-based index of next entry in chain: -1 means end of chain
-            // also encodes whether this entry _itself_ is part of the free list by changing sign and subtracting 3,
-            // so -2 means end of free list, -3 means index 0 but on free list, -4 means index 1 but on free list, etc.
-            public int next;
-            public int key;           // Key of entry
-            public TValue? value;         // Value of entry
-        }
+        private Map<TValue> _map = Map<TValue>.Empty;
 
         /// <summary>
         /// Gets the count of elements.
         /// </summary>
-        public int Count => _count;
-
-        /// <summary>
-        /// Gets the element at index <paramref name="index"/>.
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public TValue? this[int index] => _entries?[index].value;
-
-        /// <summary>
-        /// Tries to get the <paramref name="value"/> withe the <paramref name="key"/> as key.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public bool TryGetValue(int key, [NotNullWhen(true)] out TValue? value)
-        {
-            int i = -1;
-            int[]? buckets = _buckets;
-            Entry[] entries = _entries!;
-            if (buckets != null)
-            {
-                int collisionCount = 0;
-
-                Debug.Assert(entries != null, "expected entries to be != null");
-                uint hashCode = (uint)key;
-                // Value in _buckets is 1-based
-                i = buckets[hashCode % (uint)buckets.Length] - 1;
-                do
-                {
-                    // Should be a while loop https://github.com/dotnet/coreclr/issues/15476
-                    // Test in if to drop range check for following array access
-                    if ((uint)i >= (uint)entries.Length || entries[i].key == key)
-                    {
-                        break;
-                    }
-
-                    i = entries[i].next;
-                    if (collisionCount >= entries.Length)
-                    {
-                        // The chain of entries forms a loop; which means a concurrent update has happened.
-                        // Break out of the loop and throw, rather than looping forever.
-                        ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
-                    }
-                    collisionCount++;
-                } while (true);
-            }
-
-            if (i >= 0)
-            {
-                value = entries[i].value;
-                return true;
-            }
-
-            value = null;
-            return false;
-        }
+        public int Count => _map.Count;
 
         /// <summary>
         /// Tries to add the <paramref name="value"/> with <paramref name="key"/> as key.
@@ -102,261 +31,380 @@ namespace JsonWebToken.Internal
         /// <returns></returns>
         public bool TryAdd(int key, TValue value)
         {
-            if (_buckets is null)
-            {
-                int size = GetPrime(0);
-
-                _freeList = -1;
-                _buckets = new int[size];
-                _entries = new Entry[size];
-            }
-
-            Debug.Assert(_buckets != null);
-
-            Entry[] entries = _entries!;
-            Debug.Assert(entries != null, "expected entries to be non-null");
-
-            uint hashCode = (uint)key;
-
-            int collisionCount = 0;
-            ref int bucket = ref _buckets[hashCode % (uint)_buckets.Length];
-            // Value in _buckets is 1-based
-            int i = bucket - 1;
-
-            do
-            {
-                // Should be a while loop https://github.com/dotnet/coreclr/issues/15476
-                // Test uint in if rather than loop condition to drop range check for following array access
-                if ((uint)i >= (uint)entries.Length)
-                {
-                    break;
-                }
-
-                if (entries[i].key == key)
-                {
-                    return false;
-                }
-
-                i = entries[i].next;
-                if (collisionCount >= entries.Length)
-                {
-                    // The chain of entries forms a loop; which means a concurrent update has happened.
-                    // Break out of the loop and throw, rather than looping forever.
-                    ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
-                }
-
-                collisionCount++;
-            } while (true);
-            bool updateFreeList = false;
-            int index;
-            if (_freeCount > 0)
-            {
-                index = _freeList;
-                updateFreeList = true;
-                _freeCount--;
-            }
-            else
-            {
-                int count = _count;
-                if (count == entries.Length)
-                {
-                    Resize();
-                    bucket = ref _buckets[hashCode % (uint)_buckets.Length];
-                }
-
-                index = count;
-                _count = count + 1;
-                entries = _entries!;
-            }
-
-            ref Entry entry = ref entries[index];
-            if (updateFreeList)
-            {
-                Debug.Assert((StartOfFreeList - entries[_freeList].next) >= -1, "shouldn't overflow because `next` cannot underflow");
-                _freeList = StartOfFreeList - entries[_freeList].next;
-            }
-
-            // Value in _buckets is 1-based
-            entry.next = bucket - 1;
-            entry.key = key;
-            entry.value = value;
-            // Value in _buckets is 1-based
-            bucket = index + 1;
-
-            // Value types never rehash
-            if (collisionCount > HashCollisionThreshold) // TODO-NULLABLE: default(T) == null warning (https://github.com/dotnet/roslyn/issues/34757)
-            {
-                Resize(entries.Length);
-            }
-
-            return true;
+            _map = _map.TryAdd(key, value, out bool success);
+            return success;
         }
 
         /// <summary>
-        /// Tries to remove the <paramref name="key"/>.
+        /// Tries to get the <paramref name="value"/> withe the <paramref name="key"/> as key.
         /// </summary>
         /// <param name="key"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryRemove(int key)
-        {
-            int[]? buckets = _buckets;
-            if (buckets != null)
-            {
-                Entry[] entries = _entries!;
-                int collisionCount = 0;
-
-                Debug.Assert(entries != null, "entries should be non-null");
-                uint hashCode = (uint)key; // TODO-NULLABLE: Remove ! when [DoesNotReturn] respected
-                uint bucket = hashCode % (uint)buckets.Length;
-                int last = -1;
-                // Value in buckets is 1-based
-                int i = buckets[bucket] - 1;
-                while (i >= 0)
-                {
-                    ref Entry entry = ref entries[i];
-
-                    if (entry.key == key)
-                    {
-                        if (last < 0)
-                        {
-                            // Value in buckets is 1-based
-                            buckets[bucket] = entry.next + 1;
-                        }
-                        else
-                        {
-                            entries[last].next = entry.next;
-                        }
-
-                        Debug.Assert((StartOfFreeList - _freeList) < 0, "shouldn't underflow because max hashtable length is MaxPrimeArrayLength = 0x7FEFFFFD(2146435069) _freelist underflow threshold 2147483646");
-
-                        entry.next = StartOfFreeList - _freeList;
-                        entry.value = null;
-                        _freeList = i;
-                        _freeCount++;
-                        return true;
-                    }
-
-                    last = i;
-                    i = entry.next;
-                    if (collisionCount >= entries.Length)
-                    {
-                        // The chain of entries forms a loop; which means a concurrent update has happened.
-                        // Break out of the loop and throw, rather than looping forever.
-                        ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
-                    }
-                    collisionCount++;
-                }
-            }
-            return false;
-        }
-
-        private void Resize() => Resize(ExpandPrime(_count));
-
-        private void Resize(int newSize)
-        {
-            Debug.Assert(_entries != null, "_entries should be non-null");
-            Debug.Assert(newSize >= _entries.Length);
-
-            int[] buckets = new int[newSize];
-            Entry[] entries = new Entry[newSize];
-
-            int count = _count;
-            Array.Copy(_entries, 0, entries, 0, count);
-
-            for (int i = 0; i < count; i++)
-            {
-                if (entries[i].next >= -1)
-                {
-                    uint bucket = (uint)entries[i].key % (uint)newSize;
-                    // Value in _buckets is 1-based
-                    entries[i].next = buckets[bucket] - 1;
-                    // Value in _buckets is 1-based
-                    buckets[bucket] = i + 1;
-                }
-            }
-
-            _buckets = buckets;
-            _entries = entries;
-        }
+        public bool TryGetValue(int key, [NotNullWhen(true)] out TValue? value) => _map.TryGetValue(key, out value);
 
         /// <inheritsdoc />
         public void Dispose()
         {
-            var entries = _entries;
-            if (!(entries is null))
-            {
-                for (int i = 0; i < _count; i++)
-                {
-                    entries[i].value?.Dispose();
-                }
-            }
+            _map.Dispose();
         }
 
-        private const int MaxPrimeArrayLength = 0x7FEFFFFD;
-        private const int HashPrime = 101;
-        private static readonly int[] primes = {
-            3, 7, 11, 17, 23, 29, 37, 47, 59, 71, 89, 107, 131, 163, 197, 239, 293, 353, 431, 521, 631, 761, 919,
-            1103, 1327, 1597, 1931, 2333, 2801, 3371, 4049, 4861, 5839, 7013, 8419, 10103, 12143, 14591,
-            17519, 21023, 25229, 30293, 36353, 43627, 52361, 62851, 75431, 90523, 108631, 130363, 156437,
-            187751, 225307, 270371, 324449, 389357, 467237, 560689, 672827, 807403, 968897, 1162687, 1395263,
-            1674319, 2009191, 2411033, 2893249, 3471899, 4166287, 4999559, 5999471, 7199369 };
-
-        private static int GetPrime(int min)
+        private abstract partial class Map<TMapValue> : IDisposable where TMapValue : class, IDisposable
         {
-            for (int i = 0; i < primes.Length; i++)
+            public static Map<TMapValue> Empty { get; } = new EmptyMap();
+
+            public abstract int Count { get; }
+
+            public abstract Map<TMapValue> TryAdd(int key, TMapValue value, out bool success);
+
+            public abstract bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value);
+
+            public abstract void Dispose();
+
+            // Instance without any key/value pairs. Used as a singleton.
+            private sealed class EmptyMap : Map<TMapValue>
             {
-                int prime = primes[i];
-                if (prime >= min)
+                public override int Count => 0;
+
+                public override void Dispose()
                 {
-                    return prime;
+                }
+
+                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                {
+                    // Create a new one-element map to store the key/value pair
+                    success = true;
+                    return new OneElementMap(key, value);
+                }
+
+                public override bool TryGetValue(int key, out TMapValue? value)
+                {
+                    // Nothing here
+                    value = null;
+                    return false;
                 }
             }
 
-            //outside of our predefined table. 
-            //compute the hard way. 
-            for (int i = (min | 1); i < int.MaxValue; i += 2)
+            private sealed class OneElementMap : Map<TMapValue>
             {
-                if (IsPrime(i) && ((i - 1) % HashPrime != 0))
+                private readonly int _key1;
+                private readonly TMapValue _value1;
+
+                public OneElementMap(int key, TMapValue value)
                 {
-                    return i;
+                    _key1 = key;
+                    _value1 = value;
                 }
-            }
 
-            return min;
-        }
+                public override int Count => 1;
 
-        private static int ExpandPrime(int oldSize)
-        {
-            int newSize = 2 * oldSize;
-
-            // Allow the hashtables to grow to maximum possible size (~2G elements) before encountering capacity overflow.
-            // Note that this check works even when _items.Length overflowed thanks to the (uint) cast
-            if ((uint)newSize > MaxPrimeArrayLength && MaxPrimeArrayLength > oldSize)
-            {
-                Debug.Assert(MaxPrimeArrayLength == GetPrime(MaxPrimeArrayLength), "Invalid MaxPrimeArrayLength");
-                return MaxPrimeArrayLength;
-            }
-
-            return GetPrime(newSize);
-        }
-
-        private static bool IsPrime(int candidate)
-        {
-            if ((candidate & 1) != 0)
-            {
-                int limit = (int)Math.Sqrt(candidate);
-                for (int divisor = 3; divisor <= limit; divisor += 2)
+                public override void Dispose()
                 {
-                    if ((candidate % divisor) == 0)
+                    _value1.Dispose();
+                }
+
+                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                {
+                    if (key == _key1)
                     {
-                        return false;
+                        success = false;
+                        return this;
+                    }
+                    else
+                    {
+                        success = true;
+                        return new TwoElementMap(_key1, _value1, key, value);
                     }
                 }
 
-                return true;
+                public override bool TryGetValue(int key, out TMapValue? value)
+                {
+                    if (key == _key1)
+                    {
+                        value = _value1;
+                        return true;
+                    }
+                    else
+                    {
+                        value = null;
+                        return false;
+                    }
+                }
             }
 
-            return (candidate == 2);
+            private sealed class TwoElementMap : Map<TMapValue>
+            {
+                private readonly int _key1;
+                private readonly TMapValue _value1;
+                private readonly int _key2;
+                private readonly TMapValue _value2;
+
+                public TwoElementMap(int key1, TMapValue value1, int key2, TMapValue value2)
+                {
+                    _key1 = key1;
+                    _value1 = value1;
+                    _key2 = key2;
+                    _value2 = value2;
+                }
+
+                public override int Count => 2;
+
+                public override void Dispose()
+                {
+                    _value1.Dispose();
+                    _value2.Dispose();
+                }
+
+                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                {
+                    if (key == _key1)
+                    {
+                        success = false;
+                        return this;
+                    }
+                    else if (key == _key2)
+                    {
+                        success = false;
+                        return this;
+                    }
+                    else
+                    {
+                        success = true;
+                        return new ThreeElementMap(_key1, _value1, _key2, _value2, key, value);
+                    }
+                }
+
+                public override bool TryGetValue(int key, out TMapValue? value)
+                {
+                    if (key == _key1)
+                    {
+                        value = _value1;
+                        return true;
+                    }
+                    if (key == _key2)
+                    {
+                        value = _value2;
+                        return true;
+                    }
+                    else
+                    {
+                        value = null;
+                        return false;
+                    }
+                }
+            }
+
+            private sealed class ThreeElementMap : Map<TMapValue>
+            {
+                private readonly int _key1;
+                private readonly TMapValue _value1;
+                private readonly int _key2;
+                private readonly TMapValue _value2;
+                private readonly int _key3;
+                private readonly TMapValue _value3;
+
+                public ThreeElementMap(int key1, TMapValue value1, int key2, TMapValue value2, int key3, TMapValue value3)
+                {
+                    _key1 = key1;
+                    _value1 = value1;
+                    _key2 = key2;
+                    _value2 = value2;
+                    _key3 = key3;
+                    _value3 = value3;
+                }
+
+                public override int Count => 3;
+
+                public override void Dispose()
+                {
+                    _value1.Dispose();
+                    _value2.Dispose();
+                    _value3.Dispose();
+                }
+
+                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                {
+                    if (key == _key1)
+                    {
+                        success = false;
+                        return this;
+                    }
+                    else if (key == _key2)
+                    {
+                        success = false;
+                        return this;
+                    }
+                    else if (key == _key3)
+                    {
+                        success = false;
+                        return this;
+                    }
+                    else
+                    {
+                        success = true;
+                        var multi = new MultiElementMap(4);
+                        multi.UnsafeStore(0, _key1, _value1);
+                        multi.UnsafeStore(1, _key2, _value2);
+                        multi.UnsafeStore(2, _key3, _value3);
+                        multi.UnsafeStore(3, key, value);
+                        return multi;
+                    }
+                }
+
+                public override bool TryGetValue(int key, out TMapValue? value)
+                {
+                    if (key == _key1)
+                    {
+                        value = _value1;
+                        return true;
+                    }
+                    if (key == _key2)
+                    {
+                        value = _value2;
+                        return true;
+                    }
+                    else if (key == _key3)
+                    {
+                        value = _value3;
+                        return true;
+                    }
+                    else
+                    {
+                        value = null;
+                        return false;
+                    }
+                }
+            }
+
+            private sealed class MultiElementMap : Map<TMapValue>
+            {
+                private const int MaxMultiElements = 16;
+                private readonly KeyValuePair<int, TMapValue>[] _keyValues;
+
+                public override int Count => _keyValues.Length;
+
+                public MultiElementMap(int count)
+                {
+                    Debug.Assert(count <= MaxMultiElements);
+                    _keyValues = new KeyValuePair<int, TMapValue>[count];
+                }
+
+                public void UnsafeStore(int index, int key, TMapValue value)
+                {
+                    Debug.Assert(index < _keyValues.Length);
+                    _keyValues[index] = new KeyValuePair<int, TMapValue>(key, value);
+                }
+
+                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                {
+                    for (int i = 0; i < _keyValues.Length; i++)
+                    {
+                        if (key == _keyValues[i].Key)
+                        {
+                            // The key is in the map. 
+                            success = false;
+                            return this;
+                        }
+                    }
+
+                    // The key does not already exist in this map.
+                    // We need to create a new map that has the additional key/value pair.
+                    // If with the addition we can still fit in a multi map, create one.
+                    if (_keyValues.Length < MaxMultiElements)
+                    {
+                        var multi = new MultiElementMap(_keyValues.Length + 1);
+                        Array.Copy(_keyValues, 0, multi._keyValues, 0, _keyValues.Length);
+                        multi._keyValues[_keyValues.Length] = new KeyValuePair<int, TMapValue>(key, value);
+                        success = true;
+                        return multi;
+                    }
+
+                    // Otherwise, upgrade to a many map.
+                    var many = new ManyElementMap(MaxMultiElements + 1);
+                    foreach (KeyValuePair<int, TMapValue> pair in _keyValues)
+                    {
+                        many[pair.Key] = pair.Value;
+                    }
+
+                    many[key] = value;
+                    success = true;
+                    return many;
+                }
+
+                public override bool TryGetValue(int key, out TMapValue? value)
+                {
+                    foreach (KeyValuePair<int, TMapValue> pair in _keyValues)
+                    {
+                        if (key == pair.Key)
+                        {
+                            value = pair.Value;
+                            return true;
+                        }
+                    }
+
+                    value = null;
+                    return false;
+                }
+
+                public override void Dispose()
+                {
+                    foreach (KeyValuePair<int, TMapValue> pair in _keyValues)
+                    {
+                        pair.Value.Dispose();
+                    }
+                }
+            }
+
+            private sealed class ManyElementMap : Map<TMapValue>
+            {
+                private readonly Dictionary<int, TMapValue> _dictionary;
+
+                public override int Count => _dictionary.Count;
+
+                public ManyElementMap(int capacity)
+                {
+                    _dictionary = new Dictionary<int, TMapValue>(capacity);
+                }
+
+                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                {
+#if NETCOREAPP
+                    success = _dictionary.TryAdd(key, value);
+#else
+                success = !_dictionary.ContainsKey(key);
+                if (_dictionary.ContainsKey(key))
+                {
+                    success = false;
+                }
+                else
+                {
+                    _dictionary[key] = value;
+                    success = true;
+                }
+#endif
+
+                    return this;
+                }
+
+                public override bool TryGetValue(int key, out TMapValue? value)
+                {
+                    return _dictionary.TryGetValue(key, out value);
+                }
+
+                public override void Dispose()
+                {
+                    foreach (var value in _dictionary.Values)
+                    {
+                        value.Dispose();
+                    }
+                }
+
+                public TMapValue this[int key]
+                {
+                    get => _dictionary[key];
+                    set => _dictionary[key] = value;
+                }
+            }
         }
     }
 }

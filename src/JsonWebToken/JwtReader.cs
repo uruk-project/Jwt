@@ -413,15 +413,12 @@ namespace JsonWebToken
             }
 
             Jwt jws = new Jwt(header, payload);
-            if (policy.SignatureValidation != null)
+            
+            var result = policy.TryValidateSignature(jws, utf8Buffer.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), utf8Buffer.Slice(signatureSegment.Start, signatureSegment.Length));
+            if (!result.Succedeed)
             {
-                var result = TryValidateSignature(policy.SignatureValidation, jws, utf8Buffer.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), utf8Buffer.Slice(signatureSegment.Start, signatureSegment.Length));
-                if (!result.Succedeed)
-                {
-                    return result;
-                }
+                return result;
             }
-
             if (policy.HasValidation)
             {
                 return policy.TryValidate(jws);
@@ -614,78 +611,6 @@ namespace JsonWebToken
             }
 
             return keys;
-        }
-
-        private TokenValidationResult TryValidateSignature(SignatureValidationContext signatureValidationContext, Jwt jwt, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
-        {
-            if (contentBytes.Length == 0 && signatureSegment.Length == 0)
-            {
-                // This is not a JWS
-                goto Success;
-            }
-
-            if (signatureSegment.IsEmpty)
-            {
-                if (signatureValidationContext.SupportUnsecure && jwt.SignatureAlgorithm == SignatureAlgorithm.None)
-                {
-                    goto Success;
-                }
-
-                return TokenValidationResult.MissingSignature(jwt);
-            }
-
-            try
-            {
-                int signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(signatureSegment.Length);
-                Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
-                Base64Url.Decode(signatureSegment, signatureBytes, out int byteConsumed, out int bytesWritten);
-                Debug.Assert(bytesWritten == signatureBytes.Length);
-                bool keysTried = false;
-
-                var keySet = signatureValidationContext.KeyProvider.GetKeys(jwt.Header);
-                if (keySet != null)
-                {
-                    for (int i = 0; i < keySet.Length; i++)
-                    {
-                        var key = keySet[i];
-                        if (key.CanUseForSignature(jwt.Header.SignatureAlgorithm))
-                        {
-                            var alg = signatureValidationContext.Algorithm ?? key.SignatureAlgorithm;
-                            if (!(alg is null) && TryValidateSignature(contentBytes, signatureBytes, key, alg))
-                            {
-                                jwt.SigningKey = key;
-                                goto Success;
-                            }
-
-                            keysTried = true;
-                        }
-                    }
-                }
-
-                if (keysTried)
-                {
-                    return TokenValidationResult.InvalidSignature(jwt);
-                }
-
-                return TokenValidationResult.SignatureKeyNotFound(jwt);
-            }
-            catch (FormatException e)
-            {
-                return TokenValidationResult.MalformedSignature(jwt, e);
-            }
-
-        Success:
-            return TokenValidationResult.Success(jwt);
-        }
-
-        private bool TryValidateSignature(ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signature, Jwk key, SignatureAlgorithm algorithm)
-        {
-            if (!key.TryGetSigner(algorithm, out var signer))
-            {
-                return false;
-            }
-
-            return signer.Verify(contentBytes, signature);
         }
     }
 }

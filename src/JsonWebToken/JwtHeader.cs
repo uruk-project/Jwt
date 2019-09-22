@@ -43,7 +43,7 @@ namespace JsonWebToken
         /// <param name="json"></param>   
         public static JwtHeader FromJson(string json)
         {
-            return JsonHeaderParser.ReadHeader(Encoding.UTF8.GetBytes(json));
+            return JsonHeaderParser.ParseHeader(Encoding.UTF8.GetBytes(json));
         }
 
         /// <summary>

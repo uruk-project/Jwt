@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json;
+﻿using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
 using Newtonsoft.Json;
@@ -9,31 +6,6 @@ using Newtonsoft.Json.Linq;
 
 namespace JsonWebToken.Performance
 {
-    [MemoryDiagnoser]
-    public class JsonHeaderParserBenchmark
-    {
-        [Benchmark(Baseline = false)]
-        [ArgumentsSource(nameof(GetData))]
-        public JwtHeader Old(byte[] data)
-        {
-            return JsonHeaderParser.ParseHeader(data);
-        }
-
-        [Benchmark]
-        [ArgumentsSource(nameof(GetData))]
-        public JwtHeader New(byte[] data)
-        {
-            return JsonHeaderParser.ParseHeaderSlow(data);
-        }
-
-        public IEnumerable<byte[]> GetData()
-        {
-            yield return Encoding.UTF8.GetBytes("{\"alg\":\"HS256\",\"typ\":\"JWT\"}");
-            yield return Encoding.UTF8.GetBytes("{\"unk\":\"unknow value\",\"x\":123}");
-            yield return Encoding.UTF8.GetBytes("{\"alg\":\"HS256\",\"typ\":\"JWT\",\"unk\":\"unknow value\",\"x\":123}");
-        }
-    }
-
     [MemoryDiagnoser]
     public class JsonWriterBenchmark
     {

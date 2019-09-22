@@ -19,7 +19,7 @@ namespace JsonWebToken
         private readonly List<IValidator> _validators = new List<IValidator>();
         private int _maximumTokenSizeInBytes = DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
-        private SignatureValidationContext? _signatureValidation;
+        private SignatureValidationPolicy? _signatureValidation = SignatureValidationPolicy.IgnoreSignature;
         private bool _ignoreCriticalHeader;
 
         /// <summary>
@@ -30,6 +30,9 @@ namespace JsonWebToken
         {
             _validators.Clear();
             _criticalHeaderHandlers.Clear();
+            _signatureValidation = SignatureValidationPolicy.IgnoreSignature;
+            _maximumTokenSizeInBytes = DefaultMaximumTokenSizeInBytes;
+            _hasSignatureValidation = false;
             return this;
         }
 
@@ -78,7 +81,7 @@ namespace JsonWebToken
         public TokenValidationPolicyBuilder IgnoreSignature()
         {
             _hasSignatureValidation = true;
-            _signatureValidation = null;
+            _signatureValidation = SignatureValidationPolicy.IgnoreSignature;
             return this;
         }
 
@@ -89,7 +92,7 @@ namespace JsonWebToken
         public TokenValidationPolicyBuilder AcceptUnsecureToken()
         {
             _hasSignatureValidation = true;
-            _signatureValidation = new SignatureValidationContext(new EmptyKeyProvider(), supportUnsecure: true, SignatureAlgorithm.None);
+            _signatureValidation = SignatureValidationPolicy.NoSignature;
             return this;
         }
 
@@ -102,7 +105,7 @@ namespace JsonWebToken
         public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider, SignatureAlgorithm? algorithm)
         {
             _hasSignatureValidation = true;
-            _signatureValidation = new SignatureValidationContext(keyProvider, supportUnsecure: false, algorithm);
+            _signatureValidation = SignatureValidationPolicy.Create(keyProvider, algorithm);
             return this;
         }
 

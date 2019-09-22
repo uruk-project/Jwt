@@ -12,7 +12,7 @@ namespace JsonWebToken
     public sealed class TokenValidationPolicy
     {
         /// <summary>
-        /// Represents an policy without any validation.
+        /// Represents an policy without any validation. Do not use it without consideration.
         /// </summary>
         public static readonly TokenValidationPolicy NoValidation = new TokenValidationPolicyBuilder()
                                                             .IgnoreSignature()
@@ -23,12 +23,12 @@ namespace JsonWebToken
         private readonly Dictionary<string, ICriticalHeaderHandler> _criticalHandlers;
         private readonly bool _ignoreCriticalHeader;
 
-        internal TokenValidationPolicy(IValidator[] validators, Dictionary<string, ICriticalHeaderHandler> criticalHandlers, int maximumTokenSizeInBytes, bool ignoreCriticalHeader, SignatureValidationContext? signatureValidation)
+        internal TokenValidationPolicy(IValidator[] validators, Dictionary<string, ICriticalHeaderHandler> criticalHandlers, int maximumTokenSizeInBytes, bool ignoreCriticalHeader, SignatureValidationPolicy? signatureValidation)
         {
             _validators = validators ?? throw new ArgumentNullException(nameof(validators));
             _criticalHandlers = criticalHandlers ?? throw new ArgumentNullException(nameof(criticalHandlers));
+            SignatureValidationPolicy = signatureValidation ?? throw new ArgumentNullException(nameof(signatureValidation));
             _ignoreCriticalHeader = ignoreCriticalHeader;
-            SignatureValidation = signatureValidation;
             MaximumTokenSizeInBytes = maximumTokenSizeInBytes;
         }
 
@@ -40,7 +40,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the signature validation parameters.
         /// </summary>
-        public SignatureValidationContext? SignatureValidation { get; }
+        public SignatureValidationPolicy SignatureValidationPolicy { get; }
 
         /// <summary>
         /// Gets whether the <see cref="TokenValidationPolicy"/> has validation.
@@ -68,7 +68,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Try to validate the token, according to the <paramref name="header"/>.
+        /// Try to validate the token header, according to the <paramref name="header"/>.
         /// </summary>
         /// <param name="header"></param>
         /// <returns></returns>
@@ -110,6 +110,18 @@ namespace JsonWebToken
 
         Success:
             return TokenValidationResult.Success();
+        }
+
+        /// <summary>
+        /// Try to validate the token signature.
+        /// </summary>
+        /// <param name="jwt"></param>
+        /// <param name="contentBytes"></param>
+        /// <param name="signatureSegment"></param>
+        /// <returns></returns>
+        public TokenValidationResult TryValidateSignature(Jwt jwt, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
+        {
+            return SignatureValidationPolicy.TryValidateSignature(jwt, contentBytes, signatureSegment);
         }
     }
 }

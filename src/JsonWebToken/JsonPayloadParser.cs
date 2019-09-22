@@ -20,27 +20,13 @@ namespace JsonWebToken
         /// <param name="buffer"></param>
         public static JwtPayload ParsePayload(ReadOnlySpan<byte> buffer)
         {
-            return ReadPayload(buffer);
-        }
-
-        /// <summary>
-        /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtPayload"/>.
-        /// </summary>
-        /// <param name="buffer"></param>
-        internal static JwtPayload ReadPayload(ReadOnlySpan<byte> buffer)
-        {
             Utf8JsonReader reader = new Utf8JsonReader(buffer, isFinalBlock: true, state: default);
             if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
             {
                 ThrowHelper.ThrowFormatException_MalformedJson();
             }
 
-            return ReadJwtPayload(ref reader);
-        }
-
-        internal static JwtPayload ReadJwtPayload(ref Utf8JsonReader reader)
-        {
-            var current = new JwtObject(3);
+            var current = new JwtObject();
             var payload = new JwtPayload(current);
             while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {

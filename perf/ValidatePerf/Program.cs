@@ -17,7 +17,7 @@ namespace ValidatePerf
         };
         private static readonly byte[] jwsToken = _writer.WriteToken(jwsDescriptor);
 
-        private static readonly Jwk encryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithm.Aes256GcmKW);
+        private static readonly Jwk encryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithm.Aes256KW);
         private static JweDescriptor jweDescriptor = new JweDescriptor
         {
             Payload = new JwsDescriptor
@@ -40,7 +40,7 @@ namespace ValidatePerf
             _reader.EnableHeaderCaching = false;
             while (true)
             {
-                var result = _reader.TryReadToken(jweToken, TokenValidationPolicy.NoValidation);
+                var result = _reader.TryReadToken(jwsToken, TokenValidationPolicy.NoValidation);
             }
         }
     }
