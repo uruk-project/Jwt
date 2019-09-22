@@ -6,7 +6,7 @@ namespace CreatePerf
     class Program
     {
         private static readonly Jwk signingKey = SymmetricJwk.GenerateKey(128, SignatureAlgorithm.HmacSha256);
-        private static readonly Jwk encryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithm.Aes256GcmKW);
+        private static readonly Jwk encryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithm.Aes256KW);
         private static readonly JwtWriter writer = new JwtWriter();
 
         private static JwsDescriptor jwsDescriptor = new JwsDescriptor

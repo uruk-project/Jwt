@@ -29,13 +29,7 @@ namespace JsonWebToken
             return ReadJsonObject(ref reader);
         }
 
-        internal static JwtObject ReadJwtPayload(ref Utf8JsonReader reader)
-        {
-            // TODO :specialize this reader for Payload
-            return ReadJsonObject(ref reader);
-        }
-
-        internal static JwtObject ReadJsonObject(ref Utf8JsonReader reader)
+        public static JwtObject ReadJsonObject(ref Utf8JsonReader reader)
         {
             var current = new JwtObject();
             while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
@@ -94,7 +88,7 @@ namespace JsonWebToken
             return current;
         }
 
-        internal static JwtArray ReadJsonArray(ref Utf8JsonReader reader)
+        public static JwtArray ReadJsonArray(ref Utf8JsonReader reader)
         {
             var array = new JwtArray(new List<JwtValue>(2));
             while (reader.Read())

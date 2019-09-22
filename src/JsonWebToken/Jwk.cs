@@ -115,7 +115,6 @@ namespace JsonWebToken
         /// </summary>
         public abstract ReadOnlySpan<byte> Kty { get; }
 
-        // TODO : Replace string by another type faster to compare (4 comparisons).
         /// <summary>
         /// Gets or sets the 'use' (Public Key Use).
         /// </summary>
@@ -544,14 +543,14 @@ namespace JsonWebToken
             return false;
         }
 
-        /// <summary>
-        /// Releases the <see cref="Signer"/>.
-        /// </summary>
-        /// <param name="signer"></param>
-        public void Release(Signer signer)
-        {
-            _signers?.TryRemove(signer.Algorithm.Id);
-        }
+        ///// <summary>
+        ///// Releases the <see cref="Signer"/>.
+        ///// </summary>
+        ///// <param name="signer"></param>
+        //public void Release(Signer signer)
+        //{
+        //    _signers?.TryRemove(signer.Algorithm.Id);
+        //}
 
         /// <summary>
         /// Tries to provide a <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.
@@ -608,15 +607,6 @@ namespace JsonWebToken
         protected abstract KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
 
         /// <summary>
-        /// Releases the <see cref="KeyWrapper"/>.
-        /// </summary>
-        /// <param name="keyWrapper"></param>
-        public void Release(KeyWrapper keyWrapper)
-        {
-            _keyWrappers?.TryRemove(keyWrapper.EncryptionAlgorithm.ComputeKey(keyWrapper.Algorithm));
-        }
-
-        /// <summary>
         /// Creates a <see cref="AuthenticatedEncryptor"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
@@ -668,14 +658,14 @@ namespace JsonWebToken
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
         protected abstract AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm);
 
-        /// <summary>
-        /// Releases the <see cref="AuthenticatedEncryptor"/>.
-        /// </summary>
-        /// <param name="encryptor"></param>
-        public void Release(AuthenticatedEncryptor encryptor)
-        {
-            _encryptors?.TryRemove(encryptor.EncryptionAlgorithm.Id);
-        }
+        ///// <summary>
+        ///// Releases the <see cref="AuthenticatedEncryptor"/>.
+        ///// </summary>
+        ///// <param name="encryptor"></param>
+        //public void Release(AuthenticatedEncryptor encryptor)
+        //{
+        //    _encryptors?.TryRemove(encryptor.EncryptionAlgorithm.Id);
+        //}
 
         /// <summary>
         /// Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
