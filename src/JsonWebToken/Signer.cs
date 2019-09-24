@@ -32,8 +32,8 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.algorithm);
             }
 
-            Key = key!; // ! => [DoesNotReturn]
-            Algorithm = algorithm!; // ! => [DoesNotReturn]
+            Key = key;
+            Algorithm = algorithm;
         }
 
         /// <summary>

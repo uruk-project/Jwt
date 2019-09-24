@@ -27,8 +27,8 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
             }
 
-            Key = key!; // ! => [DoesNotReturn]
-            EncryptionAlgorithm = encryptionAlgorithm!; // ! => [DoesNotReturn]
+            Key = key;
+            EncryptionAlgorithm = encryptionAlgorithm; 
         }
 
         /// <summary>

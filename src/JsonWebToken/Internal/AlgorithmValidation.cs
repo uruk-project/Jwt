@@ -22,7 +22,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
             }
 
-            if (!jwt!.Header.TryGetValue(HeaderParameters.AlgUtf8, out var property))
+            if (!jwt.Header.TryGetValue(HeaderParameters.AlgUtf8, out var property))
             {
                 return TokenValidationResult.MissingHeader(HeaderParameters.AlgUtf8);
             }

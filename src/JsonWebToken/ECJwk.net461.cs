@@ -45,9 +45,6 @@ namespace JsonWebToken
 
         /// <inheritsdoc />
         protected override Signer CreateSigner(SignatureAlgorithm algorithm) => throw new NotImplementedException();
-
-        /// <inheritsdoc />
-        internal override void WriteComplementTo(Utf8JsonWriter writer) => throw new NotImplementedException();
     }
 }
 #endif

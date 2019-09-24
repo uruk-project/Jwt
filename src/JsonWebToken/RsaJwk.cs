@@ -252,8 +252,8 @@ namespace JsonWebToken
             QI = qi;
             P = p;
             Q = q;
-            E = e!;
-            N = n!;
+            E = e;
+            N = n;
         }
 
         private void Initialize(string p, string q, string dp, string dq, string qi, string e, string n)
@@ -293,13 +293,13 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
-            DP = Base64Url.Decode(dp!);
-            DQ = Base64Url.Decode(dq!);
-            QI = Base64Url.Decode(qi!);
-            P = Base64Url.Decode(p!);
-            Q = Base64Url.Decode(q!);
-            E = Base64Url.Decode(e!);
-            N = Base64Url.Decode(n!);
+            DP = Base64Url.Decode(dp);
+            DQ = Base64Url.Decode(dq);
+            QI = Base64Url.Decode(qi);
+            P = Base64Url.Decode(p);
+            Q = Base64Url.Decode(q);
+            E = Base64Url.Decode(e);
+            N = Base64Url.Decode(n);
         }
 
         private void Initialize(RSAParameters rsaParameters)
@@ -327,8 +327,8 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
-            E = Base64Url.Decode(e!);
-            N = Base64Url.Decode(n!);
+            E = Base64Url.Decode(e);
+            N = Base64Url.Decode(n);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -345,8 +345,8 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
-            E = e!;
-            N = n!;
+            E = e;
+            N = n;
         }
 
         /// <inheritsdoc />
@@ -755,8 +755,10 @@ namespace JsonWebToken
             return key;
         }
 
-        internal override void WriteComplementTo(Utf8JsonWriter writer)
+        /// <inheritsdoc />
+        public override void WriteTo(Utf8JsonWriter writer)
         {
+            base.WriteTo(writer);
             writer.WriteString(JwkParameterNames.NUtf8, Base64Url.Encode(N));
             writer.WriteString(JwkParameterNames.EUtf8, Base64Url.Encode(E));
             if (D != null)
@@ -789,7 +791,7 @@ namespace JsonWebToken
                 writer.WriteString(JwkParameterNames.QIUtf8, Base64Url.Encode(QI));
             }
         }
-
+     
         /// <inheritsdoc />
         public override bool Equals(Jwk? other)
         {

@@ -113,7 +113,7 @@ namespace JsonWebToken.Internal
             var apv = header.Apv == null ? null : Encoding.UTF8.GetBytes(header.Apv);
             byte[] secretAppend = BuildSecretAppend(apu, apv);
             byte[] exchangeHash;
-            using (var ephemeralKey = ECDiffieHellman.Create(epk!.ExportParameters())) // ! => [DoesNotReturn]
+            using (var ephemeralKey = ECDiffieHellman.Create(epk.ExportParameters()))
             using (var privateKey = ECDiffieHellman.Create(((ECJwk)Key).ExportParameters(true)))
             {
                 if (ephemeralKey.KeySize != privateKey.KeySize)
@@ -157,8 +157,8 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            var partyUInfo = GetPartyInfo(header!, HeaderParameters.ApuUtf8); // ! => [DoesNotReturn]
-            var partyVInfo = GetPartyInfo(header!, HeaderParameters.ApvUtf8); // ! => [DoesNotReturn]
+            var partyUInfo = GetPartyInfo(header, HeaderParameters.ApuUtf8);
+            var partyVInfo = GetPartyInfo(header, HeaderParameters.ApvUtf8);
             var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
             byte[] exchangeHash;
             var keyParameters = ((ECJwk)Key).ExportParameters();
@@ -169,7 +169,7 @@ namespace JsonWebToken.Internal
 
                 using (var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false)))
                 {
-                    header!.Add(new JwtProperty(HeaderParameters.EpkUtf8, epk.AsJwtObject())); // ! => [DoesNotReturn]
+                    header.Add(new JwtProperty(HeaderParameters.EpkUtf8, epk.AsJwtObject()));
                 }
             }
 

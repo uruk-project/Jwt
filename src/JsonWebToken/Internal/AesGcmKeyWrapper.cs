@@ -53,8 +53,8 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.TagUtf8);
             }
 
-            Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(encodedIV!.Length)]; // ! => [DoesNotReturn];
-            Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(encodedTag!.Length)]; // ! => [DoesNotReturn];
+            Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(encodedIV.Length)];
+            Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(encodedTag.Length)];
             try
             {
                 Base64Url.Decode(encodedIV, nonce);

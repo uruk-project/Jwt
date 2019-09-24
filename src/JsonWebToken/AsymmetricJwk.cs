@@ -38,7 +38,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
-            D = Base64Url.Decode(d!); // ! => [DoesNotReturn]
+            D = Base64Url.Decode(d);
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
-            D = Base64Url.Decode(d!); // ! => [DoesNotReturn]
+            D = Base64Url.Decode(d);
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
-            D = Base64Url.Decode(d!); // ! => [DoesNotReturn]
+            D = Base64Url.Decode(d);
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace JsonWebToken
         protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
             ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm); 
-            return null!;
+            return null;
         }
     }
 }

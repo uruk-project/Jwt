@@ -49,7 +49,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.keys);
             }
 
-            for (int i = 0; i < keys!.Count; i++) // ! => [DoesNotReturn]
+            for (int i = 0; i < keys.Count; i++)
             {
                 var key = keys[i];
                 if (key != null)
@@ -95,7 +95,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            Keys.Add(key!); // ! => [DoesNotReturn]
+            Keys.Add(key);
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            Keys.Remove(key!); // ! => [DoesNotReturn]
+            Keys.Remove(key);
         }
 
         /// <inheritsdoc />
@@ -230,7 +230,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.json);
             }
 
-            return FromJson(Encoding.UTF8.GetBytes(json!)); // ! => [DoesNotReturn]
+            return FromJson(Encoding.UTF8.GetBytes(json));
         }
 
         /// <summary>

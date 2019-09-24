@@ -786,7 +786,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowInvalidOperationException_InvalidCertificate();
             }
 
-            key!.X5t = certificate!.GetCertHash();
+            key.X5t = certificate.GetCertHash();
             key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
             return key;
         }
@@ -949,9 +949,11 @@ namespace JsonWebToken
             }
         }
 
-        internal abstract void WriteComplementTo(Utf8JsonWriter writer);
-
-        internal void WriteTo(Utf8JsonWriter writer)
+        /// <summary>
+        /// Writes the current <see cref="Jwk"/> into the <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer"></param>
+        public virtual void WriteTo(Utf8JsonWriter writer)
         {
             writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
             if (Kid != null)
@@ -1005,8 +1007,6 @@ namespace JsonWebToken
 
                 writer.WriteEndArray();
             }
-
-            WriteComplementTo(writer);
         }
 
         private string DebuggerDisplay()
@@ -1107,21 +1107,17 @@ namespace JsonWebToken
             {
                 return false;
             }
-
-            internal override void WriteComplementTo(Utf8JsonWriter writer)
-            {
-            }
-
+            
             protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             {
                 ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-                return null!;
+                return null;
             }
 
             protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
             {
                 ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-                return null!;
+                return null;
             }
 
             protected override Signer CreateSigner(SignatureAlgorithm algorithm)

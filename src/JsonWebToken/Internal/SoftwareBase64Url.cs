@@ -93,7 +93,8 @@ namespace JsonWebToken.Internal
             // 0 -> 0
             // 1 -> 2
             // 2 -> 1
-            return dataLength % 3 == 0 ? 0 : 3 - (dataLength % 3);
+            int modulo = dataLength % 3;
+            return modulo == 0 ? 0 : 3 - modulo;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

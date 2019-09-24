@@ -1,49 +1,39 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
-
 namespace JsonWebToken.Internal
 {
     /// <summary>
     /// Represents a <see cref="IValidator"/> verifying the JWT has a required claim.
     /// </summary>
-    /// <typeparam name="TClaim"></typeparam>
-    internal sealed class RequiredClaimListValidator<TClaim> : IValidator
+    internal class RequiredIntegerClaimValidator : IValidator
     {
         private readonly string _claim;
-        private readonly IList<TClaim> _values;
+        private readonly long? _value;
 
         /// <summary>
-        /// Initializes an instance of <see cref="RequiredClaimListValidator{TClaim}"/>.
+        /// Initializes an instance of <see cref="RequiredIntegerClaimValidator"/>.
         /// </summary>
         /// <param name="claim"></param>
-        /// <param name="values"></param>
-        public RequiredClaimListValidator(string claim, IList<TClaim> values)
+        public RequiredIntegerClaimValidator(string claim)
+            : this(claim, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes an instance of <see cref="RequiredIntegerClaimValidator"/>.
+        /// </summary>
+        /// <param name="claim"></param>
+        /// <param name="value"></param>
+        public RequiredIntegerClaimValidator(string claim, long? value)
         {
             if (claim is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.claim);
             }
 
-            if (values is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.values);
-            }
-
-            for (int i = 0; i < values.Count; i++)
-            {
-                if (values[i] is null)
-                {
-                    ThrowHelper.ThrowArgumentException_MustNotContainNull(ExceptionArgument.values);
-                }
-            }
-
             _claim = claim;
-            _values = values;
+            _value = value;
         }
 
         /// <inheritdoc />
@@ -65,15 +55,12 @@ namespace JsonWebToken.Internal
                 return TokenValidationResult.MissingClaim(jwt, _claim);
             }
 
-            for (int i = 0; i < _values.Count; i++)
+            if (_value != (long?)claim)
             {
-                if (_values[i]!.Equals((TClaim)claim))
-                {
-                    return TokenValidationResult.Success(jwt);
-                }
+                return TokenValidationResult.InvalidClaim(jwt, _claim);
             }
 
-            return TokenValidationResult.InvalidClaim(jwt, _claim);
+            return TokenValidationResult.Success(jwt);
         }
     }
 }

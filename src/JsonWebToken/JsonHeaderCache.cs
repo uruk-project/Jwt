@@ -4,6 +4,7 @@
 using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace JsonWebToken
@@ -49,7 +50,7 @@ namespace JsonWebToken
         /// <param name="alg"></param>
         /// <param name="base64UrlHeader"></param>
         /// <returns></returns>
-        public bool TryGetHeader(JwtObject header, SignatureAlgorithm alg, out byte[]? base64UrlHeader)
+        public bool TryGetHeader(JwtObject header, SignatureAlgorithm alg, [NotNullWhen(true)] out byte[]? base64UrlHeader)
         {
             if (header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty)
                 && kidProperty.Type == JwtTokenType.String

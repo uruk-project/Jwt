@@ -26,7 +26,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.token);
             }
 
-            _payload = token!._payload;  // ! => [DoesNotReturn]
+            _payload = token._payload;
             Header = token.Header;
             NestedToken = token.NestedToken;
             SigningKey = token.SigningKey;
@@ -57,7 +57,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionKey);
             }
 
-            Header = header!; // ! => [DoesNotReturn]
+            Header = header;
             NestedToken = nestedToken;
             EncryptionKey = encryptionKey;
         }
@@ -85,7 +85,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionKey);
             }
 
-            Header = header!; // ! => [DoesNotReturn]
+            Header = header;
             Binary = data;
             EncryptionKey = encryptionKey;
         }
@@ -107,7 +107,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.payload);
             }
 
-            Header = header!; // ! => [DoesNotReturn];
+            Header = header;
             _payload = payload;
         }
 
