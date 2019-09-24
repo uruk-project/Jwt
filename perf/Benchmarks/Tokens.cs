@@ -160,7 +160,7 @@ namespace JsonWebToken.Performance
                 var descriptor = new JwsDescriptor()
                 {
                     SigningKey = signingKey,
-                    Algorithm = (SignatureAlgorithm)signingKey.Alg
+                    Algorithm = (SignatureAlgorithm?)signingKey.Alg
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -186,7 +186,7 @@ namespace JsonWebToken.Performance
                 var descriptor = new JwsDescriptor()
                 {
                     SigningKey = signingKey,
-                    Algorithm = (SignatureAlgorithm)signingKey.Alg
+                    Algorithm = (SignatureAlgorithm?)signingKey.Alg
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -221,7 +221,7 @@ namespace JsonWebToken.Performance
                 var descriptor = new JwsDescriptor()
                 {
                     SigningKey = signingKey,
-                    Algorithm = (SignatureAlgorithm)signingKey.Alg
+                    Algorithm = (SignatureAlgorithm?)signingKey.Alg
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -312,7 +312,7 @@ namespace JsonWebToken.Performance
             return jwts;
         }
 
-        private static JwsDescriptor CreateJws(JObject descriptor, TokenValidationStatus status, string claim = null)
+        private static JwsDescriptor CreateJws(JObject descriptor, TokenValidationStatus status, string? claim = null)
         {
             var payload = new JObject();
             foreach (var kvp in descriptor)
@@ -377,12 +377,12 @@ namespace JsonWebToken.Performance
             return new JwsDescriptor(new JwtObject(), ToJwtObject(payload));
         }
 
-        private static TokenState CreateInvalidToken(TokenValidationStatus status, JwtDescriptor descriptor, string claim = null)
+        private static TokenState CreateInvalidToken(TokenValidationStatus status, JwtDescriptor descriptor, string? claim = null)
         {
             switch (status)
             {
                 case TokenValidationStatus.SignatureKeyNotFound:
-                    descriptor.Header.Replace(new JwtProperty(HeaderParameters.KidUtf8, (string)descriptor.Header[HeaderParameters.KidUtf8].Value + "x"));
+                    descriptor.Header.Replace(new JwtProperty(HeaderParameters.KidUtf8, (string?)descriptor.Header[HeaderParameters.KidUtf8].Value + "x"));
                     break;
                 case TokenValidationStatus.MissingEncryptionAlgorithm:
                     descriptor.Header.Replace(new JwtProperty(HeaderParameters.EncUtf8));
@@ -418,15 +418,15 @@ namespace JsonWebToken.Performance
             return new TokenState(jwt, status);
         }
 
-        private static TokenState CreateInvalidToken(Jwk signingKey, TokenValidationStatus status, JwsDescriptor descriptor, string claim = null)
+        private static TokenState CreateInvalidToken(Jwk signingKey, TokenValidationStatus status, JwsDescriptor descriptor, string? claim = null)
         {
             descriptor.SigningKey = signingKey;
-            descriptor.Algorithm = (SignatureAlgorithm)signingKey.Alg;
+            descriptor.Algorithm = (SignatureAlgorithm?)signingKey.Alg;
 
-            return CreateInvalidToken(status, descriptor);
+            return CreateInvalidToken(status, descriptor, claim);
         }
 
-        private static TokenState CreateInvalidToken(Jwk signingKey, Jwk encryptionKey, TokenValidationStatus status, JweDescriptor descriptor, string claim = null)
+        private static TokenState CreateInvalidToken(Jwk signingKey, Jwk encryptionKey, TokenValidationStatus status, JweDescriptor descriptor, string? claim = null)
         {
             descriptor.Payload.SigningKey = SigningKey;
             descriptor.EncryptionKey = encryptionKey;

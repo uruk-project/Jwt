@@ -101,7 +101,7 @@ namespace JsonWebToken
 
                     try
                     {
-                        using (var bufferWriter = new ArrayBufferWriter())
+                        using (var bufferWriter = new PooledByteBufferWriter())
                         {
                             header.Serialize(bufferWriter);
                             var headerJson = bufferWriter.WrittenSpan;

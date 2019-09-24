@@ -14,7 +14,7 @@ namespace JsonWebToken.Performance
         [Params(8, 16, 32, 1024)]
         public int Size;
 
-        private byte[] data;
+        private byte[] data = Array.Empty<byte>();
 
         [GlobalSetup]
         public void Setup()

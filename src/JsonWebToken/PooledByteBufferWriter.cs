@@ -3,23 +3,25 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
+#nullable disable
+
 namespace JsonWebToken
 {
     /// <summary>
-    /// Represents an implementation of <see cref="IBufferWriter{T}" /> where the memory owner is a <see cref="ArrayPool{T}"/>.
+    /// Represents an implementation of <see cref="IBufferWriter{T}" /> where the memory owner is a <see cref="ArrayPool{T}" /> of bytes.
     /// </summary>
-    public sealed class ArrayBufferWriter : IBufferWriter<byte>, IDisposable
+    public sealed class PooledByteBufferWriter : IBufferWriter<byte>, IDisposable
     {
-        private byte[]? _rentedBuffer;
+        private byte[] _rentedBuffer;
         private int _index;
 
         private const int MinimumBufferSize = 256;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ArrayBufferWriter"/> class.
+        /// Initializes a new instance of the <see cref="PooledByteBufferWriter"/> class.
         /// </summary>
         /// <param name="initialCapacity "></param>
-        public ArrayBufferWriter(int initialCapacity = MinimumBufferSize)
+        public PooledByteBufferWriter(int initialCapacity = MinimumBufferSize)
         {
             Debug.Assert(initialCapacity > 0);
 
@@ -78,7 +80,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Clear the <see cref="ArrayBufferWriter"/>. 
+        /// Clear the <see cref="PooledByteBufferWriter"/>. 
         /// </summary>
         public void Clear()
         {
@@ -95,13 +97,11 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Advances the <see cref="ArrayBufferWriter"/> of the <paramref name="count"/> indicated.
+        /// Advances the <see cref="PooledByteBufferWriter"/> of the <paramref name="count"/> indicated.
         /// </summary>
         /// <param name="count"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable CS8614 // Nullability of reference types in type of parameter doesn't match implicitly implemented member.
         public void Advance(int count)
-#pragma warning restore CS8614 // Nullability of reference types in type of parameter doesn't match implicitly implemented member.
         {
             Debug.Assert(_rentedBuffer != null);
             Debug.Assert(count >= 0);
@@ -122,19 +122,15 @@ namespace JsonWebToken
             }
         }
 
-#pragma warning disable CS8614 // Nullability of reference types in type of parameter doesn't match implicitly implemented member.
                               /// <inheritsdoc />
         public Span<byte> GetSpan(int sizeHint = 0)
-#pragma warning restore CS8614 // Nullability of reference types in type of parameter doesn't match implicitly implemented member.
         {
             CheckAndResizeBuffer(sizeHint);
             return _rentedBuffer.AsSpan(_index);
         }
 
-#pragma warning disable CS8614 // Nullability of reference types in type of parameter doesn't match implicitly implemented member.
                               /// <inheritsdoc />
         public Memory<byte> GetMemory(int sizeHint = 0)
-#pragma warning restore CS8614 // Nullability of reference types in type of parameter doesn't match implicitly implemented member.
         {
             CheckAndResizeBuffer(sizeHint);
             return _rentedBuffer.AsMemory(_index);

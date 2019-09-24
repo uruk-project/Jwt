@@ -77,7 +77,7 @@ namespace JsonWebToken.Performance
 
         private static readonly JwtObject payload = Tokens.ToJwtObject(json);
         private static readonly JwtObject payloadMedium = Tokens.ToJwtObject(jsonMedium);
-        private static readonly ArrayBufferWriter _output = new ArrayBufferWriter();
+        private static readonly PooledByteBufferWriter _output = new PooledByteBufferWriter();
 
         [Benchmark(Baseline = false)]
         public byte[] New()

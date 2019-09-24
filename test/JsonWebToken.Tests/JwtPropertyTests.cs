@@ -42,7 +42,7 @@ namespace JsonWebToken.Tests
         [MemberData(nameof(GetPropertiesToWrite))]
         public void WriteTo(JwtProperty property, string expected)
         {
-            using (var bufferWriter = new ArrayBufferWriter())
+            using (var bufferWriter = new PooledByteBufferWriter())
             {
                 using (var writer = new Utf8JsonWriter(bufferWriter))
                 {
