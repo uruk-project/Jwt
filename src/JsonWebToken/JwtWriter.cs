@@ -77,7 +77,7 @@ namespace JsonWebToken
         /// <returns>The array of <see cref="byte"/> representation of the JWT.</returns>
         public byte[] WriteToken(JwtDescriptor descriptor)
         {
-            using (var bufferWriter = new ArrayBufferWriter())
+            using (var bufferWriter = new PooledByteBufferWriter())
             {
                 WriteToken(descriptor, bufferWriter);
                 return bufferWriter.WrittenSpan.ToArray();
@@ -113,7 +113,7 @@ namespace JsonWebToken
         /// <returns>The <see cref="string"/> retpresention of the JWT.</returns>
         public string WriteTokenString(JwtDescriptor descriptor)
         {
-            using (var bufferWriter = new ArrayBufferWriter())
+            using (var bufferWriter = new PooledByteBufferWriter())
             {
                 WriteToken(descriptor, bufferWriter);
 #if NETSTANDARD2_0 || NET461

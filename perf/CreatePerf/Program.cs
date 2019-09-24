@@ -37,7 +37,7 @@ namespace CreatePerf
             Console.WriteLine("Starting...");
             writer.EnableHeaderCaching = false;
             writer.IgnoreTokenValidation = false;
-            using (var buffer = new ArrayBufferWriter())
+            using (var buffer = new PooledByteBufferWriter())
             {
                 while (true)
                 {

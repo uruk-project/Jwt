@@ -88,7 +88,7 @@ namespace JsonWebToken.Performance
                 var descriptor = new JwsDescriptor()
                 {
                     SigningKey = SigningKey,
-                    Algorithm = (SignatureAlgorithm)SigningKey.Alg
+                    Algorithm = (SignatureAlgorithm?)SigningKey.Alg
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -116,7 +116,7 @@ namespace JsonWebToken.Performance
                     var descriptor = new JwsDescriptor()
                     {
                         SigningKey = SigningKey,
-                        Algorithm = (SignatureAlgorithm)SigningKey.Alg
+                        Algorithm = (SignatureAlgorithm?)SigningKey.Alg
                     };
 
                     foreach (var property in payload.Value.Properties())
@@ -138,7 +138,7 @@ namespace JsonWebToken.Performance
                     {
                         Payload = descriptor,
                         EncryptionKey = EncryptionKey,
-                        Algorithm = (KeyManagementAlgorithm)EncryptionKey.Alg,
+                        Algorithm = (KeyManagementAlgorithm?)EncryptionKey.Alg,
                         EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
                         CompressionAlgorithm = compression
                     };

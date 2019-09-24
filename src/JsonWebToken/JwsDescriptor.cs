@@ -479,7 +479,7 @@ namespace JsonWebToken
                     }
                 }
 
-                using (var bufferWriter = new ArrayBufferWriter())
+                using (var bufferWriter = new PooledByteBufferWriter())
                 {
                     using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
                     Payload.WriteTo(writer);

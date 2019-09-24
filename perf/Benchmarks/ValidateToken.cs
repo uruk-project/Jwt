@@ -57,7 +57,7 @@ namespace JsonWebToken.Performance
                 ThrowException($"{nameof(Handler.ValidateToken)} has returned 'null'.");
             }
 
-            return result;
+            return result!;
         }
 
         public abstract Microsoft.IdentityModel.JsonWebTokens.TokenValidationResult WilsonJwt(string token);
@@ -70,7 +70,7 @@ namespace JsonWebToken.Performance
                 ThrowException($"{nameof(Handler2.ValidateToken)} has returned 'null'.");
             }
 
-            if (result.SecurityToken == null)
+            if (result!.SecurityToken == null)
             {
                 ThrowException($"{nameof(result.SecurityToken)} is 'null'.");
             }

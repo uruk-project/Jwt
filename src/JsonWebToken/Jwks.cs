@@ -115,7 +115,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override string ToString()
         {
-            using (var bufferWriter = new ArrayBufferWriter())
+            using (var bufferWriter = new PooledByteBufferWriter())
             {
                 using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
                 {
@@ -145,7 +145,7 @@ namespace JsonWebToken
 
         private string DebuggerDisplay()
         {
-            using (var bufferWriter = new ArrayBufferWriter())
+            using (var bufferWriter = new PooledByteBufferWriter())
             {
                 using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
                 {

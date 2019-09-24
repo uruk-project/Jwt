@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace JsonWebToken.Performance
 {
+#nullable disable
     [MemoryDiagnoser]
     public class Dictionary_TryGetValue
     {
@@ -75,8 +76,8 @@ namespace JsonWebToken.Performance
         private const int HashCollisionThreshold = 100;
         private const int StartOfFreeList = -3;
 
-        private int[]? _buckets;
-        private Entry[]? _entries;
+        private int[] _buckets;
+        private Entry[] _entries;
         private int _count;
         private int _freeList;
         private int _freeCount;
@@ -88,7 +89,7 @@ namespace JsonWebToken.Performance
             // so -2 means end of free list, -3 means index 0 but on free list, -4 means index 1 but on free list, etc.
             public int next;
             public int key;           // Key of entry
-            public TValue? value;         // Value of entry
+            public TValue value;         // Value of entry
         }
 
         /// <summary>
@@ -101,7 +102,7 @@ namespace JsonWebToken.Performance
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public TValue? this[int index] => _entries?[index].value;
+        public TValue this[int index] => _entries?[index].value;
 
         /// <summary>
         /// Tries to get the <paramref name="value"/> withe the <paramref name="key"/> as key.
@@ -109,10 +110,10 @@ namespace JsonWebToken.Performance
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryGetValue(int key, [NotNullWhen(true)] out TValue? value)
+        public bool TryGetValue(int key, out TValue value)
         {
             int i = -1;
-            int[]? buckets = _buckets;
+            int[] buckets = _buckets;
             Entry[] entries = _entries!;
             if (buckets != null)
             {
@@ -257,7 +258,7 @@ namespace JsonWebToken.Performance
         /// <returns></returns>
         public bool TryRemove(int key)
         {
-            int[]? buckets = _buckets;
+            int[] buckets = _buckets;
             if (buckets != null)
             {
                 Entry[] entries = _entries!;
