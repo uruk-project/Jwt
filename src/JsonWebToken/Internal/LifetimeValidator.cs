@@ -24,7 +24,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
             }
 
-            if (jwt!.Payload is null)
+            if (jwt.Payload is null)
             {
                 return TokenValidationResult.MalformedToken();
             }

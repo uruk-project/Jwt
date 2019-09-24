@@ -99,11 +99,11 @@ namespace JsonWebToken
             
             if (!IgnoreTokenValidation)
             {
-                descriptor!.Validate();
+                descriptor.Validate();
             }
 
             var encodingContext = new EncodingContext(EnableHeaderCaching ? _headerCache : null, TokenLifetimeInMinutes, GenerateIssuedTime);
-            descriptor!.Encode(encodingContext, output);
+            descriptor.Encode(encodingContext, output);
         }
 
         /// <summary>

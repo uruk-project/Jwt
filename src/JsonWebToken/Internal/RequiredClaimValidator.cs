@@ -32,7 +32,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.claim);
             }
 
-            _claim = claim!;
+            _claim = claim;
             _value = value;
         }
 
@@ -44,7 +44,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
             }
 
-            if (jwt!.Payload is null)
+            if (jwt.Payload is null)
             {
                 return TokenValidationResult.MalformedToken();
             }
@@ -93,7 +93,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.claim);
             }
 
-            _claim = claim!;
+            _claim = claim;
             _value = value;
         }
 
@@ -105,7 +105,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
             }
 
-            if (jwt!.Payload is null)
+            if (jwt.Payload is null)
             {
                 return TokenValidationResult.MalformedToken();
             }
@@ -151,8 +151,8 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
-            _claim = claim!;
-            _value = value!;
+            _claim = claim;
+            _value = value;
         }
 
         /// <inheritdoc />
@@ -163,7 +163,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
             }
 
-            if (jwt!.Payload is null)
+            if (jwt.Payload is null)
             {
                 return TokenValidationResult.MalformedToken();
             }
@@ -207,7 +207,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
             }
 
-            if (jwt!.Payload is null)
+            if (jwt.Payload is null)
             {
                 return TokenValidationResult.MalformedToken();
             }

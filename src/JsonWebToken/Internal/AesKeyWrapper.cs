@@ -95,7 +95,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            if (key.Length % 8 != 0)
+            if ((key.Length & 7) != 0)
             {
                 ThrowHelper.ThrowArgumentException_KeySizeMustBeMultipleOf64(key);
             }

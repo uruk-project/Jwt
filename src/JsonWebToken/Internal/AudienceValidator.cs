@@ -24,7 +24,7 @@ namespace JsonWebToken.Internal
             }
             
             bool missingAudience = true;
-            foreach (string audience in jwt!.Audiences)
+            foreach (string audience in jwt.Audiences)
             {
                 missingAudience = false;
                 if (string.IsNullOrWhiteSpace(audience))

@@ -24,7 +24,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            if (key!.KeySizeInBits < 256)
+            if (key.KeySizeInBits < 256)
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException_SigningKeyTooSmall(key, 256);
             }

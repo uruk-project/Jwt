@@ -41,11 +41,6 @@ namespace JsonWebToken
         /// </summary>
         public Compressor Compressor { get; }
 
-        private static readonly CompressionAlgorithm[] _algorithms = new[]
-        {
-            Deflate
-        };
-
         private readonly sbyte _id;
         private readonly byte[] _utf8Name;
 
@@ -68,8 +63,8 @@ namespace JsonWebToken
             }
 
             _id = id;
-            _utf8Name = Encoding.UTF8.GetBytes(name!); // ! => [DoesNotReturn]
-            Compressor = compressor!; // ! => [DoesNotReturn]
+            _utf8Name = Encoding.UTF8.GetBytes(name);
+            Compressor = compressor;
         }
 
         /// <summary>

@@ -27,7 +27,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
-            if (header!.Jku is null)
+            if (header.Jku is null)
             {
                 return Array.Empty<Jwk>();
             }

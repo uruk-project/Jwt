@@ -122,7 +122,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
-            return TryReadToken(token.AsSpan(), policy!);
+            return TryReadToken(token.AsSpan(), policy);
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace JsonWebToken
             }
 
             int length = token.Length;
-            if (length > policy!.MaximumTokenSizeInBytes)
+            if (length > policy.MaximumTokenSizeInBytes)
             {
                 return TokenValidationResult.MalformedToken();
             }
@@ -204,7 +204,7 @@ namespace JsonWebToken
                 goto TokenAnalyzed;
             }
 
-            if (utf8Token.Length > policy!.MaximumTokenSizeInBytes)
+            if (utf8Token.Length > policy.MaximumTokenSizeInBytes)
             {
                 result = TokenValidationResult.MalformedToken();
                 goto TokenAnalyzed;

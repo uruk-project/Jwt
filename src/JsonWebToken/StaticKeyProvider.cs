@@ -23,7 +23,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwks);
             }
 
-            _jwks = jwks!; // ! => [DoesNotReturn]
+            _jwks = jwks;
         }
 
         /// <summary>

@@ -32,7 +32,7 @@ namespace JsonWebToken
         /// </summary>
         public SymmetricJwk(string k)
         {
-            if (k == null)
+            if (k is null)
             {
                 throw new ArgumentNullException(nameof(k));
             }
@@ -40,10 +40,10 @@ namespace JsonWebToken
             _k = Base64Url.Decode(k);
         }
 
-#nullable disable
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
+#nullable disable
         internal SymmetricJwk(JwtObject @object)
 #nullable enable
         {
@@ -128,7 +128,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentException_MalformedKey();
             }
 
-            _k = k!; // ! => [DoesNotReturn]
+            _k = k;
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
-            _k = k!; // ! => [DoesNotReturn]
+            _k = k;
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
-            _k = Base64Url.Decode(k!); // ! => [DoesNotReturn]
+            _k = Base64Url.Decode(k);
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
-            _k = k!; // ! => [DoesNotReturn]
+            _k = k;
         }
 
         /// <summary>
@@ -184,7 +184,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
-            _k = Base64Url.Decode(k!); // ! => [DoesNotReturn]
+            _k = Base64Url.Decode(k);
         }
 
         /// <inheritsdoc />
@@ -227,7 +227,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.bytes);
             }
 
-            var key = new SymmetricJwk(bytes!); // ! => [DoesNotReturn]
+            var key = new SymmetricJwk(bytes);
             if (computeThumbprint)
             {
                 key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
@@ -301,7 +301,7 @@ namespace JsonWebToken
             }
 
             ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-            return null!;
+            return null;
         }
 
         /// <inheritsdoc />
@@ -317,7 +317,7 @@ namespace JsonWebToken
             }
 
             ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-            return null!;
+            return null;
         }
 
         /// <summary>
@@ -340,7 +340,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
-            var key = new SymmetricJwk(k!);
+            var key = new SymmetricJwk(k);
             if (computeThumbprint)
             {
                 key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
@@ -421,8 +421,10 @@ namespace JsonWebToken
             return _k;
         }
 
-        internal override void WriteComplementTo(Utf8JsonWriter writer)
+        /// <inheritdoc />      
+        public override void WriteTo(Utf8JsonWriter writer)
         {
+            base.WriteTo(writer);
             writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
         }
 

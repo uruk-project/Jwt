@@ -30,7 +30,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
-            return Decode(Encoding.UTF8.GetBytes(data!)); // ! => [DoesNotReturn];
+            return Decode(Encoding.UTF8.GetBytes(data));
         }
 
         /// <summary>

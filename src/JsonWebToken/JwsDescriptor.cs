@@ -492,7 +492,7 @@ namespace JsonWebToken
                     byte[]? cachedHeader = null;
                     if (headerCache != null && headerCache.TryGetHeader(Header, alg, out cachedHeader))
                     {
-                        length += cachedHeader!.Length;
+                        length += cachedHeader.Length;
                     }
                     else
                     {

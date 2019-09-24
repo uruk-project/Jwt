@@ -34,7 +34,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.values);
             }
 
-            for (int i = 0; i < values!.Count; i++)
+            for (int i = 0; i < values.Count; i++)
             {
                 if (values[i] is null)
                 {
@@ -42,7 +42,7 @@ namespace JsonWebToken.Internal
                 }
             }
 
-            _claim = claim!;
+            _claim = claim;
             _values = values;
         }
 
@@ -54,7 +54,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
             }
 
-            if (jwt!.Payload is null)
+            if (jwt.Payload is null)
             {
                 return TokenValidationResult.MalformedToken();
             }

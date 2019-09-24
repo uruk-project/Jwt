@@ -44,7 +44,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
-            _policy = policy!; // ! => [DoesNotReturn]
+            _policy = policy;
 
             // -1 due to _firstItem
             _items = new ObjectWrapper[maximumRetained - 1];

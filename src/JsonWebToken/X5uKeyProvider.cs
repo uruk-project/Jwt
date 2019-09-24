@@ -28,12 +28,12 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
-            if (header!.X5u is null)
+            if (header.X5u is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
-            return GetKeys(header, header.X5u!);
+            return GetKeys(header, header.X5u);
         }
 
         /// <inheritsdoc />

@@ -468,7 +468,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentException_MalformedKey();
             }
 
-            return new ECJwk(EllipticalCurve.FromString((string)crv.Value!), (string)x.Value!, (string)y.Value!);
+            return new ECJwk(EllipticalCurve.FromString((string)crv.Value), (string)x.Value, (string)y.Value);
         }
 
         internal JwtObject AsJwtObject()
@@ -582,8 +582,10 @@ namespace JsonWebToken
             return key;
         }
 
-        internal override void WriteComplementTo(Utf8JsonWriter writer)
+        /// <inheritsdoc />
+        public override void WriteTo(Utf8JsonWriter writer)
         {
+            base.WriteTo(writer);
             writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
             writer.WriteString(JwkParameterNames.XUtf8, Base64Url.Encode(X));
             writer.WriteString(JwkParameterNames.YUtf8, Base64Url.Encode(Y));

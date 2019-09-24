@@ -45,7 +45,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
             }
 
-            _signer = (SymmetricSigner)signer!;
+            _signer = (SymmetricSigner)signer;
         }
 
         /// <inheritdoc />
