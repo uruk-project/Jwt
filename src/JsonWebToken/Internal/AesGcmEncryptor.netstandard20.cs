@@ -11,7 +11,6 @@ namespace JsonWebToken.Internal
     internal sealed class AesGcmEncryptor : AuthenticatedEncryptor
     {
         public AesGcmEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
-            : base(key, encryptionAlgorithm)
         {
             throw new NotSupportedException();
         }

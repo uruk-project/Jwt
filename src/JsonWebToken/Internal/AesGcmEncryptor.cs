@@ -1,5 +1,6 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
+
 #if NETCOREAPP3_0
 using System;
 using System.Security.Cryptography;
@@ -16,18 +17,28 @@ namespace JsonWebToken.Internal
         private bool _disposed;
 
         public AesGcmEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
-            : base(key, encryptionAlgorithm)
         {
+            if (key is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
+            }
+
+            if (encryptionAlgorithm is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
+            }
+
             if (encryptionAlgorithm.Category != EncryptionType.AesGcm)
             {
                 ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
             }
 
-            _key = key;
             if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBits)
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
             }
+      
+            _key = key;
         }
 
         /// <inheritdoc />
@@ -45,34 +56,19 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritdoc />
-        public override int GetCiphertextSize(int plaintextSize)
-        {
-            return plaintextSize;
-        }
+        public override int GetCiphertextSize(int plaintextSize) => plaintextSize;
 
         /// <inheritdoc />
-        public override int GetNonceSize()
-        {
-            return 12;
-        }
+        public override int GetNonceSize() => 12;
 
         /// <inheritdoc />
-        public override int GetBase64NonceSize()
-        {
-            return 16;
-        }
+        public override int GetBase64NonceSize() => 16;
 
         /// <inheritdoc />
-        public override int GetTagSize()
-        {
-            return 16;
-        }
+        public override int GetTagSize() => 16;
 
         /// <inheritdoc />
-        public override int GetBase64TagSize()
-        {
-            return 22;
-        }
+        public override int GetBase64TagSize() => 22;
 
         /// <inheritdoc />
         public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)

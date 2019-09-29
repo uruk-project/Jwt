@@ -105,7 +105,7 @@ namespace JsonWebToken.Tests
             base.TryParseSlow_Success(expected);
         }
     }
-    
+
     public class CompressionAlgorithmTests : AlgorithmTests<CompressionAlgorithm>
     {
         public override bool TryParse(ReadOnlySpan<byte> value, out CompressionAlgorithm algorithm)
@@ -132,7 +132,7 @@ namespace JsonWebToken.Tests
             base.TryParseSlow_Success(expected);
         }
     }
-    
+
     public class EncryptionAlgorithmTests : AlgorithmTests<EncryptionAlgorithm>
     {
         public override bool TryParse(ReadOnlySpan<byte> value, out EncryptionAlgorithm algorithm)

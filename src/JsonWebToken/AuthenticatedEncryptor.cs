@@ -10,37 +10,6 @@ namespace JsonWebToken
     /// </summary>
     public abstract class AuthenticatedEncryptor : IDisposable
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AuthenticatedEncryptor"/> class.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="encryptionAlgorithm"></param>
-        protected AuthenticatedEncryptor(Jwk key, EncryptionAlgorithm encryptionAlgorithm)
-        {
-            if (key is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
-            if (encryptionAlgorithm is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
-            }
-
-            Key = key;
-            EncryptionAlgorithm = encryptionAlgorithm; 
-        }
-
-        /// <summary>
-        /// Gets the key.
-        /// </summary>
-        public Jwk Key { get; }
-
-        /// <summary>
-        /// Gets the encryption algorithm.
-        /// </summary>
-        public EncryptionAlgorithm EncryptionAlgorithm { get; }
-
         /// <inheritdoc />
         public abstract void Dispose();
 
