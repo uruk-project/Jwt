@@ -59,6 +59,7 @@ namespace JsonWebToken.Tests
         [InlineData("This is a test string for encryption.0123456789012")]
         [InlineData("This is a test string for encryption.01234567890123")]
         [InlineData("This is a test string for encryption.012345678901234")]
+        [InlineData("This is a test string for encryption.This is a test string for encryption.This is a test string for encryption.This is a test string for encryption.")]
         public void EncryptSimd_Decrypt(string value)
         {
             var data = Encoding.UTF8.GetBytes(value);
@@ -75,7 +76,7 @@ namespace JsonWebToken.Tests
             Assert.Equal(data, plaintext.Slice(0, bytesWritten).ToArray());
 
             plaintext.Clear();
-            decrypted = encryptorNi.TryDecrypt(ciphertext, nonce, nonce, authenticationTag, plaintext, out bytesWritten);
+            decrypted = encryptorNi.TryDecrypt2(ciphertext, nonce, nonce, authenticationTag, plaintext, out bytesWritten);
             Assert.True(decrypted);
             Assert.Equal(data, plaintext.Slice(0, bytesWritten).ToArray());
         }

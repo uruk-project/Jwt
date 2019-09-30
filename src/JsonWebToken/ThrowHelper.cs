@@ -358,6 +358,11 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateFormatException_MalformedJson(string message) => new FormatException("The JSON is malformed. " + message);
 
+        [DoesNotReturn]
+        internal static string ThrowNotSupportedException_RequireAesNi() => throw CreateNotSupportedException_RequireAesNi();
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateNotSupportedException_RequireAesNi() => new NotSupportedException("The AES New Instructions set is not supported on the executing CPU.");
+
         private static string GetArgumentName(ExceptionArgument argument)
         {
             switch (argument)

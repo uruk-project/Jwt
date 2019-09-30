@@ -208,17 +208,10 @@ namespace JsonWebToken
 
             if (x is null)
             {
-                goto NotEqual;
+                return false;
             }
-
-            if (y is null)
-            {
-                goto NotEqual;
-            }
-
+            
             return x._id == y._id;
-        NotEqual:
-            return false;
         }
 
         /// <summary>

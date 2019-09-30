@@ -121,22 +121,11 @@ namespace JsonWebToken.Internal
                     Transform(encryptor, plaintext, 0, plaintext.Length, ciphertext);
                 }
 
-                int macLength = associatedData.Length + nonce.Length + ciphertext.Length + sizeof(long);
-                Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
-                    ? stackalloc byte[macLength]
-                    : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
-
-                associatedData.CopyTo(macBytes);
-                nonce.CopyTo(macBytes.Slice(associatedData.Length));
-                ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
-                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length, sizeof(long)), associatedData.Length << 3);
-
-                _signer.TrySign(macBytes, authenticationTag, out int writtenBytes);
-                Debug.Assert(writtenBytes == authenticationTag.Length);
+                AesHmacHelper.ComputeAuthenticationTag(_signer, nonce, associatedData, ciphertext, authenticationTag);
             }
             catch
             {
-                ciphertext.Clear();
+                CryptographicOperations.ZeroMemory(ciphertext);
                 throw;
             }
             finally
@@ -182,22 +171,11 @@ namespace JsonWebToken.Internal
                     TransformNoStream(encryptor, plaintext, 0, plaintext.Length, ciphertext);
                 }
 
-                int macLength = associatedData.Length + nonce.Length + ciphertext.Length + sizeof(long);
-                Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
-                    ? stackalloc byte[macLength]
-                    : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
-
-                associatedData.CopyTo(macBytes);
-                nonce.CopyTo(macBytes.Slice(associatedData.Length));
-                ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
-                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length, sizeof(long)), associatedData.Length << 3);
-
-                _signer.TrySign(macBytes, authenticationTag, out int writtenBytes);
-                Debug.Assert(writtenBytes == authenticationTag.Length);
+                AesHmacHelper.ComputeAuthenticationTag(_signer, nonce, associatedData, ciphertext, authenticationTag);
             }
             catch
             {
-                ciphertext.Clear();
+                CryptographicOperations.ZeroMemory(ciphertext);
                 throw;
             }
             finally
@@ -238,23 +216,8 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            byte[]? byteArrayToReturnToPool = null;
-            int macLength = associatedData.Length + nonce.Length + ciphertext.Length + sizeof(long);
-            Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
-                                    ? stackalloc byte[macLength]
-                                    : (byteArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
-            try
+            if (AesHmacHelper.VerifyAuthenticationTag(_signer, nonce, associatedData, ciphertext, authenticationTag))
             {
-                associatedData.CopyTo(macBytes);
-                nonce.CopyTo(macBytes.Slice(associatedData.Length));
-                ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
-                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length), associatedData.Length * 8);
-                if (!_signer.Verify(macBytes, authenticationTag))
-                {
-                    plaintext.Clear();
-                    return ThrowHelper.TryWriteError(out bytesWritten);
-                }
-
                 Aes aes = _aesPool.Get();
                 try
                 {
@@ -271,17 +234,10 @@ namespace JsonWebToken.Internal
                     _aesPool.Return(aes);
                 }
             }
-            catch
+            else
             {
                 plaintext.Clear();
                 return ThrowHelper.TryWriteError(out bytesWritten);
-            }
-            finally
-            {
-                if (byteArrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(byteArrayToReturnToPool);
-                }
             }
         }
 
@@ -313,23 +269,8 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            byte[]? byteArrayToReturnToPool = null;
-            int macLength = associatedData.Length + nonce.Length + ciphertext.Length + sizeof(long);
-            Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
-                                    ? stackalloc byte[macLength]
-                                    : (byteArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
-            try
+            if (AesHmacHelper.VerifyAuthenticationTag(_signer, nonce, associatedData, ciphertext, authenticationTag))
             {
-                associatedData.CopyTo(macBytes);
-                nonce.CopyTo(macBytes.Slice(associatedData.Length));
-                ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
-                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length), associatedData.Length * 8);
-                if (!_signer.Verify(macBytes, authenticationTag))
-                {
-                    plaintext.Clear();
-                    return ThrowHelper.TryWriteError(out bytesWritten);
-                }
-
                 Aes aes = _aesPool.Get();
                 try
                 {
@@ -346,17 +287,10 @@ namespace JsonWebToken.Internal
                     _aesPool.Return(aes);
                 }
             }
-            catch
+            else
             {
                 plaintext.Clear();
                 return ThrowHelper.TryWriteError(out bytesWritten);
-            }
-            finally
-            {
-                if (byteArrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(byteArrayToReturnToPool);
-                }
             }
         }
 
@@ -467,38 +401,6 @@ namespace JsonWebToken.Internal
 #endif
                     cryptoStream.FlushFinalBlock();
                     return (int)messageStream.Position;
-                }
-            }
-        }
-
-        internal static void AddAuthenticationTag(Signer signer, ReadOnlySpan<byte> iv, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag)
-        {
-            byte[]? arrayToReturnToPool = null;
-            try
-            {
-                int macLength = associatedData.Length + iv.Length + ciphertext.Length + sizeof(long);
-                Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
-                    ? stackalloc byte[macLength]
-                    : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
-
-                associatedData.CopyTo(macBytes);
-                iv.CopyTo(macBytes.Slice(associatedData.Length));
-                ciphertext.CopyTo(macBytes.Slice(associatedData.Length + iv.Length));
-                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + iv.Length + ciphertext.Length, sizeof(long)), associatedData.Length << 3);
-
-                signer.TrySign(macBytes, authenticationTag, out int writtenBytes);
-                Debug.Assert(writtenBytes == authenticationTag.Length);
-            }
-            catch
-            {
-                ciphertext.Clear();
-                throw;
-            }
-            finally
-            {
-                if (arrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
                 }
             }
         }

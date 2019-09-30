@@ -309,7 +309,29 @@ namespace JsonWebToken
         {
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
+#if NETCOREAPP3_0
+                if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
+                {
+                    if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
+                    {
+                        return new Aes128CbcHmac256Encryptor(this);
+                    }
+                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
+                    {
+                        return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+                    }
+                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
+                    {
+                        return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+                    }
+                }
+                else
+                {
+                    return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+                }
+#else
                 return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+#endif
             }
             else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
             {

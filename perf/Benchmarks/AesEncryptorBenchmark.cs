@@ -20,7 +20,7 @@ namespace JsonWebToken.Performance
         [GlobalSetup]
         public void Setup()
         {
-            data = Encoding.UTF8.GetBytes("This is a test string for encryption.");
+            data = Encoding.UTF8.GetBytes("This is a test string for encryption.This is a test string for encryption.This is a test string for encryption.This is a test string for encryption.");
             ciphertext = (new byte[(data.Length + 16) & ~15]);
             authenticationTag = (new byte[32]);
             var key = SymmetricJwk.GenerateKey(256);
@@ -49,7 +49,7 @@ namespace JsonWebToken.Performance
         {
 
             _encryptorNi!.Encrypt(data, nonce, nonce, ciphertext, authenticationTag);
-        }  
+        }    
 #endif
     }
 }

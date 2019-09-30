@@ -21,7 +21,7 @@ namespace JsonWebToken.Performance
         [GlobalSetup]
         public void Setup()
         {
-            plaintext = Encoding.UTF8.GetBytes("This is a test string for encryption.");
+            plaintext = Encoding.UTF8.GetBytes("This is a test string for encryption.This is a test string for encryption.This is a test string for encryption.This is a test string for encryption.");
             ciphertext = (new byte[(plaintext.Length + 16) & ~15]);
             authenticationTag = (new byte[32]);
             var key = SymmetricJwk.GenerateKey(256);
@@ -47,9 +47,15 @@ namespace JsonWebToken.Performance
         }
 #if NETCOREAPP3_0
         [Benchmark(Baseline = false)]
-        public void Encrypt_Simd1()
+        public void Decrypt_Simd1()
         {
             _decryptorNi!.TryDecrypt(ciphertext, nonce, nonce, authenticationTag, plaintext, out int bytesWritten);
+        }      
+        
+        [Benchmark(Baseline = false)]
+        public void Decrypt_Simd2()
+        {
+            _decryptorNi!.TryDecrypt2(ciphertext, nonce, nonce, authenticationTag, plaintext, out int bytesWritten);
         }  
 #endif
     }

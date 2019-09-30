@@ -3,119 +3,108 @@
 
 #if NETCOREAPP3_0
 using System;
-using System.Buffers;
-using System.Buffers.Binary;
-using AesNi = System.Runtime.Intrinsics.X86.Aes;
-using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics.X86;
 
 namespace JsonWebToken.Internal
 {
+    /// <summary>
+    /// Provides AES encryption with CBC, PKCS#7 padding and HMAC-SHA256
+    /// </summary>
     public abstract class AesNiCbcHmacEncryptor : AuthenticatedEncryptor
     {
         private readonly SymmetricJwk _hmacKey;
         private readonly SymmetricSigner _signer;
-        protected readonly AesCbcHmacEncryptor? _fallbackEncryptor;
         protected readonly byte[] _expandedKey;
 
         private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AesNiCbcHmacEncryptor"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="encryptionAlgorithm"></param>
         protected AesNiCbcHmacEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (AesNi.IsSupported)
+            if (!Aes.IsSupported)
             {
-                if (key is null)
-                {
-                    ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-                }
-
-                int keyLength = encryptionAlgorithm.RequiredKeySizeInBits >> 4;
-                var keyBytes = key.K;
-                var aesKey = keyBytes.Slice(keyLength).ToArray();
-                _hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
-
-                if (!_hmacKey.TryGetSigner(encryptionAlgorithm.SignatureAlgorithm, out var signer))
-                {
-                    ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
-                }
-
-                _expandedKey = ExpandKey(aesKey);
-                _signer = (SymmetricSigner)signer!;
+                ThrowHelper.ThrowNotSupportedException_RequireAesNi();
             }
-            else
+
+            if (key is null)
             {
-                _fallbackEncryptor = new AesCbcHmacEncryptor(key, encryptionAlgorithm);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
+
+            int keyLength = encryptionAlgorithm.RequiredKeySizeInBits >> 4;
+            var keyBytes = key.K;
+            var aesKey = keyBytes.Slice(keyLength).ToArray();
+            _hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
+
+            if (!_hmacKey.TryGetSigner(encryptionAlgorithm.SignatureAlgorithm, out var signer))
+            {
+                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
+            }
+
+            _expandedKey = ExpandKey(aesKey);
+            _signer = (SymmetricSigner)signer!;
         }
 
+        /// <summary>
+        /// Expands the key into a number of separate round keys.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         protected abstract byte[] ExpandKey(ReadOnlySpan<byte> key);
 
+        /// <inheritsdoc />
         public override void Dispose()
         {
             if (!_disposed)
             {
+                _signer!.Dispose();
+                _hmacKey.Dispose();
                 _disposed = true;
-                if (AesNi.IsSupported)
-                {
-                    _signer!.Dispose();
-                    _hmacKey.Dispose();
-                }
-                else
-                {
-
-                    _fallbackEncryptor!.Dispose();
-                }
             }
         }
 
+        /// <inheritsdoc />
         public override int GetCiphertextSize(int plaintextSize) => (plaintextSize + 16) & ~15;
 
+        /// <inheritsdoc />
         public override int GetNonceSize() => 16;
 
+        /// <inheritsdoc />
         public override int GetTagSize() => _signer.HashSizeInBytes;
 
+        /// <inheritsdoc />
         public override int GetBase64NonceSize() => 22;
 
+        /// <inheritsdoc />
         public override int GetBase64TagSize() => _signer.Base64HashSizeInBytes;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static void ApplyPadding(ReadOnlySpan<byte> remainingBytes, Span<byte> lastBlock)
+        /// <summary>
+        /// Computes the <paramref name="authenticationTag"/>.
+        /// </summary>
+        /// <param name="iv"></param>
+        /// <param name="associatedData"></param>
+        /// <param name="ciphertext"></param>
+        /// <param name="authenticationTag"></param>
+        protected void ComputeAuthenticationTag(ReadOnlySpan<byte> iv, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag)
         {
-            remainingBytes.CopyTo(lastBlock);
-            lastBlock.Slice(remainingBytes.Length).Fill((byte)remainingBytes.Length);
+            AesHmacHelper.ComputeAuthenticationTag(_signer, iv, associatedData, ciphertext, authenticationTag);
         }
 
-        protected void SignData(ReadOnlySpan<byte> iv, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag)
+        /// <summary>
+        /// Verify the <paramref name="authenticationTag"/>.
+        /// </summary>
+        /// <param name="iv"></param>
+        /// <param name="associatedData"></param>
+        /// <param name="ciphertext"></param>
+        /// <param name="authenticationTag"></param>
+        /// <returns></returns>
+        protected bool VerifyAuthenticationTag(ReadOnlySpan<byte> iv, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> authenticationTag)
         {
-            AesCbcHmacEncryptor.AddAuthenticationTag(_signer, iv, associatedData, ciphertext, authenticationTag);
-        }
-
-        protected bool ValidateSignature(ReadOnlySpan<byte> iv, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> authenticationTag)
-        {
-            byte[]? byteArrayToReturnToPool = null;
-            int macLength = associatedData.Length + iv.Length + ciphertext.Length + sizeof(long);
-            Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
-                                    ? stackalloc byte[macLength]
-                                    : (byteArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
-            try
-            {
-                associatedData.CopyTo(macBytes);
-                iv.CopyTo(macBytes.Slice(associatedData.Length));
-                ciphertext.CopyTo(macBytes.Slice(associatedData.Length + iv.Length));
-                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + iv.Length + ciphertext.Length), associatedData.Length * 8);
-                if (!_signer.Verify(macBytes, authenticationTag))
-                {
-                    return false;
-                }
-            }
-            finally
-            {
-                if (byteArrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(byteArrayToReturnToPool);
-                }
-            }
-
-            return true;
+            return AesHmacHelper.VerifyAuthenticationTag(_signer, iv, associatedData, ciphertext, authenticationTag);
         }
     }
 }
