@@ -3,22 +3,16 @@
 
 #if NETCOREAPP3_0
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
-using AesNi = System.Runtime.Intrinsics.X86.Aes;
-using System.Runtime.CompilerServices;
 
 namespace JsonWebToken.Internal
 {
     public sealed class Aes128CbcHmac256Encryptor : AesNiCbcHmacEncryptor
     {
-        private readonly SymmetricJwk _hmacKey;
-
-        private const int BytesPerKey = 16;
         private const int BlockSize = 16;
-
-        private const int NumberOfRounds = 10;
 
         private readonly Vector128<byte> _key0;
         private readonly Vector128<byte> _key1;
@@ -31,15 +25,6 @@ namespace JsonWebToken.Internal
         private readonly Vector128<byte> _key8;
         private readonly Vector128<byte> _key9;
         private readonly Vector128<byte> _key10;
-        private readonly Vector128<byte> _key11;
-        private readonly Vector128<byte> _key12;
-        private readonly Vector128<byte> _key13;
-        private readonly Vector128<byte> _key14;
-        private readonly Vector128<byte> _key15;
-        private readonly Vector128<byte> _key16;
-        private readonly Vector128<byte> _key17;
-        private readonly Vector128<byte> _key18;
-        private readonly Vector128<byte> _key19;
 
         public Aes128CbcHmac256Encryptor(SymmetricJwk key)
             : base(key, EncryptionAlgorithm.Aes128CbcHmacSha256)
@@ -49,90 +34,30 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(key, EncryptionAlgorithm.Aes128CbcHmacSha256, 256, key.KeySizeInBits);
             }
 
-            ref var expandedKey = ref MemoryMarshal.GetReference((Span<byte>)_expandedKey);
-            _key0 = Unsafe.ReadUnaligned<Vector128<byte>>(ref expandedKey);
-            _key1 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 1)));
-            _key2 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 2)));
-            _key3 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 3)));
-            _key4 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 4)));
-            _key5 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 5)));
-            _key6 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 6)));
-            _key7 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 7)));
-            _key8 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 8)));
-            _key9 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 9)));
-            _key10 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 10)));
-
-            _key11 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 11)));
-            _key12 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 12)));
-            _key13 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 13)));
-            _key14 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 14)));
-            _key15 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 15)));
-            _key16 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 16)));
-            _key17 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 17)));
-            _key18 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 18)));
-            _key19 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(BytesPerKey * 19)));
-        }
-
-        protected override byte[] ExpandKey(ReadOnlySpan<byte> key)
-        {
-            var keySchedule = new byte[2 * BytesPerKey * NumberOfRounds];
-            ref var expandedKey = ref MemoryMarshal.GetReference(keySchedule.AsSpan());
-            ref var keyRef = ref MemoryMarshal.GetReference(key);
-
-            var tmp = Unsafe.ReadUnaligned<Vector128<byte>>(ref keyRef);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(0 * BytesPerKey)), tmp);
-
-            tmp = KeyGenAssist(tmp, 0x01);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(1 * BytesPerKey)), tmp);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(19 * BytesPerKey)), AesNi.InverseMixColumns(tmp));
-
-            tmp = KeyGenAssist(tmp, 0x02);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(2 * BytesPerKey)), tmp);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(18 * BytesPerKey)), AesNi.InverseMixColumns(tmp));
-
-            tmp = KeyGenAssist(tmp, 0x04);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(3 * BytesPerKey)), tmp);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(17 * BytesPerKey)), AesNi.InverseMixColumns(tmp));
-
-            tmp = KeyGenAssist(tmp, 0x08);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(4 * BytesPerKey)), tmp);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(16 * BytesPerKey)), AesNi.InverseMixColumns(tmp));
-
-            tmp = KeyGenAssist(tmp, 0x10);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(5 * BytesPerKey)), tmp);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(15 * BytesPerKey)), AesNi.InverseMixColumns(tmp));
-
-            tmp = KeyGenAssist(tmp, 0x20);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(6 * BytesPerKey)), tmp);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(14 * BytesPerKey)), AesNi.InverseMixColumns(tmp));
-
-            tmp = KeyGenAssist(tmp, 0x40);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(7 * BytesPerKey)), tmp);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(13 * BytesPerKey)), AesNi.InverseMixColumns(tmp));
-
-            tmp = KeyGenAssist(tmp, 0x80);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(8 * BytesPerKey)), tmp);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(12 * BytesPerKey)), AesNi.InverseMixColumns(tmp));
-
-            tmp = KeyGenAssist(tmp, 0x1B);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(9 * BytesPerKey)), tmp);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(11 * BytesPerKey)), AesNi.InverseMixColumns(tmp));
-
-            tmp = KeyGenAssist(tmp, 0x36);
-            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)(10 * BytesPerKey)), tmp);
-
-            return keySchedule;
+            // extract the 128 last bits of the key
+            ref var keyRef = ref MemoryMarshal.GetReference(key.K.Slice(16));
+            _key0 = Unsafe.ReadUnaligned<Vector128<byte>>(ref keyRef);
+            _key1 = KeyGenAssist(_key0, 0x01);
+            _key2 = KeyGenAssist(_key1, 0x02);
+            _key3 = KeyGenAssist(_key2, 0x04);
+            _key4 = KeyGenAssist(_key3, 0x08);
+            _key5 = KeyGenAssist(_key4, 0x10);
+            _key6 = KeyGenAssist(_key5, 0x20);
+            _key7 = KeyGenAssist(_key6, 0x40);
+            _key8 = KeyGenAssist(_key7, 0x80);
+            _key9 = KeyGenAssist(_key8, 0x1B);
+            _key10 = KeyGenAssist(_key9, 0x36);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector128<byte> KeyGenAssist(Vector128<byte> key, byte control)
         {
-            var keyGened = AesNi.KeygenAssist(key, control);
-            keyGened = AesNi.Shuffle(keyGened.AsInt32(), 0xFF).AsByte();
-            key = AesNi.Xor(key, AesNi.ShiftLeftLogical128BitLane(key, 4));
-            key = AesNi.Xor(key, AesNi.ShiftLeftLogical128BitLane(key, 4));
-            key = AesNi.Xor(key, AesNi.ShiftLeftLogical128BitLane(key, 4));
-            return AesNi.Xor(key, keyGened);
+            var keyGened = Aes.KeygenAssist(key, control);
+            keyGened = Aes.Shuffle(keyGened.AsInt32(), 0xFF).AsByte();
+            key = Aes.Xor(key, Aes.ShiftLeftLogical128BitLane(key, 4));
+            key = Aes.Xor(key, Aes.ShiftLeftLogical128BitLane(key, 4));
+            key = Aes.Xor(key, Aes.ShiftLeftLogical128BitLane(key, 4));
+            return Aes.Xor(key, keyGened);
         }
 
         /// <inheritsdoc />
@@ -148,19 +73,19 @@ namespace JsonWebToken.Internal
             while (Unsafe.IsAddressLessThan(ref inputRef, ref inputEndRef))
             {
                 var src = Unsafe.ReadUnaligned<Vector128<byte>>(ref inputRef);
-                src = AesNi.Xor(src, state);
+                src = Aes.Xor(src, state);
 
-                state = AesNi.Xor(src, _key0);
-                state = AesNi.Encrypt(state, _key1);
-                state = AesNi.Encrypt(state, _key2);
-                state = AesNi.Encrypt(state, _key3);
-                state = AesNi.Encrypt(state, _key4);
-                state = AesNi.Encrypt(state, _key5);
-                state = AesNi.Encrypt(state, _key6);
-                state = AesNi.Encrypt(state, _key7);
-                state = AesNi.Encrypt(state, _key8);
-                state = AesNi.Encrypt(state, _key9);
-                state = AesNi.EncryptLast(state, _key10);
+                state = Aes.Xor(src, _key0);
+                state = Aes.Encrypt(state, _key1);
+                state = Aes.Encrypt(state, _key2);
+                state = Aes.Encrypt(state, _key3);
+                state = Aes.Encrypt(state, _key4);
+                state = Aes.Encrypt(state, _key5);
+                state = Aes.Encrypt(state, _key6);
+                state = Aes.Encrypt(state, _key7);
+                state = Aes.Encrypt(state, _key8);
+                state = Aes.Encrypt(state, _key9);
+                state = Aes.EncryptLast(state, _key10);
                 Unsafe.WriteUnaligned(ref outputRef, state);
 
                 inputRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr)BlockSize);
@@ -175,22 +100,85 @@ namespace JsonWebToken.Internal
             Unsafe.InitBlockUnaligned(ref Unsafe.AddByteOffset(ref outputRef, (IntPtr)left), padding, padding);
             var srcLast = Unsafe.ReadUnaligned<Vector128<byte>>(ref outputRef);
 
-            srcLast = AesNi.Xor(srcLast, state);
+            srcLast = Aes.Xor(srcLast, state);
 
-            state = AesNi.Xor(srcLast, _key0);
-            state = AesNi.Encrypt(state, _key1);
-            state = AesNi.Encrypt(state, _key2);
-            state = AesNi.Encrypt(state, _key3);
-            state = AesNi.Encrypt(state, _key4);
-            state = AesNi.Encrypt(state, _key5);
-            state = AesNi.Encrypt(state, _key6);
-            state = AesNi.Encrypt(state, _key7);
-            state = AesNi.Encrypt(state, _key8);
-            state = AesNi.Encrypt(state, _key9);
-            state = AesNi.EncryptLast(state, _key10);
+            state = Aes.Xor(srcLast, _key0);
+            state = Aes.Encrypt(state, _key1);
+            state = Aes.Encrypt(state, _key2);
+            state = Aes.Encrypt(state, _key3);
+            state = Aes.Encrypt(state, _key4);
+            state = Aes.Encrypt(state, _key5);
+            state = Aes.Encrypt(state, _key6);
+            state = Aes.Encrypt(state, _key7);
+            state = Aes.Encrypt(state, _key8);
+            state = Aes.Encrypt(state, _key9);
+            state = Aes.EncryptLast(state, _key10);
             Unsafe.WriteUnaligned(ref outputRef, state);
 
             ComputeAuthenticationTag(nonce, associatedData, ciphertext, authenticationTag);
+        }
+    }
+
+    public sealed class Aes128CbcHmac256Decryptor : AesNiCbcHmacDecryptor
+    {
+        private const int BlockSize = 16;
+        
+        private readonly Vector128<byte> _key0;
+        private readonly Vector128<byte> _key1;
+        private readonly Vector128<byte> _key2;
+        private readonly Vector128<byte> _key3;
+        private readonly Vector128<byte> _key4;
+        private readonly Vector128<byte> _key5;
+        private readonly Vector128<byte> _key6;
+        private readonly Vector128<byte> _key7;
+        private readonly Vector128<byte> _key8;
+        private readonly Vector128<byte> _key9;
+        private readonly Vector128<byte> _key10;
+
+        public Aes128CbcHmac256Decryptor(SymmetricJwk key)
+            : base(key, EncryptionAlgorithm.Aes128CbcHmacSha256)
+        {
+            if (key.KeySizeInBits < 256)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(key, EncryptionAlgorithm.Aes128CbcHmacSha256, 256, key.KeySizeInBits);
+            }
+
+            // extract the 128 last bits of the key
+            ref var keyRef = ref MemoryMarshal.GetReference(key.K.Slice(16));
+
+            var tmp = Unsafe.ReadUnaligned<Vector128<byte>>(ref keyRef);
+            _key0 = tmp;
+
+            tmp = KeyGenAssist(tmp, 0x01);
+            _key9 = Aes.InverseMixColumns(tmp);
+            tmp = KeyGenAssist(tmp, 0x02);
+            _key8 = Aes.InverseMixColumns(tmp);
+            tmp = KeyGenAssist(tmp, 0x04);
+            _key7 = Aes.InverseMixColumns(tmp);
+            tmp = KeyGenAssist(tmp, 0x08);
+            _key6 = Aes.InverseMixColumns(tmp);
+            tmp = KeyGenAssist(tmp, 0x10);
+            _key5 = Aes.InverseMixColumns(tmp);
+            tmp = KeyGenAssist(tmp, 0x20);
+            _key4 = Aes.InverseMixColumns(tmp);
+            tmp = KeyGenAssist(tmp, 0x40);
+            _key3 = Aes.InverseMixColumns(tmp);
+            tmp = KeyGenAssist(tmp, 0x80);
+            _key2 = Aes.InverseMixColumns(tmp);
+            tmp = KeyGenAssist(tmp, 0x1B);
+            _key1 = Aes.InverseMixColumns(tmp);
+            _key10 = KeyGenAssist(tmp, 0x36);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Vector128<byte> KeyGenAssist(Vector128<byte> key, byte control)
+        {
+            var keyGened = Aes.KeygenAssist(key, control);
+            keyGened = Aes.Shuffle(keyGened.AsInt32(), 0xFF).AsByte();
+            key = Aes.Xor(key, Aes.ShiftLeftLogical128BitLane(key, 4));
+            key = Aes.Xor(key, Aes.ShiftLeftLogical128BitLane(key, 4));
+            key = Aes.Xor(key, Aes.ShiftLeftLogical128BitLane(key, 4));
+            return Aes.Xor(key, keyGened);
         }
 
         /// <inheritsdoc />
@@ -209,18 +197,18 @@ namespace JsonWebToken.Internal
                 {
                     var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref inputRef);
                     var lastIn = block;
-                    var state = AesNi.Xor(block, _key10);
+                    var state = Aes.Xor(block, _key10);
 
-                    state = AesNi.Decrypt(state, _key11);
-                    state = AesNi.Decrypt(state, _key12);
-                    state = AesNi.Decrypt(state, _key13);
-                    state = AesNi.Decrypt(state, _key14);
-                    state = AesNi.Decrypt(state, _key15);
-                    state = AesNi.Decrypt(state, _key16);
-                    state = AesNi.Decrypt(state, _key17);
-                    state = AesNi.Decrypt(state, _key18);
-                    state = AesNi.Decrypt(state, _key19);
-                    state = AesNi.DecryptLast(state, AesNi.Xor(_key0, feedback));
+                    state = Aes.Decrypt(state, _key1);
+                    state = Aes.Decrypt(state, _key2);
+                    state = Aes.Decrypt(state, _key3);
+                    state = Aes.Decrypt(state, _key4);
+                    state = Aes.Decrypt(state, _key5);
+                    state = Aes.Decrypt(state, _key6);
+                    state = Aes.Decrypt(state, _key7);
+                    state = Aes.Decrypt(state, _key8);
+                    state = Aes.Decrypt(state, _key9);
+                    state = Aes.DecryptLast(state, Aes.Xor(_key0, feedback));
 
                     Unsafe.WriteUnaligned(ref outputRef, state);
 
@@ -268,18 +256,18 @@ namespace JsonWebToken.Internal
                 {
                     var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref inputRef);
                     var lastIn = block;
-                    var state = AesNi.Xor(block, _key10);
+                    var state = Aes.Xor(block, _key10);
 
-                    state = AesNi.Decrypt(state, _key11);
-                    state = AesNi.Decrypt(state, _key12);
-                    state = AesNi.Decrypt(state, _key13);
-                    state = AesNi.Decrypt(state, _key14);
-                    state = AesNi.Decrypt(state, _key15);
-                    state = AesNi.Decrypt(state, _key16);
-                    state = AesNi.Decrypt(state, _key17);
-                    state = AesNi.Decrypt(state, _key18);
-                    state = AesNi.Decrypt(state, _key19);
-                    state = AesNi.DecryptLast(state, AesNi.Xor(_key0, feedback));
+                    state = Aes.Decrypt(state, _key1);
+                    state = Aes.Decrypt(state, _key2);
+                    state = Aes.Decrypt(state, _key3);
+                    state = Aes.Decrypt(state, _key4);
+                    state = Aes.Decrypt(state, _key5);
+                    state = Aes.Decrypt(state, _key6);
+                    state = Aes.Decrypt(state, _key7);
+                    state = Aes.Decrypt(state, _key8);
+                    state = Aes.Decrypt(state, _key9);
+                    state = Aes.DecryptLast(state, Aes.Xor(_key0, feedback));
 
                     Unsafe.WriteUnaligned(ref outputRef, state);
 

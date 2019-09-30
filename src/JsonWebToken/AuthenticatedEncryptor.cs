@@ -10,9 +10,6 @@ namespace JsonWebToken
     /// </summary>
     public abstract class AuthenticatedEncryptor : IDisposable
     {
-        /// <inheritdoc />
-        public abstract void Dispose();
-
         /// <summary>
         /// Encrypts the <paramref name="plaintext"/>.
         /// </summary>
@@ -49,6 +46,15 @@ namespace JsonWebToken
         /// </summary>
         public abstract int GetBase64TagSize();
 
+        /// <inheritdoc />
+        public abstract void Dispose();
+    }
+
+    /// <summary>
+    /// Provides authenticated decryption.
+    /// </summary>
+    public abstract class AuthenticatedDecryptor : IDisposable
+    {
         /// <summary>
         /// Try to decrypt the <paramref name="ciphertext"/>. 
         /// </summary>
@@ -60,5 +66,8 @@ namespace JsonWebToken
         /// <param name="bytesWritten">The bytes written in the <paramref name="plaintext"/>.</param>
         /// <returns></returns>
         public abstract bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten);
+        
+        /// <inheritdoc />
+        public abstract void Dispose();
     }
 }

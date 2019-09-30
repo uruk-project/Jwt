@@ -130,5 +130,12 @@ namespace JsonWebToken
             ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm); 
             return null;
         }
+
+        /// <inheritsdoc />
+        protected override AuthenticatedDecryptor CreateAuthenticatedDecryptor(EncryptionAlgorithm encryptionAlgorithm)
+        {
+            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm); 
+            return null;
+        }
     }
 }

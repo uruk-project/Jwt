@@ -10,14 +10,14 @@ namespace JsonWebToken.Internal
     /// <summary>
     /// Provides authenticated encryption and decryption for AES CBC HMAC algorithm.
     /// </summary>
-    public sealed class AesCbcHmacEncryptor : AuthenticatedEncryptor
+    public sealed class AesCbcHmacDecryptor : AuthenticatedDecryptor
     {
         private readonly SymmetricJwk _hmacKey;
         private readonly SymmetricSigner _signer;
         private readonly ObjectPool<Aes> _aesPool;
         private bool _disposed;
 
-        public AesCbcHmacEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
+        public AesCbcHmacDecryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (key is null)
             {
@@ -55,46 +55,11 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritdoc />
-        public override int GetCiphertextSize(int plaintextSize)
+        public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
         {
-            return (plaintextSize + 16) & ~15;
-        }
-
-        /// <inheritdoc />
-        public override int GetNonceSize()
-        {
-            return 16;
-        }
-
-        /// <inheritdoc />
-        public override int GetBase64NonceSize()
-        {
-            return 22;
-        }
-
-        /// <inheritdoc />
-        public override int GetTagSize()
-        {
-            return _signer.HashSizeInBytes;
-        }
-
-        /// <inheritdoc />
-        public override int GetBase64TagSize()
-        {
-            return _signer.Base64HashSizeInBytes;
-        }
-
-        /// <inheritdoc />
-        public override void Encrypt(
-            ReadOnlySpan<byte> plaintext,
-            ReadOnlySpan<byte> nonce,
-            ReadOnlySpan<byte> associatedData,
-            Span<byte> ciphertext,
-            Span<byte> authenticationTag)
-        {
-            if (plaintext.IsEmpty)
+            if (ciphertext.IsEmpty)
             {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.plaintext);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.ciphertext);
             }
 
             if (associatedData.IsEmpty)
@@ -102,35 +67,43 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.associatedData);
             }
 
+            if (nonce.IsEmpty)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.nonce);
+            }
+
+            if (authenticationTag.IsEmpty)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.authenticationTag);
+            }
+
             if (_disposed)
             {
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            byte[]? arrayToReturnToPool = null;
-            Aes aes = _aesPool.Get();
-            try
+            if (AesHmacHelper.VerifyAuthenticationTag(_signer, nonce, associatedData, ciphertext, authenticationTag))
             {
-                aes.IV = nonce.ToArray();
-                using (ICryptoTransform encryptor = aes.CreateEncryptor())
+                Aes aes = _aesPool.Get();
+                try
                 {
-                    Transform(encryptor, plaintext, 0, plaintext.Length, ciphertext);
-                }
+                    aes.IV = nonce.ToArray();
+                    using (var decryptor = aes.CreateDecryptor())
+                    {
+                        bytesWritten = Transform(decryptor, ciphertext, 0, ciphertext.Length, plaintext);
+                    }
 
-                AesHmacHelper.ComputeAuthenticationTag(_signer, nonce, associatedData, ciphertext, authenticationTag);
-            }
-            catch
-            {
-                CryptographicOperations.ZeroMemory(ciphertext);
-                throw;
-            }
-            finally
-            {
-                _aesPool.Return(aes);
-                if (arrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
+                    return bytesWritten <= ciphertext.Length;
                 }
+                finally
+                {
+                    _aesPool.Return(aes);
+                }
+            }
+            else
+            {
+                plaintext.Clear();
+                return ThrowHelper.TryWriteError(out bytesWritten);
             }
         }
 

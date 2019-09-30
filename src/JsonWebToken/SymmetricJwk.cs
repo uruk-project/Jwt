@@ -342,6 +342,44 @@ namespace JsonWebToken
             return null;
         }
 
+        /// <inheritsdoc />
+        protected override AuthenticatedDecryptor CreateAuthenticatedDecryptor(EncryptionAlgorithm encryptionAlgorithm)
+        {
+            if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
+            {
+#if NETCOREAPP3_0
+                if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
+                {
+                    if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
+                    {
+                        return new Aes128CbcHmac256Decryptor(this);
+                    }
+                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
+                    {
+                        return new AesCbcHmacDecryptor(this, encryptionAlgorithm);
+                    }
+                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
+                    {
+                        return new AesCbcHmacDecryptor(this, encryptionAlgorithm);
+                    }
+                }
+                else
+                {
+                    return new AesCbcHmacDecryptor(this, encryptionAlgorithm);
+                }
+#else
+                return new AesCbcHmacDecryptor(this, encryptionAlgorithm);
+#endif
+            }
+            else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
+            {
+                return new AesGcmDecryptor(this, encryptionAlgorithm);
+            }
+
+            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
+            return null;
+        }
+
         /// <summary>
         /// Returns a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>

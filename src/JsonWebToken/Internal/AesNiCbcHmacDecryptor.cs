@@ -8,9 +8,9 @@ using System.Runtime.Intrinsics.X86;
 namespace JsonWebToken.Internal
 {
     /// <summary>
-    /// Provides AES encryption with CBC, PKCS#7 padding and HMAC-SHA2
+    /// Provides AES encryption with CBC, PKCS#7 padding and HMAC-SHA256
     /// </summary>
-    public abstract class AesNiCbcHmacEncryptor : AuthenticatedEncryptor
+    public abstract class AesNiCbcHmacDecryptor : AuthenticatedDecryptor
     {
         private readonly SymmetricJwk _hmacKey;
         private readonly SymmetricSigner _signer;
@@ -22,7 +22,7 @@ namespace JsonWebToken.Internal
         /// </summary>
         /// <param name="key"></param>
         /// <param name="encryptionAlgorithm"></param>
-        protected AesNiCbcHmacEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
+        protected AesNiCbcHmacDecryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (!Aes.IsSupported)
             {
@@ -54,33 +54,6 @@ namespace JsonWebToken.Internal
                 _hmacKey.Dispose();
                 _disposed = true;
             }
-        }
-
-        /// <inheritsdoc />
-        public override int GetCiphertextSize(int plaintextSize) => (plaintextSize + 16) & ~15;
-
-        /// <inheritsdoc />
-        public override int GetNonceSize() => 16;
-
-        /// <inheritsdoc />
-        public override int GetTagSize() => _signer.HashSizeInBytes;
-
-        /// <inheritsdoc />
-        public override int GetBase64NonceSize() => 22;
-
-        /// <inheritsdoc />
-        public override int GetBase64TagSize() => _signer.Base64HashSizeInBytes;
-
-        /// <summary>
-        /// Computes the <paramref name="authenticationTag"/>.
-        /// </summary>
-        /// <param name="iv"></param>
-        /// <param name="associatedData"></param>
-        /// <param name="ciphertext"></param>
-        /// <param name="authenticationTag"></param>
-        protected void ComputeAuthenticationTag(ReadOnlySpan<byte> iv, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag)
-        {
-            AesHmacHelper.ComputeAuthenticationTag(_signer, iv, associatedData, ciphertext, authenticationTag);
         }
 
         /// <summary>

@@ -32,22 +32,16 @@ namespace JsonWebToken.Performance
         }
 
         [Benchmark(Baseline = true)]
-        public void Encrypt_Old()
+        public void Encrypt()
         {
 
             _encryptor!.Encrypt(data, nonce, nonce, ciphertext, authenticationTag);
         }
-        [Benchmark(Baseline = false)]
-        public void Encrypt_NoStream()
-        {
 
-            _encryptor!.EncryptNoStream(data, nonce, nonce, ciphertext, authenticationTag);
-        }
 #if NETCOREAPP3_0
         [Benchmark(Baseline = false)]
         public void Encrypt_Simd1()
         {
-
             _encryptorNi!.Encrypt(data, nonce, nonce, ciphertext, authenticationTag);
         }    
 #endif
