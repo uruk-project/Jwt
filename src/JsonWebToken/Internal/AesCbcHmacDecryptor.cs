@@ -17,6 +17,11 @@ namespace JsonWebToken.Internal
         private readonly SymmetricSigner _signer;
         private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AesCbcHmacDecryptor"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="encryptionAlgorithm"></param>
         public AesCbcHmacDecryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (key is null)
@@ -54,6 +59,12 @@ namespace JsonWebToken.Internal
             _signer = (SymmetricSigner)signer;
         }
 
+        /// <summary>
+        /// Initializs a new instance of the <see cref="AesCbcHmacDecryptor"/> class.
+        /// </summary>
+        /// <param name="hmacKey"></param>
+        /// <param name="encryptionAlgorithm"></param>
+        /// <param name="decryptor"></param>
         public AesCbcHmacDecryptor(ReadOnlySpan<byte> hmacKey, EncryptionAlgorithm encryptionAlgorithm, AesDecryptor decryptor)
         {
             if (encryptionAlgorithm is null)
@@ -110,7 +121,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            if (VerifyAuthenticationTag(_signer, nonce, associatedData, ciphertext, authenticationTag))
+            if (VerifyAuthenticationTag(nonce, associatedData, ciphertext, authenticationTag))
             {
                 return _decryptor.TryDecrypt(ciphertext, nonce, plaintext, out bytesWritten);
             }
@@ -120,7 +131,8 @@ namespace JsonWebToken.Internal
                 return ThrowHelper.TryWriteError(out bytesWritten);
             }
         }
-        public static bool VerifyAuthenticationTag(Signer signer, ReadOnlySpan<byte> iv, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> authenticationTag)
+
+        private bool VerifyAuthenticationTag(ReadOnlySpan<byte> iv, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> authenticationTag)
         {
             byte[]? byteArrayToReturnToPool = null;
             int macLength = associatedData.Length + iv.Length + ciphertext.Length + sizeof(long);
@@ -133,7 +145,7 @@ namespace JsonWebToken.Internal
                 iv.CopyTo(macBytes.Slice(associatedData.Length));
                 ciphertext.CopyTo(macBytes.Slice(associatedData.Length + iv.Length));
                 BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + iv.Length + ciphertext.Length), associatedData.Length << 3);
-                if (!signer.Verify(macBytes, authenticationTag))
+                if (!_signer.Verify(macBytes, authenticationTag))
                 {
                     return false;
                 }
