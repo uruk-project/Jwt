@@ -66,7 +66,7 @@ namespace JsonWebToken
         /// <param name="bytesWritten">The bytes written in the <paramref name="plaintext"/>.</param>
         /// <returns></returns>
         public abstract bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten);
-        
+
         /// <inheritdoc />
         public abstract void Dispose();
     }

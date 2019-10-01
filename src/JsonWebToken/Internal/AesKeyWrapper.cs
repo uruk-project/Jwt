@@ -210,12 +210,10 @@ namespace JsonWebToken.Internal
                         Unsafe.WriteUnaligned(ref block2Ref, Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref rRef, i << 3)));
                         ReadOnlySpan<byte> b = encryptor.TransformFinalBlock(block, 0, 16);
                         ref byte bRef = ref MemoryMarshal.GetReference(b);
-                        {
-                            a = Unsafe.ReadUnaligned<ulong>(ref bRef);
-                            Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i + 1));
-                            a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
-                            Unsafe.WriteUnaligned(ref Unsafe.Add(ref rRef, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref bRef, 8)));
-                        }
+                        a = Unsafe.ReadUnaligned<ulong>(ref bRef);
+                        Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i + 1));
+                        a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
+                        Unsafe.WriteUnaligned(ref Unsafe.Add(ref rRef, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref bRef, 8)));
                     }
                 }
             }

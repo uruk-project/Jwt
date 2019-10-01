@@ -11,7 +11,7 @@ namespace JsonWebToken.Performance
     {
         private AesCbcHmacDecryptor? _decryptor;
 #if NETCOREAPP3_0
-        private Aes128CbcHmac256Decryptor? _decryptorNi;
+        private AesCbcHmacDecryptor? _decryptorNi;
 #endif
         private byte[]? plaintext;
         private byte[]? ciphertext;
@@ -26,12 +26,12 @@ namespace JsonWebToken.Performance
             authenticationTag = (new byte[32]);
             var key = SymmetricJwk.GenerateKey(256);
             nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
-            var encryptor = new AesCbcHmacEncryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
+            var encryptor = new AesCbcHmacEncryptor(key.K.Slice(16), EncryptionAlgorithm.Aes128CbcHmacSha256, new AesCbcEncryptor(key.K.Slice(0, 16), EncryptionAlgorithm.Aes128CbcHmacSha256));
             encryptor.Encrypt(plaintext, nonce, nonce, ciphertext, authenticationTag);
             _decryptor = new AesCbcHmacDecryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
             plaintext.AsSpan().Clear();
 #if NETCOREAPP3_0
-            _decryptorNi = new Aes128CbcHmac256Decryptor(key);
+            _decryptorNi = new AesCbcHmacDecryptor(key.K.Slice(16), EncryptionAlgorithm.Aes128CbcHmacSha256, new AesNiCbc128Decryptor(key.K.Slice(16)));
 #endif
         }
 
@@ -46,13 +46,7 @@ namespace JsonWebToken.Performance
         public void Decrypt_Simd1()
         {
             _decryptorNi!.TryDecrypt(ciphertext, nonce, nonce, authenticationTag, plaintext, out int bytesWritten);
-        }      
-        
-        [Benchmark(Baseline = false)]
-        public void Decrypt_Simd2()
-        {
-            _decryptorNi!.TryDecrypt2(ciphertext, nonce, nonce, authenticationTag, plaintext, out int bytesWritten);
-        }  
+        }
 #endif
     }
 }

@@ -4,23 +4,15 @@
 using System;
 using System.Buffers;
 using System.Security.Cryptography;
-using System.Diagnostics;
-using System.Buffers.Binary;
 
 namespace JsonWebToken.Internal
 {
-    /// <summary>
-    /// Provides authenticated encryption and decryption for AES CBC HMAC algorithm.
-    /// </summary>
-    public sealed class AesCbcHmacEncryptor : AuthenticatedEncryptor
+    public sealed class AesCbcDecryptor : AesDecryptor
     {
-        private readonly SymmetricJwk _hmacKey;
-        private readonly SymmetricSigner _signer;
-        private readonly AesEncryptor _encryptor;
-
+        private readonly ObjectPool<Aes> _aesPool;
         private bool _disposed;
 
-        public AesCbcHmacEncryptor(ReadOnlySpan<byte> hmacKey, EncryptionAlgorithm encryptionAlgorithm, AesEncryptor encryptor)
+        public AesCbcDecryptor(ReadOnlySpan<byte> key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (encryptionAlgorithm is null)
             {
@@ -33,98 +25,27 @@ namespace JsonWebToken.Internal
             }
 
             int keyLength = encryptionAlgorithm.RequiredKeySizeInBits >> 4;
-            if (hmacKey.Length < keyLength)
+            if (key.Length < keyLength)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBits, hmacKey.Length >> 3);
+                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBits, encryptionAlgorithm.RequiredKeySizeInBits >> 4);
             }
 
-            _encryptor = encryptor;
-            _hmacKey = SymmetricJwk.FromSpan(hmacKey.Slice(0, keyLength), false);
-            if (!_hmacKey.TryGetSigner(encryptionAlgorithm.SignatureAlgorithm, out var signer))
-            {
-                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
-            }
+            var aesKey = key.ToArray();
 
-            _signer = (SymmetricSigner)signer;
-        }
-
-        public AesCbcHmacEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
-        {
-            if (key is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
-            if (encryptionAlgorithm is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
-            }
-
-            if (encryptionAlgorithm.Category != EncryptionType.AesHmac)
-            {
-                ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-            }
-
-            if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBits)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBits, key.KeySizeInBits);
-            }
-
-            int keyLength = encryptionAlgorithm.RequiredKeySizeInBits >> 4;
-
-            var keyBytes = key.K;
-            _encryptor = new AesCbcEncryptor(keyBytes.Slice(keyLength), encryptionAlgorithm);
-
-            _hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
-            if (!_hmacKey.TryGetSigner(encryptionAlgorithm.SignatureAlgorithm, out var signer))
-            {
-                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
-            }
-
-            _signer = (SymmetricSigner)signer;
+            _aesPool = new ObjectPool<Aes>(new AesPooledPolicy(aesKey));
         }
 
         /// <inheritdoc />
-        public override int GetCiphertextSize(int plaintextSize)
+        public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> nonce, Span<byte> plaintext, out int bytesWritten)
         {
-            return (plaintextSize + 16) & ~15;
-        }
-
-        /// <inheritdoc />
-        public override int GetNonceSize()
-        {
-            return 16;
-        }
-
-        /// <inheritdoc />
-        public override int GetBase64NonceSize()
-        {
-            return 22;
-        }
-
-        /// <inheritdoc />
-        public override int GetTagSize()
-        {
-            return _signer.HashSizeInBytes;
-        }
-
-        /// <inheritdoc />
-        public override int GetBase64TagSize()
-        {
-            return _signer.Base64HashSizeInBytes;
-        }
-
-        /// <inheritdoc />
-        public override void Encrypt(
-            ReadOnlySpan<byte> plaintext,
-            ReadOnlySpan<byte> nonce,
-            ReadOnlySpan<byte> associatedData,
-            Span<byte> ciphertext,
-            Span<byte> authenticationTag)
-        {
-            if (associatedData.IsEmpty)
+            if (ciphertext.IsEmpty)
             {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.associatedData);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.ciphertext);
+            }
+
+            if (nonce.IsEmpty)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.nonce);
             }
 
             if (_disposed)
@@ -132,16 +53,20 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
+            Aes aes = _aesPool.Get();
             try
             {
-                _encryptor.Encrypt(plaintext, nonce, ciphertext);
-                ComputeAuthenticationTag(_signer, nonce, associatedData, ciphertext, authenticationTag);
+                aes.IV = nonce.ToArray();
+                using (var decryptor = aes.CreateDecryptor())
+                {
+                    bytesWritten = Transform(decryptor, ciphertext, 0, ciphertext.Length, plaintext);
+                }
 
+                return bytesWritten <= ciphertext.Length;
             }
-            catch
+            finally
             {
-                CryptographicOperations.ZeroMemory(ciphertext);
-                throw;
+                _aesPool.Return(aes);
             }
         }
 
@@ -150,8 +75,7 @@ namespace JsonWebToken.Internal
         {
             if (!_disposed)
             {
-                _hmacKey.Dispose();
-                _encryptor.Dispose();
+                _aesPool.Dispose();
                 _disposed = true;
             }
         }
@@ -235,33 +159,6 @@ namespace JsonWebToken.Internal
             byte[] finalBytes = transform.TransformFinalBlock(_inputBuffer, 0, _inputBufferIndex);
             finalBytes.AsSpan(0, finalBytes.Length).CopyTo(output.Slice(outputLength));
             return outputLength + finalBytes.Length;
-        }
-
-        public static void ComputeAuthenticationTag(Signer signer, ReadOnlySpan<byte> iv, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> ciphertext, Span<byte> authenticationTag)
-        {
-            byte[]? arrayToReturnToPool = null;
-            try
-            {
-                int macLength = associatedData.Length + iv.Length + ciphertext.Length + sizeof(long);
-                Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
-                    ? stackalloc byte[macLength]
-                    : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
-
-                associatedData.CopyTo(macBytes);
-                iv.CopyTo(macBytes.Slice(associatedData.Length));
-                ciphertext.CopyTo(macBytes.Slice(associatedData.Length + iv.Length));
-                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + iv.Length + ciphertext.Length), associatedData.Length * 8);
-
-                signer.TrySign(macBytes, authenticationTag, out int writtenBytes);
-                Debug.Assert(writtenBytes == authenticationTag.Length);
-            }
-            finally
-            {
-                if (arrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
-                }
-            }
         }
 
         private sealed class AesPooledPolicy : PooledObjectFactory<Aes>

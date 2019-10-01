@@ -314,23 +314,45 @@ namespace JsonWebToken
                 {
                     if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
                     {
-                        return new Aes128CbcHmac256Encryptor(this);
+                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 16), encryptionAlgorithm, new AesNiCbc128Encryptor(_k.AsSpan(16)));
                     }
                     else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
                     {
-                        return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new AesCbcEncryptor(_k.AsSpan(32), encryptionAlgorithm));
                     }
                     else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
                     {
-                        return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 24), encryptionAlgorithm, new AesCbcEncryptor(_k.AsSpan(24), encryptionAlgorithm));
                     }
                 }
                 else
                 {
-                    return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+                    if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
+                    {
+                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 16), encryptionAlgorithm, new AesCbcEncryptor(_k.AsSpan(16), encryptionAlgorithm));
+                    }
+                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
+                    {
+                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new AesCbcEncryptor(_k.AsSpan(32), encryptionAlgorithm));
+                    }
+                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
+                    {
+                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 24), encryptionAlgorithm, new AesCbcEncryptor(_k.AsSpan(24), encryptionAlgorithm));
+                    }
                 }
 #else
-                return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+                if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
+                {
+                    return new AesCbcHmacEncryptor(_k.AsSpan(0, 16), encryptionAlgorithm, new AesCbcEncryptor(_k.AsSpan(16), encryptionAlgorithm));
+                }
+                else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
+                {
+                    return new AesCbcHmacEncryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new AesCbcEncryptor(_k.AsSpan(32), encryptionAlgorithm));
+                }
+                else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
+                {
+                    return new AesCbcHmacEncryptor(_k.AsSpan(0, 24), encryptionAlgorithm, new AesCbcEncryptor(_k.AsSpan(24), encryptionAlgorithm));
+                }
 #endif
             }
             else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
@@ -352,7 +374,7 @@ namespace JsonWebToken
                 {
                     if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
                     {
-                        return new Aes128CbcHmac256Decryptor(this);
+                        return new AesCbcHmacDecryptor(_k.AsSpan(0, 16), encryptionAlgorithm, new AesNiCbc128Decryptor(_k.AsSpan(16)));
                     }
                     else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
                     {

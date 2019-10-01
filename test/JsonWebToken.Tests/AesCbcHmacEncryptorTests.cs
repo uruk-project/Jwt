@@ -67,15 +67,15 @@ namespace JsonWebToken.Tests
             var plaintext = new Span<byte>(new byte[ciphertext.Length]);
             var key = new SymmetricJwk(Encoding.UTF8.GetBytes("ThisIsA128bitKey" + "ThisIsA128bitKey"));
             var nonce = Encoding.UTF8.GetBytes("ThisIsAnInitVect");
-            var encryptorNi = new Aes128CbcHmac256Encryptor(key);
+            var encryptorNi = new AesCbcHmacEncryptor(key.K.Slice(0, 16), EncryptionAlgorithm.Aes128CbcHmacSha256, new AesNiCbc128Encryptor(key.K.Slice(16)));
             encryptorNi.Encrypt(data, nonce, nonce, ciphertext, authenticationTag);
-            var decryptorNi = new Aes128CbcHmac256Decryptor(key);
+            var decryptorNi = new AesCbcHmacDecryptor(key.K.Slice(0, 16), EncryptionAlgorithm.Aes128CbcHmacSha256, new AesNiCbc128Decryptor(key.K.Slice(16)));
             bool decrypted = decryptorNi.TryDecrypt(ciphertext, nonce, nonce, authenticationTag, plaintext, out int bytesWritten);
             Assert.True(decrypted);
             Assert.Equal(data, plaintext.Slice(0, bytesWritten).ToArray());
 
             plaintext.Clear();
-            decrypted = decryptorNi.TryDecrypt2(ciphertext, nonce, nonce, authenticationTag, plaintext, out bytesWritten);
+            decrypted = decryptorNi.TryDecrypt(ciphertext, nonce, nonce, authenticationTag, plaintext, out bytesWritten);
             Assert.True(decrypted);
             Assert.Equal(data, plaintext.Slice(0, bytesWritten).ToArray());
         }
