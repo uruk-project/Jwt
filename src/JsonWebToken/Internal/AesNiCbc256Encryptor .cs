@@ -32,12 +32,11 @@ namespace JsonWebToken.Internal
 
         public AesNiCbc256Encryptor(ReadOnlySpan<byte> key)
         {
-            if (key.Length < 32)
+            if (key.Length < 24)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes256CbcHmacSha512, 512, key.Length << 3);
+                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes192CbcHmacSha384, 386, key.Length << 3);
             }
 
-            // extract the 128 last bits of the key
             ref var keyRef = ref MemoryMarshal.GetReference(key);
             var tmp1 = Unsafe.ReadUnaligned<Vector128<byte>>(ref keyRef);
             var tmp3 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref keyRef, 16));

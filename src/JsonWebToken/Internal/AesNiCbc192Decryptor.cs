@@ -10,7 +10,7 @@ using System.Runtime.Intrinsics.X86;
 
 namespace JsonWebToken.Internal
 {
-    public sealed class AesNiCbc256Decryptor : AesDecryptor
+    public sealed class AesNiCbc192Decryptor : AesDecryptor
     {
         private const int BlockSize = 16;
 
@@ -27,58 +27,66 @@ namespace JsonWebToken.Internal
         private Vector128<byte> _key10;
         private Vector128<byte> _key11;
         private Vector128<byte> _key12;
-        private Vector128<byte> _key13;
-        private Vector128<byte> _key14;
 
-        public AesNiCbc256Decryptor(ReadOnlySpan<byte> key)
+        public AesNiCbc192Decryptor(ReadOnlySpan<byte> key)
         {
-            if (key.Length < 32)
+            if (key.Length < 24)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes256CbcHmacSha512, 512, key.Length << 3);
+                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes192CbcHmacSha384, 386, key.Length << 3);
             }
 
             ref var keyRef = ref MemoryMarshal.GetReference(key);
 
             var tmp1 = Unsafe.ReadUnaligned<Vector128<byte>>(ref keyRef);
             var tmp3 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref keyRef, 16));
-            _key14 = tmp1;
-            _key13 = Aes.InverseMixColumns(tmp3);
-            _key12 = Aes.InverseMixColumns(KeyGenAssist1(ref tmp1, tmp3, 0x01));
-            _key11 = Aes.InverseMixColumns(KeyGenAssist2(tmp1, ref tmp3));
-            _key10 = Aes.InverseMixColumns(KeyGenAssist1(ref tmp1, tmp3, 0x02));
-            _key9 = Aes.InverseMixColumns(KeyGenAssist2(tmp1, ref tmp3));
-            _key8 = Aes.InverseMixColumns(KeyGenAssist1(ref tmp1, tmp3, 0x04));
-            _key7 = Aes.InverseMixColumns(KeyGenAssist2(tmp1, ref tmp3));
-            _key6 = Aes.InverseMixColumns(KeyGenAssist1(ref tmp1, tmp3, 0x08));
-            _key5 = Aes.InverseMixColumns(KeyGenAssist2(tmp1, ref tmp3));
-            _key4 = Aes.InverseMixColumns(KeyGenAssist1(ref tmp1, tmp3, 0x10));
-            _key3 = Aes.InverseMixColumns(KeyGenAssist2(tmp1, ref tmp3));
-            _key2 = Aes.InverseMixColumns(KeyGenAssist1(ref tmp1, tmp3, 0x20));
-            _key1 = Aes.InverseMixColumns(KeyGenAssist2(tmp1, ref tmp3));
-            _key0 = Aes.InverseMixColumns(KeyGenAssist1(ref tmp1, tmp3, 0x40));
+            _key12 = tmp1;
+
+            var tmp4 = KeyGenAssist(ref tmp1, tmp3, 0x01);
+            _key11 = Aes.InverseMixColumns(Shuffle(tmp3, tmp1, 0));
+            _key10 = Aes.InverseMixColumns(Shuffle(tmp1, tmp4, 1));
+
+            tmp3 = KeyGenAssist(ref tmp1, tmp4, 0x02);
+            _key9 = Aes.InverseMixColumns(tmp1);
+
+            tmp4 = KeyGenAssist(ref tmp1, tmp3, 0x04);
+            _key8 = Aes.InverseMixColumns(Shuffle(tmp3, tmp1, 0));
+            _key7 = Aes.InverseMixColumns(Shuffle(tmp1, tmp4, 1));
+
+            tmp3 = KeyGenAssist(ref tmp1, tmp4, 0x08);
+            _key6 = Aes.InverseMixColumns(tmp1);
+
+            tmp4 = KeyGenAssist(ref tmp1, tmp3, 0x10);
+            _key5 = Aes.InverseMixColumns(Shuffle(tmp3, tmp1, 0));
+            _key4 = Aes.InverseMixColumns(Shuffle(tmp1, tmp4, 1));
+
+            tmp3 = KeyGenAssist(ref tmp1, tmp4, 0x20);
+            _key3 = Aes.InverseMixColumns(tmp1);
+
+            tmp4 = KeyGenAssist(ref tmp1, tmp3, 0x40);
+            _key2 = Aes.InverseMixColumns(Shuffle(tmp3, tmp1, 0));
+            _key1 = Aes.InverseMixColumns(Shuffle(tmp1, tmp4, 1));
+
+            KeyGenAssist(ref tmp1, tmp4, 0x80);
+            _key0 = tmp1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<byte> KeyGenAssist1(ref Vector128<byte> tmp1, Vector128<byte> tmp3, byte control)
+        private static Vector128<byte> Shuffle(Vector128<byte> left, Vector128<byte> right, byte control)
+           => Aes.Shuffle(left.AsDouble(), right.AsDouble(), control).AsByte();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Vector128<byte> KeyGenAssist(ref Vector128<byte> tmp1, Vector128<byte> tmp3, byte control)
         {
             var keyGened = Aes.KeygenAssist(tmp3, control);
-            keyGened = Aes.Shuffle(keyGened.AsInt32(), 0xFF).AsByte();
+            keyGened = Aes.Shuffle(keyGened.AsInt32(), 0x55).AsByte();
             tmp1 = Aes.Xor(tmp1, Aes.ShiftLeftLogical128BitLane(tmp1, 4));
             tmp1 = Aes.Xor(tmp1, Aes.ShiftLeftLogical128BitLane(tmp1, 4));
             tmp1 = Aes.Xor(tmp1, Aes.ShiftLeftLogical128BitLane(tmp1, 4));
-            return Aes.Xor(tmp1, keyGened);
+            tmp1 = Aes.Xor(tmp1, keyGened);
+            keyGened = Aes.Shuffle(tmp1.AsInt32(), 0xFF).AsByte();
+            return Aes.Xor(Aes.Xor(tmp3, Aes.ShiftLeftLogical128BitLane(tmp3, 4)), keyGened);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<byte> KeyGenAssist2(Vector128<byte> tmp1, ref Vector128<byte> tmp3)
-        {
-            var keyGened = Aes.KeygenAssist(tmp1, 0);
-            var tmp2 = Aes.Shuffle(keyGened.AsInt32(), 0xAA).AsByte();
-            tmp3 = Aes.Xor(tmp3, Aes.ShiftLeftLogical128BitLane(tmp3, 4));
-            tmp3 = Aes.Xor(tmp3, Aes.ShiftLeftLogical128BitLane(tmp3, 4));
-            tmp3 = Aes.Xor(tmp3, Aes.ShiftLeftLogical128BitLane(tmp3, 4));
-            return Aes.Xor(tmp3, tmp2);
-        }
         public override void Dispose()
         {
             // Clear the keys
@@ -95,8 +103,6 @@ namespace JsonWebToken.Internal
             _key10 = Vector128<byte>.Zero;
             _key11 = Vector128<byte>.Zero;
             _key12 = Vector128<byte>.Zero;
-            _key13 = Vector128<byte>.Zero;
-            _key14 = Vector128<byte>.Zero;
         }
 
         public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> nonce, Span<byte> plaintext, out int bytesWritten)
@@ -125,9 +131,7 @@ namespace JsonWebToken.Internal
                 state = Aes.Decrypt(state, _key9);
                 state = Aes.Decrypt(state, _key10);
                 state = Aes.Decrypt(state, _key11);
-                state = Aes.Decrypt(state, _key12);
-                state = Aes.Decrypt(state, _key13);
-                state = Aes.DecryptLast(state, Aes.Xor(_key14, feedback));
+                state = Aes.DecryptLast(state, Aes.Xor(_key12, feedback));
 
                 Unsafe.WriteUnaligned(ref outputRef, state);
 

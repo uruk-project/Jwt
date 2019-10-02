@@ -33,7 +33,6 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes128CbcHmacSha256, 256, 16);
             }
 
-            // extract the 128 last bits of the key
             ref var keyRef = ref MemoryMarshal.GetReference(key);
 
             var tmp = Unsafe.ReadUnaligned<Vector128<byte>>(ref keyRef);
