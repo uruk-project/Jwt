@@ -20,7 +20,10 @@ namespace JsonWebToken.Internal
 
         private readonly ObjectPool<ICryptoTransform> _encryptorPool;
         private readonly ObjectPool<ICryptoTransform> _decryptorPool;
-
+#if NETCOREAPP3_0
+        private readonly AesDecryptor _decryptor;
+        private readonly AesEncryptor _encryptor;
+#endif
         private readonly Aes _aes;
         private bool _disposed;
 
@@ -33,8 +36,30 @@ namespace JsonWebToken.Internal
             }
 
             _aes = GetSymmetricAlgorithm(key, algorithm);
+#if NETCOREAPP3_0
+            if (algorithm == KeyManagementAlgorithm.Aes128KW)
+            {
+                _encryptor = new AesNiCbc128Encryptor(key.K);
+                _decryptor = new AesNiCbc128Decryptor(key.K);
+            }
+            else if (algorithm == KeyManagementAlgorithm.Aes256KW)
+            {
+                _encryptor = new AesNiCbc256Encryptor(key.K);
+                _decryptor = new AesNiCbc256Decryptor(key.K);
+            }
+            else if (algorithm == KeyManagementAlgorithm.Aes192KW)
+            {
+                _encryptor = new AesNiCbc192Encryptor(key.K);
+                _decryptor = new AesNiCbc192Decryptor(key.K);
+            }
+            else
+            {
+                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
+            }
+#else
             _encryptorPool = new ObjectPool<ICryptoTransform>(new PooledEncryptorPolicy(_aes));
             _decryptorPool = new ObjectPool<ICryptoTransform>(new PooledDecryptorPolicy(_aes));
+#endif
         }
 
         protected override void Dispose(bool disposing)
@@ -43,10 +68,15 @@ namespace JsonWebToken.Internal
             {
                 if (disposing)
                 {
+#if NETCOREAPP3_0
+                    _encryptor.Dispose();
+                    _decryptor.Dispose();
+#else
                     _encryptorPool.Dispose();
                     _decryptorPool.Dispose();
                     _aes.Dispose();
-                }
+#endif
+                    }
 
                 _disposed = true;
             }
@@ -123,31 +153,41 @@ namespace JsonWebToken.Internal
             int n3 = n >> 3;
             ref byte blockEndRef = ref Unsafe.Add(ref blockRef, 8);
             ref byte tRef7 = ref Unsafe.Add(ref tRef, 7);
+#if NETCOREAPP3_0
+            Span<byte> b = stackalloc byte[16];
+            ref byte bRef = ref MemoryMarshal.GetReference(b);
+#else
             var decryptor = _decryptorPool.Get();
             try
             {
-                for (var j = 5; j >= 0; j--)
+#endif
+            for (var j = 5; j >= 0; j--)
+            {
+                for (var i = n3; i > 0; i--)
                 {
-                    for (var i = n3; i > 0; i--)
-                    {
-                        Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i));
+                    Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i));
 
-                        a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
-                        Unsafe.WriteUnaligned(ref blockRef, a);
-                        ref byte rCurrent = ref Unsafe.Add(ref rRef, (i - 1) << 3);
-                        Unsafe.WriteUnaligned(ref blockEndRef, Unsafe.ReadUnaligned<ulong>(ref rCurrent));
+                    a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
+                    Unsafe.WriteUnaligned(ref blockRef, a);
+                    ref byte rCurrent = ref Unsafe.Add(ref rRef, (i - 1) << 3);
+                    Unsafe.WriteUnaligned(ref blockEndRef, Unsafe.ReadUnaligned<ulong>(ref rCurrent));
+#if NETCOREAPP3_0
+                    _decryptor.DecryptBlock(ref blockRef, ref bRef);
+#else
                         Span<byte> b = decryptor.TransformFinalBlock(block, 0, 16);
                         ref byte bRef = ref MemoryMarshal.GetReference(b);
-                        a = Unsafe.ReadUnaligned<ulong>(ref bRef);
-                        Unsafe.WriteUnaligned(ref rCurrent, Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref bRef, 8)));
-                    }
+#endif
+                    a = Unsafe.ReadUnaligned<ulong>(ref bRef);
+                    Unsafe.WriteUnaligned(ref rCurrent, Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref bRef, 8)));
                 }
             }
+#if !NETCOREAPP3_0
+        }
             finally
             {
                 _decryptorPool.Return(decryptor);
             }
-
+#endif
             if (a == _defaultIV)
             {
                 ref byte destinationRef = ref MemoryMarshal.GetReference(destination);
@@ -199,29 +239,39 @@ namespace JsonWebToken.Internal
             ref byte tRef7 = ref Unsafe.Add(ref tRef, 7);
             Unsafe.WriteUnaligned<ulong>(ref tRef, 0L);
             int n3 = n >> 3;
+#if NETCOREAPP3_0
+            Span<byte> b = stackalloc byte[16];
+            ref byte bRef = ref MemoryMarshal.GetReference(b);
+#else
             var encryptor = _encryptorPool.Get();
             try
             {
-                for (var j = 0; j < 6; j++)
+#endif
+            for (var j = 0; j < 6; j++)
+            {
+                for (var i = 0; i < n3; i++)
                 {
-                    for (var i = 0; i < n3; i++)
-                    {
-                        Unsafe.WriteUnaligned(ref blockRef, a);
-                        Unsafe.WriteUnaligned(ref block2Ref, Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref rRef, i << 3)));
-                        ReadOnlySpan<byte> b = encryptor.TransformFinalBlock(block, 0, 16);
+                    Unsafe.WriteUnaligned(ref blockRef, a);
+                    Unsafe.WriteUnaligned(ref block2Ref, Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref rRef, i << 3)));
+#if NETCOREAPP3_0
+                    _encryptor.EncryptBlock(ref blockRef, ref bRef);
+#else
+                        Span<byte> b = encryptor.TransformFinalBlock(block, 0, 16);
                         ref byte bRef = ref MemoryMarshal.GetReference(b);
-                        a = Unsafe.ReadUnaligned<ulong>(ref bRef);
-                        Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i + 1));
-                        a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
-                        Unsafe.WriteUnaligned(ref Unsafe.Add(ref rRef, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref bRef, 8)));
-                    }
+#endif
+                    a = Unsafe.ReadUnaligned<ulong>(ref bRef);
+                    Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i + 1));
+                    a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref rRef, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref bRef, 8)));
                 }
+            }
+#if !NETCOREAPP3_0
             }
             finally
             {
                 _encryptorPool.Return(encryptor);
             }
-
+#endif
             ref byte keyBytes = ref MemoryMarshal.GetReference(destination);
             Unsafe.WriteUnaligned(ref keyBytes, a);
             Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref keyBytes, 8), ref rRef, (uint)n);

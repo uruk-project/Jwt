@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
@@ -67,6 +68,11 @@ namespace JsonWebToken.Internal
             {
                 _aesPool.Return(aes);
             }
+        }
+
+        public override void DecryptBlock(ref byte ciphertext, ref byte plaintext)
+        {
+            throw new NotSupportedException();
         }
 
         /// <inheritdoc />

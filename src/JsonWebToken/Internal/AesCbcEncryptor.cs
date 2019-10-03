@@ -87,6 +87,10 @@ namespace JsonWebToken.Internal
             }
         }
 
+        public override void EncryptBlock(ref byte plaintext, ref byte ciphertext)
+        {
+            throw new NotSupportedException();
+        }
 
         private sealed class AesPooledPolicy : PooledObjectFactory<Aes>
         {

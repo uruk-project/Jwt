@@ -32,9 +32,9 @@ namespace JsonWebToken.Internal
 
         public AesNiCbc256Encryptor(ReadOnlySpan<byte> key)
         {
-            if (key.Length < 24)
+            if (key.Length != 32)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes192CbcHmacSha384, 386, key.Length << 3);
+                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes256CbcHmacSha512, 512, key.Length << 3);
             }
 
             ref var keyRef = ref MemoryMarshal.GetReference(key);
@@ -42,41 +42,54 @@ namespace JsonWebToken.Internal
             var tmp3 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref keyRef, 16));
             _key0 = tmp1;
             _key1 = tmp3;
-            _key2 = KeyGenAssist1(ref tmp1, tmp3, 0x01);
-            _key3 = KeyGenAssist2(tmp1, ref tmp3);
-            _key4 = KeyGenAssist1(ref tmp1, tmp3, 0x02);
-            _key5 = KeyGenAssist2(tmp1, ref tmp3);
-            _key6 = KeyGenAssist1(ref tmp1, tmp3, 0x04);
-            _key7 = KeyGenAssist2(tmp1, ref tmp3);
-            _key8 = KeyGenAssist1(ref tmp1, tmp3, 0x08);
-            _key9 = KeyGenAssist2(tmp1, ref tmp3);
-            _key10 = KeyGenAssist1(ref tmp1, tmp3, 0x10);
-            _key11 = KeyGenAssist2(tmp1, ref tmp3);
-            _key12 = KeyGenAssist1(ref tmp1, tmp3, 0x20);
-            _key13 = KeyGenAssist2(tmp1, ref tmp3);
-            _key14 = KeyGenAssist1(ref tmp1, tmp3, 0x40);
+            KeyGenAssist1(ref tmp1, tmp3, 0x01);
+            _key2 = tmp1;
+            KeyGenAssist2(tmp1, ref tmp3);
+            _key3 = tmp3;
+            KeyGenAssist1(ref tmp1, tmp3, 0x02);
+            _key4 = tmp1;
+            KeyGenAssist2(tmp1, ref tmp3);
+            _key5 = tmp3;
+            KeyGenAssist1(ref tmp1, tmp3, 0x04);
+            _key6 = tmp1;
+            KeyGenAssist2(tmp1, ref tmp3);
+            _key7 = tmp3;
+            KeyGenAssist1(ref tmp1, tmp3, 0x08);
+            _key8 = tmp1;
+            KeyGenAssist2(tmp1, ref tmp3);
+            _key9 = tmp3;
+            KeyGenAssist1(ref tmp1, tmp3, 0x10);
+            _key10 = tmp1;
+            KeyGenAssist2(tmp1, ref tmp3);
+            _key11 = tmp3;
+            KeyGenAssist1(ref tmp1, tmp3, 0x20);
+            _key12 = tmp1;
+            KeyGenAssist2(tmp1, ref tmp3);
+            _key13 = tmp3;
+            KeyGenAssist1(ref tmp1, tmp3, 0x40);
+            _key14 = tmp1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<byte> KeyGenAssist1(ref Vector128<byte> tmp1, Vector128<byte> tmp3, byte control)
+        private static void KeyGenAssist1(ref Vector128<byte> tmp1, Vector128<byte> tmp3, byte control)
         {
             var keyGened = Aes.KeygenAssist(tmp3, control);
-            keyGened = Aes.Shuffle(keyGened.AsInt32(), 0xAA).AsByte();
+            keyGened = Aes.Shuffle(keyGened.AsInt32(), 0xFF).AsByte();
             tmp1 = Aes.Xor(tmp1, Aes.ShiftLeftLogical128BitLane(tmp1, 4));
             tmp1 = Aes.Xor(tmp1, Aes.ShiftLeftLogical128BitLane(tmp1, 4));
             tmp1 = Aes.Xor(tmp1, Aes.ShiftLeftLogical128BitLane(tmp1, 4));
-            return Aes.Xor(tmp1, keyGened);
+            tmp1 = Aes.Xor(tmp1, keyGened);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<byte> KeyGenAssist2(Vector128<byte> tmp1, ref Vector128<byte> tmp3)
+        private static void KeyGenAssist2(Vector128<byte> tmp1, ref Vector128<byte> tmp3)
         {
             var keyGened = Aes.KeygenAssist(tmp1, 0);
-            var tmp2 = Aes.Shuffle(keyGened.AsInt32(), 0xFF).AsByte();
+            var tmp2 = Aes.Shuffle(keyGened.AsInt32(), 0xAA).AsByte();
             tmp3 = Aes.Xor(tmp3, Aes.ShiftLeftLogical128BitLane(tmp3, 4));
             tmp3 = Aes.Xor(tmp3, Aes.ShiftLeftLogical128BitLane(tmp3, 4));
             tmp3 = Aes.Xor(tmp3, Aes.ShiftLeftLogical128BitLane(tmp3, 4));
-            return Aes.Xor(tmp3, tmp2);
+            tmp3 = Aes.Xor(tmp3, tmp2);
         }
 
         /// <inheritsdoc />
@@ -162,6 +175,28 @@ namespace JsonWebToken.Internal
             state = Aes.Encrypt(state, _key13);
             state = Aes.EncryptLast(state, _key14);
             Unsafe.WriteUnaligned(ref outputRef, state);
+        }
+
+        public override void EncryptBlock(ref byte plaintext, ref byte ciphertext)
+        {
+            var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref plaintext);
+
+            block = Aes.Xor(block, _key0);
+            block = Aes.Encrypt(block, _key1);
+            block = Aes.Encrypt(block, _key2);
+            block = Aes.Encrypt(block, _key3);
+            block = Aes.Encrypt(block, _key4);
+            block = Aes.Encrypt(block, _key5);
+            block = Aes.Encrypt(block, _key6);
+            block = Aes.Encrypt(block, _key7);
+            block = Aes.Encrypt(block, _key8);
+            block = Aes.Encrypt(block, _key9);
+            block = Aes.Encrypt(block, _key10);
+            block = Aes.Encrypt(block, _key11);
+            block = Aes.Encrypt(block, _key12);
+            block = Aes.Encrypt(block, _key13);
+            block = Aes.EncryptLast(block, _key14);
+            Unsafe.WriteUnaligned(ref ciphertext, block);
         }
     }
 }

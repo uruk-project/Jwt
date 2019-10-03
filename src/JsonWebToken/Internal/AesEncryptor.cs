@@ -18,6 +18,13 @@ namespace JsonWebToken
         /// <param name="ciphertext">The resulting ciphertext.</param>
         public abstract void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, Span<byte> ciphertext);
 
+        /// <summary>
+        /// Encrypt a <paramref name="plaintext"/>.
+        /// </summary>
+        /// <param name="plaintext"></param>
+        /// <param name="ciphertext"></param>
+        public abstract void EncryptBlock(ref byte plaintext, ref byte ciphertext);
+
         /// <inheritdoc />
         public abstract void Dispose();
     }

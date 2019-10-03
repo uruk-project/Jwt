@@ -30,7 +30,7 @@ namespace JsonWebToken.Internal
 
         public AesNiCbc192Encryptor(ReadOnlySpan<byte> key)
         {
-            if (key.Length < 24)
+            if (key.Length != 24)
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes192CbcHmacSha384, 386, key.Length << 3);
             }
@@ -165,6 +165,26 @@ namespace JsonWebToken.Internal
             state = Aes.Encrypt(state, _key11);
             state = Aes.EncryptLast(state, _key12);
             Unsafe.WriteUnaligned(ref outputRef, state);
+        }
+
+        public override void EncryptBlock(ref byte plaintext, ref byte ciphertext)
+        {
+            var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref plaintext);
+
+            block = Aes.Xor(block, _key0);
+            block = Aes.Encrypt(block, _key1);
+            block = Aes.Encrypt(block, _key2);
+            block = Aes.Encrypt(block, _key3);
+            block = Aes.Encrypt(block, _key4);
+            block = Aes.Encrypt(block, _key5);
+            block = Aes.Encrypt(block, _key6);
+            block = Aes.Encrypt(block, _key7);
+            block = Aes.Encrypt(block, _key8);
+            block = Aes.Encrypt(block, _key9);
+            block = Aes.Encrypt(block, _key10);
+            block = Aes.Encrypt(block, _key11);
+            block = Aes.EncryptLast(block, _key12);
+            Unsafe.WriteUnaligned(ref ciphertext, block);
         }
     }
 }
