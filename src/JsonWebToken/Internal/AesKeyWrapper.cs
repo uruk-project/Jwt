@@ -18,13 +18,14 @@ namespace JsonWebToken.Internal
         // The default initialization vector from RFC3394
         private const ulong _defaultIV = 0XA6A6A6A6A6A6A6A6;
 
-        private readonly ObjectPool<ICryptoTransform> _encryptorPool;
-        private readonly ObjectPool<ICryptoTransform> _decryptorPool;
 #if NETCOREAPP3_0
         private readonly AesDecryptor _decryptor;
         private readonly AesEncryptor _encryptor;
-#endif
+#else
         private readonly Aes _aes;
+        private readonly ObjectPool<ICryptoTransform> _encryptorPool;
+        private readonly ObjectPool<ICryptoTransform> _decryptorPool;
+#endif
         private bool _disposed;
 
         public AesKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
@@ -35,7 +36,6 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
             }
 
-            _aes = GetSymmetricAlgorithm(key, algorithm);
 #if NETCOREAPP3_0
             if (algorithm == KeyManagementAlgorithm.Aes128KW)
             {
@@ -57,6 +57,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
             }
 #else
+            _aes = GetSymmetricAlgorithm(key, algorithm);
             _encryptorPool = new ObjectPool<ICryptoTransform>(new PooledEncryptorPolicy(_aes));
             _decryptorPool = new ObjectPool<ICryptoTransform>(new PooledDecryptorPolicy(_aes));
 #endif
@@ -76,45 +77,9 @@ namespace JsonWebToken.Internal
                     _decryptorPool.Dispose();
                     _aes.Dispose();
 #endif
-                    }
-
-                _disposed = true;
-            }
-        }
-
-        private static Aes GetSymmetricAlgorithm(SymmetricJwk key, KeyManagementAlgorithm algorithm)
-        {
-            if (algorithm.RequiredKeySizeInBits != key.KeySizeInBits)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_KeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, key, key.KeySizeInBits);
-            }
-
-            byte[] keyBytes = key.ToArray();
-            Aes? aes = null;
-            try
-            {
-                aes = Aes.Create();
-                aes.Mode = CipherMode.ECB;
-                aes.Padding = PaddingMode.None;
-                aes.KeySize = keyBytes.Length << 3;
-                aes.Key = keyBytes;
-
-                // Set the AES IV to Zeroes
-                var iv = new byte[aes.BlockSize >> 3];
-                Array.Clear(iv, 0, iv.Length);
-                aes.IV = iv;
-
-                return aes;
-            }
-            catch (Exception ex)
-            {
-                if (aes != null)
-                {
-                    aes.Dispose();
                 }
 
-                ThrowHelper.ThrowCryptographicException_CreateSymmetricAlgorithmFailed(key, algorithm, ex);
-                throw;
+                _disposed = true;
             }
         }
 
@@ -298,6 +263,42 @@ namespace JsonWebToken.Internal
         {
             return encryptionAlgorithm.KeyWrappedSizeInBytes;
         }
+#if !NETCOREAPP3_0
+        private static Aes GetSymmetricAlgorithm(SymmetricJwk key, KeyManagementAlgorithm algorithm)
+        {
+            if (algorithm.RequiredKeySizeInBits != key.KeySizeInBits)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException_KeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, key, key.KeySizeInBits);
+            }
+
+            byte[] keyBytes = key.ToArray();
+            Aes? aes = null;
+            try
+            {
+                aes = Aes.Create();
+                aes.Mode = CipherMode.ECB;
+                aes.Padding = PaddingMode.None;
+                aes.KeySize = keyBytes.Length << 3;
+                aes.Key = keyBytes;
+
+                // Set the AES IV to Zeroes
+                var iv = new byte[aes.BlockSize >> 3];
+                Array.Clear(iv, 0, iv.Length);
+                aes.IV = iv;
+
+                return aes;
+            }
+            catch (Exception ex)
+            {
+                if (aes != null)
+                {
+                    aes.Dispose();
+                }
+
+                ThrowHelper.ThrowCryptographicException_CreateSymmetricAlgorithmFailed(key, algorithm, ex);
+                throw;
+            }
+        }
 
         private sealed class PooledEncryptorPolicy : PooledObjectFactory<ICryptoTransform>
         {
@@ -328,5 +329,6 @@ namespace JsonWebToken.Internal
                 return _aes.CreateDecryptor();
             }
         }
+#endif
     }
 }

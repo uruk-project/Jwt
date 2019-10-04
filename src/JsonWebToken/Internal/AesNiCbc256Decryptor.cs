@@ -93,7 +93,7 @@ namespace JsonWebToken.Internal
             tmp3 = Aes.Xor(tmp3, Aes.ShiftLeftLogical128BitLane(tmp3, 4));
             tmp3 = Aes.Xor(tmp3, tmp2);
         }
-        
+
         /// <inheritsdoc />
         public override void Dispose()
         {
@@ -120,15 +120,15 @@ namespace JsonWebToken.Internal
             ref var inputRef = ref MemoryMarshal.GetReference(ciphertext);
             ref var outputRef = ref MemoryMarshal.GetReference(plaintext);
             ref var ivRef = ref MemoryMarshal.GetReference(nonce);
-
+     
             var feedback = Unsafe.ReadUnaligned<Vector128<byte>>(ref ivRef);
-
+            Vector128<byte> state = default;
             ref var inputEndRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr)ciphertext.Length);
             while (Unsafe.IsAddressLessThan(ref inputRef, ref inputEndRef))
             {
                 var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref inputRef);
                 var lastIn = block;
-                var state = Aes.Xor(block, _key0);
+                state = Aes.Xor(block, _key0);
 
                 state = Aes.Decrypt(state, _key1);
                 state = Aes.Decrypt(state, _key2);
@@ -155,17 +155,13 @@ namespace JsonWebToken.Internal
 
             ref byte paddingRef = ref Unsafe.Subtract(ref outputRef, 1);
             byte padding = paddingRef;
+            var mask = Vector128.Create(padding);
+            mask = Aes.ShiftLeftLogical128BitLane(mask, (byte)(16 - padding));
 
-            ref byte lastPadding = ref Unsafe.Subtract(ref outputRef, paddingRef);
-            while (Unsafe.IsAddressGreaterThan(ref paddingRef, ref lastPadding))
+            if (!Aes.And(mask, state).Equals(mask))
             {
-                if (padding != paddingRef)
-                {
-                    bytesWritten = 0;
-                    return false;
-                }
-
-                paddingRef = ref Unsafe.Subtract(ref paddingRef, 1);
+                bytesWritten = 0;
+                return false;
             }
 
             bytesWritten = ciphertext.Length - paddingRef;
@@ -175,7 +171,6 @@ namespace JsonWebToken.Internal
         public override void DecryptBlock(ref byte ciphertext, ref byte plaintext)
         {
             var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref ciphertext);
-
             block = Aes.Xor(block, _key0);
             block = Aes.Decrypt(block, _key1);
             block = Aes.Decrypt(block, _key2);

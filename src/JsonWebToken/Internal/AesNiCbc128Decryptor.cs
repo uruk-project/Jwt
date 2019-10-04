@@ -98,7 +98,7 @@ namespace JsonWebToken.Internal
             ref var inputRef = ref MemoryMarshal.GetReference(ciphertext);
             ref var outputRef = ref MemoryMarshal.GetReference(plaintext);
             ref var ivRef = ref MemoryMarshal.GetReference(nonce);
-
+            Vector128<byte> state = default;
             var feedback = Unsafe.ReadUnaligned<Vector128<byte>>(ref ivRef);
 
             ref var inputEndRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr)ciphertext.Length);
@@ -106,7 +106,7 @@ namespace JsonWebToken.Internal
             {
                 var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref inputRef);
                 var lastIn = block;
-                var state = Aes.Xor(block, _key0);
+                state = Aes.Xor(block, _key0);
 
                 state = Aes.Decrypt(state, _key1);
                 state = Aes.Decrypt(state, _key2);
@@ -129,17 +129,13 @@ namespace JsonWebToken.Internal
 
             ref byte paddingRef = ref Unsafe.Subtract(ref outputRef, 1);
             byte padding = paddingRef;
+            var mask = Vector128.Create(padding);
+            mask = Aes.ShiftLeftLogical128BitLane(mask, (byte)(BlockSize - padding));
 
-            ref byte lastPadding = ref Unsafe.Subtract(ref outputRef, paddingRef);
-            while (Unsafe.IsAddressGreaterThan(ref paddingRef, ref lastPadding))
+            if (!Aes.And(mask, state).Equals(mask))
             {
-                if (padding != paddingRef)
-                {
-                    bytesWritten = 0;
-                    return false;
-                }
-
-                paddingRef = ref Unsafe.Subtract(ref paddingRef, 1);
+                bytesWritten = 0;
+                return false;
             }
 
             bytesWritten = ciphertext.Length - paddingRef;

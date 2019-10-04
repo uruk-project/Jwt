@@ -156,7 +156,6 @@ namespace JsonWebToken.Internal
             byte padding = (byte)(BlockSize - left);
             Unsafe.InitBlockUnaligned(ref Unsafe.AddByteOffset(ref outputRef, (IntPtr)left), padding, padding);
             var srcLast = Unsafe.ReadUnaligned<Vector128<byte>>(ref outputRef);
-
             srcLast = Aes.Xor(srcLast, state);
 
             state = Aes.Xor(srcLast, _key0);
