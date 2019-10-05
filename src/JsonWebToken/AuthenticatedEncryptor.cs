@@ -11,40 +11,6 @@ namespace JsonWebToken
     public abstract class AuthenticatedEncryptor : IDisposable
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AuthenticatedEncryptor"/> class.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="encryptionAlgorithm"></param>
-        protected AuthenticatedEncryptor(Jwk key, EncryptionAlgorithm encryptionAlgorithm)
-        {
-            if (key is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
-            if (encryptionAlgorithm is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
-            }
-
-            Key = key;
-            EncryptionAlgorithm = encryptionAlgorithm; 
-        }
-
-        /// <summary>
-        /// Gets the key.
-        /// </summary>
-        public Jwk Key { get; }
-
-        /// <summary>
-        /// Gets the encryption algorithm.
-        /// </summary>
-        public EncryptionAlgorithm EncryptionAlgorithm { get; }
-
-        /// <inheritdoc />
-        public abstract void Dispose();
-
-        /// <summary>
         /// Encrypts the <paramref name="plaintext"/>.
         /// </summary>
         /// <param name="plaintext">The plaintext to encrypt.</param>
@@ -80,16 +46,7 @@ namespace JsonWebToken
         /// </summary>
         public abstract int GetBase64TagSize();
 
-        /// <summary>
-        /// Try to decrypt the <paramref name="ciphertext"/>. 
-        /// </summary>
-        /// <param name="ciphertext">The ciphertext to decrypt.</param>
-        /// <param name="associatedData">The associated data used to encrypt.</param>
-        /// <param name="nonce">The nonce used to encrypt.</param>
-        /// <param name="authenticationTag">The authentication tag</param>
-        /// <param name="plaintext">The resulting plaintext.</param>
-        /// <param name="bytesWritten">The bytes written in the <paramref name="plaintext"/>.</param>
-        /// <returns></returns>
-        public abstract bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten);
+        /// <inheritdoc />
+        public abstract void Dispose();
     }
 }

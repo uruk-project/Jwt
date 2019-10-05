@@ -206,7 +206,7 @@ namespace JsonWebToken
 
             if (IdentifiedKeys.TryGetValue(kid, out var jwks))
             {
-                return jwks.ToArray();
+                return jwks;
             }
 
             return UnidentifiedKeys;

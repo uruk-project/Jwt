@@ -3,26 +3,74 @@
 
 using System;
 using System.Buffers;
-using System.Buffers.Binary;
-using System.Diagnostics;
-using System.IO;
 using System.Security.Cryptography;
+using System.Diagnostics;
+using System.Buffers.Binary;
 
 namespace JsonWebToken.Internal
 {
     /// <summary>
     /// Provides authenticated encryption and decryption for AES CBC HMAC algorithm.
     /// </summary>
-    internal sealed class AesCbcHmacEncryptor : AuthenticatedEncryptor
+    public sealed class AesCbcHmacEncryptor : AuthenticatedEncryptor
     {
         private readonly SymmetricJwk _hmacKey;
         private readonly SymmetricSigner _signer;
-        private readonly ObjectPool<Aes> _aesPool;
+        private readonly AesEncryptor _encryptor;
+
         private bool _disposed;
 
-        public AesCbcHmacEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
-            : base(key, encryptionAlgorithm)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AesCbcHmacEncryptor"/> class.
+        /// </summary>
+        /// <param name="hmacKey"></param>
+        /// <param name="encryptionAlgorithm"></param>
+        /// <param name="encryptor"></param>
+        public AesCbcHmacEncryptor(ReadOnlySpan<byte> hmacKey, EncryptionAlgorithm encryptionAlgorithm, AesEncryptor encryptor)
         {
+            if (encryptionAlgorithm is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
+            }
+
+            if (encryptionAlgorithm.Category != EncryptionType.AesHmac)
+            {
+                ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
+            }
+
+            int keyLength = encryptionAlgorithm.RequiredKeySizeInBits >> 4;
+            if (hmacKey.Length < keyLength)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBits, hmacKey.Length >> 3);
+            }
+
+            _encryptor = encryptor;
+            _hmacKey = SymmetricJwk.FromSpan(hmacKey.Slice(0, keyLength), false);
+            if (!_hmacKey.TryGetSigner(encryptionAlgorithm.SignatureAlgorithm, out var signer))
+            {
+                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
+            }
+
+            _signer = (SymmetricSigner)signer;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AesCbcHmacEncryptor"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="encryptionAlgorithm"></param>
+        public AesCbcHmacEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
+        {
+            if (key is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
+            }
+
+            if (encryptionAlgorithm is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
+            }
+
             if (encryptionAlgorithm.Category != EncryptionType.AesHmac)
             {
                 ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
@@ -30,17 +78,16 @@ namespace JsonWebToken.Internal
 
             if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBits)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
+                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBits, key.KeySizeInBits);
             }
 
             int keyLength = encryptionAlgorithm.RequiredKeySizeInBits >> 4;
 
             var keyBytes = key.K;
-            var aesKey = keyBytes.Slice(keyLength).ToArray();
-            _hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
+            _encryptor = new AesCbcEncryptor(keyBytes.Slice(keyLength), encryptionAlgorithm);
 
-            _aesPool = key.Ephemeral ? new ObjectPool<Aes>(new AesPooledPolicy(aesKey), 1) : new ObjectPool<Aes>(new AesPooledPolicy(aesKey));
-            if(!_hmacKey.TryGetSigner(encryptionAlgorithm.SignatureAlgorithm, out var signer))
+            _hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
+            if (!_hmacKey.TryGetSigner(encryptionAlgorithm.SignatureAlgorithm, out var signer))
             {
                 ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
             }
@@ -86,11 +133,6 @@ namespace JsonWebToken.Internal
             Span<byte> ciphertext,
             Span<byte> authenticationTag)
         {
-            if (plaintext.IsEmpty)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.plaintext);
-            }
-
             if (associatedData.IsEmpty)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.associatedData);
@@ -101,116 +143,16 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            byte[]? arrayToReturnToPool = null;
-            Aes aes = _aesPool.Get();
             try
             {
-                aes.IV = nonce.ToArray();
-                using (ICryptoTransform encryptor = aes.CreateEncryptor())
-                {
-                    Transform(encryptor, plaintext, 0, plaintext.Length, ciphertext);
-                }
+                _encryptor.Encrypt(plaintext, nonce, ciphertext);
+                ComputeAuthenticationTag(nonce, associatedData, ciphertext, authenticationTag);
 
-                int macLength = associatedData.Length + nonce.Length + ciphertext.Length + sizeof(long);
-                Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
-                    ? stackalloc byte[macLength]
-                    : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
-
-                associatedData.CopyTo(macBytes);
-                nonce.CopyTo(macBytes.Slice(associatedData.Length));
-                ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
-                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length, sizeof(long)), associatedData.Length << 3);
-
-                _signer.TrySign(macBytes, authenticationTag, out int writtenBytes);
-                Debug.Assert(writtenBytes == authenticationTag.Length);
             }
             catch
             {
-                ciphertext.Clear();
+                CryptographicOperations.ZeroMemory(ciphertext);
                 throw;
-            }
-            finally
-            {
-                _aesPool.Return(aes);
-                if (arrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
-                }
-            }
-        }
-
-        /// <inheritdoc />
-        public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
-        {
-            if (ciphertext.IsEmpty)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.ciphertext);
-            }
-
-            if (associatedData.IsEmpty)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.associatedData);
-            }
-
-            if (nonce.IsEmpty)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.nonce);
-            }
-
-            if (authenticationTag.IsEmpty)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.authenticationTag);
-            }
-
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
-            byte[]? byteArrayToReturnToPool = null;
-            int macLength = associatedData.Length + nonce.Length + ciphertext.Length + sizeof(long);
-            Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
-                                    ? stackalloc byte[macLength]
-                                    : (byteArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
-            try
-            {
-                associatedData.CopyTo(macBytes);
-                nonce.CopyTo(macBytes.Slice(associatedData.Length));
-                ciphertext.CopyTo(macBytes.Slice(associatedData.Length + nonce.Length));
-                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + nonce.Length + ciphertext.Length), associatedData.Length * 8);
-                if (!_signer.Verify(macBytes, authenticationTag))
-                {
-                    plaintext.Clear();
-                    return ThrowHelper.TryWriteError(out bytesWritten);
-                }
-
-                Aes aes = _aesPool.Get();
-                try
-                {
-                    aes.IV = nonce.ToArray();
-                    using (var decryptor = aes.CreateDecryptor())
-                    {
-                        bytesWritten = Transform(decryptor, ciphertext, 0, ciphertext.Length, plaintext);
-                    }
-
-                    return bytesWritten <= ciphertext.Length;
-                }
-                finally
-                {
-                    _aesPool.Return(aes);
-                }
-            }
-            catch
-            {
-                plaintext.Clear();
-                return ThrowHelper.TryWriteError(out bytesWritten);
-            }
-            finally
-            {
-                if (byteArrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(byteArrayToReturnToPool);
-                }
             }
         }
 
@@ -220,26 +162,34 @@ namespace JsonWebToken.Internal
             if (!_disposed)
             {
                 _hmacKey.Dispose();
-                _aesPool.Dispose();
-
+                _encryptor.Dispose();
                 _disposed = true;
             }
         }
 
-        private static unsafe int Transform(ICryptoTransform transform, ReadOnlySpan<byte> input, int inputOffset, int inputLength, Span<byte> output)
+        private void ComputeAuthenticationTag(ReadOnlySpan<byte> iv, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> ciphertext, Span<byte> authenticationTag)
         {
-            fixed (byte* buffer = output)
+            byte[]? arrayToReturnToPool = null;
+            try
             {
-                using (var messageStream = new UnmanagedMemoryStream(buffer, output.Length, output.Length, FileAccess.Write))
-                using (CryptoStream cryptoStream = new CryptoStream(messageStream, transform, CryptoStreamMode.Write))
+                int macLength = associatedData.Length + iv.Length + ciphertext.Length + sizeof(long);
+                Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
+                    ? stackalloc byte[macLength]
+                    : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
+
+                associatedData.CopyTo(macBytes);
+                iv.CopyTo(macBytes.Slice(associatedData.Length));
+                ciphertext.CopyTo(macBytes.Slice(associatedData.Length + iv.Length));
+                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + iv.Length + ciphertext.Length), associatedData.Length * 8);
+
+                _signer.TrySign(macBytes, authenticationTag, out int writtenBytes);
+                Debug.Assert(writtenBytes == authenticationTag.Length);
+            }
+            finally
+            {
+                if (arrayToReturnToPool != null)
                 {
-#if !NETSTANDARD2_0 && !NET461
-                    cryptoStream.Write(input.Slice(inputOffset, inputLength));
-#else
-                    cryptoStream.Write(input.ToArray(), inputOffset, inputLength);
-#endif
-                    cryptoStream.FlushFinalBlock();
-                    return (int)messageStream.Position;
+                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
                 }
             }
         }

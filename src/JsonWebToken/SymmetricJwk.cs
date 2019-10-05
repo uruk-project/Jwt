@@ -309,11 +309,72 @@ namespace JsonWebToken
         {
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
+#if NETCOREAPP3_0
+                if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
+                {
+                    if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
+                    {
+                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 16), encryptionAlgorithm, new AesNiCbc128Encryptor(_k.AsSpan(16)));
+                    }
+                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
+                    {
+                                                return new AesCbcHmacEncryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new AesNiCbc256Encryptor(_k.AsSpan(32)));
+                        //esCbcHmacEncryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new AesCbcEncryptor(_k.AsSpan(32), encryptionAlgorithm));
+                    }
+                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
+                    {
+                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 24), encryptionAlgorithm, new AesNiCbc192Encryptor(_k.AsSpan(24)));
+                    }
+                }
+                else
+                {
+                    return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+                }
+#else
                 return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+#endif
             }
             else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
             {
                 return new AesGcmEncryptor(this, encryptionAlgorithm);
+            }
+
+            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
+            return null;
+        }
+
+        /// <inheritsdoc />
+        protected override AuthenticatedDecryptor CreateAuthenticatedDecryptor(EncryptionAlgorithm encryptionAlgorithm)
+        {
+            if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
+            {
+#if NETCOREAPP3_0
+                if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
+                {
+                    if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
+                    {
+                        return new AesCbcHmacDecryptor(_k.AsSpan(0, 16), encryptionAlgorithm, new AesNiCbc128Decryptor(_k.AsSpan(16)));
+                    }
+                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
+                    {
+                        return new AesCbcHmacDecryptor(this, encryptionAlgorithm);
+                    }
+                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
+                    {
+                        return new AesCbcHmacDecryptor(this, encryptionAlgorithm);
+                    }
+                }
+                else
+                {
+                    return new AesCbcHmacDecryptor(this, encryptionAlgorithm);
+                }
+#else
+                return new AesCbcHmacDecryptor(this, encryptionAlgorithm);
+#endif
+            }
+            else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
+            {
+                return new AesGcmDecryptor(this, encryptionAlgorithm);
             }
 
             ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);

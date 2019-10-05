@@ -8,15 +8,15 @@ using System.Security.Cryptography;
 namespace JsonWebToken.Internal
 {
     /// <summary>
-    /// Provides authenticated encryption for AES GCM algorithm.
+    /// Provides authenticated decryption for AES GCM algorithm.
     /// </summary>
-    internal sealed class AesGcmEncryptor : AuthenticatedEncryptor
+    internal sealed class AesGcmDecryptor : AuthenticatedDecryptor
     {
         private readonly SymmetricJwk _key;
 
         private bool _disposed;
 
-        public AesGcmEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
+        public AesGcmDecryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
         {
             if (key is null)
             {
@@ -42,39 +42,34 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritdoc />
-        public override void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag)
+        public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
         {
             if (_disposed)
             {
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            using (var aes = new AesGcm(_key.K))
+            try
             {
-                aes.Encrypt(nonce, plaintext, ciphertext, authenticationTag, associatedData);
+                using (var aes = new AesGcm(_key.K))
+                {
+                    aes.Decrypt(nonce, ciphertext, authenticationTag, plaintext, associatedData);
+                    bytesWritten = plaintext.Length;
+                    return true;
+                }
+            }
+            catch
+            {
+                plaintext.Clear();
+                return ThrowHelper.TryWriteError(out bytesWritten);
             }
         }
-
-        /// <inheritdoc />
-        public override int GetCiphertextSize(int plaintextSize) => plaintextSize;
-
-        /// <inheritdoc />
-        public override int GetNonceSize() => 12;
-
-        /// <inheritdoc />
-        public override int GetBase64NonceSize() => 16;
-
-        /// <inheritdoc />
-        public override int GetTagSize() => 16;
-
-        /// <inheritdoc />
-        public override int GetBase64TagSize() => 22;
 
         /// <inheritdoc />
         public override void Dispose()
         {
             _disposed = true;
         }
-    } 
+    }
 }
 #endif

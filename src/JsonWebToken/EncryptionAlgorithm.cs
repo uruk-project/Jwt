@@ -238,19 +238,15 @@ namespace JsonWebToken
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(EncryptionAlgorithm? x, EncryptionAlgorithm? y)
         {
-            if (x is null && y is null)
+            if (y is null)
             {
-                return true;
+                return x is null;
             }
 
             if (x is null)
-            {
-                return false;
-            }
-
-            if (y is null)
             {
                 return false;
             }
@@ -264,24 +260,10 @@ namespace JsonWebToken
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(EncryptionAlgorithm? x, EncryptionAlgorithm? y)
         {
-            if (x is null && y is null)
-            {
-                return false;
-            }
-
-            if (x is null)
-            {
-                return true;
-            }
-
-            if (y is null)
-            {
-                return true;
-            }
-
-            return x._id != y._id;
+            return !(x == y);
         }
 
         /// <summary>

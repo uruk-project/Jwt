@@ -529,7 +529,7 @@ namespace JsonWebToken
                 Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
 
                 bytesWritten = 0;
-                if (key.TryGetAuthenticatedEncryptor(encryptionAlgorithm, out var decryptor))
+                if (key.TryGetAuthenticatedDecryptor(encryptionAlgorithm, out var decryptor))
                 {
                     if (decryptor.TryDecrypt(
                         ciphertext,

@@ -231,6 +231,11 @@ namespace JsonWebToken
         internal static void ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(Jwk key, EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => throw CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(key, algorithm, minimalValue, currentKeySize);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(Jwk key, EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), $"The key '{key.Kid}' for encryption with algorithm '{algorithm}' cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'.");
+        
+        [DoesNotReturn]
+        internal static void ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => throw CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(algorithm, minimalValue, currentKeySize);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => new ArgumentOutOfRangeException("key", $"The key for encryption with algorithm '{algorithm}' cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_KeyWrapKeySizeIncorrect(KeyManagementAlgorithm algorithm, int requiredValue, Jwk key, int currentKeySize) => throw CreateArgumentOutOfRangeException_KeyWrapKeySizeIncorrect(algorithm, requiredValue, key, currentKeySize);
@@ -357,6 +362,11 @@ namespace JsonWebToken
         internal static string ThrowFormatException_MalformedJson(string message) => throw CreateFormatException_MalformedJson(message);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateFormatException_MalformedJson(string message) => new FormatException("The JSON is malformed. " + message);
+
+        [DoesNotReturn]
+        internal static string ThrowNotSupportedException_RequireAesNi() => throw CreateNotSupportedException_RequireAesNi();
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateNotSupportedException_RequireAesNi() => new NotSupportedException("The AES New Instructions set is not supported on the executing CPU.");
 
         private static string GetArgumentName(ExceptionArgument argument)
         {

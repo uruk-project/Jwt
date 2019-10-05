@@ -6,12 +6,11 @@ using System;
 namespace JsonWebToken.Internal
 {
     /// <summary>
-    /// Provides authenticated encryption and decryption for AES GCM algorithm.
+    /// Provides authenticated encryption for AES GCM algorithm.
     /// </summary>
     internal sealed class AesGcmEncryptor : AuthenticatedEncryptor
     {
         public AesGcmEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
-            : base(key, encryptionAlgorithm)
         {
             throw new NotSupportedException();
         }
@@ -53,15 +52,9 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritdoc />
-        public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <inheritdoc />
         public override void Dispose()
         {
         }
-    }
+    } 
 }
 #endif

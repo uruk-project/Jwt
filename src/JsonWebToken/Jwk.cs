@@ -31,6 +31,7 @@ namespace JsonWebToken
         private CryptographicStore<Signer>? _signers;
         private CryptographicStore<KeyWrapper>? _keyWrappers;
         private CryptographicStore<AuthenticatedEncryptor>? _encryptors;
+        private CryptographicStore<AuthenticatedDecryptor>? _decryptors;
 
         private bool? _isSigningKey;
         private SignatureAlgorithm? _signatureAlgorithm;
@@ -651,21 +652,64 @@ namespace JsonWebToken
             encryptor = null;
             return false;
         }
+        
+        /// <summary>
+        /// Creates a <see cref="AuthenticatedDecryptor"/> with the current <see cref="Jwk"/> as key.
+        /// </summary>
+        /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
+        /// <param name="decryptor">The provided <see cref="AuthenticatedDecryptor"/>. <c>null</c> if returns <c>false</c>.</param>
+        public bool TryGetAuthenticatedDecryptor(EncryptionAlgorithm? encryptionAlgorithm, [NotNullWhen(true)] out AuthenticatedDecryptor? decryptor)
+        {
+            if (!(encryptionAlgorithm is null))
+            {
+                var decryptors = _decryptors;
+                var algorithmKey = encryptionAlgorithm.Id;
+                if (decryptors is null)
+                {
+                    decryptors = new CryptographicStore<AuthenticatedDecryptor>();
+                    _decryptors = decryptors;
+                }
+                else
+                {
+                    if (decryptors.TryGetValue(algorithmKey, out decryptor))
+                    {
+                        return true;
+                    }
+                }
+
+                if (IsSupported(encryptionAlgorithm))
+                {
+                    decryptor = CreateAuthenticatedDecryptor(encryptionAlgorithm);
+                    if (decryptors.TryAdd(algorithmKey, decryptor))
+                    {
+                        return true;
+                    }
+
+                    decryptor.Dispose();
+                    if (decryptors.TryGetValue(encryptionAlgorithm.Id, out decryptor))
+                    {
+                        return true;
+                    }
+
+                    ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+                }
+            }
+
+            decryptor = null;
+            return false;
+        }
 
         /// <summary>
         /// Creates a fresh new <see cref="AuthenticatedEncryptor"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
         protected abstract AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm);
-
-        ///// <summary>
-        ///// Releases the <see cref="AuthenticatedEncryptor"/>.
-        ///// </summary>
-        ///// <param name="encryptor"></param>
-        //public void Release(AuthenticatedEncryptor encryptor)
-        //{
-        //    _encryptors?.TryRemove(encryptor.EncryptionAlgorithm.Id);
-        //}
+        
+        /// <summary>
+        /// Creates a fresh new <see cref="AuthenticatedDecryptor"/> with the current <see cref="Jwk"/> as key.
+        /// </summary>
+        /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
+        protected abstract AuthenticatedDecryptor CreateAuthenticatedDecryptor(EncryptionAlgorithm encryptionAlgorithm);
 
         /// <summary>
         /// Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
@@ -1071,6 +1115,11 @@ namespace JsonWebToken
             {
                 _encryptors.Dispose();
             }
+
+            if (_decryptors != null)
+            {
+                _decryptors.Dispose();
+            }
         }
 
         internal class NullJwk : Jwk
@@ -1115,6 +1164,12 @@ namespace JsonWebToken
             }
 
             protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+            {
+                ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
+                return null;
+            }
+
+            protected override AuthenticatedDecryptor CreateAuthenticatedDecryptor(EncryptionAlgorithm encryptionAlgorithm)
             {
                 ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
                 return null;
