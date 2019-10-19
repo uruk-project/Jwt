@@ -337,8 +337,7 @@ namespace JsonWebToken
                     }
                     else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
                     {
-                                                return new AesCbcHmacEncryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new AesNiCbc256Encryptor(_k.AsSpan(32)));
-                        //esCbcHmacEncryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new AesCbcEncryptor(_k.AsSpan(32), encryptionAlgorithm));
+                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new AesNiCbc256Encryptor(_k.AsSpan(32)));
                     }
                     else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
                     {
@@ -473,26 +472,26 @@ namespace JsonWebToken
 
         private static byte[] GenerateKeyBytes(int sizeInBits)
         {
-            using (var rnd = RandomNumberGenerator.Create())
-            {
-                byte[] key = new byte[sizeInBits >> 3];
-                rnd.GetBytes(key);
-
-                return key;
-            }
+            byte[] key = new byte[sizeInBits >> 3];
+#if NETCOREAPP3_0
+            RandomNumberGenerator.Fill(key);
+            return key;
+#else
+            using var rnd = RandomNumberGenerator.Create();
+            rnd.GetBytes(key);
+            return key;
+#endif
         }
 
         /// <inheritdoc />      
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
-            using (var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation))
-            {
-                writer.WriteStartObject();
-                writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
-                writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
-                writer.WriteEndObject();
-                writer.Flush();
-            }
+            using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
+            writer.WriteStartObject();
+            writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
+            writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
+            writer.WriteEndObject();
+            writer.Flush();
         }
 
         /// <inheritsdoc />

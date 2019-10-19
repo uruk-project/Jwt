@@ -245,11 +245,6 @@ namespace JsonWebToken
         {
             return EncodingHelper.GetUtf8Bytes(input, output);
         }
-
-        private static string GetUtf8String(ReadOnlySpan<byte> input)
-        {
-            return EncodingHelper.GetUtf8String(input);
-        }
 #endif
     }
 }

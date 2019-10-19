@@ -115,20 +115,18 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override string ToString()
         {
-            using (var bufferWriter = new PooledByteBufferWriter())
+            using var bufferWriter = new PooledByteBufferWriter();
+            using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
             {
-                using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
-                {
-                    WriteTo(writer);
-                }
-
-                var input = bufferWriter.WrittenSpan;
-#if NETSTANDARD2_0 || NET461
-                return Encoding.UTF8.GetString(input.ToArray());
-#else
-                return Encoding.UTF8.GetString(input);
-#endif
+                WriteTo(writer);
             }
+
+            var input = bufferWriter.WrittenSpan;
+#if NETSTANDARD2_0 || NET461
+            return Encoding.UTF8.GetString(input.ToArray());
+#else
+            return Encoding.UTF8.GetString(input);
+#endif
         }
 
         internal void WriteTo(Utf8JsonWriter writer)
@@ -145,20 +143,18 @@ namespace JsonWebToken
 
         private string DebuggerDisplay()
         {
-            using (var bufferWriter = new PooledByteBufferWriter())
+            using var bufferWriter = new PooledByteBufferWriter();
+            using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
             {
-                using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
-                {
-                    WriteTo(writer);
-                }
-
-                var input = bufferWriter.WrittenSpan;
-#if NETSTANDARD2_0 || NET461
-                return Encoding.UTF8.GetString(input.ToArray());
-#else
-                return Encoding.UTF8.GetString(input);
-#endif
+                WriteTo(writer);
             }
+
+            var input = bufferWriter.WrittenSpan;
+#if NETSTANDARD2_0 || NET461
+            return Encoding.UTF8.GetString(input.ToArray());
+#else
+            return Encoding.UTF8.GetString(input);
+#endif
         }
 
         private Jwk[] UnidentifiedKeys

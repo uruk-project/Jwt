@@ -26,7 +26,7 @@ namespace JsonWebToken
         {
             _properties = new List<JwtProperty>(6);
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtObject"/> class.
         /// </summary>
@@ -367,11 +367,9 @@ namespace JsonWebToken
         /// <returns></returns>
         public byte[] Serialize()
         {
-            using (var bufferWriter = new PooledByteBufferWriter())
-            {
-                Serialize(bufferWriter);
-                return bufferWriter.WrittenSpan.ToArray();
-            }
+            using var bufferWriter = new PooledByteBufferWriter();
+            Serialize(bufferWriter);
+            return bufferWriter.WrittenSpan.ToArray();
         }
 
         /// <summary>
@@ -380,11 +378,9 @@ namespace JsonWebToken
         /// <param name="bufferWriter"></param>
         public void Serialize(IBufferWriter<byte> bufferWriter)
         {
-            using (var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation))
-            { 
-                WriteTo(writer);
-                writer.Flush();
-            }
+            using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
+            WriteTo(writer);
+            writer.Flush();
         }
 
         /// <summary>
@@ -429,20 +425,18 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override string ToString()
         {
-            using (var bufferWriter = new PooledByteBufferWriter())
+            using var bufferWriter = new PooledByteBufferWriter();
+            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
             {
-                using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
-                {
-                    WriteTo(writer);
-                }
+                WriteTo(writer);
+            }
 
-                var input = bufferWriter.WrittenSpan;
+            var input = bufferWriter.WrittenSpan;
 #if NETSTANDARD2_0 || NET461
                 return Encoding.UTF8.GetString(input.ToArray());
 #else
-                return Encoding.UTF8.GetString(input);
+            return Encoding.UTF8.GetString(input);
 #endif
-            }
         }
     }
 }

@@ -45,7 +45,7 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of the <see cref="Jwk"/> class.
         /// </summary>
-        public Jwk()
+        protected Jwk()
         {
         }
 
@@ -53,7 +53,7 @@ namespace JsonWebToken
         /// Initializes a new instance of the <see cref="Jwk"/> class.
         /// </summary>
         /// <param name="alg"></param>
-        public Jwk(SignatureAlgorithm alg)
+        protected Jwk(SignatureAlgorithm alg)
         {
             Alg = alg.Utf8Name;
             _signatureAlgorithm = alg;
@@ -63,7 +63,7 @@ namespace JsonWebToken
         /// Initializes a new instance of the <see cref="Jwk"/> class.
         /// </summary>
         /// <param name="alg"></param>
-        public Jwk(KeyManagementAlgorithm alg)
+        protected Jwk(KeyManagementAlgorithm alg)
         {
             Alg = alg.Utf8Name;
             _keyManagementAlgorithm = alg;
@@ -73,7 +73,7 @@ namespace JsonWebToken
         /// Initializes a new instance of the <see cref="Jwk"/> class.
         /// </summary>
         /// <param name="alg"></param>
-        public Jwk(byte[] alg)
+        protected Jwk(byte[] alg)
         {
             Alg = alg;
         }
@@ -82,7 +82,7 @@ namespace JsonWebToken
         /// Initializes a new instance of the <see cref="Jwk"/> class.
         /// </summary>
         /// <param name="alg"></param>
-        public Jwk(string alg)
+        protected Jwk(string alg)
         {
             Alg = Encoding.UTF8.GetBytes(alg);
         }
@@ -182,12 +182,10 @@ namespace JsonWebToken
                 var certificateChain = new List<Jwk>(_x5c.Count);
                 foreach (var certString in _x5c)
                 {
-                    using (var certificate = new X509Certificate2(certString))
-                    {
-                        var key = FromX509Certificate(certificate, false);
-                        key.Kid = Kid;
-                        certificateChain.Add(key);
-                    }
+                    using var certificate = new X509Certificate2(certString);
+                    var key = FromX509Certificate(certificate, false);
+                    key.Kid = Kid;
+                    certificateChain.Add(key);
                 }
 
                 return certificateChain;
@@ -458,22 +456,20 @@ namespace JsonWebToken
         /// </summary>
         public override string ToString()
         {
-            using (var bufferWriter = new PooledByteBufferWriter())
+            using var bufferWriter = new PooledByteBufferWriter();
+            using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
             {
-                using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
-                {
-                    writer.WriteStartObject();
-                    WriteTo(writer);
-                    writer.WriteEndObject();
-                }
+                writer.WriteStartObject();
+                WriteTo(writer);
+                writer.WriteEndObject();
+            }
 
-                var input = bufferWriter.WrittenSpan;
+            var input = bufferWriter.WrittenSpan;
 #if NETSTANDARD2_0 || NET461
-                return Encoding.UTF8.GetString(input.ToArray());
+            return Encoding.UTF8.GetString(input.ToArray());
 #else
                 return Encoding.UTF8.GetString(input);
 #endif
-            }
         }
 
         /// <summary>
@@ -482,13 +478,11 @@ namespace JsonWebToken
         /// <param name="bufferWriter"></param>
         public void Serialize(IBufferWriter<byte> bufferWriter)
         {
-            using (var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation))
-            {
-                writer.WriteStartObject();
-                WriteTo(writer);
-                writer.WriteEndObject();
-                writer.Flush();
-            }
+            using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
+            writer.WriteStartObject();
+            WriteTo(writer);
+            writer.WriteEndObject();
+            writer.Flush();
         }
 
         /// <summary>
@@ -763,11 +757,9 @@ namespace JsonWebToken
         /// <returns></returns>
         public byte[] Canonicalize()
         {
-            using (var bufferWriter = new PooledByteBufferWriter())
-            {
-                Canonicalize(bufferWriter);
-                return bufferWriter.WrittenSpan.ToArray();
-            }
+            using var bufferWriter = new PooledByteBufferWriter();
+            Canonicalize(bufferWriter);
+            return bufferWriter.WrittenSpan.ToArray();
         }
 
         /// <summary>
@@ -783,17 +775,13 @@ namespace JsonWebToken
         /// <returns></returns>
         public byte[] ComputeThumbprint()
         {
-            using (var hashAlgorithm = SHA256.Create())
-            {
-                Span<byte> hash = stackalloc byte[hashAlgorithm.HashSize >> 3];
-                using (var bufferWriter = new PooledByteBufferWriter())
-                {
-                    Canonicalize(bufferWriter);
-                    hashAlgorithm.TryComputeHash(bufferWriter.WrittenSpan, hash, out int bytesWritten);
-                    Debug.Assert(bytesWritten == hashAlgorithm.HashSize >> 3);
-                    return Base64Url.Encode(hash);
-                }
-            }
+            using var hashAlgorithm = SHA256.Create();
+            Span<byte> hash = stackalloc byte[hashAlgorithm.HashSize >> 3];
+            using var bufferWriter = new PooledByteBufferWriter();
+            Canonicalize(bufferWriter);
+            hashAlgorithm.TryComputeHash(bufferWriter.WrittenSpan, hash, out int bytesWritten);
+            Debug.Assert(bytesWritten == hashAlgorithm.HashSize >> 3);
+            return Base64Url.Encode(hash);
         }
 #else
         /// <summary>
@@ -801,11 +789,9 @@ namespace JsonWebToken
         /// </summary>
         public byte[] ComputeThumbprint()
         {
-            using (var hashAlgorithm = SHA256.Create())
-            {
-                var hash = hashAlgorithm.ComputeHash(Canonicalize());
-                return Base64Url.Encode(hash);
-            }
+            using var hashAlgorithm = SHA256.Create();
+            var hash = hashAlgorithm.ComputeHash(Canonicalize());
+            return Base64Url.Encode(hash);
         }
 #endif
 
@@ -824,51 +810,43 @@ namespace JsonWebToken
             AsymmetricJwk? key = null;
             if (withPrivateKey)
             {
-                using (var rsa = certificate.GetRSAPrivateKey())
+                using var rsa = certificate.GetRSAPrivateKey();
+                if (!(rsa is null))
                 {
-                    if (!(rsa is null))
-                    {
-                        var rsaParameters = rsa.ExportParameters(false);
-                        key = new RsaJwk(rsaParameters);
-                    }
-#if !NET461
-                    else
-                    {
-                        using (var ecdsa = certificate.GetECDsaPrivateKey())
-                        {
-                            if (!(ecdsa is null))
-                            {
-                                var ecParameters = ecdsa.ExportParameters(false);
-                                key = new ECJwk(ecParameters);
-                            }
-                        }
-                    }
-#endif
+                    var rsaParameters = rsa.ExportParameters(false);
+                    key = new RsaJwk(rsaParameters);
                 }
+#if !NET461
+                else
+                {
+                    using var ecdsa = certificate.GetECDsaPrivateKey();
+                    if (!(ecdsa is null))
+                    {
+                        var ecParameters = ecdsa.ExportParameters(false);
+                        key = new ECJwk(ecParameters);
+                    }
+                }
+#endif
             }
             else
             {
-                using (var rsa = certificate.GetRSAPublicKey())
+                using var rsa = certificate.GetRSAPublicKey();
+                if (!(rsa is null))
                 {
-                    if (!(rsa is null))
-                    {
-                        var rsaParameters = rsa.ExportParameters(false);
-                        key = new RsaJwk(rsaParameters);
-                    }
-#if !NET461
-                    else
-                    {
-                        using (var ecdsa = certificate.GetECDsaPublicKey())
-                        {
-                            if (!(ecdsa is null))
-                            {
-                                var ecParameters = ecdsa.ExportParameters(false);
-                                key = new ECJwk(ecParameters);
-                            }
-                        }
-                    }
-#endif
+                    var rsaParameters = rsa.ExportParameters(false);
+                    key = new RsaJwk(rsaParameters);
                 }
+#if !NET461
+                else
+                {
+                    using var ecdsa = certificate.GetECDsaPublicKey();
+                    if (!(ecdsa is null))
+                    {
+                        var ecParameters = ecdsa.ExportParameters(false);
+                        key = new ECJwk(ecParameters);
+                    }
+                }
+#endif
             }
 
             if (key is null)
@@ -1101,22 +1079,20 @@ namespace JsonWebToken
 
         private string DebuggerDisplay()
         {
-            using (var bufferWriter = new PooledByteBufferWriter())
+            using var bufferWriter = new PooledByteBufferWriter();
+            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
             {
-                using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
-                {
-                    writer.WriteStartObject();
-                    WriteTo(writer);
-                    writer.WriteEndObject();
-                }
-
-                var input = bufferWriter.WrittenSpan;
-#if NETSTANDARD2_0 || NET461
-                return Encoding.UTF8.GetString(input.ToArray());
-#else
-                return Encoding.UTF8.GetString(input);
-#endif
+                writer.WriteStartObject();
+                WriteTo(writer);
+                writer.WriteEndObject();
             }
+
+            var input = bufferWriter.WrittenSpan;
+#if NETSTANDARD2_0 || NET461
+            return Encoding.UTF8.GetString(input.ToArray());
+#else
+            return Encoding.UTF8.GetString(input);
+#endif
         }
 
         internal bool CanUseForSignature(SignatureAlgorithm? signatureAlgorithm)

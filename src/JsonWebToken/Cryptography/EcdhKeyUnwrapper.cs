@@ -75,15 +75,15 @@ namespace JsonWebToken.Internal
 
             if (Algorithm.ProduceEncryptionKey)
             {
-                using (var key = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false))
-                    if (key.TryGetKeyUnwrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm, out var keyUnwrapper))
-                    {
-                        return keyUnwrapper.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
-                    }
-                    else
-                    {
-                        return ThrowHelper.TryWriteError(out bytesWritten);
-                    }
+                using var key = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
+                if (key.TryGetKeyUnwrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm, out var keyUnwrapper))
+                {
+                    return keyUnwrapper.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
+                }
+                else
+                {
+                    return ThrowHelper.TryWriteError(out bytesWritten);
+                }
             }
             else
             {

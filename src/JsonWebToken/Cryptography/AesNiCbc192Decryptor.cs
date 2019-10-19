@@ -125,7 +125,6 @@ namespace JsonWebToken.Internal
             Unsafe.WriteUnaligned(ref plaintext, block);
         }
 
-
         public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> nonce, Span<byte> plaintext, out int bytesWritten)
         {
             ref var inputRef = ref MemoryMarshal.GetReference(ciphertext);

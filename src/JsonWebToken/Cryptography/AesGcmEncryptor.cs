@@ -49,10 +49,8 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            using (var aes = new AesGcm(_key.K))
-            {
-                aes.Encrypt(nonce, plaintext, ciphertext, authenticationTag, associatedData);
-            }
+            using var aes = new AesGcm(_key.K);
+            aes.Encrypt(nonce, plaintext, ciphertext, authenticationTag, associatedData);
         }
 
         /// <inheritdoc />

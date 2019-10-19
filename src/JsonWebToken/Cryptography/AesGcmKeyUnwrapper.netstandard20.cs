@@ -14,12 +14,12 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override int GetKeyUnwrapSize(int wrappedKeySize) => throw new NotImplementedException();
-
-        public static int GetKeyWrapSize(EncryptionAlgorithm encryptionAlgorithm) => throw new NotImplementedException();
+        public override int GetKeyUnwrapSize(int wrappedKeySize)
+            => throw new NotImplementedException();
 
         /// <inheritsdoc />
-        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten) => throw new NotImplementedException();
+        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
+            => throw new NotImplementedException();
 
         /// <inheritsdoc />
         protected override void Dispose(bool disposing)

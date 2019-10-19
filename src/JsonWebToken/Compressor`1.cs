@@ -25,18 +25,16 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override Span<byte> Compress(ReadOnlySpan<byte> ciphertext)
         {
-            using (var outputStream = new MemoryStream())
-            using (var compressionStream = CreateCompressionStream(outputStream))
-            {
+            using var outputStream = new MemoryStream();
+            using var compressionStream = CreateCompressionStream(outputStream);
 #if !NETSTANDARD2_0 && !NET461
                 compressionStream.Write(ciphertext);
 #else
-                compressionStream.Write(ciphertext.ToArray(), 0, ciphertext.Length);
+            compressionStream.Write(ciphertext.ToArray(), 0, ciphertext.Length);
 #endif
-                compressionStream.Flush();
-                compressionStream.Close();
-                return outputStream.ToArray();
-            }
+            compressionStream.Flush();
+            compressionStream.Close();
+            return outputStream.ToArray();
         }
 
         private sealed class DecompressionSegment : ReadOnlySequenceSegment<byte>
@@ -60,42 +58,40 @@ namespace JsonWebToken
         {
             fixed (byte* pinnedCompressedCiphertext = compressedCiphertext)
             {
-                using (var inputStream = new UnmanagedMemoryStream(pinnedCompressedCiphertext, compressedCiphertext.Length, compressedCiphertext.Length, FileAccess.Read))
-                using (var compressionStream = CreateDecompressionStream(inputStream))
+                using var inputStream = new UnmanagedMemoryStream(pinnedCompressedCiphertext, compressedCiphertext.Length, compressedCiphertext.Length, FileAccess.Read);
+                using var compressionStream = CreateDecompressionStream(inputStream);
+                var buffer = new byte[Constants.DecompressionBufferLength];
+                DecompressionSegment? firstSegment = null;
+                DecompressionSegment? segment = null;
+                int uncompressedLength = 0;
+                int readData;
+                while ((readData = compressionStream.Read(buffer, 0, Constants.DecompressionBufferLength)) != 0)
                 {
-                    var buffer = new byte[Constants.DecompressionBufferLength];
-                    DecompressionSegment? firstSegment = null;
-                    DecompressionSegment? segment = null;
-                    int uncompressedLength = 0;
-                    int readData;
-                    while ((readData = compressionStream.Read(buffer, 0, Constants.DecompressionBufferLength)) != 0)
+                    uncompressedLength += readData;
+                    if (firstSegment is null)
                     {
-                        uncompressedLength += readData;
-                        if (firstSegment is null)
-                        {
-                            firstSegment = new DecompressionSegment(buffer.AsMemory(0, readData));
-                        }
-                        else
-                        {
-                            segment = (segment ?? firstSegment).Add(buffer.AsMemory(0, readData));
-                        }
-
-                        if (readData < Constants.DecompressionBufferLength)
-                        {
-                            break;
-                        }
-
-                        buffer = new byte[Constants.DecompressionBufferLength];
-                    }
-
-                    if (segment is null)
-                    {
-                        return new ReadOnlySequence<byte>(buffer.AsMemory(0, readData));
+                        firstSegment = new DecompressionSegment(buffer.AsMemory(0, readData));
                     }
                     else
                     {
-                        return new ReadOnlySequence<byte>(firstSegment!, 0, segment, readData);
+                        segment = (segment ?? firstSegment).Add(buffer.AsMemory(0, readData));
                     }
+
+                    if (readData < Constants.DecompressionBufferLength)
+                    {
+                        break;
+                    }
+
+                    buffer = new byte[Constants.DecompressionBufferLength];
+                }
+
+                if (segment is null)
+                {
+                    return new ReadOnlySequence<byte>(buffer.AsMemory(0, readData));
+                }
+                else
+                {
+                    return new ReadOnlySequence<byte>(firstSegment!, 0, segment, readData);
                 }
             }
         }

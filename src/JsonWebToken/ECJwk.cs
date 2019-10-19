@@ -376,27 +376,23 @@ namespace JsonWebToken
 
         private static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, byte[]? algorithm)
         {
-            using (var ecdsa = ECDsa.Create())
-            {
-                ecdsa.GenerateKey(curve.CurveParameters);
-                var parameters = ecdsa.ExportParameters(withPrivateKey);
-                return FromParameters(parameters, algorithm, false);
-            }
+            using var ecdsa = ECDsa.Create();
+            ecdsa.GenerateKey(curve.CurveParameters);
+            var parameters = ecdsa.ExportParameters(withPrivateKey);
+            return FromParameters(parameters, algorithm, false);
         }
 
         /// <inheritdoc />
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
-            using (var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation))
-            {
-                writer.WriteStartObject();
-                writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
-                writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
-                writer.WriteString(JwkParameterNames.XUtf8, Base64Url.Encode(X));
-                writer.WriteString(JwkParameterNames.YUtf8, Base64Url.Encode(Y));
-                writer.WriteEndObject();
-                writer.Flush();
-            }
+            using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
+            writer.WriteStartObject();
+            writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
+            writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
+            writer.WriteString(JwkParameterNames.XUtf8, Base64Url.Encode(X));
+            writer.WriteString(JwkParameterNames.YUtf8, Base64Url.Encode(Y));
+            writer.WriteEndObject();
+            writer.Flush();
         }
 
         /// <summary>
@@ -444,10 +440,8 @@ namespace JsonWebToken
         public override ReadOnlySpan<byte> AsSpan()
         {
 #if !NETSTANDARD2_0
-            using (var ecdh = ECDiffieHellman.Create(ExportParameters()))
-            {
-                return ecdh.PublicKey.ToByteArray();
-            }
+            using var ecdh = ECDiffieHellman.Create(ExportParameters());
+            return ecdh.PublicKey.ToByteArray();
 #else
             throw new NotImplementedException();
 #endif

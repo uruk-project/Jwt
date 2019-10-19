@@ -14,7 +14,7 @@ namespace JsonWebToken.Internal
     /// </summary>
     /// <remarks>Inspired from https://github.com/dotnet/coreclr/pull/8216. </remarks>
     /// <typeparam name="TValue"></typeparam>
-    public class CryptographicStore<TValue> : IDisposable where TValue : class, IDisposable
+    public sealed class CryptographicStore<TValue> : IDisposable where TValue : class, IDisposable
     {
         private Map<TValue> _map = Map<TValue>.Empty;
 

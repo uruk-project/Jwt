@@ -39,10 +39,8 @@ namespace JsonWebToken
         /// <inheritsdoc />
         protected override Jwks DeserializeKeySet(string value)
         {
-            using (var certificate = new X509Certificate2(Convert.FromBase64String(value)))
-            {
-                return new Jwks(new[] { Jwk.FromX509Certificate(certificate, false) });
-            }
+            using var certificate = new X509Certificate2(Convert.FromBase64String(value));
+            return new Jwks(new[] { Jwk.FromX509Certificate(certificate, false) });
         }
     }
 }
