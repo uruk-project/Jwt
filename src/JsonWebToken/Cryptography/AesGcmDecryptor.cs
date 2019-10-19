@@ -37,7 +37,7 @@ namespace JsonWebToken.Internal
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
             }
-      
+
             _key = key;
         }
 
@@ -51,14 +51,12 @@ namespace JsonWebToken.Internal
 
             try
             {
-                using (var aes = new AesGcm(_key.K))
-                {
-                    aes.Decrypt(nonce, ciphertext, authenticationTag, plaintext, associatedData);
-                    bytesWritten = plaintext.Length;
-                    return true;
-                }
+                using var aes = new AesGcm(_key.K);
+                aes.Decrypt(nonce, ciphertext, authenticationTag, plaintext, associatedData);
+                bytesWritten = plaintext.Length;
+                return true;
             }
-            catch
+            catch (CryptographicException)
             {
                 plaintext.Clear();
                 return ThrowHelper.TryWriteError(out bytesWritten);

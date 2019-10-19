@@ -22,7 +22,7 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// This is the minimum <see cref="SymmetricJwk"/>.KeySize when creating and verifying signatures.
         /// </summary>
-        public static readonly int DefaultMinimumSymmetricKeySizeInBits = 128;
+        public const int DefaultMinimumSymmetricKeySizeInBits = 128;
 
         private readonly int _hashSizeInBytes;
         private readonly int _base64HashSizeInBytes;
@@ -33,7 +33,7 @@ namespace JsonWebToken.Internal
         {
             if (key.KeySizeInBits < MinimumKeySizeInBits)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(key, algorithm.Name, MinimumKeySizeInBits, key.KeySizeInBits);
+                ThrowHelper.ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(key, algorithm.Name, MinimumKeySizeInBits);
             }
 
             if (algorithm.Category != AlgorithmCategory.Hmac)
@@ -99,7 +99,7 @@ namespace JsonWebToken.Internal
                     result.CopyTo(destination);
                     return true;
                 }
-                catch
+                catch (CryptographicException)
                 {
                     return ThrowHelper.TryWriteError(out bytesWritten);
                 }

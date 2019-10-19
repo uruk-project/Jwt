@@ -40,11 +40,9 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override void Encode(EncodingContext context, IBufferWriter<byte> output)
         {
-            using (var bufferWriter = new PooledByteBufferWriter())
-            {
-                Payload?.Encode(context, bufferWriter);
-                EncryptToken(context, bufferWriter.WrittenSpan, output);
-            }
+            using var bufferWriter = new PooledByteBufferWriter();
+            Payload?.Encode(context, bufferWriter);
+            EncryptToken(context, bufferWriter.WrittenSpan, output);
         }
 
         /// <inheritsdoc />

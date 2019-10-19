@@ -553,21 +553,19 @@ namespace JsonWebToken
         public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, byte[]? algorithm)
         {
 #if NETSTANDARD2_0 || NET461
-            using (RSA rsa = new RSACng(sizeInBits))
+            using RSA rsa = new RSACng(sizeInBits);
 #else
-            using (RSA rsa = RSA.Create(sizeInBits))
+            using RSA rsa = RSA.Create(sizeInBits);
 #endif
+            RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
+
+            var key = FromParameters(rsaParameters, false);
+            if (algorithm != null)
             {
-                RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
-
-                var key = FromParameters(rsaParameters, false);
-                if (algorithm != null)
-                {
-                    key.Alg = algorithm;
-                }
-
-                return key;
+                key.Alg = algorithm;
             }
+
+            return key;
         }
 
         /// <summary>
@@ -595,15 +593,13 @@ namespace JsonWebToken
         /// <inheritdoc />
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
-            using (var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation))
-            {
-                writer.WriteStartObject();
-                writer.WriteString(JwkParameterNames.EUtf8, Base64Url.Encode(E));
-                writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
-                writer.WriteString(JwkParameterNames.NUtf8, Base64Url.Encode(N));
-                writer.WriteEndObject();
-                writer.Flush();
-            }
+            using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
+            writer.WriteStartObject();
+            writer.WriteString(JwkParameterNames.EUtf8, Base64Url.Encode(E));
+            writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
+            writer.WriteString(JwkParameterNames.NUtf8, Base64Url.Encode(N));
+            writer.WriteEndObject();
+            writer.Flush();
         }
 
         /// <inheritsdoc />

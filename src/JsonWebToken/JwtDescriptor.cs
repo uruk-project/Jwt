@@ -126,7 +126,7 @@ namespace JsonWebToken
         /// </summary>
         public string? Type
         {
-            get => Encoding.UTF8.GetString(GetHeaderParameter<byte[]>(HeaderParameters.TypUtf8) ?? new byte[0]);
+            get => Encoding.UTF8.GetString(GetHeaderParameter<byte[]>(HeaderParameters.TypUtf8) ?? Array.Empty<byte>());
             set => SetHeaderParameter(HeaderParameters.TypUtf8, value is null ? null : Encoding.UTF8.GetBytes(value));
         }
 

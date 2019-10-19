@@ -17,7 +17,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public JwtDescriptor(JwtObject header, TPayload payload)
+        protected JwtDescriptor(JwtObject header, TPayload payload)
             : base(header)
         {
             if (payload is null)
@@ -32,7 +32,7 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="JwtDescriptor{TPayload}"/>.
         /// </summary>
         /// <param name="payload"></param>
-        public JwtDescriptor(TPayload payload)
+        protected JwtDescriptor(TPayload payload)
             : base()
         {
             if (payload is null)

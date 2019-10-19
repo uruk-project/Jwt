@@ -111,30 +111,40 @@ namespace JsonWebToken.Internal
             using (var ephemeralKey = (staticKey is null) ? ECDiffieHellman.Create(keyParameters.Curve) : ECDiffieHellman.Create(((ECJwk)staticKey).ExportParameters(true)))
             {
                 exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
-
-                using (var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false)))
-                {
-                    header.Add(new JwtProperty(HeaderParameters.EpkUtf8, epk.AsJwtObject()));
-                }
+                using var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
+                header.Add(new JwtProperty(HeaderParameters.EpkUtf8, epk.AsJwtObject()));
             }
 
-            var kek = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
+            SymmetricJwk? kek = null;
             Jwk? contentEncryptionKey;
-            if (Algorithm.ProduceEncryptionKey)
+            try
             {
-                if (kek.TryGetKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm, out var keyWrapper))
+                kek = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
+                if (Algorithm.ProduceEncryptionKey)
                 {
-                    contentEncryptionKey = keyWrapper.WrapKey(null, header, destination);
+                    if (kek.TryGetKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm, out var keyWrapper))
+                    {
+                        contentEncryptionKey = keyWrapper.WrapKey(null, header, destination);
+                    }
+                    else
+                    {
+                        ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(Algorithm.WrappedAlgorithm);
+                        return Jwk.Empty;
+                    }
                 }
                 else
                 {
-                    ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(Algorithm.WrappedAlgorithm);
-                    return Jwk.Empty;
+                    contentEncryptionKey = kek;
                 }
+
+                kek = null;
             }
-            else
+            finally
             {
-                contentEncryptionKey = kek;
+                if (kek != null)
+                {
+                    kek.Dispose();
+                }
             }
 
             return contentEncryptionKey;

@@ -198,9 +198,9 @@ namespace JsonWebToken
         private static Exception CreateArgumentOutOfRangeException_InvalidEcdsaKeySize(Jwk key, SignatureAlgorithm algorithm, int validKeySize, int keySize) => new ArgumentOutOfRangeException(nameof(algorithm), $"Invalid key size for '{key.Kid}'. Valid key size must be '{validKeySize}' bits for the algorithm {algorithm}. Key size: '{keySize}'.");
 
         [DoesNotReturn]
-        internal static void ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(Jwk key, string algorithm, int validKeySize, int keySize) => throw CreateArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(key, algorithm, validKeySize, keySize);
+        internal static void ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(Jwk key, string algorithm, int validKeySize) => throw CreateArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(key, algorithm, validKeySize);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(Jwk key, string algorithm, int validKeySize, int keySize) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), $"The algorithm '{algorithm}' requires the a key size to be greater than '{validKeySize}' bits. Key size is '{keySize}'.");
+        private static Exception CreateArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(Jwk key, string algorithm, int validKeySize) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), $"The algorithm '{algorithm}' requires the a key size to be greater than '{validKeySize}' bits. Key size is '{key.KeySizeInBits}'.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_WellKnowProperty(WellKnownProperty wellKnownName) => throw CreateArgumentOutOfRangeException_WellKnowProperty(wellKnownName);
@@ -337,15 +337,12 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateOperationNotDoneException(OperationStatus status)
         {
-            switch (status)
+            return status switch
             {
-                case OperationStatus.DestinationTooSmall:
-                    return new InvalidOperationException("The destination buffer is too small.");
-                case OperationStatus.InvalidData:
-                    return new FormatException("The input is not a valid Base-64 URL string as it contains a non-base 64 character.");
-                default:
-                    throw new InvalidOperationException();
-            }
+                OperationStatus.DestinationTooSmall => new InvalidOperationException("The destination buffer is too small."),
+                OperationStatus.InvalidData => new FormatException("The input is not a valid Base-64 URL string as it contains a non-base 64 character."),
+                _ => throw new InvalidOperationException(),
+            };
         }
 
         [DoesNotReturn]

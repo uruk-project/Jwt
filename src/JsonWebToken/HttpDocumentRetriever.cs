@@ -60,10 +60,8 @@ namespace JsonWebToken
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            using (HttpResponseMessage response = _httpClient.GetAsync(address, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult().EnsureSuccessStatusCode())
-            {
-                return response.Content.ReadAsByteArrayAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-            }
+            using HttpResponseMessage response = _httpClient.GetAsync(address, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult().EnsureSuccessStatusCode();
+            return response.Content.ReadAsByteArrayAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         /// <summary>

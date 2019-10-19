@@ -56,10 +56,8 @@ namespace JsonWebToken.Internal
             try
             {
                 aes.IV = nonce.ToArray();
-                using (ICryptoTransform encryptor = aes.CreateEncryptor())
-                {
-                    AesCbcHelper.Transform(encryptor, plaintext, 0, plaintext.Length, ciphertext);
-                }
+                using ICryptoTransform encryptor = aes.CreateEncryptor();
+                AesCbcHelper.Transform(encryptor, plaintext, 0, plaintext.Length, ciphertext);
             }
             catch
             {

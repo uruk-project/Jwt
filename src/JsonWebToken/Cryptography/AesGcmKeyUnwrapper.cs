@@ -51,15 +51,13 @@ namespace JsonWebToken.Internal
             {
                 Base64Url.Decode(encodedIV, nonce);
                 Base64Url.Decode(encodedTag, tag);
-                using (var aesGcm = new AesGcm(Key.AsSpan()))
-                {
-                    aesGcm.Decrypt(nonce, keyBytes, tag, destination);
-                    bytesWritten = destination.Length;
+                using var aesGcm = new AesGcm(Key.AsSpan());
+                aesGcm.Decrypt(nonce, keyBytes, tag, destination);
+                bytesWritten = destination.Length;
 
-                    return true;
-                }
+                return true;
             }
-            catch
+            catch (CryptographicException)
             {
                 return ThrowHelper.TryWriteError(out bytesWritten);
             }
