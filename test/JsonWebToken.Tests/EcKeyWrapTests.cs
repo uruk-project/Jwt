@@ -49,14 +49,14 @@ namespace JsonWebToken.Tests
 
             var cek = kwp.WrapKey(_aliceKey, header, wrappedKey);
 
-            var kwp2 = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW);
+            var kuwp = new EcdhKeyUnwrapper(_bobKey, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW);
             var apu = Encoding.UTF8.GetString(Base64Url.Encode("Alice")); ;
             var apv = Encoding.UTF8.GetString(Base64Url.Encode("Bob"));
             var epk = ((JwtObject)header[HeaderParameters.EpkUtf8].Value).ToString();
             var jwtHeader = JwtHeader.FromJson($"{{\"apu\":\"{apu}\",\"apv\":\"{apv}\",\"epk\":{epk}}}");
 
-            byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
-            var unwrapped = kwp2.TryUnwrapKey(wrappedKey, unwrappedKey, jwtHeader, out _);
+            byte[] unwrappedKey = new byte[kuwp.GetKeyUnwrapSize(wrappedKey.Length)];
+            var unwrapped = kuwp.TryUnwrapKey(wrappedKey, unwrappedKey, jwtHeader, out _);
 
             Assert.True(unwrapped);
         }
@@ -72,14 +72,14 @@ namespace JsonWebToken.Tests
 
             var cek = kwp.WrapKey(_aliceKey, header, wrappedKey);
 
-            var kwp2 = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW);
+            var kuwp = new EcdhKeyUnwrapper(_bobKey, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW);
             var apu = Encoding.UTF8.GetString(Base64Url.Encode("Alice")); ;
             var apv = Encoding.UTF8.GetString(Base64Url.Encode("Bob"));
             var epk = ((JwtObject)header[HeaderParameters.EpkUtf8].Value).ToString();
             var jwtHeader = JwtHeader.FromJson($"{{\"apu\":\"{apu}\",\"apv\":\"{apv}\",\"epk\":{epk}}}");
 
-            byte[] unwrappedKey = new byte[kwp.GetKeyUnwrapSize(wrappedKey.Length)];
-            var unwrapped = kwp2.TryUnwrapKey(wrappedKey, unwrappedKey, jwtHeader, out int bytesWritten);
+            byte[] unwrappedKey = new byte[kuwp.GetKeyUnwrapSize(wrappedKey.Length)];
+            var unwrapped = kuwp.TryUnwrapKey(wrappedKey, unwrappedKey, jwtHeader, out int bytesWritten);
 
             Assert.True(unwrapped);
         }

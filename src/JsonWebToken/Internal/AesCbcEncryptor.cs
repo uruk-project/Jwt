@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
 {
-    public sealed class AesCbcEncryptor : AesEncryptor
+    internal sealed class AesCbcEncryptor : AesEncryptor
     {
         private readonly ObjectPool<Aes> _aesPool;
         private bool _disposed;
@@ -88,9 +88,7 @@ namespace JsonWebToken.Internal
         }
 
         public override void EncryptBlock(ref byte plaintext, ref byte ciphertext)
-        {
-            throw new NotSupportedException();
-        }
+            => throw new NotSupportedException();
 
         private sealed class AesPooledPolicy : PooledObjectFactory<Aes>
         {

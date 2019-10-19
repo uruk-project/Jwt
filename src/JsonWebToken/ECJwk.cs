@@ -298,6 +298,12 @@ namespace JsonWebToken
         {
             return new EcdhKeyWrapper(this, encryptionAlgorithm, algorithm);
         }
+        
+        /// <inheritdoc />
+        protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        {
+            return new EcdhKeyUnwrapper(this, encryptionAlgorithm, algorithm);
+        }
 
         /// <summary>
         /// Exports the key parameters.

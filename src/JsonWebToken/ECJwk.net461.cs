@@ -41,6 +41,9 @@ namespace JsonWebToken
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter) => throw new NotImplementedException();
 
         /// <inheritsdoc />
+        protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm) => throw new NotImplementedException();
+
+        /// <inheritsdoc />
         protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm) => throw new NotImplementedException();
 
         /// <inheritsdoc />

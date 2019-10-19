@@ -10,7 +10,7 @@ using System.Runtime.Intrinsics.X86;
 
 namespace JsonWebToken.Internal
 {
-    public sealed class AesNiCbc256Decryptor : AesDecryptor
+    internal sealed class AesNiCbc256Decryptor : AesDecryptor
     {
         private const int BlockSize = 16;
 
