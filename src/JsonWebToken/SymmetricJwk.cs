@@ -305,6 +305,25 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
+        protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        {
+            if (algorithm.Category == AlgorithmCategory.Aes)
+            {
+                return new AesKeyUnwrapper(this, encryptionAlgorithm, algorithm);
+            }
+            else if (algorithm.Category == AlgorithmCategory.AesGcm)
+            {
+                return new AesGcmKeyUnwrapper(this, encryptionAlgorithm, algorithm);
+            }
+            else if (!algorithm.ProduceEncryptionKey)
+            {
+                return new DirectKeyUnwrapper(this, encryptionAlgorithm, algorithm);
+            }
+
+            ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
+            return null;
+        }
+        /// <inheritsdoc />
         protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)

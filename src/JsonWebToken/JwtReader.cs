@@ -568,7 +568,7 @@ namespace JsonWebToken
                 for (int i = 0; i < wrappedKeys.Count; i++)
                 {
                     var key = wrappedKeys[i];
-                    if (key.TryGetKeyWrapper(enc, alg, out var keyWrapper))
+                    if (key.TryGetKeyUnwrapper(enc, alg, out var keyWrapper))
                     {
                         Span<byte> unwrappedKey = stackalloc byte[keyWrapper.GetKeyUnwrapSize(encryptedKey.Length)];
                         if (keyWrapper.TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyWrappedBytesWritten))

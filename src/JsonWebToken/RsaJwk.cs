@@ -407,6 +407,12 @@ namespace JsonWebToken
         {
             return new RsaKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
         }
+        
+        /// <inheritsdoc />
+        protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+        {
+            return new RsaKeyUnwrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
+        }
 
         /// <inheritsdoc />
         public override bool HasPrivateKey => D != null && DP != null && DQ != null && P != null && Q != null && QI != null;

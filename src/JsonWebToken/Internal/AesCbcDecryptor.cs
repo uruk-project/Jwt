@@ -2,12 +2,11 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
 {
-    public sealed class AesCbcDecryptor : AesDecryptor
+    internal sealed class AesCbcDecryptor : AesDecryptor
     {
         private readonly ObjectPool<Aes> _aesPool;
         private bool _disposed;
@@ -70,10 +69,8 @@ namespace JsonWebToken.Internal
             }
         }
 
-        public override void DecryptBlock(ref byte ciphertext, ref byte plaintext)
-        {
-            throw new NotSupportedException();
-        }
+        public override void DecryptBlock(ref byte ciphertext, ref byte plaintext) 
+            => throw new NotSupportedException();
 
         /// <inheritdoc />
         public override void Dispose()

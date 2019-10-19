@@ -9,7 +9,7 @@ using System.Text;
 
 namespace JsonWebToken.Internal
 {
-    internal sealed class EcdhKeyWrapper : KeyWrapper
+    internal sealed class EcdhKeyUnwrapper : KeyUnwrapper
     {
         private static readonly byte[] _secretPreprend = { 0x0, 0x0, 0x0, 0x1 };
 
@@ -20,7 +20,7 @@ namespace JsonWebToken.Internal
 
         private bool _disposed;
 
-        public EcdhKeyWrapper(ECJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
+        public EcdhKeyUnwrapper(ECJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
             : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
             if (contentEncryptionAlgorithm.WrappedAlgorithm is null)
@@ -39,105 +39,58 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override int GetKeyWrapSize()
+        public override int GetKeyUnwrapSize(int inputSize)
         {
-            var alg = Algorithm;
-            if (alg.ProduceEncryptionKey)
-            {
-                var wrappedAlgorithm = alg.WrappedAlgorithm;
-                if (!(wrappedAlgorithm is null))
-                {
-                    if (wrappedAlgorithm.Category == AlgorithmCategory.Aes)
-                    {
-                        return AesKeyWrapper.GetKeyWrappedSize(EncryptionAlgorithm);
-                    }
-#if NETCOREAPP3_0
-                    else if (wrappedAlgorithm.Category == AlgorithmCategory.AesGcm)
-                    {
-                        //return AesGcmKeyWrapper.GetKeyWrapSize(Key);
-                        return AesGcmKeyWrapper.GetKeyWrapSize(EncryptionAlgorithm);
-                    }
-#endif
-                    else
-                    {
-                        ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(EncryptionAlgorithm);
-                        return 0;
-                    }
-                }
-                else
-                {
-                    ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(EncryptionAlgorithm);
-                    return 0;
-                }
-            }
-            else
-            {
-                if (alg == KeyManagementAlgorithm.EcdhEs)
-                {
-                    return _keySizeInBytes;
-                }
-                else
-                {
-#if NETCOREAPP3_0
-                    if (EncryptionAlgorithm.Category == EncryptionType.AesGcm)
-                    {
-                        return _keySizeInBytes + 8;
-                    }
-#endif
-                    return EncryptionAlgorithm.KeyWrappedSizeInBytes;
-                }
-            }
+            return EncryptionAlgorithm.RequiredKeySizeInBytes;
         }
 
         /// <inheritsdoc />
-        public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
+        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
         {
-            if (header is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
-            }
-
             if (_disposed)
             {
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            var partyUInfo = GetPartyInfo(header, HeaderParameters.ApuUtf8);
-            var partyVInfo = GetPartyInfo(header, HeaderParameters.ApvUtf8);
-            var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
-            byte[] exchangeHash;
-            var keyParameters = ((ECJwk)Key).ExportParameters();
-            using (var otherPartyKey = ECDiffieHellman.Create(keyParameters))
-            using (var ephemeralKey = (staticKey is null) ? ECDiffieHellman.Create(keyParameters.Curve) : ECDiffieHellman.Create(((ECJwk)staticKey).ExportParameters(true)))
+            var epk = header.Epk;
+            if (epk is null)
             {
-                exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
-
-                using (var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false)))
-                {
-                    header.Add(new JwtProperty(HeaderParameters.EpkUtf8, epk.AsJwtObject()));
-                }
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.EpkUtf8);
             }
 
-            var kek = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
-            Jwk? contentEncryptionKey;
+            var apu = header.Apu == null ? null : Encoding.UTF8.GetBytes(header.Apu);
+            var apv = header.Apv == null ? null : Encoding.UTF8.GetBytes(header.Apv);
+            byte[] secretAppend = BuildSecretAppend(apu, apv);
+            byte[] exchangeHash;
+            using (var ephemeralKey = ECDiffieHellman.Create(epk.ExportParameters()))
+            using (var privateKey = ECDiffieHellman.Create(((ECJwk)Key).ExportParameters(true)))
+            {
+                if (ephemeralKey.KeySize != privateKey.KeySize)
+                {
+                    return ThrowHelper.TryWriteError(out bytesWritten);
+                }
+
+                exchangeHash = privateKey.DeriveKeyFromHash(ephemeralKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
+            }
+
             if (Algorithm.ProduceEncryptionKey)
             {
-                if (kek.TryGetKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm, out var keyWrapper))
-                {
-                    contentEncryptionKey = keyWrapper.WrapKey(null, header, destination);
-                }
-                else
-                {
-                    ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(Algorithm.WrappedAlgorithm);
-                    return Jwk.Empty;
-                }
+                using (var key = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false))
+                    if (key.TryGetKeyUnwrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm, out var keyUnwrapper))
+                    {
+                        return keyUnwrapper.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
+                    }
+                    else
+                    {
+                        return ThrowHelper.TryWriteError(out bytesWritten);
+                    }
             }
             else
             {
-                contentEncryptionKey = kek;
+                new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes).CopyTo(destination);
+                bytesWritten = destination.Length;
+                return true;
             }
-
-            return contentEncryptionKey;
         }
 
         protected override void Dispose(bool disposing)
@@ -162,16 +115,6 @@ namespace JsonWebToken.Internal
 
         Sha256:
             return HashAlgorithmName.SHA256;
-        }
-
-        private static byte[]? GetPartyInfo(JwtObject header, ReadOnlySpan<byte> utf8Name)
-        {
-            if (header.TryGetValue(utf8Name, out var token))
-            {
-                return (byte[]?)token.Value;
-            }
-
-            return null;
         }
 
         private static void WritePartyInfo(byte[]? partyInfo, int partyInfoLength, Span<byte> destination)

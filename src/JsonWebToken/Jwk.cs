@@ -30,6 +30,7 @@ namespace JsonWebToken
 
         private CryptographicStore<Signer>? _signers;
         private CryptographicStore<KeyWrapper>? _keyWrappers;
+        private CryptographicStore<KeyUnwrapper>? _keyUnwrappers;
         private CryptographicStore<AuthenticatedEncryptor>? _encryptors;
         private CryptographicStore<AuthenticatedDecryptor>? _decryptors;
 
@@ -544,15 +545,6 @@ namespace JsonWebToken
             return false;
         }
 
-        ///// <summary>
-        ///// Releases the <see cref="Signer"/>.
-        ///// </summary>
-        ///// <param name="signer"></param>
-        //public void Release(Signer signer)
-        //{
-        //    _signers?.TryRemove(signer.Algorithm.Id);
-        //}
-
         /// <summary>
         /// Tries to provide a <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
@@ -601,11 +593,65 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Tries to provide a <see cref="KeyUnwrapper"/> with the current <see cref="Jwk"/> as key.
+        /// </summary>
+        /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
+        /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
+        /// <param name="keyUnwrapper">The provided <see cref="KeyUnwrapper"/>. <c>null</c> if return <c>false</c></param>
+        public bool TryGetKeyUnwrapper(EncryptionAlgorithm? encryptionAlgorithm, KeyManagementAlgorithm? algorithm, [NotNullWhen(true)] out KeyUnwrapper? keyUnwrapper)
+        {
+            if (!(encryptionAlgorithm is null) && !(algorithm is null))
+            {
+                var keyUnwrappers = _keyUnwrappers;
+                var algorithmKey = encryptionAlgorithm.ComputeKey(algorithm);
+                if (keyUnwrappers is null)
+                {
+                    keyUnwrappers = new CryptographicStore<KeyUnwrapper>();
+                    _keyUnwrappers = keyUnwrappers;
+                }
+                else
+                {
+                    if (keyUnwrappers.TryGetValue(algorithmKey, out keyUnwrapper))
+                    {
+                        return true;
+                    }
+                }
+
+                if (IsSupported(algorithm))
+                {
+                    keyUnwrapper = CreateKeyUnwrapper(encryptionAlgorithm, algorithm);
+                    if (keyUnwrappers.TryAdd(algorithmKey, keyUnwrapper))
+                    {
+                        return true;
+                    }
+
+                    keyUnwrapper?.Dispose();
+                    if (keyUnwrappers.TryGetValue(algorithmKey, out keyUnwrapper))
+                    {
+                        return true;
+                    }
+
+                    ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+                }
+            }
+
+            keyUnwrapper = null;
+            return false;
+        }
+
+        /// <summary>
         /// Creates a fresh new <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
         protected abstract KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
+
+        /// <summary>
+        /// Creates a fresh new <see cref="KeyUnwrapper"/> with the current <see cref="Jwk"/> as key.
+        /// </summary>
+        /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
+        /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key unwrapping.</param>
+        protected abstract KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
 
         /// <summary>
         /// Creates a <see cref="AuthenticatedEncryptor"/> with the current <see cref="Jwk"/> as key.
@@ -652,7 +698,7 @@ namespace JsonWebToken
             encryptor = null;
             return false;
         }
-        
+
         /// <summary>
         /// Creates a <see cref="AuthenticatedDecryptor"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
@@ -704,7 +750,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
         protected abstract AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm);
-        
+
         /// <summary>
         /// Creates a fresh new <see cref="AuthenticatedDecryptor"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
@@ -1111,6 +1157,11 @@ namespace JsonWebToken
                 _keyWrappers.Dispose();
             }
 
+            if (_keyUnwrappers != null)
+            {
+                _keyUnwrappers.Dispose();
+            }
+
             if (_encryptors != null)
             {
                 _encryptors.Dispose();
@@ -1156,8 +1207,14 @@ namespace JsonWebToken
             {
                 return false;
             }
-            
+
             protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+            {
+                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
+                return null;
+            }
+
+            protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             {
                 ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
                 return null;
