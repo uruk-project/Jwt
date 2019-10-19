@@ -40,7 +40,7 @@ namespace ValidatePerf
             _reader.EnableHeaderCaching = false;
             while (true)
             {
-                var result = _reader.TryReadToken(jweToken, TokenValidationPolicy.NoValidation);
+                _reader.TryReadToken(jweToken, TokenValidationPolicy.NoValidation);
             }
         }
     }
