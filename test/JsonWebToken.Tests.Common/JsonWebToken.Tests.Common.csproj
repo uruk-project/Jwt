@@ -5,7 +5,8 @@
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp3.0</TargetFrameworks>
 
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>../../jwt.snk</AssemblyOriginatorKeyFile> 
+    <AssemblyOriginatorKeyFile>../../jwt.snk</AssemblyOriginatorKeyFile>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
