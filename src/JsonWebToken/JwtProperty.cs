@@ -644,7 +644,13 @@ namespace JsonWebToken
             }
         }
 
-        internal bool ContainsKey(string key)
+        /// <summary>
+        /// Gets whether the <paramref name="key"/> is present in the current <see cref="JwtProperty"/> at the specified key. 
+        /// Return always <c>false</c> if the <see cref="JwtProperty"/> is not a JSON object.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool ContainsKey(string key)
         {
             if (Type == JwtTokenType.Object)
             {

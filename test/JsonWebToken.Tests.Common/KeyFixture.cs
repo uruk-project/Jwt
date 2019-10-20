@@ -10,11 +10,7 @@ namespace JsonWebToken.Tests
     {
         public KeyFixture()
         {
-            var location = new Uri(typeof(KeyFixture).GetTypeInfo().Assembly.CodeBase).AbsolutePath;
-            var dirPath = Path.GetDirectoryName(location);
-            var keysPath = Path.Combine(dirPath, "./resources/jwks.json"); ;
-            var jwks = File.ReadAllText(keysPath);
-            Jwks = new Jwks();// Jwks.FromJson(jwks);
+            Jwks = new Jwks();
 
             SigningKey = CreateSigningKey();
             Jwks.Keys.Add(SigningKey);

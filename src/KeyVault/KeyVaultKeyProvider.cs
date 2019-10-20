@@ -86,22 +86,13 @@ namespace JsonWebToken.KeyVault
 #if !NETFRAMEWORK
         private static SscECParameters ConvertToECParameters(KVECParameters inputParameters)
         {
-            ECCurve curve;
-            switch (inputParameters.Curve)
+            var curve = inputParameters.Curve switch
             {
-                case "P-256":
-                    curve = ECCurve.NamedCurves.nistP256;
-                    break;
-                case "P-384":
-                    curve = ECCurve.NamedCurves.nistP384;
-                    break;
-                case "P521":
-                    curve = ECCurve.NamedCurves.nistP521;
-                    break;
-                default:
-                    throw new NotSupportedException();
-            }
-
+                "P-256" => ECCurve.NamedCurves.nistP256,
+                "P-384" => ECCurve.NamedCurves.nistP384,
+                "P521" => ECCurve.NamedCurves.nistP521,
+                _ => throw new NotSupportedException(),
+            };
             return new SscECParameters
             {
                 Curve = curve,

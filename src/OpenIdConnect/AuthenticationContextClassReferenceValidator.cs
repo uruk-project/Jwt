@@ -16,12 +16,22 @@ namespace JsonWebToken
 
         public TokenValidationResult TryValidate(Jwt jwt)
         {
+            if (jwt is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
+            }
+
+            if (jwt.Payload is null)
+            {
+                return TokenValidationResult.MalformedToken();
+            }
+
             if (!jwt.Payload.TryGetValue(OidcClaims.AcrUtf8, out var property))
             {
                 return TokenValidationResult.MissingClaim(jwt, OidcClaims.AcrUtf8);
             }
 
-            if (string.Equals(_requiredAcr, (string)property.Value, StringComparison.Ordinal))
+            if (string.Equals(_requiredAcr, (string?)property.Value, StringComparison.Ordinal))
             {
                 return TokenValidationResult.InvalidClaim(jwt, OidcClaims.AcrUtf8);
             }

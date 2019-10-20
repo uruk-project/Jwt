@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace JsonWebToken
@@ -13,7 +14,7 @@ namespace JsonWebToken
     /// </summary>
     public sealed class VectorOfTrust : IEnumerable<string>
     {
-        private readonly Dictionary<char, IList<char>> _vector = new Dictionary<char, IList<char>>();
+        private readonly Dictionary<char, List<char>> _vector = new Dictionary<char, List<char>>();
 
         public VectorOfTrust()
         {
@@ -69,38 +70,38 @@ namespace JsonWebToken
         /// <summary>
         /// P
         /// </summary>
-        public IList<char> IdentityProofing { get => this['P']; set => this['P'] = value; }
+        public char[] IdentityProofing { get => this['P']; set => this['P'] = value; }
 
         /// <summary>
         /// C
         /// </summary>
-        public IList<char> PrimaryCredentialUsage { get => this['C']; set => this['C'] = value; }
+        public char[] PrimaryCredentialUsage { get => this['C']; set => this['C'] = value; }
 
         /// <summary>
         /// M
         /// </summary>
-        public IList<char> PrimaryCredentialManagement { get => this['M']; set => this['M'] = value; }
+        public char[] PrimaryCredentialManagement { get => this['M']; set => this['M'] = value; }
 
         /// <summary>
         /// A
         /// </summary>
-        public IList<char> AssertionPresentation { get => this['A']; set => this['A'] = value; }
+        public char[] AssertionPresentation { get => this['A']; set => this['A'] = value; }
 
-        public IList<char> this[char dimension]
+        public char[] this[char dimension]
         {
             get
             {
                 if (_vector.TryGetValue(dimension, out var values))
                 {
-                    return values;
+                    return values.ToArray();
                 }
 
-                return null;
+                return Array.Empty<char>();
             }
 
             set
             {
-                _vector[dimension] = value;
+                _vector[dimension] = new List<char>(value);
             }
         }
 

@@ -8,7 +8,7 @@ namespace JsonWebToken
 {
     public sealed class SecurityEventToken : Jwt
     {
-        private JwtObject _events;
+        private JwtObject? _events;
 
         public SecurityEventToken(Jwt token)
             : base(token)
@@ -31,8 +31,12 @@ namespace JsonWebToken
                         return new JwtObject();
                     }
 
-                    _events = (JwtObject)events.Value;
-                    return _events;
+                    _events = (JwtObject?)events.Value;
+
+                    if (_events is null)
+                    {
+                        return new JwtObject();
+                    }
                 }
 
                 return _events;
@@ -43,15 +47,25 @@ namespace JsonWebToken
         {
             get
             {
+                if (Payload is null)
+                {
+                    return null;
+                }
+                
                 return Payload.TryGetValue(SetClaims.ToeUtf8, out var property) ? EpochTime.ToDateTime((long?)property.Value) : null;
             }
         }
 
-        public string TransactionNumber
+        public string? TransactionNumber
         {
             get
             {
-                return Payload.TryGetValue(SetClaims.TxnUtf8, out var property) ? (string)property.Value : null;
+                if (Payload is null)
+                {
+                    return null;
+                }
+
+                return Payload.TryGetValue(SetClaims.TxnUtf8, out var property) ? (string?)property.Value : null;
             }
         }
     }
