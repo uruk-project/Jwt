@@ -18,7 +18,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the value of the 'software_id' claim.
         /// </summary>
-        public string SoftwareId
+        public string? SoftwareId
         {
             get { return GetStringClaim(OAuth2Claims.SoftwareIdUtf8); }
             set { AddClaim(OAuth2Claims.SoftwareIdUtf8, value); }

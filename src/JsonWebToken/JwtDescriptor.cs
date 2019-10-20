@@ -86,15 +86,6 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Gets or sets the JWK header parameter.
-        /// </summary>
-        public Jwk Jwk
-        {
-            get => throw new NotSupportedException(); // GetHeaderParameter<Jwk>(HeaderParameters.JwkUtf8);
-            set => throw new NotSupportedException(); //SetHeaderParameter(HeaderParameters.Jwk, value);
-        }
-
-        /// <summary>
         /// Gets or sets the X509 URL header parameter.
         /// </summary>
         public string? X509Url

@@ -422,6 +422,7 @@ namespace JsonWebToken
                 case ExceptionArgument.base64url: return "base64url";
                 case ExceptionArgument.descriptor: return "descriptor";
                 case ExceptionArgument.context: return "context";
+                case ExceptionArgument.inner: return "inner";
 
                 default:
                     Debug.Fail("The enum value is not defined, please check the ExceptionArgument Enum.");
@@ -484,6 +485,7 @@ namespace JsonWebToken
         capacity,
         base64url,
         descriptor,
-        context
+        context,
+        inner
     }
 }

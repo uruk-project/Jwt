@@ -18,13 +18,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="resources\descriptors.json" />
-    <None Remove="resources\invalid_jwts.json" />
-    <None Remove="resources\jwks.json" />
-    <None Remove="resources\jwts.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.5.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -33,25 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="resources\descriptors.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="resources\invalid_jwts.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="resources\jwts.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="resources\jwks.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\JsonWebToken\JsonWebToken.csproj" />
-    <ProjectReference Include="..\..\src\OAuth2\JsonWebToken.OAuth2.csproj" />
-    <ProjectReference Include="..\..\src\OpenIdConnect\JsonWebToken.OpenIdConnect.csproj" />
-    <ProjectReference Include="..\..\src\SecurityEventTokens\JsonWebToken.SecurityEventTokens.csproj" />
+    <ProjectReference Include="..\JsonWebToken.Tests.Common\JsonWebToken.Tests.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">

@@ -53,60 +53,46 @@ namespace JsonWebToken.KeyVault
             foreach (var keyIdentifier in keyIdentifiers)
             {
                 var kvKey = await _client.GetKeyAsync(keyIdentifier.Identifier.Identifier);
-                Jwk key = null;
-
-                switch (kvKey.Key.Kty)
+                Jwk? key = kvKey.Key.Kty switch
                 {
-                    case JsonWebKeyType.Octet:
-                        key = new SymmetricJwk(kvKey.Key.K);
-                        break;
-                    case JsonWebKeyType.Rsa:
-                    case JsonWebKeyType.RsaHsm:
-                        key = new RsaJwk(kvKey.Key.ToRSAParameters());
-                        break;
+                    JsonWebKeyType.Octet => new SymmetricJwk(kvKey.Key.K),
+                    JsonWebKeyType.Rsa => new RsaJwk(kvKey.Key.ToRSAParameters()),
+                    JsonWebKeyType.RsaHsm => new RsaJwk(kvKey.Key.ToRSAParameters()),
 #if !NETFRAMEWORK
-                    case JsonWebKeyType.EllipticCurve:
-                    case JsonWebKeyType.EllipticCurveHsm:
-                        var parameters = kvKey.Key.ToEcParameters();
-                        key = ECJwk.FromParameters(ConvertToECParameters(parameters));
-                        break;
+                    JsonWebKeyType.EllipticCurve => ECJwk.FromParameters(ConvertToECParameters(kvKey.Key.ToEcParameters())),
+                    JsonWebKeyType.EllipticCurveHsm => ECJwk.FromParameters(ConvertToECParameters(kvKey.Key.ToEcParameters())),
 #endif
-                    default:
-                        continue;
-                }
+                    _ => null
+                };
 
-                key.Kid = kvKey.Key.Kid;
-                if (kvKey.Key.KeyOps != null)
+                if (!(key is null))
                 {
-                    for (int i = 0; i < kvKey.Key.KeyOps.Count; i++)
+                    key.Kid = kvKey.Key.Kid;
+                    if (kvKey.Key.KeyOps != null)
                     {
-                        key.KeyOps.Add(kvKey.Key.KeyOps[i]);
+                        for (int i = 0; i < kvKey.Key.KeyOps.Count; i++)
+                        {
+                            key.KeyOps.Add(kvKey.Key.KeyOps[i]);
+                        }
                     }
+
+                    keys.Add(key);
                 }
             }
 
             return keys.ToArray();
         }
 
- #if !NETFRAMEWORK
-       private static SscECParameters ConvertToECParameters(KVECParameters inputParameters)
+#if !NETFRAMEWORK
+        private static SscECParameters ConvertToECParameters(KVECParameters inputParameters)
         {
-            ECCurve curve;
-            switch (inputParameters.Curve)
+            var curve = inputParameters.Curve switch
             {
-                case "P-256":
-                    curve = ECCurve.NamedCurves.nistP256;
-                    break;
-                case "P-384":
-                    curve = ECCurve.NamedCurves.nistP384;
-                    break;
-                case "P521":
-                    curve = ECCurve.NamedCurves.nistP521;
-                    break;
-                default:
-                    throw new NotSupportedException();
-            }
-
+                "P-256" => ECCurve.NamedCurves.nistP256,
+                "P-384" => ECCurve.NamedCurves.nistP384,
+                "P521" => ECCurve.NamedCurves.nistP521,
+                _ => throw new NotSupportedException(),
+            };
             return new SscECParameters
             {
                 Curve = curve,
@@ -115,7 +101,7 @@ namespace JsonWebToken.KeyVault
                 {
                     X = inputParameters.X,
                     Y = inputParameters.Y
-                }                
+                }
             };
         }
 #endif

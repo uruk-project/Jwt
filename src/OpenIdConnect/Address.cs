@@ -11,17 +11,17 @@ namespace JsonWebToken
 {
     public sealed class Address
     {
-        public string Formatted { get; set; }
+        public string? Formatted { get; set; }
 
-        public string StreetAddress { get; set; }
+        public string? StreetAddress { get; set; }
 
-        public string Locality { get; set; }
+        public string? Locality { get; set; }
 
-        public string Region { get; set; }
+        public string? Region { get; set; }
 
-        public string PostalCode { get; set; }
+        public string? PostalCode { get; set; }
 
-        public string Country { get; set; }
+        public string? Country { get; set; }
 
         public static Address FromJson(ReadOnlySpan<byte> json)
         {
@@ -97,18 +97,16 @@ namespace JsonWebToken
 
         public byte[] Serialize()
         {
-            using (var bufferWriter = new PooledByteBufferWriter())
+            using var bufferWriter = new PooledByteBufferWriter();
+            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
             {
-                using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { SkipValidation = true }))
-                {
-                    writer.WriteStartObject();
-                    WriteTo(writer);
-                    writer.WriteEndObject();
-                }
-
-                var input = bufferWriter.WrittenSpan;
-                return input.ToArray();
+                writer.WriteStartObject();
+                WriteTo(writer);
+                writer.WriteEndObject();
             }
+
+            var input = bufferWriter.WrittenSpan;
+            return input.ToArray();
         }
 
         internal void WriteTo(Utf8JsonWriter writer)

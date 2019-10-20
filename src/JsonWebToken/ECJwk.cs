@@ -608,7 +608,7 @@ namespace JsonWebToken
                 return true;
             }
 
-            return Crv.Id == Crv.Id &&
+            return Crv.Id == key.Crv.Id &&
                 X.AsSpan().SequenceEqual(key.X) &&
                 Y.AsSpan().SequenceEqual(key.Y);
         }

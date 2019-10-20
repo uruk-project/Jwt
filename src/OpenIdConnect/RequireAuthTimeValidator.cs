@@ -14,6 +14,16 @@ namespace JsonWebToken
         /// <inheritdoc />
         public TokenValidationResult TryValidate(Jwt jwt)
         {
+            if (jwt is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
+            }
+
+            if (jwt.Payload is null)
+            {
+                return TokenValidationResult.MalformedToken();
+            }
+
             if (jwt.Payload.TryGetValue(OidcClaims.AuthTimeUtf8, out var _))
             {
                 return TokenValidationResult.Success(jwt);

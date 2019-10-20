@@ -14,7 +14,23 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes an new instance of <see cref="OpenIdConnectConfiguration"/>.
         /// </summary>
-        public OpenIdConnectConfiguration()
+        public OpenIdConnectConfiguration(
+            string issuer,
+            string authorizationEndpoint,
+            string jwksUri,
+            ICollection<string> responseTypesSupported,
+            ICollection<string> idTokenSigningAlgValuesSupported)
+        {
+            Issuer = issuer;
+            AuthorizationEndpoint = authorizationEndpoint;
+            JwksUri = jwksUri;
+            ResponseTypesSupported = responseTypesSupported;
+            IdTokenSigningAlgValuesSupported = idTokenSigningAlgValuesSupported;
+        }
+
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+        private OpenIdConnectConfiguration()
+#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
         {
         }
 
@@ -304,7 +320,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'check_session_iframe'.
         /// </summary>
-        public string CheckSessionIframe { get; set; }
+        public string? CheckSessionIframe { get; set; }
 
         /// <summary>
         /// Gets the collection of 'claims_supported'
@@ -334,7 +350,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'end_session_endpoint'.
         /// </summary>
-        public string EndSessionEndpoint { get; set; }
+        public string? EndSessionEndpoint { get; set; }
 
         /// <summary>
         /// Gets or sets the 'frontchannel_logout_session_supported'.
@@ -389,17 +405,17 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'op_policy_uri'
         /// </summary>
-        public string OpPolicyUri { get; set; }
+        public string? OpPolicyUri { get; set; }
 
         /// <summary>
         /// Gets or sets the 'op_tos_uri'
         /// </summary>
-        public string OpTosUri { get; set; }
+        public string? OpTosUri { get; set; }
 
         /// <summary>
         /// Gets or sets the 'registration_endpoint'
         /// </summary>
-        public string RegistrationEndpoint { get; set; }
+        public string? RegistrationEndpoint { get; set; }
 
         /// <summary>
         /// Gets the collection of 'request_object_encryption_alg_values_supported'.
@@ -444,7 +460,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'service_documentation'
         /// </summary>
-        public string ServiceDocumentation { get; set; }
+        public string? ServiceDocumentation { get; set; }
 
         /// <summary>
         /// Gets the collection of 'scopes_supported'
@@ -459,7 +475,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'token_endpoint'.
         /// </summary>
-        public string TokenEndpoint { get; set; }
+        public string? TokenEndpoint { get; set; }
 
         /// <summary>
         /// Gets the collection of 'token_endpoint_auth_methods_supported'.
@@ -479,7 +495,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'user_info_endpoint'.
         /// </summary>
-        public string UserInfoEndpoint { get; set; }
+        public string? UserInfoEndpoint { get; set; }
 
         /// <summary>
         /// Gets the collection of 'userinfo_encryption_alg_values_supported'
@@ -499,7 +515,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'revocation_endpoint'.
         /// </summary>
-        public string RevocationEndpoint { get; set; }
+        public string? RevocationEndpoint { get; set; }
 
         /// <summary>
         /// Gets the collection of 'revocation_endpoint_auth_methods_supported'
@@ -514,7 +530,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'introspection_endpoint'.
         /// </summary>
-        public string IntrospectionEndpoint { get; set; }
+        public string? IntrospectionEndpoint { get; set; }
 
         /// <summary>
         /// Gets the collection of 'introspection_endpoint_auth_methods_supported'

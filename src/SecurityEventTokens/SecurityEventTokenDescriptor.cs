@@ -24,7 +24,7 @@ namespace JsonWebToken
         /// Gets or sets the set of event statements that each provide 
         /// information describing a single logical event that has occurred about a security subject.
         /// </summary>
-        public JwtObject Events => GetClaim(SetClaims.EventsUtf8);
+        public JwtObject? Events => GetClaim(SetClaims.EventsUtf8);
 
         public void AddEvent(string eventName, JwtObject @event)
         {
@@ -39,7 +39,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the unique transaction identifier.
         /// </summary>
-        public string TransactionNumber
+        public string? TransactionNumber
         {
             get => GetStringClaim(SetClaims.TxnUtf8);
             set => AddClaim(SetClaims.TxnUtf8, value);

@@ -141,14 +141,20 @@ namespace JsonWebToken.OpenIDConnect.Tests
     ""zoneinfo""
   ]
     }",
-                new OpenIdConnectConfiguration
+                new OpenIdConnectConfiguration(
+                        "https://login.salesforce.com",
+                        "https://login.salesforce.com/services/oauth2/authorize",
+                        "https://login.salesforce.com/id/keys", new []  {
+                            "code",
+                            "token",
+                            "token id_token"
+                        },
+                        new [] { "RS256" }
+                    )
                 {
-                    Issuer = "https://login.salesforce.com",
-                    AuthorizationEndpoint ="https://login.salesforce.com/services/oauth2/authorize",
                     TokenEndpoint = "https://login.salesforce.com/services/oauth2/token",
                     RevocationEndpoint = "https://login.salesforce.com/services/oauth2/revoke",
                     UserInfoEndpoint ="https://login.salesforce.com/services/oauth2/userinfo",
-                    JwksUri = "https://login.salesforce.com/id/keys",
                     IntrospectionEndpoint= "https://login.salesforce.com/services/oauth2/introspect",
                     ScopesSupported =
                     {
@@ -169,17 +175,10 @@ namespace JsonWebToken.OpenIDConnect.Tests
                         "wave_api",
                         "eclair_api"
                     },
-                    ResponseTypesSupported  =
-                    {
-                        "code",
-                        "token",
-                        "token id_token"
-                    },
                     SubjectTypesSupported = { "public" },
-                    IdTokenSigningAlgValuesSupported = { "RS256" },
                     DisplayValuesSupported =
                     {
-                         "page",
+                        "page",
                         "popup",
                         "touch"
                     },
@@ -286,9 +285,19 @@ namespace JsonWebToken.OpenIDConnect.Tests
 ""msgraph_host"": ""graph.microsoft.com"",
 ""rbac_url"": ""https://pas.windows.net""
 }",
-                new OpenIdConnectConfiguration
+                new OpenIdConnectConfiguration(
+                        "https://login.microsoftonline.com/{tenantid}/v2.0",
+                        "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+                        "https://login.microsoftonline.com/common/discovery/v2.0/keys",
+                        new []  {
+                            "code",
+                            "id_token",
+                            "code id_token",
+                            "id_token token"
+                        },
+                        new [] { "RS256" }
+                    )
                 {
-                    AuthorizationEndpoint= "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
                     TokenEndpoint= "https://login.microsoftonline.com/common/oauth2/v2.0/token",
                     TokenEndpointAuthMethodsSupported =
                     {
@@ -296,7 +305,6 @@ namespace JsonWebToken.OpenIDConnect.Tests
                         "private_key_jwt",
                         "client_secret_basic"
                     },
-                    JwksUri= "https://login.microsoftonline.com/common/discovery/v2.0/keys",
                     ResponseModesSupported =
                     {
                         "query",
@@ -307,20 +315,10 @@ namespace JsonWebToken.OpenIDConnect.Tests
                     {
                         "pairwise"
                     },
-                    IdTokenSigningAlgValuesSupported=
-                    {
-                        "RS256"
-                    },
                     HttpLogoutSupported= true,
                     FrontChannelLogoutSupported= true,
                     EndSessionEndpoint= "https://login.microsoftonline.com/common/oauth2/v2.0/logout",
-                    ResponseTypesSupported=
-                    {
-                    "code",
-                    "id_token",
-                    "code id_token",
-                    "id_token token"
-                    },
+
                     ScopesSupported=
                     {
                     "openid",
@@ -328,7 +326,6 @@ namespace JsonWebToken.OpenIDConnect.Tests
                     "email",
                     "offline_access"
                     },
-                    Issuer= "https://login.microsoftonline.com/{tenantid}/v2.0",
                     ClaimsSupported=
                     {
                     "sub",
@@ -412,62 +409,63 @@ namespace JsonWebToken.OpenIDConnect.Tests
     ""S256""
   ]
     }",
-                new OpenIdConnectConfiguration
+                new OpenIdConnectConfiguration(
+                        "https://www.paypal.com",
+                        "https://www.paypal.com/signin/authorize",
+                        "https://api.paypal.com/v1/oauth2/certs",
+                        new [] {
+                            "code",
+                            "code id_token"
+                        },
+                        new [] {
+                            "HS256",
+                            "RS256"
+                        }
+                    )
                 {
-  Issuer= "https://www.paypal.com",
-  AuthorizationEndpoint= "https://www.paypal.com/signin/authorize",
-  TokenEndpoint= "https://api.paypal.com/v1/oauth2/token",
-  UserInfoEndpoint= "https://api.paypal.com/v1/oauth2/token/userinfo",
-  JwksUri = "https://api.paypal.com/v1/oauth2/certs",
-  TokenEndpointAuthMethodsSupported= {
-    "client_secret_basic"
-  },
-  ResponseTypesSupported= {
-    "code",
-    "code id_token"
-  },
-  ResponseModesSupported= {
-    "query",
-    "form_post"
-  },
-  GrantTypesSupported= {
-    "authorization_code",
-    "refresh_token"
-  },
-  SubjectTypesSupported= {
-    "pairwise"
-  },
- ScopesSupported= {
-    "email",
-    "address",
-    "phone",
-    "openid",
-    "profile",
-    "https://uri.paypal.com/services/wallet/sendmoney",
-    "https://uri.paypal.com/services/payments/futurepayments",
-    "https://uri.paypal.com/services/expresscheckout"
-  },
- IdTokenSigningAlgValuesSupported= {
-    "HS256",
-    "RS256"
-  },
-    ClaimsSupported= {
-    "aud",
-    "iss",
-    "iat",
-    "exp",
-    "auth_time",
-    "nonce",
-    "sessionIndex",
-    "user_id"
-  },
-  CodeChallengeMethodsSupported= {
-    "RS256",
-    "ES256",
-    "S256"
-  }
-    }
-};
+                    TokenEndpoint= "https://api.paypal.com/v1/oauth2/token",
+                    UserInfoEndpoint= "https://api.paypal.com/v1/oauth2/token/userinfo",
+                    TokenEndpointAuthMethodsSupported= {
+                        "client_secret_basic"
+                    },
+                    ResponseModesSupported= {
+                        "query",
+                        "form_post"
+                    },
+                    GrantTypesSupported = {
+                        "authorization_code",
+                        "refresh_token"
+                    },
+                    SubjectTypesSupported = {
+                        "pairwise"
+                    },
+                    ScopesSupported = {
+                        "email",
+                        "address",
+                        "phone",
+                        "openid",
+                        "profile",
+                        "https://uri.paypal.com/services/wallet/sendmoney",
+                        "https://uri.paypal.com/services/payments/futurepayments",
+                        "https://uri.paypal.com/services/expresscheckout"
+                    },
+                    ClaimsSupported = {
+                        "aud",
+                        "iss",
+                        "iat",
+                        "exp",
+                        "auth_time",
+                        "nonce",
+                        "sessionIndex",
+                        "user_id"
+                    },
+                    CodeChallengeMethodsSupported= {
+                        "RS256",
+                        "ES256",
+                        "S256"
+                    }
+                }
+            };
 
             // https://accounts.google.com/.well-known/openid-configuration
             yield return new object[] {
@@ -522,59 +520,58 @@ namespace JsonWebToken.OpenIDConnect.Tests
   ""S256""
  ]
     }",
-                new OpenIdConnectConfiguration
+                new OpenIdConnectConfiguration(
+                        "https://accounts.google.com",
+                        "https://accounts.google.com/o/oauth2/v2/auth",
+                        "https://www.googleapis.com/oauth2/v3/certs",
+                        new [] {
+                            "code",
+                            "token",
+                            "id_token",
+                            "code token",
+                            "code id_token",
+                            "token id_token",
+                            "code token id_token",
+                            "none"
+                        },
+                        new[] { "RS256" }
+                    )
                 {
-Issuer= "https://accounts.google.com",
- AuthorizationEndpoint= "https://accounts.google.com/o/oauth2/v2/auth",
- TokenEndpoint = "https://oauth2.googleapis.com/token",
- UserInfoEndpoint= "https://openidconnect.googleapis.com/v1/userinfo",
- RevocationEndpoint= "https://oauth2.googleapis.com/revoke",
- JwksUri= "https://www.googleapis.com/oauth2/v3/certs",
- ResponseTypesSupported= {
-  "code",
-  "token",
-  "id_token",
-  "code token",
-  "code id_token",
-  "token id_token",
-  "code token id_token",
-  "none"
- },
- SubjectTypesSupported= {
-  "public"
- },
-IdTokenSigningAlgValuesSupported= {
-  "RS256"
- },
- ScopesSupported= {
-  "openid",
-  "email",
-  "profile"
- },
- TokenEndpointAuthMethodsSupported= {
-  "client_secret_post",
-  "client_secret_basic"
- },
- ClaimsSupported= {
-  "aud",
-  "email",
-  "email_verified",
-  "exp",
-  "family_name",
-  "given_name",
-  "iat",
-  "iss",
-  "locale",
-  "name",
-  "picture",
-  "sub"
- },
- CodeChallengeMethodsSupported= {
-  "plain",
-  "S256"
- }
-    }
-};
+                    TokenEndpoint = "https://oauth2.googleapis.com/token",
+                    UserInfoEndpoint= "https://openidconnect.googleapis.com/v1/userinfo",
+                    RevocationEndpoint= "https://oauth2.googleapis.com/revoke",
+                    SubjectTypesSupported= {
+                        "public"
+                    },
+                    ScopesSupported= {
+                        "openid",
+                        "email",
+                        "profile"
+                    },
+                    TokenEndpointAuthMethodsSupported= {
+                        "client_secret_post",
+                        "client_secret_basic"
+                    },
+                    ClaimsSupported= {
+                        "aud",
+                        "email",
+                        "email_verified",
+                        "exp",
+                        "family_name",
+                        "given_name",
+                        "iat",
+                        "iss",
+                        "locale",
+                        "name",
+                        "picture",
+                        "sub"
+                    },
+                    CodeChallengeMethodsSupported= {
+                        "plain",
+                        "S256"
+                    }
+                }
+            };
         }
     }
 }

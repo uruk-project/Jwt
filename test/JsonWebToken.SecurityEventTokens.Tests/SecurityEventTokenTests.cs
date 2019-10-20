@@ -1,11 +1,11 @@
-﻿using JsonWebToken.Internal;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Xunit;
 using System.Text;
+using JsonWebToken.Internal;
 #if NETCOREAPP3_0
 using System.Text.Json;
 #endif

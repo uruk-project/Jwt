@@ -28,9 +28,6 @@ namespace PlaintextJwtCreationSample
             Console.WriteLine();
             Console.WriteLine("Its compact form is:");
             Console.WriteLine(token);
-
-            var reader = new JwtReader(encryptionKey);
-            var test = reader.TryReadToken(token, TokenValidationPolicy.NoValidation);
         }
     }
 }

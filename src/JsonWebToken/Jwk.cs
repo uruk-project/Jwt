@@ -95,7 +95,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the 'key_ops' (Key Operations).
         /// </summary>
-        public IList<string>? KeyOps
+        public IList<string> KeyOps
         {
             get
             {

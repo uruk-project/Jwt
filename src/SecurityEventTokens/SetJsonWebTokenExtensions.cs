@@ -9,6 +9,16 @@ namespace JsonWebToken
     {
         public static SecurityEventToken AsSecurityEventToken(this Jwt token)
         {
+            if (token is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
+            }
+
+            if (token.Payload is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.payload);
+            }
+
             if (!token.Payload.ContainsKey(SetClaims.EventsUtf8))
             {
                 throw new InvalidOperationException();
