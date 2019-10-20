@@ -178,7 +178,7 @@ namespace JsonWebToken.Internal
             try
             {
                 aes = Aes.Create();
-                //aes.Mode = CipherMode.ECB;
+                aes.Mode = CipherMode.ECB;
                 aes.Padding = PaddingMode.None;
                 aes.KeySize = keyBytes.Length << 3;
                 aes.Key = keyBytes;
