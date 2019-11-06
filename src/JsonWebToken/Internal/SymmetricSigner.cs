@@ -7,6 +7,10 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+#if NETCOREAPP3_0
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
+#endif
 using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
@@ -17,6 +21,9 @@ namespace JsonWebToken.Internal
     internal sealed class SymmetricSigner : Signer
     {
         private readonly ObjectPool<KeyedHashAlgorithm> _hashAlgorithmPool;
+#if NETCOREAPP3_0
+        private readonly Hmac _test;
+#endif
         private bool _disposed;
 
         /// <summary>
@@ -50,6 +57,9 @@ namespace JsonWebToken.Internal
                 Algorithms.HmacSha512 => new ObjectPool<KeyedHashAlgorithm>(new HmacSha512ObjectPoolPolicy(key.ToArray())),
                 _ => new ObjectPool<KeyedHashAlgorithm>(new NotSupportedObjectPoolPolicy(algorithm)),
             };
+#if NETCOREAPP3_0
+            _test = new Hmac(new Sha256(), key.ToArray());
+#endif
         }
 
         /// <inheritsdoc />
@@ -124,11 +134,13 @@ namespace JsonWebToken.Internal
             {
 #if NETSTANDARD2_0 || NET461
                 Span<byte> hash = keyedHash.ComputeHash(input.ToArray());
+#elif NETCOREAPP3_0
+                Span<byte> hash = stackalloc byte[32];
+                _test.ComputeHash(input, hash);
 #else
                 Span<byte> hash = stackalloc byte[_hashSizeInBytes];
-                bool hashed = keyedHash.TryComputeHash(input, hash, out int bytesWritten);
+                bool hashed = keyedHash.TryComputeHash(input, hash, out _);
                 Debug.Assert(hashed);
-                Debug.Assert(hash.Length == bytesWritten);
 #endif
                 return AreEqual(signature, hash);
             }
@@ -145,6 +157,17 @@ namespace JsonWebToken.Internal
             int length = a.Length;
             ref byte first = ref MemoryMarshal.GetReference(a);
             ref byte second = ref MemoryMarshal.GetReference(b);
+#if NETCOREAPP3_0
+            if (Avx2.IsSupported && length == 32)
+            {
+                return Avx2.MoveMask(Avx2.CompareEqual(Unsafe.ReadUnaligned<Vector256<byte>>(ref first), Unsafe.ReadUnaligned<Vector256<byte>>(ref second))) == unchecked((int)0b1111_1111_1111_1111_1111_1111_1111_1111);
+            }
+            if (Sse2.IsSupported && length == 16)
+            {
+                return Sse2.MoveMask(Sse2.CompareEqual(Unsafe.ReadUnaligned<Vector128<byte>>(ref first), Unsafe.ReadUnaligned<Vector128<byte>>(ref second))) == 0b1111_1111_1111_1111;
+            }
+            else
+#endif
             if (Vector.IsHardwareAccelerated && length >= Vector<byte>.Count)
             {
                 Vector<byte> equals = new Vector<byte>();
@@ -178,7 +201,7 @@ namespace JsonWebToken.Internal
             else
             {
                 int equals = 0;
-                ref byte firstEnd = ref Unsafe.Add(ref first, length - sizeof(long));
+                ref byte firstEnd = ref Unsafe.Add(ref first, length);
                 while (Unsafe.IsAddressLessThan(ref first, ref firstEnd))
                 {
                     equals |= first - second;
