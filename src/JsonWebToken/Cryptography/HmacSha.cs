@@ -159,6 +159,5 @@ namespace JsonWebToken
         {
             Dispose(true);
         }
-
     }
 }
