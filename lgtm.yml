@@ -13,10 +13,10 @@ queries:
   - exclude: "*"
   # Then include all queries tagged 'security' and 'correctness', and with a severity of
   # 'error'.
-  - include:           
+  - include:
       tags:
         - "security"
-        - "correctness"           
+        - "correctness"
       severity: "error"
   - exclude: cs/too-many-ref-parameters
 
@@ -39,7 +39,7 @@ queries:
 # block, with one or more steps.                                                        #
 #########################################################################################
 
-extraction: 
+extraction:
   # Define settings for C# analysis
   ##################################
   csharp:
