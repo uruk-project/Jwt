@@ -11,7 +11,7 @@ namespace JsonWebToken
     /// <summary>
     /// Computes a Hash-based Message Authentication Code (HMAC) using a SHA2 hash function.
     /// </summary>
-    public abstract class HmacSha : IDisposable
+    public abstract class HmacSha
     {
 #if NETCOREAPP3_0
         private static readonly Vector256<byte> _innerKeyInit = Vector256.Create((byte)0x36);
@@ -26,8 +26,6 @@ namespace JsonWebToken
         /// The inner &amp; outer pad keys.
         /// </summary>
         protected readonly byte[] _keys;
-
-        private bool disposed;
 
         /// <summary>
         /// The inner pad key.
@@ -138,26 +136,11 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Releases and clears the keys.
+        /// Clears the keys.
         /// </summary>
-        /// <param name="disposing"></param>
-        protected virtual void Dispose(bool disposing)
+        public void Clear()
         {
-            if (!disposed)
-            {
-                if (disposing)
-                {
-                    _keys.AsSpan().Clear();
-                }
-
-                disposed = true;
-            }
-        }
-
-        /// <inheritsdoc />
-        public void Dispose()
-        {
-            Dispose(true);
+            _keys.AsSpan().Clear();
         }
     }
 }

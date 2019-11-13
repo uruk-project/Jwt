@@ -40,7 +40,7 @@ namespace JsonWebToken.Tests.Cryptography
             string digest,
             int truncateSize = -1)
         {
-            using var hmac = Create(_testKeys[testCaseId]);
+            var hmac = Create(_testKeys[testCaseId]);
             byte[] digestBytes = ByteUtils.HexToByteArray(digest);
             byte[] computedDigest = new byte[hmac.HashSize];
             hmac.ComputeHash(_testData[testCaseId], computedDigest);

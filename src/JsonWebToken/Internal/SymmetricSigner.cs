@@ -184,7 +184,7 @@ namespace JsonWebToken.Internal
             {
                 if (disposing)
                 {
-                    _hashAlgorithm.Dispose();
+                    _hashAlgorithm.Clear();
                 }
 
                 _disposed = true;

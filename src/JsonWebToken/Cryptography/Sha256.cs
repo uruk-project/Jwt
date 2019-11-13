@@ -21,7 +21,7 @@ namespace JsonWebToken
         public override int HashSize => 32;
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> src, Span<byte> destination, ReadOnlySpan<byte> prepend = default)
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend = default)
         {
             const int BlockSize = 64;
             Debug.Assert(destination.Length == 32);
@@ -48,12 +48,12 @@ namespace JsonWebToken
                 Transform(ref stateRef, ref MemoryMarshal.GetReference(prepend), ref w);
             }
 
-            ref byte srcRef = ref MemoryMarshal.GetReference(src);
-            ref byte srcEndRef = ref Unsafe.Add(ref srcRef, src.Length - BlockSize + 1);
+            ref byte srcRef = ref MemoryMarshal.GetReference(source);
+            ref byte srcEndRef = ref Unsafe.Add(ref srcRef, source.Length - BlockSize + 1);
 #if NETCOREAPP3_0
             if (Ssse3.IsSupported)
             {
-                ref byte srcSseEndRef = ref Unsafe.Add(ref srcRef, src.Length - 4 * BlockSize + 1);
+                ref byte srcSseEndRef = ref Unsafe.Add(ref srcRef, source.Length - 4 * BlockSize + 1);
                 if (Unsafe.IsAddressLessThan(ref srcRef, ref srcSseEndRef))
                 {
                     Vector128<uint>[] returnToPool;
@@ -81,7 +81,7 @@ namespace JsonWebToken
             }
 
             // final
-            int dataLength = src.Length + prepend.Length;
+            int dataLength = source.Length + prepend.Length;
             int remaining = dataLength & (BlockSize - 1);
 
             Span<byte> lastBlock = stackalloc byte[BlockSize];
