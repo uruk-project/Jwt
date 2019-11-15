@@ -17,14 +17,18 @@ namespace JsonWebToken
     /// </summary>
     public class Sha512 : ShaAlgorithm
     {
-        /// <inheritsdoc />
-        public override int HashSize => 64;
+        private const int BlockSize = 128;
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend = default)
+        public override int HashSize => 64;
+        
+        /// <inheritsdoc />
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend)
         {
-            const int BlockSize = 128;
-            Debug.Assert(destination.Length == 64);
+            if (destination.Length < HashSize)
+            {
+                ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, HashSize);
+            }
 
             Span<ulong> state = stackalloc ulong[] {
                 0x6a09e667f3bcc908ul,
@@ -251,7 +255,7 @@ namespace JsonWebToken
                 Unsafe.Add(ref state, 7) += h;
             }
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void Round(ulong a, ulong b, ulong c, ref ulong d, ulong e, ulong f, ulong g, ref ulong h, ulong w)
         {

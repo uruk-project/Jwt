@@ -16,14 +16,18 @@ namespace JsonWebToken
     /// </summary>
     public class Sha384 : ShaAlgorithm
     {
+        private const int BlockSize = 128;
+
         /// <inheritsdoc />
         public override int HashSize => 48;
 
         /// <inheritsdoc />
         public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend = default)
         {
-            const int BlockSize = 128;
-            Debug.Assert(destination.Length == 48);
+            if (destination.Length < HashSize)
+            {
+                ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, HashSize);
+            }
 
             Span<ulong> state = stackalloc ulong[] {
                 0xcbbb9d5dc1059ed8ul,

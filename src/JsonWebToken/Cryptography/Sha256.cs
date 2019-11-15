@@ -17,14 +17,18 @@ namespace JsonWebToken
     /// </summary>
     public class Sha256 : ShaAlgorithm
     {
+        private const int BlockSize = 64;
+
         /// <inheritsdoc />
         public override int HashSize => 32;
 
         /// <inheritsdoc />
         public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend = default)
         {
-            const int BlockSize = 64;
-            Debug.Assert(destination.Length == 32);
+            if (destination.Length < HashSize)
+            {
+                ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, HashSize);
+            }
 
             // init
             Span<uint> state = stackalloc uint[] {
@@ -266,7 +270,7 @@ namespace JsonWebToken
                 Unsafe.Add(ref state, 7) += h;
             }
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void Round(uint a, uint b, uint c, ref uint d, uint e, uint f, uint g, ref uint h, uint w)
         {
