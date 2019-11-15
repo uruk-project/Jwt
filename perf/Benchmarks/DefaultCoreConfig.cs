@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
@@ -23,12 +24,12 @@ namespace JsonWebToken.Performance
             Add(JitOptimizationsValidator.FailOnError);
             Add(BenchmarkLogicalGroupRule.ByCategory);
 
-            Add(Job.Core
-                .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp30))
+            Add(Job.Default
+                .With(CoreRuntime.Core30)
                 .With(new GcMode { Server = true }));
 
-            Add(Job.Core
-                .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
+            Add(Job.Default
+                .With(CoreRuntime.Core21)
                 .With(new GcMode { Server = true }));
         }
     }
