@@ -25,13 +25,11 @@ namespace JsonWebToken.Performance
             Add(BenchmarkLogicalGroupRule.ByCategory);
 
             Add(Job.Default
-                .With(CoreRuntime.Core)
-                .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp30))
+                .With(CoreRuntime.Core30)
                 .With(new GcMode { Server = true }));
 
             Add(Job.Default
-                .With(CoreRuntime.Core)
-                .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
+                .With(CoreRuntime.Core21)
                 .With(new GcMode { Server = true }));
         }
     }
