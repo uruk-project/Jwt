@@ -364,6 +364,12 @@ namespace JsonWebToken
         internal static string ThrowNotSupportedException_RequireAesNi() => throw CreateNotSupportedException_RequireAesNi();
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateNotSupportedException_RequireAesNi() => new NotSupportedException("The AES New Instructions set is not supported on the executing CPU.");
+      
+        [DoesNotReturn]
+        internal static void ThrowArgumentException_PrependMustBeEqualToBlockSize(ReadOnlySpan<byte> prepend, int blockSize) => throw CreateArgumentException_PrependMustBeEqualToBlockSize(prepend, blockSize);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateArgumentException_PrependMustBeEqualToBlockSize(ReadOnlySpan<byte> prepend, int blockSize) => new ArgumentException($"The length of the prepend must be of the same size than the block size. Prepend length is: '{prepend.Length}' bytes, block size is: {blockSize}.", nameof(prepend));
+
 
         private static string GetArgumentName(ExceptionArgument argument)
         {

@@ -12,12 +12,17 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="source">The data to hash.</param>
         /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
-        /// <param name="prepend">The data to hash before the source. Optionnal.</param>
+        /// <param name="prepend">The data to hash before the source. Optionnal. Must be of the length of <see cref="BlockSize"/>.</param>
         public abstract void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend);
         
         /// <summary>
         /// The size of the resulting hash.
         /// </summary>
         public abstract int HashSize { get; }
+
+        /// <summary>
+        /// The size of the resulting hash.
+        /// </summary>
+        public abstract int BlockSize { get; }
     }
 }

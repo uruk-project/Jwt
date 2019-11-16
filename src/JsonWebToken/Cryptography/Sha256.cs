@@ -17,17 +17,21 @@ namespace JsonWebToken
     /// </summary>
     public class Sha256 : Sha2
     {
-        private const int BlockSize = 64;
+        private const int Sha256HashSize = 32;
+        private const int Sha256BlockSize = 64;
 
         /// <inheritsdoc />
-        public override int HashSize => 32;
+        public override int HashSize => Sha256HashSize;
+
+        /// <inheritsdoc />
+        public override int BlockSize => Sha256BlockSize;
 
         /// <inheritsdoc />
         public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend = default)
         {
-            if (destination.Length < HashSize)
+            if (destination.Length < Sha256HashSize)
             {
-                ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, HashSize);
+                ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, Sha256HashSize);
             }
 
             // init
@@ -48,16 +52,20 @@ namespace JsonWebToken
             ref uint stateRef = ref MemoryMarshal.GetReference(state);
             if (!prepend.IsEmpty)
             {
-                Debug.Assert(prepend.Length == BlockSize);
+                if (prepend.Length != Sha256BlockSize)
+                {
+                    ThrowHelper.ThrowArgumentException_PrependMustBeEqualToBlockSize(prepend, Sha256BlockSize);
+                }
+
                 Transform(ref stateRef, ref MemoryMarshal.GetReference(prepend), ref w);
             }
 
             ref byte srcRef = ref MemoryMarshal.GetReference(source);
-            ref byte srcEndRef = ref Unsafe.Add(ref srcRef, source.Length - BlockSize + 1);
+            ref byte srcEndRef = ref Unsafe.Add(ref srcRef, source.Length - Sha256BlockSize + 1);
 #if NETCOREAPP3_0
             if (Ssse3.IsSupported)
             {
-                ref byte srcSseEndRef = ref Unsafe.Add(ref srcRef, source.Length - 4 * BlockSize + 1);
+                ref byte srcSseEndRef = ref Unsafe.Add(ref srcRef, source.Length - 4 * Sha256BlockSize + 1);
                 if (Unsafe.IsAddressLessThan(ref srcRef, ref srcSseEndRef))
                 {
                     Vector128<uint>[] returnToPool;
@@ -68,7 +76,7 @@ namespace JsonWebToken
                         do
                         {
                             Transform(ref stateRef, ref srcRef, ref wRef);
-                            srcRef = ref Unsafe.Add(ref srcRef, BlockSize * 4);
+                            srcRef = ref Unsafe.Add(ref srcRef, Sha256BlockSize * 4);
                         } while (Unsafe.IsAddressLessThan(ref srcRef, ref srcSseEndRef));
                     }
                     finally
@@ -81,28 +89,28 @@ namespace JsonWebToken
             while (Unsafe.IsAddressLessThan(ref srcRef, ref srcEndRef))
             {
                 Transform(ref stateRef, ref srcRef, ref w);
-                srcRef = ref Unsafe.Add(ref srcRef, BlockSize);
+                srcRef = ref Unsafe.Add(ref srcRef, Sha256BlockSize);
             }
 
             // final
             int dataLength = source.Length + prepend.Length;
-            int remaining = dataLength & (BlockSize - 1);
+            int remaining = dataLength & (Sha256BlockSize - 1);
 
-            Span<byte> lastBlock = stackalloc byte[BlockSize];
+            Span<byte> lastBlock = stackalloc byte[Sha256BlockSize];
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
             Unsafe.CopyBlockUnaligned(ref lastBlockRef, ref srcRef, (uint)remaining);
 
             // Pad the last block
             Unsafe.Add(ref lastBlockRef, remaining) = 0x80;
             lastBlock.Slice(remaining + 1).Clear();
-            if (remaining >= BlockSize - sizeof(ulong))
+            if (remaining >= Sha256BlockSize - sizeof(ulong))
             {
                 Transform(ref stateRef, ref lastBlockRef, ref w);
-                lastBlock.Slice(0, BlockSize - sizeof(ulong)).Clear();
+                lastBlock.Slice(0, Sha256BlockSize - sizeof(ulong)).Clear();
             }
 
             ulong bitLength = (ulong)dataLength << 3;
-            Unsafe.WriteUnaligned(ref Unsafe.Add(ref lastBlockRef, BlockSize - sizeof(ulong)), BinaryPrimitives.ReverseEndianness(bitLength));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref lastBlockRef, Sha256BlockSize - sizeof(ulong)), BinaryPrimitives.ReverseEndianness(bitLength));
             Transform(ref stateRef, ref lastBlockRef, ref w);
 
             ref byte destinationRef = ref MemoryMarshal.GetReference(destination);
