@@ -323,6 +323,7 @@ namespace JsonWebToken
             ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
             return null;
         }
+
         /// <inheritsdoc />
         protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {

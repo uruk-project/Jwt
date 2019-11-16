@@ -147,7 +147,6 @@ namespace JsonWebToken.Internal
             {
                 _encryptor.Encrypt(plaintext, nonce, ciphertext);
                 ComputeAuthenticationTag(nonce, associatedData, ciphertext, authenticationTag);
-
             }
             catch
             {
