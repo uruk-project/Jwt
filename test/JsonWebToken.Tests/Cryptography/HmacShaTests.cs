@@ -31,7 +31,7 @@ namespace JsonWebToken.Tests.Cryptography
 
         protected abstract HmacSha Create(ReadOnlySpan<byte> key);
 
-        protected abstract ShaAlgorithm CreateShaAlgorithm();
+        protected abstract Sha2 CreateShaAlgorithm();
 
         protected abstract int BlockSize { get; }
 
