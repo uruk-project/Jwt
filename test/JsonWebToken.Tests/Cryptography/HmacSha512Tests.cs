@@ -10,7 +10,7 @@ namespace JsonWebToken.Tests.Cryptography
             return new HmacSha512(key);
         }
 
-        protected override ShaAlgorithm CreateShaAlgorithm()
+        protected override Sha2 CreateShaAlgorithm()
         {
             return new Sha512();
         }

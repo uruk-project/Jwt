@@ -15,13 +15,13 @@ namespace JsonWebToken
     /// <summary>
     /// Computes SHA2-512 hash values.
     /// </summary>
-    public class Sha512 : ShaAlgorithm
+    public class Sha512 : Sha2
     {
         private const int BlockSize = 128;
 
         /// <inheritsdoc />
         public override int HashSize => 64;
-        
+
         /// <inheritsdoc />
         public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend)
         {
@@ -30,6 +30,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, HashSize);
             }
 
+            // init
             Span<ulong> state = stackalloc ulong[] {
                 0x6a09e667f3bcc908ul,
                 0xbb67ae8584caa73bul,
@@ -40,6 +41,8 @@ namespace JsonWebToken
                 0x1f83d9abfb41bd6bul,
                 0x5be0cd19137e2179ul
             };
+
+            // update
             Span<ulong> W = stackalloc ulong[80];
             ref ulong w = ref MemoryMarshal.GetReference(W);
             ref ulong stateRef = ref MemoryMarshal.GetReference(state);
@@ -82,6 +85,7 @@ namespace JsonWebToken
                 srcRef = ref Unsafe.Add(ref srcRef, BlockSize);
             }
 
+            // final
             int dataLength = source.Length + prepend.Length;
             int remaining = dataLength & (BlockSize - 1);
 

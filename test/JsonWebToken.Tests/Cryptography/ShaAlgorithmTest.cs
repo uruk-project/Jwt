@@ -6,7 +6,7 @@ namespace JsonWebToken.Tests.Cryptography
 {
     public abstract class ShaAlgorithmTest
     {
-        protected abstract ShaAlgorithm Create();
+        protected abstract Sha2 Create();
 
         protected void Verify(string input, string output)
         {
@@ -21,7 +21,7 @@ namespace JsonWebToken.Tests.Cryptography
         [Fact]
         public void InvalidInput_ComputeHash()
         {
-            ShaAlgorithm hash = Create();
+            Sha2 hash = Create();
             Assert.Throws<ArgumentException>("destination", () => hash.ComputeHash(Span<byte>.Empty, Span<byte>.Empty));
         }
 
@@ -30,7 +30,7 @@ namespace JsonWebToken.Tests.Cryptography
             byte[] expected = ByteUtils.HexToByteArray(output);
             byte[] actual;
 
-            ShaAlgorithm hash = Create();
+            Sha2 hash = Create();
             // Too small
             actual = new byte[expected.Length - 1];
             Assert.Throws<ArgumentException>("destination", () => hash.ComputeHash(input, actual));
@@ -51,7 +51,7 @@ namespace JsonWebToken.Tests.Cryptography
         [Fact]
         public void InvalidInput_Null()
         {
-            ShaAlgorithm hash = Create();
+            Sha2 hash = Create();
             Assert.Throws<ArgumentException>("destination", () => hash.ComputeHash(null, null));
         }
     }

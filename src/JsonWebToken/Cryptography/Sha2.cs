@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
-#if NETCOREAPP3_0
-#endif
 
 namespace JsonWebToken
 {
     /// <summary>
-    /// Represents the base class for SHA algorithms.
+    /// Represents the base class for SHA-2 algorithms.
     /// </summary>
-    public abstract class ShaAlgorithm
+    public abstract class Sha2
     {
         /// <summary>
         /// Computes the hash value for the specified <paramref name="source"/>.

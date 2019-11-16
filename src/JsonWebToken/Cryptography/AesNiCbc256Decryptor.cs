@@ -34,7 +34,7 @@ namespace JsonWebToken.Internal
         {
             if (key.Length != 32)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes256CbcHmacSha512, 512, key.Length << 3);
+                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes256CbcHmacSha512, 256, key.Length * 8);
             }
 
             ref var keyRef = ref MemoryMarshal.GetReference(key);
@@ -120,7 +120,7 @@ namespace JsonWebToken.Internal
             ref var inputRef = ref MemoryMarshal.GetReference(ciphertext);
             ref var outputRef = ref MemoryMarshal.GetReference(plaintext);
             ref var ivRef = ref MemoryMarshal.GetReference(nonce);
-     
+
             var feedback = Unsafe.ReadUnaligned<Vector128<byte>>(ref ivRef);
             Vector128<byte> state = default;
             ref var inputEndRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr)ciphertext.Length);

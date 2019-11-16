@@ -32,7 +32,7 @@ namespace JsonWebToken.Internal
         {
             if (key.Length != 24)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes192CbcHmacSha384, 192, key.Length << 3);
+                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes192CbcHmacSha384, 192, key.Length * 8);
             }
 
             ref var keyRef = ref MemoryMarshal.GetReference(key);

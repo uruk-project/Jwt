@@ -14,7 +14,7 @@ namespace JsonWebToken
     /// <summary>
     /// Computes SHA2-512 hash values.
     /// </summary>
-    public class Sha384 : ShaAlgorithm
+    public class Sha384 : Sha2
     {
         private const int BlockSize = 128;
 
@@ -29,6 +29,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, HashSize);
             }
 
+            // init
             Span<ulong> state = stackalloc ulong[] {
                 0xcbbb9d5dc1059ed8ul,
                 0x629a292a367cd507ul,
@@ -39,6 +40,8 @@ namespace JsonWebToken
                 0xdb0c2e0d64f98fa7ul,
                 0x47b5481dbefa4fa4ul
             };
+
+            // update
             Span<ulong> W = stackalloc ulong[80];
             ref ulong w = ref MemoryMarshal.GetReference(W);
             ref ulong stateRef = ref MemoryMarshal.GetReference(state);
@@ -81,6 +84,7 @@ namespace JsonWebToken
                 srcRef = ref Unsafe.Add(ref srcRef, BlockSize);
             }
 
+            // final
             int dataLength = source.Length + prepend.Length;
             int remaining = dataLength & (BlockSize - 1);
 

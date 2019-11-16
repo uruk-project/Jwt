@@ -5,7 +5,7 @@ namespace JsonWebToken.Tests.Cryptography
 {
     public class Sha256Tests : ShaAlgorithmTest
     {
-        protected override ShaAlgorithm Create()
+        protected override Sha2 Create()
         {
             return new Sha256();
         }

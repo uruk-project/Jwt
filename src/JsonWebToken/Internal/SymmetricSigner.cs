@@ -202,11 +202,11 @@ namespace JsonWebToken.Internal
             public override int BlockSize => throw new NotImplementedException();
         }
 
-        private sealed class ShaNull : ShaAlgorithm
+        private sealed class ShaNull : Sha2
         {
             public override int HashSize => 0;
 
-            public override void ComputeHash(ReadOnlySpan<byte> src, Span<byte> destination, ReadOnlySpan<byte> prepend = default)
+            public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend = default)
             {
             }
         }

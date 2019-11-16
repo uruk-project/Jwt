@@ -20,7 +20,7 @@ namespace JsonWebToken
         /// <summary>
         /// The hash algorithm.
         /// </summary>
-        protected readonly ShaAlgorithm _sha;
+        protected readonly Sha2 _sha;
 
         /// <summary>
         /// The inner &amp; outer pad keys.
@@ -52,8 +52,13 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="sha"></param>
         /// <param name="key"></param>
-        protected HmacSha(ShaAlgorithm sha, ReadOnlySpan<byte> key)
+        protected HmacSha(Sha2 sha, ReadOnlySpan<byte> key)
         {
+            if (sha is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.sha);
+            }
+
             _keys = new byte[BlockSize * 2];
             _sha = sha;
             if (key.Length > BlockSize)
@@ -69,7 +74,7 @@ namespace JsonWebToken
             }
         }
 
-        private void InitializeIOKeys(ShaAlgorithm sha, ReadOnlySpan<byte> key)
+        private void InitializeIOKeys(Sha2 sha, ReadOnlySpan<byte> key)
         {
 #if NETCOREAPP3_0
             if (Avx2.IsSupported && (key.Length & 31) == 0)

@@ -15,7 +15,7 @@ namespace JsonWebToken
     /// <summary>
     /// Computes SHA2-256 hash values.
     /// </summary>
-    public class Sha256 : ShaAlgorithm
+    public class Sha256 : Sha2
     {
         private const int BlockSize = 64;
 
