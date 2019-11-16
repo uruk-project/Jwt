@@ -36,11 +36,13 @@ namespace ValidatePerf
 
         private static void Main()
         {
+            var policy = new TokenValidationPolicyBuilder().RequireSignature(signingKey).Build();
+
             Console.WriteLine("Starting...");
             _reader.EnableHeaderCaching = false;
             while (true)
             {
-                _reader.TryReadToken(jweToken, TokenValidationPolicy.NoValidation);
+                _reader.TryReadToken(jwsToken, policy);
             }
         }
     }

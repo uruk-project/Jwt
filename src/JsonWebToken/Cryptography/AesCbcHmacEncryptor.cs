@@ -147,7 +147,6 @@ namespace JsonWebToken.Internal
             {
                 _encryptor.Encrypt(plaintext, nonce, ciphertext);
                 ComputeAuthenticationTag(nonce, associatedData, ciphertext, authenticationTag);
-
             }
             catch
             {
@@ -178,9 +177,12 @@ namespace JsonWebToken.Internal
                     : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
 
                 associatedData.CopyTo(macBytes);
-                iv.CopyTo(macBytes.Slice(associatedData.Length));
-                ciphertext.CopyTo(macBytes.Slice(associatedData.Length + iv.Length));
-                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + iv.Length + ciphertext.Length), associatedData.Length * 8);
+                var bytes = macBytes.Slice(associatedData.Length);
+                iv.CopyTo(bytes);
+                bytes = bytes.Slice(iv.Length);
+                ciphertext.CopyTo(bytes);
+                bytes = bytes.Slice(ciphertext.Length);
+                BinaryPrimitives.WriteInt64BigEndian(bytes, associatedData.Length * 8);
 
                 _signer.TrySign(macBytes, authenticationTag, out int writtenBytes);
                 Debug.Assert(writtenBytes == authenticationTag.Length);
