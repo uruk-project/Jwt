@@ -105,12 +105,12 @@ namespace JsonWebToken.Internal
 
             Span<byte> hash = stackalloc byte[_hashSizeInBytes];
             _hashAlgorithm.ComputeHash(input, hash);
-            return AreEqual(signature, hash);
+            return AreFixedTimeEqual(signature, hash);
         }
 
         // Optimized byte-based AreEqual. Inspired from https://github.com/dotnet/corefx/blob/master/src/Common/src/CoreLib/System/SpanHelpers.Byte.cs
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        private static bool AreEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
+        private static bool AreFixedTimeEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
         {
             int length = a.Length;
             ref byte first = ref MemoryMarshal.GetReference(a);
@@ -120,7 +120,7 @@ namespace JsonWebToken.Internal
             {
                 return
                     Avx2.MoveMask(Avx2.CompareEqual(Unsafe.ReadUnaligned<Vector256<byte>>(ref first), Unsafe.ReadUnaligned<Vector256<byte>>(ref second))) == unchecked((int)0b1111_1111_1111_1111_1111_1111_1111_1111)
-                 && Avx2.MoveMask(Avx2.CompareEqual(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.Add(ref first, 32)), Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.Add(ref second, 32)))) == unchecked((int)0b1111_1111_1111_1111_1111_1111_1111_1111);
+                 & Avx2.MoveMask(Avx2.CompareEqual(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.Add(ref first, 32)), Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.Add(ref second, 32)))) == unchecked((int)0b1111_1111_1111_1111_1111_1111_1111_1111);
             }
             else if (Avx2.IsSupported && length == 32)
             {
