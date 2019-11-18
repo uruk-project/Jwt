@@ -12,7 +12,7 @@ namespace JsonWebToken.Tests
         {
             var jwks = Jwks.FromJson(json);
 
-            Assert.Equal(count, jwks.Keys.Count);
+            Assert.Equal(count, jwks.Count);
         }
 
         [Theory]

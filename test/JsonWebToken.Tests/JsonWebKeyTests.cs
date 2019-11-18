@@ -36,7 +36,7 @@ namespace JsonWebToken.Tests
         public static IEnumerable<object[]> GetJsonKeys()
         {
             var fixture = new KeyFixture();
-            foreach (var key in fixture.Jwks.Keys)
+            foreach (var key in fixture.Jwks.GetKeys(null))
             {
                 yield return new object[] { key.ToString(), key.Kid, Encoding.UTF8.GetString(key.Alg ?? new byte[0]) };
             }
