@@ -65,16 +65,16 @@ namespace JsonWebToken
             {
                 Span<byte> keyPrime = stackalloc byte[sha.HashSize];
                 _sha.ComputeHash(key, keyPrime);
-                InitializeIOKeys(sha, keyPrime);
+                InitializeIOKeys(keyPrime);
                 keyPrime.Clear();
             }
             else
             {
-                InitializeIOKeys(sha, key);
+                InitializeIOKeys(key);
             }
         }
 
-        private void InitializeIOKeys(Sha2 sha, ReadOnlySpan<byte> key)
+        private void InitializeIOKeys(ReadOnlySpan<byte> key)
         {
 #if NETCOREAPP3_0
             if (Avx2.IsSupported && (key.Length & 31) == 0)
