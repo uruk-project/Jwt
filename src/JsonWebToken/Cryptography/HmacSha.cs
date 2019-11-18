@@ -30,12 +30,12 @@ namespace JsonWebToken
         /// <summary>
         /// The inner pad key.
         /// </summary>
-        protected ReadOnlySpan<byte> InnerPadKey => new ReadOnlySpan<byte>(_keys, 0, BlockSize);
+        private ReadOnlyMemory<byte> _innerPadKey;
 
         /// <summary>
         /// The outer pad key.
         /// </summary>
-        protected ReadOnlySpan<byte> OuterPadKey => new ReadOnlySpan<byte>(_keys, BlockSize, BlockSize);
+        private ReadOnlyMemory<byte> _outerPadKey;
 
         /// <summary>
         /// The block size.
@@ -60,6 +60,8 @@ namespace JsonWebToken
             }
 
             _keys = new byte[BlockSize * 2];
+            _innerPadKey = new ReadOnlyMemory<byte>(_keys, 0, BlockSize);
+            _outerPadKey = new ReadOnlyMemory<byte>(_keys, BlockSize, BlockSize);
             _sha = sha;
             if (key.Length > BlockSize)
             {
@@ -136,8 +138,8 @@ namespace JsonWebToken
         public void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination)
         {
             // hash(o_key_pad ∥ hash(i_key_pad ∥ message));
-            _sha.ComputeHash(source, destination, InnerPadKey);
-            _sha.ComputeHash(destination, destination, OuterPadKey);
+            _sha.ComputeHash(source, destination, _innerPadKey.Span);
+            _sha.ComputeHash(destination, destination, _outerPadKey.Span);
         }
 
         /// <summary>
