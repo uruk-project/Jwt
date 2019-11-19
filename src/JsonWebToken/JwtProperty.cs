@@ -17,38 +17,23 @@ namespace JsonWebToken
     {
         internal static ReadOnlySpan<byte> GetWellKnowName(WellKnownProperty wellKnownName)
         {
-            switch (wellKnownName)
+            return wellKnownName switch
             {
-                case WellKnownProperty.Exp:
-                    return Claims.ExpUtf8;
-                case WellKnownProperty.Aud:
-                    return Claims.AudUtf8;
-                case WellKnownProperty.Iat:
-                    return Claims.IatUtf8;
-                case WellKnownProperty.Iss:
-                    return Claims.IssUtf8;
-                case WellKnownProperty.Jti:
-                    return Claims.JtiUtf8;
-                case WellKnownProperty.Nbf:
-                    return Claims.NbfUtf8;
-                case WellKnownProperty.Sub:
-                    return Claims.SubUtf8;
-                case WellKnownProperty.Typ:
-                    return HeaderParameters.TypUtf8;
-                case WellKnownProperty.Zip:
-                    return HeaderParameters.ZipUtf8;
-                case WellKnownProperty.Kid:
-                    return HeaderParameters.KidUtf8;
-                case WellKnownProperty.Alg:
-                    return HeaderParameters.AlgUtf8;
-                case WellKnownProperty.Enc:
-                    return HeaderParameters.EncUtf8;
-                case WellKnownProperty.Cty:
-                    return HeaderParameters.CtyUtf8;
-                default:
-                    ThrowHelper.ThrowArgumentOutOfRangeException_WellKnowProperty(wellKnownName);
-                    return default;
-            }
+                WellKnownProperty.Exp => Claims.ExpUtf8,
+                WellKnownProperty.Aud => Claims.AudUtf8,
+                WellKnownProperty.Iat => Claims.IatUtf8,
+                WellKnownProperty.Iss => Claims.IssUtf8,
+                WellKnownProperty.Jti => Claims.JtiUtf8,
+                WellKnownProperty.Nbf => Claims.NbfUtf8,
+                WellKnownProperty.Sub => Claims.SubUtf8,
+                WellKnownProperty.Typ => HeaderParameters.TypUtf8,
+                WellKnownProperty.Zip => HeaderParameters.ZipUtf8,
+                WellKnownProperty.Kid => HeaderParameters.KidUtf8,
+                WellKnownProperty.Alg => HeaderParameters.AlgUtf8,
+                WellKnownProperty.Enc => HeaderParameters.EncUtf8,
+                WellKnownProperty.Cty => HeaderParameters.CtyUtf8,
+                _ => ThrowHelper.ThrowArgumentOutOfRangeException_WellKnowProperty(wellKnownName)
+            };
         }
 
         /// <summary>
