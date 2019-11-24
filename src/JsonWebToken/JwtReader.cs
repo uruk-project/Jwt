@@ -50,18 +50,18 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="JwtReader"/>.
         /// </summary>
-        /// <param name="keys"></param>
-        public JwtReader(IList<Jwk> keys)
-           : this(new Jwks(keys))
+        /// <param name="encryptionKeys"></param>
+        public JwtReader(IList<Jwk> encryptionKeys)
+           : this(new Jwks(encryptionKeys))
         {
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwtReader"/>.
         /// </summary>
-        /// <param name="keys"></param>
-        public JwtReader(params Jwk[] keys)
-           : this(new Jwks(keys))
+        /// <param name="encryptionKeys"></param>
+        public JwtReader(params Jwk[] encryptionKeys)
+           : this(new Jwks(encryptionKeys))
         {
         }
 
@@ -122,42 +122,17 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
-            return TryReadToken(token.AsSpan(), policy);
-        }
-
-        /// <summary>
-        /// Reads and validates a JWT encoded as a JWS or JWE in compact serialized format.
-        /// </summary>
-        /// <param name="utf8Token">The JWT encoded as JWE or JWS.</param>
-        /// <param name="policy">The validation policy.</param>
-        public TokenValidationResult TryReadToken(in ReadOnlySequence<byte> utf8Token, TokenValidationPolicy policy)
-        {
-            if (utf8Token.IsSingleSegment)
-            {
-                return TryReadToken(utf8Token.First.Span, policy);
-            }
-
-            return TryReadToken(utf8Token.ToArray(), policy);
-        }
-
-        /// <summary>
-        /// Reads and validates a JWT encoded as a JWS or JWE in compact serialized format.
-        /// </summary>
-        /// <param name="token">The JWT encoded as JWE or JWS</param>
-        /// <param name="policy">The validation policy.</param>
-        public TokenValidationResult TryReadToken(ReadOnlySpan<char> token, TokenValidationPolicy policy)
-        {
             if (policy is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
-            if (token.IsEmpty)
+            if (token.Length == 0)
             {
                 return TokenValidationResult.MalformedToken();
             }
 
-            int length = token.Length;
+            int length = Encoding.UTF8.GetByteCount(token);
             if (length > policy.MaximumTokenSizeInBytes)
             {
                 return TokenValidationResult.MalformedToken();
@@ -183,6 +158,21 @@ namespace JsonWebToken
                     ArrayPool<byte>.Shared.Return(utf8ArrayToReturnToPool);
                 }
             }
+        }
+
+        /// <summary>
+        /// Reads and validates a JWT encoded as a JWS or JWE in compact serialized format.
+        /// </summary>
+        /// <param name="utf8Token">The JWT encoded as JWE or JWS.</param>
+        /// <param name="policy">The validation policy.</param>
+        public TokenValidationResult TryReadToken(in ReadOnlySequence<byte> utf8Token, TokenValidationPolicy policy)
+        {
+            if (utf8Token.IsSingleSegment)
+            {
+                return TryReadToken(utf8Token.First.Span, policy);
+            }
+
+            return TryReadToken(utf8Token.ToArray(), policy);
         }
 
         /// <summary>
@@ -251,6 +241,11 @@ namespace JsonWebToken
             catch (JsonException readerException)
             {
                 result = TokenValidationResult.MalformedToken(readerException);
+                goto TokenAnalyzed;
+            }
+            catch (InvalidOperationException invalidOperationException) when (invalidOperationException.InnerException is DecoderFallbackException)
+            {
+                result = TokenValidationResult.MalformedToken(invalidOperationException);
                 goto TokenAnalyzed;
             }
 
@@ -409,6 +404,11 @@ namespace JsonWebToken
             catch (JsonException readerException)
             {
                 malformedException = readerException;
+                goto Malformed;
+            }
+            catch (InvalidOperationException invalidOperationException) when (invalidOperationException.InnerException is DecoderFallbackException)
+            {
+                malformedException = invalidOperationException;
                 goto Malformed;
             }
 
