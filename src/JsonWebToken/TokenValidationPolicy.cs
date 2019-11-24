@@ -80,7 +80,7 @@ namespace JsonWebToken
             }
 
             var crit = header.Crit;
-            if (crit == null || crit.Count == 0)
+            if (crit is null || crit.Count == 0)
             {
                 goto Success;
             }

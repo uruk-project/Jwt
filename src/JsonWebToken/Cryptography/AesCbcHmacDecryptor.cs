@@ -142,9 +142,12 @@ namespace JsonWebToken.Internal
             try
             {
                 associatedData.CopyTo(macBytes);
-                iv.CopyTo(macBytes.Slice(associatedData.Length));
-                ciphertext.CopyTo(macBytes.Slice(associatedData.Length + iv.Length));
-                BinaryPrimitives.WriteInt64BigEndian(macBytes.Slice(associatedData.Length + iv.Length + ciphertext.Length), associatedData.Length << 3);
+                var bytes = macBytes.Slice(associatedData.Length);
+                iv.CopyTo(bytes);
+                bytes = bytes.Slice(iv.Length);
+                ciphertext.CopyTo(bytes);
+                bytes = bytes.Slice(ciphertext.Length);
+                BinaryPrimitives.WriteInt64BigEndian(bytes, associatedData.Length << 3);
                 if (!_signer.Verify(macBytes, authenticationTag))
                 {
                     return false;

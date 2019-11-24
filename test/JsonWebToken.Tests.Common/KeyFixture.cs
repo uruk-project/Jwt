@@ -13,21 +13,21 @@ namespace JsonWebToken.Tests
             Jwks = new Jwks();
 
             SigningKey = CreateSigningKey();
-            Jwks.Keys.Add(SigningKey);
+            Jwks.Add(SigningKey);
 
             EncryptionKey = CreateEncryptionKey();
-            Jwks.Keys.Add(EncryptionKey);
-            Jwks.Keys.Add(PrivateRsa2048Key);
+            Jwks.Add(EncryptionKey);
+            Jwks.Add(PrivateRsa2048Key);
 #if !NET461
-            Jwks.Keys.Add(PrivateEcc256Key);
-            Jwks.Keys.Add(PrivateEcc384Key);
-            Jwks.Keys.Add(PrivateEcc512Key);
+            Jwks.Add(PrivateEcc256Key);
+            Jwks.Add(PrivateEcc384Key);
+            Jwks.Add(PrivateEcc512Key);
 #endif
-            Jwks.Keys.Add(Symmetric128Key);
-            Jwks.Keys.Add(Symmetric192Key);
-            Jwks.Keys.Add(Symmetric256Key);
-            Jwks.Keys.Add(Symmetric384Key);
-            Jwks.Keys.Add(Symmetric512Key);
+            Jwks.Add(Symmetric128Key);
+            Jwks.Add(Symmetric192Key);
+            Jwks.Add(Symmetric256Key);
+            Jwks.Add(Symmetric384Key);
+            Jwks.Add(Symmetric512Key);
         }
 
         public SymmetricJwk SigningKey { get; }

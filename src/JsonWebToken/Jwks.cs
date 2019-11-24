@@ -20,6 +20,9 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public sealed class Jwks : IDisposable
     {
+        private readonly List<Jwk> _keys = new List<Jwk>();
+
+        private Jwk[]? _keyArray;
         private Jwk[]? _unidentifiedKeys;
         private Dictionary<string, Jwk[]>? _identifiedKeys;
 
@@ -35,8 +38,13 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         public Jwks(Jwk key)
-            : this(new[] { key })
         {
+            if (key is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
+            }
+
+            _keys.Add(key);
         }
 
         /// <summary>
@@ -54,15 +62,10 @@ namespace JsonWebToken
                 var key = keys[i];
                 if (key != null)
                 {
-                    Keys.Add(key);
+                    _keys.Add(key);
                 }
             }
         }
-
-        /// <summary>
-        /// Gets the <see cref="IList{Jwk}"/>.
-        /// </summary>       
-        public IList<Jwk> Keys { get; } = new List<Jwk>();
 
         /// <summary>
         /// Gets or sets the first <see cref="Jwk"/> with its 'kid'.
@@ -71,9 +74,10 @@ namespace JsonWebToken
         {
             get
             {
-                for (int i = 0; i < Keys.Count; i++)
+                var keys = _keys;
+                for (int i = 0; i < keys.Count; i++)
                 {
-                    var key = Keys[i];
+                    var key = keys[i];
                     if (string.Equals(kid, key.Kid, StringComparison.Ordinal))
                     {
                         return key;
@@ -95,7 +99,10 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            Keys.Add(key);
+            _identifiedKeys = null;
+            _unidentifiedKeys = null;
+            _keyArray = null;
+            _keys.Add(key);
         }
 
         /// <summary>
@@ -109,7 +116,10 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            Keys.Remove(key);
+            _identifiedKeys = null;
+            _unidentifiedKeys = null;
+            _keyArray = null;
+            _keys.Remove(key);
         }
 
         /// <inheritsdoc />
@@ -133,9 +143,10 @@ namespace JsonWebToken
         {
             writer.WriteStartObject();
             writer.WriteStartObject(JwksParameterNames.KeysUtf8);
-            for (int i = 0; i < Keys.Count; i++)
+            var keys = _keys;
+            for (int i = 0; i < keys.Count; i++)
             {
-                Keys[i].WriteTo(writer);
+                keys[i].WriteTo(writer);
             }
 
             writer.WriteEndObject();
@@ -163,7 +174,7 @@ namespace JsonWebToken
             {
                 if (_unidentifiedKeys is null)
                 {
-                    _unidentifiedKeys = Keys
+                    _unidentifiedKeys = _keys
                                         .Where(jwk => jwk.Kid is null)
                                         .ToArray();
                 }
@@ -178,7 +189,7 @@ namespace JsonWebToken
             {
                 if (_identifiedKeys is null)
                 {
-                    _identifiedKeys = Keys
+                    _identifiedKeys = _keys
                                         .Where(jwk => !(jwk.Kid is null))
                                         .GroupBy(k => k.Kid!)
                                         .ToDictionary(k => k.Key, k => k.Concat(UnidentifiedKeys).ToArray());
@@ -189,6 +200,11 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Gets the number of keys contained in the <see cref="Jwks"/>.
+        /// </summary>
+        public int Count => _keys.Count;
+
+        /// <summary>
         /// Gets the list of <see cref="Jwk"/> identified by the 'kid'.
         /// </summary>
         /// <param name="kid"></param>
@@ -197,7 +213,7 @@ namespace JsonWebToken
         {
             if (kid is null)
             {
-                return Keys.ToArray();
+                return _keyArray ?? (_keyArray = _keys.ToArray());
             }
 
             if (IdentifiedKeys.TryGetValue(kid, out var jwks))
@@ -207,12 +223,6 @@ namespace JsonWebToken
 
             return UnidentifiedKeys;
         }
-
-        /// <summary>
-        /// Cast the array of <see cref="Jwk"/> into a <see cref="Jwks"/>.
-        /// </summary>
-        /// <param name="keys"></param>
-        public static implicit operator Jwks(Jwk[] keys) => new Jwks(keys);
 
         /// <summary>
         /// Returns a new instance of <see cref="Jwks"/>.
@@ -286,7 +296,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public void Dispose()
         {
-            IList<Jwk> keys = Keys;
+            var keys = _keys;
             for (int i = 0; i < keys.Count; i++)
             {
                 keys[i].Dispose();
