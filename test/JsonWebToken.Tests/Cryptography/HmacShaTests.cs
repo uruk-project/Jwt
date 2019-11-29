@@ -29,7 +29,7 @@ namespace JsonWebToken.Tests.Cryptography
             ByteUtils.AsciiBytes("This is a test using a larger than block-size key and a larger than block-size data. The key needs to be hashed before being used by the HMAC algorithm."),
         };
 
-        protected abstract HmacSha Create(ReadOnlySpan<byte> key);
+        protected abstract HmacSha2 Create(ReadOnlySpan<byte> key);
 
         protected abstract Sha2 CreateShaAlgorithm();
 

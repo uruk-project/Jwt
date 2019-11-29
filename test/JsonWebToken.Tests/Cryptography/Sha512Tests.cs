@@ -5,9 +5,10 @@ namespace JsonWebToken.Tests.Cryptography
 {
     public class Sha512Tests : ShaAlgorithmTest
     {
-        protected override Sha2 Create()
+        protected override void ComputeHash(Span<byte> source, Span<byte> destination)
         {
-            return new Sha512();
+            var sha512 = new Sha512();
+            sha512.ComputeHash(source, destination);
         }
 
         [Fact]

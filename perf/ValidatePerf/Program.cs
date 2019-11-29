@@ -40,9 +40,13 @@ namespace ValidatePerf
 
             Console.WriteLine("Starting...");
             _reader.EnableHeaderCaching = false;
+            var sha = new Sha512();
+            Span<byte> dest = new byte[64];
+            var src = new byte[4096];
             while (true)
             {
-                _reader.TryReadToken(jwsToken, policy);
+                sha.ComputeHash(src, dest);
+              //  _reader.TryReadToken(jwsToken, policy);
             }
         }
     }

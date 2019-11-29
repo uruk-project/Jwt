@@ -11,7 +11,7 @@ namespace JsonWebToken
     /// <summary>
     /// Computes a Hash-based Message Authentication Code (HMAC) using a SHA2 hash function.
     /// </summary>
-    public abstract class HmacSha
+    public abstract class HmacSha2
     {
 #if NETCOREAPP3_0
         private static readonly Vector256<byte> _innerKeyInit = Vector256.Create((byte)0x36);
@@ -20,7 +20,7 @@ namespace JsonWebToken
         /// <summary>
         /// The hash algorithm.
         /// </summary>
-        protected readonly Sha2 _sha;
+        public Sha2 Sha2 { get; }
 
         /// <summary>
         /// The inner &amp; outer pad keys.
@@ -30,12 +30,12 @@ namespace JsonWebToken
         /// <summary>
         /// The inner pad key.
         /// </summary>
-        private ReadOnlyMemory<byte> _innerPadKey;
+        protected ReadOnlyMemory<byte> _innerPadKey;
 
         /// <summary>
         /// The outer pad key.
         /// </summary>
-        private ReadOnlyMemory<byte> _outerPadKey;
+        protected ReadOnlyMemory<byte> _outerPadKey;
 
         /// <summary>
         /// The block size.
@@ -45,28 +45,28 @@ namespace JsonWebToken
         /// <summary>
         /// The size of the resulting hash.
         /// </summary>
-        public int HashSize => _sha.HashSize;
+        public int HashSize => Sha2.HashSize;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HmacSha"/> class.
+        /// Initializes a new instance of the <see cref="HmacSha2"/> class.
         /// </summary>
-        /// <param name="sha"></param>
+        /// <param name="sha2"></param>
         /// <param name="key"></param>
-        protected HmacSha(Sha2 sha, ReadOnlySpan<byte> key)
+        protected HmacSha2(Sha2 sha2, ReadOnlySpan<byte> key)
         {
-            if (sha is null)
+            if (sha2 is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.sha);
             }
 
+            Sha2 = sha2;
             _keys = new byte[BlockSize * 2];
             _innerPadKey = new ReadOnlyMemory<byte>(_keys, 0, BlockSize);
             _outerPadKey = new ReadOnlyMemory<byte>(_keys, BlockSize, BlockSize);
-            _sha = sha;
             if (key.Length > BlockSize)
             {
-                Span<byte> keyPrime = stackalloc byte[sha.HashSize];
-                _sha.ComputeHash(key, keyPrime);
+                Span<byte> keyPrime = stackalloc byte[sha2.HashSize];
+                ComputeKeyHash(key, keyPrime);
                 InitializeIOKeys(keyPrime);
                 keyPrime.Clear();
             }
@@ -75,6 +75,13 @@ namespace JsonWebToken
                 InitializeIOKeys(key);
             }
         }
+
+        /// <summary>
+        /// Computes the hash of the key, used when key size is greater than the <see cref="BlockSize"/>.
+        /// </summary>
+        /// <param name="key">The original key.</param>
+        /// <param name="keyPrime">The derived key. The derived key length equals to <see cref="BlockSize"/>.</param>
+        protected abstract void ComputeKeyHash(ReadOnlySpan<byte> key, Span<byte> keyPrime);
 
         private void InitializeIOKeys(ReadOnlySpan<byte> key)
         {
@@ -135,12 +142,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="source"></param>
         /// <param name="destination"></param>
-        public void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination)
-        {
-            // hash(o_key_pad ∥ hash(i_key_pad ∥ message));
-            _sha.ComputeHash(source, destination, _innerPadKey.Span);
-            _sha.ComputeHash(destination, destination, _outerPadKey.Span);
-        }
+        public abstract void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination);
 
         /// <summary>
         /// Clears the keys.
