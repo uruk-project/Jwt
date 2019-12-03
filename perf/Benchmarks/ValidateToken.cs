@@ -27,12 +27,51 @@ namespace JsonWebToken.Performance
         private static readonly SymmetricJwk SymmetricKey = Tokens.SigningKey;
 
         public static readonly JwtReader Reader = new JwtReader(Tokens.EncryptionKey);
-        protected static readonly TokenValidationPolicy policyWithSignatureValidation = new TokenValidationPolicyBuilder().RequireSignature(SymmetricKey).Build();
+        protected static readonly TokenValidationPolicy tokenValidationPolicy
+            = new TokenValidationPolicyBuilder()
+                .RequireSignature(SymmetricKey)
+                .RequireAudience("636C69656E745F6964")
+                .RequireIssuer("https://idp.example.com/")
+                .EnableLifetimeValidation()
+                .Build();
+
+        protected static readonly TokenValidationPolicy tokenValidationPolicyWithoutSignature
+            = new TokenValidationPolicyBuilder()
+                .IgnoreSignature()
+                .AcceptUnsecureToken()
+                .RequireAudience("636C69656E745F6964")
+                .RequireIssuer("https://idp.example.com/")
+                .EnableLifetimeValidation()
+                .Build();
 
         private static readonly JsonWebKey WilsonSharedKey = JsonWebKey.Create(SymmetricKey.ToString());
 
-        protected static readonly TokenValidationParameters wilsonParameters = new TokenValidationParameters() { IssuerSigningKey = WilsonSharedKey, ValidateAudience = false, ValidateIssuer = false, ValidateLifetime = false, TokenDecryptionKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(Tokens.EncryptionKey.ToString()) };
-        protected static readonly TokenValidationParameters wilsonParametersWithouSignature = new TokenValidationParameters() { ValidateAudience = false, ValidateIssuer = false, ValidateLifetime = false, RequireSignedTokens = false };
+        protected static readonly TokenValidationParameters wilsonParameters = new TokenValidationParameters()
+        {
+            IssuerSigningKey = WilsonSharedKey,
+            ValidateAudience = true,
+            ValidateIssuer = true,
+            ValidateLifetime = true,
+            ValidAudience = "636C69656E745F6964",
+            ValidIssuer = "https://idp.example.com/",
+            TokenDecryptionKey = JsonWebKey.Create(Tokens.EncryptionKey.ToString())
+        };
+        protected static readonly TokenValidationParameters wilsonParametersWithouSignature = new TokenValidationParameters()
+        {
+            ValidateAudience = true,
+            ValidateIssuer = true,
+            ValidateLifetime = true,
+            ValidAudience = "636C69656E745F6964",
+            ValidIssuer = "https://idp.example.com/",
+            RequireSignedTokens = false
+        };  
+        protected static readonly TokenValidationParameters wilsonParametersWithoutValidation = new TokenValidationParameters()
+        {
+            ValidateAudience = false,
+            ValidateIssuer = false,
+            ValidateLifetime = false,
+            RequireSignedTokens = false
+        };
 
         public abstract TokenValidationResult Jwt(string token);
 
@@ -110,7 +149,7 @@ namespace JsonWebToken.Performance
                 throw new Exception();
             }
         }
-        
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected static void ThrowException(string message)
         {

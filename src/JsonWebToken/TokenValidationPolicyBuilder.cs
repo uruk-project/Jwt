@@ -15,12 +15,18 @@ namespace JsonWebToken
     public sealed class TokenValidationPolicyBuilder
     {
         private const int DefaultMaximumTokenSizeInBytes = 1024 * 1024 * 2;
+
         private readonly Dictionary<string, ICriticalHeaderHandler> _criticalHeaderHandlers = new Dictionary<string, ICriticalHeaderHandler>();
         private readonly List<IValidator> _validators = new List<IValidator>();
         private int _maximumTokenSizeInBytes = DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
         private SignatureValidationPolicy? _signatureValidation = SignatureValidationPolicy.IgnoreSignature;
         private bool _ignoreCriticalHeader;
+
+        private byte _control;
+        private byte[] _issuer;
+        private int _clockSkrew;
+        private readonly List<byte[]> _audiences = new List<byte[]>();
 
         /// <summary>
         /// Clear the defined policies.
@@ -114,7 +120,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="keyProvider"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider) 
+        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider)
             => RequireSignature(keyProvider, null);
 
         /// <summary>
@@ -254,15 +260,22 @@ namespace JsonWebToken
         /// <param name="requireExpirationTime"></param>
         /// <param name="clockSkew"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder AddLifetimeValidation(bool requireExpirationTime = true, int clockSkew = 300)
+        public TokenValidationPolicyBuilder EnableLifetimeValidation(bool requireExpirationTime = true, int clockSkew = 300)
         {
             if (clockSkew <= 0)
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException_MustBeGreaterThanTimeSpanZero(ExceptionArgument.clockSkew, clockSkew);
             }
 
-            RemoveValidator<LifetimeValidator>();
-            AddValidator(new LifetimeValidator(requireExpirationTime, clockSkew));
+            //RemoveValidator<LifetimeValidator>();
+            //AddValidator(new LifetimeValidator(requireExpirationTime, clockSkew));
+            _clockSkrew = clockSkew;
+            _control |= TokenValidationPolicy.ExpirationTime | TokenValidationPolicy.NotBefore;
+            if (requireExpirationTime)
+            {
+                _control |= TokenValidationPolicy.ExpirationTimeRequired;
+            }
+
             return this;
         }
 
@@ -278,8 +291,8 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(audience));
             }
 
-            RemoveValidator<AudienceValidator>();
-            AddValidator(new AudienceValidator(new[] { audience }));
+            _audiences.Add(Encoding.UTF8.GetBytes(audience));
+            _control |= TokenValidationPolicy.Audience;
             return this;
         }
 
@@ -295,8 +308,15 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(audiences));
             }
 
-            RemoveValidator<AudienceValidator>();
-            AddValidator(new AudienceValidator(audiences));
+            foreach (var audience in audiences)
+            {
+                if (audience != null)
+                {
+                    _audiences.Add(Encoding.UTF8.GetBytes(audience));
+                }
+            }
+
+            _control |= TokenValidationPolicy.Audience;
             return this;
         }
 
@@ -312,8 +332,8 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(issuer));
             }
 
-            RemoveValidator<IssuerValidation>();
-            AddValidator(new IssuerValidation(issuer));
+            _issuer = Encoding.UTF8.GetBytes(issuer);
+            _control |= TokenValidationPolicy.Issuer;
             return this;
         }
 
@@ -322,7 +342,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="tokenReplayCache"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder AddTokenReplayValidation(ITokenReplayCache tokenReplayCache)
+        public TokenValidationPolicyBuilder EnableTokenReplayValidation(ITokenReplayCache tokenReplayCache)
         {
             if (tokenReplayCache == null)
             {
@@ -388,7 +408,16 @@ namespace JsonWebToken
         {
             Validate();
 
-            var policy = new TokenValidationPolicy(_validators.ToArray(), _criticalHeaderHandlers, _maximumTokenSizeInBytes, _ignoreCriticalHeader, _signatureValidation);
+            var policy = new TokenValidationPolicy(
+                _validators.ToArray(), 
+                _criticalHeaderHandlers, 
+                _maximumTokenSizeInBytes, 
+                _ignoreCriticalHeader, 
+                _signatureValidation,
+                _issuer,
+                _audiences?.ToArray(), 
+                _clockSkrew,
+                _control);
             return policy;
         }
 

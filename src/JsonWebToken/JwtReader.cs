@@ -394,7 +394,7 @@ namespace JsonWebToken
             JwtPayload payload;
             try
             {
-                payload = GetJsonPayload(rawPayload);
+                payload = GetJsonPayload(rawPayload, policy);
             }
             catch (FormatException formatException)
             {
@@ -419,7 +419,7 @@ namespace JsonWebToken
             {
                 return result;
             }
-            if (policy.HasValidation)
+            //if (policy.HasValidation)
             {
                 return policy.TryValidate(jws);
             }
@@ -430,7 +430,7 @@ namespace JsonWebToken
             return TokenValidationResult.MalformedToken(exception: malformedException);
         }
 
-        private static JwtPayload GetJsonPayload(ReadOnlySpan<byte> data)
+        private static JwtPayload GetJsonPayload(ReadOnlySpan<byte> data, TokenValidationPolicy policy)
         {
             int bufferLength = Base64Url.GetArraySizeRequiredToDecode(data.Length);
             byte[]? base64UrlArrayToReturnToPool = null;
@@ -440,7 +440,7 @@ namespace JsonWebToken
             try
             {
                 Base64Url.Decode(data, buffer);
-                return JsonPayloadParser.ParsePayload(buffer);
+                return JsonPayloadParser.ParsePayload(buffer, policy);
             }
             finally
             {
