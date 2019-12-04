@@ -41,7 +41,7 @@ namespace JsonWebToken
         public static SignatureValidationPolicy Create(IKeyProvider keyProvider, SignatureAlgorithm? algorithm)
             => new DefaultSignatureValidationPolicy(keyProvider, algorithm);
 
-        private class DefaultSignatureValidationPolicy : SignatureValidationPolicy
+        private sealed class DefaultSignatureValidationPolicy : SignatureValidationPolicy
         {
             private readonly IKeyProvider _keyProvider;
             private readonly SignatureAlgorithm? _algorithm;

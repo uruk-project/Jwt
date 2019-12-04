@@ -24,7 +24,7 @@ namespace JsonWebToken
         private bool _ignoreCriticalHeader;
 
         private byte _control;
-        private byte[] _issuer;
+        private byte[]? _issuer;
         private int _clockSkrew;
         private readonly List<byte[]> _audiences = new List<byte[]>();
 
@@ -270,10 +270,10 @@ namespace JsonWebToken
             //RemoveValidator<LifetimeValidator>();
             //AddValidator(new LifetimeValidator(requireExpirationTime, clockSkew));
             _clockSkrew = clockSkew;
-            _control |= TokenValidationPolicy.ExpirationTime | TokenValidationPolicy.NotBefore;
+            _control |= TokenValidationPolicy.ExpirationTimeFlag | TokenValidationPolicy.NotBeforeFlag;
             if (requireExpirationTime)
             {
-                _control |= TokenValidationPolicy.ExpirationTimeRequired;
+                _control |= TokenValidationPolicy.ExpirationTimeRequiredFlag;
             }
 
             return this;
@@ -292,7 +292,7 @@ namespace JsonWebToken
             }
 
             _audiences.Add(Encoding.UTF8.GetBytes(audience));
-            _control |= TokenValidationPolicy.Audience;
+            _control |= TokenValidationPolicy.AudienceFlag;
             return this;
         }
 
@@ -316,7 +316,7 @@ namespace JsonWebToken
                 }
             }
 
-            _control |= TokenValidationPolicy.Audience;
+            _control |= TokenValidationPolicy.AudienceFlag;
             return this;
         }
 
@@ -333,7 +333,7 @@ namespace JsonWebToken
             }
 
             _issuer = Encoding.UTF8.GetBytes(issuer);
-            _control |= TokenValidationPolicy.Issuer;
+            _control |= TokenValidationPolicy.IssuerFlag;
             return this;
         }
 
@@ -367,7 +367,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Ignore the 'crit' header.
+        /// Ignore the 'crit' header if present.
         /// </summary>
         /// <returns></returns>
         public TokenValidationPolicyBuilder IgnoreCriticalHeader()

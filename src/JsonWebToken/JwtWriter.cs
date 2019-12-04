@@ -13,7 +13,7 @@ namespace JsonWebToken
     public sealed class JwtWriter
     {
         private readonly JsonHeaderCache _headerCache;
-        private int _tokenLifetimeInMinutes;
+        private int _tokenLifetimeInSeconds;
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwtWriter"/>.
@@ -33,15 +33,15 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Gets or sets the token lifetime in minutes.
+        /// Gets or sets the token lifetime in seconds.
         /// </summary>
         /// <remarks>Used by <see cref="WriteToken(JwtDescriptor)"/> to set the default expiration ('exp').</remarks>
         /// <exception cref="ArgumentOutOfRangeException">'value' less than 0.</exception>
-        public int TokenLifetimeInMinutes
+        public int TokenLifetimeInSeconds
         {
             get
             {
-                return _tokenLifetimeInMinutes;
+                return _tokenLifetimeInSeconds;
             }
 
             set
@@ -51,7 +51,7 @@ namespace JsonWebToken
                     ThrowHelper.ThrowArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(ExceptionArgument.value, value);
                 }
 
-                _tokenLifetimeInMinutes = value;
+                _tokenLifetimeInSeconds = value;
             }
         }
 
@@ -100,7 +100,7 @@ namespace JsonWebToken
                 descriptor.Validate();
             }
 
-            var encodingContext = new EncodingContext(EnableHeaderCaching ? _headerCache : null, TokenLifetimeInMinutes, GenerateIssuedTime);
+            var encodingContext = new EncodingContext(EnableHeaderCaching ? _headerCache : null, TokenLifetimeInSeconds, GenerateIssuedTime);
             descriptor.Encode(encodingContext, output);
         }
 

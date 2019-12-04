@@ -12,15 +12,15 @@ namespace JsonWebToken
     /// </summary>
     public sealed class TokenValidationPolicy
     {
-        internal const int MissingAudience = 0x01;
-        internal const int InvalidAudience = 0x02;
-        internal const int Audience = MissingAudience | InvalidAudience;
-        internal const int MissingIssuer = 0x04;
-        internal const int InvalidIssuer = 0x08;
-        internal const int Issuer = MissingIssuer | InvalidIssuer;
-        internal const int ExpirationTime = 0x10;
-        internal const int ExpirationTimeRequired = 0x20;
-        internal const int NotBefore = 0x40;
+        internal const int MissingAudienceFlag = 0x01;
+        internal const int InvalidAudienceFlag = 0x02;
+        internal const int AudienceFlag = MissingAudienceFlag | InvalidAudienceFlag;
+        internal const int MissingIssuerFlag = 0x04;
+        internal const int InvalidIssuerFlag = 0x08;
+        internal const int IssuerFlag = MissingIssuerFlag | InvalidIssuerFlag;
+        internal const int ExpirationTimeFlag = 0x10;
+        internal const int ExpirationTimeRequiredFlag = 0x20;
+        internal const int NotBeforeFlag = 0x40;
 
         /// <summary>
         /// Represents an policy without any validation. Do not use it without consideration.
@@ -41,7 +41,7 @@ namespace JsonWebToken
             int maximumTokenSizeInBytes,
             bool ignoreCriticalHeader,
             SignatureValidationPolicy? signatureValidation,
-            byte[] issuer,
+            byte[]? issuer,
             byte[][]? audiences,
             int clockSkrew,
             byte control)
@@ -75,29 +75,32 @@ namespace JsonWebToken
         /// <summary>
         /// Gets whether the issuer 'iss' is required.
         /// </summary>
-        public bool RequireIssuer => (Control & Issuer) == Issuer;
+        public bool RequireIssuer => (ValidationControl & IssuerFlag) == IssuerFlag;
 
         /// <summary>
-        /// Gets the required issuer.
+        /// Gets the required issuer, in UTF8 binary format.
         /// </summary>
-        public byte[] RequiredIssuer { get; }
+        public byte[]? RequiredIssuer { get; }
 
         /// <summary>
         /// Gets whether the audience 'aud' is required.
         /// </summary>
-        public bool RequireAudience => (Control & Audience) == Audience;
+        public bool RequireAudience => (ValidationControl & AudienceFlag) == AudienceFlag;
 
         /// <summary>
-        /// Gets the required audiences. At least of audience of this list is required.
+        /// Gets the required audience array, in UTF8 binary format. At least one audience of this list is required.
         /// </summary>
         public byte[][] RequiredAudiences { get; }
 
-        public byte Control => _control;
+        /// <summary>
+        /// Gets the validation control bits.
+        /// </summary>
+        public byte ValidationControl => _control;
 
         /// <summary>
         /// Gets whether the expiration time 'exp' is required.
         /// </summary>
-        public bool RequireExpirationTime => (Control & ExpirationTimeRequired) == ExpirationTimeRequired;
+        public bool RequireExpirationTime => (ValidationControl & ExpirationTimeRequiredFlag) == ExpirationTimeRequiredFlag;
 
         /// <summary>
         /// Defines the clock skrew used for the token lifetime validation.
@@ -105,14 +108,19 @@ namespace JsonWebToken
         public int ClockSkrew { get; }
 
         /// <summary>
+        /// Gets the extension points used to handle the critical headers.
+        /// </summary>
+        public Dictionary<string, ICriticalHeaderHandler> CriticalHandlers => _criticalHandlers;
+
+        /// <summary>
         /// Try to validate the token, according to the <paramref name="jwt"/>.
         /// </summary>
         /// <param name="jwt"></param>
         /// <returns></returns>
-        public TokenValidationResult TryValidate(Jwt jwt)
+        public TokenValidationResult TryValidateJwt(Jwt jwt)
         {
             var payload = jwt.Payload!;
-            if (payload.Control != 0)
+            if (payload.ValidationControl != 0)
             {
                 if (payload.MissingAudience)
                 {
@@ -168,43 +176,29 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <returns></returns>
-        public TokenValidationResult TryValidate(JwtHeader header)
+        public TokenValidationResult TryValidateHeader(JwtHeader header)
         {
-            if (_ignoreCriticalHeader)
+            if (!_ignoreCriticalHeader)
             {
-                goto Success;
-            }
-
-            var crit = header.Crit;
-            if (crit is null || crit.Count == 0)
-            {
-                goto Success;
-            }
-
-            for (int i = 0; i < crit.Count; i++)
-            {
-                var criticalHeader = crit[i];
-                if (!header.ContainsKey(criticalHeader))
+                var handlers = header.CriticalHeaderHandlers;
+                if (handlers != null)
                 {
-                    return TokenValidationResult.CriticalHeaderMissing(criticalHeader);
-                }
-                else
-                {
-                    if (_criticalHandlers.TryGetValue(criticalHeader, out var handler))
+                    for (int i = 0; i < handlers.Count; i++)
                     {
-                        if (!handler.TryHandle(header, criticalHeader))
+                        KeyValuePair<string, ICriticalHeaderHandler> handler = handlers[i];
+                        if (handler.Value is null)
                         {
-                            return TokenValidationResult.InvalidHeader(criticalHeader);
+                            return TokenValidationResult.CriticalHeaderUnsupported(handler.Key);
+                        }
+
+                        if (!handler.Value.TryHandle(header, handler.Key))
+                        {
+                            return TokenValidationResult.InvalidHeader(handler.Key);
                         }
                     }
-                    else
-                    {
-                        return TokenValidationResult.CriticalHeaderUnsupported(criticalHeader);
-                    }
                 }
             }
 
-        Success:
             return TokenValidationResult.Success();
         }
 

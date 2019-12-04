@@ -1,8 +1,10 @@
 ﻿// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
+using JsonWebToken.Internal;
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -13,13 +15,14 @@ namespace JsonWebToken
     /// <summary>
     /// Provides methods for converting JWT header JSON data into a <see cref="JwtHeader"/>
     /// </summary>
-    public static partial class JsonHeaderParser
+    public static partial class JwtHeaderParser
     {
         /// <summary>
         /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtHeader"/>.
         /// </summary>
         /// <param name="buffer"></param>
-        public static JwtHeader ParseHeader(ReadOnlySpan<byte> buffer)
+        /// <param name="policy"></param>
+        public static JwtHeader ParseHeader(ReadOnlySpan<byte> buffer, TokenValidationPolicy policy)
         {
             Utf8JsonReader reader = new Utf8JsonReader(buffer, isFinalBlock: true, state: default);
             if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
@@ -27,10 +30,10 @@ namespace JsonWebToken
                 ThrowHelper.ThrowFormatException_MalformedJson();
             }
 
-            return ReadJwtHeader(ref reader);
+            return ReadJwtHeader(ref reader, policy);
         }
 
-        internal static JwtHeader ReadJwtHeader(ref Utf8JsonReader reader)
+        internal static JwtHeader ReadJwtHeader(ref Utf8JsonReader reader, TokenValidationPolicy policy)
         {
             var current = new JwtObject(3);
             var header = new JwtHeader(current);
@@ -50,7 +53,44 @@ namespace JsonWebToken
                         current.Add(name, JsonParser.ReadJsonObject(ref reader));
                         break;
                     case JsonTokenType.StartArray:
-                        current.Add(name, JsonParser.ReadJsonArray(ref reader));
+                        if (name.Length == 4 && Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(name)) == 1953067619u /* crit */)
+                        {
+                            var handlers = policy.CriticalHandlers;
+                            if (handlers.Count != 0)
+                            {
+                                header.CriticalHeaderHandlers = new List<KeyValuePair<string, ICriticalHeaderHandler>>(handlers.Count);
+                                var criticals = new List<JwtValue>();
+                                while (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                {
+                                    string criticalHeader = reader.GetString();
+                                    criticals.Add(new JwtValue(criticalHeader));
+                                    if (handlers.TryGetValue(criticalHeader, out var handler))
+                                    {
+                                        header.CriticalHeaderHandlers.Add(new KeyValuePair<string, ICriticalHeaderHandler>(criticalHeader, handler));
+                                    }
+                                    else
+                                    {
+                                        header.CriticalHeaderHandlers.Add(new KeyValuePair<string, ICriticalHeaderHandler>(criticalHeader, null!));
+                                    }
+                                }
+
+                                if (reader.TokenType != JsonTokenType.EndArray)
+                                {
+                                    ThrowHelper.ThrowFormatException_MalformedJson("The 'crit' header parameter must be an array of string.");
+                                }
+
+                                current.Add(new JwtProperty(name, new JwtArray(criticals)));
+                            }
+                            else
+                            {
+                                current.Add(name, JsonParser.ReadJsonArray(ref reader));
+                            }
+                        }
+                        else
+                        {
+                            current.Add(name, JsonParser.ReadJsonArray(ref reader));
+                        }
+
                         break;
                     case JsonTokenType.String:
                         if (name.Length == 3)

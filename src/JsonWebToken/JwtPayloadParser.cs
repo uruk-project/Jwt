@@ -15,7 +15,7 @@ namespace JsonWebToken
     /// <summary>
     /// Provides methods for converting JWT header JSON data into a <see cref="JwtHeader"/>
     /// </summary>
-    public static partial class JsonPayloadParser
+    public static partial class JwtPayloadParser
     {
         delegate void Unescape(ReadOnlySpan<byte> source, Span<byte> destination, int idx, out int written);
 
@@ -40,7 +40,7 @@ namespace JsonWebToken
 
             var current = new JwtObject();
             var payload = new JwtPayload(current);
-            byte control = policy.Control;
+            byte control = policy.ValidationControl;
             while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
                 var name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
@@ -64,7 +64,7 @@ namespace JsonWebToken
                                     {
                                         if (reader.ValueTextEquals(requiredAudiences[i]))
                                         {
-                                            control &= unchecked((byte)~TokenValidationPolicy.Audience);
+                                            control &= unchecked((byte)~TokenValidationPolicy.AudienceFlag);
                                             break;
                                         }
                                     }
@@ -105,8 +105,8 @@ namespace JsonWebToken
                                     {
                                         if (reader.ValueTextEquals(policy.RequiredIssuer))
                                         {
-                                            current.Add(new JwtProperty(WellKnownProperty.Iss, policy.RequiredIssuer));
-                                            control &= unchecked((byte)~TokenValidationPolicy.Issuer);
+                                            current.Add(new JwtProperty(WellKnownProperty.Iss, policy.RequiredIssuer!));
+                                            control &= unchecked((byte)~TokenValidationPolicy.IssuerFlag);
                                             break;
                                         }
 
@@ -131,7 +131,7 @@ namespace JsonWebToken
                                             if (reader.ValueTextEquals(audiences[i]))
                                             {
                                                 current.Add(new JwtProperty(WellKnownProperty.Aud, audiences[i]));
-                                                control &= unchecked((byte)~TokenValidationPolicy.Audience);
+                                                control &= unchecked((byte)~TokenValidationPolicy.AudienceFlag);
                                                 break;
                                             }
                                         }
@@ -191,7 +191,7 @@ namespace JsonWebToken
                                             control &= unchecked((byte)~JwtPayload.MissingExpirationFlag);
                                         }
 
-                                        if (longValue >= DateTime.UtcNow.ToEpochTime() - policy.ClockSkrew)
+                                        if (longValue >= EpochTime.UtcNow - policy.ClockSkrew)
                                         {
                                             control &= unchecked((byte)~JwtPayload.ExpiredFlag);
                                         }
@@ -222,8 +222,8 @@ namespace JsonWebToken
                                 case 6709870u:
                                     if (reader.TryGetInt64(out longValue))
                                     {
-                                        // the 'nbf' claim is not common. The 2nd call to DateTime.UtcNow should be rare.
-                                        if (longValue <= DateTime.UtcNow.ToEpochTime() + policy.ClockSkrew)
+                                        // the 'nbf' claim is not common. The 2nd call to EpochTime.UtcNow should be rare.
+                                        if (longValue <= EpochTime.UtcNow + policy.ClockSkrew)
                                         {
                                             control &= unchecked((byte)~JwtPayload.NotYetFlag);
                                         }
@@ -266,7 +266,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowFormatException_MalformedJson();
             }
 
-            payload.Control = control;
+            payload.ValidationControl = control;
 
             return payload;
         }

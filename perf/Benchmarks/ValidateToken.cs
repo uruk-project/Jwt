@@ -70,7 +70,8 @@ namespace JsonWebToken.Performance
             ValidateAudience = false,
             ValidateIssuer = false,
             ValidateLifetime = false,
-            RequireSignedTokens = false
+            RequireSignedTokens = false,
+            IssuerSigningKey = JsonWebKey.Create(Tokens.SigningKey.ToString())
         };
 
         public abstract TokenValidationResult Jwt(string token);

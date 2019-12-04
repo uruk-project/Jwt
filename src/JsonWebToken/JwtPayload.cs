@@ -124,7 +124,7 @@ namespace JsonWebToken
         /// </summary>
         public string? Sub => _inner.TryGetValue(Claims.SubUtf8, out var property) ? (string?)property.Value : null;
 
-        internal byte Control
+        internal byte ValidationControl
         {
             get => _control;
             set => _control = value;
