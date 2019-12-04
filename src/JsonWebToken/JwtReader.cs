@@ -224,13 +224,13 @@ namespace JsonWebToken
                 {
                     if (!_headerCache.TryGetHeader(rawHeader, out header))
                     {
-                        header = GetJsonHeader(rawHeader);
+                        header = GetJsonHeader(rawHeader, policy);
                         _headerCache.AddHeader(rawHeader, header);
                     }
                 }
                 else
                 {
-                    header = GetJsonHeader(rawHeader);
+                    header = GetJsonHeader(rawHeader, policy);
                 }
             }
             catch (FormatException formatException)
@@ -249,7 +249,7 @@ namespace JsonWebToken
                 goto TokenAnalyzed;
             }
 
-            result = policy.TryValidate(header);
+            result = policy.TryValidateHeader(header);
             if (result.Succedeed)
             {
                 if (segmentCount == Constants.JwsSegmentCount)
@@ -394,7 +394,7 @@ namespace JsonWebToken
             JwtPayload payload;
             try
             {
-                payload = GetJsonPayload(rawPayload);
+                payload = GetJsonPayload(rawPayload, policy);
             }
             catch (FormatException formatException)
             {
@@ -413,24 +413,19 @@ namespace JsonWebToken
             }
 
             Jwt jws = new Jwt(header, payload);
-            
             var result = policy.TryValidateSignature(jws, utf8Buffer.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), utf8Buffer.Slice(signatureSegment.Start, signatureSegment.Length));
             if (!result.Succedeed)
             {
                 return result;
             }
-            if (policy.HasValidation)
-            {
-                return policy.TryValidate(jws);
-            }
-
-            return TokenValidationResult.Success(jws);
+             
+            return policy.TryValidateJwt(jws);
 
         Malformed:
             return TokenValidationResult.MalformedToken(exception: malformedException);
         }
 
-        private static JwtPayload GetJsonPayload(ReadOnlySpan<byte> data)
+        private static JwtPayload GetJsonPayload(ReadOnlySpan<byte> data, TokenValidationPolicy policy)
         {
             int bufferLength = Base64Url.GetArraySizeRequiredToDecode(data.Length);
             byte[]? base64UrlArrayToReturnToPool = null;
@@ -440,7 +435,7 @@ namespace JsonWebToken
             try
             {
                 Base64Url.Decode(data, buffer);
-                return JsonPayloadParser.ParsePayload(buffer);
+                return JwtPayloadParser.ParsePayload(buffer, policy);
             }
             finally
             {
@@ -451,7 +446,7 @@ namespace JsonWebToken
             }
         }
 
-        private static JwtHeader GetJsonHeader(ReadOnlySpan<byte> data)
+        private static JwtHeader GetJsonHeader(ReadOnlySpan<byte> data, TokenValidationPolicy policy)
         {
             int base64UrlLength = Base64Url.GetArraySizeRequiredToDecode(data.Length);
             byte[]? base64UrlArrayToReturnToPool = null;
@@ -461,7 +456,7 @@ namespace JsonWebToken
             try
             {
                 Base64Url.Decode(data, buffer);
-                return JsonHeaderParser.ParseHeader(buffer);
+                return JwtHeaderParser.ParseHeader(buffer, policy);
             }
             finally
             {

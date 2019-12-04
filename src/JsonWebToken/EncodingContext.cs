@@ -12,12 +12,12 @@ namespace JsonWebToken
         /// Initializes a new instance of the <see cref="EncodingContext"/> class.
         /// </summary>
         /// <param name="headerCache"></param>
-        /// <param name="tokenLifetimeInMinutes"></param>
+        /// <param name="tokenLifetimeInSeconds"></param>
         /// <param name="generateIssuedTime"></param>
-        public EncodingContext(JsonHeaderCache? headerCache, int tokenLifetimeInMinutes, bool generateIssuedTime)
+        public EncodingContext(JsonHeaderCache? headerCache, int tokenLifetimeInSeconds, bool generateIssuedTime)
         {
             HeaderCache = headerCache;
-            TokenLifetimeInMinutes = tokenLifetimeInMinutes;
+            TokenLifetimeInSeconds = tokenLifetimeInSeconds;
             GenerateIssuedTime = generateIssuedTime;
         }
 
@@ -27,9 +27,9 @@ namespace JsonWebToken
         public JsonHeaderCache? HeaderCache { get; }
 
         /// <summary>
-        /// Gets the token lifetime, in minutes.
+        /// Gets the token lifetime, in seconds.
         /// </summary>
-        public int TokenLifetimeInMinutes { get; }
+        public int TokenLifetimeInSeconds { get; }
 
         /// <summary>
         /// Gets whether the issuance time must be generated.

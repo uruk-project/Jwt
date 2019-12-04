@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace JsonWebToken.Internal
 {
@@ -13,6 +14,7 @@ namespace JsonWebToken.Internal
     public static class EpochTime
     {
         internal static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        internal static readonly long UnixEpochTicks = 621355968000000000;
         private static readonly DateTime MaxUnixTime = UnixEpoch.AddSafe(TimeSpan.MaxValue.Ticks).ToUniversalTime();
 
         /// <summary>
@@ -29,12 +31,13 @@ namespace JsonWebToken.Internal
                 datetime = datetime.ToUniversalTime();
             }
 
-            if (datetime <= UnixEpoch)
+            var ticks = datetime.Ticks;
+            if (ticks <= UnixEpochTicks)
             {
                 return 0;
             }
 
-            return (long)(datetime - UnixEpoch).TotalSeconds;
+            return (long)((ticks - UnixEpochTicks) * 1E-07);
         }
 
         /// <summary>
@@ -70,6 +73,15 @@ namespace JsonWebToken.Internal
             }
 
             return ToDateTime(secondsSinceUnixEpoch.Value);
+        }
+
+        /// <summary>
+        /// Gets the current date and time on this computer expressed as the UTC time, in the Unix epoch time format (total of seconds since the 01/01/1970). 
+        /// </summary>
+        public static long UtcNow
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => (DateTime.UtcNow.Ticks - UnixEpochTicks) / 10000000;
         }
     }
 }

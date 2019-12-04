@@ -17,7 +17,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetData))]
         public JwtHeader Old(byte[] data)
         {
-            return JsonHeaderParser.ParseHeader(data);
+            return JwtHeaderParser.ParseHeader(data, TokenValidationPolicy.NoValidation);
         }
 
         [Benchmark]

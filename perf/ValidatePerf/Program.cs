@@ -36,7 +36,12 @@ namespace ValidatePerf
 
         private static void Main()
         {
-            var policy = new TokenValidationPolicyBuilder().RequireSignature(signingKey).Build();
+            var policy = new TokenValidationPolicyBuilder()
+                .RequireSignature(signingKey)
+                .RequireAudience("636C69656E745F6964")
+                .RequireIssuer("https://idp.example.com/")
+                .EnableLifetimeValidation()
+                .Build();
 
             Console.WriteLine("Starting...");
             _reader.EnableHeaderCaching = false;

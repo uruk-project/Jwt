@@ -58,21 +58,6 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// The 'crit' header defines a missing critical header.
-        /// </summary>
-        /// <param name="criticalHeader"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult CriticalHeaderMissing(string criticalHeader)
-        {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.CriticalHeaderMissing,
-                ErrorHeader = criticalHeader
-            };
-        }
-
-        /// <summary>
         /// The token was already validated previously.
         /// </summary>
         /// <param name="token"></param>

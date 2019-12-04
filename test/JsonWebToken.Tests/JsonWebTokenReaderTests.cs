@@ -51,7 +51,7 @@ namespace JsonWebToken.Tests
 
             var reader = new JwtReader(_keys.Jwks);
             var builder = new TokenValidationPolicyBuilder()
-                    .AddLifetimeValidation()
+                    .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
                     .RequireIssuer("https://idp.example.com/");
             if (signed)
@@ -78,7 +78,7 @@ namespace JsonWebToken.Tests
 
             var reader = new JwtReader(_keys.Jwks);
             var builder = new TokenValidationPolicyBuilder()
-                    .AddLifetimeValidation()
+                    .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
                     .RequireIssuer("https://idp.example.com/");
             if (signed)
@@ -101,7 +101,7 @@ namespace JsonWebToken.Tests
             var jwt = _tokens.ValidTokens[token];
             var reader = new JwtReader(_keys.Jwks);
             var builder = new TokenValidationPolicyBuilder()
-                    .AddLifetimeValidation()
+                    .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
                     .RequireIssuer("https://idp.example.com/");
             if (signed)
@@ -124,7 +124,7 @@ namespace JsonWebToken.Tests
             var reader = new JwtReader(_keys.Jwks);
             var policy = new TokenValidationPolicyBuilder()
                     .RequireSignature(_keys.SigningKey)
-                    .AddLifetimeValidation()
+                    .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
                     .RequireIssuer("https://idp.example.com/")
                     .Build();
@@ -174,7 +174,7 @@ namespace JsonWebToken.Tests
 
         [Theory]
         [InlineData("eyJhbGciOiAibm9uZSIsImNyaXQiOlsidW5kZWZpbmVkIl0sInVuZGVmaW5lZCI6IHRydWV9.RkFJTA.", TokenValidationStatus.CriticalHeaderUnsupported)]
-        [InlineData("eyJhbGciOiAibm9uZSIsImNyaXQiOlsidW5kZWZpbmVkIl19.RkFJTA.", TokenValidationStatus.CriticalHeaderMissing)]
+        [InlineData("eyJhbGciOiAibm9uZSIsImNyaXQiOlsidW5kZWZpbmVkIl19.RkFJTA.", TokenValidationStatus.CriticalHeaderUnsupported)]
         [InlineData("eyJhbGciOiAibm9uZSIsImNyaXQiOlsiaW52YWxpZCJdLCJpbnZhbGlkIjogdHJ1ZX0.RkFJTA.", TokenValidationStatus.InvalidHeader)]
         [InlineData("eyJhbGciOiAibm9uZSIsImNyaXQiOlsiZXhwIl0sImV4cCI6IDEyMzR9.RkFJTA.", TokenValidationStatus.MalformedToken)]
         [InlineData("eyJhbGciOiAibm9uZSIsImNyaXQiOlsiZXhwIl0sImV4cCI6IDEyMzR9.e30.", TokenValidationStatus.Success)]

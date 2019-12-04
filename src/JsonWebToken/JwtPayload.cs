@@ -14,15 +14,16 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtPayload
     {
-        private readonly JwtObject _inner;
+        internal const byte InvalidAudienceFlag = 0x01;
+        internal const byte MissingAudienceFlag = 0x02;
+        internal const byte InvalidIssuerFlag = 0x04;
+        internal const byte MissingIssuerFlag = 0x08;
+        internal const byte ExpiredFlag = 0x10;
+        internal const byte MissingExpirationFlag = 0x20;
+        internal const byte NotYetFlag = 0x40;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JwtPayload"/> class.
-        /// </summary>
-        public JwtPayload()
-        {
-            _inner = new JwtObject();
-        }
+        private readonly JwtObject _inner;
+        private byte _control;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtPayload"/> class.
@@ -122,6 +123,44 @@ namespace JsonWebToken
         /// Gets the 'subject' claim.
         /// </summary>
         public string? Sub => _inner.TryGetValue(Claims.SubUtf8, out var property) ? (string?)property.Value : null;
+
+        internal byte ValidationControl
+        {
+            get => _control;
+            set => _control = value;
+        }
+
+        internal bool InvalidAudience
+        {
+            get => (_control & InvalidAudienceFlag) == InvalidAudienceFlag;
+        }
+
+        internal bool MissingAudience
+        {
+            get => (_control & MissingAudienceFlag) == MissingAudienceFlag;
+        }
+
+        internal bool InvalidIssuer
+        {
+            get => (_control & InvalidIssuerFlag) == InvalidIssuerFlag;
+        }
+
+        internal bool MissingIssuer
+        {
+            get => (_control & MissingIssuerFlag) == MissingIssuerFlag;
+        }
+        internal bool MissingExpirationTime
+        {
+            get => (_control & MissingExpirationFlag) == MissingExpirationFlag;
+        }
+        internal bool Expired
+        {
+            get => (_control & ExpiredFlag) == ExpiredFlag;
+        }
+        internal bool NotYetValid
+        {
+            get => (_control & NotYetFlag) == NotYetFlag;
+        }
 
         /// <summary>
         /// Determines whether the <see cref="JwtPayload"/> contains the specified key.

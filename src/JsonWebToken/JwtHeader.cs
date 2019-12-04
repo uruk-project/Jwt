@@ -43,7 +43,7 @@ namespace JsonWebToken
         /// <param name="json"></param>   
         public static JwtHeader FromJson(string json)
         {
-            return JsonHeaderParser.ParseHeader(Encoding.UTF8.GetBytes(json));
+            return JwtHeaderParser.ParseHeader(Encoding.UTF8.GetBytes(json), TokenValidationPolicy.NoValidation);
         }
 
         /// <summary>
@@ -197,6 +197,8 @@ namespace JsonWebToken
                 return Array.Empty<string>();
             }
         }
+
+        internal List<KeyValuePair<string, ICriticalHeaderHandler>>? CriticalHeaderHandlers { get; set; }
 
 #if NETCOREAPP
         /// <summary>

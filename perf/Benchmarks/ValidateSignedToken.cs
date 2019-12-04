@@ -20,21 +20,21 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokens))]
         public override TokenValidationResult Jwt(string token)
         {
-            return JwtCore(token, policyWithSignatureValidation);
+            return JwtCore(token, token.Contains("empty") ? TokenValidationPolicy.NoValidation : tokenValidationPolicy);
         }
 
         [Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public override ClaimsPrincipal Wilson(string token)
         {
-            return WilsonCore(token, wilsonParameters);
+            return WilsonCore(token, token.Contains("empty") ? wilsonParametersWithoutValidation : wilsonParameters);
         }
 
         //[Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public override Microsoft.IdentityModel.JsonWebTokens.TokenValidationResult WilsonJwt(string token)
         {
-            return WilsonJwtCore(token, wilsonParameters);
+            return WilsonJwtCore(token, token.Contains("empty") ? wilsonParametersWithoutValidation : wilsonParameters);
         }
 
         public IEnumerable<string> GetTokens()

@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -157,6 +158,16 @@ namespace JsonWebToken
         /// <summary>
         /// Adds a claim;
         /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public void AddClaim(ReadOnlySpan<byte> utf8Name, long value)
+        {
+            Payload.Add(new JwtProperty(utf8Name, value));
+        }
+
+        /// <summary>
+        /// Adds a claim;
+        /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
         public void AddClaim(string name, string value)
@@ -187,6 +198,16 @@ namespace JsonWebToken
         /// <param name="name"></param>
         /// <param name="value"></param>
         public void AddClaim(string name, bool? value)
+        {
+            AddClaim(Encoding.UTF8.GetBytes(name), value);
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void AddClaim(string name, long value)
         {
             AddClaim(Encoding.UTF8.GetBytes(name), value);
         }
@@ -388,12 +409,23 @@ namespace JsonWebToken
         {
             if (Payload.TryGetValue(utf8Name, out JwtProperty value) && !(value.Value is null))
             {
+                var list = new List<T>();
                 if (value.Type == JwtTokenType.Array)
                 {
-                    return (List<T>?)value.Value;
+                    var array = (JwtArray)value.Value;
+                    for (int i = 0; i < array.Count; i++)
+                    {
+                        var tValue = array[i].Value;
+                        if (!(tValue is null))
+                        {
+                            list.Add((T)tValue);
+                        }
+                    }
+
+                    return list;
                 }
 
-                var list = new List<T> { (T)value.Value };
+                list.Add((T)value.Value);
                 return list;
             }
 
@@ -465,17 +497,17 @@ namespace JsonWebToken
             var alg = (Algorithm ?? key?.SignatureAlgorithm) ?? SignatureAlgorithm.None;
             if (!(key is null) && key.TryGetSigner(alg, out var signer))
             {
-                if (context.TokenLifetimeInMinutes != 0 || context.GenerateIssuedTime)
+                if (context.TokenLifetimeInSeconds != 0 || context.GenerateIssuedTime)
                 {
-                    DateTime now = DateTime.UtcNow;
+                    long now = EpochTime.UtcNow;
                     if (context.GenerateIssuedTime && !Payload.ContainsKey(Claims.IatUtf8))
                     {
                         AddClaim(Claims.IatUtf8, now);
                     }
 
-                    if (context.TokenLifetimeInMinutes != 0 && !Payload.ContainsKey(Claims.ExpUtf8))
+                    if (context.TokenLifetimeInSeconds != 0 && !Payload.ContainsKey(Claims.ExpUtf8))
                     {
-                        AddClaim(Claims.ExpUtf8, now + TimeSpan.FromMinutes(context.TokenLifetimeInMinutes));
+                        AddClaim(Claims.ExpUtf8, now + context.TokenLifetimeInSeconds);
                     }
                 }
 
