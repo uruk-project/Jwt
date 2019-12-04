@@ -5,9 +5,10 @@ namespace JsonWebToken.Tests.Cryptography
 {
     public class Sha384Tests : ShaAlgorithmTest
     {
-        protected override Sha2 Create()
+        protected override void ComputeHash(Span<byte> source, Span<byte> destination)
         {
-            return new Sha384();
+            var sha384 = new Sha384();
+            sha384.ComputeHash(source, destination);
         }
 
         [Fact]

@@ -75,9 +75,10 @@ namespace JsonWebToken.Internal
             _key10 = Vector128<byte>.Zero;
         }
 
-        public override void DecryptBlock(ref byte ciphertext, ref byte plaintext)
+        public override unsafe void DecryptBlock(ref byte ciphertext, ref byte plaintext)
         {
-            var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref ciphertext);
+            var block = Sse2.LoadVector128((byte*)Unsafe.AsPointer(ref ciphertext));
+            //var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref ciphertext);
 
             block = Aes.Xor(block, _key0);
             block = Aes.Decrypt(block, _key1);
@@ -90,7 +91,8 @@ namespace JsonWebToken.Internal
             block = Aes.Decrypt(block, _key8);
             block = Aes.Decrypt(block, _key9);
             block = Aes.DecryptLast(block, _key10);
-            Unsafe.WriteUnaligned(ref plaintext, block);
+            Sse2.Store((byte*)Unsafe.AsPointer(ref plaintext), block);
+            //Unsafe.WriteUnaligned(ref plaintext, block);
         }
 
         public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> nonce, Span<byte> plaintext, out int bytesWritten)

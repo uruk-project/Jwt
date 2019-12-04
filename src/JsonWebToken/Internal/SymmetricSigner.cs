@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
-using System.Buffers;
-using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -11,7 +9,6 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 #endif
-using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
 {
@@ -20,7 +17,7 @@ namespace JsonWebToken.Internal
     /// </summary>
     internal sealed class SymmetricSigner : Signer
     {
-        private readonly HmacSha _hashAlgorithm;
+        private readonly HmacSha2 _hashAlgorithm;
         private bool _disposed;
 
         /// <summary>
@@ -191,7 +188,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class NotSupportedHmacSha : HmacSha
+        private sealed class NotSupportedHmacSha : HmacSha2
         {
             public NotSupportedHmacSha(SignatureAlgorithm algorithm)
                 : base(new ShaNull(), default)
@@ -199,7 +196,15 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm.Name);
             }
 
-            public override int BlockSize => throw new NotImplementedException();
+            public override int BlockSize => 0;
+
+            public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination)
+            {
+            }
+
+            protected override void ComputeKeyHash(ReadOnlySpan<byte> key, Span<byte> keyPrime)
+            {
+            }
         }
 
         private sealed class ShaNull : Sha2
@@ -208,7 +213,11 @@ namespace JsonWebToken.Internal
 
             public override int BlockSize => 0;
 
-            public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend = default)
+            public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<uint> w)
+            {
+            }
+
+            public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<ulong> w)
             {
             }
         }

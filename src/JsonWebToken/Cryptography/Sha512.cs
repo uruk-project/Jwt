@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -27,7 +26,13 @@ namespace JsonWebToken
         public override int BlockSize => Sha512BlockSize;
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend)
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<uint> W)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritsdoc />
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<ulong> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -47,8 +52,8 @@ namespace JsonWebToken
             };
 
             // update
-            Span<ulong> W = stackalloc ulong[80];
-            ref ulong w = ref MemoryMarshal.GetReference(W);
+            Span<ulong> wTemp = w.IsEmpty ? stackalloc ulong[80] : w;
+            ref ulong wRef = ref MemoryMarshal.GetReference(wTemp);
             ref ulong stateRef = ref MemoryMarshal.GetReference(state);
             if (!prepend.IsEmpty)
             {
@@ -57,7 +62,7 @@ namespace JsonWebToken
                     ThrowHelper.ThrowArgumentException_PrependMustBeEqualToBlockSize(prepend, Sha512BlockSize);
                 }
 
-                Transform(ref stateRef, ref MemoryMarshal.GetReference(prepend), ref w);
+                Transform(ref stateRef, ref MemoryMarshal.GetReference(prepend), ref wRef);
             }
 
             ref byte srcRef = ref MemoryMarshal.GetReference(source);
@@ -72,10 +77,10 @@ namespace JsonWebToken
                     Span<Vector256<ulong>> wAvx = (returnToPool = ArrayPool<Vector256<ulong>>.Shared.Rent(80));
                     try
                     {
-                        ref Vector256<ulong> wRef = ref MemoryMarshal.GetReference(wAvx);
+                        ref Vector256<ulong> w4Ref = ref MemoryMarshal.GetReference(wAvx);
                         do
                         {
-                            Transform(ref stateRef, ref srcRef, ref wRef);
+                            Transform(ref stateRef, ref srcRef, ref w4Ref);
                             srcRef = ref Unsafe.Add(ref srcRef, Sha512BlockSize * 4);
                         } while (Unsafe.IsAddressLessThan(ref srcRef, ref srcSimdEndRef));
                     }
@@ -89,7 +94,7 @@ namespace JsonWebToken
 
             while (Unsafe.IsAddressLessThan(ref srcRef, ref srcEndRef))
             {
-                Transform(ref stateRef, ref srcRef, ref w);
+                Transform(ref stateRef, ref srcRef, ref wRef);
                 srcRef = ref Unsafe.Add(ref srcRef, Sha512BlockSize);
             }
 
@@ -106,7 +111,7 @@ namespace JsonWebToken
             lastBlock.Slice(remaining + 1).Clear();
             if (remaining >= Sha512BlockSize - 2 * sizeof(ulong))
             {
-                Transform(ref stateRef, ref lastBlockRef, ref w);
+                Transform(ref stateRef, ref lastBlockRef, ref wRef);
                 lastBlock.Slice(0, Sha512BlockSize - 2 * sizeof(ulong)).Clear();
             }
 
@@ -114,7 +119,7 @@ namespace JsonWebToken
             ulong bitLength = (ulong)dataLength << 3;
             Unsafe.WriteUnaligned(ref Unsafe.Add(ref lastBlockRef, Sha512BlockSize - 16), 0ul); // Don't support input length > 2^64
             Unsafe.WriteUnaligned(ref Unsafe.Add(ref lastBlockRef, Sha512BlockSize - 8), BinaryPrimitives.ReverseEndianness(bitLength));
-            Transform(ref stateRef, ref lastBlockRef, ref w);
+            Transform(ref stateRef, ref lastBlockRef, ref wRef);
 
             // reverse all the bytes when copying the final state to the output hash.
             ref byte destinationRef = ref MemoryMarshal.GetReference(destination);

@@ -5,7 +5,7 @@ namespace JsonWebToken.Tests.Cryptography
 {
     public class HmacSha512Tests : HmacShaTests
     {
-        protected override HmacSha Create(ReadOnlySpan<byte> key)
+        protected override HmacSha2 Create(ReadOnlySpan<byte> key)
         {
             return new HmacSha512(key);
         }
