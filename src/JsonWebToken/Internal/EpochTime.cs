@@ -13,9 +13,11 @@ namespace JsonWebToken.Internal
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class EpochTime
     {
-        internal static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-        internal static readonly long UnixEpochTicks = 621355968000000000;
-        private static readonly DateTime MaxUnixTime = UnixEpoch.AddSafe(TimeSpan.MaxValue.Ticks).ToUniversalTime();
+        private const long UnixEpochTicks = 621355968000000000;
+        private const long MaxValue = 9223372036854775807;
+        private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        private static readonly DateTime MaxValueUtc = new DateTime(DateTime.MaxValue.Ticks, DateTimeKind.Utc);
 
         /// <summary>
         /// Per JWT spec:
@@ -37,7 +39,7 @@ namespace JsonWebToken.Internal
                 return 0;
             }
 
-            return (long)((ticks - UnixEpochTicks) * 1E-07);
+            return (ticks - UnixEpochTicks) / 10000000;
         }
 
         /// <summary>
@@ -52,12 +54,12 @@ namespace JsonWebToken.Internal
                 return UnixEpoch;
             }
 
-            if (secondsSinceUnixEpoch > TimeSpan.MaxValue.TotalSeconds)
+            if (MaxValue - UnixEpochTicks <= secondsSinceUnixEpoch)
             {
-                return MaxUnixTime;
+                return MaxValueUtc;
             }
 
-            return UnixEpoch.AddSafe(secondsSinceUnixEpoch * TimeSpan.TicksPerSecond).ToUniversalTime();
+            return UnixEpoch.AddTicks(secondsSinceUnixEpoch);
         }
 
         /// <summary>
