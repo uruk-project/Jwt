@@ -59,7 +59,7 @@ namespace JsonWebToken.Internal
                 return MaxValueUtc;
             }
 
-            return UnixEpoch.AddTicks(secondsSinceUnixEpoch);
+            return UnixEpoch.AddSeconds(secondsSinceUnixEpoch);
         }
 
         /// <summary>
