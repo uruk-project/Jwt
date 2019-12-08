@@ -198,7 +198,7 @@ namespace JsonWebToken
             W13 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 13)).AsByte(), LittleEndianMask256).AsUInt64();
             W14 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 14)).AsByte(), LittleEndianMask256).AsUInt64();
             W15 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 15)).AsByte(), LittleEndianMask256).AsUInt64();
-            while (i < 64)
+            do
             {
                 W0 = Schedule(W0, W1, W9, W14, i++, ref schedule);
                 W1 = Schedule(W1, W2, W10, W15, i++, ref schedule);
@@ -217,6 +217,7 @@ namespace JsonWebToken
                 W14 = Schedule(W14, W15, W7, W12, i++, ref schedule);
                 W15 = Schedule(W15, W0, W8, W13, i++, ref schedule);
             }
+            while (i < 64);
 
             Unsafe.Add(ref schedule, 64) = Avx2.Add(W0, K256(64));
             Unsafe.Add(ref schedule, 65) = Avx2.Add(W1, K256(65));
@@ -252,7 +253,7 @@ namespace JsonWebToken
                 g = Unsafe.Add(ref state, 6);
                 h = Unsafe.Add(ref state, 7);
                 ref Vector256<ulong> w0 = ref w;
-                while (Unsafe.IsAddressLessThan(ref w0, ref wEnd))
+                do
                 {
                     Round(a, b, c, ref d, e, f, g, ref h, w0.GetElement(j));
                     w0 = ref Unsafe.Add(ref w0, 1);
@@ -271,6 +272,7 @@ namespace JsonWebToken
                     Round(b, c, d, ref e, f, g, h, ref a, w0.GetElement(j));
                     w0 = ref Unsafe.Add(ref w0, 1);
                 }
+                while (Unsafe.IsAddressLessThan(ref w0, ref wEnd));
 
                 state += a;
                 Unsafe.Add(ref state, 1) += b;
@@ -325,12 +327,13 @@ namespace JsonWebToken
 
             ref ulong wEnd = ref Unsafe.Add(ref w, 80);
             ref ulong w0 = ref Unsafe.Add(ref w, 16);
-            while (Unsafe.IsAddressLessThan(ref w0, ref wEnd))
+            do
             {
                 w0 = Unsafe.Subtract(ref w0, 16) + Sigma0(Unsafe.Subtract(ref w0, 15)) + Unsafe.Subtract(ref w0, 7) + Sigma1(Unsafe.Subtract(ref w0, 2));
                 Unsafe.Add(ref w0, 1) = Unsafe.Subtract(ref w0, 15) + Sigma0(Unsafe.Subtract(ref w0, 14)) + Unsafe.Subtract(ref w0, 6) + Sigma1(Unsafe.Subtract(ref w0, 1));
                 w0 = ref Unsafe.Add(ref w0, 2);
             }
+            while (Unsafe.IsAddressLessThan(ref w0, ref wEnd));
 
             ulong a = state;
             ulong b = Unsafe.Add(ref state, 1);
@@ -342,7 +345,7 @@ namespace JsonWebToken
             ulong h = Unsafe.Add(ref state, 7);
             w0 = ref w;
             ref ulong k0 = ref k[0];
-            while (Unsafe.IsAddressLessThan(ref w0, ref wEnd))
+            do
             {
                 Round(a, b, c, ref d, e, f, g, ref h, w0, k0);
                 w0 = ref Unsafe.Add(ref w0, 1);
@@ -369,6 +372,7 @@ namespace JsonWebToken
                 w0 = ref Unsafe.Add(ref w0, 1);
                 k0 = ref Unsafe.Add(ref k0, 1);
             }
+            while (Unsafe.IsAddressLessThan(ref w0, ref wEnd));
 
             state += a;
             Unsafe.Add(ref state, 1) += b;
