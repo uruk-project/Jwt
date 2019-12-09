@@ -250,7 +250,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private void Transform(ref uint state, ref byte currentBlock, ref Vector128<uint> w)
         {
-            ref Vector128<uint> wEnd = ref Unsafe.Add(ref w, 64);
+            ref uint wEnd = ref Unsafe.As<Vector128<uint>, uint>(ref Unsafe.Add(ref w, 64));
             uint a, b, c, d, e, f, g, h;
             Schedule(ref w, ref currentBlock);
             for (int j = 0; j < 4; j++)
@@ -263,25 +263,25 @@ namespace JsonWebToken
                 f = Unsafe.Add(ref state, 5);
                 g = Unsafe.Add(ref state, 6);
                 h = Unsafe.Add(ref state, 7);
-                ref Vector128<uint> w0 = ref w;
+                ref uint w0 = ref Unsafe.Add(ref Unsafe.As<Vector128<uint>, uint>(ref w), j);
                 do
                 {
-                    Round(a, b, c, ref d, e, f, g, ref h, w0.GetElement(j));
-                    w0 = ref Unsafe.Add(ref w0, 1);
-                    Round(h, a, b, ref c, d, e, f, ref g, w0.GetElement(j));
-                    w0 = ref Unsafe.Add(ref w0, 1);
-                    Round(g, h, a, ref b, c, d, e, ref f, w0.GetElement(j));
-                    w0 = ref Unsafe.Add(ref w0, 1);
-                    Round(f, g, h, ref a, b, c, d, ref e, w0.GetElement(j));
-                    w0 = ref Unsafe.Add(ref w0, 1);
-                    Round(e, f, g, ref h, a, b, c, ref d, w0.GetElement(j));
-                    w0 = ref Unsafe.Add(ref w0, 1);
-                    Round(d, e, f, ref g, h, a, b, ref c, w0.GetElement(j));
-                    w0 = ref Unsafe.Add(ref w0, 1);
-                    Round(c, d, e, ref f, g, h, a, ref b, w0.GetElement(j));
-                    w0 = ref Unsafe.Add(ref w0, 1);
-                    Round(b, c, d, ref e, f, g, h, ref a, w0.GetElement(j));
-                    w0 = ref Unsafe.Add(ref w0, 1);
+                    Round(a, b, c, ref d, e, f, g, ref h, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
+                    Round(h, a, b, ref c, d, e, f, ref g, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
+                    Round(g, h, a, ref b, c, d, e, ref f, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
+                    Round(f, g, h, ref a, b, c, d, ref e, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
+                    Round(e, f, g, ref h, a, b, c, ref d, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
+                    Round(d, e, f, ref g, h, a, b, ref c, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
+                    Round(c, d, e, ref f, g, h, a, ref b, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
+                    Round(b, c, d, ref e, f, g, h, ref a, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
                 }
                 while (Unsafe.IsAddressLessThan(ref w0, ref wEnd));
 
