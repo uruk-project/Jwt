@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -193,7 +192,7 @@ namespace JsonWebToken
             W14 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 14)).AsByte(), LittleEndianMask128).AsUInt32();
             W15 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 15)).AsByte(), LittleEndianMask128).AsUInt32();
             int i = 0;
-            while (i < 32)
+            do
             {
                 W0 = Schedule(W0, W1, W9, W14, i++, ref schedule);
                 W1 = Schedule(W1, W2, W10, W15, i++, ref schedule);
@@ -212,6 +211,7 @@ namespace JsonWebToken
                 W14 = Schedule(W14, W15, W7, W12, i++, ref schedule);
                 W15 = Schedule(W15, W0, W8, W13, i++, ref schedule);
             }
+            while (i < 32);
 
             W0 = Schedule(W0, W1, W9, W14, i++, ref schedule);
             Unsafe.Add(ref schedule, 48) = Sse2.Add(W0, K128(48));
@@ -250,6 +250,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private void Transform(ref uint state, ref byte currentBlock, ref Vector128<uint> w)
         {
+            ref uint wEnd = ref Unsafe.As<Vector128<uint>, uint>(ref Unsafe.Add(ref w, 64));
             uint a, b, c, d, e, f, g, h;
             Schedule(ref w, ref currentBlock);
             for (int j = 0; j < 4; j++)
@@ -262,17 +263,27 @@ namespace JsonWebToken
                 f = Unsafe.Add(ref state, 5);
                 g = Unsafe.Add(ref state, 6);
                 h = Unsafe.Add(ref state, 7);
-                for (int t = 0; t < 64; t += 8)
+                ref uint w0 = ref Unsafe.Add(ref Unsafe.As<Vector128<uint>, uint>(ref w), j);
+                do
                 {
-                    Round(a, b, c, ref d, e, f, g, ref h, Unsafe.Add(ref w, t).GetElement(j));
-                    Round(h, a, b, ref c, d, e, f, ref g, Unsafe.Add(ref w, t + 1).GetElement(j));
-                    Round(g, h, a, ref b, c, d, e, ref f, Unsafe.Add(ref w, t + 2).GetElement(j));
-                    Round(f, g, h, ref a, b, c, d, ref e, Unsafe.Add(ref w, t + 3).GetElement(j));
-                    Round(e, f, g, ref h, a, b, c, ref d, Unsafe.Add(ref w, t + 4).GetElement(j));
-                    Round(d, e, f, ref g, h, a, b, ref c, Unsafe.Add(ref w, t + 5).GetElement(j));
-                    Round(c, d, e, ref f, g, h, a, ref b, Unsafe.Add(ref w, t + 6).GetElement(j));
-                    Round(b, c, d, ref e, f, g, h, ref a, Unsafe.Add(ref w, t + 7).GetElement(j));
+                    Round(a, b, c, ref d, e, f, g, ref h, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
+                    Round(h, a, b, ref c, d, e, f, ref g, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
+                    Round(g, h, a, ref b, c, d, e, ref f, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
+                    Round(f, g, h, ref a, b, c, d, ref e, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
+                    Round(e, f, g, ref h, a, b, c, ref d, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
+                    Round(d, e, f, ref g, h, a, b, ref c, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
+                    Round(c, d, e, ref f, g, h, a, ref b, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
+                    Round(b, c, d, ref e, f, g, h, ref a, w0);
+                    w0 = ref Unsafe.Add(ref w0, 4);
                 }
+                while (Unsafe.IsAddressLessThan(ref w0, ref wEnd));
 
                 state += a;
                 Unsafe.Add(ref state, 1) += b;
@@ -319,14 +330,15 @@ namespace JsonWebToken
                 }
             }
 
-            ref uint w0 = ref Unsafe.Add(ref w, 16);
             ref uint wEnd = ref Unsafe.Add(ref w, 64);
-            while (Unsafe.IsAddressLessThan(ref w0, ref wEnd))
+            ref uint w0 = ref Unsafe.Add(ref w, 16);
+            do
             {
                 w0 = Unsafe.Subtract(ref w0, 16) + Sigma0(Unsafe.Subtract(ref w0, 15)) + Unsafe.Subtract(ref w0, 7) + Sigma1(Unsafe.Subtract(ref w0, 2));
                 Unsafe.Add(ref w0, 1) = Unsafe.Subtract(ref w0, 15) + Sigma0(Unsafe.Subtract(ref w0, 14)) + Unsafe.Subtract(ref w0, 6) + Sigma1(Unsafe.Subtract(ref w0, 1));
                 w0 = ref Unsafe.Add(ref w0, 2);
             }
+            while (Unsafe.IsAddressLessThan(ref w0, ref wEnd));
 
             uint a = state;
             uint b = Unsafe.Add(ref state, 1);
@@ -336,18 +348,36 @@ namespace JsonWebToken
             uint f = Unsafe.Add(ref state, 5);
             uint g = Unsafe.Add(ref state, 6);
             uint h = Unsafe.Add(ref state, 7);
-
-            for (int i = 0; i < 64; i += 8)
+            w0 = ref w;
+            ref uint k0 = ref k[0];
+            do
             {
-                Round(a, b, c, ref d, e, f, g, ref h, Unsafe.Add(ref w, i), K(i));
-                Round(h, a, b, ref c, d, e, f, ref g, Unsafe.Add(ref w, i + 1), K(i + 1));
-                Round(g, h, a, ref b, c, d, e, ref f, Unsafe.Add(ref w, i + 2), K(i + 2));
-                Round(f, g, h, ref a, b, c, d, ref e, Unsafe.Add(ref w, i + 3), K(i + 3));
-                Round(e, f, g, ref h, a, b, c, ref d, Unsafe.Add(ref w, i + 4), K(i + 4));
-                Round(d, e, f, ref g, h, a, b, ref c, Unsafe.Add(ref w, i + 5), K(i + 5));
-                Round(c, d, e, ref f, g, h, a, ref b, Unsafe.Add(ref w, i + 6), K(i + 6));
-                Round(b, c, d, ref e, f, g, h, ref a, Unsafe.Add(ref w, i + 7), K(i + 7));
+                Round(a, b, c, ref d, e, f, g, ref h, w0, k0);
+                w0 = ref Unsafe.Add(ref w0, 1);
+                k0 = ref Unsafe.Add(ref k0, 1);
+                Round(h, a, b, ref c, d, e, f, ref g, w0, k0);
+                w0 = ref Unsafe.Add(ref w0, 1);
+                k0 = ref Unsafe.Add(ref k0, 1);
+                Round(g, h, a, ref b, c, d, e, ref f, w0, k0);
+                w0 = ref Unsafe.Add(ref w0, 1);
+                k0 = ref Unsafe.Add(ref k0, 1);
+                Round(f, g, h, ref a, b, c, d, ref e, w0, k0);
+                w0 = ref Unsafe.Add(ref w0, 1);
+                k0 = ref Unsafe.Add(ref k0, 1);
+                Round(e, f, g, ref h, a, b, c, ref d, w0, k0);
+                w0 = ref Unsafe.Add(ref w0, 1);
+                k0 = ref Unsafe.Add(ref k0, 1);
+                Round(d, e, f, ref g, h, a, b, ref c, w0, k0);
+                w0 = ref Unsafe.Add(ref w0, 1);
+                k0 = ref Unsafe.Add(ref k0, 1);
+                Round(c, d, e, ref f, g, h, a, ref b, w0, k0);
+                w0 = ref Unsafe.Add(ref w0, 1);
+                k0 = ref Unsafe.Add(ref k0, 1);
+                Round(b, c, d, ref e, f, g, h, ref a, w0, k0);
+                w0 = ref Unsafe.Add(ref w0, 1);
+                k0 = ref Unsafe.Add(ref k0, 1);
             }
+            while (Unsafe.IsAddressLessThan(ref w0, ref wEnd));
 
             state += a;
             Unsafe.Add(ref state, 1) += b;
@@ -399,9 +429,6 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint Maj(uint x, uint y, uint z)
             => ((x | y) & z) | (x & y);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ref uint K(int i) => ref Unsafe.Add(ref k[0], i);
 
         private static readonly uint[] k = {
             0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
