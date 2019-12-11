@@ -126,15 +126,15 @@ namespace JsonWebToken
 #if NETCOREAPP3_0
             if (Avx2.IsSupported)
             {
-                Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), LittleEndianMask256));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), LittleEndianMask256));
+                Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), _littleEndianMask256));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), _littleEndianMask256));
             }
             else if (Ssse3.IsSupported)
             {
-                Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), LittleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 16), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 16)), LittleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), LittleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 48), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 48)), LittleEndianMask128));
+                Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 16), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 16)), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 48), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 48)), _littleEndianMask128));
             }
             else
 #endif
@@ -182,22 +182,22 @@ namespace JsonWebToken
         {
             int i = 0;
             Vector256<ulong> W0, W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W11, W12, W13, W14, W15;
-            W0 = Avx2.Shuffle(Gather(ref message).AsByte(), LittleEndianMask256).AsUInt64();
-            W1 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 1)).AsByte(), LittleEndianMask256).AsUInt64();
-            W2 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 2)).AsByte(), LittleEndianMask256).AsUInt64();
-            W3 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 3)).AsByte(), LittleEndianMask256).AsUInt64();
-            W4 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 4)).AsByte(), LittleEndianMask256).AsUInt64();
-            W5 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 5)).AsByte(), LittleEndianMask256).AsUInt64();
-            W6 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 6)).AsByte(), LittleEndianMask256).AsUInt64();
-            W7 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 7)).AsByte(), LittleEndianMask256).AsUInt64();
-            W8 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 8)).AsByte(), LittleEndianMask256).AsUInt64();
-            W9 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 9)).AsByte(), LittleEndianMask256).AsUInt64();
-            W10 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 10)).AsByte(), LittleEndianMask256).AsUInt64();
-            W11 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 11)).AsByte(), LittleEndianMask256).AsUInt64();
-            W12 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 12)).AsByte(), LittleEndianMask256).AsUInt64();
-            W13 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 13)).AsByte(), LittleEndianMask256).AsUInt64();
-            W14 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 14)).AsByte(), LittleEndianMask256).AsUInt64();
-            W15 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 15)).AsByte(), LittleEndianMask256).AsUInt64();
+            W0 = Avx2.Shuffle(Gather(ref message).AsByte(), _littleEndianMask256).AsUInt64();
+            W1 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 1)).AsByte(), _littleEndianMask256).AsUInt64();
+            W2 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 2)).AsByte(), _littleEndianMask256).AsUInt64();
+            W3 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 3)).AsByte(), _littleEndianMask256).AsUInt64();
+            W4 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 4)).AsByte(), _littleEndianMask256).AsUInt64();
+            W5 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 5)).AsByte(), _littleEndianMask256).AsUInt64();
+            W6 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 6)).AsByte(), _littleEndianMask256).AsUInt64();
+            W7 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 7)).AsByte(), _littleEndianMask256).AsUInt64();
+            W8 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 8)).AsByte(), _littleEndianMask256).AsUInt64();
+            W9 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 9)).AsByte(), _littleEndianMask256).AsUInt64();
+            W10 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 10)).AsByte(), _littleEndianMask256).AsUInt64();
+            W11 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 11)).AsByte(), _littleEndianMask256).AsUInt64();
+            W12 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 12)).AsByte(), _littleEndianMask256).AsUInt64();
+            W13 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 13)).AsByte(), _littleEndianMask256).AsUInt64();
+            W14 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 14)).AsByte(), _littleEndianMask256).AsUInt64();
+            W15 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 15)).AsByte(), _littleEndianMask256).AsUInt64();
             do
             {
                 W0 = Schedule(W0, W1, W9, W14, i++, ref schedule);
@@ -300,21 +300,21 @@ namespace JsonWebToken
             ref byte wRef = ref Unsafe.As<ulong, byte>(ref w);
             if (Avx2.IsSupported)
             {
-                Unsafe.WriteUnaligned(ref wRef, Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref currentBlock), LittleEndianMask256));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 32)), LittleEndianMask256));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 64), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 64)), LittleEndianMask256));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 96), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 96)), LittleEndianMask256));
+                Unsafe.WriteUnaligned(ref wRef, Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref currentBlock), _littleEndianMask256));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 32)), _littleEndianMask256));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 64), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 64)), _littleEndianMask256));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 96), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 96)), _littleEndianMask256));
             }
             else if (Ssse3.IsSupported)
             {
-                Unsafe.WriteUnaligned(ref wRef, Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref currentBlock), LittleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 16), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 16)), LittleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 32)), LittleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 48), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 48)), LittleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 64), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 64)), LittleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 80), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 80)), LittleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 96), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 96)), LittleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 112), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 112)), LittleEndianMask128));
+                Unsafe.WriteUnaligned(ref wRef, Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref currentBlock), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 16), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 16)), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 32)), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 48), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 48)), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 64), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 64)), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 80), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 80)), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 96), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 96)), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 112), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 112)), _littleEndianMask128));
             }
             else
 #endif
@@ -344,7 +344,7 @@ namespace JsonWebToken
             ulong g = Unsafe.Add(ref state, 6);
             ulong h = Unsafe.Add(ref state, 7);
             w0 = ref w;
-            ref ulong k0 = ref k[0];
+            ref ulong k0 = ref _k[0];
             do
             {
                 Round(a, b, c, ref d, e, f, g, ref h, w0, k0);
@@ -424,7 +424,7 @@ namespace JsonWebToken
         private static ulong Maj(ulong x, ulong y, ulong z)
             => ((x | y) & z) | (x & y);
 
-        private static readonly ulong[] k = {
+        private static readonly ulong[] _k = {
                 0x428a2f98d728ae22, 0x7137449123ef65cd, 0xb5c0fbcfec4d3b2f, 0xe9b5dba58189dbbc,
                 0x3956c25bf348b538, 0x59f111f1b605d019, 0x923f82a4af194f9b, 0xab1c5ed5da6d8118,
                 0xd807aa98a3030242, 0x12835b0145706fbe, 0x243185be4ee4b28c, 0x550c7dc3d5ffb4e2,
@@ -450,9 +450,9 @@ namespace JsonWebToken
 #if NETCOREAPP3_0
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector256<ulong> K256(int i)
-            => Unsafe.Add(ref k256[0], i);
+            => Unsafe.Add(ref _k256[0], i);
 
-        private static readonly Vector256<ulong>[] k256 = {
+        private static readonly Vector256<ulong>[] _k256 = {
                 Vector256.Create(0x428a2f98d728ae22ul), Vector256.Create(0x7137449123ef65cdul), Vector256.Create(0xb5c0fbcfec4d3b2ful), Vector256.Create(0xe9b5dba58189dbbcul),
                 Vector256.Create(0x3956c25bf348b538ul), Vector256.Create(0x59f111f1b605d019ul), Vector256.Create(0x923f82a4af194f9bul), Vector256.Create(0xab1c5ed5da6d8118ul),
                 Vector256.Create(0xd807aa98a3030242ul), Vector256.Create(0x12835b0145706fbeul), Vector256.Create(0x243185be4ee4b28cul), Vector256.Create(0x550c7dc3d5ffb4e2ul),
@@ -479,7 +479,7 @@ namespace JsonWebToken
         // 11, 10, 9, 8, 15, 14, 13, 12,
         // 19, 18, 17, 16, 23, 22, 21, 20,
         // 27, 26, 25, 24, 31, 30, 29, 28
-        internal static Vector256<byte> LittleEndianMask256 = Vector256.Create(
+        internal static readonly Vector256<byte> _littleEndianMask256 = Vector256.Create(
                     283686952306183,
                     579005069656919567,
                     1157726452361532951,
@@ -488,7 +488,7 @@ namespace JsonWebToken
 
         // 3, 2, 1, 0, 7, 6, 5, 4,
         // 11, 10, 9, 8, 15, 14, 13, 12
-        internal static Vector128<byte> LittleEndianMask128 = Vector128.Create(
+        internal static readonly Vector128<byte> _littleEndianMask128 = Vector128.Create(
                     283686952306183,
                     579005069656919567
                 ).AsByte();

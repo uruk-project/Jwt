@@ -175,22 +175,22 @@ namespace JsonWebToken
         private void Schedule(ref Vector128<uint> schedule, ref byte message)
         {
             Vector128<uint> W0, W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W11, W12, W13, W14, W15;
-            W0 = Ssse3.Shuffle(Gather(ref message).AsByte(), LittleEndianMask128).AsUInt32();
-            W1 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 1)).AsByte(), LittleEndianMask128).AsUInt32();
-            W2 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 2)).AsByte(), LittleEndianMask128).AsUInt32();
-            W3 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 3)).AsByte(), LittleEndianMask128).AsUInt32();
-            W4 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 4)).AsByte(), LittleEndianMask128).AsUInt32();
-            W5 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 5)).AsByte(), LittleEndianMask128).AsUInt32();
-            W6 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 6)).AsByte(), LittleEndianMask128).AsUInt32();
-            W7 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 7)).AsByte(), LittleEndianMask128).AsUInt32();
-            W8 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 8)).AsByte(), LittleEndianMask128).AsUInt32();
-            W9 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 9)).AsByte(), LittleEndianMask128).AsUInt32();
-            W10 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 10)).AsByte(), LittleEndianMask128).AsUInt32();
-            W11 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 11)).AsByte(), LittleEndianMask128).AsUInt32();
-            W12 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 12)).AsByte(), LittleEndianMask128).AsUInt32();
-            W13 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 13)).AsByte(), LittleEndianMask128).AsUInt32();
-            W14 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 14)).AsByte(), LittleEndianMask128).AsUInt32();
-            W15 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 15)).AsByte(), LittleEndianMask128).AsUInt32();
+            W0 = Ssse3.Shuffle(Gather(ref message).AsByte(), _littleEndianMask128).AsUInt32();
+            W1 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 1)).AsByte(), _littleEndianMask128).AsUInt32();
+            W2 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 2)).AsByte(), _littleEndianMask128).AsUInt32();
+            W3 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 3)).AsByte(), _littleEndianMask128).AsUInt32();
+            W4 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 4)).AsByte(), _littleEndianMask128).AsUInt32();
+            W5 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 5)).AsByte(), _littleEndianMask128).AsUInt32();
+            W6 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 6)).AsByte(), _littleEndianMask128).AsUInt32();
+            W7 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 7)).AsByte(), _littleEndianMask128).AsUInt32();
+            W8 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 8)).AsByte(), _littleEndianMask128).AsUInt32();
+            W9 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 9)).AsByte(), _littleEndianMask128).AsUInt32();
+            W10 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 10)).AsByte(), _littleEndianMask128).AsUInt32();
+            W11 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 11)).AsByte(), _littleEndianMask128).AsUInt32();
+            W12 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 12)).AsByte(), _littleEndianMask128).AsUInt32();
+            W13 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 13)).AsByte(), _littleEndianMask128).AsUInt32();
+            W14 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 14)).AsByte(), _littleEndianMask128).AsUInt32();
+            W15 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 15)).AsByte(), _littleEndianMask128).AsUInt32();
             int i = 0;
             do
             {
@@ -316,10 +316,10 @@ namespace JsonWebToken
             }
             else if (Ssse3.IsSupported)
             {
-                Unsafe.WriteUnaligned(ref wRef, Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref currentBlock), LittleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 16), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 16)), LittleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 32)), LittleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 48), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 48)), LittleEndianMask128));
+                Unsafe.WriteUnaligned(ref wRef, Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref currentBlock), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 16), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 16)), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 32)), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 48), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 48)), _littleEndianMask128));
             }
             else
 #endif
@@ -446,7 +446,7 @@ namespace JsonWebToken
         // 11, 10, 9, 8, 15, 14, 13, 12,
         // 19, 18, 17, 16, 23, 22, 21, 20,
         // 27, 26, 25, 24, 31, 30, 29, 28
-        private static Vector256<byte> LittleEndianMask256 = Vector256.Create(
+        private static readonly Vector256<byte> LittleEndianMask256 = Vector256.Create(
                 289644378169868803,
                 868365760874482187,
                 1447087143579095571,
@@ -455,15 +455,15 @@ namespace JsonWebToken
 
         // 3, 2, 1, 0, 7, 6, 5, 4,
         // 11, 10, 9, 8, 15, 14, 13, 12
-        private static Vector128<byte> LittleEndianMask128 = Vector128.Create(
+        private static readonly Vector128<byte> _littleEndianMask128 = Vector128.Create(
                 289644378169868803,
                 868365760874482187
                 ).AsByte();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<uint> K128(int i) => Unsafe.Add(ref k128[0], i);
+        private static Vector128<uint> K128(int i) => Unsafe.Add(ref _k128[0], i);
 
-        private static readonly Vector128<uint>[] k128 = {
+        private static readonly Vector128<uint>[] _k128 = {
             Vector128.Create(0x428a2f98u),
             Vector128.Create(0x71374491u),
             Vector128.Create(0xb5c0fbcfu),
@@ -534,7 +534,7 @@ namespace JsonWebToken
         // 11, 10, 9, 8, 15, 14, 13, 12,
         // 19, 18, 17, 16, 23, 22, 21, 20,
         // 27, 26, 25, 24, 31, 30, 29, 28
-        private static Vector256<byte> _shuffleMask256 = Vector256.Create(
+        private static readonly Vector256<byte> _shuffleMask256 = Vector256.Create(
                 289644378169868803,
                 868365760874482187,
                 1447087143579095571,
@@ -543,7 +543,7 @@ namespace JsonWebToken
 
         // 3, 2, 1, 0, 7, 6, 5, 4,
         // 11, 10, 9, 8, 15, 14, 13, 12
-        private static Vector128<byte> _shuffleMask128 = Vector128.Create(
+        private static readonly Vector128<byte> _shuffleMask128 = Vector128.Create(
                 289644378169868803,
                 868365760874482187
                 ).AsByte();
