@@ -5,7 +5,6 @@ using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -17,14 +16,6 @@ namespace JsonWebToken
     /// </summary>
     public static partial class JwtPayloadParser
     {
-        delegate void Unescape(ReadOnlySpan<byte> source, Span<byte> destination, int idx, out int written);
-
-        //https://github.com/dotnet/corefx/issues/35386
-        private static Unescape JsonReaderHelperUnescape = (Unescape)Delegate.CreateDelegate(
-            type: typeof(Unescape),
-            method: typeof(Utf8JsonReader).Assembly.GetType("System.Text.Json.JsonReaderHelper")!
-                .GetMethod("Unescape", BindingFlags.NonPublic | BindingFlags.Static)!);
-
         /// <summary>
         /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtPayload"/>.
         /// </summary>
