@@ -111,7 +111,6 @@ namespace JsonWebToken.Internal
             Unsafe.WriteUnaligned(ref outputRef, state);
         }
 
-
         /// <inheritsdoc />
         public void Encrypt3(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, Span<byte> ciphertext)
         {
