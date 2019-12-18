@@ -43,15 +43,15 @@ namespace JsonWebToken.Tests
         [MemberData(nameof(GetWrappingKeys))]
         public override void IsSupportedKeyWrapping_Success(Jwk key, EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
-            Assert.True(key.IsSupported(alg));
-            Assert.False(key.IsSupported(enc));
+            Assert.True(key.SupportKeyManagement(alg));
+            Assert.False(key.SupportEncryption(enc));
         }
 
         [Theory]
         [MemberData(nameof(GetSignatureCreationKeys))]
         public override void IsSupportedSignature_Success(Jwk key, SignatureAlgorithm alg)
         {
-            Assert.True(key.IsSupported(alg));
+            Assert.True(key.SupportSignature(alg));
         }
 
         public static IEnumerable<object[]> GetWrappingKeys()

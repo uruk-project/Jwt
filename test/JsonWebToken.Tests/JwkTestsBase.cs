@@ -65,17 +65,17 @@ namespace JsonWebToken.Tests
 
         public virtual void IsSupportedEncryption_Success(Jwk key, EncryptionAlgorithm enc)
         {
-            Assert.True(key.IsSupported(enc));
+            Assert.True(key.SupportEncryption(enc));
         }
 
         public virtual void IsSupportedKeyWrapping_Success(Jwk key, EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
-            Assert.True(key.IsSupported(alg));
+            Assert.True(key.SupportKeyManagement(alg));
         }
 
         public virtual void IsSupportedSignature_Success(Jwk key, SignatureAlgorithm alg)
         {
-            Assert.True(key.IsSupported(alg));
+            Assert.True(key.SupportSignature(alg));
         }
 
         public void Dispose()

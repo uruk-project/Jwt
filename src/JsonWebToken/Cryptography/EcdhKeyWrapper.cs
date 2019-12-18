@@ -51,7 +51,7 @@ namespace JsonWebToken.Internal
                     {
                         return AesKeyWrapper.GetKeyWrappedSize(EncryptionAlgorithm);
                     }
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
                     else if (wrappedAlgorithm.Category == AlgorithmCategory.AesGcm)
                     {
                         //return AesGcmKeyWrapper.GetKeyWrapSize(Key);
@@ -78,7 +78,7 @@ namespace JsonWebToken.Internal
                 }
                 else
                 {
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
                     if (EncryptionAlgorithm.Category == EncryptionType.AesGcm)
                     {
                         return _keySizeInBytes + 8;

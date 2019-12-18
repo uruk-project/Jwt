@@ -1,5 +1,5 @@
 ﻿using System;
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;

@@ -5,7 +5,7 @@ using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 #endif
@@ -112,7 +112,7 @@ namespace JsonWebToken.Internal
             int length = a.Length;
             ref byte first = ref MemoryMarshal.GetReference(a);
             ref byte second = ref MemoryMarshal.GetReference(b);
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Avx2.IsSupported && length == 64)
             {
                 return

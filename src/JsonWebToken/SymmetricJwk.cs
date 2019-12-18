@@ -261,19 +261,19 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override bool IsSupported(KeyManagementAlgorithm algorithm)
+        public override bool SupportKeyManagement(KeyManagementAlgorithm algorithm)
         {
             return ((algorithm.Category & AlgorithmCategory.Aes) != 0 && algorithm.RequiredKeySizeInBits == KeySizeInBits) || (algorithm == KeyManagementAlgorithm.Direct);
         }
 
         /// <inheritsdoc />
-        public override bool IsSupported(SignatureAlgorithm algorithm)
+        public override bool SupportSignature(SignatureAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.Hmac;
         }
 
         /// <inheritsdoc />
-        public override bool IsSupported(EncryptionAlgorithm algorithm)
+        public override bool SupportEncryption(EncryptionAlgorithm algorithm)
         {
             return (algorithm.Category == EncryptionType.AesHmac || algorithm.Category == EncryptionType.AesGcm) && KeySizeInBits >= algorithm.RequiredKeySizeInBits;
         }
@@ -329,7 +329,7 @@ namespace JsonWebToken
         {
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
                 if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
                 {
                     if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
@@ -367,7 +367,7 @@ namespace JsonWebToken
         {
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
                 if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
                 {
                     if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
@@ -474,7 +474,7 @@ namespace JsonWebToken
         private static byte[] GenerateKeyBytes(int sizeInBits)
         {
             byte[] key = new byte[sizeInBits >> 3];
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             RandomNumberGenerator.Fill(key);
             return key;
 #else

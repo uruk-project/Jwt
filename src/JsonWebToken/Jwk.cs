@@ -259,7 +259,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> to verify.</param>
         /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
-        public abstract bool IsSupported(SignatureAlgorithm algorithm);
+        public abstract bool SupportSignature(SignatureAlgorithm algorithm);
 
         internal static Jwk FromJsonReader(ref Utf8JsonReader reader)
         {
@@ -442,14 +442,14 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> to verify.</param>
         /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
-        public abstract bool IsSupported(KeyManagementAlgorithm algorithm);
+        public abstract bool SupportKeyManagement(KeyManagementAlgorithm algorithm);
 
         /// <summary>
         /// Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.
         /// </summary>
         /// <param name="algorithm">The <see cref="EncryptionAlgorithm"/> to verify.</param>
         /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
-        public abstract bool IsSupported(EncryptionAlgorithm algorithm);
+        public abstract bool SupportEncryption(EncryptionAlgorithm algorithm);
 
         /// <summary>
         /// Returns a string that represents the <see cref="Jwk"/> in JSON.
@@ -517,7 +517,7 @@ namespace JsonWebToken
                     return true;
                 }
 
-                if (IsSupported(algorithm))
+                if (SupportSignature(algorithm))
                 {
                     signer = CreateSigner(algorithm);
                     if (signers.TryAdd(algorithm.Id, signer))
@@ -564,7 +564,7 @@ namespace JsonWebToken
                     }
                 }
 
-                if (IsSupported(algorithm))
+                if (SupportKeyManagement(algorithm))
                 {
                     keyWrapper = CreateKeyWrapper(encryptionAlgorithm, algorithm);
                     if (keyWrappers.TryAdd(algorithmKey, keyWrapper))
@@ -611,7 +611,7 @@ namespace JsonWebToken
                     }
                 }
 
-                if (IsSupported(algorithm))
+                if (SupportKeyManagement(algorithm))
                 {
                     keyUnwrapper = CreateKeyUnwrapper(encryptionAlgorithm, algorithm);
                     if (keyUnwrappers.TryAdd(algorithmKey, keyUnwrapper))
@@ -671,7 +671,7 @@ namespace JsonWebToken
                     }
                 }
 
-                if (IsSupported(encryptionAlgorithm))
+                if (SupportEncryption(encryptionAlgorithm))
                 {
                     encryptor = CreateAuthenticatedEncryptor(encryptionAlgorithm);
                     if (encryptors.TryAdd(algorithmKey, encryptor))
@@ -717,7 +717,7 @@ namespace JsonWebToken
                     }
                 }
 
-                if (IsSupported(encryptionAlgorithm))
+                if (SupportEncryption(encryptionAlgorithm))
                 {
                     decryptor = CreateAuthenticatedDecryptor(encryptionAlgorithm);
                     if (decryptors.TryAdd(algorithmKey, decryptor))
@@ -1169,17 +1169,17 @@ namespace JsonWebToken
                 return ReferenceEquals(this, other);
             }
 
-            public override bool IsSupported(SignatureAlgorithm algorithm)
+            public override bool SupportSignature(SignatureAlgorithm algorithm)
             {
                 return algorithm == SignatureAlgorithm.None;
             }
 
-            public override bool IsSupported(KeyManagementAlgorithm algorithm)
+            public override bool SupportKeyManagement(KeyManagementAlgorithm algorithm)
             {
                 return false;
             }
 
-            public override bool IsSupported(EncryptionAlgorithm algorithm)
+            public override bool SupportEncryption(EncryptionAlgorithm algorithm)
             {
                 return false;
             }
