@@ -4,7 +4,7 @@ using System.Buffers.Binary;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 #endif
@@ -67,7 +67,7 @@ namespace JsonWebToken
 
             ref byte srcRef = ref MemoryMarshal.GetReference(source);
             ref byte srcEndRef = ref Unsafe.Add(ref srcRef, source.Length - Sha256BlockSize + 1);
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Ssse3.IsSupported)
             {
                 ref byte src128EndRef = ref Unsafe.Add(ref srcRef, source.Length - 4 * Sha256BlockSize + 1);
@@ -119,7 +119,7 @@ namespace JsonWebToken
             Transform(ref stateRef, ref lastBlockRef, ref wRef);
 
             ref byte destinationRef = ref MemoryMarshal.GetReference(destination);
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
                 Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(state))), _shuffleMask256));
@@ -143,7 +143,7 @@ namespace JsonWebToken
             }
         }
 
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector128<uint> Gather(ref byte message)
         {
@@ -307,7 +307,7 @@ namespace JsonWebToken
 
         private void Transform(ref uint state, ref byte currentBlock, ref uint w)
         {
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             ref byte wRef = ref Unsafe.As<uint, byte>(ref w);
             if (Avx2.IsSupported)
             {
@@ -399,7 +399,7 @@ namespace JsonWebToken
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint RotateRight(uint a, byte b)
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             => BitOperations.RotateRight(a, b);
 #else
             => (a >> b) | (a << (32 - b));
@@ -441,7 +441,7 @@ namespace JsonWebToken
             0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
         };
 
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
         // 3, 2, 1, 0, 7, 6, 5, 4,
         // 11, 10, 9, 8, 15, 14, 13, 12,
         // 19, 18, 17, 16, 23, 22, 21, 20,

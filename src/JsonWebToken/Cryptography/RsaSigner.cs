@@ -25,7 +25,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            if (!key.IsSupported(algorithm))
+            if (!key.SupportSignature(algorithm))
             {
                 ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(algorithm, key);
             }

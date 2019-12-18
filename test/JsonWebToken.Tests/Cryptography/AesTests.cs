@@ -19,6 +19,7 @@ namespace JsonWebToken.Tests.Cryptography
 
             // The last 16 bytes are ignored as the test data sets are for ECB mode
             Assert.Equal(expectedCiphertext.ToArray(), ciphertext.Slice(0, ciphertext.Length - 16).ToArray());
+            encryptor.Dispose();
         }
 
         protected void VerifyKeySboxKat(ReadOnlySpan<byte> key, ReadOnlySpan<byte> expectedCiphertext)

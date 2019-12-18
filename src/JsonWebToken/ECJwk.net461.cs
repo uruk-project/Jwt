@@ -29,13 +29,13 @@ namespace JsonWebToken
         public override bool Equals(Jwk? other) => throw new NotImplementedException();
 
         /// <inheritsdoc />
-        public override bool IsSupported(SignatureAlgorithm algorithm) => throw new NotImplementedException();
+        public override bool SupportSignature(SignatureAlgorithm algorithm) => throw new NotImplementedException();
 
         /// <inheritsdoc />
-        public override bool IsSupported(KeyManagementAlgorithm algorithm) => throw new NotImplementedException();
+        public override bool SupportKeyManagement(KeyManagementAlgorithm algorithm) => throw new NotImplementedException();
 
         /// <inheritsdoc />
-        public override bool IsSupported(EncryptionAlgorithm algorithm) => throw new NotImplementedException();
+        public override bool SupportEncryption(EncryptionAlgorithm algorithm) => throw new NotImplementedException();
 
         /// <inheritsdoc />
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter) => throw new NotImplementedException();

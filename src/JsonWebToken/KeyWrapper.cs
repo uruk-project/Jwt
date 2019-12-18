@@ -39,7 +39,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            if (!key.IsSupported(algorithm))
+            if (!key.SupportKeyManagement(algorithm))
             {
                 ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
             }
@@ -133,7 +133,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            if (!key.IsSupported(algorithm))
+            if (!key.SupportKeyManagement(algorithm))
             {
                 ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
             }

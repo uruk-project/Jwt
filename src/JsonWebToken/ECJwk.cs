@@ -270,19 +270,19 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
-        public override bool IsSupported(SignatureAlgorithm algorithm)
+        public override bool SupportSignature(SignatureAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.EllipticCurve;
         }
 
         /// <inheritdoc />
-        public override bool IsSupported(KeyManagementAlgorithm algorithm)
+        public override bool SupportKeyManagement(KeyManagementAlgorithm algorithm)
         {
             return algorithm.Category == AlgorithmCategory.EllipticCurve;
         }
 
         /// <inheritdoc />
-        public override bool IsSupported(EncryptionAlgorithm algorithm)
+        public override bool SupportEncryption(EncryptionAlgorithm algorithm)
         {
             return false;
         }
