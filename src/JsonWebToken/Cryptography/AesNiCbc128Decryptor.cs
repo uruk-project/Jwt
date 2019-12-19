@@ -14,39 +14,11 @@ namespace JsonWebToken.Internal
     {
         private const int BlockSize = 16;
 
-        private readonly Aes128Keys _keys;
+        private readonly Aes128DecryptionKeys _keys;
 
         public AesNiCbc128Decryptor(ReadOnlySpan<byte> key)
         {
-            if (key.Length != 16)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes128CbcHmacSha256, 128, key.Length * 8);
-            }
-
-            ref var keyRef = ref MemoryMarshal.GetReference(key);
-
-            var tmp = Unsafe.ReadUnaligned<Vector128<byte>>(ref keyRef);
-            _keys.Key10 = tmp;
-
-            tmp = KeyGenAssist(tmp, 0x01);
-            _keys.Key9 = Aes.InverseMixColumns(tmp);
-            tmp = KeyGenAssist(tmp, 0x02);
-            _keys.Key8 = Aes.InverseMixColumns(tmp);
-            tmp = KeyGenAssist(tmp, 0x04);
-            _keys.Key7 = Aes.InverseMixColumns(tmp);
-            tmp = KeyGenAssist(tmp, 0x08);
-            _keys.Key6 = Aes.InverseMixColumns(tmp);
-            tmp = KeyGenAssist(tmp, 0x10);
-            _keys.Key5 = Aes.InverseMixColumns(tmp);
-            tmp = KeyGenAssist(tmp, 0x20);
-            _keys.Key4 = Aes.InverseMixColumns(tmp);
-            tmp = KeyGenAssist(tmp, 0x40);
-            _keys.Key3 = Aes.InverseMixColumns(tmp);
-            tmp = KeyGenAssist(tmp, 0x80);
-            _keys.Key2 = Aes.InverseMixColumns(tmp);
-            tmp = KeyGenAssist(tmp, 0x1B);
-            _keys.Key1 = Aes.InverseMixColumns(tmp);
-            _keys.Key0 = KeyGenAssist(tmp, 0x36);
+            _keys = new Aes128DecryptionKeys(key);
         }
 
         public override void Dispose()
@@ -122,15 +94,71 @@ namespace JsonWebToken.Internal
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<byte> KeyGenAssist(Vector128<byte> key, byte control)
+        private readonly struct Aes128DecryptionKeys
         {
-            var keyGened = Aes.KeygenAssist(key, control);
-            keyGened = Sse2.Shuffle(keyGened.AsInt32(), 0xFF).AsByte();
-            key = Sse2.Xor(key, Sse2.ShiftLeftLogical128BitLane(key, 4));
-            key = Sse2.Xor(key, Sse2.ShiftLeftLogical128BitLane(key, 4));
-            key = Sse2.Xor(key, Sse2.ShiftLeftLogical128BitLane(key, 4));
-            return Sse2.Xor(key, keyGened);
+            private const int Count = 11;
+
+            public readonly Vector128<byte> Key0;
+            public readonly Vector128<byte> Key1;
+            public readonly Vector128<byte> Key2;
+            public readonly Vector128<byte> Key3;
+            public readonly Vector128<byte> Key4;
+            public readonly Vector128<byte> Key5;
+            public readonly Vector128<byte> Key6;
+            public readonly Vector128<byte> Key7;
+            public readonly Vector128<byte> Key8;
+            public readonly Vector128<byte> Key9;
+            public readonly Vector128<byte> Key10;
+
+            public Aes128DecryptionKeys(ReadOnlySpan<byte> key)
+            {
+                if (key.Length != 16)
+                {
+                    ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes128CbcHmacSha256, 128, key.Length * 8);
+                }
+
+                ref var keyRef = ref MemoryMarshal.GetReference(key);
+
+                var tmp = Unsafe.ReadUnaligned<Vector128<byte>>(ref keyRef);
+                Key10 = tmp;
+
+                tmp = KeyGenAssist(tmp, 0x01);
+                Key9 = Aes.InverseMixColumns(tmp);
+                tmp = KeyGenAssist(tmp, 0x02);
+                Key8 = Aes.InverseMixColumns(tmp);
+                tmp = KeyGenAssist(tmp, 0x04);
+                Key7 = Aes.InverseMixColumns(tmp);
+                tmp = KeyGenAssist(tmp, 0x08);
+                Key6 = Aes.InverseMixColumns(tmp);
+                tmp = KeyGenAssist(tmp, 0x10);
+                Key5 = Aes.InverseMixColumns(tmp);
+                tmp = KeyGenAssist(tmp, 0x20);
+                Key4 = Aes.InverseMixColumns(tmp);
+                tmp = KeyGenAssist(tmp, 0x40);
+                Key3 = Aes.InverseMixColumns(tmp);
+                tmp = KeyGenAssist(tmp, 0x80);
+                Key2 = Aes.InverseMixColumns(tmp);
+                tmp = KeyGenAssist(tmp, 0x1B);
+                Key1 = Aes.InverseMixColumns(tmp);
+                Key0 = KeyGenAssist(tmp, 0x36);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static Vector128<byte> KeyGenAssist(Vector128<byte> key, byte control)
+            {
+                var keyGened = Aes.KeygenAssist(key, control);
+                keyGened = Sse2.Shuffle(keyGened.AsInt32(), 0xFF).AsByte();
+                key = Sse2.Xor(key, Sse2.ShiftLeftLogical128BitLane(key, 4));
+                key = Sse2.Xor(key, Sse2.ShiftLeftLogical128BitLane(key, 4));
+                key = Sse2.Xor(key, Sse2.ShiftLeftLogical128BitLane(key, 4));
+                return Sse2.Xor(key, keyGened);
+            }
+
+            public void Clear()
+            {
+                ref byte that = ref Unsafe.As<Aes128DecryptionKeys, byte>(ref Unsafe.AsRef(this));
+                Unsafe.InitBlock(ref that, 0, Count * 16);
+            }
         }
     }
 }
