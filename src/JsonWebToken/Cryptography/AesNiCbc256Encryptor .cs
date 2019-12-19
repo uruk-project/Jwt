@@ -14,46 +14,11 @@ namespace JsonWebToken.Internal
     {
         private const int BlockSize = 16;
 
-        private readonly Aes256Keys _keys;
+        private readonly Aes256EncryptionKeys _keys;
 
         public AesNiCbc256Encryptor(ReadOnlySpan<byte> key)
         {
-            if (key.Length != 32)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes256CbcHmacSha512, 256, key.Length * 8);
-            }
-
-            ref var keyRef = ref MemoryMarshal.GetReference(key);
-            var tmp1 = Unsafe.ReadUnaligned<Vector128<byte>>(ref keyRef);
-            var tmp3 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref keyRef, 16));
-            _keys.Key0 = tmp1;
-            _keys.Key1 = tmp3;
-            KeyGenAssist1(ref tmp1, tmp3, 0x01);
-            _keys.Key2 = tmp1;
-            KeyGenAssist2(tmp1, ref tmp3);
-            _keys.Key3 = tmp3;
-            KeyGenAssist1(ref tmp1, tmp3, 0x02);
-            _keys.Key4 = tmp1;
-            KeyGenAssist2(tmp1, ref tmp3);
-            _keys.Key5 = tmp3;
-            KeyGenAssist1(ref tmp1, tmp3, 0x04);
-            _keys.Key6 = tmp1;
-            KeyGenAssist2(tmp1, ref tmp3);
-            _keys.Key7 = tmp3;
-            KeyGenAssist1(ref tmp1, tmp3, 0x08);
-            _keys.Key8 = tmp1;
-            KeyGenAssist2(tmp1, ref tmp3);
-            _keys.Key9 = tmp3;
-            KeyGenAssist1(ref tmp1, tmp3, 0x10);
-            _keys.Key10 = tmp1;
-            KeyGenAssist2(tmp1, ref tmp3);
-            _keys.Key11 = tmp3;
-            KeyGenAssist1(ref tmp1, tmp3, 0x20);
-            _keys.Key12 = tmp1;
-            KeyGenAssist2(tmp1, ref tmp3);
-            _keys.Key13 = tmp3;
-            KeyGenAssist1(ref tmp1, tmp3, 0x40);
-            _keys.Key14 = tmp1;
+            _keys = new Aes256EncryptionKeys(key);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -168,6 +133,73 @@ namespace JsonWebToken.Internal
             block = Aes.Encrypt(block, _keys.Key13);
             block = Aes.EncryptLast(block, _keys.Key14);
             Unsafe.WriteUnaligned(ref ciphertext, block);
+        }
+
+        private struct Aes256EncryptionKeys
+        {
+            private const int Count = 15;
+
+            public Vector128<byte> Key0;
+            public Vector128<byte> Key1;
+            public Vector128<byte> Key2;
+            public Vector128<byte> Key3;
+            public Vector128<byte> Key4;
+            public Vector128<byte> Key5;
+            public Vector128<byte> Key6;
+            public Vector128<byte> Key7;
+            public Vector128<byte> Key8;
+            public Vector128<byte> Key9;
+            public Vector128<byte> Key10;
+            public Vector128<byte> Key11;
+            public Vector128<byte> Key12;
+            public Vector128<byte> Key13;
+            public Vector128<byte> Key14;
+
+            public Aes256EncryptionKeys(ReadOnlySpan<byte> key)
+            {
+                if (key.Length != 32)
+                {
+                    ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes256CbcHmacSha512, 256, key.Length * 8);
+                }
+
+                ref var keyRef = ref MemoryMarshal.GetReference(key);
+                var tmp1 = Unsafe.ReadUnaligned<Vector128<byte>>(ref keyRef);
+                var tmp3 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref keyRef, 16));
+                Key0 = tmp1;
+                Key1 = tmp3;
+                KeyGenAssist1(ref tmp1, tmp3, 0x01);
+                Key2 = tmp1;
+                KeyGenAssist2(tmp1, ref tmp3);
+                Key3 = tmp3;
+                KeyGenAssist1(ref tmp1, tmp3, 0x02);
+                Key4 = tmp1;
+                KeyGenAssist2(tmp1, ref tmp3);
+                Key5 = tmp3;
+                KeyGenAssist1(ref tmp1, tmp3, 0x04);
+                Key6 = tmp1;
+                KeyGenAssist2(tmp1, ref tmp3);
+                Key7 = tmp3;
+                KeyGenAssist1(ref tmp1, tmp3, 0x08);
+                Key8 = tmp1;
+                KeyGenAssist2(tmp1, ref tmp3);
+                Key9 = tmp3;
+                KeyGenAssist1(ref tmp1, tmp3, 0x10);
+                Key10 = tmp1;
+                KeyGenAssist2(tmp1, ref tmp3);
+                Key11 = tmp3;
+                KeyGenAssist1(ref tmp1, tmp3, 0x20);
+                Key12 = tmp1;
+                KeyGenAssist2(tmp1, ref tmp3);
+                Key13 = tmp3;
+                KeyGenAssist1(ref tmp1, tmp3, 0x40);
+                Key14 = tmp1;
+            }
+
+            public void Clear()
+            {
+                ref byte that = ref Unsafe.As<Aes256EncryptionKeys, byte>(ref Unsafe.AsRef(this));
+                Unsafe.InitBlock(ref that, 0, Count * 16);
+            }
         }
     }
 }
