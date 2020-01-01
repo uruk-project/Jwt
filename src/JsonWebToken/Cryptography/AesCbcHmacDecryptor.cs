@@ -47,7 +47,7 @@ namespace JsonWebToken.Internal
             int keyLength = encryptionAlgorithm.RequiredKeySizeInBits >> 4;
 
             var keyBytes = key.K;
-            var aesKey = keyBytes.Slice(keyLength).ToArray();
+            var aesKey = keyBytes.Slice(keyLength);
             _hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
 
             _decryptor = new AesCbcDecryptor(aesKey, encryptionAlgorithm);

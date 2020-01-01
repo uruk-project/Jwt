@@ -44,7 +44,7 @@ namespace JsonWebToken.Internal
                         int numWholeBlocksInBytes = numWholeBlocks * _inputBlockSize;
 
                         // Use ArrayPool.Shared instead of CryptoPool because the array is passed out.
-                        byte[] tempOutputBuffer = ArrayPool<byte>.Shared.Rent(numWholeBlocks * _outputBlockSize);
+                        byte[] tempOutputBuffer = ArrayPool<byte>.Shared.Rent(numWholeBlocksInBytes);
                         numOutputBytes = 0;
 
                         try

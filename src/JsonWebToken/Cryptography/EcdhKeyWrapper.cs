@@ -217,9 +217,12 @@ namespace JsonWebToken.Internal
             var secretAppend = new byte[secretAppendLength];
             var secretAppendSpan = secretAppend.AsSpan();
             WriteAlgorithmId(secretAppendSpan);
-            WritePartyInfo(apu, apuLength, secretAppendSpan.Slice(algorithmLength));
-            WritePartyInfo(apv, apvLength, secretAppendSpan.Slice(algorithmLength + partyUInfoLength));
-            BinaryPrimitives.WriteInt32BigEndian(secretAppendSpan.Slice(algorithmLength + partyUInfoLength + partyVInfoLength), _keySizeInBytes << 3);
+            secretAppendSpan = secretAppendSpan.Slice(algorithmLength);
+            WritePartyInfo(apu, apuLength, secretAppendSpan);
+            secretAppendSpan = secretAppendSpan.Slice(partyUInfoLength);
+            WritePartyInfo(apv, apvLength, secretAppendSpan);
+            secretAppendSpan = secretAppendSpan.Slice(partyVInfoLength);
+            BinaryPrimitives.WriteInt32BigEndian(secretAppendSpan, _keySizeInBytes << 3);
 
             return secretAppend;
         }
