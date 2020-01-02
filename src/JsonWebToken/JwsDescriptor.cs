@@ -546,8 +546,8 @@ namespace JsonWebToken
                     headerCache?.AddHeader(Header, alg, buffer.Slice(0, offset));
                 }
 
-                buffer[offset] = Constants.ByteDot;
-                offset += Base64Url.Encode(bufferWriter.WrittenSpan.Slice(0, payloadLength), buffer.Slice(++offset));
+                buffer[offset++] = Constants.ByteDot;
+                offset += Base64Url.Encode(bufferWriter.WrittenSpan.Slice(0, payloadLength), buffer.Slice(offset));
                 buffer[offset] = Constants.ByteDot;
                 Span<byte> signature = stackalloc byte[signer.HashSizeInBytes];
                 bool success = signer.TrySign(buffer.Slice(0, offset), signature, out int signatureBytesWritten);
