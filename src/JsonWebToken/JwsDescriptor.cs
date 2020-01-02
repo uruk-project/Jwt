@@ -534,29 +534,29 @@ namespace JsonWebToken
                 }
 
                 var buffer = output.GetSpan(length).Slice(0, length);
-                int headerBytesWritten;
+                int offset;
                 if (cachedHeader != null)
                 {
                     cachedHeader.CopyTo(buffer);
-                    headerBytesWritten = cachedHeader.Length;
+                    offset = cachedHeader.Length;
                 }
                 else
                 {
-                    headerBytesWritten = Base64Url.Encode(headerJson, buffer);
-                    headerCache?.AddHeader(Header, alg, buffer.Slice(0, headerBytesWritten));
+                    offset = Base64Url.Encode(headerJson, buffer);
+                    headerCache?.AddHeader(Header, alg, buffer.Slice(0, offset));
                 }
 
-                buffer[headerBytesWritten] = Constants.ByteDot;
-                int payloadBytesWritten = Base64Url.Encode(bufferWriter.WrittenSpan.Slice(0, payloadLength), buffer.Slice(headerBytesWritten + 1));
-                buffer[headerBytesWritten + payloadBytesWritten + 1] = Constants.ByteDot;
+                buffer[offset++] = Constants.ByteDot;
+                offset += Base64Url.Encode(bufferWriter.WrittenSpan.Slice(0, payloadLength), buffer.Slice(offset));
+                buffer[offset] = Constants.ByteDot;
                 Span<byte> signature = stackalloc byte[signer.HashSizeInBytes];
-                bool success = signer.TrySign(buffer.Slice(0, payloadBytesWritten + headerBytesWritten + 1), signature, out int signatureBytesWritten);
+                bool success = signer.TrySign(buffer.Slice(0, offset), signature, out int signatureBytesWritten);
                 Debug.Assert(success);
                 Debug.Assert(signature.Length == signatureBytesWritten);
 
-                int bytesWritten = Base64Url.Encode(signature, buffer.Slice(payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1)));
+                int bytesWritten = Base64Url.Encode(signature, buffer.Slice(++offset));
 
-                Debug.Assert(length == payloadBytesWritten + headerBytesWritten + (Constants.JwsSegmentCount - 1) + bytesWritten);
+                Debug.Assert(length == offset + bytesWritten);
                 output.Advance(length);
             }
             else

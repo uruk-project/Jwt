@@ -300,7 +300,7 @@ namespace JsonWebToken
             byte[]? decryptedArrayToReturnToPool = null;
             var decryptedBytes = decryptedLength <= Constants.MaxStackallocBytes
                   ? stackalloc byte[decryptedLength]
-                  : (decryptedArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(decryptedLength)).AsSpan(0, decryptedLength);
+                  : (decryptedArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(decryptedLength));
 
             try
             {
@@ -485,7 +485,7 @@ namespace JsonWebToken
             byte[]? arrayToReturn = null;
             Span<byte> buffer = bufferLength < Constants.MaxStackallocBytes
                 ? stackalloc byte[bufferLength]
-                : (arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength)).AsSpan(0, bufferLength);
+                : (arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength));
 
             Span<byte> ciphertext = buffer.Slice(0, ciphertextLength);
             Span<byte> header = buffer.Slice(ciphertextLength, headerLength);
