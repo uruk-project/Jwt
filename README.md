@@ -68,8 +68,8 @@ It is about **3x faster** when writing a JWS of common size, with less than **1-
 The main reason of the eficiency of this library is the usage of the new API provided in .NET Core 2.0, 2.1 & 3.0, like the new Span API and the new JSON API.
 
 ## Supported JWT
-* [JWS](https://tools.ietf.org/html/rfc7515). See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/JwsCreationSample/Program.cs).
-* [Nested JWT](https://tools.ietf.org/html/rfc7519#appendix-A.2): JWE with JWS as payload (know as JWE or Encrypted JWS). See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/JweCreationSample/Program.cs).
+* [Signed JWT (JWS)](https://tools.ietf.org/html/rfc7515). See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/JwsCreationSample/Program.cs).
+* [Nested encrypted JWT (JWE)](https://tools.ietf.org/html/rfc7519#appendix-A.2): JWE with JWS as payload (know as JWE or Encrypted JWS). See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/JweCreationSample/Program.cs).
 * [Plaintext JWE](https://tools.ietf.org/html/rfc7519#appendix-A.1): JWE with plaintext as payload. See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/PlaintextJwtCreationSample/Program.cs).
 * Binary JWE: JWE with binary as payload. See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/BinaryJwtCreationSample/Program.cs).
 * [Unsecure JWT](https://tools.ietf.org/html/rfc7515#appendix-A.5): JWS without signature. See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/UnsecureJwtCreationSample/Program.cs).
