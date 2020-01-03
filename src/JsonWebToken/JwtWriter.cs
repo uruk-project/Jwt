@@ -12,25 +12,8 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtWriter
     {
-        private readonly JsonHeaderCache _headerCache;
+        private readonly JsonHeaderCache _headerCache = new JsonHeaderCache();
         private int _tokenLifetimeInSeconds;
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwtWriter"/>.
-        /// </summary>
-        public JwtWriter() :
-            this(null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwtWriter"/>.
-        /// </summary>
-        /// <param name="headerCache"></param>
-        public JwtWriter(JsonHeaderCache? headerCache)
-        {
-            _headerCache = headerCache ?? new JsonHeaderCache();
-        }
 
         /// <summary>
         /// Gets or sets the token lifetime in seconds.
@@ -94,7 +77,7 @@ namespace JsonWebToken
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.descriptor);
             }
-            
+
             if (!IgnoreTokenValidation)
             {
                 descriptor.Validate();

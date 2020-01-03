@@ -196,12 +196,12 @@ namespace JsonWebToken
         {
             if (x == null)
             {
-                throw new ArgumentNullException(nameof(x));
+              ThrowHelper.ThrowArgumentNullException(ExceptionArgument.x);
             }
 
             if (y == null)
             {
-                throw new ArgumentNullException(nameof(y));
+              ThrowHelper.ThrowArgumentNullException(ExceptionArgument.y);
             }
 
             Crv = crv;
@@ -213,12 +213,12 @@ namespace JsonWebToken
         {
             if (x is null)
             {
-                throw new ArgumentNullException(nameof(x));
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.x);
             }
 
-            if (y is null)
+            if (y == null)
             {
-                throw new ArgumentNullException(nameof(y));
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.y);
             }
 
             Crv = crv;

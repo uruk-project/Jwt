@@ -32,7 +32,7 @@ namespace ValidatePerf
             EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256
         };
         private static readonly byte[] jweToken = _writer.WriteToken(jweDescriptor);
-        private static readonly JwtReader _reader = new JwtReader(signingKey, encryptionKey);
+        private static readonly JwtReader _reader = new JwtReader(encryptionKey);
 
         private static void Main()
         {

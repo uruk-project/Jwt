@@ -20,23 +20,13 @@ namespace JsonWebToken
     public sealed partial class JwtReader
     {
         private readonly IKeyProvider[] _encryptionKeyProviders;
-        private readonly JwtHeaderCache _headerCache;
+        private readonly JwtHeaderCache _headerCache = new JwtHeaderCache();
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwtReader"/>.
         /// </summary>
         /// <param name="encryptionKeyProviders"></param>
         public JwtReader(ICollection<IKeyProvider> encryptionKeyProviders)
-            : this(encryptionKeyProviders, null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwtReader"/>.
-        /// </summary>
-        /// <param name="encryptionKeyProviders"></param>
-        /// <param name="headerCache"></param>
-        public JwtReader(ICollection<IKeyProvider> encryptionKeyProviders, JwtHeaderCache? headerCache)
         {
             if (encryptionKeyProviders is null)
             {
@@ -44,16 +34,6 @@ namespace JsonWebToken
             }
 
             _encryptionKeyProviders = encryptionKeyProviders.Where(p => p != null).ToArray();
-            _headerCache = headerCache ?? new JwtHeaderCache();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwtReader"/>.
-        /// </summary>
-        /// <param name="encryptionKeys"></param>
-        public JwtReader(IList<Jwk> encryptionKeys)
-           : this(new Jwks(encryptionKeys))
-        {
         }
 
         /// <summary>
