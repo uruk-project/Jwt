@@ -139,8 +139,8 @@ namespace JsonWebToken
                                                         ? (arrayCiphertextToReturnToPool = ArrayPool<byte>.Shared.Rent(ciphertextLength)).AsSpan(0, ciphertextLength)
                                                         : stackalloc byte[ciphertextLength];
 #if NETSTANDARD2_0 || NET461
-                                var nonce = new byte[encryptor.GetNonceSize()];
-                                _randomNumberGenerator.GetBytes(nonce);
+                            var nonce = new byte[encryptor.GetNonceSize()];
+                            _randomNumberGenerator.GetBytes(nonce);
 #else
                             Span<byte> nonce = stackalloc byte[encryptor.GetNonceSize()];
                             RandomNumberGenerator.Fill(nonce);
