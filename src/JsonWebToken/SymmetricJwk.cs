@@ -17,11 +17,19 @@ namespace JsonWebToken
     /// </summary>
     public sealed class SymmetricJwk : Jwk
     {
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NET461 || NETCOREAPP2_1
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 #endif
 
         private readonly byte[] _k;
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
+        public SymmetricJwk(ReadOnlySpan<byte> k)
+        {
+            _k = k.ToArray();
+        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
@@ -208,11 +216,6 @@ namespace JsonWebToken
         public override int KeySizeInBits => _k.Length != 0 ? _k.Length << 3 : 0;
 
         /// <summary>
-        /// Gets or sets whether the key is ephemeral, and should not try to reuse internal objects.
-        /// </summary>
-        public bool Ephemeral { get; set; }
-
-        /// <summary>
         /// Creates a new <see cref="SymmetricJwk"/> from the <paramref name="bytes"/>.
         /// </summary>
         /// <param name="bytes"></param>
@@ -385,11 +388,11 @@ namespace JsonWebToken
                     }
                     else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
                     {
-                        return new AesCbcHmacDecryptor(this, encryptionAlgorithm);
+                        return new AesCbcHmacDecryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new AesNiCbc256Decryptor(_k.AsSpan(32)));
                     }
                     else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
                     {
-                        return new AesCbcHmacDecryptor(this, encryptionAlgorithm);
+                        return new AesCbcHmacDecryptor(_k.AsSpan(0, 24), encryptionAlgorithm, new AesNiCbc192Decryptor(_k.AsSpan(24)));
                     }
                 }
                 else

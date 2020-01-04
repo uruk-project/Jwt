@@ -31,8 +31,6 @@ namespace JsonWebToken
         private CryptographicStore<Signer>? _signers;
         private CryptographicStore<KeyWrapper>? _keyWrappers;
         private CryptographicStore<KeyUnwrapper>? _keyUnwrappers;
-        private CryptographicStore<AuthenticatedEncryptor>? _encryptors;
-        private CryptographicStore<AuthenticatedDecryptor>? _decryptors;
 
         private bool? _isSigningKey;
         private SignatureAlgorithm? _signatureAlgorithm;
@@ -654,39 +652,10 @@ namespace JsonWebToken
         /// <param name="encryptor">The provided <see cref="AuthenticatedEncryptor"/>. <c>null</c> if returns <c>false</c>.</param>
         public bool TryGetAuthenticatedEncryptor(EncryptionAlgorithm? encryptionAlgorithm, [NotNullWhen(true)] out AuthenticatedEncryptor? encryptor)
         {
-            if (!(encryptionAlgorithm is null))
+            if (!(encryptionAlgorithm is null) && SupportEncryption(encryptionAlgorithm))
             {
-                var encryptors = _encryptors;
-                var algorithmKey = encryptionAlgorithm.Id;
-                if (encryptors is null)
-                {
-                    encryptors = new CryptographicStore<AuthenticatedEncryptor>();
-                    _encryptors = encryptors;
-                }
-                else
-                {
-                    if (encryptors.TryGetValue(algorithmKey, out encryptor))
-                    {
-                        return true;
-                    }
-                }
-
-                if (SupportEncryption(encryptionAlgorithm))
-                {
-                    encryptor = CreateAuthenticatedEncryptor(encryptionAlgorithm);
-                    if (encryptors.TryAdd(algorithmKey, encryptor))
-                    {
-                        return true;
-                    }
-
-                    encryptor.Dispose();
-                    if (encryptors.TryGetValue(encryptionAlgorithm.Id, out encryptor))
-                    {
-                        return true;
-                    }
-
-                    ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
-                }
+                encryptor = CreateAuthenticatedEncryptor(encryptionAlgorithm);
+                return true;
             }
 
             encryptor = null;
@@ -700,39 +669,10 @@ namespace JsonWebToken
         /// <param name="decryptor">The provided <see cref="AuthenticatedDecryptor"/>. <c>null</c> if returns <c>false</c>.</param>
         public bool TryGetAuthenticatedDecryptor(EncryptionAlgorithm? encryptionAlgorithm, [NotNullWhen(true)] out AuthenticatedDecryptor? decryptor)
         {
-            if (!(encryptionAlgorithm is null))
+             if (!(encryptionAlgorithm is null) && SupportEncryption(encryptionAlgorithm))
             {
-                var decryptors = _decryptors;
-                var algorithmKey = encryptionAlgorithm.Id;
-                if (decryptors is null)
-                {
-                    decryptors = new CryptographicStore<AuthenticatedDecryptor>();
-                    _decryptors = decryptors;
-                }
-                else
-                {
-                    if (decryptors.TryGetValue(algorithmKey, out decryptor))
-                    {
-                        return true;
-                    }
-                }
-
-                if (SupportEncryption(encryptionAlgorithm))
-                {
-                    decryptor = CreateAuthenticatedDecryptor(encryptionAlgorithm);
-                    if (decryptors.TryAdd(algorithmKey, decryptor))
-                    {
-                        return true;
-                    }
-
-                    decryptor.Dispose();
-                    if (decryptors.TryGetValue(encryptionAlgorithm.Id, out decryptor))
-                    {
-                        return true;
-                    }
-
-                    ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
-                }
+                decryptor = CreateAuthenticatedDecryptor(encryptionAlgorithm);
+                return true;
             }
 
             decryptor = null;
@@ -1136,16 +1076,6 @@ namespace JsonWebToken
             if (_keyUnwrappers != null)
             {
                 _keyUnwrappers.Dispose();
-            }
-
-            if (_encryptors != null)
-            {
-                _encryptors.Dispose();
-            }
-
-            if (_decryptors != null)
-            {
-                _decryptors.Dispose();
             }
         }
 

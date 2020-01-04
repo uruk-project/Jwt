@@ -398,7 +398,7 @@ namespace JsonWebToken
             {
                 return result;
             }
-             
+
             return policy.TryValidateJwt(jws);
 
         Malformed:
@@ -549,8 +549,7 @@ namespace JsonWebToken
                         if (keyWrapper.TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyWrappedBytesWritten))
                         {
                             Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
-                            SymmetricJwk jwk = SymmetricJwk.FromSpan(unwrappedKey);
-                            jwk.Ephemeral = true;
+                            Jwk jwk = new SymmetricJwk(unwrappedKey);
                             keys.Add(jwk);
                         }
                     }

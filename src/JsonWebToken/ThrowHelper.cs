@@ -198,9 +198,9 @@ namespace JsonWebToken
         private static Exception CreateArgumentOutOfRangeException_InvalidEcdsaKeySize(Jwk key, SignatureAlgorithm algorithm, int validKeySize, int keySize) => new ArgumentOutOfRangeException(nameof(algorithm), $"Invalid key size for '{key.Kid}'. Valid key size must be '{validKeySize}' bits for the algorithm {algorithm}. Key size: '{keySize}'.");
 
         [DoesNotReturn]
-        internal static void ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(Jwk key, string algorithm, int validKeySize) => throw CreateArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(key, algorithm, validKeySize);
+        internal static void ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(int keySizeInBits, string algorithm, int validKeySize) => throw CreateArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(keySizeInBits, algorithm, validKeySize);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(Jwk key, string algorithm, int validKeySize) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), $"The algorithm '{algorithm}' requires the a key size to be greater than '{validKeySize}' bits. Key size is '{key.KeySizeInBits}'.");
+        private static Exception CreateArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(int keySizeInBits, string algorithm, int validKeySize) => new ArgumentOutOfRangeException(nameof(keySizeInBits), $"The algorithm '{algorithm}' requires the a key size to be greater than '{validKeySize}' bits. Key size is '{keySizeInBits}'.");
 
         [DoesNotReturn]
         internal static ReadOnlySpan<byte> ThrowArgumentOutOfRangeException_WellKnowProperty(WellKnownProperty wellKnownName) => throw CreateArgumentOutOfRangeException_WellKnowProperty(wellKnownName);
