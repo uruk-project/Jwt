@@ -124,11 +124,7 @@ namespace JsonWebToken
                   : (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
             try
             {
-#if !NETSTANDARD2_0 && !NET461
                 Encoding.UTF8.GetBytes(token, utf8Token);
-#else
-                EncodingHelper.GetUtf8Bytes(token, utf8Token);
-#endif
                 return TryReadToken(utf8Token, policy);
             }
             finally
@@ -476,7 +472,6 @@ namespace JsonWebToken
                 Base64Url.Decode(rawCiphertext, ciphertext, out int ciphertextBytesConsumed, out int ciphertextBytesWritten);
                 Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
 
-#if !NETSTANDARD2_0 && !NET461
                 char[]? headerArrayToReturn = null;
                 try
                 {
@@ -494,9 +489,7 @@ namespace JsonWebToken
                         ArrayPool<char>.Shared.Return(headerArrayToReturn);
                     }
                 }
-#else
-                EncodingHelper.GetAsciiBytes(rawHeader, header);
-#endif
+
                 Base64Url.Decode(rawInitializationVector, initializationVector, out int ivBytesConsumed, out int ivBytesWritten);
                 Debug.Assert(initializationVector.Length == ivBytesWritten);
 

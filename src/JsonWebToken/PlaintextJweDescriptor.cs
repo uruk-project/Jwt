@@ -43,11 +43,7 @@ namespace JsonWebToken
 
             try
             {
-#if !NETSTANDARD2_0 && !NET461
                 Encoding.UTF8.GetBytes(Payload, encodedPayload);
-#else
-                EncodingHelper.GetUtf8Bytes(Payload.AsSpan(), encodedPayload);
-#endif
                 EncryptToken(context, encodedPayload, output);
             }
             finally

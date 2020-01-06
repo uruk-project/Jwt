@@ -82,11 +82,7 @@ namespace JsonWebToken
                 : stackalloc byte[base64Url.Length];
             try
             {
-#if !NETSTANDARD2_0 && !NET461
                 Encoding.UTF8.GetBytes(base64Url, buffer);
-#else
-                EncodingHelper.GetUtf8Bytes(base64Url, buffer);
-#endif
                 return Decode(buffer, data);
             }
             finally
@@ -197,7 +193,7 @@ namespace JsonWebToken
                     ? (utf8ArrayToReturn = ArrayPool<byte>.Shared.Rent(data.Length)).AsSpan(0, data.Length)
                     : stackalloc byte[data.Length];
 
-                GetUtf8Bytes(data, utf8Data);
+                Encoding.UTF8.GetBytes(data, utf8Data);
                 return Encode(utf8Data);
             }
             finally
@@ -234,17 +230,5 @@ namespace JsonWebToken
         {
             return _base64.GetEncodedLength(count);
         }
-
-#if !NETSTANDARD2_0 && !NET461
-        private static int GetUtf8Bytes(ReadOnlySpan<char> input, Span<byte> output)
-        {
-            return Encoding.UTF8.GetBytes(input, output);
-        }
-#else
-        private static int GetUtf8Bytes(ReadOnlySpan<char> input, Span<byte> output)
-        {
-            return EncodingHelper.GetUtf8Bytes(input, output);
-        }
-#endif
     }
 }
