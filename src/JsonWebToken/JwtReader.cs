@@ -102,11 +102,6 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
-            if (policy is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.policy);
-            }
-
             if (token.Length == 0)
             {
                 return TokenValidationResult.MalformedToken();
