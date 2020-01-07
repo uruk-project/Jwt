@@ -41,7 +41,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets whether the <see cref="JwtDescriptor"/> has to be validated. Default value is <c>false</c>.
         /// </summary>
-        public bool IgnoreTokenValidation { get; set; } = false;
+        public bool IgnoreTokenValidation { get; set; }
 
         /// <summary>
         /// Gets or sets whether the JWT header will be cached. Default value is <c>true</c>.
@@ -49,7 +49,7 @@ namespace JsonWebToken
         public bool EnableHeaderCaching { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets whether the issued time must be generated.
+        /// Gets or sets whether the issued time must be generated. Default value is <c>false</c>.
         /// </summary>
         public bool GenerateIssuedTime { get; set; }
 
@@ -96,11 +96,7 @@ namespace JsonWebToken
         {
             using var bufferWriter = new PooledByteBufferWriter();
             WriteToken(descriptor, bufferWriter);
-#if NETSTANDARD2_0 || NET461
-            return Encoding.UTF8.GetString(bufferWriter.WrittenSpan.ToArray());
-#else
             return Encoding.UTF8.GetString(bufferWriter.WrittenSpan);
-#endif
         }
     }
 }

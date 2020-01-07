@@ -131,7 +131,7 @@ namespace JsonWebToken
                 }
             }
 
-            ThrowHelper.ThrowNotSupportedException_Curve(Encoding.UTF8.GetString(crv.ToArray()));
+            ThrowHelper.ThrowNotSupportedException_Curve(Encoding.UTF8.GetString(crv));
             return default;
         }
     }

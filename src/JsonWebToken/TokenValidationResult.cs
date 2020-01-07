@@ -246,7 +246,7 @@ namespace JsonWebToken
             {
                 Token = jwt,
                 Status = TokenValidationStatus.InvalidClaim,
-                ErrorClaim = Encoding.UTF8.GetString(claim.ToArray())
+                ErrorClaim = Encoding.UTF8.GetString(claim)
             };
         }
 
@@ -280,7 +280,7 @@ namespace JsonWebToken
             {
                 Token = jwt,
                 Status = TokenValidationStatus.MissingClaim,
-                ErrorClaim = Encoding.UTF8.GetString(claim.ToArray())
+                ErrorClaim = Encoding.UTF8.GetString(claim)
             };
         }
 
@@ -312,7 +312,7 @@ namespace JsonWebToken
             return new TokenValidationResult
             {
                 Status = TokenValidationStatus.InvalidHeader,
-                ErrorHeader = Encoding.UTF8.GetString(header.ToArray())
+                ErrorHeader = Encoding.UTF8.GetString(header)
             };
         }
 
@@ -342,7 +342,7 @@ namespace JsonWebToken
             return new TokenValidationResult
             {
                 Status = TokenValidationStatus.MissingHeader,
-                ErrorHeader = Encoding.UTF8.GetString(header.ToArray())
+                ErrorHeader = Encoding.UTF8.GetString(header)
             };
         }
 

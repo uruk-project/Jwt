@@ -132,11 +132,7 @@ namespace JsonWebToken
             }
 
             var input = bufferWriter.WrittenSpan;
-#if NETSTANDARD2_0 || NET461
-            return Encoding.UTF8.GetString(input.ToArray());
-#else
             return Encoding.UTF8.GetString(input);
-#endif
         }
 
         internal void WriteTo(Utf8JsonWriter writer)
@@ -161,11 +157,7 @@ namespace JsonWebToken
             }
 
             var input = bufferWriter.WrittenSpan;
-#if NETSTANDARD2_0 || NET461
-            return Encoding.UTF8.GetString(input.ToArray());
-#else
             return Encoding.UTF8.GetString(input);
-#endif
         }
 
         private Jwk[] UnidentifiedKeys

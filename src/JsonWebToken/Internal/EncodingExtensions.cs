@@ -7,7 +7,7 @@ using System.Buffers;
 using System.ComponentModel;
 using System.Text;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     /// <summary>
     /// Helper class for encoding text.

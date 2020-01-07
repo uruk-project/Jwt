@@ -251,7 +251,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public TokenValidationPolicyBuilder RequireClaim(ReadOnlySpan<byte> requiredClaim)
         {
-            return RequireClaim(Encoding.UTF8.GetString(requiredClaim.ToArray()));
+            return RequireClaim(Encoding.UTF8.GetString(requiredClaim));
         }
 
         /// <summary>

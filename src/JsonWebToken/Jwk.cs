@@ -463,11 +463,7 @@ namespace JsonWebToken
             }
 
             var input = bufferWriter.WrittenSpan;
-#if NETSTANDARD2_0 || NET461
-            return Encoding.UTF8.GetString(input.ToArray());
-#else
-                return Encoding.UTF8.GetString(input);
-#endif
+            return Encoding.UTF8.GetString(input);
         }
 
         /// <summary>
@@ -669,7 +665,7 @@ namespace JsonWebToken
         /// <param name="decryptor">The provided <see cref="AuthenticatedDecryptor"/>. <c>null</c> if returns <c>false</c>.</param>
         public bool TryGetAuthenticatedDecryptor(EncryptionAlgorithm? encryptionAlgorithm, [NotNullWhen(true)] out AuthenticatedDecryptor? decryptor)
         {
-             if (!(encryptionAlgorithm is null) && SupportEncryption(encryptionAlgorithm))
+            if (!(encryptionAlgorithm is null) && SupportEncryption(encryptionAlgorithm))
             {
                 decryptor = CreateAuthenticatedDecryptor(encryptionAlgorithm);
                 return true;
@@ -708,32 +704,18 @@ namespace JsonWebToken
         /// <returns></returns>
         protected abstract void Canonicalize(IBufferWriter<byte> bufferWriter);
 
-#if !NETSTANDARD2_0 && !NET461
         /// <summary>
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
         /// <returns></returns>
         public byte[] ComputeThumbprint()
         {
-            using var hashAlgorithm = SHA256.Create();
-            Span<byte> hash = stackalloc byte[hashAlgorithm.HashSize >> 3];
+            Span<byte> hash = stackalloc byte[32];
             using var bufferWriter = new PooledByteBufferWriter();
             Canonicalize(bufferWriter);
-            hashAlgorithm.TryComputeHash(bufferWriter.WrittenSpan, hash, out int bytesWritten);
-            Debug.Assert(bytesWritten == hashAlgorithm.HashSize >> 3);
+            Sha256.Shared.ComputeHash(bufferWriter.WrittenSpan, hash);
             return Base64Url.Encode(hash);
         }
-#else
-        /// <summary>
-        /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
-        /// </summary>
-        public byte[] ComputeThumbprint()
-        {
-            using var hashAlgorithm = SHA256.Create();
-            var hash = hashAlgorithm.ComputeHash(Canonicalize());
-            return Base64Url.Encode(hash);
-        }
-#endif
 
         /// <summary>
         /// Returns a new instance of <see cref="AsymmetricJwk"/>.
@@ -1028,11 +1010,7 @@ namespace JsonWebToken
             }
 
             var input = bufferWriter.WrittenSpan;
-#if NETSTANDARD2_0 || NET461
-            return Encoding.UTF8.GetString(input.ToArray());
-#else
             return Encoding.UTF8.GetString(input);
-#endif
         }
 
         internal bool CanUseForSignature(SignatureAlgorithm? signatureAlgorithm)

@@ -226,7 +226,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_Jwk(ReadOnlySpan<byte> name) => throw CreateNotSupportedException_Jwk(name);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateNotSupportedException_Jwk(ReadOnlySpan<byte> name) => new NotSupportedException($"JWK type '{Encoding.UTF8.GetString(name.ToArray())}' is not supported.");
+        private static Exception CreateNotSupportedException_Jwk(ReadOnlySpan<byte> name) => new NotSupportedException($"JWK type '{Encoding.UTF8.GetString(name)}' is not supported.");
 
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm) => throw CreateNotSupportedException_SignatureAlgorithm(algorithm);
@@ -324,7 +324,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowFormatException_NotSupportedNumberValue(ReadOnlySpan<byte> name) => throw CreateFormatException_NotSUpportedNumberValue(name);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateFormatException_NotSUpportedNumberValue(ReadOnlySpan<byte> name) => new FormatException($"The claim '{Encoding.UTF8.GetString(name.ToArray())}' is not a supported Number value.");
+        private static Exception CreateFormatException_NotSUpportedNumberValue(ReadOnlySpan<byte> name) => new FormatException($"The claim '{Encoding.UTF8.GetString(name)}' is not a supported Number value.");
 
         [DoesNotReturn]
         internal static string ThrowFormatException_MalformedJson() => throw CreateFormatException_MalformedJson();

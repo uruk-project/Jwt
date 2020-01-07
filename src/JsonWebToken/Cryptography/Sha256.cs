@@ -22,6 +22,11 @@ namespace JsonWebToken
         private const int Sha256HashSize = 32;
         private const int Sha256BlockSize = 64;
 
+        /// <summary>
+        /// Gets the default instance of the <see cref="Sha256"/> class.
+        /// </summary>
+        public static readonly Sha256 Shared = new Sha256();
+
         /// <inheritsdoc />
         public override int HashSize => Sha256HashSize;
 
