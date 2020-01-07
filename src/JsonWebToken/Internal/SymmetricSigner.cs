@@ -196,7 +196,7 @@ namespace JsonWebToken.Internal
         private sealed class NotSupportedHmacSha : HmacSha2
         {
             public NotSupportedHmacSha(SignatureAlgorithm algorithm)
-                : base(new ShaNull(), default)
+                : base(ShaNull.Shared, default)
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm.Name);
             }
@@ -214,6 +214,8 @@ namespace JsonWebToken.Internal
 
         private sealed class ShaNull : Sha2
         {
+            public static readonly ShaNull Shared = new ShaNull();
+
             public override int HashSize => 0;
 
             public override int BlockSize => 0;

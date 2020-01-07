@@ -15,7 +15,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         public HmacSha512(ReadOnlySpan<byte> key)
-            : base(new Sha512(), key)
+            : base(Sha512.Shared, key)
         {
         }
 

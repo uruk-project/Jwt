@@ -20,6 +20,11 @@ namespace JsonWebToken
     {
         private const int Sha384HashSize = 48;
         private const int Sha384BlockSize = 128;
+        
+        /// <summary>
+        /// Gets the default instance of the <see cref="Sha384"/> class.
+        /// </summary>
+        public static readonly Sha384 Shared = new Sha384();
 
         /// <inheritsdoc />
         public override int HashSize => Sha384HashSize;
