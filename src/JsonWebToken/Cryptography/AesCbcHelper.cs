@@ -9,6 +9,7 @@ namespace JsonWebToken.Internal
 {
     internal static class AesCbcHelper
     {
+        // Taken from https://github.com/dotnet/runtime/blob/master/src/libraries/System.Security.Cryptography.Primitives/src/System/Security/Cryptography/CryptoStream.cs#L516
         public static int Transform(ICryptoTransform transform, ReadOnlySpan<byte> input, int inputOffset, int inputLength, Span<byte> output)
         {
             byte[] buffer = input.ToArray();
