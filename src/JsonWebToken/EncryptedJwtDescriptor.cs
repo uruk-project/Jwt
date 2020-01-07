@@ -155,7 +155,7 @@ namespace JsonWebToken
                                 + (Constants.JweSegmentCount - 1);
                             encryptionLength += Base64Url.GetArraySizeRequiredToEncode(wrappedKey.Length);
 
-                            Span<byte> encryptedToken = output.GetSpan(encryptionLength).Slice(0, encryptionLength);
+                            Span<byte> encryptedToken = output.GetSpan(encryptionLength);
 
                             base64EncodedHeader.CopyTo(encryptedToken);
                             encryptedToken[bytesWritten++] = Constants.ByteDot;

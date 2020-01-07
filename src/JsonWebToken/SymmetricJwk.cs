@@ -488,11 +488,10 @@ namespace JsonWebToken
             byte[] key = new byte[sizeInBits >> 3];
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             RandomNumberGenerator.Fill(key);
-            return key;
 #else
             _randomNumberGenerator.GetBytes(key);
-            return key;
 #endif
+            return key;
         }
 
         /// <inheritdoc />      

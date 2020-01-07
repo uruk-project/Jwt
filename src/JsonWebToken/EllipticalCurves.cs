@@ -15,34 +15,26 @@ namespace JsonWebToken
     /// </summary>
     public readonly struct EllipticalCurve
     {
-        /// <summary>
-        /// 'P-256'.
-        /// </summary>
-        public static ReadOnlySpan<byte> P256Name => new byte[] { (byte)'P', (byte)'-', (byte)'2', (byte)'5', (byte)'6' };
+        private static readonly byte[] P256Name = new byte[] { (byte)'P', (byte)'-', (byte)'2', (byte)'5', (byte)'6' };
 
         /// <summary>
         /// 'P-256'.
         /// </summary>
-        public static EllipticalCurve P256 => new EllipticalCurve(1, ECCurve.NamedCurves.nistP256, P256Name.ToArray(), 256, 64);
-        /// <summary>
-        /// 'P-384'.
-        /// </summary>
-        public static ReadOnlySpan<byte> P384Name => new byte[] { (byte)'P', (byte)'-', (byte)'3', (byte)'8', (byte)'4' };
+        public static EllipticalCurve P256 => new EllipticalCurve(1, ECCurve.NamedCurves.nistP256, P256Name, 256, 64);
+    
+        private static readonly byte[] P384Name = new byte[] { (byte)'P', (byte)'-', (byte)'3', (byte)'8', (byte)'4' };
 
         /// <summary>
         /// 'P-384'.
         /// </summary>
-        public static EllipticalCurve P384 => new EllipticalCurve(2, ECCurve.NamedCurves.nistP384, P384Name.ToArray(), 384, 96);
+        public static EllipticalCurve P384 => new EllipticalCurve(2, ECCurve.NamedCurves.nistP384, P384Name, 384, 96);
+
+        private static readonly byte[] P521Name = new byte[] { (byte)'P', (byte)'-', (byte)'5', (byte)'2', (byte)'1' };
 
         /// <summary>
         /// 'P-521'.
         /// </summary>    
-        public static ReadOnlySpan<byte> P521Name => new byte[] { (byte)'P', (byte)'-', (byte)'5', (byte)'2', (byte)'1' };
-
-        /// <summary>
-        /// 'P-521'.
-        /// </summary>    
-        public static EllipticalCurve P521 => new EllipticalCurve(3, ECCurve.NamedCurves.nistP521, P521Name.ToArray(), 521, 132);
+        public static EllipticalCurve P521 => new EllipticalCurve(3, ECCurve.NamedCurves.nistP521, P521Name, 521, 132);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EllipticalCurve"/> struct.
