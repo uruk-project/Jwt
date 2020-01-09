@@ -12,7 +12,7 @@ namespace JsonWebToken.Tests
 
             builder
                 .SignWith(RsaJwk.GenerateKey(2048, true, SignatureAlgorithm.RsaSsaPssSha256.Utf8Name))
-                .EncryptWith(SymmetricJwk.GenerateKey(128))
+                .EncryptWith(SymmetricJwk.GenerateKey(128), EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Direct)
                 .IssuedBy("https://issuer.example.com")
                 .ExpiresAt(DateTime.UtcNow);
 
@@ -57,7 +57,7 @@ namespace JsonWebToken.Tests
             var builder = new JwtDescriptorBuilder();
 
             builder
-                .EncryptWith(SymmetricJwk.GenerateKey(128))
+                .EncryptWith(SymmetricJwk.GenerateKey(128), EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Direct)
                 .BinaryPayload(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 
             var descriptor = builder.Build();
@@ -72,7 +72,7 @@ namespace JsonWebToken.Tests
 
             builder
                 .PlaintextPayload("Live long and prosper.")
-                .EncryptWith(SymmetricJwk.GenerateKey(128));
+                .EncryptWith(SymmetricJwk.GenerateKey(128), EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Direct);
 
             var descriptor = builder.Build();
 
