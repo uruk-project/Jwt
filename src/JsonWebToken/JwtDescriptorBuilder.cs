@@ -24,8 +24,11 @@ namespace JsonWebToken
         private EncryptionAlgorithm? _encryptionAlgorithm;
         private bool _noSignature;
         private SignatureAlgorithm? _algorithm;
-        private bool _automaticId;
         private long? _expireAfter;
+        private long? _notBefore;
+        private long? _issuedAt;
+        private bool _automaticId;
+        private bool _automaticIssuedAt;
 
         private JwtDescriptorBuilder AddHeader(ReadOnlySpan<byte> utf8Name, string value)
         {
@@ -143,6 +146,36 @@ namespace JsonWebToken
         public JwtDescriptorBuilder NotBefore(DateTime nbf)
         {
             return AddClaim(Claims.NbfUtf8, nbf.ToEpochTime());
+        }
+
+        /// <summary>
+        /// Defines the sliding "not before" claim.
+        /// </summary>
+        /// <param name="before"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder NotBefore(TimeSpan before)
+            => NotBefore((long)before.TotalSeconds);
+
+        /// <summary>
+        /// Defines the sliding "not before" claim.
+        /// </summary>
+        /// <param name="seconds"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder NotBefore(long seconds)
+        {
+            _notBefore = seconds;
+            return this;
+        }
+
+        /// <summary>
+        /// Defines the issuance time claim.
+        /// </summary>
+        /// <param name="iat"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder IssuedAt(long iat)
+        {
+            _issuedAt = iat;
+            return this;
         }
 
         private JwtDescriptorBuilder AddClaim(ReadOnlySpan<byte> utf8Name, string value)
@@ -380,6 +413,20 @@ namespace JsonWebToken
             if (_expireAfter.HasValue)
             {
                 jws.ExpirationTime = DateTime.UtcNow.AddSeconds(_expireAfter.Value);
+            }
+
+            if (_notBefore.HasValue)
+            {
+                jws.NotBefore = DateTime.UtcNow.AddSeconds(_notBefore.Value);
+            }
+
+            if (_automaticIssuedAt)
+            {
+                jws.IssuedAt = DateTime.UtcNow;
+            }
+            else if (_issuedAt.HasValue)
+            {
+                jws.IssuedAt = EpochTime.ToDateTime(_issuedAt.Value);
             }
 
             return jws;
@@ -624,10 +671,23 @@ namespace JsonWebToken
             return this;
         }
 
+        /// <summary>
+        /// Generates a new id ('jti' claim) for each new descriptor build.
+        /// </summary>
+        /// <returns></returns>
         public JwtDescriptorBuilder WithAutomaticId()
         {
             _automaticId = true;
+            return this;
+        }
 
+        /// <summary>
+        /// Generate the issuance time for each new descriptor build.
+        /// </summary>
+        /// <returns></returns>
+        public JwtDescriptorBuilder WithAutomaticIssuedAt()
+        {
+            _automaticIssuedAt = true;
             return this;
         }
     }
