@@ -3,7 +3,6 @@
 
 #if NETSTANDARD2_0 || NET461
 using System;
-using System.Buffers;
 using System.ComponentModel;
 using System.Text;
 
@@ -35,9 +34,9 @@ namespace JsonWebToken
         /// <param name="encoding"></param>
         /// <param name="input"></param>
         /// <param name="output"></param>
-        public static void GetBytes(this Encoding encoding, string input, Span<byte> output)
+        public static int GetBytes(this Encoding encoding, string input, Span<byte> output)
         {
-            encoding.GetBytes(input.AsSpan(), output);
+            return encoding.GetBytes(input.AsSpan(), output);
         }
 
         /// <summary>

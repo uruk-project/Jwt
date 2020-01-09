@@ -5,7 +5,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace JsonWebToken
 {
@@ -16,20 +15,18 @@ namespace JsonWebToken
     public readonly struct EllipticalCurve
     {
         private static readonly byte[] P256Name = new byte[] { (byte)'P', (byte)'-', (byte)'2', (byte)'5', (byte)'6' };
+        private static readonly byte[] P384Name = new byte[] { (byte)'P', (byte)'-', (byte)'3', (byte)'8', (byte)'4' };
+        private static readonly byte[] P521Name = new byte[] { (byte)'P', (byte)'-', (byte)'5', (byte)'2', (byte)'1' };
 
         /// <summary>
         /// 'P-256'.
         /// </summary>
         public static EllipticalCurve P256 => new EllipticalCurve(1, ECCurve.NamedCurves.nistP256, P256Name, 256, 64);
-    
-        private static readonly byte[] P384Name = new byte[] { (byte)'P', (byte)'-', (byte)'3', (byte)'8', (byte)'4' };
 
         /// <summary>
         /// 'P-384'.
         /// </summary>
         public static EllipticalCurve P384 => new EllipticalCurve(2, ECCurve.NamedCurves.nistP384, P384Name, 384, 96);
-
-        private static readonly byte[] P521Name = new byte[] { (byte)'P', (byte)'-', (byte)'5', (byte)'2', (byte)'1' };
 
         /// <summary>
         /// 'P-521'.
@@ -123,7 +120,7 @@ namespace JsonWebToken
                 }
             }
 
-            ThrowHelper.ThrowNotSupportedException_Curve(Encoding.UTF8.GetString(crv));
+            ThrowHelper.ThrowNotSupportedException_Curve(Utf8.GetString(crv));
             return default;
         }
     }

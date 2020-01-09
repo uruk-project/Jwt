@@ -1,10 +1,9 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -180,7 +179,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the plaintext of the JWE.
         /// </summary>
-        public string? Plaintext => Binary is null ? null : Encoding.UTF8.GetString(Binary);
+        public string? Plaintext => Binary is null ? null : Utf8.GetString(Binary);
 
         /// <summary>
         /// Gets the binary data of the JWE.

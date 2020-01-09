@@ -1,11 +1,10 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
-using System.Text;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -30,7 +29,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
-            return Decode(Encoding.UTF8.GetBytes(data));
+            return Decode(Utf8.GetBytes(data));
         }
 
         /// <summary>
@@ -82,7 +81,7 @@ namespace JsonWebToken
                 : stackalloc byte[base64Url.Length];
             try
             {
-                Encoding.UTF8.GetBytes(base64Url, buffer);
+                Utf8.GetBytes(base64Url, buffer);
                 return Decode(buffer, data);
             }
             finally
@@ -193,7 +192,7 @@ namespace JsonWebToken
                     ? (utf8ArrayToReturn = ArrayPool<byte>.Shared.Rent(data.Length)).AsSpan(0, data.Length)
                     : stackalloc byte[data.Length];
 
-                Encoding.UTF8.GetBytes(data, utf8Data);
+                Utf8.GetBytes(data, utf8Data);
                 return Encode(utf8Data);
             }
             finally

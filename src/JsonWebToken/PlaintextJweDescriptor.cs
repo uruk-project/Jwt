@@ -3,8 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Text;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -31,20 +29,20 @@ namespace JsonWebToken
             : base(payload)
         {
         }
-    
+
         /// <inheritsdoc />
         public override void Encode(EncodingContext context, IBufferWriter<byte> output)
         {
-            int payloadLength = Payload.Length;
+            int payloadLength = Utf8.GetMaxByteCount(Payload.Length);
             byte[]? payloadToReturnToPool = null;
             Span<byte> encodedPayload = payloadLength > Constants.MaxStackallocBytes
-                             ? (payloadToReturnToPool = ArrayPool<byte>.Shared.Rent(payloadLength)).AsSpan(0, payloadLength)
+                             ? (payloadToReturnToPool = ArrayPool<byte>.Shared.Rent(payloadLength))
                              : stackalloc byte[payloadLength];
 
             try
             {
-                Encoding.UTF8.GetBytes(Payload, encodedPayload);
-                EncryptToken(context, encodedPayload, output);
+                int bytesWritten = Utf8.GetBytes(Payload, encodedPayload);
+                EncryptToken(context, encodedPayload.Slice(0, bytesWritten), output);
             }
             finally
             {

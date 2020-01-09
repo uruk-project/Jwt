@@ -1,7 +1,6 @@
 // Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -10,10 +9,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -82,7 +80,7 @@ namespace JsonWebToken
         /// <param name="alg"></param>
         protected Jwk(string alg)
         {
-            Alg = Encoding.UTF8.GetBytes(alg);
+            Alg = Utf8.GetBytes(alg);
         }
 
         /// <summary>
@@ -414,7 +412,7 @@ namespace JsonWebToken
         {
             if (jwk.TryGetValue(JwkParameterNames.KtyUtf8, out var property) && !(property.Value is null))
             {
-                ReadOnlySpan<byte> kty = Encoding.UTF8.GetBytes((string)property.Value);
+                ReadOnlySpan<byte> kty = Utf8.GetBytes((string)property.Value);
                 if (kty.SequenceEqual(JwkTypeNames.Octet))
                 {
                     return new SymmetricJwk(jwk);
@@ -463,7 +461,7 @@ namespace JsonWebToken
             }
 
             var input = bufferWriter.WrittenSpan;
-            return Encoding.UTF8.GetString(input);
+            return Utf8.GetString(input);
         }
 
         /// <summary>
@@ -777,7 +775,7 @@ namespace JsonWebToken
             }
 
             key.X5t = certificate.GetCertHash();
-            key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
+            key.Kid = Utf8.GetString(key.ComputeThumbprint());
             return key;
         }
 
@@ -788,7 +786,7 @@ namespace JsonWebToken
         /// <returns><see cref="Jwk"/></returns>
         public static Jwk FromJson(string json)
         {
-            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json), true, default);
+            var reader = new Utf8JsonReader(Utf8.GetBytes(json), true, default);
             if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
             {
                 return FromJsonReader(ref reader);
@@ -1010,7 +1008,7 @@ namespace JsonWebToken
             }
 
             var input = bufferWriter.WrittenSpan;
-            return Encoding.UTF8.GetString(input);
+            return Utf8.GetString(input);
         }
 
         internal bool CanUseForSignature(SignatureAlgorithm? signatureAlgorithm)

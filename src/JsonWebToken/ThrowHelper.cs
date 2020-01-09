@@ -9,8 +9,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using System.Text;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -62,7 +60,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_ClaimIsRequired(ReadOnlySpan<byte> claim)
         {
-            var value = Encoding.UTF8.GetString(claim);
+            var value = Utf8.GetString(claim);
             return new JwtDescriptorException($"The claim '{value}' is required.");
         }
 
@@ -72,7 +70,7 @@ namespace JsonWebToken
         private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
         {
             var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-            var value = Encoding.UTF8.GetString(utf8Name);
+            var value = Utf8.GetString(utf8Name);
             return new JwtDescriptorException($"The claim '{value}' must be of type [{claimTypes}].");
         }
 
@@ -81,7 +79,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
         {
-            var value = Encoding.UTF8.GetString(utf8Name);
+            var value = Utf8.GetString(utf8Name);
             return new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
         }
 
@@ -91,7 +89,7 @@ namespace JsonWebToken
         private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
         {
             var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-            var value = Encoding.UTF8.GetString(utf8Name);
+            var value = Utf8.GetString(utf8Name);
             return new JwtDescriptorException($"The header parameter '{value}' must be of type [{claimTypes}].");
         }
 
@@ -100,7 +98,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
         {
-            var value = Encoding.UTF8.GetString(utf8Name);
+            var value = Utf8.GetString(utf8Name);
             return new JwtDescriptorException($"The header parameter '{value}' must be of type {type}.");
         }
 
@@ -109,7 +107,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_HeaderIsRequired(ReadOnlySpan<byte> header)
         {
-            var value = Encoding.UTF8.GetString(header);
+            var value = Utf8.GetString(header);
             return new JwtDescriptorException($"The header parameter '{value}' is required.");
         }
 
@@ -226,7 +224,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_Jwk(ReadOnlySpan<byte> name) => throw CreateNotSupportedException_Jwk(name);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateNotSupportedException_Jwk(ReadOnlySpan<byte> name) => new NotSupportedException($"JWK type '{Encoding.UTF8.GetString(name)}' is not supported.");
+        private static Exception CreateNotSupportedException_Jwk(ReadOnlySpan<byte> name) => new NotSupportedException($"JWK type '{Utf8.GetString(name)}' is not supported.");
 
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm) => throw CreateNotSupportedException_SignatureAlgorithm(algorithm);
@@ -324,7 +322,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowFormatException_NotSupportedNumberValue(ReadOnlySpan<byte> name) => throw CreateFormatException_NotSUpportedNumberValue(name);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateFormatException_NotSUpportedNumberValue(ReadOnlySpan<byte> name) => new FormatException($"The claim '{Encoding.UTF8.GetString(name)}' is not a supported Number value.");
+        private static Exception CreateFormatException_NotSUpportedNumberValue(ReadOnlySpan<byte> name) => new FormatException($"The claim '{Utf8.GetString(name)}' is not a supported Number value.");
 
         [DoesNotReturn]
         internal static string ThrowFormatException_MalformedJson() => throw CreateFormatException_MalformedJson();

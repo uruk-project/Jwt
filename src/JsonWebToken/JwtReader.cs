@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -11,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -107,7 +107,7 @@ namespace JsonWebToken
                 return TokenValidationResult.MalformedToken();
             }
 
-            int length = Encoding.UTF8.GetByteCount(token);
+            int length = Utf8.GetMaxByteCount(token.Length);
             if (length > policy.MaximumTokenSizeInBytes)
             {
                 return TokenValidationResult.MalformedToken();
@@ -116,11 +116,11 @@ namespace JsonWebToken
             byte[]? utf8ArrayToReturnToPool = null;
             var utf8Token = length <= Constants.MaxStackallocBytes
                   ? stackalloc byte[length]
-                  : (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
+                  : (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length));
             try
             {
-                Encoding.UTF8.GetBytes(token, utf8Token);
-                return TryReadToken(utf8Token, policy);
+                int bytesWritten = Utf8.GetBytes(token, utf8Token);
+                return TryReadToken(utf8Token.Slice(0, bytesWritten), policy);
             }
             finally
             {
@@ -470,12 +470,13 @@ namespace JsonWebToken
                 char[]? headerArrayToReturn = null;
                 try
                 {
-                    Span<char> utf8Header = header.Length < Constants.MaxStackallocBytes
-                        ? stackalloc char[header.Length]
-                        : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(header.Length)).AsSpan(0, header.Length);
+                    int utf8HeaderLength = Utf8.GetMaxCharCount(header.Length);
+                    Span<char> utf8Header = utf8HeaderLength < Constants.MaxStackallocBytes
+                        ? stackalloc char[utf8HeaderLength]
+                        : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(utf8HeaderLength));
 
-                    Encoding.UTF8.GetChars(rawHeader, utf8Header);
-                    Encoding.ASCII.GetBytes(utf8Header, header);
+                    utf8HeaderLength = Utf8.GetChars(rawHeader, utf8Header);
+                    Ascii.GetBytes(utf8Header.Slice(0, utf8HeaderLength), header);
                 }
                 finally
                 {

@@ -3,11 +3,9 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using JsonWebToken.Internal;
 
@@ -172,7 +170,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, string value)
         {
-            AddClaim(Encoding.UTF8.GetBytes(name), value);
+            AddClaim(Utf8.GetBytes(name), value);
         }
 
         /// <summary>
@@ -199,7 +197,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, bool? value)
         {
-            AddClaim(Encoding.UTF8.GetBytes(name), value);
+            AddClaim(Utf8.GetBytes(name), value);
         }
 
         /// <summary>
@@ -209,7 +207,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, long value)
         {
-            AddClaim(Encoding.UTF8.GetBytes(name), value);
+            AddClaim(Utf8.GetBytes(name), value);
         }
 
         /// <summary>
@@ -236,7 +234,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, DateTime? value)
         {
-            AddClaim(Encoding.UTF8.GetBytes(name), value);
+            AddClaim(Utf8.GetBytes(name), value);
         }
 
         /// <summary>
@@ -256,7 +254,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, int value)
         {
-            AddClaim(Encoding.UTF8.GetBytes(name), value);
+            AddClaim(Utf8.GetBytes(name), value);
         }
 
         /// <summary>
@@ -276,7 +274,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, bool value)
         {
-            AddClaim(Encoding.UTF8.GetBytes(name), value);
+            AddClaim(Utf8.GetBytes(name), value);
         }
 
         /// <summary>
@@ -296,7 +294,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, JwtObject value)
         {
-            AddClaim(Encoding.UTF8.GetBytes(name), value);
+            AddClaim(Utf8.GetBytes(name), value);
         }
 
         /// <summary>
@@ -327,7 +325,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void AddClaim(string name, JwtProperty value)
         {
-            AddClaim(Encoding.UTF8.GetBytes(name), value);
+            AddClaim(Utf8.GetBytes(name), value);
         }
 
         /// <summary>
@@ -352,7 +350,7 @@ namespace JsonWebToken
         /// <returns></returns>
         protected string? GetStringClaim(string name)
         {
-            return GetStringClaim(Encoding.UTF8.GetBytes(name));
+            return GetStringClaim(Utf8.GetBytes(name));
         }
 
         /// <summary>
@@ -439,7 +437,7 @@ namespace JsonWebToken
         /// <returns></returns>
         protected List<T>? GetListClaims<T>(string name)
         {
-            return GetListClaims<T>(Encoding.UTF8.GetBytes(name));
+            return GetListClaims<T>(Utf8.GetBytes(name));
         }
 
         /// <summary>

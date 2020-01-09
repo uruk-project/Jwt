@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Text;
 using System.Text.Json;
 using JsonWebToken.Internal;
 
@@ -351,7 +350,7 @@ namespace JsonWebToken
         {
             Type = JwtTokenType.Array;
             WellKnownName = 0;
-            _utf8Name = Encoding.UTF8.GetBytes(name);
+            _utf8Name = Utf8.GetBytes(name);
             Value = value;
         }
 
@@ -369,7 +368,7 @@ namespace JsonWebToken
 
             Type = JwtTokenType.Object;
             WellKnownName = 0;
-            _utf8Name = Encoding.UTF8.GetBytes(name);
+            _utf8Name = Utf8.GetBytes(name);
             Value = value;
         }
 
@@ -387,7 +386,7 @@ namespace JsonWebToken
 
             Type = JwtTokenType.String;
             WellKnownName = 0;
-            _utf8Name = Encoding.UTF8.GetBytes(name);
+            _utf8Name = Utf8.GetBytes(name);
             Value = value;
         }
 
@@ -400,7 +399,7 @@ namespace JsonWebToken
         {
             Type = JwtTokenType.Utf8String;
             WellKnownName = 0;
-            _utf8Name = Encoding.UTF8.GetBytes(name);
+            _utf8Name = Utf8.GetBytes(name);
             Value = value;
         }
 
@@ -413,7 +412,7 @@ namespace JsonWebToken
         {
             Type = JwtTokenType.Integer;
             WellKnownName = 0;
-            _utf8Name = Encoding.UTF8.GetBytes(name);
+            _utf8Name = Utf8.GetBytes(name);
             Value = value;
         }
 
@@ -426,7 +425,7 @@ namespace JsonWebToken
         {
             Type = JwtTokenType.Integer;
             WellKnownName = 0;
-            _utf8Name = Encoding.UTF8.GetBytes(name);
+            _utf8Name = Utf8.GetBytes(name);
             Value = (long)value; // cast to long required due to boxing
         }
 
@@ -439,7 +438,7 @@ namespace JsonWebToken
         {
             Type = JwtTokenType.Float;
             WellKnownName = 0;
-            _utf8Name = Encoding.UTF8.GetBytes(name);
+            _utf8Name = Utf8.GetBytes(name);
             Value = value;
         }
 
@@ -452,7 +451,7 @@ namespace JsonWebToken
         {
             Type = JwtTokenType.Float;
             WellKnownName = 0;
-            _utf8Name = Encoding.UTF8.GetBytes(name);
+            _utf8Name = Utf8.GetBytes(name);
             Value = value;
         }
 
@@ -465,7 +464,7 @@ namespace JsonWebToken
         {
             Type = JwtTokenType.Boolean;
             WellKnownName = 0;
-            _utf8Name = Encoding.UTF8.GetBytes(name);
+            _utf8Name = Utf8.GetBytes(name);
             Value = value;
         }
 
@@ -477,7 +476,7 @@ namespace JsonWebToken
         {
             Type = JwtTokenType.Null;
             WellKnownName = 0;
-            _utf8Name = Encoding.UTF8.GetBytes(name);
+            _utf8Name = Utf8.GetBytes(name);
             Value = null;
         }
 
@@ -697,7 +696,7 @@ namespace JsonWebToken
             }
 
             var input = bufferWriter.WrittenSpan;
-            return Encoding.UTF8.GetString(input);
+            return Utf8.GetString(input);
         }
     }
 }

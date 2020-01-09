@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Text;
 
 namespace JsonWebToken
 {
@@ -96,7 +95,7 @@ namespace JsonWebToken
         {
             using var bufferWriter = new PooledByteBufferWriter();
             WriteToken(descriptor, bufferWriter);
-            return Encoding.UTF8.GetString(bufferWriter.WrittenSpan);
+            return Utf8.GetString(bufferWriter.WrittenSpan);
         }
     }
 }

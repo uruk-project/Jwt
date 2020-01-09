@@ -1,13 +1,11 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -121,7 +119,7 @@ namespace JsonWebToken
                                     {
                                         // TODO : Fix when the Utf8JsonReader will allow
                                         // to read an unescaped string without allocating a string
-                                        current.Add(new JwtProperty(WellKnownProperty.Alg, Encoding.UTF8.GetBytes(reader.GetString())));
+                                        current.Add(new JwtProperty(WellKnownProperty.Alg, Utf8.GetBytes(reader.GetString())));
                                     }
 
                                     continue;
@@ -140,7 +138,7 @@ namespace JsonWebToken
                                     {
                                         // TODO : Fix when the Utf8JsonReader will allow
                                         // to read an unescaped string without allocating a string
-                                        current.Add(new JwtProperty(WellKnownProperty.Enc, Encoding.UTF8.GetBytes(reader.GetString())));
+                                        current.Add(new JwtProperty(WellKnownProperty.Enc, Utf8.GetBytes(reader.GetString())));
                                     }
 
                                     continue;
@@ -159,7 +157,7 @@ namespace JsonWebToken
                                     {
                                         // TODO : Fix when the Utf8JsonReader will allow
                                         // to read an unescaped string without allocating a string
-                                        current.Add(new JwtProperty(WellKnownProperty.Zip, Encoding.UTF8.GetBytes(reader.GetString())));
+                                        current.Add(new JwtProperty(WellKnownProperty.Zip, Utf8.GetBytes(reader.GetString())));
                                     }
 
                                     continue;
@@ -167,13 +165,13 @@ namespace JsonWebToken
                                 case 7959651u:
                                     // TODO : Fix when the Utf8JsonReader will allow
                                     // to read an unescaped string without allocating a string
-                                    current.Add(new JwtProperty(WellKnownProperty.Cty, Encoding.UTF8.GetBytes(reader.GetString())));
+                                    current.Add(new JwtProperty(WellKnownProperty.Cty, Utf8.GetBytes(reader.GetString())));
                                     continue;
                                 /* typ */
                                 case 7371124u:
                                     // TODO : Fix when the Utf8JsonReader will allow
                                     // to read an unescaped string without allocating a string
-                                    current.Add(new JwtProperty(WellKnownProperty.Typ, Encoding.UTF8.GetBytes(reader.GetString())));
+                                    current.Add(new JwtProperty(WellKnownProperty.Typ, Utf8.GetBytes(reader.GetString())));
                                     continue;
                                 /* kid */
                                 case 6580587u:

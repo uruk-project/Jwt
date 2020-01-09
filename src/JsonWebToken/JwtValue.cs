@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System.Diagnostics;
-using System.Text;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -186,7 +185,7 @@ namespace JsonWebToken
             }
 
             var input = bufferWriter.WrittenSpan;
-            return Encoding.UTF8.GetString(input);
+            return Utf8.GetString(input);
         }
     }
 }

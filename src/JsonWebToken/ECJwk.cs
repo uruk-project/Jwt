@@ -2,15 +2,14 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 #if NETSTANDARD || NETCOREAPP 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -415,7 +414,7 @@ namespace JsonWebToken
             var key = new ECJwk(parameters);
             if (computeThumbprint)
             {
-                key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
+                key.Kid = Utf8.GetString(key.ComputeThumbprint());
             }
 
             if (algorithm != null)

@@ -1,7 +1,6 @@
 // Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -9,8 +8,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -132,7 +131,7 @@ namespace JsonWebToken
             }
 
             var input = bufferWriter.WrittenSpan;
-            return Encoding.UTF8.GetString(input);
+            return Utf8.GetString(input);
         }
 
         internal void WriteTo(Utf8JsonWriter writer)
@@ -157,7 +156,7 @@ namespace JsonWebToken
             }
 
             var input = bufferWriter.WrittenSpan;
-            return Encoding.UTF8.GetString(input);
+            return Utf8.GetString(input);
         }
 
         private Jwk[] UnidentifiedKeys
@@ -228,7 +227,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.json);
             }
 
-            return FromJson(Encoding.UTF8.GetBytes(json));
+            return FromJson(Utf8.GetBytes(json));
         }
 
         /// <summary>

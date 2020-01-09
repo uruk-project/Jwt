@@ -5,8 +5,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -154,7 +152,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public JwtProperty this[string key] => this[Encoding.UTF8.GetBytes(key).AsSpan()];
+        public JwtProperty this[string key] => this[Utf8.GetBytes(key).AsSpan()];
 
         /// <summary>
         /// Gets or sets the <see cref="JwtProperty"/> at the specified key;
@@ -232,7 +230,7 @@ namespace JsonWebToken
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryGetValue(string key, out JwtProperty value) => TryGetValue(Encoding.UTF8.GetBytes(key).AsSpan(), out value);
+        public bool TryGetValue(string key, out JwtProperty value) => TryGetValue(Utf8.GetBytes(key).AsSpan(), out value);
 
         /// <summary>
         /// Gets the <see cref="JwtProperty"/> associated with the specified key.
@@ -337,7 +335,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool ContainsKey(string key) => ContainsKey(Encoding.UTF8.GetBytes(key));
+        public bool ContainsKey(string key) => ContainsKey(Utf8.GetBytes(key));
 
         /// <summary>
         /// Replaces a <see cref="JwtProperty"/> 
@@ -432,7 +430,7 @@ namespace JsonWebToken
             }
 
             var input = bufferWriter.WrittenSpan;
-            return Encoding.UTF8.GetString(input);
+            return Utf8.GetString(input);
         }
     }
 }

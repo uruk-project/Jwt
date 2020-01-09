@@ -8,7 +8,6 @@
 using System;
 using System.Buffers.Binary;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace JsonWebToken.Internal
 {
@@ -61,8 +60,8 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.EpkUtf8);
             }
 
-            var apu = header.Apu == null ? null : Encoding.UTF8.GetBytes(header.Apu);
-            var apv = header.Apv == null ? null : Encoding.UTF8.GetBytes(header.Apv);
+            var apu = header.Apu == null ? null : Utf8.GetBytes(header.Apu);
+            var apv = header.Apv == null ? null : Utf8.GetBytes(header.Apv);
             byte[] secretAppend = BuildSecretAppend(apu, apv);
             byte[] exchangeHash;
             using (var ephemeralKey = ECDiffieHellman.Create(epk.ExportParameters()))

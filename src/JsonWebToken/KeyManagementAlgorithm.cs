@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -130,7 +129,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the key management algorithm.
         /// </summary>
-        public string Name => Encoding.UTF8.GetString(_utf8Name);
+        public string Name => Utf8.GetString(_utf8Name);
 
         /// <summary>
         /// Gets the name of the key management algorithm.
@@ -221,7 +220,7 @@ namespace JsonWebToken
         public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, KeyManagementAlgorithm? wrappedAlgorithm, bool produceEncryptedKey)
         {
             _id = id;
-            _utf8Name = Encoding.UTF8.GetBytes(name);
+            _utf8Name = Utf8.GetBytes(name);
             _category = keyType;
             _requiredKeySizeInBits = requiredKeySizeInBits;
             _wrappedAlgorithm = wrappedAlgorithm;
@@ -346,7 +345,7 @@ namespace JsonWebToken
 
             if (!TryParse(value, out var algorithm))
             {
-                ThrowHelper.ThrowNotSupportedException_Algorithm(Encoding.UTF8.GetString(value));
+                ThrowHelper.ThrowNotSupportedException_Algorithm(Utf8.GetString(value));
             }
 
             return algorithm;
@@ -363,7 +362,7 @@ namespace JsonWebToken
                 return null;
             }
 
-            if (!TryParse(Encoding.UTF8.GetBytes(value), out var algorithm))
+            if (!TryParse(Utf8.GetBytes(value), out var algorithm))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(value);
             }

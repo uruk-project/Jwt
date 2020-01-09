@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -114,7 +113,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the signature algorithm.
         /// </summary>
-        public string Name => Encoding.UTF8.GetString(_utf8Name);
+        public string Name => Utf8.GetString(_utf8Name);
 
         /// <summary>
         /// Gets the name of the signature algorithm.
@@ -147,7 +146,7 @@ namespace JsonWebToken
         public SignatureAlgorithm(int id, string name, AlgorithmCategory category, ushort requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
         {
             _id = id;
-            _utf8Name = Encoding.UTF8.GetBytes(name);
+            _utf8Name = Utf8.GetBytes(name);
             _category = category;
             _requiredKeySizeInBits = requiredKeySizeInBits;
             _hashAlgorithm = hashAlgorithm;
@@ -245,7 +244,7 @@ namespace JsonWebToken
                 return null;
             }
 
-            if (!TryParse(Encoding.UTF8.GetBytes(value), out var algorithm))
+            if (!TryParse(Utf8.GetBytes(value), out var algorithm))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(value);
             }
@@ -266,7 +265,7 @@ namespace JsonWebToken
 
             if (!TryParse(value, out var algorithm))
             {
-                ThrowHelper.ThrowNotSupportedException_Algorithm(Encoding.UTF8.GetString(value));
+                ThrowHelper.ThrowNotSupportedException_Algorithm(Utf8.GetString(value));
             }
 
             return algorithm;
