@@ -143,7 +143,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Adds a claim;
+        /// Adds a claim.
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
@@ -154,7 +154,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Adds a claim;
+        /// Adds a claim.
         /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
@@ -164,7 +164,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Adds a claim;
+        /// Adds a claim.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>

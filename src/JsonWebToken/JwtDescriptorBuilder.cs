@@ -43,9 +43,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder AddHeader(string name, string value)
-        {
-            return AddHeader(Utf8.GetBytes(name), value);
-        }
+            => AddHeader(Utf8.GetBytes(name), value);
 
         private JwtDescriptorBuilder AddHeader(ReadOnlySpan<byte> utf8Name, long value)
         {
@@ -60,9 +58,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder AddHeader(string name, long value)
-        {
-            return AddHeader(Utf8.GetBytes(name), value);
-        }
+            => AddHeader(Utf8.GetBytes(name), value);
 
         private JwtDescriptorBuilder AddHeader(ReadOnlySpan<byte> utf8Name, bool value)
         {
@@ -77,9 +73,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder AddHeader(string name, bool value)
-        {
-            return AddHeader(Utf8.GetBytes(name), value);
-        }
+            => AddHeader(Utf8.GetBytes(name), value);
 
         private JwtDescriptorBuilder AddHeader(ReadOnlySpan<byte> utf8Name, JwtArray value)
         {
@@ -94,9 +88,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder AddHeader(string name, JwtArray value)
-        {
-            return AddHeader(Utf8.GetBytes(name), value);
-        }
+            => AddHeader(Utf8.GetBytes(name), value);
 
         /// <summary>
         /// Defines the issuer.
@@ -104,9 +96,7 @@ namespace JsonWebToken
         /// <param name="iss"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder IssuedBy(string iss)
-        {
-            return AddClaim(Claims.IssUtf8, iss);
-        }
+            => AddClaim(Claims.IssUtf8, iss);
 
         /// <summary>
         /// Defines the expiration time.
@@ -114,9 +104,7 @@ namespace JsonWebToken
         /// <param name="exp"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder ExpiresAt(DateTime exp)
-        {
-            return AddClaim(Claims.ExpUtf8, exp.ToEpochTime());
-        }
+            => AddClaim(Claims.ExpUtf8, exp.ToEpochTime());
 
         /// <summary>
         /// Defines the sliding expiration time.
@@ -125,6 +113,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder ExpiresAfter(long seconds)
         {
+            EnsureJsonPayload();
             _expireAfter = seconds;
 
             return this;
@@ -144,9 +133,7 @@ namespace JsonWebToken
         /// <param name="nbf"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder NotBefore(DateTime nbf)
-        {
-            return AddClaim(Claims.NbfUtf8, nbf.ToEpochTime());
-        }
+            => AddClaim(Claims.NbfUtf8, nbf.ToEpochTime());
 
         /// <summary>
         /// Defines the sliding "not before" claim.
@@ -163,6 +150,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder NotBefore(long seconds)
         {
+            EnsureJsonPayload();
             _notBefore = seconds;
             return this;
         }
@@ -172,10 +160,15 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="iat"></param>
         /// <returns></returns>
-        public JwtDescriptorBuilder IssuedAt(long iat)
+        public JwtDescriptorBuilder IssuedAt(DateTime iat)
+            => AddClaim(Claims.IatUtf8, iat.ToEpochTime());
+
+        private void EnsureJsonPayload()
         {
-            _issuedAt = iat;
-            return this;
+            if (_jsonPayload == null)
+            {
+                _jsonPayload = new JwtObject();
+            }
         }
 
         private JwtDescriptorBuilder AddClaim(ReadOnlySpan<byte> utf8Name, string value)
@@ -196,9 +189,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder AddClaim(string name, string value)
-        {
-            return AddClaim(Utf8.GetBytes(name), value);
-        }
+            => AddClaim(Utf8.GetBytes(name), value);
 
         private JwtDescriptorBuilder AddClaim(ReadOnlySpan<byte> utf8Name, int value)
         {
@@ -218,9 +209,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder AddClaim(string name, int value)
-        {
-            return AddClaim(Utf8.GetBytes(name), value);
-        }
+            => AddClaim(Utf8.GetBytes(name), value);
 
         private JwtDescriptorBuilder AddClaim(ReadOnlySpan<byte> utf8Name, double value)
         {
@@ -240,9 +229,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder AddClaim(string name, double value)
-        {
-            return AddClaim(Utf8.GetBytes(name), value);
-        }
+            => AddClaim(Utf8.GetBytes(name), value);
 
         private JwtDescriptorBuilder AddClaim(ReadOnlySpan<byte> utf8Name, long value)
         {
@@ -262,9 +249,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder AddClaim(string name, long value)
-        {
-            return AddClaim(Utf8.GetBytes(name), value);
-        }
+            => AddClaim(Utf8.GetBytes(name), value);
 
         private JwtDescriptorBuilder AddClaim(ReadOnlySpan<byte> utf8Name, float value)
         {
@@ -284,9 +269,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder AddClaim(string name, float value)
-        {
-            return AddClaim(Utf8.GetBytes(name), value);
-        }
+            => AddClaim(Utf8.GetBytes(name), value);
 
         private JwtDescriptorBuilder AddClaim(ReadOnlySpan<byte> utf8Name, bool value)
         {
@@ -306,9 +289,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder AddClaim(string name, bool value)
-        {
-            return AddClaim(Utf8.GetBytes(name), value);
-        }
+            => AddClaim(Utf8.GetBytes(name), value);
 
         /// <summary>
         /// Build the <see cref="JwtDescriptor"/>.
@@ -350,6 +331,12 @@ namespace JsonWebToken
 
         private JwtDescriptor BuildJwe(Jwk encryptionKey)
         {
+            var alg = encryptionKey.KeyManagementAlgorithm ?? _keyManagementAlgorithm;
+            if (alg is null)
+            {
+                throw new InvalidOperationException($"No algorithm is defined for the key management encryption. Set the 'KeyManagementAlgorithm' property on the encryption key, or specify a '{nameof(KeyManagementAlgorithm)}' to the '{nameof(EncryptWith)}' method.");
+            }
+
             if (_binaryPayload != null)
             {
                 var jwe = new BinaryJweDescriptor(_header, _binaryPayload)
@@ -394,13 +381,28 @@ namespace JsonWebToken
             var jws = new JwsDescriptor(header, _jsonPayload!);
             if (_signingKey != null)
             {
+                var alg = _signingKey.SignatureAlgorithm ?? _algorithm;
+                if (alg is null)
+                {
+                    throw new InvalidOperationException($"No algorithm is defined for the signature. Set the 'SignatureAlgorithm' property on the signing key, or specify a '{nameof(SignatureAlgorithm)}' to the '{nameof(SignWith)}' method.");
+                }
+
+                if (alg == SignatureAlgorithm.None)
+                {
+                    throw new InvalidOperationException($"The algorithm 'none' defined with a signing key. Specify either a signing with with a {nameof(SignatureAlgorithm)} different of 'none', or specify the {nameof(SignatureAlgorithm)} 'none' without signing key.");
+                }
+
                 jws.SigningKey = _signingKey;
                 if (_algorithm != null)
                 {
                     jws.Algorithm = _algorithm;
                 }
             }
-            else if (!_noSignature)
+            else if (_noSignature)
+            {
+                jws.Algorithm = SignatureAlgorithm.None;
+            }
+            else
             {
                 ThrowHelper.ThrowInvalidOperationException_NoSigningKeyDefined();
             }
@@ -475,7 +477,7 @@ namespace JsonWebToken
         /// Ignore the signature requirement.
         /// </summary>
         /// <returns></returns>
-        public JwtDescriptorBuilder EmptyPayload()
+        public JwtDescriptorBuilder EmptyJsonPayload()
         {
             EnsurePayloadNotDefined("JSON");
 
@@ -507,9 +509,7 @@ namespace JsonWebToken
         /// <param name="kid"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder KeyId(string kid)
-        {
-            return AddHeader(HeaderParameters.KidUtf8, kid);
-        }
+            => AddHeader(HeaderParameters.KidUtf8, kid);
 
         /// <summary>
         /// Defines the JWKS URL.
@@ -517,9 +517,7 @@ namespace JsonWebToken
         /// <param name="jku"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder JwkSetUrl(string jku)
-        {
-            return AddHeader(HeaderParameters.JkuUtf8, jku);
-        }
+            => AddHeader(HeaderParameters.JkuUtf8, jku);
 
         /// <summary>
         /// Defines the 'jwk' header.
@@ -527,9 +525,7 @@ namespace JsonWebToken
         /// <param name="jwk"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder Jwk(Jwk jwk)
-        {
-            return AddHeader(HeaderParameters.JwkUtf8, jwk.ToString());
-        }
+            => AddHeader(HeaderParameters.JwkUtf8, jwk.ToString());
 
         /// <summary>
         /// Defines the X509 URL.
@@ -537,9 +533,7 @@ namespace JsonWebToken
         /// <param name="x5u"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder X509Url(string x5u)
-        {
-            return AddHeader(HeaderParameters.X5uUtf8, x5u);
-        }
+            => AddHeader(HeaderParameters.X5uUtf8, x5u);
 
         /// <summary>
         /// Defines the 509 certificate chain.
@@ -557,9 +551,7 @@ namespace JsonWebToken
         /// <param name="x5t"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder X509CertificateSha1Thumbprint(string x5t)
-        {
-            return AddHeader(HeaderParameters.X5tUtf8, x5t);
-        }
+            => AddHeader(HeaderParameters.X5tUtf8, x5t);
 
         /// <summary>
         /// Defines the JWT type 'typ'.
@@ -567,9 +559,7 @@ namespace JsonWebToken
         /// <param name="typ"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder Type(string typ)
-        {
-            return AddHeader(HeaderParameters.TypUtf8, typ);
-        }
+            => AddHeader(HeaderParameters.TypUtf8, typ);
 
         /// <summary>
         /// Defines the content type 'cty'.
@@ -577,9 +567,7 @@ namespace JsonWebToken
         /// <param name="cty"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder ContentType(string cty)
-        {
-            return AddHeader(HeaderParameters.CtyUtf8, cty);
-        }
+            => AddHeader(HeaderParameters.CtyUtf8, cty);
 
         /// <summary>
         /// Defines the critical headers.
@@ -587,9 +575,7 @@ namespace JsonWebToken
         /// <param name="crit"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder CriticalHeaders(IEnumerable<string> crit)
-        {
-            return AddHeader(HeaderParameters.CritUtf8, new JwtArray(crit.ToList()));
-        }
+            => AddHeader(HeaderParameters.CritUtf8, new JwtArray(crit.ToList()));
 
         /// <summary>
         /// Defines the <see cref="Jwk"/> used as key for signature.
@@ -597,7 +583,7 @@ namespace JsonWebToken
         /// <param name="key"></param>
         /// <returns></returns>
         public JwtDescriptorBuilder SignWith(Jwk key)
-        => SignWith(key, null);
+            => SignWith(key, null);
 
         /// <summary>
         /// Defines the <see cref="Jwk"/> used as key for signature.
@@ -610,11 +596,6 @@ namespace JsonWebToken
             if (key is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
-            if (algorithm is null && key.Alg is null)
-            {
-                throw new InvalidOperationException($"Signed JWT require a signature algorithm defined in the 'alg' claim. The provided JWK does have a 'alg' claim, and not {nameof(SignatureAlgorithm)} is provided. You must provide at least one of them by calling the method {nameof(SignWith)} either with a key containg a valid 'alg' claim or with the '{algorithm}' parameter.");
             }
 
             _signingKey = key;
@@ -650,11 +631,6 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
             }
 
-            if (keyManagementAlgorithm is null && key.Alg is null)
-            {
-                throw new InvalidOperationException($"Encrypted JWT require a key management algorithm defined in the 'alg' claim. The provided JWK does have a 'alg' claim, and not {nameof(KeyManagementAlgorithm)} is provided. You must provide at least one of them by calling the method {nameof(EncryptWith)} either with a key containg a valid 'alg' claim or with the '{keyManagementAlgorithm}' parameter.");
-            }
-
             _encryptionKey = key;
             _keyManagementAlgorithm = keyManagementAlgorithm;
             _encryptionAlgorithm = encryptionAlgorithm;
@@ -677,6 +653,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder WithAutomaticId()
         {
+            EnsureJsonPayload();
             _automaticId = true;
             return this;
         }
@@ -687,6 +664,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public JwtDescriptorBuilder WithAutomaticIssuedAt()
         {
+            EnsureJsonPayload();
             _automaticIssuedAt = true;
             return this;
         }
