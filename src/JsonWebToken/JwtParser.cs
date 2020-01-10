@@ -38,7 +38,7 @@ namespace JsonWebToken
             var current = new JwtObject();
             while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
-                var name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                var name = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                 reader.Read();
                 var type = reader.TokenType;
                 switch (type)

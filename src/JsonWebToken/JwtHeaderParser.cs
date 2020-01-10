@@ -42,7 +42,7 @@ namespace JsonWebToken
                     break;
                 }
 
-                var name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                var name = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                 reader.Read();
                 var type = reader.TokenType;
                 switch (type)
@@ -98,7 +98,7 @@ namespace JsonWebToken
                             {
                                 /* alg */
                                 case 6777953u:
-                                    var alg = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                                    var alg = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                                     if (SignatureAlgorithm.TryParse(alg, out var signatureAlgorithm))
                                     {
                                         header.SignatureAlgorithm = signatureAlgorithm;
@@ -125,7 +125,7 @@ namespace JsonWebToken
                                     continue;
                                 /* enc */
                                 case 6516325u:
-                                    var enc = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                                    var enc = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                                     if (EncryptionAlgorithm.TryParse(enc, out var encryptionAlgorithm))
                                     {
                                         header.EncryptionAlgorithm = encryptionAlgorithm;
@@ -144,7 +144,7 @@ namespace JsonWebToken
                                     continue;
                                 /* zip */
                                 case 7367034u:
-                                    var zip = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                                    var zip = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                                     if (CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm))
                                     {
                                         header.CompressionAlgorithm = compressionAlgorithm;

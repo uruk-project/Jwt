@@ -101,7 +101,7 @@ namespace JsonWebToken
             byte[]? k = null;
             while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
-                var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                var propertyName = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                 ref byte propertyNameRef = ref MemoryMarshal.GetReference(propertyName);
                 reader.Read();
                 switch (reader.TokenType)
@@ -116,7 +116,7 @@ namespace JsonWebToken
                         switch (propertyName.Length)
                         {
                             case 1 when propertyNameRef == (byte)'k':
-                                k = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                k = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                                 break;
 
                             case 3:

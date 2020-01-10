@@ -360,7 +360,7 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         public static bool TryParse(ref Utf8JsonReader reader, [NotNullWhen(true)] out SignatureAlgorithm? algorithm)
         {
-            var value = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+            var value = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
             if (TryParse(value, out algorithm))
             {
                 return true;

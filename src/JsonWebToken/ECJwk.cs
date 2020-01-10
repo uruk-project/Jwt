@@ -485,7 +485,7 @@ namespace JsonWebToken
             var key = new ECJwk();
             while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
-                var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                var propertyName = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                 ref byte propertyNameRef = ref MemoryMarshal.GetReference(propertyName);
                 reader.Read();
                 switch (reader.TokenType)
@@ -500,17 +500,17 @@ namespace JsonWebToken
                         switch (propertyName.Length)
                         {
                             case 1 when propertyNameRef == (byte)'x':
-                                key.X = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                key.X = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                                 break;
                             case 1 when propertyNameRef == (byte)'y':
-                                key.Y = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                key.Y = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                                 break;
                             case 1 when propertyNameRef == (byte)'d':
-                                key.D = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                key.D = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                                 break;
 
                             case 3 when (Unsafe.ReadUnaligned<uint>(ref propertyNameRef) & 0x00ffffff) == 7762531u:
-                                key.Crv = EllipticalCurve.FromSpan(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                key.Crv = EllipticalCurve.FromSpan(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                                 break;
                             case 3:
                                 PopulateThree(ref reader, ref propertyNameRef, key);

@@ -261,11 +261,11 @@ namespace JsonWebToken
         {
             if (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
-                var nameSpan = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                var nameSpan = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                 if (nameSpan.SequenceEqual(JwkParameterNames.KtyUtf8)
                     && reader.Read() && reader.TokenType is JsonTokenType.String)
                 {
-                    var valueSpan = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                    var valueSpan = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                     switch (valueSpan.Length)
                     {
 #if !NET461
@@ -297,7 +297,7 @@ namespace JsonWebToken
             var jwk = new JwtObject();
             do
             {
-                var name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                var name = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                 reader.Read();
                 switch (reader.TokenType)
                 {
@@ -310,15 +310,15 @@ namespace JsonWebToken
                             {
                                 /* alg */
                                 case 6777953u:
-                                    jwk.Add(new JwtProperty(WellKnownProperty.Alg, reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray()));
+                                    jwk.Add(new JwtProperty(WellKnownProperty.Alg, reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray()));
                                     break;
                                 /* use */
                                 case 6648693u:
-                                    jwk.Add(new JwtProperty(name, reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray()));
+                                    jwk.Add(new JwtProperty(name, reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray()));
                                     continue;
                                 /* x5t */
                                 case 7615864u:
-                                    jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray())));
+                                    jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray())));
                                     continue;
                                 /* kid */
                                 case 6580587u:
@@ -329,7 +329,7 @@ namespace JsonWebToken
                         /* x5t#S256 */
                         else if (name.Length == 8 && Unsafe.ReadUnaligned<ulong>(ref MemoryMarshal.GetReference(name)) == 3906083584472266104u)
                         {
-                            jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray())));
+                            jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray())));
                             continue;
                         }
 
@@ -861,7 +861,7 @@ namespace JsonWebToken
             /* x5t#S256 */
             if (Unsafe.ReadUnaligned<ulong>(ref pPropertyName) == 3906083584472266104u)
             {
-                key.X5tS256 = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                key.X5tS256 = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
             }
         }
 
@@ -870,7 +870,7 @@ namespace JsonWebToken
             /* x5t#S256 */
             if (Unsafe.ReadUnaligned<ulong>(ref MemoryMarshal.GetReference(pPropertyName)) == 3906083584472266104u)
             {
-                key.X5tS256 = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                key.X5tS256 = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
             }
         }
 
@@ -913,7 +913,7 @@ namespace JsonWebToken
             {
                 /* alg */
                 case 6777953u:
-                    key.Alg = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray();
+                    key.Alg = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray();
                     break;
                 /* kid */
                 case 6580587u:
@@ -921,11 +921,11 @@ namespace JsonWebToken
                     break;
                 /* use */
                 case 6648693u:
-                    key.Use = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray();
+                    key.Use = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray();
                     break;
                 /* x5t */
                 case 7615864u:
-                    key.X5t = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                    key.X5t = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                     break;
                 /* x5u */
                 case 7681400u:

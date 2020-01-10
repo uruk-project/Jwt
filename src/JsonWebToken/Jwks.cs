@@ -253,7 +253,7 @@ namespace JsonWebToken
                 && reader.Read()
                 && reader.TokenType is JsonTokenType.PropertyName)
             {
-                var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                var propertyName = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                 if (propertyName.Length == 4)
                 {
                     ref byte propertyNameRef = ref MemoryMarshal.GetReference(propertyName);
