@@ -12,7 +12,7 @@ namespace JsonWebToken
     /// Helper class for encoding text.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public static class EncodingExtensions
+    internal static class EncodingExtensions
     {
         /// <summary>
         /// Gets the string representation of the <paramref name="input"/>. 

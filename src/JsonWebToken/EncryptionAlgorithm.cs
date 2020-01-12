@@ -22,32 +22,32 @@ namespace JsonWebToken
         /// <summary>
         /// 'A128CBC-HS256'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: 11, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesHmac);
+        public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: 14, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesHmac);
 
         /// <summary>
         /// 'A192CBC-HS384'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes192CbcHmacSha384 = new EncryptionAlgorithm(id: 12, "A192CBC-HS384", requiredKeySizeInBytes: 48, SignatureAlgorithm.HmacSha384, requiredKeyWrappedSizeInBytes: 56, EncryptionType.AesHmac);
+        public static readonly EncryptionAlgorithm Aes192CbcHmacSha384 = new EncryptionAlgorithm(id: 16 /* Undefined in CWT */, "A192CBC-HS384", requiredKeySizeInBytes: 48, SignatureAlgorithm.HmacSha384, requiredKeyWrappedSizeInBytes: 56, EncryptionType.AesHmac);
 
         /// <summary>
         /// 'A256CBC-HS512'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(id: 13, "A256CBC-HS512", requiredKeySizeInBytes: 64, SignatureAlgorithm.HmacSha512, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesHmac);
+        public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(id: 15, "A256CBC-HS512", requiredKeySizeInBytes: 64, SignatureAlgorithm.HmacSha512, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesHmac);
 
         /// <summary>
         /// 'A128GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 21, "A128GCM", requiredKeySizeInBytes: 16, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 24, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 1, "A128GCM", requiredKeySizeInBytes: 16, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 24, EncryptionType.AesGcm);
 
         /// <summary>
         /// 'A192GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 22, "A192GCM", requiredKeySizeInBytes: 24, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 32, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 2, "A192GCM", requiredKeySizeInBytes: 24, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 32, EncryptionType.AesGcm);
 
         /// <summary>
         /// 'A256GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 23, "A256GCM", requiredKeySizeInBytes: 32, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 3, "A256GCM", requiredKeySizeInBytes: 32, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
 
         private static readonly EncryptionAlgorithm[] _algorithms = new[]
         {

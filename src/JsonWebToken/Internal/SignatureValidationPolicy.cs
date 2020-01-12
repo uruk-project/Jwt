@@ -10,7 +10,7 @@ namespace JsonWebToken
     /// <summary>
     /// Validates a token signature.
     /// </summary>
-    public abstract class SignatureValidationPolicy
+    internal abstract class SignatureValidationPolicy
     {
         /// <summary>
         /// Allows to support the unsecure 'none' algorithm that require no signature.
