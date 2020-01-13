@@ -19,7 +19,7 @@ namespace JsonWebToken.Performance
 
         private static readonly SymmetricJwk EncryptionKey = Tokens.EncryptionKey;
 
-        private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SigningKey.ToString());
+        private static readonly JsonWebKey WilsonSharedKey = JsonWebKey.Create(SigningKey.ToString());
 
         private static readonly IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
         private static readonly IJsonSerializer serializer = new JsonNetSerializer();
@@ -46,14 +46,6 @@ namespace JsonWebToken.Performance
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
         }
 
-        [GlobalSetup]
-        public void Setup()
-        {
-            Jwt("JWT-empty");
-            Wilson("JWT-empty");
-            WilsonJwt("JWT-empty");
-        }
-
         [IterationCleanup]
         public void Clean()
         {
@@ -65,6 +57,21 @@ namespace JsonWebToken.Performance
         protected byte[] JwtCore(string payload)
         {
             Writer.WriteToken(JwtPayloads[payload], _output);
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            Writer.WriteToken(JwtPayloads[payload], _output);
+            Writer.WriteToken(JwtPayloads[payload], _output);
             return Array.Empty<byte>();
         }
 
@@ -72,6 +79,21 @@ namespace JsonWebToken.Performance
 
         protected string WilsonCore(string payload)
         {
+            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
+            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
+            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
+            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
+            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
+            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
+            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
+            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
+            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
+            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
+            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
+            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
+            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
+            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
+            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
             return Handler.CreateEncodedJwt(WilsonPayloads[payload]);
         }
 
