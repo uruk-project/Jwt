@@ -26,7 +26,6 @@ namespace JsonWebToken
         private SignatureAlgorithm? _algorithm;
         private long? _expireAfter;
         private long? _notBefore;
-        private long? _issuedAt;
         private bool _automaticId;
         private bool _automaticIssuedAt;
 
@@ -425,10 +424,6 @@ namespace JsonWebToken
             if (_automaticIssuedAt)
             {
                 jws.IssuedAt = DateTime.UtcNow;
-            }
-            else if (_issuedAt.HasValue)
-            {
-                jws.IssuedAt = EpochTime.ToDateTime(_issuedAt.Value);
             }
 
             return jws;
