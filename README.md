@@ -62,10 +62,10 @@ See the [samples](https://github.com/ycrumeyrolle/Jwt/tree/master/samples) for m
 ````
 ## Performances
 See [benchmarks](Benchmark.md) for details. 
-This library is about **8x** faster than the Microsoft.IdentityModel.Tokens.Jwt when decoding and validating the token, with less than **5-10% memory allocation**.
-It is about **3x faster** when writing a JWS of common size, with less than **1-2% memory allocation**.
+This library is about **10-11x** faster than the Microsoft.IdentityModel.Tokens.Jwt when decoding and validating the token, with less than **5-10% memory allocation**. (5-6x faster including signature generation)
+It is about **6x faster** when writing a JWS of common size, with less than **1-2% memory allocation**. (3x faster including signature generation)
 
-The main reason of the eficiency of this library is the usage of the new API provided in .NET Core 2.0, 2.1 & 3.0, like the new Span API and the new JSON API.
+The main reason of the efficiency of this library is the usage of the new API provided in .NET Core 2.0, 2.1 & 3.0, like the new Span API and the new JSON API.
 
 ## Supported JWT
 * [Signed JWT (JWS)](https://tools.ietf.org/html/rfc7515). See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/JwsCreationSample/Program.cs).
