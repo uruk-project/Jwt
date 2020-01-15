@@ -17,16 +17,14 @@
 |    Jwt |  JWS-small |  7.340 us | 136,248.7 |  1.00 |   1.19 KB |
 | Wilson |  JWS-small | 44.804 us |  22,319.6 |  6.01 |  17.91 KB |
 
-
 ### Read unsigned JWT
-| Method |    payload |     Mean |      Op/s | Ratio | Allocated |
-|------- |----------- |---------:|----------:|------:|----------:|
-|    Jwt | JWE-medium | 2.380 us | 420,160.2 |  1.00 |      69 B |
-| Wilson | JWE-medium | 8.852 us | 112,968.3 |  3.75 |    2760 B |
-|        |            |          |           |       |           |
-|    Jwt |  JWE-small | 1.279 us | 782,159.6 |  1.00 |      69 B |
-| Wilson |  JWE-small | 6.226 us | 160,625.7 |  4.89 |    1708 B |
-
+| Method |      token |      Mean |      Op/s | Ratio | Allocated |
+|------- |----------- |----------:|----------:|------:|----------:|
+|    Jwt | JWT-medium |  8.972 us | 111,457.0 |  1.00 |   3.34 KB |
+| Wilson | JWT-medium | 73.471 us |  13,610.9 |  8.19 |  31.02 KB |
+|        |            |           |           |       |           |
+|    Jwt |  JWT-small |  2.953 us | 338,652.4 |  1.00 |   1.19 KB |
+| Wilson |  JWT-small | 36.644 us |  27,289.9 | 12.56 |  16.17 KB |
 
 ### Write encrypted JWT (A128CBC-HS256 & A128KW, with HS256 signed JWT)
 | Method |    payload |      Mean |     Op/s | Ratio | Allocated |
@@ -37,7 +35,6 @@
 |    Jwt |  JWE-small |  23.89 us | 41,862.2 |  1.00 |   1.08 KB |
 | Wilson |  JWE-small | 127.75 us |  7,827.6 |  5.28 |  26.72 KB |
 
-
 ### Write signed JWT (HS256)
 | Method |    payload |      Mean |      Op/s | Ratio | Allocated |
 |------- |----------- |----------:|----------:|------:|----------:|
@@ -46,7 +43,6 @@
 |        |            |           |           |       |           |
 |    Jwt |  JWS-small |  7.187 us | 139,135.6 |  1.00 |     184 B |
 | Wilson |  JWS-small | 18.688 us |  53,510.4 |  2.61 |    7768 B |
-
 
 ### Write unsigned JWT
 | Method |    payload |      Mean |      Op/s | Ratio | Allocated |
@@ -57,9 +53,7 @@
 |    Jwt |  JWT-small |  2.642 us | 378,517.2 |  1.00 |     184 B |
 | Wilson |  JWT-small | 10.265 us |  97,418.9 |  3.89 |    6056 B |
 
-
-
 Small token: Token with 6 claims
 Medium token: Token with 22 claims
 
-Wilson was tested in version 5.3.0.
+Wilson was tested in version 5.6.0.
