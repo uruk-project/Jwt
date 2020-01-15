@@ -1,49 +1,62 @@
-## Read token with signature validation (HS256)
-### .NET Core 2.1
-|    Method |      token |      Mean |     Error |    StdDev |      Op/s | Ratio | RatioSD | Gen 0/1k Op | Allocated Memory/Op |
-|---------- |----------- |----------:|----------:|----------:|----------:|------:|--------:|------------:|--------------------:|
-|    **Jwt**|**JWS-medium**|**21.791 us**|**0.2926 us**|**0.2737 us**|**45,890.3**|**1.00**|**0.00**|**0.0305**|**9056 B**|
-|    Wilson | JWS-medium | 67.659 us | 0.6521 us | 0.6100 us |  14,780.1 |  3.11 |    0.05 |      0.1221 |             33944 B |
-| WilsonJwt | JWS-medium | 43.408 us | 0.6834 us | 0.6393 us |  23,037.4 |  1.99 |    0.03 |      0.1221 |             24392 B |
-|           |            |           |           |           |           |       |         |             |                     |
-| **Jwt**| **JWS-small**| **9.081 us**|**0.0969 us**|**0.0907 us**|**110,117.4**|**1.00**|**0.00**|**0.0305**|**4608 B** |
-|    Wilson |  JWS-small | 37.458 us | 0.6093 us | 0.5699 us |  26,696.4 |  4.12 |    0.06 |      0.1221 |             18760 B |
-| WilsonJwt |  JWS-small | 21.868 us | 0.2220 us | 0.2077 us |  45,728.2 |  2.41 |    0.02 |      0.0610 |             10768 B |
- 
-### .NET Core 3.0
-|    Method |      token |      Mean |     Error |    StdDev |      Op/s | Ratio | RatioSD | Gen 0/1k Op | Allocated Memory/Op |
-|---------- |----------- |----------:|----------:|----------:|----------:|------:|--------:|------------:|--------------------:|
-|**Jwt**| **JWS-medium** | **13.989 us** | **0.1865 us** | **0.1744 us** |  **71,485.4** |  **1.00** |**0.00** |**0.0153** |**3328 B** |
-|    Wilson | JWS-medium | 66.880 us | 0.8888 us | 0.8314 us |  14,952.1 |  4.78 |    0.09 |      0.1221 |             33736 B |
-| WilsonJwt | JWS-medium | 42.244 us | 0.3724 us | 0.3483 us |  23,672.1 |  3.02 |    0.04 |      0.1221 |             24456 B |
-|           |            |           |           |           |           |       |         |             |                     |
-|**Jwt** |  **JWS-small** |  **5.169 us** | **0.0823 us** | **0.0770 us** | **193,456.2** |  **1.00** |    **0.00** |**-** |**880 B** |
-|    Wilson |  JWS-small | 34.533 us | 0.5072 us | 0.4744 us |  28,957.7 |  6.68 |    0.15 |      0.1221 |             18296 B |
-| WilsonJwt |  JWS-small | 20.429 us | 0.2159 us | 0.1914 us |  48,950.0 |  3.95 |    0.06 |      0.0610 |             10576 B |
+### Read Encrypted JWT (A128CBC-HS256 & A128KW, with HS256 signed JWT)
+| Method |      token |      Mean |     Op/s | Ratio | Allocated |
+|------- |----------- |----------:|---------:|------:|----------:|
+|    Jwt | JWE-medium |  36.16 us | 27,652.7 |  1.00 |   4.35 KB |
+| Wilson | JWE-medium | 228.86 us |  4,369.5 |  6.41 |  65.39 KB |
+|        |            |           |          |       |           |
+|    Jwt |  JWE-small |  18.16 us | 55,055.5 |  1.00 |    2.2 KB |
+| Wilson |  JWE-small | 138.53 us |  7,218.5 |  7.57 |  38.17 KB |
 
 
-## Write token with signature (HS256)
-### .NET Core 2.1
-|    Method |    payload |      Mean |     Error |    StdDev |      Op/s | Ratio | RatioSD | Gen 0/1k Op | Allocated Memory/Op |
-|---------- |----------- |----------:|----------:|----------:|----------:|------:|--------:|------------:|--------------------:|
-|**Jwt** | **JWS-medium** | **15.690 us** | **0.2948 us** | **0.3028 us** |  **63,736.7** |  **1.00** |    **0.00** |**0.0305** |**6.49 KB** |
-|    Wilson | JWS-medium | 33.251 us | 0.6570 us | 0.8543 us |  30,074.1 |  2.13 |    0.07 |      0.0610 |            17.39 KB |
-| WilsonJwt | JWS-medium | 48.686 us | 0.5674 us | 0.4738 us |  20,539.8 |  3.11 |    0.08 |      0.1831 |            28.39 KB |
-|           |            |           |           |           |           |       |         |             |                     |
-|**Jwt**|**JWS-small**|**7.225 us**|**0.1424 us**|**0.1639 us**|**138,404.3**|**1.00**|**0.00**|**0.0229**|**3.47 KB** |
-|    Wilson |  JWS-small | 16.192 us | 0.3210 us | 0.5705 us |  61,759.3 |  2.26 |    0.10 |      0.0305 |             7.99 KB |
-| WilsonJwt |  JWS-small | 21.338 us | 0.4236 us | 0.5655 us |  46,864.7 |  2.96 |    0.11 |      0.0610 |             11.7 KB |
+### Read Signed JWT (HS256)
+| Method |      token |      Mean |      Op/s | Ratio | Allocated |
+|------- |----------- |----------:|----------:|------:|----------:|
+|    Jwt | JWS-medium | 18.074 us |  55,329.5 |  1.00 |   3.34 KB |
+| Wilson | JWS-medium | 94.284 us |  10,606.3 |  5.32 |  32.54 KB |
+|        |            |           |           |       |           |
+|    Jwt |  JWS-small |  7.340 us | 136,248.7 |  1.00 |   1.19 KB |
+| Wilson |  JWS-small | 44.804 us |  22,319.6 |  6.01 |  17.91 KB |
 
-### .NET Core 3.0
-|    Method |    payload |      Mean |     Error |    StdDev |      Op/s | Ratio | RatioSD | Gen 0/1k Op | Allocated Memory/Op |
-|---------- |----------- |----------:|----------:|----------:|----------:|------:|--------:|------------:|--------------------:|
-|**Jwt**|**JWS-medium**|**15.696 us**|**0.2303 us**|**0.2041 us**|**63,708.7**|**1.00**|**0.00**|**0.0305**|**6.49 KB**|
-|    Wilson | JWS-medium | 31.473 us | 0.5159 us | 0.4573 us |  31,773.2 |  2.01 |    0.05 |      0.0610 |            17.41 KB |
-| WilsonJwt | JWS-medium | 50.553 us | 0.5960 us | 0.5575 us |  19,781.4 |  3.22 |    0.05 |      0.1831 |             28.3 KB |
-|           |            |           |           |           |           |       |         |             |                     |
-|**Jwt**|**JWS-small**|**7.324 us**|**0.1409 us**|**0.1384 us**|**136,535.7**|**1.00**|**0.00**|**0.0153**|**3.47 KB**|
-|    Wilson |  JWS-small | 15.116 us | 0.2977 us | 0.3655 us |  66,155.2 |  2.07 |    0.06 |      0.0458 |             7.92 KB |
-| WilsonJwt |  JWS-small | 22.418 us | 0.4265 us | 0.3990 us |  44,607.3 |  3.06 |    0.08 |      0.0610 |             11.5 KB |
+
+### Read unsigned JWT
+| Method |    payload |     Mean |      Op/s | Ratio | Allocated |
+|------- |----------- |---------:|----------:|------:|----------:|
+|    Jwt | JWE-medium | 2.380 us | 420,160.2 |  1.00 |      69 B |
+| Wilson | JWE-medium | 8.852 us | 112,968.3 |  3.75 |    2760 B |
+|        |            |          |           |       |           |
+|    Jwt |  JWE-small | 1.279 us | 782,159.6 |  1.00 |      69 B |
+| Wilson |  JWE-small | 6.226 us | 160,625.7 |  4.89 |    1708 B |
+
+
+### Write encrypted JWT (A128CBC-HS256 & A128KW, with HS256 signed JWT)
+| Method |    payload |      Mean |     Op/s | Ratio | Allocated |
+|------- |----------- |----------:|---------:|------:|----------:|
+|    Jwt | JWE-medium |  47.06 us | 21,250.4 |  1.00 |   1.08 KB |
+| Wilson | JWE-medium | 175.12 us |  5,710.4 |  3.75 |   43.3 KB |
+|        |            |           |          |       |           |
+|    Jwt |  JWE-small |  23.89 us | 41,862.2 |  1.00 |   1.08 KB |
+| Wilson |  JWE-small | 127.75 us |  7,827.6 |  5.28 |  26.72 KB |
+
+
+### Write signed JWT (HS256)
+| Method |    payload |      Mean |      Op/s | Ratio | Allocated |
+|------- |----------- |----------:|----------:|------:|----------:|
+|    Jwt | JWS-medium | 16.328 us |  61,245.9 |  1.00 |     184 B |
+| Wilson | JWS-medium | 43.174 us |  23,162.1 |  2.70 |   17520 B |
+|        |            |           |           |       |           |
+|    Jwt |  JWS-small |  7.187 us | 139,135.6 |  1.00 |     184 B |
+| Wilson |  JWS-small | 18.688 us |  53,510.4 |  2.61 |    7768 B |
+
+
+### Write unsigned JWT
+| Method |    payload |      Mean |      Op/s | Ratio | Allocated |
+|------- |----------- |----------:|----------:|------:|----------:|
+|    Jwt | JWT-medium |  7.812 us | 128,009.4 |  1.00 |     184 B |
+| Wilson | JWT-medium | 27.077 us |  36,932.1 |  3.46 |   14008 B |
+|        |            |           |           |       |           |
+|    Jwt |  JWT-small |  2.642 us | 378,517.2 |  1.00 |     184 B |
+| Wilson |  JWT-small | 10.265 us |  97,418.9 |  3.89 |    6056 B |
+
 
 
 Small token: Token with 6 claims
