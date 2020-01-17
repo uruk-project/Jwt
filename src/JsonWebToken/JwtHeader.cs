@@ -111,7 +111,14 @@ namespace JsonWebToken
         public EncryptionAlgorithm? EncryptionAlgorithm
         {
             get => _encryptionAlgorithm ?? (_inner.TryGetValue(WellKnownProperty.Enc, out var property) ? (EncryptionAlgorithm?)property.Value : null);
-            set => _encryptionAlgorithm = value;
+            set
+            {
+                _encryptionAlgorithm = value;
+                if (!(value is null))
+                {
+                    _inner.Add(new JwtProperty(WellKnownProperty.Enc, value.Utf8Name));
+                }
+            }
         }
 
         /// <summary>

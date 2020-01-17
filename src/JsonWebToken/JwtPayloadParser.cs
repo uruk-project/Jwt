@@ -96,12 +96,13 @@ namespace JsonWebToken
                                     {
                                         if (reader.ValueTextEquals(policy.RequiredIssuer))
                                         {
-                                            current.Add(new JwtProperty(WellKnownProperty.Iss, policy.RequiredIssuer!));
+                                            current.Add(new JwtProperty(WellKnownProperty.Iss, policy.RequiredIssuerString!));
                                             control &= unchecked((byte)~TokenValidationPolicy.IssuerFlag);
-                                            break;
                                         }
-
-                                        control &= unchecked((byte)~JwtPayload.MissingIssuerFlag);
+                                        else
+                                        {
+                                            control &= unchecked((byte)~JwtPayload.MissingIssuerFlag);
+                                        }
                                     }
                                     else
                                     {

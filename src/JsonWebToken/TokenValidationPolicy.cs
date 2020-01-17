@@ -4,6 +4,7 @@
 using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -55,6 +56,11 @@ namespace JsonWebToken
             RequiredAudiences = audiences ?? Array.Empty<byte[]>();
             ClockSkrew = clockSkrew;
             _control = control;
+
+            if (issuer != null)
+            {
+                RequiredIssuerString = Encoding.UTF8.GetString(issuer);
+            }
         }
 
         /// <summary>
@@ -81,6 +87,8 @@ namespace JsonWebToken
         /// Gets the required issuer, in UTF8 binary format.
         /// </summary>
         public byte[]? RequiredIssuer { get; }
+
+        internal string? RequiredIssuerString { get; }
 
         /// <summary>
         /// Gets whether the audience 'aud' is required.

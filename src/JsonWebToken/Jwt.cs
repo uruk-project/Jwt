@@ -189,13 +189,17 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override string ToString()
         {
-            if (Payload != null)
+            if (Payload == null)
+            {
+                return Header.ToString() + ".";
+            }
+            else if (NestedToken == null)
             {
                 return Header.ToString() + "." + Payload.ToString();
             }
             else
             {
-                return Header.ToString() + ".";
+                return Header.ToString() + "." + NestedToken.Header.ToString() + "." + NestedToken.Payload;
             }
         }
     }
