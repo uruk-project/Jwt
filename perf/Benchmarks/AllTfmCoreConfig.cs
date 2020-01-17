@@ -28,9 +28,9 @@ namespace JsonWebToken.Performance
             //    .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp20))
             //    .With(new GcMode { Server = true }));
 
-            Add(Job.Default
-                .With(CoreRuntime.Core21) 
-                .With(new GcMode { Server = true }));
+            //Add(Job.Default
+            //    .With(CoreRuntime.Core21) 
+            //    .With(new GcMode { Server = true }));
 
             Add(Job.Default
                 .With(CoreRuntime.Core30)

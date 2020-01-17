@@ -9,6 +9,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 
 namespace JsonWebToken.Performance
@@ -16,8 +17,10 @@ namespace JsonWebToken.Performance
     public abstract class WriteToken
     {
         private static readonly SymmetricJwk SigningKey = Tokens.SigningKey;
+        private static readonly byte[] SigningKeyArray = Tokens.SigningKey.ToArray();
 
         private static readonly SymmetricJwk EncryptionKey = Tokens.EncryptionKey;
+        private static readonly byte[] EncryptionKeyArray = Tokens.EncryptionKey.ToArray();
 
         private static readonly JsonWebKey WilsonSharedKey = JsonWebKey.Create(SigningKey.ToString());
 
@@ -33,23 +36,17 @@ namespace JsonWebToken.Performance
 
         public static readonly SigningCredentials signingCredentials = new SigningCredentials(WilsonSharedKey, ((SignatureAlgorithm)SigningKey.Alg!).Name);
 
-        public static readonly JwtWriter Writer = new JwtWriter() { EnableHeaderCaching = false };
+        public static readonly JwtWriter Writer = new JwtWriter() { EnableHeaderCaching = true };
 
         protected static readonly Dictionary<string, JwtDescriptor> JwtPayloads = CreateJwtDescriptors();
         protected static readonly Dictionary<string, Dictionary<string, object>> DictionaryPayloads = CreateDictionaryDescriptors();
         protected static readonly Dictionary<string, SecurityTokenDescriptor> WilsonPayloads = CreateWilsonDescriptors();
 
-        private static readonly PooledByteBufferWriter _output = new PooledByteBufferWriter();
+        private static readonly FixedSizedBufferWriter _output = new FixedSizedBufferWriter(4096);
 
         static WriteToken()
         {
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
-        }
-
-        [IterationCleanup]
-        public void Clean()
-        {
-            _output.Clear();
         }
 
         public abstract byte[] Jwt(string payload);
@@ -57,43 +54,14 @@ namespace JsonWebToken.Performance
         protected byte[] JwtCore(string payload)
         {
             Writer.WriteToken(JwtPayloads[payload], _output);
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            return Array.Empty<byte>();
+            _output.Clear();
+            return _output.Buffer;
         }
 
         public abstract string Wilson(string payload);
 
         protected string WilsonCore(string payload)
         {
-            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-            Handler.CreateEncodedJwt(WilsonPayloads[payload]);
             return Handler.CreateEncodedJwt(WilsonPayloads[payload]);
         }
 
@@ -104,27 +72,29 @@ namespace JsonWebToken.Performance
             return Handler2.CreateToken(Tokens.Payloads[payload.Substring(4)].ToString(), signingCredentials);
         }
 
-        //[Benchmark]
-        //[ArgumentsSource(nameof(GetPayloads))]
-        public void JoseDotNet(string payload)
+        public abstract string JoseDotNet(string payload);
+
+        protected string JoseDotNetJwsCore(string payload)
         {
-            if (payload.StartsWith("JWE-"))
-            {
-                payload = payload.Substring(4, payload.Length - 4);
-                var value = Jose.JWT.Encode(DictionaryPayloads[payload], SigningKey.K.ToArray(), JwsAlgorithm.HS256);
-                value = Jose.JWT.Encode(value, EncryptionKey.K.ToArray(), JweAlgorithm.A128KW, JweEncryption.A128CBC_HS256);
-            }
-            else
-            {
-                var value = Jose.JWT.Encode(DictionaryPayloads[payload], SigningKey.K.ToArray(), JwsAlgorithm.HS256);
-            }
+            return Jose.JWT.Encode(DictionaryPayloads[payload], SigningKeyArray, JwsAlgorithm.HS256);
         }
 
-        //[Benchmark]
-        //[ArgumentsSource(nameof(GetNotEncryptedPayloads))]
-        public void JwtDotNet(string payload)
+        protected string JoseDotNetJweCore(string payload)
         {
-            var value = JwtDotNetEncoder.Encode(DictionaryPayloads[payload], SigningKey.K.ToArray());
+            //payload = payload.Substring(4, payload.Length - 4);
+            var value = Jose.JWT.Encode(DictionaryPayloads[payload], SigningKeyArray, JwsAlgorithm.HS256);
+            return Jose.JWT.Encode(value, EncryptionKeyArray, JweAlgorithm.A128KW, JweEncryption.A128CBC_HS256);
+        }
+
+        public abstract string JwtDotNet(string payload);
+
+        protected string JwtDotNetJwsCore(string payload)
+        {
+            return JwtDotNetEncoder.Encode(DictionaryPayloads[payload], SigningKeyArray);
+        }
+        protected string JwtDotNetJwtCore(string payload)
+        {
+            return JwtDotNetEncoder.Encode(DictionaryPayloads[payload], (byte[])null);
         }
 
         private static Dictionary<string, JwtDescriptor> CreateJwtDescriptors()
@@ -276,7 +246,7 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new SecurityTokenDescriptor()
                 {
-                    SigningCredentials = new SigningCredentials(WilsonSharedKey,((SignatureAlgorithm) SigningKey.Alg!).Name),
+                    SigningCredentials = new SigningCredentials(WilsonSharedKey, ((SignatureAlgorithm)SigningKey.Alg!).Name),
                     EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.Aes128KW.Name, EncryptionAlgorithm.Aes128CbcHmacSha256.Name),
                     Subject = new ClaimsIdentity(),
                     Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
@@ -306,29 +276,62 @@ namespace JsonWebToken.Performance
         private static Dictionary<string, Dictionary<string, object>> CreateDictionaryDescriptors()
         {
             var descriptors = new Dictionary<string, Dictionary<string, object>>();
-            foreach (var payload in Tokens.Payloads)
+
+            foreach (var type in new[] {"JWE", "JWS", "JWT" })
             {
-                var descriptor = new Dictionary<string, object>();
-
-                foreach (var property in payload.Value.Properties())
+                foreach (var payload in Tokens.Payloads)
                 {
-                    switch (property.Name)
-                    {
-                        case "iat":
-                        case "nbf":
-                        case "exp":
-                            descriptor.Add(property.Name, (long)property.Value);
-                            break;
-                        default:
-                            descriptor.Add(property.Name, (string)property.Value);
-                            break;
-                    }
-                }
+                    var descriptor = new Dictionary<string, object>();
 
-                descriptors.Add(payload.Key, descriptor);
+                    foreach (var property in payload.Value.Properties())
+                    {
+                        switch (property.Name)
+                        {
+                            case "iat":
+                            case "nbf":
+                            case "exp":
+                                descriptor.Add(property.Name, (long)property.Value);
+                                break;
+                            default:
+                                descriptor.Add(property.Name, (string)property.Value);
+                                break;
+                        }
+                    }
+
+                    descriptors.Add(type + "-" + payload.Key, descriptor);
+                }
             }
 
             return descriptors;
+        }
+    }
+
+    internal class FixedSizedBufferWriter : IBufferWriter<byte>
+    {
+        private readonly byte[] _buffer;
+        private int _count;
+
+        public FixedSizedBufferWriter(int capacity)
+        {
+            _buffer = new byte[capacity];
+        }
+
+        public void Clear()
+        {
+            _count = 0;
+        }
+
+        public byte[] Buffer => _buffer;
+
+        public Memory<byte> GetMemory(int minimumLength = 0) => _buffer.AsMemory(_count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Span<byte> GetSpan(int minimumLength = 0) => _buffer.AsSpan(_count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Advance(int bytes)
+        {
+            _count += bytes;
         }
     }
 }

@@ -123,6 +123,34 @@ namespace JsonWebToken.Performance
                 },
             };
 
+            for (int i = 0; i < 10; i++)
+            {
+                var payload = new JObject
+                {
+                    { "jti", "756E69717565206964656E746966696572"},
+                    { "iss", "https://idp.example.com/"},
+                    { "iat", 1508184845},
+                    { "aud", "636C69656E745F6964"},
+                    { "exp", 1628184845},
+                    { "nbf",  1508184845}
+                };
+                const int intValue = 1508184845;
+                const string stringValue = "636C69656E745F6964";
+                for (int j = 0; j < i*10; j++)
+                {
+                    if (j % 2 == 0)
+                    {
+                        payload.Add("prop" + j, intValue);
+                    }
+                    else
+                    {
+                        payload.Add("prop" + j, stringValue);
+                    }
+                }
+
+                payloads.Add(i.ToString(), payload);
+            }
+
             return payloads;
         }
 

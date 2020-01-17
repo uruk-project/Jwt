@@ -8,6 +8,8 @@ namespace JsonWebToken.Performance
     [BenchmarkCategory("CI-CD")]
     public class ValidateSignedToken : ValidateToken
     {
+        private static byte[] signingKey = Tokens.SigningKey.ToArray();
+    
         [GlobalSetup]
         public void Setup()
         {
@@ -30,7 +32,7 @@ namespace JsonWebToken.Performance
             return WilsonCore(token, token.Contains("empty") ? wilsonParametersWithoutValidation : wilsonParameters);
         }
 
-        //[Benchmark]
+        [Benchmark]
         [ArgumentsSource(nameof(GetTokens))]
         public override Microsoft.IdentityModel.JsonWebTokens.TokenValidationResult WilsonJwt(string token)
         {
@@ -39,10 +41,29 @@ namespace JsonWebToken.Performance
 
         public IEnumerable<string> GetTokens()
         {
-            //yield return "JWS-empty";
-            yield return "JWS-small";
-            yield return "JWS-medium";
+            yield return "JWS-empty";
+            for (int i = 0; i < 10; i++)
+            {
+                yield return "JWS-" + i;
+            }
+
+            //yield return "JWS-small";
+            //yield return "JWS-medium";
             //yield return "JWS-big";
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(GetTokens))]
+        public override void JoseDotNet(string token)
+        {
+            JoseDotNetCore(token, Jose.JwsAlgorithm.HS256, signingKey);
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(GetTokens))]
+        public override void JwtDotNet(string token)
+        {
+            JwtDotNetCore(token, signingKey, true);
         }
     }
 }

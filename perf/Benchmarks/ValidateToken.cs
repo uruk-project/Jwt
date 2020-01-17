@@ -56,23 +56,30 @@ namespace JsonWebToken.Performance
             ValidIssuer = "https://idp.example.com/",
             TokenDecryptionKey = JsonWebKey.Create(Tokens.EncryptionKey.ToString())
         };
-        protected static readonly TokenValidationParameters wilsonParametersWithouSignature = new TokenValidationParameters()
+        protected static readonly TokenValidationParameters wilsonParametersWithoutSignature = new TokenValidationParameters()
         {
             ValidateAudience = true,
             ValidateIssuer = true,
             ValidateLifetime = true,
             ValidAudience = "636C69656E745F6964",
             ValidIssuer = "https://idp.example.com/",
-            RequireSignedTokens = false
-        };  
+            RequireSignedTokens = false,
+            TokenDecryptionKey = JsonWebKey.Create(Tokens.EncryptionKey.ToString())
+        };
         protected static readonly TokenValidationParameters wilsonParametersWithoutValidation = new TokenValidationParameters()
         {
             ValidateAudience = false,
             ValidateIssuer = false,
             ValidateLifetime = false,
             RequireSignedTokens = false,
-            IssuerSigningKey = JsonWebKey.Create(Tokens.SigningKey.ToString())
+            IssuerSigningKey = JsonWebKey.Create(Tokens.SigningKey.ToString()),
+            TokenDecryptionKey = JsonWebKey.Create(Tokens.EncryptionKey.ToString())
         };
+
+        static ValidateToken()
+        {
+            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
+        }
 
         public abstract TokenValidationResult Jwt(string token);
 
@@ -118,33 +125,31 @@ namespace JsonWebToken.Performance
             return result;
         }
 
-        //[Benchmark]
-        //[ArgumentsSource(nameof(GetTokens))]
-        public void JoseDotNet(string token)
+        public abstract void JoseDotNet(string token);
+
+        protected void JoseDotNetCore(string token, JweEncryption enc, JweAlgorithm alg, byte[] key)
         {
-            if (token.StartsWith("JWE-"))
+            var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: Tokens.EncryptionKey.K.ToArray(), enc: enc/*JweEncryption.A128CBC_HS256*/, alg: alg/*JweAlgorithm.A128KW*/);
+            if (value == null)
             {
-                var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: Tokens.EncryptionKey.K.ToArray(), enc: JweEncryption.A128CBC_HS256, alg: JweAlgorithm.A128KW);
-                if (value == null)
-                {
-                    throw new Exception();
-                }
-            }
-            else
-            {
-                var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: Tokens.SigningKey.K.ToArray(), alg: JwsAlgorithm.HS256);
-                if (value == null)
-                {
-                    throw new Exception();
-                }
+                throw new Exception();
             }
         }
 
-        //[Benchmark]
-        //[ArgumentsSource(nameof(GetNotEncryptedTokens))]
-        public void JwtDotNet(string token)
+        protected void JoseDotNetCore(string token, JwsAlgorithm alg, byte[] key)
         {
-            var value = JwtDotNetDecoder.DecodeToObject(Tokens.ValidTokens[token], SymmetricKey.K.ToArray(), verify: true);
+            var value = Jose.JWT.Decode<Dictionary<string, object>>(Tokens.ValidTokens[token], key: key, alg: alg /*JwsAlgorithm.HS256*/);
+            if (value == null)
+            {
+                throw new Exception();
+            }
+        }
+
+        public abstract void JwtDotNet(string token);
+
+        protected void JwtDotNetCore(string token, byte[] key, bool verify)
+        {
+            var value = JwtDotNetDecoder.DecodeToObject(Tokens.ValidTokens[token], key, verify: verify);
             if (value == null)
             {
                 throw new Exception();
