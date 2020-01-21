@@ -11,56 +11,50 @@ namespace JsonWebToken.Performance
         [GlobalSetup]
         public void Setup()
         {
-            Jwt("JWT-empty");
-            Wilson("JWT-empty");
-            WilsonJwt("JWT-empty");
+            Jwt(new BenchmarkPayload("JWT-0"));
+            Wilson(new BenchmarkPayload("JWT-0"));
+            WilsonJwt(new BenchmarkPayload("JWT-0"));
         }
 
-        [Benchmark(Baseline = true, OperationsPerInvoke = 1)]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public override byte[] Jwt(string payload)
+        [Benchmark(Baseline = true)]
+        [ArgumentsSource(nameof(GetPayloadValues))]
+        public override byte[] Jwt(BenchmarkPayload payload)
         {
-            return JwtCore(payload);
-        }
-
-        [Benchmark(OperationsPerInvoke = 1)]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public override string Wilson(string payload)
-        {
-            return WilsonCore(payload);
+            return JwtCore(payload.JwtDescriptor);
         }
 
         [Benchmark]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public override string WilsonJwt(string payload)
+        [ArgumentsSource(nameof(GetPayloadValues))]
+        public override string Wilson(BenchmarkPayload payload)
         {
-            return WilsonJwtCore(payload);
+            return WilsonCore(payload.WilsonDescriptor);
         }
 
-        public IEnumerable<string> GetPayloads()
+        [Benchmark]
+        [ArgumentsSource(nameof(GetPayloadValues))]
+        public override string WilsonJwt(BenchmarkPayload payload)
         {
-            yield return "JWT-empty";
-            for (int i = 0; i < 10; i++)
-            {
-                yield return "JWT-" + i;
-            }
-
-            //yield return "JWT-empty";
-            //yield return "JWT-small";
-            //yield return "JWT-medium";
-            //yield return "JWT-big";
+            return WilsonJwtCore(payload.WilsonJwtDescriptor);
         }
 
-        public override string JoseDotNet(string payload)
+        public override string JoseDotNet(BenchmarkPayload payload)
         {
             throw new NotImplementedException();
         }
 
         [Benchmark]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public override string JwtDotNet(string payload)
+        [ArgumentsSource(nameof(GetPayloadValues))]
+        public override string JwtDotNet(BenchmarkPayload payload)
         {
-            return JwtDotNetJwtCore(payload);
+            return JwtDotNetJwtCore(payload.JoseDescriptor);
+        }
+
+        public override IEnumerable<string> GetPayloads()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                yield return "JWT-" + i;
+            }
         }
     }
 }

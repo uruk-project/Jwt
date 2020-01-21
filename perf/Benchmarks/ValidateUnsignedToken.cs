@@ -14,56 +14,50 @@ namespace JsonWebToken.Performance
         [GlobalSetup]
         public void Setup()
         {
-            Jwt("JWT-empty");
-            Wilson("JWT-empty");
-            WilsonJwt("JWT-empty");
+            Jwt(new BenchmarkToken("JWT-0"));
+            Wilson(new BenchmarkToken("JWT-0"));
+            WilsonJwt(new BenchmarkToken("JWT-0"));
         }
 
         [Benchmark(Baseline = true)]
-        [ArgumentsSource(nameof(GetTokens))]
-        public override TokenValidationResult Jwt(string token)
+        [ArgumentsSource(nameof(GetTokenValues))]
+        public override TokenValidationResult Jwt(BenchmarkToken token)
         {
-            return JwtCore(token, token.Contains("empty") ? TokenValidationPolicy.NoValidation : tokenValidationPolicyWithoutSignature);
+            return JwtCore(token.TokenBinary, tokenValidationPolicyWithoutSignature);
         }
 
         [Benchmark]
-        [ArgumentsSource(nameof(GetTokens))]
-        public override ClaimsPrincipal Wilson(string token)
+        [ArgumentsSource(nameof(GetTokenValues))]
+        public override ClaimsPrincipal Wilson(BenchmarkToken token)
         {
-            return WilsonCore(token, token.Contains("empty") ? wilsonParametersWithoutValidation : wilsonParametersWithoutSignature);
+            return WilsonCore(token.TokenString, wilsonParametersWithoutSignature);
         }
 
         [Benchmark]
-        [ArgumentsSource(nameof(GetTokens))]
-        public override Microsoft.IdentityModel.JsonWebTokens.TokenValidationResult WilsonJwt(string token)
+        [ArgumentsSource(nameof(GetTokenValues))]
+        public override Microsoft.IdentityModel.JsonWebTokens.TokenValidationResult WilsonJwt(BenchmarkToken token)
         {
-            return WilsonJwtCore(token, token.Contains("empty") ? wilsonParametersWithoutValidation : wilsonParametersWithoutSignature);
+            return WilsonJwtCore(token.TokenString, wilsonParametersWithoutSignature);
         }
 
-        public IEnumerable<string> GetTokens()
+        [Benchmark]
+        [ArgumentsSource(nameof(GetTokenValues))]
+        public override void JoseDotNet(BenchmarkToken token)
         {
-            yield return "JWT-empty";
+            JoseDotNetCore(token.TokenString, Jose.JwsAlgorithm.none, signingKey);
+        }
+
+        public override void JwtDotNet(BenchmarkToken token)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override IEnumerable<string> GetTokens()
+        {
             for (int i = 0; i < 10; i++)
             {
                 yield return "JWT-" + i;
             }
-
-            //yield return "JWT-empty";
-            //yield return "JWT-small";
-            //yield return "JWT-medium";
-            //yield return "JWT-big";
-        }
-
-        [Benchmark]
-        [ArgumentsSource(nameof(GetTokens))]
-        public override void JoseDotNet(string token)
-        {
-            JoseDotNetCore(token, Jose.JwsAlgorithm.none, signingKey);
-        }
-
-        public override void JwtDotNet(string token)
-        {
-            throw new NotSupportedException();
         }
     }
 }

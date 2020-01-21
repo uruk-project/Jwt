@@ -14,57 +14,50 @@ namespace JsonWebToken.Performance
         [GlobalSetup]
         public void Setup()
         {
-            Jwt("JWE-empty");
-            Wilson("JWE-empty");
-            WilsonJwt("JWE-empty");
-            JoseDotNet("JWE-empty");
+            Jwt(new BenchmarkToken("JWE-0"));
+            Wilson(new BenchmarkToken("JWE-0"));
+            WilsonJwt(new BenchmarkToken("JWE-0"));
         }
 
         [Benchmark(Baseline = true)]
-        [ArgumentsSource(nameof(GetTokens))]
-        public override TokenValidationResult Jwt(string token)
+        [ArgumentsSource(nameof(GetTokenValues))]
+        public override TokenValidationResult Jwt(BenchmarkToken token)
         {
-            return JwtCore(token, token.Contains("empty") ? TokenValidationPolicy.NoValidation : tokenValidationPolicy);
+            return JwtCore(token.TokenBinary, tokenValidationPolicy);
         }
 
         [Benchmark]
-        [ArgumentsSource(nameof(GetTokens))]
-        public override ClaimsPrincipal Wilson(string token)
+        [ArgumentsSource(nameof(GetTokenValues))]
+        public override ClaimsPrincipal Wilson(BenchmarkToken token)
         {
-            return WilsonCore(token, token.Contains("empty") ? wilsonParametersWithoutValidation : wilsonParameters);
+            return WilsonCore(token.TokenString, wilsonParameters);
         }
 
-        //[Benchmark]
-        [ArgumentsSource(nameof(GetTokens))]
-        public override Microsoft.IdentityModel.JsonWebTokens.TokenValidationResult WilsonJwt(string token)
+        [Benchmark]
+        [ArgumentsSource(nameof(GetTokenValues))]
+        public override Microsoft.IdentityModel.JsonWebTokens.TokenValidationResult WilsonJwt(BenchmarkToken token)
         {
-            return WilsonJwtCore(token, token.Contains("empty") ? wilsonParametersWithoutValidation : wilsonParameters);
+            return WilsonJwtCore(token.TokenString, wilsonParameters);
         }
 
-        public IEnumerable<string> GetTokens()
+        [Benchmark]
+        [ArgumentsSource(nameof(GetTokenValues))]
+        public override void JoseDotNet(BenchmarkToken token)
         {
-            yield return "JWE-empty";
+            JoseDotNetCore(token.TokenString, Jose.JweEncryption.A128CBC_HS256, Jose.JweAlgorithm.A128KW, encryptionKey);
+        }
+
+        public override void JwtDotNet(BenchmarkToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IEnumerable<string> GetTokens()
+        {
             for (int i = 0; i < 10; i++)
             {
                 yield return "JWE-" + i;
             }
-
-            //yield return "JWE-empty";
-            //yield return "JWE-small";
-            //yield return "JWE-medium";
-            //yield return "JWE-big";
-        }
-
-        [Benchmark]
-        [ArgumentsSource(nameof(GetTokens))]
-        public override void JoseDotNet(string token)
-        {
-            JoseDotNetCore(token, Jose.JweEncryption.A128CBC_HS256, Jose.JweAlgorithm.A128KW, encryptionKey);
-        }
-
-        public override void JwtDotNet(string token)
-        {
-            throw new NotImplementedException();
         }
     }
 }
