@@ -195,12 +195,12 @@ namespace JsonWebToken
         {
             if (x == null)
             {
-              ThrowHelper.ThrowArgumentNullException(ExceptionArgument.x);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.x);
             }
 
             if (y == null)
             {
-              ThrowHelper.ThrowArgumentNullException(ExceptionArgument.y);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.y);
             }
 
             Crv = crv;
@@ -297,7 +297,7 @@ namespace JsonWebToken
         {
             return new EcdhKeyWrapper(this, encryptionAlgorithm, algorithm);
         }
-        
+
         /// <inheritdoc />
         protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
@@ -388,8 +388,11 @@ namespace JsonWebToken
             writer.WriteStartObject();
             writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
             writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
-            writer.WriteString(JwkParameterNames.XUtf8, Base64Url.Encode(X));
-            writer.WriteString(JwkParameterNames.YUtf8, Base64Url.Encode(Y));
+            Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(X.Length)];
+            Base64Url.Encode(X, buffer);
+            writer.WriteString(JwkParameterNames.XUtf8, buffer);
+            Base64Url.Encode(Y, buffer);
+            writer.WriteString(JwkParameterNames.YUtf8, buffer);
             writer.WriteEndObject();
             writer.Flush();
         }
@@ -414,7 +417,9 @@ namespace JsonWebToken
             var key = new ECJwk(parameters);
             if (computeThumbprint)
             {
-                key.Kid = Utf8.GetString(key.ComputeThumbprint());
+                Span<byte> thumbprint = stackalloc byte[43];
+                key.ComputeThumbprint(thumbprint);
+                key.Kid = Utf8.GetString(thumbprint);
             }
 
             if (algorithm != null)
@@ -586,11 +591,17 @@ namespace JsonWebToken
         {
             base.WriteTo(writer);
             writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
-            writer.WriteString(JwkParameterNames.XUtf8, Base64Url.Encode(X));
-            writer.WriteString(JwkParameterNames.YUtf8, Base64Url.Encode(Y));
+          
+            // X & Y & D have the same length
+            Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(X.Length)];
+            Base64Url.Encode(X, buffer);
+            writer.WriteString(JwkParameterNames.XUtf8, buffer);
+            Base64Url.Encode(Y, buffer);
+            writer.WriteString(JwkParameterNames.YUtf8, buffer);
             if (D != null)
             {
-                writer.WriteString(JwkParameterNames.DUtf8, Base64Url.Encode(D));
+                int bytesWritten = Base64Url.Encode(D, buffer);
+                writer.WriteString(JwkParameterNames.DUtf8, buffer);
             }
         }
 

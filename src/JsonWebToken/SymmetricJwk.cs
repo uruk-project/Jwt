@@ -241,7 +241,9 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes);
             if (computeThumbprint)
             {
-                key.Kid = Utf8.GetString(key.ComputeThumbprint());
+                Span<byte> thumbprint = stackalloc byte[43];
+                key.ComputeThumbprint(thumbprint);
+                key.Kid = Utf8.GetString(thumbprint);
             }
 
             return key;
@@ -265,7 +267,9 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes);
             if (computeThumbprint)
             {
-                key.Kid = Utf8.GetString(key.ComputeThumbprint());
+                Span<byte> thumbprint = stackalloc byte[43];
+                key.ComputeThumbprint(thumbprint);
+                key.Kid = Utf8.GetString(thumbprint);
             }
 
             return key;
@@ -434,7 +438,9 @@ namespace JsonWebToken
             var key = new SymmetricJwk(k);
             if (computeThumbprint)
             {
-                key.Kid = Utf8.GetString(key.ComputeThumbprint());
+                Span<byte> thumbprint = stackalloc byte[43];
+                key.ComputeThumbprint(thumbprint);
+                key.Kid = Utf8.GetString(thumbprint);
             }
 
             return key;
@@ -498,7 +504,24 @@ namespace JsonWebToken
         {
             using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
             writer.WriteStartObject();
-            writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
+            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(_k.Length);
+            byte[]? arrayToReturn = null;
+            try
+            {
+                Span<byte> buffer = requiredBufferSize > Constants.MaxStackallocBytes
+                                    ? stackalloc byte[requiredBufferSize]
+                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
+                int bytesWritten = Base64Url.Encode(_k, buffer);
+                writer.WriteString(JwkParameterNames.KUtf8, buffer.Slice(0, bytesWritten));
+            }
+            finally
+            {
+                if (arrayToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturn);
+                }
+            }
+
             writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
             writer.WriteEndObject();
             writer.Flush();
@@ -514,7 +537,23 @@ namespace JsonWebToken
         public override void WriteTo(Utf8JsonWriter writer)
         {
             base.WriteTo(writer);
-            writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
+            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(_k.Length);
+            byte[]? arrayToReturn = null;
+            try
+            {
+                Span<byte> buffer = requiredBufferSize > Constants.MaxStackallocBytes
+                                    ? stackalloc byte[requiredBufferSize]
+                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
+                int bytesWritten = Base64Url.Encode(_k, buffer);
+                writer.WriteString(JwkParameterNames.KUtf8, buffer.Slice(0, bytesWritten));
+            }
+            finally
+            {
+                if (arrayToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturn);
+                }
+            }
         }
 
         /// <inheritsdoc />

@@ -33,7 +33,7 @@ namespace JsonWebToken.Performance
         public static readonly JwtWriter Writer = new JwtWriter() { EnableHeaderCaching = true };
 
 
-        private static readonly FixedSizedBufferWriter _output = new FixedSizedBufferWriter(4096);
+        private static readonly FixedSizedBufferWriter _output = new FixedSizedBufferWriter(8192);
 
         static WriteToken()
         {

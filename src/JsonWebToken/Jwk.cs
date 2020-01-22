@@ -716,6 +716,20 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
+        /// </summary>
+        /// <returns></returns>
+        public void ComputeThumbprint(Span<byte> destination)
+        {
+            Debug.Assert(destination.Length == 43); // 43 => Base64Url.GetArraySizeRequiredToEncode(32)
+            Span<byte> hash = stackalloc byte[32];
+            using var bufferWriter = new PooledByteBufferWriter();
+            Canonicalize(bufferWriter);
+            Sha256.Shared.ComputeHash(bufferWriter.WrittenSpan, hash);
+            Base64Url.Encode(hash, destination);
+        }
+
+        /// <summary>
         /// Returns a new instance of <see cref="AsymmetricJwk"/>.
         /// </summary>
         /// <param name="certificate">A <see cref="X509Certificate2"/> that contains JSON Web Key parameters.</param>
@@ -775,7 +789,9 @@ namespace JsonWebToken
             }
 
             key.X5t = certificate.GetCertHash();
-            key.Kid = Utf8.GetString(key.ComputeThumbprint());
+            Span<byte> thumbprint = stackalloc byte[43];
+            key.ComputeThumbprint(thumbprint);
+            key.Kid = Utf8.GetString(thumbprint);
             return key;
         }
 
@@ -786,7 +802,15 @@ namespace JsonWebToken
         /// <returns><see cref="Jwk"/></returns>
         public static Jwk FromJson(string json)
         {
-            var reader = new Utf8JsonReader(Utf8.GetBytes(json), true, default);
+            byte[]? jsonToReturn = null;
+            try
+            {
+            int length = Utf8.GetMaxByteCount(json.Length);
+            Span<byte> jsonSpan = length <= Constants.MaxStackallocBytes
+                        ? stackalloc byte[length]
+                        : (jsonToReturn = ArrayPool<byte>.Shared.Rent(length));
+            length = Utf8.GetBytes(json, jsonSpan);
+            var reader = new Utf8JsonReader(jsonSpan.Slice(0, length), true, default);
             if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
             {
                 return FromJsonReader(ref reader);
@@ -794,6 +818,14 @@ namespace JsonWebToken
 
             ThrowHelper.ThrowArgumentException_MalformedKey();
             return Jwk.Empty;
+            }
+            finally
+            {
+                if (jsonToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(jsonToReturn);
+                }
+            }
         }
 
         internal void Populate(ReadOnlySpan<byte> name, string value)
@@ -972,12 +1004,16 @@ namespace JsonWebToken
 
             if (X5t != null)
             {
-                writer.WriteString(JwkParameterNames.X5tUtf8, Base64Url.Encode(X5t));
+                Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(X5t.Length)];
+                Base64Url.Encode(X5t, buffer);
+                writer.WriteString(JwkParameterNames.X5tUtf8, buffer);
             }
 
             if (X5tS256 != null)
             {
-                writer.WriteString(JwkParameterNames.X5tS256Utf8, Base64Url.Encode(X5tS256));
+                Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(X5tS256.Length)];
+                int bytesWritten = Base64Url.Encode(X5tS256, buffer);
+                writer.WriteString(JwkParameterNames.X5tS256Utf8, buffer.Slice(0, bytesWritten));
             }
 
             if (X5u != null)
