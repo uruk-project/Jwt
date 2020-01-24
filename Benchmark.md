@@ -28,7 +28,7 @@
 Tokens used in the benchmarks have from 6 to 96 claims.
 
 JsonWebToken was tested in version 1.0.0.
-https://www.nuget.org/packages/JsonWebToken/5.6.0
+https://www.nuget.org/packages/JsonWebToken/1.0.0
 
 Wilson was tested in version 5.6.0.
 https://www.nuget.org/packages/System.IdentityModel.Tokens.Jwt/5.6.0
