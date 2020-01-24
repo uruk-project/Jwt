@@ -29,6 +29,7 @@ namespace JsonWebToken.Performance
         public static readonly JsonWebTokenHandler Handler2 = new JsonWebTokenHandler();
 
         public static readonly SigningCredentials signingCredentials = new SigningCredentials(JsonWebKey.Create(Tokens.SigningKey.ToString()), ((SignatureAlgorithm)Tokens.SigningKey.Alg!).Name);
+        public static readonly EncryptingCredentials encryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(Tokens.EncryptionKey.ToArray()), "A128KW", "A128CBC-HS256");
 
         public static readonly JwtWriter Writer = new JwtWriter() { EnableHeaderCaching = true };
 
@@ -60,7 +61,17 @@ namespace JsonWebToken.Performance
 
         protected string WilsonJwtCore(string payload)
         {
+            return Handler2.CreateToken(payload);
+        }
+
+        protected string WilsonJwsCore(string payload)
+        {
             return Handler2.CreateToken(payload, signingCredentials);
+        }
+
+        protected string WilsonJweCore(string payload)
+        {
+            return Handler2.CreateToken(payload, signingCredentials, encryptingCredentials);
         }
 
         public abstract string JoseDotNet(BenchmarkPayload payload);

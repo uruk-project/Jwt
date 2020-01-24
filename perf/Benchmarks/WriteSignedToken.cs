@@ -33,7 +33,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetPayloadValues))]
         public override string WilsonJwt(BenchmarkPayload payload)
         {
-            return WilsonJwtCore(payload.WilsonJwtDescriptor);
+            return WilsonJwsCore(payload.WilsonJwtDescriptor);
         }
 
         [Benchmark]
