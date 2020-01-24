@@ -46,13 +46,14 @@ namespace JsonWebToken.Internal
 
                         // Use ArrayPool.Shared instead of CryptoPool because the array is passed out.
                         byte[] tempOutputBuffer = ArrayPool<byte>.Shared.Rent(numWholeBlocksInBytes);
-                        numOutputBytes = 0;
 
+                        Span<byte> outputSpan = default;
                         try
                         {
                             numOutputBytes = transform.TransformBlock(buffer, currentInputIndex, numWholeBlocksInBytes, tempOutputBuffer, 0);
 
-                            tempOutputBuffer.AsSpan(0, numOutputBytes).CopyTo(output.Slice(outputLength));
+                            outputSpan = tempOutputBuffer.AsSpan(0, numOutputBytes);
+                            outputSpan.CopyTo(output.Slice(outputLength));
                             outputLength += numOutputBytes;
 
                             currentInputIndex += numWholeBlocksInBytes;
@@ -60,7 +61,7 @@ namespace JsonWebToken.Internal
                         }
                         finally
                         {
-                            CryptographicOperations.ZeroMemory(new Span<byte>(tempOutputBuffer, 0, numOutputBytes));
+                            CryptographicOperations.ZeroMemory(outputSpan);
                             ArrayPool<byte>.Shared.Return(tempOutputBuffer);
                         }
                     }
@@ -87,7 +88,7 @@ namespace JsonWebToken.Internal
             }
 
             byte[] finalBytes = transform.TransformFinalBlock(_inputBuffer, 0, _inputBufferIndex);
-            finalBytes.AsSpan(0, finalBytes.Length).CopyTo(output.Slice(outputLength));
+            finalBytes.AsSpan().CopyTo(output.Slice(outputLength));
             return outputLength + finalBytes.Length;
         }
     }
