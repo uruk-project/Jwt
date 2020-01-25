@@ -6,9 +6,9 @@
 // Licensed under the MIT license. See the LICENSE file in the project root for more information.
 
 using System;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace JsonWebToken.Internal
 {
@@ -61,9 +61,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.EpkUtf8);
             }
 
-            var apu = header.Apu == null ? null : Encoding.UTF8.GetBytes(header.Apu);
-            var apv = header.Apv == null ? null : Encoding.UTF8.GetBytes(header.Apv);
-            byte[] secretAppend = BuildSecretAppend(apu, apv);
+            byte[] secretAppend = BuildSecretAppend(header.Apu, header.Apv);
             byte[] exchangeHash;
             using (var ephemeralKey = ECDiffieHellman.Create(epk.ExportParameters()))
             using (var privateKey = ECDiffieHellman.Create(((ECJwk)Key).ExportParameters(true)))
@@ -120,7 +118,7 @@ namespace JsonWebToken.Internal
             return HashAlgorithmName.SHA256;
         }
 
-        private static void WritePartyInfo(byte[]? partyInfo, int partyInfoLength, Span<byte> destination)
+        private static void WritePartyInfo(ReadOnlySpan<byte> partyInfo, int partyInfoLength, Span<byte> destination)
         {
             if (partyInfoLength == 0)
             {
@@ -139,26 +137,64 @@ namespace JsonWebToken.Internal
             _algorithmName.CopyTo(destination.Slice(sizeof(int)));
         }
 
-        private byte[] BuildSecretAppend(byte[]? apu, byte[]? apv)
+        private byte[] BuildSecretAppend(string? apuS, string? apvS)
         {
-            int apuLength = apu == null ? 0 : Base64Url.GetArraySizeRequiredToDecode(apu.Length);
-            int apvLength = apv == null ? 0 : Base64Url.GetArraySizeRequiredToDecode(apv.Length);
+            byte[]? apuToReturn = null;
+            byte[]? apvToReturn = null;
+            byte[] secretAppend;
+            try
+            {
+                int apuLength = apuS == null ? 0 : Utf8.GetMaxByteCount(apuS.Length);
+                Span<byte> apu = apuLength <= Constants.MaxStackallocBytes
+                                        ? stackalloc byte[apuLength]
+                                        : (apuToReturn = ArrayPool<byte>.Shared.Rent(apuLength));
+                if (apuS != null)
+                {
+                    apuLength = Utf8.GetBytes(apuS, apu);
+                    apu = apu.Slice(0, apuLength);
+                }
 
-            int algorithmLength = sizeof(int) + _algorithmNameLength;
-            int partyUInfoLength = sizeof(int) + apuLength;
-            int partyVInfoLength = sizeof(int) + apvLength;
-            const int suppPubInfoLength = sizeof(int);
+                int apvLength = apvS == null ? 0 : Utf8.GetMaxByteCount(apvS.Length);
+                Span<byte> apv = apvLength <= Constants.MaxStackallocBytes
+                                        ? stackalloc byte[apvLength]
+                                        : (apvToReturn = ArrayPool<byte>.Shared.Rent(apvLength));
+                if (apvS != null)
+                {
+                    apvLength = Utf8.GetBytes(apvS, apv);
+                    apv = apv.Slice(0, apvLength);
+                }
 
-            int secretAppendLength = algorithmLength + partyUInfoLength + partyVInfoLength + suppPubInfoLength;
-            var secretAppend = new byte[secretAppendLength];
-            var secretAppendSpan = secretAppend.AsSpan();
-            WriteAlgorithmId(secretAppendSpan);
-            secretAppendSpan = secretAppendSpan.Slice(algorithmLength);
-            WritePartyInfo(apu, apuLength, secretAppendSpan);
-            secretAppendSpan = secretAppendSpan.Slice(partyUInfoLength);
-            WritePartyInfo(apv, apvLength, secretAppendSpan);
-            secretAppendSpan = secretAppendSpan.Slice(partyVInfoLength);
-            BinaryPrimitives.WriteInt32BigEndian(secretAppendSpan, _keySizeInBytes << 3);
+                apuLength = Base64Url.GetArraySizeRequiredToDecode(apuLength);
+                apvLength = Base64Url.GetArraySizeRequiredToDecode(apvLength);
+
+                int algorithmLength = sizeof(int) + _algorithmNameLength;
+                int partyUInfoLength = sizeof(int) + apuLength;
+                int partyVInfoLength = sizeof(int) + apvLength;
+                const int suppPubInfoLength = sizeof(int);
+
+                int secretAppendLength = algorithmLength + partyUInfoLength + partyVInfoLength + suppPubInfoLength;
+                secretAppend = new byte[secretAppendLength];
+                var secretAppendSpan = secretAppend.AsSpan();
+                WriteAlgorithmId(secretAppendSpan);
+                secretAppendSpan = secretAppendSpan.Slice(algorithmLength);
+                WritePartyInfo(apu, apuLength, secretAppendSpan);
+                secretAppendSpan = secretAppendSpan.Slice(partyUInfoLength);
+                WritePartyInfo(apv, apvLength, secretAppendSpan);
+                secretAppendSpan = secretAppendSpan.Slice(partyVInfoLength);
+                BinaryPrimitives.WriteInt32BigEndian(secretAppendSpan, _keySizeInBytes << 3);
+            }
+            finally
+            {
+                if (apuToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(apuToReturn);
+                }
+
+                if (apvToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(apvToReturn);
+                }
+            }
 
             return secretAppend;
         }

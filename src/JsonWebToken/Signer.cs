@@ -18,28 +18,16 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of the <see cref="Signer"/> class used to create and verify signatures.
         /// </summary>
-        /// <param name="key">The <see cref="Jwk"/> that will be used for signature operations.</param>
         /// <param name="algorithm">The signature algorithm to apply.</param>
-        protected Signer(Jwk key, SignatureAlgorithm algorithm)
+        protected Signer(SignatureAlgorithm algorithm)
         {
-            if (key is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
             if (algorithm is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.algorithm);
             }
 
-            Key = key;
             Algorithm = algorithm;
         }
-
-        /// <summary>
-        /// Gets the <see cref="Jwk"/>.
-        /// </summary>
-        public Jwk Key { get; }
 
         /// <summary>
         /// Gets the signature algorithm.
@@ -91,7 +79,7 @@ namespace JsonWebToken
         private class EmptySigner : Signer
         {
             public EmptySigner()
-                : base(Jwk.Empty, SignatureAlgorithm.None)
+                : base(SignatureAlgorithm.None)
             {
             }
 

@@ -139,8 +139,8 @@ namespace JsonWebToken
                                                         ? (arrayCiphertextToReturnToPool = ArrayPool<byte>.Shared.Rent(ciphertextLength)).AsSpan(0, ciphertextLength)
                                                         : stackalloc byte[ciphertextLength];
 #if NETSTANDARD2_0 || NET461
-                                var nonce = new byte[encryptor.GetNonceSize()];
-                                _randomNumberGenerator.GetBytes(nonce);
+                            var nonce = new byte[encryptor.GetNonceSize()];
+                            _randomNumberGenerator.GetBytes(nonce);
 #else
                             Span<byte> nonce = stackalloc byte[encryptor.GetNonceSize()];
                             RandomNumberGenerator.Fill(nonce);
@@ -155,7 +155,7 @@ namespace JsonWebToken
                                 + (Constants.JweSegmentCount - 1);
                             encryptionLength += Base64Url.GetArraySizeRequiredToEncode(wrappedKey.Length);
 
-                            Span<byte> encryptedToken = output.GetSpan(encryptionLength).Slice(0, encryptionLength);
+                            Span<byte> encryptedToken = output.GetSpan(encryptionLength);
 
                             base64EncodedHeader.CopyTo(encryptedToken);
                             encryptedToken[bytesWritten++] = Constants.ByteDot;

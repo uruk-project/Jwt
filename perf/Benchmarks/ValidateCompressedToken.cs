@@ -7,16 +7,16 @@ namespace JsonWebToken.Performance
 {
     [Config(typeof(DefaultCoreConfig))]
     [BenchmarkCategory("CI-CD")]
-    public class ValidateEncryptedToken : ValidateToken
+    public class ValidateCompressedToken : ValidateToken
     {
         private static byte[] encryptionKey = Tokens.EncryptionKey.ToArray();
 
         [GlobalSetup]
         public void Setup()
         {
-            Jwt(new BenchmarkToken("JWE-0"));
-            Wilson(new BenchmarkToken("JWE-0"));
-            WilsonJwt(new BenchmarkToken("JWE-0"));
+            Jwt(new BenchmarkToken("JWE-DEF-0"));
+            Wilson(new BenchmarkToken("JWE-DEF-0"));
+            WilsonJwt(new BenchmarkToken("JWE-DEF-0"));
         }
 
         [Benchmark(Baseline = true)]
@@ -40,11 +40,9 @@ namespace JsonWebToken.Performance
             return WilsonJwtCore(token.TokenString, wilsonParameters);
         }
 
-        [Benchmark]
-        [ArgumentsSource(nameof(GetTokenValues))]
         public override Dictionary<string, object> JoseDotNet(BenchmarkToken token)
         {
-            return JoseDotNetCore(token.TokenString, Jose.JweEncryption.A128CBC_HS256, Jose.JweAlgorithm.A128KW, encryptionKey);
+            throw new NotImplementedException();
         }
 
         public override IDictionary<string, object> JwtDotNet(BenchmarkToken token)
@@ -56,7 +54,7 @@ namespace JsonWebToken.Performance
         {
             for (int i = 0; i < 10; i++)
             {
-                yield return "JWE-" + i;
+                yield return "JWE-DEF-" + i;
             }
         }
     }

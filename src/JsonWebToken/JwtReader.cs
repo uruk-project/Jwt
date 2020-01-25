@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -11,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -20,23 +20,13 @@ namespace JsonWebToken
     public sealed partial class JwtReader
     {
         private readonly IKeyProvider[] _encryptionKeyProviders;
-        private readonly JwtHeaderCache _headerCache;
+        private readonly JwtHeaderCache _headerCache = new JwtHeaderCache();
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwtReader"/>.
         /// </summary>
         /// <param name="encryptionKeyProviders"></param>
         public JwtReader(ICollection<IKeyProvider> encryptionKeyProviders)
-            : this(encryptionKeyProviders, null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwtReader"/>.
-        /// </summary>
-        /// <param name="encryptionKeyProviders"></param>
-        /// <param name="headerCache"></param>
-        public JwtReader(ICollection<IKeyProvider> encryptionKeyProviders, JwtHeaderCache? headerCache)
         {
             if (encryptionKeyProviders is null)
             {
@@ -44,16 +34,6 @@ namespace JsonWebToken
             }
 
             _encryptionKeyProviders = encryptionKeyProviders.Where(p => p != null).ToArray();
-            _headerCache = headerCache ?? new JwtHeaderCache();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwtReader"/>.
-        /// </summary>
-        /// <param name="encryptionKeys"></param>
-        public JwtReader(IList<Jwk> encryptionKeys)
-           : this(new Jwks(encryptionKeys))
-        {
         }
 
         /// <summary>
@@ -122,17 +102,12 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.policy);
             }
 
-            if (policy is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.policy);
-            }
-
             if (token.Length == 0)
             {
                 return TokenValidationResult.MalformedToken();
             }
 
-            int length = Encoding.UTF8.GetByteCount(token);
+            int length = Utf8.GetMaxByteCount(token.Length);
             if (length > policy.MaximumTokenSizeInBytes)
             {
                 return TokenValidationResult.MalformedToken();
@@ -141,15 +116,11 @@ namespace JsonWebToken
             byte[]? utf8ArrayToReturnToPool = null;
             var utf8Token = length <= Constants.MaxStackallocBytes
                   ? stackalloc byte[length]
-                  : (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
+                  : (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length));
             try
             {
-#if !NETSTANDARD2_0 && !NET461
-                Encoding.UTF8.GetBytes(token, utf8Token);
-#else
-                EncodingHelper.GetUtf8Bytes(token, utf8Token);
-#endif
-                return TryReadToken(utf8Token, policy);
+                int bytesWritten = Utf8.GetBytes(token, utf8Token);
+                return TryReadToken(utf8Token.Slice(0, bytesWritten), policy);
             }
             finally
             {
@@ -390,6 +361,12 @@ namespace JsonWebToken
             TokenSegment payloadSegment = Unsafe.Add(ref segments, 1);
             TokenSegment signatureSegment = Unsafe.Add(ref segments, 2);
             var rawPayload = utf8Buffer.Slice(payloadSegment.Start, payloadSegment.Length);
+            var result = policy.TryValidateSignature(header, utf8Buffer.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), utf8Buffer.Slice(signatureSegment.Start, signatureSegment.Length));
+            if (!result.Succedeed)
+            {
+                return TokenValidationResult.SignatureValidationFailed(result);
+            }
+
             Exception malformedException;
             JwtPayload payload;
             try
@@ -412,13 +389,7 @@ namespace JsonWebToken
                 goto Malformed;
             }
 
-            Jwt jws = new Jwt(header, payload);
-            var result = policy.TryValidateSignature(jws, utf8Buffer.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), utf8Buffer.Slice(signatureSegment.Start, signatureSegment.Length));
-            if (!result.Succedeed)
-            {
-                return result;
-            }
-             
+            Jwt jws = new Jwt(header, payload, result.SigningKey);
             return policy.TryValidateJwt(jws);
 
         Malformed:
@@ -496,16 +467,16 @@ namespace JsonWebToken
                 Base64Url.Decode(rawCiphertext, ciphertext, out int ciphertextBytesConsumed, out int ciphertextBytesWritten);
                 Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
 
-#if !NETSTANDARD2_0 && !NET461
                 char[]? headerArrayToReturn = null;
                 try
                 {
-                    Span<char> utf8Header = header.Length < Constants.MaxStackallocBytes
-                        ? stackalloc char[header.Length]
-                        : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(header.Length)).AsSpan(0, header.Length);
+                    int utf8HeaderLength = Utf8.GetMaxCharCount(header.Length);
+                    Span<char> utf8Header = utf8HeaderLength < Constants.MaxStackallocBytes
+                        ? stackalloc char[utf8HeaderLength]
+                        : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(utf8HeaderLength));
 
-                    Encoding.UTF8.GetChars(rawHeader, utf8Header);
-                    Encoding.ASCII.GetBytes(utf8Header, header);
+                    utf8HeaderLength = Utf8.GetChars(rawHeader, utf8Header);
+                    Ascii.GetBytes(utf8Header.Slice(0, utf8HeaderLength), header);
                 }
                 finally
                 {
@@ -514,9 +485,7 @@ namespace JsonWebToken
                         ArrayPool<char>.Shared.Return(headerArrayToReturn);
                     }
                 }
-#else
-                EncodingHelper.GetAsciiBytes(rawHeader, header);
-#endif
+
                 Base64Url.Decode(rawInitializationVector, initializationVector, out int ivBytesConsumed, out int ivBytesWritten);
                 Debug.Assert(initializationVector.Length == ivBytesWritten);
 
@@ -569,8 +538,7 @@ namespace JsonWebToken
                         if (keyWrapper.TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyWrappedBytesWritten))
                         {
                             Debug.Assert(keyWrappedBytesWritten == unwrappedKey.Length);
-                            SymmetricJwk jwk = SymmetricJwk.FromSpan(unwrappedKey);
-                            jwk.Ephemeral = true;
+                            Jwk jwk = new SymmetricJwk(unwrappedKey);
                             keys.Add(jwk);
                         }
                     }

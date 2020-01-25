@@ -30,11 +30,16 @@ namespace JsonWebToken.Internal
         private int _minimumKeySizeInBits = DefaultMinimumSymmetricKeySizeInBits;
 
         public SymmetricSigner(SymmetricJwk key, SignatureAlgorithm algorithm)
-            : base(key, algorithm)
+            : this(key.AsSpan(), algorithm)
         {
-            if (key.KeySizeInBits < MinimumKeySizeInBits)
+        }
+
+        public SymmetricSigner(ReadOnlySpan<byte> key, SignatureAlgorithm algorithm)
+            : base(algorithm)
+        {
+            if (key.Length << 3 < MinimumKeySizeInBits)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(key, algorithm.Name, MinimumKeySizeInBits);
+                ThrowHelper.ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(key.Length << 3, algorithm.Name, MinimumKeySizeInBits);
             }
 
             if (algorithm.Category != AlgorithmCategory.Hmac)
@@ -46,9 +51,9 @@ namespace JsonWebToken.Internal
             _base64HashSizeInBytes = Base64Url.GetArraySizeRequiredToEncode(_hashSizeInBytes);
             _hashAlgorithm = Algorithm.Id switch
             {
-                Algorithms.HmacSha256 => new HmacSha256(key.AsSpan()),
-                Algorithms.HmacSha384 => new HmacSha384(key.AsSpan()),
-                Algorithms.HmacSha512 => new HmacSha512(key.AsSpan()),
+                Algorithms.HmacSha256 => new HmacSha256(key),
+                Algorithms.HmacSha384 => new HmacSha384(key),
+                Algorithms.HmacSha512 => new HmacSha512(key),
                 _ => new NotSupportedHmacSha(algorithm)
             };
         }
@@ -191,7 +196,7 @@ namespace JsonWebToken.Internal
         private sealed class NotSupportedHmacSha : HmacSha2
         {
             public NotSupportedHmacSha(SignatureAlgorithm algorithm)
-                : base(new ShaNull(), default)
+                : base(ShaNull.Shared, default)
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm.Name);
             }
@@ -209,6 +214,8 @@ namespace JsonWebToken.Internal
 
         private sealed class ShaNull : Sha2
         {
+            public static readonly ShaNull Shared = new ShaNull();
+
             public override int HashSize => 0;
 
             public override int BlockSize => 0;

@@ -1,14 +1,13 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -407,7 +406,7 @@ namespace JsonWebToken
         {
             return new RsaKeyWrapper(this, encryptionAlgorithm, contentEncryptionAlgorithm);
         }
-        
+
         /// <inheritsdoc />
         protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
         {
@@ -578,7 +577,9 @@ namespace JsonWebToken
             var key = new RsaJwk(parameters);
             if (computeThumbprint)
             {
-                key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
+                Span<byte> thumbprint = stackalloc byte[43];
+                key.ComputeThumbprint(thumbprint);
+                key.Kid = Utf8.GetString(thumbprint);
             }
 
             return key;
@@ -595,9 +596,28 @@ namespace JsonWebToken
         {
             using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
             writer.WriteStartObject();
-            writer.WriteString(JwkParameterNames.EUtf8, Base64Url.Encode(E));
-            writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
-            writer.WriteString(JwkParameterNames.NUtf8, Base64Url.Encode(N));
+
+            // the RSA exponent E is always smaller than the modulus N
+            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(N.Length);
+            byte[]? arrayToReturn = null;
+            try
+            {
+                Span<byte> buffer = requiredBufferSize > Constants.MaxStackallocBytes
+                                    ? stackalloc byte[requiredBufferSize]
+                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
+                int bytesWritten = Base64Url.Encode(E, buffer);
+                writer.WriteString(JwkParameterNames.EUtf8, buffer.Slice(0, bytesWritten));
+                writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
+                bytesWritten = Base64Url.Encode(N, buffer);
+                writer.WriteString(JwkParameterNames.NUtf8, buffer.Slice(0, bytesWritten));
+            }
+            finally
+            {
+                if (arrayToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturn);
+                }
+            }
             writer.WriteEndObject();
             writer.Flush();
         }
@@ -684,7 +704,7 @@ namespace JsonWebToken
                     break;
                 }
 
-                ReadOnlySpan<byte> propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                ReadOnlySpan<byte> propertyName = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                 ref byte propertyNameRef = ref MemoryMarshal.GetReference(propertyName);
                 reader.Read();
                 switch (reader.TokenType)
@@ -702,19 +722,19 @@ namespace JsonWebToken
                                 switch (propertyNameRef)
                                 {
                                     case (byte)'e':
-                                        key.E = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                        key.E = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                                         break;
                                     case (byte)'n':
-                                        key.N = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                        key.N = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                                         break;
                                     case (byte)'p':
-                                        key.P = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                        key.P = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                                         break;
                                     case (byte)'q':
-                                        key.Q = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                        key.Q = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                                         break;
                                     case (byte)'d':
-                                        key.D = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                        key.D = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                                         break;
                                 }
                                 break;
@@ -723,15 +743,15 @@ namespace JsonWebToken
                                 var pKtyShort = Unsafe.ReadUnaligned<ushort>(ref propertyNameRef);
                                 if (pKtyShort == 26993u)
                                 {
-                                    key.QI = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                    key.QI = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                                 }
                                 else if (pKtyShort == 28772u)
                                 {
-                                    key.DP = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                    key.DP = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                                 }
                                 else if (pKtyShort == 29028u)
                                 {
-                                    key.DQ = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                    key.DQ = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                                 }
                                 break;
                             case 3:
@@ -761,39 +781,65 @@ namespace JsonWebToken
         public override void WriteTo(Utf8JsonWriter writer)
         {
             base.WriteTo(writer);
-            writer.WriteString(JwkParameterNames.NUtf8, Base64Url.Encode(N));
-            writer.WriteString(JwkParameterNames.EUtf8, Base64Url.Encode(E));
-            if (D != null)
-            {
-                writer.WriteString(JwkParameterNames.DUtf8, Base64Url.Encode(D));
-            }
 
-            if (DP != null)
+            // the modulus N is always the biggest field
+            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(N.Length);
+            byte[]? arrayToReturn = null;
+            try
             {
-                writer.WriteString(JwkParameterNames.DPUtf8, Base64Url.Encode(DP));
-            }
+                Span<byte> buffer = requiredBufferSize > Constants.MaxStackallocBytes
+                                    ? stackalloc byte[requiredBufferSize]
+                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
+                int bytesWritten = Base64Url.Encode(E, buffer);
+                writer.WriteString(JwkParameterNames.EUtf8, buffer.Slice(0, bytesWritten));
+                bytesWritten = Base64Url.Encode(N, buffer);
+                writer.WriteString(JwkParameterNames.NUtf8, buffer.Slice(0, bytesWritten));
 
-            if (DQ != null)
-            {
-                writer.WriteString(JwkParameterNames.DQUtf8, Base64Url.Encode(DQ));
-            }
+                if (D != null)
+                {
+                    bytesWritten = Base64Url.Encode(D, buffer);
+                    writer.WriteString(JwkParameterNames.DUtf8, buffer.Slice(0, bytesWritten));
+                }
 
-            if (P != null)
-            {
-                writer.WriteString(JwkParameterNames.PUtf8, Base64Url.Encode(P));
-            }
+                if (DP != null)
+                {
+                    bytesWritten = Base64Url.Encode(DP, buffer);
+                    writer.WriteString(JwkParameterNames.DPUtf8, buffer.Slice(0, bytesWritten));
+                }
 
-            if (Q != null)
-            {
-                writer.WriteString(JwkParameterNames.QUtf8, Base64Url.Encode(Q));
-            }
+                if (DQ != null)
+                {
+                    bytesWritten = Base64Url.Encode(DQ, buffer);
+                    writer.WriteString(JwkParameterNames.DQUtf8, buffer.Slice(0, bytesWritten));
+                }
 
-            if (QI != null)
+                if (P != null)
+                {
+                    bytesWritten = Base64Url.Encode(P, buffer);
+                    writer.WriteString(JwkParameterNames.PUtf8, buffer.Slice(0, bytesWritten));
+                }
+
+                if (Q != null)
+                {
+                    bytesWritten = Base64Url.Encode(Q, buffer);
+                    writer.WriteString(JwkParameterNames.QUtf8, buffer.Slice(0, bytesWritten));
+                }
+
+                if (QI != null)
+                {
+                    bytesWritten = Base64Url.Encode(QI, buffer);
+                    writer.WriteString(JwkParameterNames.QIUtf8, buffer.Slice(0, bytesWritten));
+                }
+            }
+            finally
             {
-                writer.WriteString(JwkParameterNames.QIUtf8, Base64Url.Encode(QI));
+                if (arrayToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturn);
+                }
             }
         }
-     
+
         /// <inheritsdoc />
         public override bool Equals(Jwk? other)
         {

@@ -1,10 +1,9 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -95,7 +94,8 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public Jwt(JwtHeader header, JwtPayload payload)
+        /// <param name="signingKey"></param>
+        public Jwt(JwtHeader header, JwtPayload payload, Jwk? signingKey)
         {
             if (header is null)
             {
@@ -106,9 +106,10 @@ namespace JsonWebToken
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.payload);
             }
-
+     
             Header = header;
             _payload = payload;
+            SigningKey = signingKey;
         }
 
         /// <summary>
@@ -149,7 +150,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the <see cref="Jwk"/> used for the signature of this token.
         /// </summary>
-        public Jwk? SigningKey { get; set; }
+        public Jwk? SigningKey { get; }
 
         /// <summary>
         /// Gets the <see cref="Jwk"/> used for the encryption of this token.
@@ -180,7 +181,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the plaintext of the JWE.
         /// </summary>
-        public string? Plaintext => Binary is null ? null : Encoding.UTF8.GetString(Binary);
+        public string? Plaintext => Binary is null ? null : Utf8.GetString(Binary);
 
         /// <summary>
         /// Gets the binary data of the JWE.
@@ -190,13 +191,17 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override string ToString()
         {
-            if (Payload != null)
+            if (Payload == null)
+            {
+                return Header.ToString() + ".";
+            }
+            else if (NestedToken == null)
             {
                 return Header.ToString() + "." + Payload.ToString();
             }
             else
             {
-                return Header.ToString() + ".";
+                return Header.ToString() + "." + NestedToken.Header.ToString() + "." + NestedToken.Payload;
             }
         }
     }

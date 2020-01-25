@@ -123,6 +123,34 @@ namespace JsonWebToken.Performance
                 },
             };
 
+            for (int i = 0; i < 10; i++)
+            {
+                var payload = new JObject
+                {
+                    { "jti", "756E69717565206964656E746966696572"},
+                    { "iss", "https://idp.example.com/"},
+                    { "iat", 1508184845},
+                    { "aud", "636C69656E745F6964"},
+                    { "exp", 1628184845},
+                    { "nbf",  1508184845}
+                };
+                const int intValue = 1508184845;
+                const string stringValue = "636C69656E745F6964";
+                for (int j = 0; j < i * 10; j++)
+                {
+                    if (j % 2 == 0)
+                    {
+                        payload.Add("prop" + j, intValue);
+                    }
+                    else
+                    {
+                        payload.Add("prop" + j, stringValue);
+                    }
+                }
+
+                payloads.Add(i.ToString(), payload);
+            }
+
             return payloads;
         }
 
@@ -424,15 +452,6 @@ namespace JsonWebToken.Performance
             descriptor.Algorithm = (SignatureAlgorithm?)signingKey.Alg;
 
             return CreateInvalidToken(status, descriptor, claim);
-        }
-
-        private static TokenState CreateInvalidToken(Jwk signingKey, Jwk encryptionKey, TokenValidationStatus status, JweDescriptor descriptor, string? claim = null)
-        {
-            descriptor.Payload.SigningKey = SigningKey;
-            descriptor.EncryptionKey = encryptionKey;
-            descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
-
-            return CreateInvalidToken(status, descriptor);
         }
 
         public static JwtObject ToJwtObject(JObject json)

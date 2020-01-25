@@ -1,14 +1,13 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -17,14 +16,31 @@ namespace JsonWebToken
     /// </summary>
     public sealed class SymmetricJwk : Jwk
     {
+#if NETSTANDARD2_0 || NET461 || NETCOREAPP2_1
+        private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
+#endif
+
         private readonly byte[] _k;
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
+        public SymmetricJwk(ReadOnlySpan<byte> k)
+        {
+            _k = k.ToArray();
+        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         public SymmetricJwk(byte[] k)
         {
-            _k = k ?? throw new ArgumentNullException(nameof(k));
+            if (k is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
+            }
+
+            _k = k;
         }
 
         /// <summary>
@@ -34,7 +50,7 @@ namespace JsonWebToken
         {
             if (k is null)
             {
-                throw new ArgumentNullException(nameof(k));
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
             }
 
             _k = Base64Url.Decode(k);
@@ -85,7 +101,7 @@ namespace JsonWebToken
             byte[]? k = null;
             while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
-                var propertyName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                var propertyName = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                 ref byte propertyNameRef = ref MemoryMarshal.GetReference(propertyName);
                 reader.Read();
                 switch (reader.TokenType)
@@ -100,7 +116,7 @@ namespace JsonWebToken
                         switch (propertyName.Length)
                         {
                             case 1 when propertyNameRef == (byte)'k':
-                                k = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                                k = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                                 break;
 
                             case 3:
@@ -199,11 +215,6 @@ namespace JsonWebToken
         public override int KeySizeInBits => _k.Length != 0 ? _k.Length << 3 : 0;
 
         /// <summary>
-        /// Gets or sets whether the key is ephemeral, and should not try to reuse internal objects.
-        /// </summary>
-        public bool Ephemeral { get; set; }
-
-        /// <summary>
         /// Creates a new <see cref="SymmetricJwk"/> from the <paramref name="bytes"/>.
         /// </summary>
         /// <param name="bytes"></param>
@@ -230,7 +241,9 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes);
             if (computeThumbprint)
             {
-                key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
+                Span<byte> thumbprint = stackalloc byte[43];
+                key.ComputeThumbprint(thumbprint);
+                key.Kid = Utf8.GetString(thumbprint);
             }
 
             return key;
@@ -251,10 +264,12 @@ namespace JsonWebToken
         /// <returns></returns>
         public static SymmetricJwk FromSpan(ReadOnlySpan<byte> bytes, bool computeThumbprint)
         {
-            var key = new SymmetricJwk(bytes.ToArray());
+            var key = new SymmetricJwk(bytes);
             if (computeThumbprint)
             {
-                key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
+                Span<byte> thumbprint = stackalloc byte[43];
+                key.ComputeThumbprint(thumbprint);
+                key.Kid = Utf8.GetString(thumbprint);
             }
 
             return key;
@@ -376,11 +391,11 @@ namespace JsonWebToken
                     }
                     else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
                     {
-                        return new AesCbcHmacDecryptor(this, encryptionAlgorithm);
+                        return new AesCbcHmacDecryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new AesNiCbc256Decryptor(_k.AsSpan(32)));
                     }
                     else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
                     {
-                        return new AesCbcHmacDecryptor(this, encryptionAlgorithm);
+                        return new AesCbcHmacDecryptor(_k.AsSpan(0, 24), encryptionAlgorithm, new AesNiCbc192Decryptor(_k.AsSpan(24)));
                     }
                 }
                 else
@@ -423,7 +438,9 @@ namespace JsonWebToken
             var key = new SymmetricJwk(k);
             if (computeThumbprint)
             {
-                key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
+                Span<byte> thumbprint = stackalloc byte[43];
+                key.ComputeThumbprint(thumbprint);
+                key.Kid = Utf8.GetString(thumbprint);
             }
 
             return key;
@@ -476,12 +493,10 @@ namespace JsonWebToken
             byte[] key = new byte[sizeInBits >> 3];
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             RandomNumberGenerator.Fill(key);
-            return key;
 #else
-            using var rnd = RandomNumberGenerator.Create();
-            rnd.GetBytes(key);
-            return key;
+            _randomNumberGenerator.GetBytes(key);
 #endif
+            return key;
         }
 
         /// <inheritdoc />      
@@ -489,7 +504,24 @@ namespace JsonWebToken
         {
             using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
             writer.WriteStartObject();
-            writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
+            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(_k.Length);
+            byte[]? arrayToReturn = null;
+            try
+            {
+                Span<byte> buffer = requiredBufferSize > Constants.MaxStackallocBytes
+                                    ? stackalloc byte[requiredBufferSize]
+                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
+                int bytesWritten = Base64Url.Encode(_k, buffer);
+                writer.WriteString(JwkParameterNames.KUtf8, buffer.Slice(0, bytesWritten));
+            }
+            finally
+            {
+                if (arrayToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturn);
+                }
+            }
+
             writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
             writer.WriteEndObject();
             writer.Flush();
@@ -505,7 +537,23 @@ namespace JsonWebToken
         public override void WriteTo(Utf8JsonWriter writer)
         {
             base.WriteTo(writer);
-            writer.WriteString(JwkParameterNames.KUtf8, Base64Url.Encode(_k));
+            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(_k.Length);
+            byte[]? arrayToReturn = null;
+            try
+            {
+                Span<byte> buffer = requiredBufferSize > Constants.MaxStackallocBytes
+                                    ? stackalloc byte[requiredBufferSize]
+                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
+                int bytesWritten = Base64Url.Encode(_k, buffer);
+                writer.WriteString(JwkParameterNames.KUtf8, buffer.Slice(0, bytesWritten));
+            }
+            finally
+            {
+                if (arrayToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturn);
+                }
+            }
         }
 
         /// <inheritsdoc />

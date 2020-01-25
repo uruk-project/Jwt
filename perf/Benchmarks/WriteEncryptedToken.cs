@@ -7,34 +7,53 @@ namespace JsonWebToken.Performance
     [BenchmarkCategory("CI-CD")]
     public class WriteEncryptedToken : WriteToken
     {
+        [GlobalSetup]
+        public void Setup()
+        {
+            Jwt(new BenchmarkPayload("JWE-0"));
+            Wilson(new BenchmarkPayload("JWE-0"));
+            WilsonJwt(new BenchmarkPayload("JWE-0"));
+        }
 
         [Benchmark(Baseline = true)]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public override byte[] Jwt(string payload)
+        [ArgumentsSource(nameof(GetPayloadValues))]
+        public override byte[] Jwt(BenchmarkPayload payload)
         {
-            return JwtCore(payload);
+            return JwtCore(payload.JwtDescriptor);
         }
 
         [Benchmark]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public override string Wilson(string payload)
+        [ArgumentsSource(nameof(GetPayloadValues))]
+        public override string Wilson(BenchmarkPayload payload)
         {
-            return WilsonCore(payload);
+            return WilsonCore(payload.WilsonDescriptor);
         }
 
-        //[Benchmark]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public override string WilsonJwt(string payload)
+        [Benchmark]
+        [ArgumentsSource(nameof(GetPayloadValues))]
+        public override string WilsonJwt(BenchmarkPayload payload)
         {
-            return WilsonJwtCore(payload);
+            return WilsonJweCore(payload.WilsonJwtDescriptor);
         }
 
-        public IEnumerable<string> GetPayloads()
+        [Benchmark]
+        [ArgumentsSource(nameof(GetPayloadValues))]
+        public override string JoseDotNet(BenchmarkPayload payload)
         {
-            //yield return "JWE-empty";
-            yield return "JWE-small";
-            yield return "JWE-medium";
-            //yield return "JWE-big";
+            return JoseDotNetJweCore(payload.JoseDescriptor);
+        }
+
+        public override string JwtDotNet(BenchmarkPayload payload)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override IEnumerable<string> GetPayloads()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                yield return "JWE-" + i;
+            }
         }
     }
 }

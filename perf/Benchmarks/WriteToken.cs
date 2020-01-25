@@ -1,25 +1,22 @@
-﻿using BenchmarkDotNet.Attributes;
+﻿using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using Jose;
 using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace JsonWebToken.Performance
 {
     public abstract class WriteToken
     {
-        private static readonly SymmetricJwk SigningKey = Tokens.SigningKey;
-
-        private static readonly SymmetricJwk EncryptionKey = Tokens.EncryptionKey;
-
-        private static readonly Microsoft.IdentityModel.Tokens.JsonWebKey WilsonSharedKey = Microsoft.IdentityModel.Tokens.JsonWebKey.Create(SigningKey.ToString());
+        private static readonly byte[] SigningKeyArray = Tokens.SigningKey.ToArray();
+        private static readonly byte[] EncryptionKeyArray = Tokens.EncryptionKey.ToArray();
 
         private static readonly IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
         private static readonly IJsonSerializer serializer = new JsonNetSerializer();
@@ -31,78 +28,162 @@ namespace JsonWebToken.Performance
         public static readonly JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler();
         public static readonly JsonWebTokenHandler Handler2 = new JsonWebTokenHandler();
 
-        public static readonly SigningCredentials signingCredentials = new SigningCredentials(WilsonSharedKey, ((SignatureAlgorithm)SigningKey.Alg!).Name);
+        public static readonly SigningCredentials signingCredentials = new SigningCredentials(JsonWebKey.Create(Tokens.SigningKey.ToString()), ((SignatureAlgorithm)Tokens.SigningKey.Alg!).Name);
+        public static readonly EncryptingCredentials encryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(Tokens.EncryptionKey.ToArray()), "A128KW", "A128CBC-HS256");
 
-        public static readonly JwtWriter Writer = new JwtWriter() { EnableHeaderCaching = false };
+        public static readonly JwtWriter Writer = new JwtWriter() { EnableHeaderCaching = true };
 
-        protected static readonly Dictionary<string, JwtDescriptor> JwtPayloads = CreateJwtDescriptors();
-        protected static readonly Dictionary<string, Dictionary<string, object>> DictionaryPayloads = CreateDictionaryDescriptors();
-        protected static readonly Dictionary<string, SecurityTokenDescriptor> WilsonPayloads = CreateWilsonDescriptors();
 
-        private static readonly PooledByteBufferWriter _output = new PooledByteBufferWriter();
+        private static readonly FixedSizedBufferWriter _output = new FixedSizedBufferWriter(8192);
 
         static WriteToken()
         {
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
         }
 
-        [GlobalSetup]
-        public void Setup()
-        {
-            Jwt("JWT-empty");
-            Wilson("JWT-empty");
-            WilsonJwt("JWT-empty");
-        }
+        public abstract byte[] Jwt(BenchmarkPayload payload);
 
-        [IterationCleanup]
-        public void Clean()
+        protected byte[] JwtCore(JwtDescriptor payload)
         {
+            Writer.WriteToken(payload, _output);
             _output.Clear();
+            return _output.Buffer;
         }
 
-        public abstract byte[] Jwt(string payload);
+        public abstract string Wilson(BenchmarkPayload payload);
 
-        protected byte[] JwtCore(string payload)
+        protected string WilsonCore(SecurityTokenDescriptor payload)
         {
-            Writer.WriteToken(JwtPayloads[payload], _output);
-            return Array.Empty<byte>();
+            return Handler.CreateEncodedJwt(payload);
         }
 
-        public abstract string Wilson(string payload);
-
-        protected string WilsonCore(string payload)
-        {
-            return Handler.CreateEncodedJwt(WilsonPayloads[payload]);
-        }
-
-        public abstract string WilsonJwt(string payload);
+        public abstract string WilsonJwt(BenchmarkPayload payload);
 
         protected string WilsonJwtCore(string payload)
         {
-            return Handler2.CreateToken(Tokens.Payloads[payload.Substring(4)].ToString(), signingCredentials);
+            return Handler2.CreateToken(payload);
         }
 
-        //[Benchmark]
-        //[ArgumentsSource(nameof(GetPayloads))]
-        public void JoseDotNet(string payload)
+        protected string WilsonJwsCore(string payload)
         {
-            if (payload.StartsWith("JWE-"))
-            {
-                payload = payload.Substring(4, payload.Length - 4);
-                var value = Jose.JWT.Encode(DictionaryPayloads[payload], SigningKey.K.ToArray(), JwsAlgorithm.HS256);
-                value = Jose.JWT.Encode(value, EncryptionKey.K.ToArray(), JweAlgorithm.A128KW, JweEncryption.A128CBC_HS256);
-            }
-            else
-            {
-                var value = Jose.JWT.Encode(DictionaryPayloads[payload], SigningKey.K.ToArray(), JwsAlgorithm.HS256);
-            }
+            return Handler2.CreateToken(payload, signingCredentials);
         }
 
-        //[Benchmark]
-        //[ArgumentsSource(nameof(GetNotEncryptedPayloads))]
-        public void JwtDotNet(string payload)
+        protected string WilsonJweCore(string payload)
         {
-            var value = JwtDotNetEncoder.Encode(DictionaryPayloads[payload], SigningKey.K.ToArray());
+            return Handler2.CreateToken(payload, signingCredentials, encryptingCredentials);
+        }
+
+        protected string WilsonJweCompressedCore(string payload)
+        {
+            return Handler2.CreateToken(payload, signingCredentials, encryptingCredentials, "DEF");
+        }
+
+        public abstract string JoseDotNet(BenchmarkPayload payload);
+
+        protected string JoseDotNetJwsCore(Dictionary<string, object> payload)
+        {
+            return Jose.JWT.Encode(payload, SigningKeyArray, JwsAlgorithm.HS256);
+        }
+
+        protected string JoseDotNetJweCore(Dictionary<string, object> payload)
+        {
+            var value = Jose.JWT.Encode(payload, SigningKeyArray, JwsAlgorithm.HS256);
+            return Jose.JWT.Encode(value, EncryptionKeyArray, JweAlgorithm.A128KW, JweEncryption.A128CBC_HS256);
+        }
+
+        protected string JoseDotNetJweCompressedCore(Dictionary<string, object> payload)
+        {
+            var value = Jose.JWT.Encode(payload, SigningKeyArray, JwsAlgorithm.HS256);
+            return Jose.JWT.Encode(value, EncryptionKeyArray, JweAlgorithm.A128KW, JweEncryption.A128CBC_HS256, JweCompression.DEF);
+        }
+
+        public abstract string JwtDotNet(BenchmarkPayload payload);
+
+        protected string JwtDotNetJwsCore(Dictionary<string, object> payload)
+        {
+            return JwtDotNetEncoder.Encode(payload, SigningKeyArray);
+        }
+        protected string JwtDotNetJwtCore(Dictionary<string, object> payload)
+        {
+            return JwtDotNetEncoder.Encode(payload, (byte[])null!);
+        }
+
+
+        public abstract IEnumerable<string> GetPayloads();
+
+        public IEnumerable<BenchmarkPayload> GetPayloadValues()
+        {
+            foreach (var item in GetPayloads())
+            {
+                yield return new BenchmarkPayload(item);
+            }
+        }
+    }
+
+    internal class FixedSizedBufferWriter : IBufferWriter<byte>
+    {
+        private readonly byte[] _buffer;
+        private int _count;
+
+        public FixedSizedBufferWriter(int capacity)
+        {
+            _buffer = new byte[capacity];
+        }
+
+        public void Clear()
+        {
+            _count = 0;
+        }
+
+        public byte[] Buffer => _buffer;
+
+        public Memory<byte> GetMemory(int minimumLength = 0) => _buffer.AsMemory(_count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Span<byte> GetSpan(int minimumLength = 0) => _buffer.AsSpan(_count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Advance(int bytes)
+        {
+            _count += bytes;
+        }
+    }
+
+
+    public class BenchmarkPayload
+    {
+        private static readonly SymmetricJwk SigningKey = Tokens.SigningKey;
+        private static readonly SymmetricJwk EncryptionKey = Tokens.EncryptionKey;
+
+        private static readonly JsonWebKey WilsonSharedKey = JsonWebKey.Create(SigningKey.ToString());
+
+        private static readonly Dictionary<string, JwtDescriptor> JwtPayloads = CreateJwtDescriptors();
+        private static readonly Dictionary<string, Dictionary<string, object>> DictionaryPayloads = CreateDictionaryDescriptors();
+        private static readonly Dictionary<string, SecurityTokenDescriptor> WilsonPayloads = CreateWilsonDescriptors();
+
+        public BenchmarkPayload(string name)
+        {
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            JwtDescriptor = JwtPayloads[name];
+            JoseDescriptor = DictionaryPayloads[name];
+            WilsonDescriptor = WilsonPayloads[name];
+            WilsonJwtDescriptor = Tokens.Payloads[name.Substring(name.LastIndexOf('-') + 1)].ToString();
+        }
+
+        public string Name { get; }
+
+        public JwtDescriptor JwtDescriptor { get; }
+
+        public Dictionary<string, object> JoseDescriptor { get; }
+
+        public SecurityTokenDescriptor WilsonDescriptor { get; }
+
+        public string WilsonJwtDescriptor { get; }
+
+        public override string ToString()
+        {
+            return Name;
         }
 
         private static Dictionary<string, JwtDescriptor> CreateJwtDescriptors()
@@ -188,6 +269,15 @@ namespace JsonWebToken.Performance
                 };
 
                 descriptors.Add("JWE-" + payload.Key, jwe);
+
+                var jwc = new JweDescriptor
+                {
+                    Payload = descriptor,
+                    EncryptionKey = EncryptionKey,
+                    EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
+                    CompressionAlgorithm = CompressionAlgorithm.Deflate
+                };
+                descriptors.Add("JWE-DEF-" + payload.Key, jwc);
             }
 
             return descriptors;
@@ -254,7 +344,7 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new SecurityTokenDescriptor()
                 {
-                    SigningCredentials = new SigningCredentials(WilsonSharedKey,((SignatureAlgorithm) SigningKey.Alg!).Name),
+                    SigningCredentials = new SigningCredentials(WilsonSharedKey, ((SignatureAlgorithm)SigningKey.Alg!).Name),
                     EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.Aes128KW.Name, EncryptionAlgorithm.Aes128CbcHmacSha256.Name),
                     Subject = new ClaimsIdentity(),
                     Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
@@ -278,15 +368,17 @@ namespace JsonWebToken.Performance
                 descriptors.Add("JWE-" + payload.Key, descriptor);
             }
 
-            return descriptors;
-        }
-
-        private static Dictionary<string, Dictionary<string, object>> CreateDictionaryDescriptors()
-        {
-            var descriptors = new Dictionary<string, Dictionary<string, object>>();
             foreach (var payload in Tokens.Payloads)
             {
-                var descriptor = new Dictionary<string, object>();
+                var descriptor = new SecurityTokenDescriptor()
+                {
+                    SigningCredentials = new SigningCredentials(WilsonSharedKey, ((SignatureAlgorithm)SigningKey.Alg!).Name),
+                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.Aes128KW.Name, EncryptionAlgorithm.Aes128CbcHmacSha256.Name),
+                    Subject = new ClaimsIdentity(),
+                    Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
+                    IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
+                    CompressionAlgorithm = "DEF"
+                };
 
                 foreach (var property in payload.Value.Properties())
                 {
@@ -295,15 +387,46 @@ namespace JsonWebToken.Performance
                         case "iat":
                         case "nbf":
                         case "exp":
-                            descriptor.Add(property.Name, (long)property.Value);
                             break;
                         default:
-                            descriptor.Add(property.Name, (string)property.Value);
+                            descriptor.Subject.AddClaim(new Claim(property.Name, (string)property.Value));
                             break;
                     }
                 }
 
-                descriptors.Add(payload.Key, descriptor);
+                descriptors.Add("JWE-DEF-" + payload.Key, descriptor);
+            }
+
+            return descriptors;
+        }
+
+        private static Dictionary<string, Dictionary<string, object>> CreateDictionaryDescriptors()
+        {
+            var descriptors = new Dictionary<string, Dictionary<string, object>>();
+
+            foreach (var type in new[] { "JWE", "JWS", "JWT", "JWE-DEF" })
+            {
+                foreach (var payload in Tokens.Payloads)
+                {
+                    var descriptor = new Dictionary<string, object>();
+
+                    foreach (var property in payload.Value.Properties())
+                    {
+                        switch (property.Name)
+                        {
+                            case "iat":
+                            case "nbf":
+                            case "exp":
+                                descriptor.Add(property.Name, (long)property.Value);
+                                break;
+                            default:
+                                descriptor.Add(property.Name, (string)property.Value);
+                                break;
+                        }
+                    }
+
+                    descriptors.Add(type + "-" + payload.Key, descriptor);
+                }
             }
 
             return descriptors;

@@ -1,11 +1,10 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
-using System.Text;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -30,7 +29,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
-            return Decode(Encoding.UTF8.GetBytes(data));
+            return Decode(Utf8.GetBytes(data));
         }
 
         /// <summary>
@@ -82,11 +81,7 @@ namespace JsonWebToken
                 : stackalloc byte[base64Url.Length];
             try
             {
-#if !NETSTANDARD2_0 && !NET461
-                Encoding.UTF8.GetBytes(base64Url, buffer);
-#else
-                EncodingHelper.GetUtf8Bytes(base64Url, buffer);
-#endif
+                Utf8.GetBytes(base64Url, buffer);
                 return Decode(buffer, data);
             }
             finally
@@ -197,7 +192,7 @@ namespace JsonWebToken
                     ? (utf8ArrayToReturn = ArrayPool<byte>.Shared.Rent(data.Length)).AsSpan(0, data.Length)
                     : stackalloc byte[data.Length];
 
-                GetUtf8Bytes(data, utf8Data);
+                Utf8.GetBytes(data, utf8Data);
                 return Encode(utf8Data);
             }
             finally
@@ -234,17 +229,5 @@ namespace JsonWebToken
         {
             return _base64.GetEncodedLength(count);
         }
-
-#if !NETSTANDARD2_0 && !NET461
-        private static int GetUtf8Bytes(ReadOnlySpan<char> input, Span<byte> output)
-        {
-            return Encoding.UTF8.GetBytes(input, output);
-        }
-#else
-        private static int GetUtf8Bytes(ReadOnlySpan<char> input, Span<byte> output)
-        {
-            return EncodingHelper.GetUtf8Bytes(input, output);
-        }
-#endif
     }
 }

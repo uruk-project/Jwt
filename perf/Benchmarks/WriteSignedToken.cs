@@ -7,33 +7,55 @@ namespace JsonWebToken.Performance
     [BenchmarkCategory("CI-CD")]
     public class WriteSignedToken : WriteToken
     {
-        [Benchmark(Baseline = true)]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public override byte[] Jwt(string payload)
+        [GlobalSetup]
+        public void Setup()
         {
-            return JwtCore(payload);
+            Jwt(new BenchmarkPayload("JWS-0"));
+            Wilson(new BenchmarkPayload("JWS-0"));
+            WilsonJwt(new BenchmarkPayload("JWS-0"));
+        }
+
+        [Benchmark(Baseline = true)]
+        [ArgumentsSource(nameof(GetPayloadValues))]
+        public override byte[] Jwt(BenchmarkPayload payload)
+        {
+            return JwtCore(payload.JwtDescriptor);
         }
 
         [Benchmark]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public override string Wilson(string payload)
+        [ArgumentsSource(nameof(GetPayloadValues))]
+        public override string Wilson(BenchmarkPayload payload)
         {
-            return WilsonCore(payload);
+            return WilsonCore(payload.WilsonDescriptor);
         }
 
-        //[Benchmark]
-        [ArgumentsSource(nameof(GetPayloads))]
-        public override string WilsonJwt(string payload)
+        [Benchmark]
+        [ArgumentsSource(nameof(GetPayloadValues))]
+        public override string WilsonJwt(BenchmarkPayload payload)
         {
-            return WilsonJwtCore(payload);
+            return WilsonJwsCore(payload.WilsonJwtDescriptor);
         }
 
-        public IEnumerable<string> GetPayloads()
+        [Benchmark]
+        [ArgumentsSource(nameof(GetPayloadValues))]
+        public override string JoseDotNet(BenchmarkPayload payload)
         {
-            //yield return "JWS-empty";
-            yield return "JWS-small";
-            yield return "JWS-medium";
-            //yield return "JWS-big";
+            return JoseDotNetJwsCore(payload.JoseDescriptor);
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(GetPayloadValues))]
+        public override string JwtDotNet(BenchmarkPayload payload)
+        {
+            return JwtDotNetJwsCore(payload.JoseDescriptor);
+        }
+
+        public override IEnumerable<string> GetPayloads()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                yield return "JWS-" + i;
+            }
         }
     }
 }

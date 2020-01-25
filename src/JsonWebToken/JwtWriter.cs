@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Text;
 
 namespace JsonWebToken
 {
@@ -12,25 +11,8 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtWriter
     {
-        private readonly JsonHeaderCache _headerCache;
+        private readonly JsonHeaderCache _headerCache = new JsonHeaderCache();
         private int _tokenLifetimeInSeconds;
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwtWriter"/>.
-        /// </summary>
-        public JwtWriter() :
-            this(null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwtWriter"/>.
-        /// </summary>
-        /// <param name="headerCache"></param>
-        public JwtWriter(JsonHeaderCache? headerCache)
-        {
-            _headerCache = headerCache ?? new JsonHeaderCache();
-        }
 
         /// <summary>
         /// Gets or sets the token lifetime in seconds.
@@ -58,7 +40,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets whether the <see cref="JwtDescriptor"/> has to be validated. Default value is <c>false</c>.
         /// </summary>
-        public bool IgnoreTokenValidation { get; set; } = false;
+        public bool IgnoreTokenValidation { get; set; }
 
         /// <summary>
         /// Gets or sets whether the JWT header will be cached. Default value is <c>true</c>.
@@ -66,7 +48,7 @@ namespace JsonWebToken
         public bool EnableHeaderCaching { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets whether the issued time must be generated.
+        /// Gets or sets whether the issued time must be generated. Default value is <c>false</c>.
         /// </summary>
         public bool GenerateIssuedTime { get; set; }
 
@@ -94,7 +76,7 @@ namespace JsonWebToken
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.descriptor);
             }
-            
+
             if (!IgnoreTokenValidation)
             {
                 descriptor.Validate();
@@ -113,11 +95,7 @@ namespace JsonWebToken
         {
             using var bufferWriter = new PooledByteBufferWriter();
             WriteToken(descriptor, bufferWriter);
-#if NETSTANDARD2_0 || NET461
-            return Encoding.UTF8.GetString(bufferWriter.WrittenSpan.ToArray());
-#else
-            return Encoding.UTF8.GetString(bufferWriter.WrittenSpan);
-#endif
+            return Utf8.GetString(bufferWriter.WrittenSpan);
         }
     }
 }

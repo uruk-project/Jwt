@@ -1,11 +1,10 @@
 // Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -169,7 +168,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool ContainsKey(string key)
         {
-            return ContainsKey(Encoding.UTF8.GetBytes(key));
+            return ContainsKey(Utf8.GetBytes(key));
         }
 
         /// <summary>

@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.Json;
 using JsonWebToken.Internal;
 
@@ -29,7 +28,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the compression algorithm.
         /// </summary>
-        public string Name => Encoding.UTF8.GetString(_utf8Name);
+        public string Name => Utf8.GetString(_utf8Name);
 
         /// <summary>
         /// Gets the name of the signature algorithm.
@@ -63,7 +62,7 @@ namespace JsonWebToken
             }
 
             _id = id;
-            _utf8Name = Encoding.UTF8.GetBytes(name);
+            _utf8Name = Utf8.GetBytes(name);
             Compressor = compressor;
         }
 
@@ -211,7 +210,7 @@ namespace JsonWebToken
 
             if (!TryParse(value, out var algorithm))
             {
-                ThrowHelper.ThrowNotSupportedException_Algorithm(Encoding.UTF8.GetString(value));
+                ThrowHelper.ThrowNotSupportedException_Algorithm(Utf8.GetString(value));
             }
 
             return algorithm;

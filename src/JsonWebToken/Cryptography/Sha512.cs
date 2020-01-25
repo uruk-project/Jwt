@@ -22,6 +22,12 @@ namespace JsonWebToken
         private const int Sha512HashSize = 64;
         private const int Sha512BlockSize = 128;
 
+
+        /// <summary>
+        /// Gets the default instance of the <see cref="Sha512"/> class.
+        /// </summary>
+        public static readonly Sha512 Shared = new Sha512();
+
         /// <inheritsdoc />
         public override int HashSize => Sha512HashSize;
 
