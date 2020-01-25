@@ -2,14 +2,13 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-using System.Runtime.CompilerServices;
 
 namespace JsonWebToken
 {
     /// <summary>
-    /// Provides key wrapping services.
+    /// Provides key unwrapping services.
     /// </summary>
-    public abstract class KeyWrapper : IDisposable
+    public abstract class KeyUnwrapper : IDisposable
     {
         /// <summary>
         /// Gets the <see cref="Jwk"/> that is being used.
@@ -27,12 +26,12 @@ namespace JsonWebToken
         public EncryptionAlgorithm EncryptionAlgorithm { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="KeyWrapper"/> class.
+        /// Initializes a new instance of the <see cref="KeyUnwrapper"/> class.
         /// </summary>
         /// <param name="key"></param>
         /// <param name="encryptionAlgorithm"></param>
         /// <param name="algorithm"></param>
-        protected KeyWrapper(Jwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        protected KeyUnwrapper(Jwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
             if (key is null)
             {
@@ -75,28 +74,18 @@ namespace JsonWebToken
         protected abstract void Dispose(bool disposing);
 
         /// <summary>
-        /// Wrap a key.
+        /// Unwrap a key.
         /// </summary>
-        /// <param name="staticKey">The key to be wrapped. If <c>null</c>, the key will be ephemeral and generated within this method.</param>
-        /// <param name="header">The key-values representing the JWT header.</param>
-        /// <param name="destination">The destination span.</param>
-        public abstract Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination);
+        /// <param name="keyBytes">key to unwrap.</param>
+        /// <param name="destination"></param>
+        /// <param name="header"></param>
+        /// <param name="bytesWritten"></param>
+        /// <returns>Unwrapped key.</returns>
+        public abstract bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten);
 
         /// <summary>
-        /// Gets the size of the wrapped key.
+        /// Gets the size of the unwrapped key.
         /// </summary>
-        public abstract int GetKeyWrapSize();
-
-        /// <summary>
-        /// Creates a symmetric key based on the <paramref name="encryptionAlgorithm"/>, excepts if the <paramref name="staticKey"/> is defined.
-        /// </summary>
-        /// <param name="encryptionAlgorithm"></param>
-        /// <param name="staticKey"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Jwk CreateSymmetricKey(EncryptionAlgorithm encryptionAlgorithm, Jwk? staticKey)
-        {
-            return staticKey ?? SymmetricJwk.GenerateKey(encryptionAlgorithm.RequiredKeySizeInBits);
-        }
+        public abstract int GetKeyUnwrapSize(int wrappedKeySize);
     }
 }
