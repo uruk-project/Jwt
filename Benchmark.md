@@ -36,6 +36,7 @@ Tokens used in this benchmarks have from 6 to 96 claims.
 
 ![Invalid JWS validation, allocated bytes per operation. Lower is better.](docs/validate_jwsi_allocated.png)
 *Invalid JWS validation, allocated bytes per operation. Lower is better.*
+*JsonWebToken allocation is too low compared to others library to be represented in this graph*
 
 ## Write tokens
 Tokens used in this benchmarks have from 6 to 96 claims.
@@ -46,6 +47,7 @@ Tokens used in this benchmarks have from 6 to 96 claims.
 
 ![JWS creation, allocated bytes per operation. Lower is better.](docs/write_jws_allocated.png)
 *JWS creation, allocated bytes per operation. Lower is better.*
+*JsonWebToken allocation is too low compared to others library to be represented in this graph*
 
 ### Write encrypted JWT (A128CBC-HS256 & A128KW, with HS256 signed JWT)
 ![JWE creation, operation per second. Higher is better.](docs/write_jwe_ops.png)
@@ -53,6 +55,7 @@ _JWE creation, operation per second. Higher is better._
 
 ![JWE creation, allocated bytes per operation. Lower is better.](docs/write_jwe_allocated.png)
 _JWE creation, allocated bytes per operation. Lower is better._
+*JsonWebToken allocation is too low compared to others library to be represented in this graph*
 
 ### Write encrypted and compressed JWT (A128CBC-HS256 & A128KW, with HS256 signed JWT, deflate compression)
 ![JWE compressed creation, operation per second. Higher is better.](docs/write_jwec_ops.png)
