@@ -439,7 +439,7 @@ namespace JsonWebToken.Internal
             {
                 // 64bit * 64bit => 128bit isn't currently supported by Math https://github.com/dotnet/corefx/issues/41822
                 // otherwise we'd want this to be (uint)Math.MultiplyHigh(lowbits, divisor)
-                high = (uint)((((ulong)(uint)lowBits * 3 >> 32) + (lowBits >> 32) * 3) >> 32);
+                high = (uint)(((((ulong)(uint)lowBits * 3) >> 32) + (lowBits >> 32) * 3) >> 32);
             }
 
             Debug.Assert(high == value % 3);
