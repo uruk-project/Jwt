@@ -1,4 +1,4 @@
-## Read & validate tokens
+## Read & validate token benchmarks
 Token validation includes:
 * signature verification
 * expiration time 
@@ -39,7 +39,7 @@ Token is invalid due to the invalid signature.
 *Invalid JWS validation, allocated bytes per operation. Lower is better.*
 *JsonWebToken allocation is too low compared to others libraries to be represented in this graph.*
 
-## Write tokens
+## Write token benchmarks
 Tokens used in this benchmarks have from 6 to 96 claims.
 
 ### Write signed JWT (HS256)
