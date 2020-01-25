@@ -62,7 +62,7 @@ See the [samples](https://github.com/ycrumeyrolle/Jwt/tree/master/samples) for m
 ````
 ## Performances
 See [benchmarks](Benchmark.md) for details. 
-This library is about **12x** faster than the Microsoft.IdentityModel.Tokens.Jwt when decoding and validating the token, with less than **5-10% memory allocation**. (6x faster including signature validation, 7x faster for encrypted tokens)
+This library is about **12x** faster than the Microsoft.IdentityModel.Tokens.Jwt when decoding and validating the token, with less than **5-10% memory allocation**. (**6x** faster including signature validation or for encrypted tokens)
 
 In case of invalid token, is is about **25x** faster for detecting an invalid signature.
 
