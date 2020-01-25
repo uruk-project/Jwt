@@ -73,12 +73,12 @@ namespace JsonWebToken.Tests
             Assert.IsType<JwsDescriptor>(descriptor);
             var jws = (JwsDescriptor)descriptor;
             Assert.NotNull(jws.ExpirationTime);
-            Assert.InRange((jws.ExpirationTime - now).Value.TotalSeconds - 10, -1, 1);
+            Assert.InRange((jws.ExpirationTime - now).Value.TotalSeconds - 10, -2, 2);
             Assert.NotNull(jws.JwtId);
             Assert.NotNull(jws.IssuedAt);
-            Assert.InRange((jws.IssuedAt - now).Value.TotalSeconds, -1, 1);
+            Assert.InRange((jws.IssuedAt - now).Value.TotalSeconds, -2, 2);
             Assert.NotNull(jws.NotBefore);
-            Assert.InRange((jws.NotBefore - now).Value.TotalSeconds - 5, -1, 1);
+            Assert.InRange((jws.NotBefore - now).Value.TotalSeconds - 5, -2, 2);
             Assert.Null(jws.Subject);
             Assert.Null(jws.KeyId);
             Assert.Null(jws.Audience); 
