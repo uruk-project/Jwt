@@ -31,6 +31,7 @@ Tokens used in this benchmarks have from 6 to 96 claims.
 *JWE compressed validation, allocated bytes per operation. Lower is better.*
 
 ### Read & validate invalid JWT
+Token is invalid due to the invalid signature. 
 ![Invalid JWS validation, operation per second. Higher is better.](docs/validate_jwsi_ops.png)
 *Invalid JWS validation, operation per second. Higher is better.*
 
