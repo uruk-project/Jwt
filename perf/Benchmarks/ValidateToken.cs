@@ -7,8 +7,10 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using System.Text;
 
 namespace JsonWebToken.Performance
 {
@@ -85,81 +87,40 @@ namespace JsonWebToken.Performance
 
         protected TokenValidationResult JwtCore(byte[] token, TokenValidationPolicy policy)
         {
-            var result = Reader.TryReadToken(token, policy);
-            if (!result.Succedeed)
-            {
-                ThrowException(result.Status.ToString());
-            }
-
-            return result;
+            return Reader.TryReadToken(token, policy);
         }
 
         public abstract ClaimsPrincipal Wilson(BenchmarkToken token);
 
         protected ClaimsPrincipal WilsonCore(string token, TokenValidationParameters parameters)
         {
-            var result = Handler.ValidateToken(token, parameters, out var securityToken);
-            if (result == null)
-            {
-                ThrowException($"{nameof(Handler.ValidateToken)} has returned 'null'.");
-            }
-
-            return result!;
+            return Handler.ValidateToken(token, parameters, out var securityToken);
         }
 
         public abstract Microsoft.IdentityModel.JsonWebTokens.TokenValidationResult WilsonJwt(BenchmarkToken token);
 
         protected Microsoft.IdentityModel.JsonWebTokens.TokenValidationResult WilsonJwtCore(string token, TokenValidationParameters parameters)
         {
-            var result = Handler2.ValidateToken(token, parameters);
-            if (result == null)
-            {
-                ThrowException($"{nameof(Handler2.ValidateToken)} has returned 'null'.");
-            }
-
-            if (result!.SecurityToken == null)
-            {
-                ThrowException($"{nameof(result.SecurityToken)} is 'null'.");
-            }
-
-            return result;
+            return Handler2.ValidateToken(token, parameters);
         }
 
-        public abstract void JoseDotNet(BenchmarkToken token);
+        public abstract Dictionary<string, object> JoseDotNet(BenchmarkToken token);
 
-        protected void JoseDotNetCore(string token, JweEncryption enc, JweAlgorithm alg, byte[] key)
+        protected Dictionary<string, object> JoseDotNetCore(string token, JweEncryption enc, JweAlgorithm alg, byte[] key)
         {
-            var value = Jose.JWT.Decode<Dictionary<string, object>>(token, key: key, enc: enc/*JweEncryption.A128CBC_HS256*/, alg: alg/*JweAlgorithm.A128KW*/);
-            if (value == null)
-            {
-                ThrowException($"{nameof(value)} is 'null'.");
-            }
+            return Jose.JWT.Decode<Dictionary<string, object>>(token, key: key, enc: enc/*JweEncryption.A128CBC_HS256*/, alg: alg/*JweAlgorithm.A128KW*/);
         }
 
-        protected void JoseDotNetCore(string token, JwsAlgorithm alg, byte[] key)
+        protected Dictionary<string, object> JoseDotNetCore(string token, JwsAlgorithm alg, byte[] key)
         {
-            var value = Jose.JWT.Decode<Dictionary<string, object>>(token, key: key, alg: alg /*JwsAlgorithm.HS256*/);
-            if (value == null)
-            {
-                ThrowException($"{nameof(value)} is 'null'.");
-            }
+            return Jose.JWT.Decode<Dictionary<string, object>>(token, key: key, alg: alg /*JwsAlgorithm.HS256*/);
         }
 
-        public abstract void JwtDotNet(BenchmarkToken token);
+        public abstract IDictionary<string, object> JwtDotNet(BenchmarkToken token);
 
-        protected void JwtDotNetCore(string token, byte[] key, bool verify)
+        protected IDictionary<string, object> JwtDotNetCore(string token, byte[] key, bool verify)
         {
-            var value = JwtDotNetDecoder.DecodeToObject(token, key, verify: verify);
-            if (value == null)
-            {
-                ThrowException($"{nameof(value)} is 'null'.");
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        protected static void ThrowException(string message)
-        {
-            throw new Exception(message);
+            return JwtDotNetDecoder.DecodeToObject(token, key, verify: verify);
         }
 
         public abstract IEnumerable<string> GetTokens();
@@ -178,7 +139,11 @@ namespace JsonWebToken.Performance
             {
                 Name = name ?? throw new ArgumentNullException(nameof(name));
                 TokenString = Tokens.ValidTokens[name];
-                TokenBinary = Tokens.ValidBinaryTokens[name];
+                TokenBinary = Encoding.UTF8.GetBytes(TokenString);
+                var parts = TokenString.Split('.');
+                parts[2] = new string(parts[2].Reverse().ToArray());
+                InvalidTokenString = parts[0] + "." + parts[1] + "." + parts[2];
+                InvalidTokenBinary = Encoding.UTF8.GetBytes(InvalidTokenString);
             }
 
             public string Name { get; }
@@ -186,6 +151,10 @@ namespace JsonWebToken.Performance
             public string TokenString { get; }
 
             public byte[] TokenBinary { get; }
+
+            public string InvalidTokenString { get; }
+
+            public byte[] InvalidTokenBinary { get; }
 
             public override string ToString()
             {

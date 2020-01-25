@@ -136,7 +136,7 @@ namespace JsonWebToken.Performance
                 };
                 const int intValue = 1508184845;
                 const string stringValue = "636C69656E745F6964";
-                for (int j = 0; j < i*10; j++)
+                for (int j = 0; j < i * 10; j++)
                 {
                     if (j % 2 == 0)
                     {
@@ -452,15 +452,6 @@ namespace JsonWebToken.Performance
             descriptor.Algorithm = (SignatureAlgorithm?)signingKey.Alg;
 
             return CreateInvalidToken(status, descriptor, claim);
-        }
-
-        private static TokenState CreateInvalidToken(Jwk signingKey, Jwk encryptionKey, TokenValidationStatus status, JweDescriptor descriptor, string? claim = null)
-        {
-            descriptor.Payload.SigningKey = SigningKey;
-            descriptor.EncryptionKey = encryptionKey;
-            descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
-
-            return CreateInvalidToken(status, descriptor);
         }
 
         public static JwtObject ToJwtObject(JObject json)

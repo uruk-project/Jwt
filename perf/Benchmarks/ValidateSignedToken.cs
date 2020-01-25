@@ -41,16 +41,16 @@ namespace JsonWebToken.Performance
 
         [Benchmark]
         [ArgumentsSource(nameof(GetTokenValues))]
-        public override void JoseDotNet(BenchmarkToken token)
+        public override Dictionary<string, object> JoseDotNet(BenchmarkToken token)
         {
-            JoseDotNetCore(token.TokenString, Jose.JwsAlgorithm.HS256, signingKey);
+            return JoseDotNetCore(token.TokenString, Jose.JwsAlgorithm.HS256, signingKey);
         }
 
         [Benchmark]
         [ArgumentsSource(nameof(GetTokenValues))]
-        public override void JwtDotNet(BenchmarkToken token)
+        public override IDictionary<string, object> JwtDotNet(BenchmarkToken token)
         {
-            JwtDotNetCore(token.TokenString, signingKey, true);
+            return JwtDotNetCore(token.TokenString, signingKey, true);
         }
 
         public override IEnumerable<string> GetTokens()

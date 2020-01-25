@@ -42,12 +42,12 @@ namespace JsonWebToken.Performance
 
         [Benchmark]
         [ArgumentsSource(nameof(GetTokenValues))]
-        public override void JoseDotNet(BenchmarkToken token)
+        public override Dictionary<string, object> JoseDotNet(BenchmarkToken token)
         {
-            JoseDotNetCore(token.TokenString, Jose.JwsAlgorithm.none, signingKey);
+            return JoseDotNetCore(token.TokenString, Jose.JwsAlgorithm.none, signingKey);
         }
 
-        public override void JwtDotNet(BenchmarkToken token)
+        public override IDictionary<string, object> JwtDotNet(BenchmarkToken token)
         {
             throw new NotSupportedException();
         }
