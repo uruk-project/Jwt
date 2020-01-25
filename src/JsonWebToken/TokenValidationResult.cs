@@ -359,5 +359,14 @@ namespace JsonWebToken
                 Exception = exception
             };
         }
+
+        internal static TokenValidationResult SignatureValidationFailed(SignatureValidationResult result)
+        {
+            return new TokenValidationResult
+            {
+                Status = result.Status,
+                Exception = result.Exception
+            };
+        }
     }
 }

@@ -74,6 +74,11 @@ namespace JsonWebToken.Performance
             return Handler2.CreateToken(payload, signingCredentials, encryptingCredentials);
         }
 
+        protected string WilsonJweCompressedCore(string payload)
+        {
+            return Handler2.CreateToken(payload, signingCredentials, encryptingCredentials, "DEF");
+        }
+
         public abstract string JoseDotNet(BenchmarkPayload payload);
 
         protected string JoseDotNetJwsCore(Dictionary<string, object> payload)
@@ -85,6 +90,12 @@ namespace JsonWebToken.Performance
         {
             var value = Jose.JWT.Encode(payload, SigningKeyArray, JwsAlgorithm.HS256);
             return Jose.JWT.Encode(value, EncryptionKeyArray, JweAlgorithm.A128KW, JweEncryption.A128CBC_HS256);
+        }
+
+        protected string JoseDotNetJweCompressedCore(Dictionary<string, object> payload)
+        {
+            var value = Jose.JWT.Encode(payload, SigningKeyArray, JwsAlgorithm.HS256);
+            return Jose.JWT.Encode(value, EncryptionKeyArray, JweAlgorithm.A128KW, JweEncryption.A128CBC_HS256, JweCompression.DEF);
         }
 
         public abstract string JwtDotNet(BenchmarkPayload payload);
@@ -157,7 +168,7 @@ namespace JsonWebToken.Performance
             JwtDescriptor = JwtPayloads[name];
             JoseDescriptor = DictionaryPayloads[name];
             WilsonDescriptor = WilsonPayloads[name];
-            WilsonJwtDescriptor = Tokens.Payloads[name.Substring(4)].ToString();
+            WilsonJwtDescriptor = Tokens.Payloads[name.Substring(name.LastIndexOf('-') + 1)].ToString();
         }
 
         public string Name { get; }
@@ -258,6 +269,15 @@ namespace JsonWebToken.Performance
                 };
 
                 descriptors.Add("JWE-" + payload.Key, jwe);
+
+                var jwc = new JweDescriptor
+                {
+                    Payload = descriptor,
+                    EncryptionKey = EncryptionKey,
+                    EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
+                    CompressionAlgorithm = CompressionAlgorithm.Deflate
+                };
+                descriptors.Add("JWE-DEF-" + payload.Key, jwc);
             }
 
             return descriptors;
@@ -348,6 +368,35 @@ namespace JsonWebToken.Performance
                 descriptors.Add("JWE-" + payload.Key, descriptor);
             }
 
+            foreach (var payload in Tokens.Payloads)
+            {
+                var descriptor = new SecurityTokenDescriptor()
+                {
+                    SigningCredentials = new SigningCredentials(WilsonSharedKey, ((SignatureAlgorithm)SigningKey.Alg!).Name),
+                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.Aes128KW.Name, EncryptionAlgorithm.Aes128CbcHmacSha256.Name),
+                    Subject = new ClaimsIdentity(),
+                    Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
+                    IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
+                    CompressionAlgorithm = "DEF"
+                };
+
+                foreach (var property in payload.Value.Properties())
+                {
+                    switch (property.Name)
+                    {
+                        case "iat":
+                        case "nbf":
+                        case "exp":
+                            break;
+                        default:
+                            descriptor.Subject.AddClaim(new Claim(property.Name, (string)property.Value));
+                            break;
+                    }
+                }
+
+                descriptors.Add("JWE-DEF-" + payload.Key, descriptor);
+            }
+
             return descriptors;
         }
 
@@ -355,7 +404,7 @@ namespace JsonWebToken.Performance
         {
             var descriptors = new Dictionary<string, Dictionary<string, object>>();
 
-            foreach (var type in new[] { "JWE", "JWS", "JWT" })
+            foreach (var type in new[] { "JWE", "JWS", "JWT", "JWE-DEF" })
             {
                 foreach (var payload in Tokens.Payloads)
                 {

@@ -361,6 +361,12 @@ namespace JsonWebToken
             TokenSegment payloadSegment = Unsafe.Add(ref segments, 1);
             TokenSegment signatureSegment = Unsafe.Add(ref segments, 2);
             var rawPayload = utf8Buffer.Slice(payloadSegment.Start, payloadSegment.Length);
+            var result = policy.TryValidateSignature(header, utf8Buffer.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), utf8Buffer.Slice(signatureSegment.Start, signatureSegment.Length));
+            if (!result.Succedeed)
+            {
+                return TokenValidationResult.SignatureValidationFailed(result);
+            }
+
             Exception malformedException;
             JwtPayload payload;
             try
@@ -383,13 +389,7 @@ namespace JsonWebToken
                 goto Malformed;
             }
 
-            Jwt jws = new Jwt(header, payload);
-            var result = policy.TryValidateSignature(jws, utf8Buffer.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), utf8Buffer.Slice(signatureSegment.Start, signatureSegment.Length));
-            if (!result.Succedeed)
-            {
-                return result;
-            }
-
+            Jwt jws = new Jwt(header, payload, result.SigningKey);
             return policy.TryValidateJwt(jws);
 
         Malformed:

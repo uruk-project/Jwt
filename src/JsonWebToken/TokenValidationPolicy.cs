@@ -213,13 +213,13 @@ namespace JsonWebToken
         /// <summary>
         /// Try to validate the token signature.
         /// </summary>
-        /// <param name="jwt"></param>
+        /// <param name="header"></param>
         /// <param name="contentBytes"></param>
         /// <param name="signatureSegment"></param>
         /// <returns></returns>
-        public TokenValidationResult TryValidateSignature(Jwt jwt, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
+        public SignatureValidationResult TryValidateSignature(JwtHeader header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
         {
-            return SignatureValidationPolicy.TryValidateSignature(jwt, contentBytes, signatureSegment);
+            return SignatureValidationPolicy.TryValidateSignature(header, contentBytes, signatureSegment);
         }
     }
 }

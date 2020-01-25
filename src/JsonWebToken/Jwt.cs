@@ -94,7 +94,8 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
-        public Jwt(JwtHeader header, JwtPayload payload)
+        /// <param name="signingKey"></param>
+        public Jwt(JwtHeader header, JwtPayload payload, Jwk? signingKey)
         {
             if (header is null)
             {
@@ -105,9 +106,10 @@ namespace JsonWebToken
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.payload);
             }
-
+     
             Header = header;
             _payload = payload;
+            SigningKey = signingKey;
         }
 
         /// <summary>
@@ -148,7 +150,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the <see cref="Jwk"/> used for the signature of this token.
         /// </summary>
-        public Jwk? SigningKey { get; set; }
+        public Jwk? SigningKey { get; }
 
         /// <summary>
         /// Gets the <see cref="Jwk"/> used for the encryption of this token.

@@ -376,6 +376,7 @@ namespace JsonWebToken
                 case ExceptionArgument.keys: return "keys";
                 case ExceptionArgument.json: return "json";
                 case ExceptionArgument.nestedToken: return "nestedToken";
+                case ExceptionArgument.signingKey: return "signingKey";
                 case ExceptionArgument.encryptionKey: return "encryptionKey";
                 case ExceptionArgument.payload: return "payload";
                 case ExceptionArgument.encryptionKeyProviders: return "encryptionKeyProviders";
@@ -441,6 +442,7 @@ namespace JsonWebToken
         keys,
         json,
         nestedToken,
+        signingKey,
         encryptionKey,
         payload,
         encryptionKeyProviders,

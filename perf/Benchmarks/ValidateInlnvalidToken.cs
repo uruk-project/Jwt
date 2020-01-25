@@ -10,7 +10,7 @@ namespace JsonWebToken.Performance
     [BenchmarkCategory("CI-CD")]
     public class ValidateInvalidToken : ValidateToken
     {
-        private static byte[] signingKey = Tokens.SigningKey.ToArray();
+        private static byte[] SigningKey = Tokens.SigningKey.ToArray();
 
         [GlobalSetup]
         public void Setup()
@@ -35,17 +35,17 @@ namespace JsonWebToken.Performance
             {
                 return WilsonCore(token.InvalidTokenString, wilsonParameters);
             }
-            catch (SecurityTokenEncryptionKeyNotFoundException e) { return null; }
-            catch (SecurityTokenDecryptionFailedException e) { return null; }
-            catch (SecurityTokenExpiredException e) { return null; }
-            catch (SecurityTokenInvalidAudienceException e) { return null; }
-            catch (SecurityTokenInvalidLifetimeException e) { return null; }
-            catch (SecurityTokenInvalidSignatureException e) { return null; }
-            catch (SecurityTokenNoExpirationException e) { return null; }
-            catch (SecurityTokenNotYetValidException e) { return null; }
-            catch (SecurityTokenReplayAddFailedException e) { return null; }
-            catch (SecurityTokenReplayDetectedException e) { return null; }
-            catch (SecurityTokenException e) { return null; }
+            catch (SecurityTokenEncryptionKeyNotFoundException) { return null!; }
+            catch (SecurityTokenDecryptionFailedException) { return null!; }
+            catch (SecurityTokenExpiredException) { return null!; }
+            catch (SecurityTokenInvalidAudienceException) { return null!; }
+            catch (SecurityTokenInvalidLifetimeException) { return null!; }
+            catch (SecurityTokenInvalidSignatureException) { return null!; }
+            catch (SecurityTokenNoExpirationException) { return null!; }
+            catch (SecurityTokenNotYetValidException) { return null!; }
+            catch (SecurityTokenReplayAddFailedException) { return null!; }
+            catch (SecurityTokenReplayDetectedException) { return null!; }
+            catch (SecurityTokenException) { return null!; }
         }
 
         [Benchmark]
@@ -61,11 +61,11 @@ namespace JsonWebToken.Performance
         {
             try
             {
-                return JoseDotNetCore(token.InvalidTokenString, Jose.JwsAlgorithm.HS256, signingKey);
+                return JoseDotNetCore(token.InvalidTokenString, Jose.JwsAlgorithm.HS256, SigningKey);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                return null;
+                return null!;
             }
         }
 
@@ -75,11 +75,11 @@ namespace JsonWebToken.Performance
         {
             try
             {
-                return JwtDotNetCore(token.InvalidTokenString, signingKey, true);
+                return JwtDotNetCore(token.InvalidTokenString, SigningKey, true);
             }
-            catch (Exception e)
+            catch (Exception )
             {
-                return null;
+                return null!;
             }
         }
 

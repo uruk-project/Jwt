@@ -33,14 +33,14 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetPayloadValues))]
         public override string WilsonJwt(BenchmarkPayload payload)
         {
-            return WilsonJweCore(payload.WilsonJwtDescriptor);
+            return WilsonJweCompressedCore(payload.WilsonJwtDescriptor);
         }
 
         [Benchmark]
         [ArgumentsSource(nameof(GetPayloadValues))]
         public override string JoseDotNet(BenchmarkPayload payload)
         {
-            return JoseDotNetJweCore(payload.JoseDescriptor);
+            return JoseDotNetJweCompressedCore(payload.JoseDescriptor);
         }
 
         public override string JwtDotNet(BenchmarkPayload payload)
