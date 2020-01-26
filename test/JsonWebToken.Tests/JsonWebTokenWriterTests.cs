@@ -88,6 +88,28 @@ namespace JsonWebToken.Tests
         }
 
         [Fact]
+        public void Write_Utf8ToEscape()
+        {
+            var plaintext = "Live long and prosper!€";
+
+            var descriptor = new PlaintextJweDescriptor(plaintext);
+            descriptor.EncryptionKey = RsaKey;
+            descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
+            descriptor.Algorithm = KeyManagementAlgorithm.RsaPkcs1;
+
+            JwtWriter writer = new JwtWriter();
+            var value = writer.WriteToken(descriptor);
+
+            var reader = new JwtReader(RsaKey);
+            var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
+            Assert.Equal(TokenValidationStatus.Success, result.Status);
+
+            var jwt = result.Token;
+
+            Assert.Equal(plaintext, jwt.Plaintext);
+        }
+
+        [Fact]
         public void Write_Binary()
         {
             var data = new byte[256];

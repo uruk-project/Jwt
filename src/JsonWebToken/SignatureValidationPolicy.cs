@@ -25,11 +25,11 @@ namespace JsonWebToken
         /// <summary>
         /// Try to validate the token signature.
         /// </summary>
-        /// <param name="jwt"></param>
+        /// <param name="header"></param>
         /// <param name="contentBytes"></param>
         /// <param name="signatureSegment"></param>
         /// <returns></returns>
-        public abstract TokenValidationResult TryValidateSignature(Jwt jwt, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment);
+        public abstract SignatureValidationResult TryValidateSignature(JwtHeader header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment);
 
         /// <summary>
         /// Creates a new <see cref="SignatureValidationPolicy"/> instance.
@@ -57,17 +57,17 @@ namespace JsonWebToken
                 _algorithm = algorithm;
             }
 
-            public override TokenValidationResult TryValidateSignature(Jwt jwt, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
+            public override SignatureValidationResult TryValidateSignature(JwtHeader header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
                 if (contentBytes.IsEmpty && signatureSegment.IsEmpty)
                 {
                     // This is not a JWS
-                    goto Success;
+                    return SignatureValidationResult.Success();
                 }
 
                 if (signatureSegment.IsEmpty)
                 {
-                    return TokenValidationResult.MissingSignature(jwt);
+                    return SignatureValidationResult.MissingSignature();
                 }
 
                 try
@@ -78,14 +78,14 @@ namespace JsonWebToken
                     Debug.Assert(bytesWritten == signatureBytes.Length);
                     bool keysTried = false;
 
-                    var keySet = _keyProvider.GetKeys(jwt.Header);
+                    var keySet = _keyProvider.GetKeys(header);
                     if (keySet != null)
                     {
                         var algorithm = _algorithm;
                         for (int i = 0; i < keySet.Length; i++)
                         {
                             var key = keySet[i];
-                            if (key.CanUseForSignature(jwt.Header.SignatureAlgorithm))
+                            if (key.CanUseForSignature(header.SignatureAlgorithm))
                             {
                                 var alg = algorithm ?? key.SignatureAlgorithm;
                                 if (!(alg is null))
@@ -94,8 +94,7 @@ namespace JsonWebToken
                                     {
                                         if (signer.Verify(contentBytes, signatureBytes))
                                         {
-                                            jwt.SigningKey = key;
-                                            goto Success;
+                                            return SignatureValidationResult.Success(key);
                                         }
                                     }
                                 }
@@ -106,34 +105,31 @@ namespace JsonWebToken
                     }
 
                     return keysTried
-                        ? TokenValidationResult.InvalidSignature(jwt)
-                        : TokenValidationResult.SignatureKeyNotFound(jwt);
+                        ? SignatureValidationResult.InvalidSignature()
+                        : SignatureValidationResult.SignatureKeyNotFound();
                 }
                 catch (FormatException e)
                 {
-                    return TokenValidationResult.MalformedSignature(jwt, e);
+                    return SignatureValidationResult.MalformedSignature(e);
                 }
-
-            Success:
-                return TokenValidationResult.Success(jwt);
             }
         }
 
         private sealed class NoSignatureValidationContext : SignatureValidationPolicy
         {
-            public override TokenValidationResult TryValidateSignature(Jwt jwt, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
+            public override SignatureValidationResult TryValidateSignature(JwtHeader header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
-                return (contentBytes.Length == 0 && signatureSegment.Length == 0) || (signatureSegment.IsEmpty && jwt.SignatureAlgorithm == SignatureAlgorithm.None)
-                    ? TokenValidationResult.Success(jwt)
-                    : TokenValidationResult.InvalidSignature(jwt);
+                return (contentBytes.Length == 0 && signatureSegment.Length == 0) || (signatureSegment.IsEmpty && header.SignatureAlgorithm == SignatureAlgorithm.None)
+                    ? SignatureValidationResult.Success()
+                    : SignatureValidationResult.InvalidSignature();
             }
         }
 
         private sealed class IgnoreSignatureValidationContext : SignatureValidationPolicy
         {
-            public override TokenValidationResult TryValidateSignature(Jwt jwt, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
+            public override SignatureValidationResult TryValidateSignature(JwtHeader header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
-                return TokenValidationResult.Success(jwt);
+                return SignatureValidationResult.Success();
             }
         }
     }

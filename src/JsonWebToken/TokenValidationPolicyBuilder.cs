@@ -1,11 +1,10 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -251,7 +250,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public TokenValidationPolicyBuilder RequireClaim(ReadOnlySpan<byte> requiredClaim)
         {
-            return RequireClaim(Encoding.UTF8.GetString(requiredClaim.ToArray()));
+            return RequireClaim(Utf8.GetString(requiredClaim));
         }
 
         /// <summary>
@@ -291,7 +290,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(audience));
             }
 
-            _audiences.Add(Encoding.UTF8.GetBytes(audience));
+            _audiences.Add(Utf8.GetBytes(audience));
             _control |= TokenValidationPolicy.AudienceFlag;
             return this;
         }
@@ -312,7 +311,7 @@ namespace JsonWebToken
             {
                 if (audience != null)
                 {
-                    _audiences.Add(Encoding.UTF8.GetBytes(audience));
+                    _audiences.Add(Utf8.GetBytes(audience));
                 }
             }
 
@@ -332,7 +331,7 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(issuer));
             }
 
-            _issuer = Encoding.UTF8.GetBytes(issuer);
+            _issuer = Utf8.GetBytes(issuer);
             _control |= TokenValidationPolicy.IssuerFlag;
             return this;
         }

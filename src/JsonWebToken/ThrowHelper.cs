@@ -9,8 +9,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using System.Text;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -62,11 +60,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_ClaimIsRequired(ReadOnlySpan<byte> claim)
         {
-#if NETSTANDARD2_0 || NET461
-            var value = EncodingHelper.GetUtf8String(claim);
-#else
-            var value = Encoding.UTF8.GetString(claim);
-#endif
+            var value = Utf8.GetString(claim);
             return new JwtDescriptorException($"The claim '{value}' is required.");
         }
 
@@ -76,11 +70,7 @@ namespace JsonWebToken
         private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
         {
             var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-#if NETSTANDARD2_0 || NET461
-            var value = EncodingHelper.GetUtf8String(utf8Name);
-#else
-            var value = Encoding.UTF8.GetString(utf8Name);
-#endif
+            var value = Utf8.GetString(utf8Name);
             return new JwtDescriptorException($"The claim '{value}' must be of type [{claimTypes}].");
         }
 
@@ -89,11 +79,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
         {
-#if NETSTANDARD2_0 || NET461
-            var value = EncodingHelper.GetUtf8String(utf8Name);
-#else
-            var value = Encoding.UTF8.GetString(utf8Name);
-#endif
+            var value = Utf8.GetString(utf8Name);
             return new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
         }
 
@@ -103,11 +89,7 @@ namespace JsonWebToken
         private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
         {
             var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-#if NETSTANDARD2_0 || NET461
-            var value = EncodingHelper.GetUtf8String(utf8Name);
-#else
-            var value = Encoding.UTF8.GetString(utf8Name);
-#endif
+            var value = Utf8.GetString(utf8Name);
             return new JwtDescriptorException($"The header parameter '{value}' must be of type [{claimTypes}].");
         }
 
@@ -116,11 +98,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
         {
-#if NETSTANDARD2_0 || NET461
-            var value = EncodingHelper.GetUtf8String(utf8Name);
-#else
-            var value = Encoding.UTF8.GetString(utf8Name);
-#endif
+            var value = Utf8.GetString(utf8Name);
             return new JwtDescriptorException($"The header parameter '{value}' must be of type {type}.");
         }
 
@@ -129,11 +107,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_HeaderIsRequired(ReadOnlySpan<byte> header)
         {
-#if NETSTANDARD2_0 || NET461
-            var value = EncodingHelper.GetUtf8String(header);
-#else
-            var value = Encoding.UTF8.GetString(header);
-#endif
+            var value = Utf8.GetString(header);
             return new JwtDescriptorException($"The header parameter '{value}' is required.");
         }
 
@@ -198,9 +172,9 @@ namespace JsonWebToken
         private static Exception CreateArgumentOutOfRangeException_InvalidEcdsaKeySize(Jwk key, SignatureAlgorithm algorithm, int validKeySize, int keySize) => new ArgumentOutOfRangeException(nameof(algorithm), $"Invalid key size for '{key.Kid}'. Valid key size must be '{validKeySize}' bits for the algorithm {algorithm}. Key size: '{keySize}'.");
 
         [DoesNotReturn]
-        internal static void ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(Jwk key, string algorithm, int validKeySize) => throw CreateArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(key, algorithm, validKeySize);
+        internal static void ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(int keySizeInBits, string algorithm, int validKeySize) => throw CreateArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(keySizeInBits, algorithm, validKeySize);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(Jwk key, string algorithm, int validKeySize) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), $"The algorithm '{algorithm}' requires the a key size to be greater than '{validKeySize}' bits. Key size is '{key.KeySizeInBits}'.");
+        private static Exception CreateArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(int keySizeInBits, string algorithm, int validKeySize) => new ArgumentOutOfRangeException(nameof(keySizeInBits), $"The algorithm '{algorithm}' requires the a key size to be greater than '{validKeySize}' bits. Key size is '{keySizeInBits}'.");
 
         [DoesNotReturn]
         internal static ReadOnlySpan<byte> ThrowArgumentOutOfRangeException_WellKnowProperty(WellKnownProperty wellKnownName) => throw CreateArgumentOutOfRangeException_WellKnowProperty(wellKnownName);
@@ -250,7 +224,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_Jwk(ReadOnlySpan<byte> name) => throw CreateNotSupportedException_Jwk(name);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateNotSupportedException_Jwk(ReadOnlySpan<byte> name) => new NotSupportedException($"JWK type '{Encoding.UTF8.GetString(name.ToArray())}' is not supported.");
+        private static Exception CreateNotSupportedException_Jwk(ReadOnlySpan<byte> name) => new NotSupportedException($"JWK type '{Utf8.GetString(name)}' is not supported.");
 
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm) => throw CreateNotSupportedException_SignatureAlgorithm(algorithm);
@@ -348,7 +322,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowFormatException_NotSupportedNumberValue(ReadOnlySpan<byte> name) => throw CreateFormatException_NotSUpportedNumberValue(name);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateFormatException_NotSUpportedNumberValue(ReadOnlySpan<byte> name) => new FormatException($"The claim '{Encoding.UTF8.GetString(name.ToArray())}' is not a supported Number value.");
+        private static Exception CreateFormatException_NotSUpportedNumberValue(ReadOnlySpan<byte> name) => new FormatException($"The claim '{Utf8.GetString(name)}' is not a supported Number value.");
 
         [DoesNotReturn]
         internal static string ThrowFormatException_MalformedJson() => throw CreateFormatException_MalformedJson();
@@ -402,6 +376,7 @@ namespace JsonWebToken
                 case ExceptionArgument.keys: return "keys";
                 case ExceptionArgument.json: return "json";
                 case ExceptionArgument.nestedToken: return "nestedToken";
+                case ExceptionArgument.signingKey: return "signingKey";
                 case ExceptionArgument.encryptionKey: return "encryptionKey";
                 case ExceptionArgument.payload: return "payload";
                 case ExceptionArgument.encryptionKeyProviders: return "encryptionKeyProviders";
@@ -467,6 +442,7 @@ namespace JsonWebToken
         keys,
         json,
         nestedToken,
+        signingKey,
         encryptionKey,
         payload,
         encryptionKeyProviders,

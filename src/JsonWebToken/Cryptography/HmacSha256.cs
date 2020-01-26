@@ -15,7 +15,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         public HmacSha256(ReadOnlySpan<byte> key)
-            : base(new Sha256(), key)
+            : base(Sha256.Shared, key)
         {
         }
 

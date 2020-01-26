@@ -13,7 +13,6 @@ namespace JsonWebToken.Internal
     public sealed class AesCbcHmacDecryptor : AuthenticatedDecryptor
     {
         private readonly AesDecryptor _decryptor;
-        private readonly SymmetricJwk _hmacKey;
         private readonly SymmetricSigner _signer;
         private bool _disposed;
 
@@ -48,24 +47,22 @@ namespace JsonWebToken.Internal
 
             var keyBytes = key.K;
             var aesKey = keyBytes.Slice(keyLength);
-            _hmacKey = SymmetricJwk.FromSpan(keyBytes.Slice(0, keyLength), false);
-
             _decryptor = new AesCbcDecryptor(aesKey, encryptionAlgorithm);
-            if (!_hmacKey.TryGetSigner(encryptionAlgorithm.SignatureAlgorithm, out var signer))
+            if (encryptionAlgorithm.SignatureAlgorithm is null)
             {
                 ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
             }
 
-            _signer = (SymmetricSigner)signer;
+            _signer = new SymmetricSigner(keyBytes.Slice(0, keyLength), encryptionAlgorithm.SignatureAlgorithm);
         }
 
         /// <summary>
-        /// Initializs a new instance of the <see cref="AesCbcHmacDecryptor"/> class.
+        /// Initializes a new instance of the <see cref="AesCbcHmacDecryptor"/> class.
         /// </summary>
-        /// <param name="hmacKey"></param>
+        /// <param name="keyBytes"></param>
         /// <param name="encryptionAlgorithm"></param>
         /// <param name="decryptor"></param>
-        public AesCbcHmacDecryptor(ReadOnlySpan<byte> hmacKey, EncryptionAlgorithm encryptionAlgorithm, AesDecryptor decryptor)
+        public AesCbcHmacDecryptor(ReadOnlySpan<byte> keyBytes, EncryptionAlgorithm encryptionAlgorithm, AesDecryptor decryptor)
         {
             if (encryptionAlgorithm is null)
             {
@@ -78,19 +75,18 @@ namespace JsonWebToken.Internal
             }
 
             int keyLength = encryptionAlgorithm.RequiredKeySizeInBits >> 4;
-            if (hmacKey.Length < keyLength)
+            if (keyBytes.Length < keyLength)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBits, hmacKey.Length >> 3);
+                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBits, keyBytes.Length >> 3);
             }
 
             _decryptor = decryptor;
-            _hmacKey = SymmetricJwk.FromSpan(hmacKey.Slice(0, keyLength), false);
-            if (!_hmacKey.TryGetSigner(encryptionAlgorithm.SignatureAlgorithm, out var signer))
+            if (encryptionAlgorithm.SignatureAlgorithm is null)
             {
                 ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
             }
 
-            _signer = (SymmetricSigner)signer;
+            _signer = new SymmetricSigner(keyBytes.Slice(0, keyLength), encryptionAlgorithm.SignatureAlgorithm);
         }
 
         /// <inheritdoc />
@@ -169,7 +165,6 @@ namespace JsonWebToken.Internal
         {
             if (!_disposed)
             {
-                _hmacKey.Dispose();
                 _decryptor.Dispose();
                 _disposed = true;
             }

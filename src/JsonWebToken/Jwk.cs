@@ -1,7 +1,6 @@
 // Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -10,10 +9,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -31,8 +29,6 @@ namespace JsonWebToken
         private CryptographicStore<Signer>? _signers;
         private CryptographicStore<KeyWrapper>? _keyWrappers;
         private CryptographicStore<KeyUnwrapper>? _keyUnwrappers;
-        private CryptographicStore<AuthenticatedEncryptor>? _encryptors;
-        private CryptographicStore<AuthenticatedDecryptor>? _decryptors;
 
         private bool? _isSigningKey;
         private SignatureAlgorithm? _signatureAlgorithm;
@@ -84,7 +80,7 @@ namespace JsonWebToken
         /// <param name="alg"></param>
         protected Jwk(string alg)
         {
-            Alg = Encoding.UTF8.GetBytes(alg);
+            Alg = Utf8.GetBytes(alg);
         }
 
         /// <summary>
@@ -265,11 +261,11 @@ namespace JsonWebToken
         {
             if (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
-                var nameSpan = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                var nameSpan = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                 if (nameSpan.SequenceEqual(JwkParameterNames.KtyUtf8)
                     && reader.Read() && reader.TokenType is JsonTokenType.String)
                 {
-                    var valueSpan = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                    var valueSpan = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                     switch (valueSpan.Length)
                     {
 #if !NET461
@@ -301,7 +297,7 @@ namespace JsonWebToken
             var jwk = new JwtObject();
             do
             {
-                var name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                var name = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                 reader.Read();
                 switch (reader.TokenType)
                 {
@@ -314,15 +310,15 @@ namespace JsonWebToken
                             {
                                 /* alg */
                                 case 6777953u:
-                                    jwk.Add(new JwtProperty(WellKnownProperty.Alg, reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray()));
+                                    jwk.Add(new JwtProperty(WellKnownProperty.Alg, reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray()));
                                     break;
                                 /* use */
                                 case 6648693u:
-                                    jwk.Add(new JwtProperty(name, reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray()));
+                                    jwk.Add(new JwtProperty(name, reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray()));
                                     continue;
                                 /* x5t */
                                 case 7615864u:
-                                    jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray())));
+                                    jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray())));
                                     continue;
                                 /* kid */
                                 case 6580587u:
@@ -333,7 +329,7 @@ namespace JsonWebToken
                         /* x5t#S256 */
                         else if (name.Length == 8 && Unsafe.ReadUnaligned<ulong>(ref MemoryMarshal.GetReference(name)) == 3906083584472266104u)
                         {
-                            jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray())));
+                            jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray())));
                             continue;
                         }
 
@@ -416,7 +412,7 @@ namespace JsonWebToken
         {
             if (jwk.TryGetValue(JwkParameterNames.KtyUtf8, out var property) && !(property.Value is null))
             {
-                ReadOnlySpan<byte> kty = Encoding.UTF8.GetBytes((string)property.Value);
+                ReadOnlySpan<byte> kty = Utf8.GetBytes((string)property.Value);
                 if (kty.SequenceEqual(JwkTypeNames.Octet))
                 {
                     return new SymmetricJwk(jwk);
@@ -465,11 +461,7 @@ namespace JsonWebToken
             }
 
             var input = bufferWriter.WrittenSpan;
-#if NETSTANDARD2_0 || NET461
-            return Encoding.UTF8.GetString(input.ToArray());
-#else
-                return Encoding.UTF8.GetString(input);
-#endif
+            return Utf8.GetString(input);
         }
 
         /// <summary>
@@ -654,39 +646,10 @@ namespace JsonWebToken
         /// <param name="encryptor">The provided <see cref="AuthenticatedEncryptor"/>. <c>null</c> if returns <c>false</c>.</param>
         public bool TryGetAuthenticatedEncryptor(EncryptionAlgorithm? encryptionAlgorithm, [NotNullWhen(true)] out AuthenticatedEncryptor? encryptor)
         {
-            if (!(encryptionAlgorithm is null))
+            if (!(encryptionAlgorithm is null) && SupportEncryption(encryptionAlgorithm))
             {
-                var encryptors = _encryptors;
-                var algorithmKey = encryptionAlgorithm.Id;
-                if (encryptors is null)
-                {
-                    encryptors = new CryptographicStore<AuthenticatedEncryptor>();
-                    _encryptors = encryptors;
-                }
-                else
-                {
-                    if (encryptors.TryGetValue(algorithmKey, out encryptor))
-                    {
-                        return true;
-                    }
-                }
-
-                if (SupportEncryption(encryptionAlgorithm))
-                {
-                    encryptor = CreateAuthenticatedEncryptor(encryptionAlgorithm);
-                    if (encryptors.TryAdd(algorithmKey, encryptor))
-                    {
-                        return true;
-                    }
-
-                    encryptor.Dispose();
-                    if (encryptors.TryGetValue(encryptionAlgorithm.Id, out encryptor))
-                    {
-                        return true;
-                    }
-
-                    ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
-                }
+                encryptor = CreateAuthenticatedEncryptor(encryptionAlgorithm);
+                return true;
             }
 
             encryptor = null;
@@ -700,39 +663,10 @@ namespace JsonWebToken
         /// <param name="decryptor">The provided <see cref="AuthenticatedDecryptor"/>. <c>null</c> if returns <c>false</c>.</param>
         public bool TryGetAuthenticatedDecryptor(EncryptionAlgorithm? encryptionAlgorithm, [NotNullWhen(true)] out AuthenticatedDecryptor? decryptor)
         {
-            if (!(encryptionAlgorithm is null))
+            if (!(encryptionAlgorithm is null) && SupportEncryption(encryptionAlgorithm))
             {
-                var decryptors = _decryptors;
-                var algorithmKey = encryptionAlgorithm.Id;
-                if (decryptors is null)
-                {
-                    decryptors = new CryptographicStore<AuthenticatedDecryptor>();
-                    _decryptors = decryptors;
-                }
-                else
-                {
-                    if (decryptors.TryGetValue(algorithmKey, out decryptor))
-                    {
-                        return true;
-                    }
-                }
-
-                if (SupportEncryption(encryptionAlgorithm))
-                {
-                    decryptor = CreateAuthenticatedDecryptor(encryptionAlgorithm);
-                    if (decryptors.TryAdd(algorithmKey, decryptor))
-                    {
-                        return true;
-                    }
-
-                    decryptor.Dispose();
-                    if (decryptors.TryGetValue(encryptionAlgorithm.Id, out decryptor))
-                    {
-                        return true;
-                    }
-
-                    ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
-                }
+                decryptor = CreateAuthenticatedDecryptor(encryptionAlgorithm);
+                return true;
             }
 
             decryptor = null;
@@ -768,32 +702,32 @@ namespace JsonWebToken
         /// <returns></returns>
         protected abstract void Canonicalize(IBufferWriter<byte> bufferWriter);
 
-#if !NETSTANDARD2_0 && !NET461
         /// <summary>
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
         /// <returns></returns>
         public byte[] ComputeThumbprint()
         {
-            using var hashAlgorithm = SHA256.Create();
-            Span<byte> hash = stackalloc byte[hashAlgorithm.HashSize >> 3];
+            Span<byte> hash = stackalloc byte[32];
             using var bufferWriter = new PooledByteBufferWriter();
             Canonicalize(bufferWriter);
-            hashAlgorithm.TryComputeHash(bufferWriter.WrittenSpan, hash, out int bytesWritten);
-            Debug.Assert(bytesWritten == hashAlgorithm.HashSize >> 3);
+            Sha256.Shared.ComputeHash(bufferWriter.WrittenSpan, hash);
             return Base64Url.Encode(hash);
         }
-#else
+
         /// <summary>
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
-        public byte[] ComputeThumbprint()
+        /// <returns></returns>
+        public void ComputeThumbprint(Span<byte> destination)
         {
-            using var hashAlgorithm = SHA256.Create();
-            var hash = hashAlgorithm.ComputeHash(Canonicalize());
-            return Base64Url.Encode(hash);
+            Debug.Assert(destination.Length == 43); // 43 => Base64Url.GetArraySizeRequiredToEncode(32)
+            Span<byte> hash = stackalloc byte[32];
+            using var bufferWriter = new PooledByteBufferWriter();
+            Canonicalize(bufferWriter);
+            Sha256.Shared.ComputeHash(bufferWriter.WrittenSpan, hash);
+            Base64Url.Encode(hash, destination);
         }
-#endif
 
         /// <summary>
         /// Returns a new instance of <see cref="AsymmetricJwk"/>.
@@ -855,7 +789,9 @@ namespace JsonWebToken
             }
 
             key.X5t = certificate.GetCertHash();
-            key.Kid = Encoding.UTF8.GetString(key.ComputeThumbprint());
+            Span<byte> thumbprint = stackalloc byte[43];
+            key.ComputeThumbprint(thumbprint);
+            key.Kid = Utf8.GetString(thumbprint);
             return key;
         }
 
@@ -866,7 +802,15 @@ namespace JsonWebToken
         /// <returns><see cref="Jwk"/></returns>
         public static Jwk FromJson(string json)
         {
-            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json), true, default);
+            byte[]? jsonToReturn = null;
+            try
+            {
+            int length = Utf8.GetMaxByteCount(json.Length);
+            Span<byte> jsonSpan = length <= Constants.MaxStackallocBytes
+                        ? stackalloc byte[length]
+                        : (jsonToReturn = ArrayPool<byte>.Shared.Rent(length));
+            length = Utf8.GetBytes(json, jsonSpan);
+            var reader = new Utf8JsonReader(jsonSpan.Slice(0, length), true, default);
             if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
             {
                 return FromJsonReader(ref reader);
@@ -874,6 +818,14 @@ namespace JsonWebToken
 
             ThrowHelper.ThrowArgumentException_MalformedKey();
             return Jwk.Empty;
+            }
+            finally
+            {
+                if (jsonToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(jsonToReturn);
+                }
+            }
         }
 
         internal void Populate(ReadOnlySpan<byte> name, string value)
@@ -941,7 +893,7 @@ namespace JsonWebToken
             /* x5t#S256 */
             if (Unsafe.ReadUnaligned<ulong>(ref pPropertyName) == 3906083584472266104u)
             {
-                key.X5tS256 = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                key.X5tS256 = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
             }
         }
 
@@ -950,7 +902,7 @@ namespace JsonWebToken
             /* x5t#S256 */
             if (Unsafe.ReadUnaligned<ulong>(ref MemoryMarshal.GetReference(pPropertyName)) == 3906083584472266104u)
             {
-                key.X5tS256 = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                key.X5tS256 = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
             }
         }
 
@@ -993,7 +945,7 @@ namespace JsonWebToken
             {
                 /* alg */
                 case 6777953u:
-                    key.Alg = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray();
+                    key.Alg = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray();
                     break;
                 /* kid */
                 case 6580587u:
@@ -1001,11 +953,11 @@ namespace JsonWebToken
                     break;
                 /* use */
                 case 6648693u:
-                    key.Use = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan.ToArray();
+                    key.Use = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray();
                     break;
                 /* x5t */
                 case 7615864u:
-                    key.X5t = Base64Url.Decode(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
+                    key.X5t = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
                     break;
                 /* x5u */
                 case 7681400u:
@@ -1052,12 +1004,16 @@ namespace JsonWebToken
 
             if (X5t != null)
             {
-                writer.WriteString(JwkParameterNames.X5tUtf8, Base64Url.Encode(X5t));
+                Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(X5t.Length)];
+                Base64Url.Encode(X5t, buffer);
+                writer.WriteString(JwkParameterNames.X5tUtf8, buffer);
             }
 
             if (X5tS256 != null)
             {
-                writer.WriteString(JwkParameterNames.X5tS256Utf8, Base64Url.Encode(X5tS256));
+                Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(X5tS256.Length)];
+                int bytesWritten = Base64Url.Encode(X5tS256, buffer);
+                writer.WriteString(JwkParameterNames.X5tS256Utf8, buffer.Slice(0, bytesWritten));
             }
 
             if (X5u != null)
@@ -1088,11 +1044,7 @@ namespace JsonWebToken
             }
 
             var input = bufferWriter.WrittenSpan;
-#if NETSTANDARD2_0 || NET461
-            return Encoding.UTF8.GetString(input.ToArray());
-#else
-            return Encoding.UTF8.GetString(input);
-#endif
+            return Utf8.GetString(input);
         }
 
         internal bool CanUseForSignature(SignatureAlgorithm? signatureAlgorithm)
@@ -1136,16 +1088,6 @@ namespace JsonWebToken
             if (_keyUnwrappers != null)
             {
                 _keyUnwrappers.Dispose();
-            }
-
-            if (_encryptors != null)
-            {
-                _encryptors.Dispose();
-            }
-
-            if (_decryptors != null)
-            {
-                _decryptors.Dispose();
             }
         }
 

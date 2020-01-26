@@ -1,52 +1,82 @@
-## Read token with signature validation (HS256)
-### .NET Core 2.1
-|    Method |      token |      Mean |     Error |    StdDev |      Op/s | Ratio | RatioSD | Gen 0/1k Op | Allocated Memory/Op |
-|---------- |----------- |----------:|----------:|----------:|----------:|------:|--------:|------------:|--------------------:|
-|    **Jwt**|**JWS-medium**|**21.791 us**|**0.2926 us**|**0.2737 us**|**45,890.3**|**1.00**|**0.00**|**0.0305**|**9056 B**|
-|    Wilson | JWS-medium | 67.659 us | 0.6521 us | 0.6100 us |  14,780.1 |  3.11 |    0.05 |      0.1221 |             33944 B |
-| WilsonJwt | JWS-medium | 43.408 us | 0.6834 us | 0.6393 us |  23,037.4 |  1.99 |    0.03 |      0.1221 |             24392 B |
-|           |            |           |           |           |           |       |         |             |                     |
-| **Jwt**| **JWS-small**| **9.081 us**|**0.0969 us**|**0.0907 us**|**110,117.4**|**1.00**|**0.00**|**0.0305**|**4608 B** |
-|    Wilson |  JWS-small | 37.458 us | 0.6093 us | 0.5699 us |  26,696.4 |  4.12 |    0.06 |      0.1221 |             18760 B |
-| WilsonJwt |  JWS-small | 21.868 us | 0.2220 us | 0.2077 us |  45,728.2 |  2.41 |    0.02 |      0.0610 |             10768 B |
- 
-### .NET Core 3.0
-|    Method |      token |      Mean |     Error |    StdDev |      Op/s | Ratio | RatioSD | Gen 0/1k Op | Allocated Memory/Op |
-|---------- |----------- |----------:|----------:|----------:|----------:|------:|--------:|------------:|--------------------:|
-|**Jwt**| **JWS-medium** | **13.989 us** | **0.1865 us** | **0.1744 us** |  **71,485.4** |  **1.00** |**0.00** |**0.0153** |**3328 B** |
-|    Wilson | JWS-medium | 66.880 us | 0.8888 us | 0.8314 us |  14,952.1 |  4.78 |    0.09 |      0.1221 |             33736 B |
-| WilsonJwt | JWS-medium | 42.244 us | 0.3724 us | 0.3483 us |  23,672.1 |  3.02 |    0.04 |      0.1221 |             24456 B |
-|           |            |           |           |           |           |       |         |             |                     |
-|**Jwt** |  **JWS-small** |  **5.169 us** | **0.0823 us** | **0.0770 us** | **193,456.2** |  **1.00** |    **0.00** |**-** |**880 B** |
-|    Wilson |  JWS-small | 34.533 us | 0.5072 us | 0.4744 us |  28,957.7 |  6.68 |    0.15 |      0.1221 |             18296 B |
-| WilsonJwt |  JWS-small | 20.429 us | 0.2159 us | 0.1914 us |  48,950.0 |  3.95 |    0.06 |      0.0610 |             10576 B |
+## Read & validate token benchmarks
+Token validation includes:
+* signature verification
+* expiration time 
+* issuer presence & validity
+* audience presence & validity
 
+Tokens used in this benchmarks have from 6 to 96 claims.
 
-## Write token with signature (HS256)
-### .NET Core 2.1
-|    Method |    payload |      Mean |     Error |    StdDev |      Op/s | Ratio | RatioSD | Gen 0/1k Op | Allocated Memory/Op |
-|---------- |----------- |----------:|----------:|----------:|----------:|------:|--------:|------------:|--------------------:|
-|**Jwt** | **JWS-medium** | **15.690 us** | **0.2948 us** | **0.3028 us** |  **63,736.7** |  **1.00** |    **0.00** |**0.0305** |**6.49 KB** |
-|    Wilson | JWS-medium | 33.251 us | 0.6570 us | 0.8543 us |  30,074.1 |  2.13 |    0.07 |      0.0610 |            17.39 KB |
-| WilsonJwt | JWS-medium | 48.686 us | 0.5674 us | 0.4738 us |  20,539.8 |  3.11 |    0.08 |      0.1831 |            28.39 KB |
-|           |            |           |           |           |           |       |         |             |                     |
-|**Jwt**|**JWS-small**|**7.225 us**|**0.1424 us**|**0.1639 us**|**138,404.3**|**1.00**|**0.00**|**0.0229**|**3.47 KB** |
-|    Wilson |  JWS-small | 16.192 us | 0.3210 us | 0.5705 us |  61,759.3 |  2.26 |    0.10 |      0.0305 |             7.99 KB |
-| WilsonJwt |  JWS-small | 21.338 us | 0.4236 us | 0.5655 us |  46,864.7 |  2.96 |    0.11 |      0.0610 |             11.7 KB |
+**Note:** JsonWebToken, Wilson & Wilson JWT propose signature and standard claims validation. Jwt.Net only propose signature validation. jose-jwt does not propose any validation.
 
-### .NET Core 3.0
-|    Method |    payload |      Mean |     Error |    StdDev |      Op/s | Ratio | RatioSD | Gen 0/1k Op | Allocated Memory/Op |
-|---------- |----------- |----------:|----------:|----------:|----------:|------:|--------:|------------:|--------------------:|
-|**Jwt**|**JWS-medium**|**15.696 us**|**0.2303 us**|**0.2041 us**|**63,708.7**|**1.00**|**0.00**|**0.0305**|**6.49 KB**|
-|    Wilson | JWS-medium | 31.473 us | 0.5159 us | 0.4573 us |  31,773.2 |  2.01 |    0.05 |      0.0610 |            17.41 KB |
-| WilsonJwt | JWS-medium | 50.553 us | 0.5960 us | 0.5575 us |  19,781.4 |  3.22 |    0.05 |      0.1831 |             28.3 KB |
-|           |            |           |           |           |           |       |         |             |                     |
-|**Jwt**|**JWS-small**|**7.324 us**|**0.1409 us**|**0.1384 us**|**136,535.7**|**1.00**|**0.00**|**0.0153**|**3.47 KB**|
-|    Wilson |  JWS-small | 15.116 us | 0.2977 us | 0.3655 us |  66,155.2 |  2.07 |    0.06 |      0.0458 |             7.92 KB |
-| WilsonJwt |  JWS-small | 22.418 us | 0.4265 us | 0.3990 us |  44,607.3 |  3.06 |    0.08 |      0.0610 |             11.5 KB |
+### Read & validate signed JWT (HS256)
+![JWS validation, operation per second. Higher is better.](docs/validate_jws_ops.png)
+*JWS validation, operation per second. Higher is better.*
 
+![JWS validation, allocated bytes per operation. Lower is better.](docs/validate_jws_allocated.png)
+*JWS validation, allocated bytes per operation. Lower is better.*
 
-Small token: Token with 6 claims
-Medium token: Token with 22 claims
+### Read & validate encrypted JWT (A128CBC-HS256 & A128KW, with HS256 signed JWT)
+![JWE validation, operation per second. Higher is better.](docs/validate_jwe_ops.png)
+*JWE validation, operation per second. Higher is better.*
 
-Wilson was tested in version 5.3.0.
+![JWE validation, allocated bytes per operation. Lower is better.](docs/validate_jwe_allocated.png)
+*JWE validation, allocated bytes per operation. Lower is better.*
+
+### Read & validate encrypted and compressed JWT (A128CBC-HS256 & A128KW, with HS256 signed JWT, deflate compression)
+![JWE compressed validation, operation per second. Higher is better.](docs/validate_jwec_ops.png)
+*JWE compressed validation, operation per second. Higher is better.*
+
+![JWE compressed validation, allocated bytes per operation. Lower is better.](docs/validate_jwec_allocated.png)
+*JWE compressed validation, allocated bytes per operation. Lower is better.*
+
+### Read & validate invalid JWT
+Token is invalid due to the invalid signature. 
+![Invalid JWS validation, operation per second. Higher is better.](docs/validate_jwsi_ops.png)
+*Invalid JWS validation, operation per second. Higher is better.*
+
+![Invalid JWS validation, allocated bytes per operation. Lower is better.](docs/validate_jwsi_allocated.png)
+*Invalid JWS validation, allocated bytes per operation. Lower is better.*
+*JsonWebToken allocation is too low compared to others libraries to be represented in this graph.*
+
+## Write token benchmarks
+Tokens used in this benchmarks have from 6 to 96 claims.
+
+### Write signed JWT (HS256)
+![JWS creation, operation per second. Higher is better.](docs/write_jws_ops.png)
+*JWS creation, operation per second. Higher is better.*
+
+![JWS creation, allocated bytes per operation. Lower is better.](docs/write_jws_allocated.png)
+*JWS creation, allocated bytes per operation. Lower is better.*
+*JsonWebToken allocation is too low compared to others libraries to be represented in this graph.*
+
+### Write encrypted JWT (A128CBC-HS256 & A128KW, with HS256 signed JWT)
+![JWE creation, operation per second. Higher is better.](docs/write_jwe_ops.png)
+_JWE creation, operation per second. Higher is better._
+
+![JWE creation, allocated bytes per operation. Lower is better.](docs/write_jwe_allocated.png)
+_JWE creation, allocated bytes per operation. Lower is better._
+*JsonWebToken allocation is too low compared to others libraries to be represented in this graph.*
+
+### Write encrypted and compressed JWT (A128CBC-HS256 & A128KW, with HS256 signed JWT, deflate compression)
+![JWE compressed creation, operation per second. Higher is better.](docs/write_jwec_ops.png)
+*JWE compressed creation, operation per second. Higher is better.*
+
+![JWE compressed creation, allocated bytes per operation. Lower is better.](docs/write_jwec_allocated.png)
+*JWE compressed creation, allocated bytes per operation. Lower is better.*
+
+## Versions used
+JsonWebToken was tested in version 1.0.0.
+https://www.nuget.org/packages/JsonWebToken/1.0.0
+
+Wilson was tested in version 5.6.0.
+https://www.nuget.org/packages/System.IdentityModel.Tokens.Jwt/5.6.0
+
+Wilson JWT was tested in version 5.6.0.
+https://www.nuget.org/packages/Microsoft.IdentityModel.JsonWebTokens/5.6.0
+
+Jwt.Net was tested in version 5.3.1.
+https://www.nuget.org/packages/JWT/5.3.1
+
+jose-jwt was tested in version 2.5.0.
+https://www.nuget.org/packages/jose-jwt/2.5.0

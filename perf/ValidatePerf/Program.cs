@@ -32,7 +32,7 @@ namespace ValidatePerf
             EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256
         };
         private static readonly byte[] jweToken = _writer.WriteToken(jweDescriptor);
-        private static readonly JwtReader _reader = new JwtReader(signingKey, encryptionKey);
+        private static readonly JwtReader _reader = new JwtReader(encryptionKey);
 
         private static void Main()
         {
@@ -45,13 +45,13 @@ namespace ValidatePerf
 
             Console.WriteLine("Starting...");
             _reader.EnableHeaderCaching = false;
-            var sha = new Sha512();
-            Span<byte> dest = new byte[64];
-            var src = new byte[4096];
+            //var sha = new Sha512();
+            //Span<byte> dest = new byte[64];
+            //var src = new byte[4096];
             while (true)
             {
-                sha.ComputeHash(src, dest);
-              //  _reader.TryReadToken(jwsToken, policy);
+                //sha.ComputeHash(src, dest);
+                _reader.TryReadToken(jwsToken, policy);
             }
         }
     }

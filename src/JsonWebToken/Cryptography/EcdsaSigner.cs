@@ -17,7 +17,7 @@ namespace JsonWebToken.Internal
         private bool _disposed;
 
         public EcdsaSigner(ECJwk key, SignatureAlgorithm algorithm)
-            : base(key, algorithm)
+            : base(algorithm)
         {
             if (key is null)
             {

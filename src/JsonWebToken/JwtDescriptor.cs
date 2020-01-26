@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -117,8 +116,8 @@ namespace JsonWebToken
         /// </summary>
         public string? Type
         {
-            get => Encoding.UTF8.GetString(GetHeaderParameter<byte[]>(HeaderParameters.TypUtf8) ?? Array.Empty<byte>());
-            set => SetHeaderParameter(HeaderParameters.TypUtf8, value is null ? null : Encoding.UTF8.GetBytes(value));
+            get => Utf8.GetString(GetHeaderParameter<byte[]>(HeaderParameters.TypUtf8) ?? Array.Empty<byte>());
+            set => SetHeaderParameter(HeaderParameters.TypUtf8, value is null ? null : Utf8.GetBytes(value));
         }
 
         /// <summary>
@@ -221,7 +220,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         protected void SetHeaderParameter(string name, string value)
         {
-            SetHeaderParameter(Encoding.UTF8.GetBytes(name), value);
+            SetHeaderParameter(Utf8.GetBytes(name), value);
         }
 
         /// <summary>
@@ -248,7 +247,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         protected void SetHeaderParameter(string name, List<string> value)
         {
-            SetHeaderParameter(Encoding.UTF8.GetBytes(name), value);
+            SetHeaderParameter(Utf8.GetBytes(name), value);
         }
 
         /// <summary>

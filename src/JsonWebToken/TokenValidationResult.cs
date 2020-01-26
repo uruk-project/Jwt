@@ -3,7 +3,6 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace JsonWebToken
 {
@@ -246,7 +245,7 @@ namespace JsonWebToken
             {
                 Token = jwt,
                 Status = TokenValidationStatus.InvalidClaim,
-                ErrorClaim = Encoding.UTF8.GetString(claim.ToArray())
+                ErrorClaim = Utf8.GetString(claim)
             };
         }
 
@@ -280,7 +279,7 @@ namespace JsonWebToken
             {
                 Token = jwt,
                 Status = TokenValidationStatus.MissingClaim,
-                ErrorClaim = Encoding.UTF8.GetString(claim.ToArray())
+                ErrorClaim = Utf8.GetString(claim)
             };
         }
 
@@ -312,7 +311,7 @@ namespace JsonWebToken
             return new TokenValidationResult
             {
                 Status = TokenValidationStatus.InvalidHeader,
-                ErrorHeader = Encoding.UTF8.GetString(header.ToArray())
+                ErrorHeader = Utf8.GetString(header)
             };
         }
 
@@ -342,7 +341,7 @@ namespace JsonWebToken
             return new TokenValidationResult
             {
                 Status = TokenValidationStatus.MissingHeader,
-                ErrorHeader = Encoding.UTF8.GetString(header.ToArray())
+                ErrorHeader = Utf8.GetString(header)
             };
         }
 
@@ -358,6 +357,15 @@ namespace JsonWebToken
             {
                 Status = TokenValidationStatus.DecompressionFailed,
                 Exception = exception
+            };
+        }
+
+        internal static TokenValidationResult SignatureValidationFailed(SignatureValidationResult result)
+        {
+            return new TokenValidationResult
+            {
+                Status = result.Status,
+                Exception = result.Exception
             };
         }
     }

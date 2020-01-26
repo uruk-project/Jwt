@@ -18,7 +18,7 @@ namespace JsonWebToken
         private bool _disposed;
 
         public RsaSigner(RsaJwk key, SignatureAlgorithm algorithm)
-            : base(key, algorithm)
+            : base(algorithm)
         {
             if (key is null)
             {

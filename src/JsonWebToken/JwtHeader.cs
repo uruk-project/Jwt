@@ -1,10 +1,9 @@
 // Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -43,7 +42,7 @@ namespace JsonWebToken
         /// <param name="json"></param>   
         public static JwtHeader FromJson(string json)
         {
-            return JwtHeaderParser.ParseHeader(Encoding.UTF8.GetBytes(json), TokenValidationPolicy.NoValidation);
+            return JwtHeaderParser.ParseHeader(Utf8.GetBytes(json), TokenValidationPolicy.NoValidation);
         }
 
         /// <summary>
@@ -112,7 +111,14 @@ namespace JsonWebToken
         public EncryptionAlgorithm? EncryptionAlgorithm
         {
             get => _encryptionAlgorithm ?? (_inner.TryGetValue(WellKnownProperty.Enc, out var property) ? (EncryptionAlgorithm?)property.Value : null);
-            set => _encryptionAlgorithm = value;
+            set
+            {
+                _encryptionAlgorithm = value;
+                if (!(value is null))
+                {
+                    _inner.Add(new JwtProperty(WellKnownProperty.Enc, value.Utf8Name));
+                }
+            }
         }
 
         /// <summary>
@@ -251,7 +257,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool ContainsKey(string key)
         {
-            return _inner.ContainsKey(Encoding.UTF8.GetBytes(key));
+            return _inner.ContainsKey(Utf8.GetBytes(key));
         }
 
         /// <inheritsdoc />

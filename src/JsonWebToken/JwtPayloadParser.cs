@@ -34,7 +34,7 @@ namespace JsonWebToken
             byte control = policy.ValidationControl;
             while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
-                var name = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                var name = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                 reader.Read();
                 var type = reader.TokenType;
                 switch (type)
@@ -96,12 +96,13 @@ namespace JsonWebToken
                                     {
                                         if (reader.ValueTextEquals(policy.RequiredIssuer))
                                         {
-                                            current.Add(new JwtProperty(WellKnownProperty.Iss, policy.RequiredIssuer!));
+                                            current.Add(new JwtProperty(WellKnownProperty.Iss, policy.RequiredIssuerString!));
                                             control &= unchecked((byte)~TokenValidationPolicy.IssuerFlag);
-                                            break;
                                         }
-
-                                        control &= unchecked((byte)~JwtPayload.MissingIssuerFlag);
+                                        else
+                                        {
+                                            control &= unchecked((byte)~JwtPayload.MissingIssuerFlag);
+                                        }
                                     }
                                     else
                                     {

@@ -6,6 +6,9 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+#if NETCOREAPP3_0
+using System.Runtime.Intrinsics.X86;
+#endif
 
 namespace JsonWebToken.Internal
 {
@@ -24,7 +27,7 @@ namespace JsonWebToken.Internal
             ref byte destBytes = ref MemoryMarshal.GetReference(encoded);
             int srcLength = data.Length;
             int destLength = encoded.Length;
-  
+
             int maxSrcLength;
             if (srcLength <= MaximumEncodeLength && destLength >= GetEncodedLength(srcLength))
             {
@@ -71,7 +74,7 @@ namespace JsonWebToken.Internal
             bytesWritten = destIndex;
             return OperationStatus.Done;
 
-            DestinationSmallExit:
+        DestinationSmallExit:
             bytesConsumed = sourceIndex;
             bytesWritten = destIndex;
             return OperationStatus.DestinationTooSmall;
@@ -83,7 +86,7 @@ namespace JsonWebToken.Internal
             if ((uint)length > MaximumEncodeLength)
                 ThrowHelper.ThrowArgumentOutOfRangeException();
 
-            return (((length + 2) / 3) << 2) - GetNumBase64PaddingCharsAddedByEncode(length);
+            return (((int)FastDiv3(length + 2)) << 2) - GetNumBase64PaddingCharsAddedByEncode(length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -93,8 +96,8 @@ namespace JsonWebToken.Internal
             // 0 -> 0
             // 1 -> 2
             // 2 -> 1
-            int modulo = dataLength % 3;
-            return modulo == 0 ? 0 : 3 - modulo;
+            uint modulo = FastMod3((uint)dataLength);
+            return (int)(modulo == 0 ? 0 : 3 - modulo);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -195,7 +198,7 @@ namespace JsonWebToken.Internal
             {
                 // This should never overflow since destLength here is less than int.MaxValue / 4 * 3.
                 // Therefore, (destLength / 3) * 4 will always be less than int.MaxValue.
-                maxSrcLength = (destLength / 3) << 2;
+                maxSrcLength = (int)FastDiv3(destLength) << 2;
             }
 
             while (sourceIndex < maxSrcLength)
@@ -278,12 +281,12 @@ namespace JsonWebToken.Internal
                 goto InvalidExit;
             }
 
-            DoneExit:
+        DoneExit:
             bytesConsumed = sourceIndex;
             bytesWritten = destIndex;
             return OperationStatus.Done;
 
-            DestinationSmallExit:
+        DestinationSmallExit:
             if (srcLength != encoded.Length)
             {
                 // if input is not a multiple of 4, and there is no more data, return invalid data instead
@@ -293,7 +296,7 @@ namespace JsonWebToken.Internal
             bytesWritten = destIndex;
             return OperationStatus.DestinationTooSmall;
 
-            InvalidExit:
+        InvalidExit:
             bytesConsumed = sourceIndex;
             bytesWritten = destIndex;
             return OperationStatus.InvalidData;
@@ -419,5 +422,49 @@ namespace JsonWebToken.Internal
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
         };
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static uint FastMod3(uint value)
+        {
+            // Using fastmod from Daniel Le mire https://lemire.me/blog/2019/02/08/faster-remainders-when-the-divisor-is-a-constant-beating-compilers-and-libdivide/
+            ulong lowBits = 6148914691236517206UL * value;
+            uint high;
+#if NETCOREAPP3_0
+            if (Bmi2.X64.IsSupported)
+            {
+                high = (uint)Bmi2.X64.MultiplyNoFlags(lowBits, 3);
+            }
+            else
+#endif
+            {
+                // 64bit * 64bit => 128bit isn't currently supported by Math https://github.com/dotnet/corefx/issues/41822
+                // otherwise we'd want this to be (uint)Math.MultiplyHigh(lowbits, divisor)
+                high = (uint)(((((ulong)(uint)lowBits * 3) >> 32) + ((lowBits >> 32) * 3)) >> 32);
+            }
+
+            Debug.Assert(high == value % 3);
+            return high;
+        }
+
+        // Replace the divide by 3 by an optimized version
+        // value / 3;
+        //   L0000: mov ecx, 0x55555556
+        //   L0005: mov eax, ecx
+        //   L0007: imul edx
+        //   L0009: mov eax, edx
+        //   L000b: shr eax, 0x1f
+        //   L000e: add eax, edx
+        //   L0010: movsxd rax, eax
+        // 
+        // (0xAAAAAAABUL * (uint)value) >> 33;
+        //   L0000: mov eax, edx
+        //   L0002: mov edx, 0xaaaaaaab
+        //   L0007: imul rax, rdx
+        //   L000b: shr rax, 0x21
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static uint FastDiv3(int value)
+        {
+            return (uint)((0xAAAAAAABUL * (uint)value) >> 33);
+        }
     }
 }

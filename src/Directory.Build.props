@@ -13,13 +13,12 @@
     
     <Authors>Yann Crumeyrolle</Authors>
     <Company>Yann Crumeyrolle</Company>
-    <Copyright>Copyright © Yann Crumeyrolle 2019</Copyright>
+    <Copyright>Copyright © Yann Crumeyrolle 2020</Copyright>
     <PackageProjectUrl>https://github.com/ycrumeyrolle/Jwt</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ycrumeyrolle/Jwt</RepositoryUrl>
     <PackageTags>jwt security</PackageTags>
     <Description>
-High-performance JWT library.
-Provides Json Web Token primitives.
+      Probably the fastest JWT library for .Net. Provides Json Web Token primitives.
     </Description>
     <sumary>High-performance JWT library.</sumary>
     <PackageLicense>MIT</PackageLicense>

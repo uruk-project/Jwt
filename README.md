@@ -62,7 +62,10 @@ See the [samples](https://github.com/ycrumeyrolle/Jwt/tree/master/samples) for m
 ````
 ## Performances
 See [benchmarks](Benchmark.md) for details. 
-This library is about **12x** faster than the Microsoft.IdentityModel.Tokens.Jwt when decoding and validating the token, with less than **5-10% memory allocation**. (6x faster including signature validation, 7x faster for encrypted tokens)
+This library is about **12x** faster than the Microsoft.IdentityModel.Tokens.Jwt when decoding and validating the token, with less than **5-10% memory allocation**. (**6x** faster including signature validation or for encrypted tokens)
+
+In case of invalid token, is is about **25x** faster for detecting an invalid signature.
+
 It is about **4x faster** when writing a JWS of common size, with less than **1-2% memory allocation**. (3x faster including signature generation, 5x faster for encrypted tokens)
 
 The main reason of the efficiency of this library is the usage of the new API provided in .NET Core 2.0, 2.1 & 3.0, like the new Span API, the new JSON API, and the intrisics SIMD API.
@@ -72,6 +75,7 @@ The main reason of the efficiency of this library is the usage of the new API pr
 * [Nested encrypted JWT (JWE)](https://tools.ietf.org/html/rfc7519#appendix-A.2): JWE with JWS as payload (know as JWE or Encrypted JWS). See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/JweCreationSample/Program.cs).
 * [Plaintext JWE](https://tools.ietf.org/html/rfc7519#appendix-A.1): JWE with plaintext as payload. See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/PlaintextJwtCreationSample/Program.cs).
 * Binary JWE: JWE with binary as payload. See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/BinaryJwtCreationSample/Program.cs).
+* [Compressed JWE](https://tools.ietf.org/html/rfc7516#section-4.1.3) : JWE compressed with Deflate compression algorithm.
 * [Unsecure JWT](https://tools.ietf.org/html/rfc7515#appendix-A.5): JWS without signature. See [sample](https://github.com/ycrumeyrolle/Jwt/blob/master/samples/UnsecureJwtCreationSample/Program.cs).
 
 ## Supported algorithms

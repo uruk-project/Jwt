@@ -117,22 +117,18 @@ namespace JsonWebToken
         /// </summary>
         public void Dispose()
         {
-            if (_rentedBuffer != null)
-            {
-                ClearHelper();
-                ArrayPool<byte>.Shared.Return(_rentedBuffer);
-                _rentedBuffer = null;
-            }
+            ClearHelper();
+            ArrayPool<byte>.Shared.Return(_rentedBuffer);
         }
 
-                              /// <inheritsdoc />
+        /// <inheritsdoc />
         public Span<byte> GetSpan(int sizeHint = 0)
         {
             CheckAndResizeBuffer(sizeHint);
             return _rentedBuffer.AsSpan(_index);
         }
 
-                              /// <inheritsdoc />
+        /// <inheritsdoc />
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
             CheckAndResizeBuffer(sizeHint);

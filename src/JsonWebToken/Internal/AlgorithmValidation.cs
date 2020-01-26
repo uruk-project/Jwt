@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-using System.Text;
 
 namespace JsonWebToken.Internal
 {
@@ -12,7 +11,7 @@ namespace JsonWebToken.Internal
 
         public AlgorithmValidation(string algorithm)
         {
-            _algorithm = Encoding.UTF8.GetBytes(algorithm ?? throw new ArgumentNullException(nameof(algorithm)));
+            _algorithm = Utf8.GetBytes(algorithm ?? throw new ArgumentNullException(nameof(algorithm)));
         }
 
         public TokenValidationResult TryValidate(Jwt jwt)
