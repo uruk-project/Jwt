@@ -41,7 +41,7 @@ namespace JsonWebToken.Performance
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
         }
 
-        public abstract byte[] Jwt(BenchmarkPayload payload);
+        public abstract byte[] JsonWebToken(BenchmarkPayload payload);
 
         protected byte[] JwtCore(JwtDescriptor payload)
         {
@@ -79,7 +79,7 @@ namespace JsonWebToken.Performance
             return Handler2.CreateToken(payload, signingCredentials, encryptingCredentials, "DEF");
         }
 
-        public abstract string JoseDotNet(BenchmarkPayload payload);
+        public abstract string jose_jwt(BenchmarkPayload payload);
 
         protected string JoseDotNetJwsCore(Dictionary<string, object> payload)
         {
@@ -98,17 +98,12 @@ namespace JsonWebToken.Performance
             return Jose.JWT.Encode(value, EncryptionKeyArray, JweAlgorithm.A128KW, JweEncryption.A128CBC_HS256, JweCompression.DEF);
         }
 
-        public abstract string JwtDotNet(BenchmarkPayload payload);
+        public abstract string Jwt_Net(BenchmarkPayload payload);
 
         protected string JwtDotNetJwsCore(Dictionary<string, object> payload)
         {
             return JwtDotNetEncoder.Encode(payload, SigningKeyArray);
         }
-        protected string JwtDotNetJwtCore(Dictionary<string, object> payload)
-        {
-            return JwtDotNetEncoder.Encode(payload, (byte[])null!);
-        }
-
 
         public abstract IEnumerable<string> GetPayloads();
 
@@ -168,7 +163,7 @@ namespace JsonWebToken.Performance
             JwtDescriptor = JwtPayloads[name];
             JoseDescriptor = DictionaryPayloads[name];
             WilsonDescriptor = WilsonPayloads[name];
-            WilsonJwtDescriptor = Tokens.Payloads[name.Substring(name.LastIndexOf('-') + 1)].ToString();
+            WilsonJwtDescriptor = Tokens.Payloads[name.Substring(name.LastIndexOf('6') - 1).Trim().Substring(0, 1)].ToString();
         }
 
         public string Name { get; }
@@ -203,7 +198,7 @@ namespace JsonWebToken.Performance
                         case "iat":
                         case "nbf":
                         case "exp":
-                            descriptor.AddClaim(property.Name, Microsoft.IdentityModel.Tokens.EpochTime.DateTime((long)property.Value));
+                            descriptor.AddClaim(property.Name, EpochTime.DateTime((long)property.Value));
                             break;
                         default:
                             descriptor.AddClaim(property.Name, (string)property.Value);
@@ -211,7 +206,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWT-" + payload.Key, descriptor);
+                descriptors.Add("JWT " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
@@ -228,7 +223,7 @@ namespace JsonWebToken.Performance
                         case "iat":
                         case "nbf":
                         case "exp":
-                            descriptor.AddClaim(property.Name, Microsoft.IdentityModel.Tokens.EpochTime.DateTime((long)property.Value));
+                            descriptor.AddClaim(property.Name, EpochTime.DateTime((long)property.Value));
                             break;
                         default:
                             descriptor.AddClaim(property.Name, (string)property.Value);
@@ -236,7 +231,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWS-" + payload.Key, descriptor);
+                descriptors.Add("JWS " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
@@ -268,7 +263,7 @@ namespace JsonWebToken.Performance
                     EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256
                 };
 
-                descriptors.Add("JWE-" + payload.Key, jwe);
+                descriptors.Add("JWE " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwe);
 
                 var jwc = new JweDescriptor
                 {
@@ -277,7 +272,7 @@ namespace JsonWebToken.Performance
                     EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
                     CompressionAlgorithm = CompressionAlgorithm.Deflate
                 };
-                descriptors.Add("JWE-DEF-" + payload.Key, jwc);
+                descriptors.Add("JWE DEF " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwc);
             }
 
             return descriptors;
@@ -310,7 +305,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWT-" + payload.Key, descriptor);
+                descriptors.Add("JWT " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
@@ -337,7 +332,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWS-" + payload.Key, descriptor);
+                descriptors.Add("JWS " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
@@ -365,7 +360,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWE-" + payload.Key, descriptor);
+                descriptors.Add("JWE " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
@@ -394,7 +389,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWE-DEF-" + payload.Key, descriptor);
+                descriptors.Add("JWE DEF " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
             }
 
             return descriptors;
@@ -404,7 +399,7 @@ namespace JsonWebToken.Performance
         {
             var descriptors = new Dictionary<string, Dictionary<string, object>>();
 
-            foreach (var type in new[] { "JWE", "JWS", "JWT", "JWE-DEF" })
+            foreach (var type in new[] { "JWE", "JWS", "JWT", "JWE DEF" })
             {
                 foreach (var payload in Tokens.Payloads)
                 {
@@ -425,7 +420,7 @@ namespace JsonWebToken.Performance
                         }
                     }
 
-                    descriptors.Add(type + "-" + payload.Key, descriptor);
+                    descriptors.Add(type + " " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
                 }
             }
 

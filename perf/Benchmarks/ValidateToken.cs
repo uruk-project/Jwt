@@ -83,7 +83,7 @@ namespace JsonWebToken.Performance
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
         }
 
-        public abstract TokenValidationResult Jwt(BenchmarkToken token);
+        public abstract TokenValidationResult JsonWebToken(BenchmarkToken token);
 
         protected TokenValidationResult JwtCore(byte[] token, TokenValidationPolicy policy)
         {
@@ -104,7 +104,7 @@ namespace JsonWebToken.Performance
             return Handler2.ValidateToken(token, parameters);
         }
 
-        public abstract Dictionary<string, object> JoseDotNet(BenchmarkToken token);
+        public abstract Dictionary<string, object> jose_jwt(BenchmarkToken token);
 
         protected Dictionary<string, object> JoseDotNetCore(string token, JweEncryption enc, JweAlgorithm alg, byte[] key)
         {
@@ -116,7 +116,7 @@ namespace JsonWebToken.Performance
             return Jose.JWT.Decode<Dictionary<string, object>>(token, key: key, alg: alg /*JwsAlgorithm.HS256*/);
         }
 
-        public abstract IDictionary<string, object> JwtDotNet(BenchmarkToken token);
+        public abstract IDictionary<string, object> Jwt_Net(BenchmarkToken token);
 
         protected IDictionary<string, object> JwtDotNetCore(string token, byte[] key, bool verify)
         {

@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using BenchmarkDotNet.Attributes;
 
 namespace JsonWebToken.Performance
 {
     [Config(typeof(DefaultCoreConfig))]
-    [BenchmarkCategory("CI-CD")]
     public class ValidateSignedToken : ValidateToken
     {
         private static byte[] signingKey = Tokens.SigningKey.ToArray();
@@ -13,14 +13,17 @@ namespace JsonWebToken.Performance
         [GlobalSetup]
         public void Setup()
         {
-            Jwt(new BenchmarkToken("JWS-0"));
-            Wilson(new BenchmarkToken("JWS-0"));
-            WilsonJwt(new BenchmarkToken("JWS-0"));
+            var token = GetTokenValues().First();
+            JsonWebToken(token);
+            Wilson(token);
+            WilsonJwt(token);
+            jose_jwt(token);
+            Jwt_Net(token);
         }
 
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetTokenValues))]
-        public override TokenValidationResult Jwt(BenchmarkToken token)
+        public override TokenValidationResult JsonWebToken(BenchmarkToken token)
         {
             return JwtCore(token.TokenBinary, tokenValidationPolicy);
         }
@@ -41,14 +44,14 @@ namespace JsonWebToken.Performance
 
         [Benchmark]
         [ArgumentsSource(nameof(GetTokenValues))]
-        public override Dictionary<string, object> JoseDotNet(BenchmarkToken token)
+        public override Dictionary<string, object> jose_jwt(BenchmarkToken token)
         {
             return JoseDotNetCore(token.TokenString, Jose.JwsAlgorithm.HS256, signingKey);
         }
 
         [Benchmark]
         [ArgumentsSource(nameof(GetTokenValues))]
-        public override IDictionary<string, object> JwtDotNet(BenchmarkToken token)
+        public override IDictionary<string, object> Jwt_Net(BenchmarkToken token)
         {
             return JwtDotNetCore(token.TokenString, signingKey, true);
         }
@@ -57,7 +60,7 @@ namespace JsonWebToken.Performance
         {
             for (int i = 0; i < 10; i++)
             {
-                yield return "JWS-" + i;
+                yield return "JWS " + (i == 0 ? "" : i.ToString()) + "6 claims";
             }
         }
     }
