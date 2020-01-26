@@ -1,24 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using BenchmarkDotNet.Attributes;
 
 namespace JsonWebToken.Performance
 {
     [Config(typeof(DefaultCoreConfig))]
-    [BenchmarkCategory("CI-CD")]
     public class WriteUnsignedToken : WriteToken
     {
         [GlobalSetup]
         public void Setup()
         {
-            Jwt(new BenchmarkPayload("JWT-0"));
-            Wilson(new BenchmarkPayload("JWT-0"));
-            WilsonJwt(new BenchmarkPayload("JWT-0"));
+            var payload = GetPayloadValues().First();
+            JsonWebToken(payload);
+            Wilson(payload);
+            WilsonJwt(payload);
+            Jwt_Net(payload);
         }
 
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetPayloadValues))]
-        public override byte[] Jwt(BenchmarkPayload payload)
+        public override byte[] JsonWebToken(BenchmarkPayload payload)
         {
             return JwtCore(payload.JwtDescriptor);
         }
@@ -37,23 +39,21 @@ namespace JsonWebToken.Performance
             return WilsonJwtCore(payload.WilsonJwtDescriptor);
         }
 
-        public override string JoseDotNet(BenchmarkPayload payload)
+        public override string jose_jwt(BenchmarkPayload payload)
         {
             throw new NotImplementedException();
         }
 
-        [Benchmark]
-        [ArgumentsSource(nameof(GetPayloadValues))]
-        public override string JwtDotNet(BenchmarkPayload payload)
+        public override string Jwt_Net(BenchmarkPayload payload)
         {
-            return JwtDotNetJwtCore(payload.JoseDescriptor);
+            throw new NotImplementedException();
         }
 
         public override IEnumerable<string> GetPayloads()
         {
             for (int i = 0; i < 10; i++)
             {
-                yield return "JWT-" + i;
+                yield return "JWT " + (i == 0 ? "" : i.ToString()) + "6 claims";
             }
         }
     }
