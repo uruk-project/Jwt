@@ -504,7 +504,7 @@ namespace JsonWebToken
                         decryptedBytes,
                         out bytesWritten))
                     {
-                        return decryptedBytes != null;
+                        return true;
                     }
                 }
 
