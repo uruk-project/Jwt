@@ -10,7 +10,7 @@ namespace JsonWebToken
     /// </summary>
     public class SignatureValidationResult
     {
-        private static SignatureValidationResult _success = new SignatureValidationResult(TokenValidationStatus.Success);
+        private static readonly SignatureValidationResult _success = new SignatureValidationResult(TokenValidationStatus.Success);
         private static readonly SignatureValidationResult _invalidSignature = new SignatureValidationResult(TokenValidationStatus.InvalidSignature);
         private static readonly SignatureValidationResult _missingSignature = new SignatureValidationResult(TokenValidationStatus.MissingSignature);
         private static readonly SignatureValidationResult _signatureKeyNotFound = new SignatureValidationResult(TokenValidationStatus.SignatureKeyNotFound);
