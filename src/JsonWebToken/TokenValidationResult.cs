@@ -11,6 +11,27 @@ namespace JsonWebToken
     /// </summary>
     public sealed class TokenValidationResult
     {
+        private static readonly TokenValidationResult _success = new TokenValidationResult
+        {
+            Status = TokenValidationStatus.Success,
+        };
+        private static readonly TokenValidationResult _decryptionFailed = new TokenValidationResult
+        {
+            Status = TokenValidationStatus.DecryptionFailed
+        };
+        private static readonly TokenValidationResult _malformedToken = new TokenValidationResult
+        {
+            Status = TokenValidationStatus.MalformedToken
+        };
+        private static readonly TokenValidationResult _missingEncryptionAlgorithm = new TokenValidationResult
+        {
+            Status = TokenValidationStatus.MissingEncryptionAlgorithm
+        };
+        private static readonly TokenValidationResult _encryptionKeyNotFound = new TokenValidationResult
+        {
+            Status = TokenValidationStatus.EncryptionKeyNotFound
+        };
+
         /// <summary>
         /// Gets whether the token validation is successful.
         /// </summary>
@@ -87,78 +108,23 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// The signature is not present.
-        /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult MissingSignature(Jwt token)
-        {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.MissingSignature,
-                Token = token
-            };
-        }
-
-        /// <summary>
-        /// The signature is not base64url encoded.
-        /// </summary>
-        /// <param name="token"></param>
-        /// <param name="e"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult MalformedSignature(Jwt token, Exception? e = null)
-        {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.MalformedSignature,
-                Token = token,
-                Exception = e
-            };
-        }
-
-        /// <summary>
-        /// The signature key is not found.
-        /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult SignatureKeyNotFound(Jwt token)
-        {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.SignatureKeyNotFound,
-                Token = token
-            };
-        }
-
-        /// <summary>
-        /// The signature is invalid.
-        /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult InvalidSignature(Jwt token)
-        {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.InvalidSignature,
-                Token = token
-            };
-        }
-
-        /// <summary>
         /// The encryption key was not found.
         /// </summary>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult EncryptionKeyNotFound()
         {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.EncryptionKeyNotFound
-            };
+            return _encryptionKeyNotFound;
+        }
+
+        /// <summary>
+        /// The token is not a JWT in compact representation, is not base64url encoded, and is not a JSON UTF-8 encoded.
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationResult MalformedToken()
+        {
+            return _malformedToken;
         }
 
         /// <summary>
@@ -167,7 +133,7 @@ namespace JsonWebToken
         /// <param name="exception"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult MalformedToken(Exception? exception = null)
+        public static TokenValidationResult MalformedToken(Exception exception)
         {
             return new TokenValidationResult
             {
@@ -183,10 +149,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult MissingEncryptionAlgorithm()
         {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.MissingEncryptionAlgorithm
-            };
+            return _missingEncryptionAlgorithm;
         }
 
         /// <summary>
@@ -207,10 +170,20 @@ namespace JsonWebToken
         /// <summary>
         /// The token is valid.
         /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationResult Success()
+        {
+            return _success;
+        }
+
+        /// <summary>
+        /// The token is valid.
+        /// </summary>
         /// <param name="jwtToken"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult Success(Jwt? jwtToken = null)
+        public static TokenValidationResult Success(Jwt jwtToken)
         {
             return new TokenValidationResult
             {
@@ -226,10 +199,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationResult DecryptionFailed()
         {
-            return new TokenValidationResult
-            {
-                Status = TokenValidationStatus.DecryptionFailed
-            };
+            return _decryptionFailed;
         }
 
         /// <summary>
@@ -351,7 +321,7 @@ namespace JsonWebToken
         /// <param name="exception"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult DecompressionFailed(Exception? exception = null)
+        public static TokenValidationResult DecompressionFailed(Exception exception)
         {
             return new TokenValidationResult
             {
