@@ -16,12 +16,14 @@ namespace MultiIssuersValidationSample
                            .RequireAudience("636C69656E745F6964")
                            .RequireIssuer("https://idp1.example.com/")
                            .Build();
+        
             var keyIssuer2 = new SymmetricJwk("9dobXhxMWH9PoLsKRdv1qp0bEqJm4YNd8JRaTxes8i4");
             var policyIssuer2 = new TokenValidationPolicyBuilder()
                            .RequireSignature(keyIssuer2, SignatureAlgorithm.HmacSha256)
                            .RequireAudience("9656E745F6964636C6")
                            .RequireIssuer("https://idp2.example.com/")
                            .Build();
+            
             var keyIssuer3 = new SymmetricJwk("lh2TJcMdPyNLhfNp0nYLAFM_R0UEXVoZ9N7ife4ZT-A");
             var policyIssuer3 = new TokenValidationPolicyBuilder()
                            .RequireSignature(keyIssuer3, SignatureAlgorithm.HmacSha256)
@@ -49,6 +51,5 @@ namespace MultiIssuersValidationSample
                 Console.WriteLine("  Reason: " + result.Status);
             }
         }
-
     }
 }
