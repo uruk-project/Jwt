@@ -190,7 +190,7 @@ namespace JsonWebToken
                 var properties = _properties;
                 for (int i = 0; i < properties.Count; i++)
                 {
-                    var current = _properties[i];
+                    var current = properties[i];
                     if (current.Utf8Name.SequenceEqual(key))
                     {
                         return current;
@@ -213,7 +213,7 @@ namespace JsonWebToken
                 var properties = _properties;
                 for (int i = 0; i < properties.Count; i++)
                 {
-                    var current = _properties[i];
+                    var current = properties[i];
                     if (current.WellKnownName == key)
                     {
                         return current;
