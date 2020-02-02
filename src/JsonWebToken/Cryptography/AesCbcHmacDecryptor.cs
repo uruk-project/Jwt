@@ -166,6 +166,7 @@ namespace JsonWebToken.Internal
             if (!_disposed)
             {
                 _decryptor.Dispose();
+                _signer.Dispose();
                 _disposed = true;
             }
         }
