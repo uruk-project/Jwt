@@ -1,21 +1,26 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
     /// <summary>
     /// Provides methods for converting JWT header JSON data into a <see cref="JwtHeader"/>
     /// </summary>
-    public static partial class JwtPayloadParser
+    public static class JwtPayloadParser
     {
+        internal const uint Aud = 6583649u;
+        internal const uint Iss = 7566185u;
+        internal const uint Jti = 6911082u;
+        internal const uint Sub = 6452595u;
+        internal const uint Exp = 7370853u;
+        internal const uint Iat = 7627113u;
+        internal const uint Nbf = 6709870u;
+
         /// <summary>
         /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtPayload"/>.
         /// </summary>
@@ -29,8 +34,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowFormatException_MalformedJson();
             }
 
-            var current = new JwtObject();
-            var payload = new JwtPayload(current);
+            var payload = new JwtPayload();
             byte control = policy.ValidationControl;
             while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
@@ -40,14 +44,14 @@ namespace JsonWebToken
                 switch (type)
                 {
                     case JsonTokenType.StartObject:
-                        current.Add(name, JsonParser.ReadJsonObject(ref reader));
+                        payload.Inner.Add(name, JsonParser.ReadJsonObject(ref reader));
                         break;
                     case JsonTokenType.StartArray:
-                        if (name.Length == 3 && ReadThreeBytesAsInt32(name) == 6583649u /* aud */)
+                        if (name.Length == 3 && JsonParser.ReadThreeBytesAsUInt32(name) == Aud)
                         {
                             if (policy.RequireAudience)
                             {
-                                var audiences = new List<JwtValue>();
+                                var audiences = new List<string>();
                                 while (reader.Read() && reader.TokenType == JsonTokenType.String)
                                 {
                                     var requiredAudiences = policy.RequiredAudiences;
@@ -60,7 +64,7 @@ namespace JsonWebToken
                                         }
                                     }
 
-                                    audiences.Add(new JwtValue(reader.GetString()));
+                                    audiences.Add(reader.GetString());
                                     control &= unchecked((byte)~JwtPayload.MissingAudienceFlag);
                                 }
 
@@ -69,34 +73,32 @@ namespace JsonWebToken
                                     ThrowHelper.ThrowFormatException_MalformedJson("The 'aud' claim must be an array of string or a string.");
                                 }
 
-                                current.Add(new JwtProperty(Claims.AudUtf8, new JwtArray(audiences)));
+                                payload.Aud = audiences.ToArray();
 
                             }
                             else
                             {
-                                // TODO : Well know property 'aud'
-                                current.Add(name, JsonParser.ReadJsonArray(ref reader));
+                                payload.Aud = JsonParser.ReadStringArray(ref reader);
                             }
                         }
                         else
                         {
-                            current.Add(name, JsonParser.ReadJsonArray(ref reader));
+                            payload.Inner.Add(name, JsonParser.ReadJsonArray(ref reader));
                         }
 
                         break;
                     case JsonTokenType.String:
                         if (name.Length == 3)
                         {
-                            var refName = ReadThreeBytesAsInt32(name);
+                            var refName = JsonParser.ReadThreeBytesAsUInt32(name);
                             switch (refName)
                             {
-                                /* iss */
-                                case 7566185u:
+                                case Iss:
                                     if (policy.RequireIssuer)
                                     {
                                         if (reader.ValueTextEquals(policy.RequiredIssuer))
                                         {
-                                            current.Add(new JwtProperty(WellKnownProperty.Iss, policy.RequiredIssuerString!));
+                                            payload.Iss = policy.RequiredIssuerString;
                                             control &= unchecked((byte)~TokenValidationPolicy.IssuerFlag);
                                         }
                                         else
@@ -106,15 +108,12 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        // TODO : Fix when the Utf8JsonReader will allow
-                                        // to read an unescaped string without allocating a string
-                                        current.Add(new JwtProperty(WellKnownProperty.Iss, reader.GetString()));
+                                        payload.Iss = reader.GetString();
                                     }
 
                                     continue;
 
-                                /* aud */
-                                case 6583649u:
+                                case Aud:
                                     if (policy.RequireAudience)
                                     {
                                         var audiences = policy.RequiredAudiences;
@@ -122,7 +121,7 @@ namespace JsonWebToken
                                         {
                                             if (reader.ValueTextEquals(audiences[i]))
                                             {
-                                                current.Add(new JwtProperty(WellKnownProperty.Aud, audiences[i]));
+                                                payload.Aud = new[] { reader.GetString() };
                                                 control &= unchecked((byte)~TokenValidationPolicy.AudienceFlag);
                                                 break;
                                             }
@@ -132,50 +131,40 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        // TODO : Fix when the Utf8JsonReader will allow
-                                        // to read an unescaped string without allocating a string
-                                        JwtProperty property = new JwtProperty(WellKnownProperty.Aud, reader.GetString());
-                                        current.Add(property);
+                                        payload.Aud = new[] { reader.GetString() };
                                     }
 
                                     continue;
 
-                                /* jti */
-                                case 6911082u:
-                                    // TODO : Fix when the Utf8JsonReader will allow
-                                    // to read an unescaped string without allocating a string
-                                    current.Add(new JwtProperty(WellKnownProperty.Jti, reader.GetString()));
+                                case Jti:
+                                    payload.Jti = reader.GetString();
                                     continue;
 
-                                /* sub */
-                                case 6452595u:
-                                    // TODO : Fix when the Utf8JsonReader will allow
-                                    // to read an unescaped string without allocating a string
-                                    current.Add(new JwtProperty(WellKnownProperty.Sub, reader.GetString()));
+                                case Sub:
+                                    payload.Sub = reader.GetString();
                                     continue;
                             }
                         }
 
-                        current.Add(name, reader.GetString());
+                        payload.Inner.Add(name, reader.GetString());
                         break;
                     case JsonTokenType.True:
-                        current.Add(name, true);
+                        payload.Inner.Add(name, true);
                         break;
                     case JsonTokenType.False:
-                        current.Add(name, false);
+                        payload.Inner.Add(name, false);
                         break;
                     case JsonTokenType.Null:
-                        current.Add(name);
+                        payload.Inner.Add(name);
                         break;
                     case JsonTokenType.Number:
                         long longValue;
                         if (name.Length == 3)
                         {
-                            var refName = ReadThreeBytesAsInt32(name);
+                            var refName = JsonParser.ReadThreeBytesAsUInt32(name);
                             switch (refName)
                             {
-                                /* exp */
-                                case 7370853u:
+                                case Exp:
                                     if (reader.TryGetInt64(out longValue))
                                     {
                                         if (policy.RequireExpirationTime)
@@ -188,7 +177,7 @@ namespace JsonWebToken
                                             control &= unchecked((byte)~JwtPayload.ExpiredFlag);
                                         }
 
-                                        current.Add(new JwtProperty(WellKnownProperty.Exp, longValue));
+                                        payload.Exp = longValue;
                                         continue;
                                     }
                                     else
@@ -197,11 +186,10 @@ namespace JsonWebToken
                                     }
                                     break;
 
-                                /* iat */
-                                case 7627113u:
+                                case Iat:
                                     if (reader.TryGetInt64(out longValue))
                                     {
-                                        current.Add(new JwtProperty(WellKnownProperty.Iat, longValue));
+                                        payload.Iat = longValue;
                                         continue;
                                     }
                                     else
@@ -210,8 +198,7 @@ namespace JsonWebToken
                                     }
                                     break;
 
-                                /* nbf */
-                                case 6709870u:
+                                case Nbf:
                                     if (reader.TryGetInt64(out longValue))
                                     {
                                         // the 'nbf' claim is not common. The 2nd call to EpochTime.UtcNow should be rare.
@@ -220,7 +207,7 @@ namespace JsonWebToken
                                             control &= unchecked((byte)~JwtPayload.NotYetFlag);
                                         }
 
-                                        current.Add(new JwtProperty(WellKnownProperty.Nbf, longValue));
+                                        payload.Nbf = longValue;
                                         continue;
                                     }
                                     else
@@ -233,18 +220,11 @@ namespace JsonWebToken
 
                         if (reader.TryGetInt64(out longValue))
                         {
-                            current.Add(name, longValue);
+                            payload.Inner.Add(name, longValue);
                         }
                         else
                         {
-                            if (reader.TryGetDouble(out double doubleValue))
-                            {
-                                current.Add(name, doubleValue);
-                            }
-                            else
-                            {
-                                ThrowHelper.ThrowFormatException_NotSupportedNumberValue(name);
-                            }
+                            payload.Inner.Add(name, reader.GetDouble());
                         }
                         break;
                     default:
@@ -261,12 +241,6 @@ namespace JsonWebToken
             payload.ValidationControl = control;
 
             return payload;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static uint ReadThreeBytesAsInt32(ReadOnlySpan<byte> name)
-        {
-            return Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(name)) & 0x00ffffffu;
         }
     }
 }

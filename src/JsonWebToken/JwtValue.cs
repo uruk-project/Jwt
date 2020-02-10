@@ -147,7 +147,7 @@ namespace JsonWebToken
             switch (Type)
             {
                 case JwtTokenType.Object:
-                    ((JwtObject)Value!).WriteTo(writer);
+                    ((JwtObject)Value!).WriteObjectTo(writer);
                     break;
                 case JwtTokenType.Array:
                     ((JwtArray)Value!).WriteTo(writer);

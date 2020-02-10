@@ -355,14 +355,7 @@ namespace JsonWebToken
                         }
                         else
                         {
-                            if (reader.TryGetDouble(out double doubleValue))
-                            {
-                                jwk.Add(new JwtProperty(name, doubleValue));
-                            }
-                            else
-                            {
-                                ThrowHelper.ThrowFormatException_NotSupportedNumberValue(name);
-                            }
+                            jwk.Add(new JwtProperty(name, reader.GetDouble()));
                         }
                         break;
                     case JsonTokenType.StartArray:
@@ -805,19 +798,19 @@ namespace JsonWebToken
             byte[]? jsonToReturn = null;
             try
             {
-            int length = Utf8.GetMaxByteCount(json.Length);
-            Span<byte> jsonSpan = length <= Constants.MaxStackallocBytes
-                        ? stackalloc byte[length]
-                        : (jsonToReturn = ArrayPool<byte>.Shared.Rent(length));
-            length = Utf8.GetBytes(json, jsonSpan);
-            var reader = new Utf8JsonReader(jsonSpan.Slice(0, length), true, default);
-            if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
-            {
-                return FromJsonReader(ref reader);
-            }
+                int length = Utf8.GetMaxByteCount(json.Length);
+                Span<byte> jsonSpan = length <= Constants.MaxStackallocBytes
+                            ? stackalloc byte[length]
+                            : (jsonToReturn = ArrayPool<byte>.Shared.Rent(length));
+                length = Utf8.GetBytes(json, jsonSpan);
+                var reader = new Utf8JsonReader(jsonSpan.Slice(0, length), true, default);
+                if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
+                {
+                    return FromJsonReader(ref reader);
+                }
 
-            ThrowHelper.ThrowArgumentException_MalformedKey();
-            return Jwk.Empty;
+                ThrowHelper.ThrowArgumentException_MalformedKey();
+                return Jwk.Empty;
             }
             finally
             {

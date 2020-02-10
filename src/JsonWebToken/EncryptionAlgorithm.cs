@@ -341,5 +341,8 @@ namespace JsonWebToken
         {
             return (_id << 8) | (byte)algorithm.Id;
         }
+
+        internal static EncryptionAlgorithm Create(string name)
+            => new EncryptionAlgorithm(127, name, 0, null, 0, EncryptionType.Undefined);
     }
 }

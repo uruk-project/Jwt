@@ -273,9 +273,9 @@ namespace JsonWebToken
                                     {
                                         config.AdditionalData.Add(new JwtProperty(propertyName, longValue));
                                     }
-                                    else if (reader.TryGetDouble(out double doubleValue))
+                                    else
                                     {
-                                        config.AdditionalData.Add(new JwtProperty(propertyName, doubleValue));
+                                        config.AdditionalData.Add(new JwtProperty(propertyName, reader.GetDouble()));
                                     }
                                     break;
                             }

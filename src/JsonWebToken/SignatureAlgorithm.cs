@@ -209,7 +209,7 @@ namespace JsonWebToken
             {
                 return false;
             }
-            
+
             return x._id == y._id;
         }
 
@@ -402,5 +402,8 @@ namespace JsonWebToken
         {
             return Name;
         }
+
+        internal static SignatureAlgorithm Create(string name)
+            => new SignatureAlgorithm(127, name, AlgorithmCategory.None, 0, new HashAlgorithmName());
     }
 }

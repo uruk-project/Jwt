@@ -2,10 +2,10 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.Json;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -68,14 +68,7 @@ namespace JsonWebToken
                         }
                         else
                         {
-                            if (reader.TryGetDouble(out double doubleValue))
-                            {
-                                current.Add(name, doubleValue);
-                            }
-                            else
-                            {
-                                ThrowHelper.ThrowFormatException_NotSupportedNumberValue(name);
-                            }
+                            current.Add(name, reader.GetDouble());
                         }
                         break;
                     default:
@@ -123,14 +116,7 @@ namespace JsonWebToken
                         }
                         else
                         {
-                            if (reader.TryGetDouble(out double doubleValue))
-                            {
-                                array.Add(doubleValue);
-                            }
-                            else
-                            {
-                                ThrowHelper.ThrowFormatException_MalformedJson();
-                            }
+                            array.Add(reader.GetDouble());
                         }
 
                         break;
@@ -154,6 +140,26 @@ namespace JsonWebToken
             // If we are here, we are missing a closing brace.
             ThrowHelper.ThrowFormatException_MalformedJson();
             return default;
+        }
+        
+        /// <summary>
+        /// Use the <paramref name="reader"/> as JSON input and returns a <see cref="JwtArray"/>.
+        /// </summary>
+        /// <param name="reader"></param>
+        public static string[] ReadStringArray(ref Utf8JsonReader reader)
+        {
+            var array = new List<string>(2);
+            while (reader.Read() && reader.TokenType == JsonTokenType.String)
+            {
+                array.Add(reader.GetString());
+            }
+
+            if (reader.TokenType != JsonTokenType.EndArray)
+            {
+                ThrowHelper.ThrowFormatException_MalformedJson($"Expected an array of string. A value of type {reader.TokenType} was found.");
+            }
+
+            return array.ToArray();
         }
 
         internal static void ConsumeJsonObject(ref Utf8JsonReader reader)
@@ -224,6 +230,12 @@ namespace JsonWebToken
 
             // If we are here, we are missing a closing bracket.
             ThrowHelper.ThrowFormatException_MalformedJson();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static uint ReadThreeBytesAsUInt32(ReadOnlySpan<byte> name)
+        {
+            return Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(name)) & 0x00ffffffu;
         }
     }
 }

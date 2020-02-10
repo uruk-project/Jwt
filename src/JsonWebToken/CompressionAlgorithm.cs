@@ -249,5 +249,8 @@ namespace JsonWebToken
         {
             return Name;
         }
+
+        internal static CompressionAlgorithm Create(string name)
+            => new CompressionAlgorithm(127, name, Compressor.Null);
     }
 }

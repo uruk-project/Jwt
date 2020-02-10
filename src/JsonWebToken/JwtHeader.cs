@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -13,11 +14,21 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtHeader
     {
-        private readonly JwtObject _inner;
+        private static readonly JsonEncodedText AlgEncodedText = JsonEncodedText.Encode("alg");
+        private static readonly JsonEncodedText EncEncodedText = JsonEncodedText.Encode("enc");
+        private static readonly JsonEncodedText ZipEncodedText = JsonEncodedText.Encode("zip");
+        private static readonly JsonEncodedText KidEncodedText = JsonEncodedText.Encode("kid");
+        private static readonly JsonEncodedText CtyEncodedText = JsonEncodedText.Encode("cty");
+        private static readonly JsonEncodedText TypEncodedText = JsonEncodedText.Encode("typ");
+
+        private JwtObject? _inner;
         private SignatureAlgorithm? _signatureAlgorithm;
         private KeyManagementAlgorithm? _keyManagementAlgorithm;
         private EncryptionAlgorithm? _encryptionAlgorithm;
         private CompressionAlgorithm? _compressionAlgorithm;
+        private string? _kid;
+        private string? _typ;
+        private string? _cty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtHeader"/> class.
@@ -33,7 +44,6 @@ namespace JsonWebToken
         /// </summary>
         public JwtHeader()
         {
-            _inner = new JwtObject(3);
         }
 
         /// <summary>
@@ -45,34 +55,21 @@ namespace JsonWebToken
             return JwtHeaderParser.ParseHeader(Utf8.GetBytes(json), TokenValidationPolicy.NoValidation);
         }
 
+        internal JwtObject Inner => _inner ?? (_inner = new JwtObject());
+
         /// <summary>
         /// Gets the signature algorithm that was used to create the signature.
         /// </summary>
         public ReadOnlySpan<byte> Alg
-        {
-            get
-            {
-                return _signatureAlgorithm?.Utf8Name ?? _keyManagementAlgorithm?.Utf8Name ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property) ? (byte[]?)property.Value : default);
-            }
-        }
+            => _signatureAlgorithm?.Utf8Name ?? _keyManagementAlgorithm?.Utf8Name;
 
         /// <summary>
         /// Gets the signature algorithm (alg) that was used to create the signature.
         /// </summary>
         public SignatureAlgorithm? SignatureAlgorithm
         {
-            get => _signatureAlgorithm
-                ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property)
-                ? (SignatureAlgorithm.TryParse((byte[]?)property.Value, out var alg) ? alg : null)
-                : null);
-            set
-            {
-                _signatureAlgorithm = value;
-                if (!(value is null))
-                {
-                    _inner.Add(new JwtProperty(WellKnownProperty.Alg, value.Utf8Name));
-                }
-            }
+            get => _signatureAlgorithm;
+            set => _signatureAlgorithm = value;
         }
 
         /// <summary>
@@ -80,95 +77,88 @@ namespace JsonWebToken
         /// </summary>
         public KeyManagementAlgorithm? KeyManagementAlgorithm
         {
-            get => _keyManagementAlgorithm
-                ?? (_inner.TryGetValue(WellKnownProperty.Alg, out var property)
-                ? (KeyManagementAlgorithm.TryParse((byte[]?)property.Value, out var alg) ? alg : null)
-                : null);
-            set
-            {
-                _keyManagementAlgorithm = value;
-                if (!(value is null))
-                {
-                    _inner.Add(new JwtProperty(WellKnownProperty.Alg, value.Utf8Name));
-                }
-            }
+            get => _keyManagementAlgorithm;
+            set => _keyManagementAlgorithm = value;
         }
 
         /// <summary>
         /// Gets the content type (Cty) of the token.
         /// </summary>
-        public ReadOnlySpan<byte> Cty => _inner.TryGetValue(WellKnownProperty.Cty, out var property) ? (byte[]?)property.Value : default;
+        public string? Cty
+        {
+            get => _cty;
+            set => _cty = value;
+        }
 
         /// <summary>
         /// Gets the encryption algorithm (enc) of the token.
         /// </summary>
-        public ReadOnlySpan<byte> Enc => _encryptionAlgorithm?.Utf8Name
-            ?? (_inner.TryGetValue(WellKnownProperty.Enc, out var property) ? (byte[]?)property.Value : default);
+        public ReadOnlySpan<byte> Enc => _encryptionAlgorithm?.Utf8Name;
 
         /// <summary>
         /// Gets the encryption algorithm (enc) of the token.
         /// </summary>
         public EncryptionAlgorithm? EncryptionAlgorithm
         {
-            get => _encryptionAlgorithm ?? (_inner.TryGetValue(WellKnownProperty.Enc, out var property) ? (EncryptionAlgorithm?)property.Value : null);
-            set
-            {
-                _encryptionAlgorithm = value;
-                if (!(value is null))
-                {
-                    _inner.Add(new JwtProperty(WellKnownProperty.Enc, value.Utf8Name));
-                }
-            }
+            get => _encryptionAlgorithm;
+            set => _encryptionAlgorithm = value;
         }
 
         /// <summary>
         /// Gets the key identifier for the key used to sign the token.
         /// </summary>
-        public string? Kid => _inner.TryGetValue(WellKnownProperty.Kid, out var property) ? (string?)property.Value : null;
+        public string? Kid
+        {
+            get => _kid;
+            set => _kid = value;
+        }
 
         /// <summary>
         /// Gets the mime type (Typ) of the token.
         /// </summary>
-        public string? Typ => _inner.TryGetValue(WellKnownProperty.Typ, out var property) ? (string?)property.Value : null;
+        public string? Typ
+        {
+            get => _typ;
+            set => _typ = value;
+        }
 
         /// <summary>
         /// Gets the thumbprint of the certificate used to sign the token.
         /// </summary>
-        public string? X5t => _inner.TryGetValue(HeaderParameters.TagUtf8, out var property) ? (string?)property.Value : null;
+        public string? X5t => Inner.TryGetValue(HeaderParameters.TagUtf8, out var property) ? (string?)property.Value : null;
 
         /// <summary>
         /// Gets the URL of the JWK used to sign the token.
         /// </summary>
-        public string? Jku => _inner.TryGetValue(HeaderParameters.JkuUtf8, out var property) ? (string?)property.Value : null;
+        public string? Jku => Inner.TryGetValue(HeaderParameters.JkuUtf8, out var property) ? (string?)property.Value : null;
 
         /// <summary>
         /// Gets the URL of the certificate used to sign the token
         /// </summary>
-        public string? X5u => _inner.TryGetValue(HeaderParameters.X5uUtf8, out var property) ? (string?)property.Value : null;
+        public string? X5u => Inner.TryGetValue(HeaderParameters.X5uUtf8, out var property) ? (string?)property.Value : null;
 
         /// <summary>
         /// Gets the algorithm used to compress the token.
         /// </summary>
-        public ReadOnlySpan<byte> Zip => _compressionAlgorithm?.Utf8Name
-            ?? (_inner.TryGetValue(WellKnownProperty.Zip, out var property) ? (byte[]?)property.Value : null);
+        public ReadOnlySpan<byte> Zip => _compressionAlgorithm?.Utf8Name;
 
         /// <summary>
         /// Gets the compression algorithm (zip) of the token.
         /// </summary>
         public CompressionAlgorithm? CompressionAlgorithm
         {
-            get => _compressionAlgorithm ?? (_inner.TryGetValue(WellKnownProperty.Zip, out var property) ? (CompressionAlgorithm?)property.Value : null);
+            get => _compressionAlgorithm;
             set => _compressionAlgorithm = value;
         }
         /// <summary>
         /// Gets the Initialization Vector used for AES GCM encryption.
         /// </summary>
-        public string? IV => _inner.TryGetValue(HeaderParameters.IVUtf8, out var property) ? (string?)property.Value : null;
+        public string? IV => Inner.TryGetValue(HeaderParameters.IVUtf8, out var property) ? (string?)property.Value : null;
 
         /// <summary>
         /// Gets the Authentication Tag used for AES GCM encryption.
         /// </summary>
-        public string? Tag => _inner.TryGetValue(HeaderParameters.TagUtf8, out var property) ? (string?)property.Value : null;
+        public string? Tag => Inner.TryGetValue(HeaderParameters.TagUtf8, out var property) ? (string?)property.Value : null;
 
         /// <summary>
         /// Gets the Crit header.
@@ -177,26 +167,29 @@ namespace JsonWebToken
         {
             get
             {
-                if (_inner.TryGetValue(HeaderParameters.CritUtf8, out var property) && !(property.Value is null))
+                if (!(_inner is null))
                 {
-                    if (property.Type is JwtTokenType.Array)
+                    if (_inner.TryGetValue(HeaderParameters.CritUtf8, out var property) && !(property.Value is null))
                     {
-                        var list = new List<string>();
-                        var array = (JwtArray)property.Value;
-                        for (int i = 0; i < array.Count; i++)
+                        if (property.Type is JwtTokenType.Array)
                         {
-                            object? value = array[i].Value;
-                            if (!(value is null))
+                            var list = new List<string>();
+                            var array = (JwtArray)property.Value;
+                            for (int i = 0; i < array.Count; i++)
                             {
-                                list.Add((string)value);
+                                object? value = array[i].Value;
+                                if (!(value is null))
+                                {
+                                    list.Add((string)value);
+                                }
                             }
-                        }
 
-                        return list;
-                    }
-                    else if (property.Type is JwtTokenType.String)
-                    {
-                        return new List<string> { (string)property.Value };
+                            return list;
+                        }
+                        else if (property.Type is JwtTokenType.String)
+                        {
+                            return new List<string> { (string)property.Value };
+                        }
                     }
                 }
 
@@ -214,19 +207,19 @@ namespace JsonWebToken
         {
             get
             {
-                return _inner.TryGetValue(HeaderParameters.EpkUtf8, out var property) && !(property.Value is null) ? ECJwk.FromJwtObject((JwtObject)property.Value) : null;
+                return Inner.TryGetValue(HeaderParameters.EpkUtf8, out var property) && !(property.Value is null) ? ECJwk.FromJwtObject((JwtObject)property.Value) : null;
             }
         }
 
         /// <summary>
         /// Gets the Agreement PartyUInfo used for ECDH key agreement.
         /// </summary>
-        public string? Apu => _inner.TryGetValue(HeaderParameters.ApuUtf8, out var property) ? (string?)property.Value : null;
+        public string? Apu => Inner.TryGetValue(HeaderParameters.ApuUtf8, out var property) ? (string?)property.Value : null;
 
         /// <summary>
         /// Gets the Agreement PartyVInfo used for ECDH key agreement.
         /// </summary>
-        public string? Apv => _inner.TryGetValue(HeaderParameters.ApvUtf8, out var property) ? (string?)property.Value : null;
+        public string? Apv => Inner.TryGetValue(HeaderParameters.ApvUtf8, out var property) ? (string?)property.Value : null;
 #endif
 
         /// <summary>
@@ -235,7 +228,61 @@ namespace JsonWebToken
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryGetValue(ReadOnlySpan<byte> key, out JwtProperty value) => _inner.TryGetValue(key, out value);
+        public bool TryGetValue(ReadOnlySpan<byte> key, out JwtProperty value)
+        {
+            if (key.Length == 3)
+            {
+                switch (JsonParser.ReadThreeBytesAsUInt32(key))
+                {
+                    case JwtHeaderParser.Enc:
+                        if (_encryptionAlgorithm is null)
+                        {
+                            value = default;
+                            return false;
+                        }
+
+                        value = new JwtProperty(_encryptionAlgorithm);
+                        return true;
+                    case JwtHeaderParser.Alg:
+                        if (_signatureAlgorithm is null)
+                        {
+                            if (_keyManagementAlgorithm is null)
+                            {
+                                value = default;
+                                return false;
+                            }
+                            else
+                            {
+                                value = new JwtProperty(_keyManagementAlgorithm);
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            value = new JwtProperty(_signatureAlgorithm);
+                            return true;
+                        }
+
+                    case JwtHeaderParser.Zip:
+                        if (_compressionAlgorithm is null)
+                        {
+                            value = default;
+                            return false;
+                        }
+
+                        value = new JwtProperty(_compressionAlgorithm);
+                        return true;
+                }
+            }
+
+            if (_inner is null)
+            {
+                value = default;
+                return false;
+            }
+
+            return _inner.TryGetValue(key, out value);
+        }
 
         /// <summary>
         ///  Gets the claim for a specified key in the current <see cref="JwtPayload"/>.
@@ -246,7 +293,22 @@ namespace JsonWebToken
         {
             get
             {
-                return _inner.TryGetValue(key, out var value) ? value.Value : null;
+                switch (key)
+                {
+                    case "enc":
+                        return _encryptionAlgorithm;
+                    case "alg":
+                        return (object?)_signatureAlgorithm ?? _keyManagementAlgorithm;
+                    case "zip":
+                        return _compressionAlgorithm;
+                    default:
+                        if (_inner is null)
+                        {
+                            return null;
+                        }
+
+                        return _inner.TryGetValue(key, out var value) ? value.Value : null;
+                }
             }
         }
 
@@ -257,13 +319,75 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool ContainsKey(string key)
         {
-            return _inner.ContainsKey(Utf8.GetBytes(key));
+            switch (key)
+            {
+                case "enc":
+                    return _encryptionAlgorithm is null;
+                case "alg":
+                    return _signatureAlgorithm is null && _keyManagementAlgorithm is null;
+                case "zip":
+                    return _compressionAlgorithm is null;
+                default:
+                    if (_inner is null)
+                    {
+                        return false;
+                    }
+
+                    return _inner.ContainsKey(Utf8.GetBytes(key));
+            }
         }
 
         /// <inheritsdoc />
         public override string ToString()
         {
-            return _inner.ToString();
+            using var bufferWriter = new PooledByteBufferWriter();
+            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
+            {
+                writer.WriteStartObject();
+                if (!(_signatureAlgorithm is null))
+                {
+                    writer.WriteString(AlgEncodedText, _signatureAlgorithm.Utf8Name);
+                }
+                else if (!(_keyManagementAlgorithm is null))
+                {
+                    writer.WriteString(AlgEncodedText, _keyManagementAlgorithm.Utf8Name);
+                }
+
+                if (!(_encryptionAlgorithm is null))
+                {
+                    writer.WriteString(EncEncodedText, _encryptionAlgorithm.Utf8Name);
+                }
+                
+                if (!(_compressionAlgorithm is null))
+                {
+                    writer.WriteString(ZipEncodedText, _compressionAlgorithm.Utf8Name);
+                }
+                
+                if (!(_kid is null))
+                {
+                    writer.WriteString(KidEncodedText, _kid);
+                }
+                
+                if (!(_cty is null))
+                {
+                    writer.WriteString(CtyEncodedText, _cty);
+                }
+
+                if (!(_typ is null))
+                {
+                    writer.WriteString(TypEncodedText, _typ);
+                }
+                
+                if (!(_inner is null))
+                {
+                    _inner.WriteTo(writer);
+                }
+
+                writer.WriteEndObject();
+            }
+
+            var input = bufferWriter.WrittenSpan;
+            return Utf8.GetString(input);
         }
     }
 }

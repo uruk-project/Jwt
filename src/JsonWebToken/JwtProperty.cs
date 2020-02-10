@@ -78,6 +78,19 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
         /// </summary>
+        /// <param name="wellKnown"></param>
+        /// <param name="value"></param>
+        public JwtProperty(WellKnownProperty wellKnown, JwtArray value)
+        {
+            Type = JwtTokenType.Array;
+            WellKnownName = wellKnown;
+            _utf8Name = default;
+            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the struct <see cref="JwtProperty"/>.
+        /// </summary>
         /// <param name="utf8Name"></param>
         /// <param name="value"></param>
         public JwtProperty(ReadOnlySpan<byte> utf8Name, JwtObject value)

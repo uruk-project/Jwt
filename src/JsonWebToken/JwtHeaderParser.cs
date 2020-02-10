@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -13,8 +12,16 @@ namespace JsonWebToken
     /// <summary>
     /// Provides methods for converting JWT header JSON data into a <see cref="JwtHeader"/>
     /// </summary>
-    public static partial class JwtHeaderParser
+    public static class JwtHeaderParser
     {
+        internal const uint Alg = 6777953u;
+        internal const uint Enc = 6516325u;
+        internal const uint Zip = 7367034u;
+        internal const uint Cty = 7959651u;
+        internal const uint Typ = 7371124u;
+        internal const uint Kid = 6580587u;
+        internal const uint Crit = 1953067619u;
+
         /// <summary>
         /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtHeader"/>.
         /// </summary>
@@ -33,8 +40,7 @@ namespace JsonWebToken
 
         internal static JwtHeader ReadJwtHeader(ref Utf8JsonReader reader, TokenValidationPolicy policy)
         {
-            var current = new JwtObject(3);
-            var header = new JwtHeader(current);
+            var header = new JwtHeader();
             while (reader.Read())
             {
                 if (!(reader.TokenType is JsonTokenType.PropertyName))
@@ -48,10 +54,10 @@ namespace JsonWebToken
                 switch (type)
                 {
                     case JsonTokenType.StartObject:
-                        current.Add(name, JsonParser.ReadJsonObject(ref reader));
+                        header.Inner.Add(name, JsonParser.ReadJsonObject(ref reader));
                         break;
                     case JsonTokenType.StartArray:
-                        if (name.Length == 4 && Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(name)) == 1953067619u /* crit */)
+                        if (name.Length == 4 && Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(name)) == Crit)
                         {
                             var handlers = policy.CriticalHandlers;
                             if (handlers.Count != 0)
@@ -77,27 +83,26 @@ namespace JsonWebToken
                                     ThrowHelper.ThrowFormatException_MalformedJson("The 'crit' header parameter must be an array of string.");
                                 }
 
-                                current.Add(new JwtProperty(name, new JwtArray(criticals)));
+                                header.Inner.Add(name, new JwtArray(criticals));
                             }
                             else
                             {
-                                current.Add(name, JsonParser.ReadJsonArray(ref reader));
+                                header.Inner.Add(name, JsonParser.ReadJsonArray(ref reader));
                             }
                         }
                         else
                         {
-                            current.Add(name, JsonParser.ReadJsonArray(ref reader));
+                            header.Inner.Add(name, JsonParser.ReadJsonArray(ref reader));
                         }
 
                         break;
                     case JsonTokenType.String:
                         if (name.Length == 3)
                         {
-                            var refName = Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(name)) & 0x00ffffffu;
+                            var refName = JsonParser.ReadThreeBytesAsUInt32(name);
                             switch (refName)
                             {
-                                /* alg */
-                                case 6777953u:
+                                case Alg:
                                     var alg = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                                     if (SignatureAlgorithm.TryParse(alg, out var signatureAlgorithm))
                                     {
@@ -117,14 +122,12 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        // TODO : Fix when the Utf8JsonReader will allow
-                                        // to read an unescaped string without allocating a string
-                                        current.Add(new JwtProperty(WellKnownProperty.Alg, Utf8.GetBytes(reader.GetString())));
+                                        header.SignatureAlgorithm = SignatureAlgorithm.Create(reader.GetString());
                                     }
 
                                     continue;
-                                /* enc */
-                                case 6516325u:
+
+                                case Enc:
                                     var enc = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                                     if (EncryptionAlgorithm.TryParse(enc, out var encryptionAlgorithm))
                                     {
@@ -136,14 +139,12 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        // TODO : Fix when the Utf8JsonReader will allow
-                                        // to read an unescaped string without allocating a string
-                                        current.Add(new JwtProperty(WellKnownProperty.Enc, Utf8.GetBytes(reader.GetString())));
+                                        header.EncryptionAlgorithm = EncryptionAlgorithm.Create(reader.GetString());
                                     }
 
                                     continue;
-                                /* zip */
-                                case 7367034u:
+
+                                case Zip:
                                     var zip = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                                     if (CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm))
                                     {
@@ -155,59 +156,44 @@ namespace JsonWebToken
                                     }
                                     else
                                     {
-                                        // TODO : Fix when the Utf8JsonReader will allow
-                                        // to read an unescaped string without allocating a string
-                                        current.Add(new JwtProperty(WellKnownProperty.Zip, Utf8.GetBytes(reader.GetString())));
+                                        header.CompressionAlgorithm = CompressionAlgorithm.Create(reader.GetString());
                                     }
 
                                     continue;
-                                /* cty */
-                                case 7959651u:
-                                    // TODO : Fix when the Utf8JsonReader will allow
-                                    // to read an unescaped string without allocating a string
-                                    current.Add(new JwtProperty(WellKnownProperty.Cty, Utf8.GetBytes(reader.GetString())));
+
+                                case Cty:
+                                    header.Cty = reader.GetString();
                                     continue;
-                                /* typ */
-                                case 7371124u:
-                                    // TODO : Fix when the Utf8JsonReader will allow
-                                    // to read an unescaped string without allocating a string
-                                    current.Add(new JwtProperty(WellKnownProperty.Typ, Utf8.GetBytes(reader.GetString())));
+
+                                case Typ:
+                                    header.Typ = reader.GetString();
                                     continue;
-                                /* kid */
-                                case 6580587u:
-                                    // TODO : Fix when the Utf8JsonReader will allow
-                                    // to read an unescaped string without allocating a string
-                                    current.Add(new JwtProperty(WellKnownProperty.Kid, reader.GetString()));
+
+                                case Kid:
+                                    header.Kid = reader.GetString();
                                     continue;
                             }
                         }
 
-                        current.Add(name, reader.GetString());
+                        header.Inner.Add(name, reader.GetString());
                         break;
                     case JsonTokenType.True:
-                        current.Add(name, true);
+                        header.Inner.Add(name, true);
                         break;
                     case JsonTokenType.False:
-                        current.Add(name, false);
+                        header.Inner.Add(name, false);
                         break;
                     case JsonTokenType.Null:
-                        current.Add(name);
+                        header.Inner.Add(name);
                         break;
                     case JsonTokenType.Number:
                         if (reader.TryGetInt64(out long longValue))
                         {
-                            current.Add(name, longValue);
+                            header.Inner.Add(name, longValue);
                         }
                         else
                         {
-                            if (reader.TryGetDouble(out double doubleValue))
-                            {
-                                current.Add(name, doubleValue);
-                            }
-                            else
-                            {
-                                ThrowHelper.ThrowFormatException_NotSupportedNumberValue(name);
-                            }
+                            header.Inner.Add(name, reader.GetDouble());
                         }
                         break;
                     default:
