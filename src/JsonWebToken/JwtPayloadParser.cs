@@ -41,111 +41,157 @@ namespace JsonWebToken
                 var name = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                 reader.Read();
                 var type = reader.TokenType;
+                if (name.Length == 3)
+                {
+                    uint nameValue = IntegerMarshal.ReadUInt24(name);
+                    switch (nameValue)
+                    {
+                        case Aud:
+                            if (type == JsonTokenType.String)
+                            {
+                                if (policy.RequireAudience)
+                                {
+                                    var audiencesBinary = policy.RequiredAudiencesBinary;
+                                    var audiences = policy.RequiredAudiences;
+                                    for (int i = 0; i < audiencesBinary.Length; i++)
+                                    {
+                                        if (reader.ValueTextEquals(audiencesBinary[i]))
+                                        {
+                                            payload.Aud = new[] { audiences[i] };
+                                            control &= unchecked((byte)~TokenValidationPolicy.AudienceFlag);
+                                            break;
+                                        }
+                                    }
+
+                                    control &= unchecked((byte)~JwtPayload.MissingAudienceFlag);
+                                }
+                                else
+                                {
+                                    payload.Aud = new[] { reader.GetString() };
+                                }
+                            }
+                            else if (type == JsonTokenType.StartArray)
+                            {
+                                if (policy.RequireAudience)
+                                {
+                                    var audiences = new List<string>();
+                                    while (reader.Read() && reader.TokenType == JsonTokenType.String)
+                                    {
+                                        var requiredAudiences = policy.RequiredAudiencesBinary;
+                                        for (int i = 0; i < requiredAudiences.Length; i++)
+                                        {
+                                            if (reader.ValueTextEquals(requiredAudiences[i]))
+                                            {
+                                                control &= unchecked((byte)~TokenValidationPolicy.AudienceFlag);
+                                                break;
+                                            }
+                                        }
+
+                                        audiences.Add(reader.GetString());
+                                        control &= unchecked((byte)~JwtPayload.MissingAudienceFlag);
+                                    }
+
+                                    if (reader.TokenType != JsonTokenType.EndArray)
+                                    {
+                                        ThrowHelper.ThrowFormatException_MalformedJson("The 'aud' claim must be an array of string or a string.");
+                                    }
+
+                                    payload.Aud = audiences.ToArray();
+                                }
+                                else
+                                {
+                                    payload.Aud = JsonParser.ReadStringArray(ref reader);
+                                }
+                            }
+                            else
+                            {
+                                ThrowHelper.ThrowFormatException_MalformedJson("The 'aud' claim must be an array of string or a string.");
+                            }
+
+                            continue;
+
+                        case Iss:
+                            if (policy.RequireIssuer)
+                            {
+                                if (reader.ValueTextEquals(policy.RequiredIssuerBinary))
+                                {
+                                    payload.Iss = policy.RequiredIssuer;
+                                    control &= unchecked((byte)~TokenValidationPolicy.IssuerFlag);
+                                }
+                                else
+                                {
+                                    control &= unchecked((byte)~JwtPayload.MissingIssuerFlag);
+                                }
+                            }
+                            else
+                            {
+                                payload.Iss = reader.GetString();
+                            }
+
+                            continue;
+
+                        case Exp:
+                            if (!reader.TryGetInt64(out long longValue))
+                            {
+                                ThrowHelper.ThrowFormatException_MalformedJson("The claim 'exp' must be an integral number.");
+                            }
+
+                            if (policy.RequireExpirationTime)
+                            {
+                                control &= unchecked((byte)~JwtPayload.MissingExpirationFlag);
+                            }
+
+                            if (longValue >= EpochTime.UtcNow - policy.ClockSkew)
+                            {
+                                control &= unchecked((byte)~JwtPayload.ExpiredFlag);
+                            }
+
+                            payload.Exp = longValue;
+                            continue;
+
+                        case Iat:
+                            if (!reader.TryGetInt64(out longValue))
+                            {
+                                ThrowHelper.ThrowFormatException_MalformedJson("The claim 'iat' must be an integral number.");
+                            }
+
+                            payload.Iat = longValue;
+                            continue;
+
+                        case Nbf:
+                            if (!reader.TryGetInt64(out longValue))
+                            {
+                                ThrowHelper.ThrowFormatException_MalformedJson("The claim 'nbf' must be an integral number.");
+                            }
+
+                            // the 'nbf' claim is not common. The 2nd call to EpochTime.UtcNow should be rare.
+                            if (longValue <= EpochTime.UtcNow + policy.ClockSkew)
+                            {
+                                control &= unchecked((byte)~JwtPayload.NotYetFlag);
+                            }
+
+                            payload.Nbf = longValue;
+                            continue;
+
+                        case Jti:
+                            payload.Jti = reader.GetString();
+                            continue;
+
+                        case Sub:
+                            payload.Sub = reader.GetString();
+                            continue;
+                    }
+                }
+
                 switch (type)
                 {
                     case JsonTokenType.StartObject:
                         payload.Inner.Add(name, JsonParser.ReadJsonObject(ref reader));
                         break;
                     case JsonTokenType.StartArray:
-                        if (name.Length == 3 && JsonParser.ReadThreeBytesAsUInt32(name) == Aud)
-                        {
-                            if (policy.RequireAudience)
-                            {
-                                var audiences = new List<string>();
-                                while (reader.Read() && reader.TokenType == JsonTokenType.String)
-                                {
-                                    var requiredAudiences = policy.RequiredAudiences;
-                                    for (int i = 0; i < requiredAudiences.Length; i++)
-                                    {
-                                        if (reader.ValueTextEquals(requiredAudiences[i]))
-                                        {
-                                            control &= unchecked((byte)~TokenValidationPolicy.AudienceFlag);
-                                            break;
-                                        }
-                                    }
-
-                                    audiences.Add(reader.GetString());
-                                    control &= unchecked((byte)~JwtPayload.MissingAudienceFlag);
-                                }
-
-                                if (reader.TokenType != JsonTokenType.EndArray)
-                                {
-                                    ThrowHelper.ThrowFormatException_MalformedJson("The 'aud' claim must be an array of string or a string.");
-                                }
-
-                                payload.Aud = audiences.ToArray();
-
-                            }
-                            else
-                            {
-                                payload.Aud = JsonParser.ReadStringArray(ref reader);
-                            }
-                        }
-                        else
-                        {
-                            payload.Inner.Add(name, JsonParser.ReadJsonArray(ref reader));
-                        }
-
+                        payload.Inner.Add(name, JsonParser.ReadJsonArray(ref reader));
                         break;
                     case JsonTokenType.String:
-                        if (name.Length == 3)
-                        {
-                            var refName = JsonParser.ReadThreeBytesAsUInt32(name);
-                            switch (refName)
-                            {
-                                case Iss:
-                                    if (policy.RequireIssuer)
-                                    {
-                                        if (reader.ValueTextEquals(policy.RequiredIssuer))
-                                        {
-                                            payload.Iss = policy.RequiredIssuerString;
-                                            control &= unchecked((byte)~TokenValidationPolicy.IssuerFlag);
-                                        }
-                                        else
-                                        {
-                                            control &= unchecked((byte)~JwtPayload.MissingIssuerFlag);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        payload.Iss = reader.GetString();
-                                    }
-
-                                    continue;
-
-                                case Aud:
-                                    if (policy.RequireAudience)
-                                    {
-                                        var audiences = policy.RequiredAudiences;
-                                        for (int i = 0; i < audiences.Length; i++)
-                                        {
-                                            if (reader.ValueTextEquals(audiences[i]))
-                                            {
-                                                payload.Aud = new[] { reader.GetString() };
-                                                control &= unchecked((byte)~TokenValidationPolicy.AudienceFlag);
-                                                break;
-                                            }
-                                        }
-
-                                        control &= unchecked((byte)~JwtPayload.MissingAudienceFlag);
-                                    }
-                                    else
-                                    {
-                                        payload.Aud = new[] { reader.GetString() };
-                                    }
-
-                                    continue;
-
-                                case Jti:
-                                    payload.Jti = reader.GetString();
-                                    continue;
-
-                                case Sub:
-                                    payload.Sub = reader.GetString();
-                                    continue;
-                            }
-                        }
-
                         payload.Inner.Add(name, reader.GetString());
                         break;
                     case JsonTokenType.True:
@@ -159,64 +205,6 @@ namespace JsonWebToken
                         break;
                     case JsonTokenType.Number:
                         long longValue;
-                        if (name.Length == 3)
-                        {
-                            var refName = JsonParser.ReadThreeBytesAsUInt32(name);
-                            switch (refName)
-                            {
-                                case Exp:
-                                    if (reader.TryGetInt64(out longValue))
-                                    {
-                                        if (policy.RequireExpirationTime)
-                                        {
-                                            control &= unchecked((byte)~JwtPayload.MissingExpirationFlag);
-                                        }
-
-                                        if (longValue >= EpochTime.UtcNow - policy.ClockSkrew)
-                                        {
-                                            control &= unchecked((byte)~JwtPayload.ExpiredFlag);
-                                        }
-
-                                        payload.Exp = longValue;
-                                        continue;
-                                    }
-                                    else
-                                    {
-                                        ThrowHelper.ThrowFormatException_MalformedJson("The claim 'exp' must be an integral number.");
-                                    }
-                                    break;
-
-                                case Iat:
-                                    if (reader.TryGetInt64(out longValue))
-                                    {
-                                        payload.Iat = longValue;
-                                        continue;
-                                    }
-                                    else
-                                    {
-                                        ThrowHelper.ThrowFormatException_MalformedJson("The claim 'iat' must be an integral number.");
-                                    }
-                                    break;
-
-                                case Nbf:
-                                    if (reader.TryGetInt64(out longValue))
-                                    {
-                                        // the 'nbf' claim is not common. The 2nd call to EpochTime.UtcNow should be rare.
-                                        if (longValue <= EpochTime.UtcNow + policy.ClockSkrew)
-                                        {
-                                            control &= unchecked((byte)~JwtPayload.NotYetFlag);
-                                        }
-
-                                        payload.Nbf = longValue;
-                                        continue;
-                                    }
-                                    else
-                                    {
-                                        ThrowHelper.ThrowFormatException_MalformedJson("The claim 'nbf' must be an integral number.");
-                                    }
-                                    break;
-                            }
-                        }
 
                         if (reader.TryGetInt64(out longValue))
                         {

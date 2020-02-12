@@ -19,6 +19,7 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public sealed class Jwks : IDisposable
     {
+        private const uint keys = 1937335659u;
         private readonly List<Jwk> _keys = new List<Jwk>();
 
         private Jwk[]? _keyArray;
@@ -273,7 +274,7 @@ namespace JsonWebToken
                 if (propertyName.Length == 4)
                 {
                     ref byte propertyNameRef = ref MemoryMarshal.GetReference(propertyName);
-                    if (Unsafe.ReadUnaligned<uint>(ref propertyNameRef) == 1937335659u /* keys */)
+                    if (IntegerMarshal.ReadUInt32(ref propertyNameRef) == keys /* keys */)
                     {
                         if (reader.Read() && reader.TokenType is JsonTokenType.StartArray)
                         {

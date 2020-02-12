@@ -14,6 +14,16 @@ namespace JsonWebToken
     /// </summary>
     public sealed class EncryptionAlgorithm : IEquatable<EncryptionAlgorithm>, IAlgorithm
     {
+        private const ulong A128CBC_ = 3261523411619426625u;
+        private const ulong BC_HS256 = 3906083585088373570u;
+        private const ulong A192CBC_ = 3261523411519222081u;
+        private const ulong BC_HS384 = 3762813921454277442u;
+        private const ulong A256CBC_ = 3261523411586069057u;
+        private const ulong BC_HS512 = 3616730607564702530u;
+        private const ulong A128GCM = 21747546371273025u;
+        private const ulong A192GCM = 21747546271068481u;
+        private const ulong A256GCM = 21747546337915457u;
+
         /// <summary>
         /// Empty
         /// </summary>
@@ -156,31 +166,31 @@ namespace JsonWebToken
             if (value.Length == 13)
             {
                 ref byte refValue = ref MemoryMarshal.GetReference(value);
-                ulong endValue = Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref refValue, 5));
-                switch (Unsafe.ReadUnaligned<ulong>(ref refValue))
+                ulong endValue = IntegerMarshal.ReadUInt64(ref refValue, 5);
+                switch (IntegerMarshal.ReadUInt64(ref refValue))
                 {
-                    case 3261523411619426625u when endValue == 3906083585088373570u:
+                    case A128CBC_ when endValue == BC_HS256:
                         algorithm = Aes128CbcHmacSha256;
                         return true;
-                    case 3261523411519222081u when endValue == 3762813921454277442u:
+                    case A192CBC_ when endValue == BC_HS384:
                         algorithm = Aes192CbcHmacSha384;
                         return true;
-                    case 3261523411586069057u when endValue == 3616730607564702530u:
+                    case A256CBC_ when endValue == BC_HS512:
                         algorithm = Aes256CbcHmacSha512;
                         return true;
                 }
             }
             else if (value.Length == 7)
             {
-                switch (Unsafe.ReadUnaligned<ulong>(ref MemoryMarshal.GetReference(value)) & 0x00ffffffffffffffu)
+                switch (IntegerMarshal.ReadUInt56(ref MemoryMarshal.GetReference(value)))
                 {
-                    case 21747546371273025u:
+                    case A128GCM:
                         algorithm = Aes128Gcm;
                         return true;
-                    case 21747546271068481u:
+                    case A192GCM:
                         algorithm = Aes192Gcm;
                         return true;
-                    case 21747546337915457u:
+                    case A256GCM:
                         algorithm = Aes256Gcm;
                         return true;
                 }
@@ -189,7 +199,6 @@ namespace JsonWebToken
             algorithm = null;
             return false;
         }
-
 
         /// <summary>
         /// Determines whether this instance and a specified object, which must also be a

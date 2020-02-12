@@ -104,7 +104,7 @@ namespace JsonWebToken
             {
                 if (key.Length == 3)
                 {
-                    switch (JsonParser.ReadThreeBytesAsUInt32(key))
+                    switch (IntegerMarshal.ReadUInt24(key))
                     {
                         case JwtPayloadParser.Aud:
                             return _aud;
@@ -250,7 +250,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool ContainsKey(ReadOnlySpan<byte> key)
         {
-            switch (JsonParser.ReadThreeBytesAsUInt32(key))
+            switch (IntegerMarshal.ReadUInt24(key))
             {
                 case JwtPayloadParser.Aud:
                     return !(_aud is null);
@@ -283,7 +283,7 @@ namespace JsonWebToken
         {
             if (key.Length == 3)
             {
-                switch (JsonParser.ReadThreeBytesAsUInt32(key))
+                switch (IntegerMarshal.ReadUInt24(key))
                 {
                     case JwtPayloadParser.Aud:
                         if (!(_aud is null))

@@ -4,6 +4,7 @@
 using JsonWebToken.Internal;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace JsonWebToken
@@ -43,8 +44,8 @@ namespace JsonWebToken
             bool ignoreCriticalHeader,
             SignatureValidationPolicy? signatureValidation,
             byte[]? issuer,
-            byte[][]? audiences,
-            int clockSkrew,
+            byte[][] audiences,
+            int clockSkew,
             byte control)
         {
             _validators = validators ?? throw new ArgumentNullException(nameof(validators));
@@ -52,14 +53,15 @@ namespace JsonWebToken
             SignatureValidationPolicy = signatureValidation ?? throw new ArgumentNullException(nameof(signatureValidation));
             _ignoreCriticalHeader = ignoreCriticalHeader;
             MaximumTokenSizeInBytes = maximumTokenSizeInBytes;
-            RequiredIssuer = issuer;
-            RequiredAudiences = audiences ?? Array.Empty<byte[]>();
-            ClockSkrew = clockSkrew;
+            ClockSkew = clockSkew;
             _control = control;
+            RequiredAudiencesBinary = audiences;
+            RequiredAudiences = audiences.Select(a => Encoding.UTF8.GetString(a)).ToArray();
 
             if (issuer != null)
             {
-                RequiredIssuerString = Encoding.UTF8.GetString(issuer);
+                RequiredIssuerBinary = issuer;
+                RequiredIssuer = Encoding.UTF8.GetString(issuer);
             }
         }
 
@@ -86,9 +88,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the required issuer, in UTF8 binary format.
         /// </summary>
-        public byte[]? RequiredIssuer { get; }
+        internal byte[]? RequiredIssuerBinary { get; }
 
-        internal string? RequiredIssuerString { get; }
+        /// <summary>
+        /// Gets the required issuer.
+        /// </summary>
+        public string? RequiredIssuer { get; }
 
         /// <summary>
         /// Gets whether the audience 'aud' is required.
@@ -98,7 +103,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the required audience array, in UTF8 binary format. At least one audience of this list is required.
         /// </summary>
-        public byte[][] RequiredAudiences { get; }
+        public byte[][] RequiredAudiencesBinary { get; }
+
+        /// <summary>
+        /// Gets the required issuer.
+        /// </summary>
+        public string[] RequiredAudiences { get; }
 
         /// <summary>
         /// Gets the validation control bits.
@@ -113,7 +123,7 @@ namespace JsonWebToken
         /// <summary>
         /// Defines the clock skrew used for the token lifetime validation.
         /// </summary>
-        public int ClockSkrew { get; }
+        public int ClockSkew { get; }
 
         /// <summary>
         /// Gets the extension points used to handle the critical headers.

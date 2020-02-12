@@ -2,9 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -16,6 +14,11 @@ namespace JsonWebToken
     /// </summary>
     public sealed class SignatureAlgorithm : IEquatable<SignatureAlgorithm>, IAlgorithm
     {
+        private const uint S256 = 909455955u;
+        private const uint S384 = 876098387u;
+        private const uint S512 = 842085715u;
+        private const uint none = 1701736302u;
+
         /// <summary>
         /// 'none'
         /// </summary>
@@ -302,48 +305,48 @@ namespace JsonWebToken
             {
                 ref byte valueRef = ref MemoryMarshal.GetReference(value);
                 var first = valueRef;
-                var refvalue = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref valueRef, 1));
+                var refvalue = IntegerMarshal.ReadUInt32(ref valueRef, 1);
                 switch (refvalue)
                 {
-                    case 909455955u when first == (byte)'H':
+                    case S256 when first == (byte)'H':
                         algorithm = HmacSha256;
                         return true;
-                    case 909455955u when first == (byte)'R':
+                    case S256 when first == (byte)'R':
                         algorithm = RsaSha256;
                         return true;
-                    case 909455955u when first == (byte)'E':
+                    case S256 when first == (byte)'E':
                         algorithm = EcdsaSha256;
                         return true;
-                    case 909455955u when first == (byte)'P':
+                    case S256 when first == (byte)'P':
                         algorithm = RsaSsaPssSha256;
                         return true;
-                    case 876098387u when first == (byte)'H':
+                    case S384 when first == (byte)'H':
                         algorithm = HmacSha384;
                         return true;
-                    case 876098387u when first == (byte)'R':
+                    case S384 when first == (byte)'R':
                         algorithm = RsaSha384;
                         return true;
-                    case 876098387u when first == (byte)'E':
+                    case S384 when first == (byte)'E':
                         algorithm = EcdsaSha384;
                         return true;
-                    case 876098387u when first == (byte)'P':
+                    case S384 when first == (byte)'P':
                         algorithm = RsaSsaPssSha384;
                         return true;
-                    case 842085715u when first == (byte)'H':
+                    case S512 when first == (byte)'H':
                         algorithm = HmacSha512;
                         return true;
-                    case 842085715u when first == (byte)'R':
+                    case S512 when first == (byte)'R':
                         algorithm = RsaSha512;
                         return true;
-                    case 842085715u when first == (byte)'E':
+                    case S512 when first == (byte)'E':
                         algorithm = EcdsaSha512;
                         return true;
-                    case 842085715u when first == (byte)'P':
+                    case S512 when first == (byte)'P':
                         algorithm = RsaSsaPssSha512;
                         return true;
                 }
             }
-            else if (value.Length == 4 && Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(value)) == 1701736302u /* none */)
+            else if (value.Length == 4 && IntegerMarshal.ReadUInt32(value) == none)
             {
                 algorithm = None;
                 return true;

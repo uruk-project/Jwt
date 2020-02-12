@@ -231,11 +231,5 @@ namespace JsonWebToken
             // If we are here, we are missing a closing bracket.
             ThrowHelper.ThrowFormatException_MalformedJson();
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static uint ReadThreeBytesAsUInt32(ReadOnlySpan<byte> name)
-        {
-            return Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(name)) & 0x00ffffffu;
-        }
     }
 }

@@ -232,7 +232,7 @@ namespace JsonWebToken
         {
             if (key.Length == 3)
             {
-                switch (JsonParser.ReadThreeBytesAsUInt32(key))
+                switch (IntegerMarshal.ReadUInt24(key))
                 {
                     case JwtHeaderParser.Enc:
                         if (_encryptionAlgorithm is null)
