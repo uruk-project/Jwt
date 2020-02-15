@@ -1,7 +1,4 @@
-﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
-// Licensed under the MIT license. See LICENSE in the project root for license information.
-
-using System;
+﻿using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -10,18 +7,18 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
 #endif
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Performance
 {
-    internal sealed class Base64UrlEncoder : Base64
+    internal sealed class OldBase64UrlEncoder
     {
         // Force init of map
-        static Base64UrlEncoder()
+        static OldBase64UrlEncoder()
         {
         }
 
         private const int MaximumEncodeLength = (int.MaxValue >> 2) * 3;
 
-        public override OperationStatus Encode(ReadOnlySpan<byte> data, Span<byte> encoded, out int bytesConsumed, out int bytesWritten)
+        public OperationStatus Encode(ReadOnlySpan<byte> data, Span<byte> encoded, out int bytesConsumed, out int bytesWritten)
         {
             ref byte srcBytes = ref MemoryMarshal.GetReference(data);
             ref byte destBytes = ref MemoryMarshal.GetReference(encoded);
@@ -81,7 +78,7 @@ namespace JsonWebToken.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override int GetEncodedLength(int length)
+        public int GetEncodedLength(int length)
         {
             if ((uint)length > MaximumEncodeLength)
                 ThrowHelper.ThrowArgumentOutOfRangeException();
@@ -140,7 +137,7 @@ namespace JsonWebToken.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override int GetMaxDecodedLength(int length)
+        public int GetMaxDecodedLength(int length)
         {
             var numPaddingChars = GetNumBase64PaddingCharsToAddForDecode(length);
             var base64Len = length + numPaddingChars;
@@ -166,7 +163,7 @@ namespace JsonWebToken.Internal
             return result;
         }
 
-        public override OperationStatus Decode(ReadOnlySpan<byte> encoded, Span<byte> data, out int bytesConsumed, out int bytesWritten)
+        public OperationStatus Decode(ReadOnlySpan<byte> encoded, Span<byte> data, out int bytesConsumed, out int bytesWritten)
         {
             ref var source = ref MemoryMarshal.GetReference(encoded);
             ref var destBytes = ref MemoryMarshal.GetReference(data);
