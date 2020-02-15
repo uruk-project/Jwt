@@ -644,43 +644,7 @@ namespace JsonWebToken
                     switch (property.Type)
                     {
                         case JwtTokenType.String:
-                            string value = (string)property.Value;
-                            if (name.SequenceEqual(JwkParameterNames.NUtf8))
-                            {
-                                key.N = Base64Url.Decode(value);
-                            }
-                            else if (name.SequenceEqual(JwkParameterNames.EUtf8))
-                            {
-                                key.E = Base64Url.Decode(value);
-                            }
-                            else if (name.SequenceEqual(JwkParameterNames.DUtf8))
-                            {
-                                key.D = Base64Url.Decode(value);
-                            }
-                            else if (name.SequenceEqual(JwkParameterNames.DPUtf8))
-                            {
-                                key.DP = Base64Url.Decode(value);
-                            }
-                            else if (name.SequenceEqual(JwkParameterNames.DQUtf8))
-                            {
-                                key.DQ = Base64Url.Decode(value);
-                            }
-                            else if (name.SequenceEqual(JwkParameterNames.PUtf8))
-                            {
-                                key.P = Base64Url.Decode(value);
-                            }
-                            else if (name.SequenceEqual(JwkParameterNames.QUtf8))
-                            {
-                                key.Q = Base64Url.Decode(value);
-                            }
-                            else if (name.SequenceEqual(JwkParameterNames.QIUtf8))
-                            {
-                                key.QI = Base64Url.Decode(value);
-                            }
-                            else
-                            {
-                                key.Populate(name, value);
-                            }
+                            PopulateStringProperty(key, property, name);
                             break;
                         case JwtTokenType.Utf8String:
                             key.Populate(name, (byte[])property.Value);
@@ -695,6 +659,48 @@ namespace JsonWebToken
             }
 
             return key;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void PopulateStringProperty(RsaJwk key, JwtProperty property, ReadOnlySpan<byte> name)
+        {
+            string value = (string)property.Value!;
+            if (name.SequenceEqual(JwkParameterNames.NUtf8))
+            {
+                key.N = Base64Url.Decode(value);
+            }
+            else if (name.SequenceEqual(JwkParameterNames.EUtf8))
+            {
+                key.E = Base64Url.Decode(value);
+            }
+            else if (name.SequenceEqual(JwkParameterNames.DUtf8))
+            {
+                key.D = Base64Url.Decode(value);
+            }
+            else if (name.SequenceEqual(JwkParameterNames.DPUtf8))
+            {
+                key.DP = Base64Url.Decode(value);
+            }
+            else if (name.SequenceEqual(JwkParameterNames.DQUtf8))
+            {
+                key.DQ = Base64Url.Decode(value);
+            }
+            else if (name.SequenceEqual(JwkParameterNames.PUtf8))
+            {
+                key.P = Base64Url.Decode(value);
+            }
+            else if (name.SequenceEqual(JwkParameterNames.QUtf8))
+            {
+                key.Q = Base64Url.Decode(value);
+            }
+            else if (name.SequenceEqual(JwkParameterNames.QIUtf8))
+            {
+                key.QI = Base64Url.Decode(value);
+            }
+            else
+            {
+                key.Populate(name, value);
+            }
         }
 
         internal static Jwk FromJsonReaderFast(ref Utf8JsonReader reader)
@@ -717,40 +723,10 @@ namespace JsonWebToken
                         switch (propertyName.Length)
                         {
                             case 1:
-                                switch (propertyNameRef)
-                                {
-                                    case (byte)'e':
-                                        key.E = Base64Url.Decode(reader.ValueSpan);
-                                        break;
-                                    case (byte)'n':
-                                        key.N = Base64Url.Decode(reader.ValueSpan);
-                                        break;
-                                    case (byte)'p':
-                                        key.P = Base64Url.Decode(reader.ValueSpan);
-                                        break;
-                                    case (byte)'q':
-                                        key.Q = Base64Url.Decode(reader.ValueSpan);
-                                        break;
-                                    case (byte)'d':
-                                        key.D = Base64Url.Decode(reader.ValueSpan);
-                                        break;
-                                }
+                                PopulatOne(ref reader, ref propertyNameRef, key);
                                 break;
-
                             case 2:
-                                var pKtyShort = IntegerMarshal.ReadUInt16(ref propertyNameRef);
-                                if (pKtyShort == qi)
-                                {
-                                    key.QI = Base64Url.Decode(reader.ValueSpan);
-                                }
-                                else if (pKtyShort == dp)
-                                {
-                                    key.DP = Base64Url.Decode(reader.ValueSpan);
-                                }
-                                else if (pKtyShort == dq)
-                                {
-                                    key.DQ = Base64Url.Decode(reader.ValueSpan);
-                                }
+                                PopulateTwo(ref reader, ref propertyNameRef, key);
                                 break;
                             case 3:
                                 PopulateThree(ref reader, ref propertyNameRef, key);
@@ -779,6 +755,45 @@ namespace JsonWebToken
             }
 
             return key;
+        }
+
+        private static void PopulateTwo(ref Utf8JsonReader reader, ref byte propertyNameRef, RsaJwk key)
+        {
+            var pKtyShort = IntegerMarshal.ReadUInt16(ref propertyNameRef);
+            if (pKtyShort == qi)
+            {
+                key.QI = Base64Url.Decode(reader.ValueSpan);
+            }
+            else if (pKtyShort == dp)
+            {
+                key.DP = Base64Url.Decode(reader.ValueSpan);
+            }
+            else if (pKtyShort == dq)
+            {
+                key.DQ = Base64Url.Decode(reader.ValueSpan);
+            }
+        }
+
+        private static void PopulatOne(ref Utf8JsonReader reader, ref byte propertyNameRef, RsaJwk key)
+        {
+            switch (propertyNameRef)
+            {
+                case (byte)'e':
+                    key.E = Base64Url.Decode(reader.ValueSpan);
+                    break;
+                case (byte)'n':
+                    key.N = Base64Url.Decode(reader.ValueSpan);
+                    break;
+                case (byte)'p':
+                    key.P = Base64Url.Decode(reader.ValueSpan);
+                    break;
+                case (byte)'q':
+                    key.Q = Base64Url.Decode(reader.ValueSpan);
+                    break;
+                case (byte)'d':
+                    key.D = Base64Url.Decode(reader.ValueSpan);
+                    break;
+            }
         }
 
         /// <inheritsdoc />
