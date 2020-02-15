@@ -757,6 +757,7 @@ namespace JsonWebToken
             return key;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void PopulateTwo(ref Utf8JsonReader reader, ref byte propertyNameRef, RsaJwk key)
         {
             var pKtyShort = IntegerMarshal.ReadUInt16(ref propertyNameRef);
@@ -774,6 +775,7 @@ namespace JsonWebToken
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void PopulatOne(ref Utf8JsonReader reader, ref byte propertyNameRef, RsaJwk key)
         {
             switch (propertyNameRef)
