@@ -21,24 +21,31 @@ namespace JsonWebToken
     {
         public int GetMaxDecodedLength(int encodedLength)
         {
-            if (!TryGetDecodedLength(encodedLength, out int decodedLength))
-            {
-                ThrowHelper.ThrowFormatException_MalformdedInput(encodedLength);
-            }
-
-            return decodedLength;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryGetDecodedLength(int encodedLength, out int dataLength)
-        {
             if ((uint)encodedLength >= int.MaxValue)
             {
-                dataLength = 0;
-                return false;
+                goto InvalidData;
             }
 
-            return TryGetDataLength(encodedLength, out int _, out dataLength);
+            int numPaddingChars = GetNumBase64PaddingCharsToAddForDecode(encodedLength);
+
+            if (numPaddingChars == 3)
+            {
+                goto InvalidData;
+            }
+
+            int base64Len = encodedLength + numPaddingChars;
+            if (base64Len < 0)    // overflow
+            {
+                goto InvalidData;
+            }
+
+            Debug.Assert(base64Len % 4 == 0, "Invariant: Array length must be a multiple of 4.");
+
+            return ((base64Len >> 2) * 3) - numPaddingChars;
+
+        InvalidData:
+            ThrowHelper.ThrowFormatException_MalformdedInput(encodedLength);
+            return 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -48,27 +55,28 @@ namespace JsonWebToken
 
             if (numPaddingChars == 3)
             {
-                base64Len = 0;
-                dataLength = 0;
-                return false;
+                goto InvalidData;
             }
 
             base64Len = urlEncodedLen + numPaddingChars;
             if (base64Len < 0)    // overflow
             {
-                base64Len = 0;
-                dataLength = 0;
-                return false;
+                goto InvalidData;
             }
 
             Debug.Assert(base64Len % 4 == 0, "Invariant: Array length must be a multiple of 4.");
 
             dataLength = ((base64Len >> 2) * 3) - numPaddingChars;
             return true;
+
+        InvalidData:
+            base64Len = 0;
+            dataLength = 0;
+            return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetNumBase64PaddingCharsToAddForDecode(int urlEncodedLen)
+        private static int GetNumBase64PaddingCharsToAddForDecode(int encodedLength)
         {
             // Calculation is:
             // switch (inputLength % 4)
@@ -76,13 +84,9 @@ namespace JsonWebToken
             // 2 -> 2
             // 3 -> 1
             // default -> format exception
-
-            int result = (4 - urlEncodedLen) & 3;
-
-            return result;
+            return (4 - encodedLength) & 3;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public OperationStatus TryDecode(ReadOnlySpan<byte> encoded, Span<byte> data, out int consumed, out int written)
         {
             if (encoded.IsEmpty)
@@ -555,20 +559,12 @@ namespace JsonWebToken
         };
 #endif
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetEncodedLength(int sourceLength)
         {
             int numPaddingChars = GetNumBase64PaddingCharsAddedByEncode(sourceLength);
             int base64EncodedLength = GetBase64EncodedLength(sourceLength);
 
             return base64EncodedLength - numPaddingChars;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetBufferSizeRequiredToBase64Encode(int sourceLength, out int numPaddingChars)
-        {
-            numPaddingChars = GetNumBase64PaddingCharsAddedByEncode(sourceLength);
-            return GetBase64EncodedLength(sourceLength);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -592,7 +588,6 @@ namespace JsonWebToken
             return (int)FastDiv3(sourceLength + 2) * 4;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public OperationStatus TryEncode(ReadOnlySpan<byte> data, Span<byte> encoded, out int consumed, out int written)
         {
             if (data.IsEmpty)
@@ -720,6 +715,7 @@ namespace JsonWebToken
             Unsafe.Add(ref encoded, 0) = (byte)i0;
             Unsafe.Add(ref encoded, 1) = (byte)i1;
         }
+
         private static ReadOnlySpan<byte> EncodingMap
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
