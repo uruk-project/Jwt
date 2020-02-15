@@ -63,7 +63,7 @@ namespace JsonWebToken
 
             Debug.Assert(base64Len % 4 == 0, "Invariant: Array length must be a multiple of 4.");
 
-            dataLength = (base64Len >> 2) * 3 - numPaddingChars;
+            dataLength = ((base64Len >> 2) * 3) - numPaddingChars;
             return true;
         }
 
@@ -898,6 +898,7 @@ namespace JsonWebToken
             -4, -4, -4, -4,
             -17, 32,  0,  0
         };
+
         private static ReadOnlySpan<sbyte> SseEncodeShuffleVec => new sbyte[16]
         {
             1,  0,  2,  1,
@@ -914,7 +915,6 @@ namespace JsonWebToken
             -1, -1, -1, -1
         };
 #endif
-
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void EncodeThreeBytes(ref byte threeBytes, ref byte encoded, ref byte encodingMap)
