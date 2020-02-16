@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -74,7 +75,11 @@ namespace JsonWebToken
                 {
                     int signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(signatureSegment.Length);
                     Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
-                    Base64Url.Decode(signatureSegment, signatureBytes, out int byteConsumed, out int bytesWritten);
+                    if (Base64Url.Decode(signatureSegment, signatureBytes, out int byteConsumed, out int bytesWritten) != OperationStatus.Done)
+                    {
+                        return SignatureValidationResult.MalformedSignature();
+                    }
+
                     Debug.Assert(bytesWritten == signatureBytes.Length);
                     bool keysTried = false;
 

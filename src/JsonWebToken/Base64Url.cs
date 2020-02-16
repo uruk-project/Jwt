@@ -15,7 +15,7 @@ namespace JsonWebToken
     /// </remarks>
     public static class Base64Url
     {
-        private static readonly Base64 _base64 = Base64.Url;
+        private static readonly Base64UrlEncoder _base64 = new Base64UrlEncoder();
 
         private static readonly byte[] EmptyBytes = Array.Empty<byte>();
 
@@ -37,11 +37,6 @@ namespace JsonWebToken
         /// </summary>
         public static byte[] Decode(ReadOnlySpan<byte> base64Url)
         {
-            if (base64Url.IsEmpty)
-            {
-                return EmptyBytes;
-            }
-
             var dataLength = GetArraySizeRequiredToDecode(base64Url.Length);
             var data = new byte[dataLength];
             Decode(base64Url, data);
@@ -70,11 +65,6 @@ namespace JsonWebToken
         /// <returns>The number of the bytes written to <paramref name="data"/>.</returns>
         public static int Decode(ReadOnlySpan<char> base64Url, Span<byte> data)
         {
-            if (base64Url.IsEmpty)
-            {
-                return 0;
-            }
-
             byte[]? arrayToReturn = null;
             var buffer = base64Url.Length > Constants.MaxStackallocBytes
                 ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(base64Url.Length)).AsSpan(0, base64Url.Length)
@@ -113,15 +103,7 @@ namespace JsonWebToken
         /// </summary>
         public static OperationStatus Decode(ReadOnlySpan<byte> base64Url, Span<byte> data, out int bytesConsumed, out int bytesWritten)
         {
-            // Special-case empty input
-            if (base64Url.IsEmpty)
-            {
-                bytesConsumed = 0;
-                bytesWritten = 0;
-                return OperationStatus.Done;
-            }
-
-            return _base64.Decode(base64Url, data, out bytesConsumed, out bytesWritten);
+            return _base64.TryDecode(base64Url, data, out bytesConsumed, out bytesWritten);
         }
 
         /// <summary>
@@ -130,13 +112,7 @@ namespace JsonWebToken
         /// <returns>The number of the bytes written to <paramref name="base64Url"/>.</returns>
         public static int Encode(ReadOnlySpan<byte> utf8Data, Span<byte> base64Url)
         {
-            // Special-case empty input
-            if (utf8Data.IsEmpty)
-            {
-                return 0;
-            }
-
-            var status = _base64.Encode(utf8Data, base64Url, out _, out var bytesWritten);
+            var status = _base64.TryEncode(utf8Data, base64Url, out _, out var bytesWritten);
             if (status != OperationStatus.Done)
             {
                 ThrowHelper.ThrowOperationNotDoneException(status);
@@ -151,12 +127,6 @@ namespace JsonWebToken
         /// <returns>The base64-url encoded string.</returns>
         public static byte[] Encode(ReadOnlySpan<byte> utf8Data)
         {
-            // Special-case empty input
-            if (utf8Data.IsEmpty)
-            {
-                return Array.Empty<byte>();
-            }
-
             int base64UrlLength = _base64.GetEncodedLength(utf8Data.Length);
             var utf8Encoded = new byte[base64UrlLength];
             Encode(utf8Data, utf8Encoded);
