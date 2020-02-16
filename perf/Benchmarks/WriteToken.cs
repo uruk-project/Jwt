@@ -23,7 +23,7 @@ namespace JsonWebToken.Performance
         private static readonly IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
         private static readonly IDateTimeProvider dateTimeProvider = new UtcDateTimeProvider();
         public static readonly IJwtEncoder JwtDotNetEncoder = new JwtEncoder(algorithm, serializer, urlEncoder);
-        public static readonly JwtDecoder JwtDotNetDecoder = new JwtDecoder(serializer, new JwtValidator(serializer, dateTimeProvider), urlEncoder);
+        public static readonly JwtDecoder JwtDotNetDecoder = new JwtDecoder(serializer, new JwtValidator(serializer, dateTimeProvider), urlEncoder, algorithm);
 
         public static readonly JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler();
         public static readonly JsonWebTokenHandler Handler2 = new JsonWebTokenHandler();

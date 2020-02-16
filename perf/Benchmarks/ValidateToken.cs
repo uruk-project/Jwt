@@ -1,16 +1,15 @@
-﻿using Jose;
+﻿using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
+using Jose;
 using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Security.Claims;
-using System.Text;
 
 namespace JsonWebToken.Performance
 {
@@ -21,7 +20,7 @@ namespace JsonWebToken.Performance
         private static readonly IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
         private static readonly IDateTimeProvider dateTimeProvider = new UtcDateTimeProvider();
         public static readonly IJwtEncoder JwtDotNetEncoder = new JwtEncoder(algorithm, serializer, urlEncoder);
-        public static readonly JwtDecoder JwtDotNetDecoder = new JwtDecoder(serializer, new JwtValidator(serializer, dateTimeProvider), urlEncoder);
+        public static readonly JwtDecoder JwtDotNetDecoder = new JwtDecoder(serializer, new JwtValidator(serializer, dateTimeProvider), urlEncoder, algorithm);
 
         public static readonly JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler() { MaximumTokenSizeInBytes = 4 * 1024 * 1024 };
         public static readonly JsonWebTokenHandler Handler2 = new JsonWebTokenHandler();
