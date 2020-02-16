@@ -21,6 +21,18 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class Jwk : IEquatable<Jwk>, IDisposable
     {
+        private const uint EC = 17221u;
+        private const uint RSA = 4281170u;
+        private const uint oct = 7627631u;
+        private const uint alg = 6777953u;
+        private const uint use = 6648693u;
+        private const uint x5t = 7615864u;
+        private const uint kid = 6580587u;
+        private const ulong x5t_S256 = 3906083584472266104u;
+        private const uint x5c = 6501752u;
+        private const uint x5u = 7681400u;
+        private const ulong key_ops = 32493245967197547u;
+
         /// <summary>
         /// An empty <see cref="Jwk"/>.
         /// </summary>
@@ -271,20 +283,20 @@ namespace JsonWebToken
 #if !NET461
                         /* EC */
                         case 2:
-                            if (Unsafe.ReadUnaligned<ushort>(ref MemoryMarshal.GetReference(valueSpan)) == 17221u)
+                            if (IntegerMarshal.ReadUInt16(valueSpan) == EC)
                             {
                                 return ECJwk.FromJsonReaderFast(ref reader);
                             }
                             break;
 #endif
                         case 3:
-                            switch (Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(valueSpan)) & 0x00ffffff)
+                            switch (IntegerMarshal.ReadUInt24(valueSpan))
                             {
                                 /* RSA */
-                                case 4281170u:
+                                case RSA:
                                     return RsaJwk.FromJsonReaderFast(ref reader);
                                 /* oct */
-                                case 7627631u:
+                                case oct:
                                     return new SymmetricJwk(ref reader);
                             }
                             break;
@@ -305,31 +317,26 @@ namespace JsonWebToken
                         if (name.Length == 3)
                         {
                             // Read the 4 bytes, but use a bitmask to ignore the last byte
-                            uint propertyName = Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(name)) & 0x00ffffff;
+                            uint propertyName = IntegerMarshal.ReadUInt24(name);
                             switch (propertyName)
                             {
-                                /* alg */
-                                case 6777953u:
-                                    jwk.Add(new JwtProperty(WellKnownProperty.Alg, reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray()));
+                                case alg:
+                                    jwk.Add(new JwtProperty(WellKnownProperty.Alg, reader.ValueSpan.ToArray()));
                                     break;
-                                /* use */
-                                case 6648693u:
-                                    jwk.Add(new JwtProperty(name, reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray()));
+                                case use:
+                                    jwk.Add(new JwtProperty(name, reader.ValueSpan.ToArray()));
                                     continue;
-                                /* x5t */
-                                case 7615864u:
-                                    jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray())));
+                                case x5t:
+                                    jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan .ToArray()*/)));
                                     continue;
-                                /* kid */
-                                case 6580587u:
+                                case kid:
                                     jwk.Add(new JwtProperty(WellKnownProperty.Kid, reader.GetString()));
                                     continue;
                             }
                         }
-                        /* x5t#S256 */
-                        else if (name.Length == 8 && Unsafe.ReadUnaligned<ulong>(ref MemoryMarshal.GetReference(name)) == 3906083584472266104u)
+                        else if (name.Length == 8 && IntegerMarshal.ReadUInt64(name) == x5t_S256)
                         {
-                            jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray())));
+                            jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan .ToArray()*/)));
                             continue;
                         }
 
@@ -355,19 +362,11 @@ namespace JsonWebToken
                         }
                         else
                         {
-                            if (reader.TryGetDouble(out double doubleValue))
-                            {
-                                jwk.Add(new JwtProperty(name, doubleValue));
-                            }
-                            else
-                            {
-                                ThrowHelper.ThrowFormatException_NotSupportedNumberValue(name);
-                            }
+                            jwk.Add(new JwtProperty(name, reader.GetDouble()));
                         }
                         break;
                     case JsonTokenType.StartArray:
-                        // x5c
-                        if (name.Length == 3 && (Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(name)) & 0x00ffffff) == 6501752u)
+                        if (name.Length == 3 && IntegerMarshal.ReadUInt24(name) == x5c)
                         {
                             jwk.Add(new JwtProperty(name, ReadBase64StringJsonArray(ref reader)));
                             break;
@@ -805,19 +804,19 @@ namespace JsonWebToken
             byte[]? jsonToReturn = null;
             try
             {
-            int length = Utf8.GetMaxByteCount(json.Length);
-            Span<byte> jsonSpan = length <= Constants.MaxStackallocBytes
-                        ? stackalloc byte[length]
-                        : (jsonToReturn = ArrayPool<byte>.Shared.Rent(length));
-            length = Utf8.GetBytes(json, jsonSpan);
-            var reader = new Utf8JsonReader(jsonSpan.Slice(0, length), true, default);
-            if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
-            {
-                return FromJsonReader(ref reader);
-            }
+                int length = Utf8.GetMaxByteCount(json.Length);
+                Span<byte> jsonSpan = length <= Constants.MaxStackallocBytes
+                            ? stackalloc byte[length]
+                            : (jsonToReturn = ArrayPool<byte>.Shared.Rent(length));
+                length = Utf8.GetBytes(json, jsonSpan);
+                var reader = new Utf8JsonReader(jsonSpan.Slice(0, length), true, default);
+                if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
+                {
+                    return FromJsonReader(ref reader);
+                }
 
-            ThrowHelper.ThrowArgumentException_MalformedKey();
-            return Jwk.Empty;
+                ThrowHelper.ThrowArgumentException_MalformedKey();
+                return Jwk.Empty;
             }
             finally
             {
@@ -890,26 +889,23 @@ namespace JsonWebToken
 
         internal static void PopulateEight(ref Utf8JsonReader reader, ref byte pPropertyName, Jwk key)
         {
-            /* x5t#S256 */
-            if (Unsafe.ReadUnaligned<ulong>(ref pPropertyName) == 3906083584472266104u)
+            if (IntegerMarshal.ReadUInt64(ref pPropertyName) == x5t_S256)
             {
-                key.X5tS256 = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
+                key.X5tS256 = Base64Url.Decode(reader.ValueSpan);
             }
         }
 
         internal static void PopulateEight(ref Utf8JsonReader reader, ReadOnlySpan<byte> pPropertyName, Jwk key)
         {
-            /* x5t#S256 */
-            if (Unsafe.ReadUnaligned<ulong>(ref MemoryMarshal.GetReference(pPropertyName)) == 3906083584472266104u)
+            if (IntegerMarshal.ReadUInt64(pPropertyName) == x5t_S256)
             {
-                key.X5tS256 = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
+                key.X5tS256 = Base64Url.Decode(reader.ValueSpan);
             }
         }
 
         internal static void PopulateArray(ref Utf8JsonReader reader, ref byte propertyNameRef, int propertyLength, Jwk key)
         {
-            /* key_ops */
-            if (propertyLength == 7 && (Unsafe.ReadUnaligned<ulong>(ref propertyNameRef) & 0x00ffffffffffffffu) == 32493245967197547u)
+            if (propertyLength == 7 && IntegerMarshal.ReadUInt56(ref propertyNameRef) == key_ops)
             {
                 key._keyOps = new List<string>();
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
@@ -918,9 +914,8 @@ namespace JsonWebToken
                 }
             }
             else
-            if (propertyLength == 3 && (Unsafe.ReadUnaligned<uint>(ref propertyNameRef) & 0x00ffffffu) == 6501752u)
+            if (propertyLength == 3 && IntegerMarshal.ReadUInt24(ref propertyNameRef) == x5c)
             {
-                /* x5c */
                 key._x5c = new List<byte[]>();
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                 {
@@ -940,27 +935,22 @@ namespace JsonWebToken
 
         internal static void PopulateThree(ref Utf8JsonReader reader, ref byte propertyNameRef, Jwk key)
         {
-            uint pPropertyNameShort = Unsafe.ReadUnaligned<uint>(ref propertyNameRef) & 0x00ffffffu;
+            uint pPropertyNameShort = IntegerMarshal.ReadUInt24(ref propertyNameRef);
             switch (pPropertyNameShort)
             {
-                /* alg */
-                case 6777953u:
-                    key.Alg = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray();
+                case alg:
+                    key.Alg = reader.ValueSpan.ToArray();
                     break;
-                /* kid */
-                case 6580587u:
+                case kid:
                     key.Kid = reader.GetString();
                     break;
-                /* use */
-                case 6648693u:
-                    key.Use = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */.ToArray();
+                case use:
+                    key.Use = reader.ValueSpan.ToArray();
                     break;
-                /* x5t */
-                case 7615864u:
-                    key.X5t = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
+                case x5t:
+                    key.X5t = Base64Url.Decode(reader.ValueSpan);
                     break;
-                /* x5u */
-                case 7681400u:
+                case x5u:
                     key.X5u = reader.GetString();
                     break;
 
@@ -1089,6 +1079,22 @@ namespace JsonWebToken
             {
                 _keyUnwrappers.Dispose();
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void WriteOptionalBase64UrlProperty(Utf8JsonWriter writer, Span<byte> buffer, byte[]? value, ReadOnlySpan<byte> propertyName)
+        {
+            if (value != null)
+            {
+                WriteBase64UrlProperty(writer, buffer, value, propertyName);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void WriteBase64UrlProperty(Utf8JsonWriter writer, Span<byte> buffer, byte[] value, ReadOnlySpan<byte> propertyName)
+        {
+            int bytesWritten = Base64Url.Encode(value, buffer);
+            writer.WriteString(propertyName, buffer.Slice(0, bytesWritten));
         }
 
         internal class NullJwk : Jwk

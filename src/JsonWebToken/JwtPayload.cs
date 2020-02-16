@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -21,8 +22,23 @@ namespace JsonWebToken
         internal const byte MissingExpirationFlag = 0x20;
         internal const byte NotYetFlag = 0x40;
 
-        private readonly JwtObject _inner;
+        private static readonly JsonEncodedText AudEncodedText = JsonEncodedText.Encode("aud");
+        private static readonly JsonEncodedText IssEncodedText = JsonEncodedText.Encode("iss");
+        private static readonly JsonEncodedText JtiEncodedText = JsonEncodedText.Encode("jti");
+        private static readonly JsonEncodedText ExpEncodedText = JsonEncodedText.Encode("exp");
+        private static readonly JsonEncodedText IatEncodedText = JsonEncodedText.Encode("Iat");
+        private static readonly JsonEncodedText NbfEncodedText = JsonEncodedText.Encode("nbf");
+        private static readonly JsonEncodedText SubEncodedText = JsonEncodedText.Encode("sub");
+
+        private JwtObject? _inner;
         private byte _control;
+        private string[]? _aud;
+        private string? _iss;
+        private string? _jti;
+        private string? _sub;
+        private long? _exp;
+        private long? _iat;
+        private long? _nbf;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtPayload"/> class.
@@ -34,6 +50,15 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="JwtPayload"/> class.
+        /// </summary>
+        public JwtPayload()
+        {
+        }
+
+        internal JwtObject Inner => _inner ?? (_inner = new JwtObject());
+
+        /// <summary>
         ///  Gets the claim for a specified key in the current <see cref="JwtPayload"/>.
         /// </summary>
         /// <param name="key"></param>
@@ -42,7 +67,29 @@ namespace JsonWebToken
         {
             get
             {
-                return _inner.TryGetValue(key, out var value) ? value.Value : null;
+
+                switch (key)
+                {
+                    case "iss":
+                        return _iss;
+                    case "jti":
+                        return _jti;
+                    case "sub":
+                        return _sub;
+                    case "exp":
+                        return _exp;
+                    case "_iat":
+                        return _iat;
+                    case "nbf":
+                        return _nbf;
+                    default:
+                        if (_inner is null)
+                        {
+                            return null;
+                        }
+
+                        return _inner.TryGetValue(key, out var value) ? value.Value : null;
+                }
             }
         }
 
@@ -55,73 +102,98 @@ namespace JsonWebToken
         {
             get
             {
+                if (key.Length == 3)
+                {
+                    switch (IntegerMarshal.ReadUInt24(key))
+                    {
+                        case JwtPayloadParser.Aud:
+                            return _aud;
+                        case JwtPayloadParser.Iss:
+                            return _iss;
+                        case JwtPayloadParser.Jti:
+                            return _jti;
+                        case JwtPayloadParser.Exp:
+                            return _exp;
+                        case JwtPayloadParser.Iat:
+                            return _iat;
+                        case JwtPayloadParser.Nbf:
+                            return _nbf;
+                        case JwtPayloadParser.Sub:
+                            return _sub;
+                    }
+                }
+
+                if (_inner is null)
+                {
+                    return null;
+                }
+
                 return _inner.TryGetValue(key, out var value) ? value.Value : null;
             }
         }
 
         /// <summary>
-        /// Gets the 'audience' claim as a list of strings.
+        /// Gets the 'aud' claim as a list of strings.
         /// </summary>
-        public IList<string> Aud
+        public string[] Aud
         {
-            get
-            {
-                if (_inner.TryGetValue(Claims.AudUtf8, out var property) && !(property.Value is null))
-                {
-                    if (property.Type == JwtTokenType.Array)
-                    {
-                        var list = new List<string>();
-                        var array = (JwtArray)property.Value;
-                        for (int i = 0; i < array.Count; i++)
-                        {
-                            var value = array[i].Value;
-                            if (!(value is null))
-                            {
-                                list.Add((string)value);
-                            }
-                        }
-
-                        return list;
-                    }
-                    else if (property.Type == JwtTokenType.String)
-                    {
-                        return new List<string> { (string)property.Value };
-                    }
-                }
-
-                return Array.Empty<string>();
-            }
+            get => _aud ?? Array.Empty<string>();
+            set => _aud = value;
         }
 
         /// <summary>
         /// Gets the 'expiration time' claim.
         /// </summary>
-        public long? Exp => _inner.TryGetValue(Claims.ExpUtf8, out var property) ? (long?)property.Value : null;
+        public long? Exp
+        {
+            get => _exp;
+            set => _exp = value;
+        }
 
         /// <summary>
         /// Gets the 'JWT ID' claim.
         /// </summary>
-        public string? Jti => _inner.TryGetValue(Claims.JtiUtf8, out var property) ? (string?)property.Value : null;
+        public string? Jti
+        {
+            get => _jti;
+            set => _jti = value;
+        }
 
         /// <summary>
         /// Gets the 'issued at' claim.
         /// </summary>
-        public long? Iat => _inner.TryGetValue(Claims.IatUtf8, out var property) ? (long?)property.Value : null;
+        public long? Iat
+        {
+            get => _iat;
+            set => _iat = value;
+        }
 
         /// <summary>
         /// Gets the 'issuer' claim.
         /// </summary>
-        public string? Iss => _inner.TryGetValue(Claims.IssUtf8, out var property) ? (string?)property.Value : null;
+        public string? Iss
+        {
+            get => _iss;
+            set => _iss = value;
+        }
 
         /// <summary>
         /// Gets the 'not before' claim.
         /// </summary>
-        public long? Nbf => _inner.TryGetValue(Claims.NbfUtf8, out var property) ? (long?)property.Value : null;
+        public long? Nbf
+        {
+            get => _nbf;
+            set => _nbf = value;
+        }
 
         /// <summary>
         /// Gets the 'subject' claim.
         /// </summary>
-        public string? Sub => _inner.TryGetValue(Claims.SubUtf8, out var property) ? (string?)property.Value : null;
+        public string? Sub
+        {
+            get => _sub;
+            set => _sub = value;
+        }
 
         internal byte ValidationControl
         {
@@ -178,6 +250,29 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool ContainsKey(ReadOnlySpan<byte> key)
         {
+            switch (IntegerMarshal.ReadUInt24(key))
+            {
+                case JwtPayloadParser.Aud:
+                    return !(_aud is null);
+                case JwtPayloadParser.Iss:
+                    return !(_iss is null);
+                case JwtPayloadParser.Jti:
+                    return !(_jti is null);
+                case JwtPayloadParser.Exp:
+                    return _exp.HasValue;
+                case JwtPayloadParser.Iat:
+                    return _iat.HasValue;
+                case JwtPayloadParser.Nbf:
+                    return _nbf.HasValue;
+                case JwtPayloadParser.Sub:
+                    return !(_sub is null);
+            }
+
+            if (_inner is null)
+            {
+                return false;
+            }
+
             return _inner.ContainsKey(key);
         }
 
@@ -186,6 +281,68 @@ namespace JsonWebToken
         /// </summary>
         public bool TryGetValue(ReadOnlySpan<byte> key, [NotNullWhen(true)] out JwtProperty value)
         {
+            if (key.Length == 3)
+            {
+                switch (IntegerMarshal.ReadUInt24(key))
+                {
+                    case JwtPayloadParser.Aud:
+                        if (!(_aud is null))
+                        {
+                            value = new JwtProperty(WellKnownProperty.Aud, new JwtArray(new List<string>(_aud)));
+                            return true;
+                        }
+                        break;
+                    case JwtPayloadParser.Iss:
+                        if (!(_iss is null))
+                        {
+                            value = new JwtProperty(WellKnownProperty.Iss, _iss);
+                            return true;
+                        }
+                        break;
+                    case JwtPayloadParser.Jti:
+                        if (!(_jti is null))
+                        {
+                            value = new JwtProperty(WellKnownProperty.Jti, _jti);
+                            return true;
+                        }
+                        break;
+                    case JwtPayloadParser.Exp:
+                        if (_exp.HasValue)
+                        {
+                            value = new JwtProperty(WellKnownProperty.Exp, _exp.Value);
+                            return true;
+                        }
+                        break;
+                    case JwtPayloadParser.Iat:
+                        if (_iat.HasValue)
+                        {
+                            value = new JwtProperty(WellKnownProperty.Iat, _iat.Value);
+                            return true;
+                        }
+                        break;
+                    case JwtPayloadParser.Nbf:
+                        if (_nbf.HasValue)
+                        {
+                            value = new JwtProperty(WellKnownProperty.Nbf, _nbf.Value);
+                            return true;
+                        }
+                        break;
+                    case JwtPayloadParser.Sub:
+                        if (!(_sub is null))
+                        {
+                            value = new JwtProperty(WellKnownProperty.Sub, _sub);
+                            return true;
+                        }
+                        break;
+                }
+            }
+
+            if (_inner is null)
+            {
+                value = default;
+                return false;
+            }
+
             return _inner.TryGetValue(key, out value);
         }
 
@@ -194,13 +351,126 @@ namespace JsonWebToken
         /// </summary>
         public bool TryGetValue(string key, out JwtProperty value)
         {
+            switch (key)
+            {
+                case "aud":
+                    if (!(_aud is null))
+                    {
+                        value = new JwtProperty(WellKnownProperty.Aud, new JwtArray(new List<string>(_aud)));
+                        return true;
+                    }
+                    break;
+                case "iss":
+                    if (!(_iss is null))
+                    {
+                        value = new JwtProperty(WellKnownProperty.Iss, _iss);
+                        return true;
+                    }
+                    break;
+                case "jti":
+                    if (!(_jti is null))
+                    {
+                        value = new JwtProperty(WellKnownProperty.Jti, _jti);
+                        return true;
+                    }
+                    break;
+                case "exp":
+                    if (_exp.HasValue)
+                    {
+                        value = new JwtProperty(WellKnownProperty.Exp, _exp.Value);
+                        return true;
+                    }
+                    break;
+                case "iat":
+                    if (_iat.HasValue)
+                    {
+                        value = new JwtProperty(WellKnownProperty.Iat, _iat.Value);
+                        return true;
+                    }
+                    break;
+                case "nbf":
+                    if (_nbf.HasValue)
+                    {
+                        value = new JwtProperty(WellKnownProperty.Nbf, _nbf.Value);
+                        return true;
+                    }
+                    break;
+                case "sub":
+                    if (!(_sub is null))
+                    {
+                        value = new JwtProperty(WellKnownProperty.Sub, _sub);
+                        return true;
+                    }
+                    break;
+            }
+
+            if (_inner is null)
+            {
+                value = default;
+                return false;
+            }
+
             return _inner.TryGetValue(key, out value);
         }
 
         /// <inheritsdoc />
         public override string ToString()
         {
-            return _inner.ToString();
+            using var bufferWriter = new PooledByteBufferWriter();
+            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
+            {
+                writer.WriteStartObject();
+                if (!(_aud is null))
+                {
+                    if (_aud.Length == 1)
+                    {
+                        writer.WriteString(AudEncodedText, _aud[0]);
+                    }
+                    else
+                    {
+                        writer.WriteStartArray(AudEncodedText);
+                        for (int i = 0; i < _aud.Length; i++)
+                        {
+                            writer.WriteStringValue(_aud[i]);
+                        }
+
+                        writer.WriteEndArray();
+                    }
+                }
+                if (!(_iss is null))
+                {
+                    writer.WriteString(IssEncodedText, _iss);
+                }
+                if (!(_jti is null))
+                {
+                    writer.WriteString(JtiEncodedText, _jti);
+                }
+                if (_exp.HasValue)
+                {
+                    writer.WriteNumber(ExpEncodedText, _exp.Value);
+                }
+                if (_iat.HasValue)
+                {
+                    writer.WriteNumber(IatEncodedText, _iat.Value);
+                }
+                if (_nbf.HasValue)
+                {
+                    writer.WriteNumber(NbfEncodedText, _nbf.Value);
+                }
+                if (!(_sub is null))
+                {
+                    writer.WriteString(SubEncodedText, _sub);
+                }
+                if (!(_inner is null))
+                {
+                    _inner.WriteTo(writer);
+                }
+
+                writer.WriteEndObject();
+            }
+
+            var input = bufferWriter.WrittenSpan;
+            return Utf8.GetString(input);
         }
     }
 }

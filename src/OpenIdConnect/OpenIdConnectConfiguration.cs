@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 
@@ -64,206 +65,17 @@ namespace JsonWebToken
                             switch (reader.TokenType)
                             {
                                 case JsonTokenType.True:
-                                    switch (propertyName)
-                                    {
-                                        case OpenIdProviderMetadataNames.ClaimsParameterSupported:
-                                            config.ClaimsParameterSupported = true;
-                                            break;
-                                        case OpenIdProviderMetadataNames.FrontChannelLogoutSessionSupported:
-                                            config.FrontChannelLogoutSessionSupported = true;
-                                            break;
-                                        case OpenIdProviderMetadataNames.FrontChannelLogoutSupported:
-                                            config.FrontChannelLogoutSupported = true;
-                                            break;
-                                        case OpenIdProviderMetadataNames.HttpLogoutSupported:
-                                            config.HttpLogoutSupported = true;
-                                            break;
-                                        case OpenIdProviderMetadataNames.LogoutSessionSupported:
-                                            config.LogoutSessionSupported = true;
-                                            break;
-                                        case OpenIdProviderMetadataNames.RequestParameterSupported:
-                                            config.RequestParameterSupported = true;
-                                            break;
-                                        case OpenIdProviderMetadataNames.RequestUriParameterSupported:
-                                            config.RequestUriParameterSupported = true;
-                                            break;
-                                        case OpenIdProviderMetadataNames.RequireRequestUriRegistration:
-                                            config.RequireRequestUriRegistration = true;
-                                            break;
-
-                                        default:
-                                            config.AdditionalData.Add(new JwtProperty(propertyName, true));
-                                            break;
-                                    }
+                                    ReadTrueProperty(config, propertyName);
                                     break;
                                 case JsonTokenType.False:
-                                    switch (propertyName)
-                                    {
-                                        case OpenIdProviderMetadataNames.ClaimsParameterSupported:
-                                            config.ClaimsParameterSupported = false;
-                                            break;
-                                        case OpenIdProviderMetadataNames.FrontChannelLogoutSessionSupported:
-                                            config.FrontChannelLogoutSessionSupported = false;
-                                            break;
-                                        case OpenIdProviderMetadataNames.FrontChannelLogoutSupported:
-                                            config.FrontChannelLogoutSupported = false;
-                                            break;
-                                        case OpenIdProviderMetadataNames.HttpLogoutSupported:
-                                            config.HttpLogoutSupported = false;
-                                            break;
-                                        case OpenIdProviderMetadataNames.LogoutSessionSupported:
-                                            config.LogoutSessionSupported = false;
-                                            break;
-                                        case OpenIdProviderMetadataNames.RequestParameterSupported:
-                                            config.RequestParameterSupported = false;
-                                            break;
-                                        case OpenIdProviderMetadataNames.RequestUriParameterSupported:
-                                            config.RequestUriParameterSupported = false;
-                                            break;
-                                        case OpenIdProviderMetadataNames.RequireRequestUriRegistration:
-                                            config.RequireRequestUriRegistration = false;
-                                            break;
-                                        default:
-                                            config.AdditionalData.Add(new JwtProperty(propertyName, false));
-                                            break;
-                                    }
+                                    ReadFalseProperty(config, propertyName);
                                     break;
                                 case JsonTokenType.String:
-                                    switch (propertyName)
-                                    {
-                                        case OpenIdProviderMetadataNames.AuthorizationEndpoint:
-                                            config.AuthorizationEndpoint = reader.GetString();
-                                            break;
-                                        case OpenIdProviderMetadataNames.CheckSessionIframe:
-                                            config.CheckSessionIframe = reader.GetString();
-                                            break;
-                                        case OpenIdProviderMetadataNames.EndSessionEndpoint:
-                                            config.EndSessionEndpoint = reader.GetString();
-                                            break;
-                                        case OpenIdProviderMetadataNames.Issuer:
-                                            config.Issuer = reader.GetString();
-                                            break;
-                                        case OpenIdProviderMetadataNames.JwksUri:
-                                            config.JwksUri = reader.GetString();
-                                            break;
-                                        case OpenIdProviderMetadataNames.OpPolicyUri:
-                                            config.OpPolicyUri = reader.GetString();
-                                            break;
-                                        case OpenIdProviderMetadataNames.OpTosUri:
-                                            config.OpTosUri = reader.GetString();
-                                            break;
-                                        case OpenIdProviderMetadataNames.RegistrationEndpoint:
-                                            config.RegistrationEndpoint = reader.GetString();
-                                            break;
-                                        case OpenIdProviderMetadataNames.ServiceDocumentation:
-                                            config.ServiceDocumentation = reader.GetString();
-                                            break;
-                                        case OpenIdProviderMetadataNames.TokenEndpoint:
-                                            config.TokenEndpoint = reader.GetString();
-                                            break;
-                                        case OpenIdProviderMetadataNames.UserInfoEndpoint:
-                                            config.UserInfoEndpoint = reader.GetString();
-                                            break;
-                                        case OpenIdProviderMetadataNames.RevocationEndpoint:
-                                            config.RevocationEndpoint = reader.GetString();
-                                            break;
-                                        case OpenIdProviderMetadataNames.IntrospectionEndpoint:
-                                            config.IntrospectionEndpoint = reader.GetString();
-                                            break;
-                                        default:
-                                            config.AdditionalData.Add(new JwtProperty(propertyName, reader.GetString()));
-                                            break;
-                                    }
+                                    ReadStringProperty(ref reader, config, propertyName);
                                     break;
 
                                 case JsonTokenType.StartArray:
-                                    switch (propertyName)
-                                    {
-                                        case OpenIdProviderMetadataNames.AcrValuesSupported:
-                                            config.AcrValuesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.ClaimsSupported:
-                                            config.ClaimsSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.ClaimsLocalesSupported:
-                                            config.ClaimsLocalesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.ClaimTypesSupported:
-                                            config.ClaimTypesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.DisplayValuesSupported:
-                                            config.DisplayValuesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.GrantTypesSupported:
-                                            config.GrantTypesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.IdTokenEncryptionAlgValuesSupported:
-                                            config.IdTokenEncryptionAlgValuesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.IdTokenEncryptionEncValuesSupported:
-                                            config.IdTokenEncryptionEncValuesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.IdTokenSigningAlgValuesSupported:
-                                            config.IdTokenSigningAlgValuesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.RequestObjectEncryptionAlgValuesSupported:
-                                            config.RequestObjectEncryptionAlgValuesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.RequestObjectEncryptionEncValuesSupported:
-                                            config.RequestObjectEncryptionEncValuesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.RequestObjectSigningAlgValuesSupported:
-                                            config.RequestObjectSigningAlgValuesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.ResponseModesSupported:
-                                            config.ResponseModesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.ResponseTypesSupported:
-                                            config.ResponseTypesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.ScopesSupported:
-                                            config.ScopesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.SubjectTypesSupported:
-                                            config.SubjectTypesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.TokenEndpointAuthMethodsSupported:
-                                            config.TokenEndpointAuthMethodsSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.TokenEndpointAuthSigningAlgValuesSupported:
-                                            config.TokenEndpointAuthSigningAlgValuesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.UILocalesSupported:
-                                            config.UILocalesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.UserInfoEncryptionAlgValuesSupported:
-                                            config.UserInfoEncryptionAlgValuesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.UserInfoEncryptionEncValuesSupported:
-                                            config.UserInfoEncryptionEncValuesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.UserInfoSigningAlgValuesSupported:
-                                            config.UserInfoSigningAlgValuesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.RevocationEndpointAuthMethodsSupported:
-                                            config.RevocationEndpointAuthMethodsSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.RevocationEndpointAuthSigningAlgValuesSupported:
-                                            config.RevocationEndpointAuthSigningAlgValuesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.IntrospectionEndpointAuthMethodsSupported:
-                                            config.IntrospectionEndpointAuthMethodsSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.IntrospectionEndpointAuthSigningAlgValuesSupported:
-                                            config.IntrospectionEndpointAuthSigningAlgValuesSupported = GetStringArray(ref reader);
-                                            break;
-                                        case OpenIdProviderMetadataNames.CodeChallengeMethodsSupported:
-                                            config.CodeChallengeMethodsSupported = GetStringArray(ref reader);
-                                            break;
-                                        default:
-                                            config.AdditionalData.Add(new JwtProperty(propertyName, JsonParser.ReadJsonArray(ref reader)));
-                                            break;
-                                    }
+                                    ReadArrayProperty(ref reader, config, propertyName);
                                     break;
                                 case JsonTokenType.StartObject:
                                     config.AdditionalData.Add(new JwtProperty(propertyName, JsonParser.ReadJsonObject(ref reader)));
@@ -273,9 +85,9 @@ namespace JsonWebToken
                                     {
                                         config.AdditionalData.Add(new JwtProperty(propertyName, longValue));
                                     }
-                                    else if (reader.TryGetDouble(out double doubleValue))
+                                    else
                                     {
-                                        config.AdditionalData.Add(new JwtProperty(propertyName, doubleValue));
+                                        config.AdditionalData.Add(new JwtProperty(propertyName, reader.GetDouble()));
                                     }
                                     break;
                             }
@@ -289,6 +101,219 @@ namespace JsonWebToken
 
             ThrowHelper.ThrowFormatException_MalformedJson();
             return null;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void ReadFalseProperty(OpenIdConnectConfiguration config, string propertyName)
+        {
+            switch (propertyName)
+            {
+                case OpenIdProviderMetadataNames.ClaimsParameterSupported:
+                    config.ClaimsParameterSupported = false;
+                    break;
+                case OpenIdProviderMetadataNames.FrontChannelLogoutSessionSupported:
+                    config.FrontChannelLogoutSessionSupported = false;
+                    break;
+                case OpenIdProviderMetadataNames.FrontChannelLogoutSupported:
+                    config.FrontChannelLogoutSupported = false;
+                    break;
+                case OpenIdProviderMetadataNames.HttpLogoutSupported:
+                    config.HttpLogoutSupported = false;
+                    break;
+                case OpenIdProviderMetadataNames.LogoutSessionSupported:
+                    config.LogoutSessionSupported = false;
+                    break;
+                case OpenIdProviderMetadataNames.RequestParameterSupported:
+                    config.RequestParameterSupported = false;
+                    break;
+                case OpenIdProviderMetadataNames.RequestUriParameterSupported:
+                    config.RequestUriParameterSupported = false;
+                    break;
+                case OpenIdProviderMetadataNames.RequireRequestUriRegistration:
+                    config.RequireRequestUriRegistration = false;
+                    break;
+                default:
+                    config.AdditionalData.Add(new JwtProperty(propertyName, false));
+                    break;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void ReadTrueProperty(OpenIdConnectConfiguration config, string propertyName)
+        {
+            switch (propertyName)
+            {
+                case OpenIdProviderMetadataNames.ClaimsParameterSupported:
+                    config.ClaimsParameterSupported = true;
+                    break;
+                case OpenIdProviderMetadataNames.FrontChannelLogoutSessionSupported:
+                    config.FrontChannelLogoutSessionSupported = true;
+                    break;
+                case OpenIdProviderMetadataNames.FrontChannelLogoutSupported:
+                    config.FrontChannelLogoutSupported = true;
+                    break;
+                case OpenIdProviderMetadataNames.HttpLogoutSupported:
+                    config.HttpLogoutSupported = true;
+                    break;
+                case OpenIdProviderMetadataNames.LogoutSessionSupported:
+                    config.LogoutSessionSupported = true;
+                    break;
+                case OpenIdProviderMetadataNames.RequestParameterSupported:
+                    config.RequestParameterSupported = true;
+                    break;
+                case OpenIdProviderMetadataNames.RequestUriParameterSupported:
+                    config.RequestUriParameterSupported = true;
+                    break;
+                case OpenIdProviderMetadataNames.RequireRequestUriRegistration:
+                    config.RequireRequestUriRegistration = true;
+                    break;
+
+                default:
+                    config.AdditionalData.Add(new JwtProperty(propertyName, true));
+                    break;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void ReadStringProperty(ref Utf8JsonReader reader, OpenIdConnectConfiguration config, string propertyName)
+        {
+            switch (propertyName)
+            {
+                case OpenIdProviderMetadataNames.AuthorizationEndpoint:
+                    config.AuthorizationEndpoint = reader.GetString();
+                    break;
+                case OpenIdProviderMetadataNames.CheckSessionIframe:
+                    config.CheckSessionIframe = reader.GetString();
+                    break;
+                case OpenIdProviderMetadataNames.EndSessionEndpoint:
+                    config.EndSessionEndpoint = reader.GetString();
+                    break;
+                case OpenIdProviderMetadataNames.Issuer:
+                    config.Issuer = reader.GetString();
+                    break;
+                case OpenIdProviderMetadataNames.JwksUri:
+                    config.JwksUri = reader.GetString();
+                    break;
+                case OpenIdProviderMetadataNames.OpPolicyUri:
+                    config.OpPolicyUri = reader.GetString();
+                    break;
+                case OpenIdProviderMetadataNames.OpTosUri:
+                    config.OpTosUri = reader.GetString();
+                    break;
+                case OpenIdProviderMetadataNames.RegistrationEndpoint:
+                    config.RegistrationEndpoint = reader.GetString();
+                    break;
+                case OpenIdProviderMetadataNames.ServiceDocumentation:
+                    config.ServiceDocumentation = reader.GetString();
+                    break;
+                case OpenIdProviderMetadataNames.TokenEndpoint:
+                    config.TokenEndpoint = reader.GetString();
+                    break;
+                case OpenIdProviderMetadataNames.UserInfoEndpoint:
+                    config.UserInfoEndpoint = reader.GetString();
+                    break;
+                case OpenIdProviderMetadataNames.RevocationEndpoint:
+                    config.RevocationEndpoint = reader.GetString();
+                    break;
+                case OpenIdProviderMetadataNames.IntrospectionEndpoint:
+                    config.IntrospectionEndpoint = reader.GetString();
+                    break;
+                default:
+                    config.AdditionalData.Add(new JwtProperty(propertyName, reader.GetString()));
+                    break;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void ReadArrayProperty(ref Utf8JsonReader reader, OpenIdConnectConfiguration config, string propertyName)
+        {
+            switch (propertyName)
+            {
+                case OpenIdProviderMetadataNames.AcrValuesSupported:
+                    config.AcrValuesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.ClaimsSupported:
+                    config.ClaimsSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.ClaimsLocalesSupported:
+                    config.ClaimsLocalesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.ClaimTypesSupported:
+                    config.ClaimTypesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.DisplayValuesSupported:
+                    config.DisplayValuesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.GrantTypesSupported:
+                    config.GrantTypesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.IdTokenEncryptionAlgValuesSupported:
+                    config.IdTokenEncryptionAlgValuesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.IdTokenEncryptionEncValuesSupported:
+                    config.IdTokenEncryptionEncValuesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.IdTokenSigningAlgValuesSupported:
+                    config.IdTokenSigningAlgValuesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.RequestObjectEncryptionAlgValuesSupported:
+                    config.RequestObjectEncryptionAlgValuesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.RequestObjectEncryptionEncValuesSupported:
+                    config.RequestObjectEncryptionEncValuesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.RequestObjectSigningAlgValuesSupported:
+                    config.RequestObjectSigningAlgValuesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.ResponseModesSupported:
+                    config.ResponseModesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.ResponseTypesSupported:
+                    config.ResponseTypesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.ScopesSupported:
+                    config.ScopesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.SubjectTypesSupported:
+                    config.SubjectTypesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.TokenEndpointAuthMethodsSupported:
+                    config.TokenEndpointAuthMethodsSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.TokenEndpointAuthSigningAlgValuesSupported:
+                    config.TokenEndpointAuthSigningAlgValuesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.UILocalesSupported:
+                    config.UILocalesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.UserInfoEncryptionAlgValuesSupported:
+                    config.UserInfoEncryptionAlgValuesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.UserInfoEncryptionEncValuesSupported:
+                    config.UserInfoEncryptionEncValuesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.UserInfoSigningAlgValuesSupported:
+                    config.UserInfoSigningAlgValuesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.RevocationEndpointAuthMethodsSupported:
+                    config.RevocationEndpointAuthMethodsSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.RevocationEndpointAuthSigningAlgValuesSupported:
+                    config.RevocationEndpointAuthSigningAlgValuesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.IntrospectionEndpointAuthMethodsSupported:
+                    config.IntrospectionEndpointAuthMethodsSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.IntrospectionEndpointAuthSigningAlgValuesSupported:
+                    config.IntrospectionEndpointAuthSigningAlgValuesSupported = GetStringArray(ref reader);
+                    break;
+                case OpenIdProviderMetadataNames.CodeChallengeMethodsSupported:
+                    config.CodeChallengeMethodsSupported = GetStringArray(ref reader);
+                    break;
+                default:
+                    config.AdditionalData.Add(new JwtProperty(propertyName, JsonParser.ReadJsonArray(ref reader)));
+                    break;
+            }
         }
 
         private static ICollection<string> GetStringArray(ref Utf8JsonReader reader)

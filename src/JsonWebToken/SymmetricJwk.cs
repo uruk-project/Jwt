@@ -101,22 +101,16 @@ namespace JsonWebToken
             byte[]? k = null;
             while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
-                var propertyName = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
+                var propertyName = reader.ValueSpan;
                 ref byte propertyNameRef = ref MemoryMarshal.GetReference(propertyName);
                 reader.Read();
                 switch (reader.TokenType)
                 {
-                    case JsonTokenType.StartObject:
-                        PopulateObject(ref reader);
-                        break;
-                    case JsonTokenType.StartArray:
-                        PopulateArray(ref reader, ref propertyNameRef, propertyName.Length, this);
-                        break;
                     case JsonTokenType.String:
                         switch (propertyName.Length)
                         {
                             case 1 when propertyNameRef == (byte)'k':
-                                k = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
+                                k = Base64Url.Decode(reader.ValueSpan);
                                 break;
 
                             case 3:
@@ -128,6 +122,12 @@ namespace JsonWebToken
                             default:
                                 break;
                         }
+                        break;
+                    case JsonTokenType.StartObject:
+                        PopulateObject(ref reader);
+                        break;
+                    case JsonTokenType.StartArray:
+                        PopulateArray(ref reader, ref propertyNameRef, propertyName.Length, this);
                         break;
                     default:
                         break;
@@ -544,8 +544,7 @@ namespace JsonWebToken
                 Span<byte> buffer = requiredBufferSize > Constants.MaxStackallocBytes
                                     ? stackalloc byte[requiredBufferSize]
                                     : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
-                int bytesWritten = Base64Url.Encode(_k, buffer);
-                writer.WriteString(JwkParameterNames.KUtf8, buffer.Slice(0, bytesWritten));
+                WriteBase64UrlProperty(writer, buffer, _k, JwkParameterNames.KUtf8);
             }
             finally
             {

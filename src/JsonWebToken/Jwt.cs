@@ -12,8 +12,8 @@ namespace JsonWebToken
     /// </summary>
     public class Jwt
     {
-        private static readonly string[] EmptyStrings = Array.Empty<string>();
         private readonly JwtPayload? _payload;
+        private readonly Jwt? _nestedToken;
 
         /// <summary>
         /// Initializes a new instance of <see cref="Jwt"/>.
@@ -27,19 +27,19 @@ namespace JsonWebToken
 
             _payload = token._payload;
             Header = token.Header;
-            NestedToken = token.NestedToken;
+            _nestedToken = token._nestedToken;
             SigningKey = token.SigningKey;
             EncryptionKey = token.EncryptionKey;
             Binary = token.Binary;
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="Jwt"/>.
+        /// Creates a new instance of <see cref="Jwt"/>.
         /// </summary>
         /// <param name="header"></param>
         /// <param name="nestedToken"></param>
         /// <param name="encryptionKey"></param>
-        public Jwt(JwtHeader header, Jwt nestedToken, Jwk encryptionKey)
+        public static Jwt Create(JwtHeader header, Jwt nestedToken, Jwk encryptionKey)
         {
             if (header is null)
             {
@@ -56,18 +56,23 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionKey);
             }
 
+            return new Jwt(header, nestedToken, encryptionKey);
+        }
+
+        internal Jwt(JwtHeader header, Jwt nestedToken, Jwk encryptionKey)
+        {
             Header = header;
-            NestedToken = nestedToken;
+            _nestedToken = nestedToken;
             EncryptionKey = encryptionKey;
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="Jwt"/>.
+        /// Creates a new instance of <see cref="Jwt"/>.
         /// </summary>
         /// <param name="header"></param>
         /// <param name="data"></param>
         /// <param name="encryptionKey"></param>
-        public Jwt(JwtHeader header, byte[] data, Jwk encryptionKey)
+        public static Jwt Create(JwtHeader header, byte[] data, Jwk encryptionKey)
         {
             if (header is null)
             {
@@ -84,18 +89,23 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionKey);
             }
 
+            return new Jwt(header, data, encryptionKey);
+        }
+
+        internal Jwt(JwtHeader header, byte[] data, Jwk encryptionKey)
+        {
             Header = header;
             Binary = data;
             EncryptionKey = encryptionKey;
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="Jwt"/>.
+        /// Creates a new instance of <see cref="Jwt"/>.
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
         /// <param name="signingKey"></param>
-        public Jwt(JwtHeader header, JwtPayload payload, Jwk? signingKey)
+        public static Jwt Create(JwtHeader header, JwtPayload payload, Jwk? signingKey)
         {
             if (header is null)
             {
@@ -106,7 +116,12 @@ namespace JsonWebToken
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.payload);
             }
-     
+
+            return new Jwt(header, payload, signingKey);
+        }
+
+        internal Jwt(JwtHeader header, JwtPayload payload, Jwk? signingKey)
+        {
             Header = header;
             _payload = payload;
             SigningKey = signingKey;
@@ -115,7 +130,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the list of 'aud' claim.
         /// </summary>
-        public IEnumerable<string> Audiences => Payload?.Aud ?? EmptyStrings;
+        public IEnumerable<string> Audiences => Payload?.Aud ?? Array.Empty<string>();
 
         /// <summary>
         /// Gets the <see cref="JwtHeader"/> associated with this instance if the token is signed.
@@ -135,12 +150,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the <see cref="JwtPayload"/> associated with this instance.
         /// </summary>
-        public JwtPayload? Payload => NestedToken?.Payload ?? _payload;
+        public JwtPayload? Payload => _nestedToken?.Payload ?? _payload;
 
         /// <summary>
         /// Gets the nested <see cref="Jwt"/> associated with this instance.
         /// </summary>
-        public Jwt? NestedToken { get; }
+        public Jwt? NestedToken => _nestedToken;
 
         /// <summary>
         /// Gets the signature algorithm associated with this instance.

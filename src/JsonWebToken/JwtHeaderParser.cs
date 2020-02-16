@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -13,8 +12,16 @@ namespace JsonWebToken
     /// <summary>
     /// Provides methods for converting JWT header JSON data into a <see cref="JwtHeader"/>
     /// </summary>
-    public static partial class JwtHeaderParser
+    public static class JwtHeaderParser
     {
+        internal const uint Alg = 6777953u;
+        internal const uint Enc = 6516325u;
+        internal const uint Zip = 7367034u;
+        internal const uint Cty = 7959651u;
+        internal const uint Typ = 7371124u;
+        internal const uint Kid = 6580587u;
+        internal const uint Crit = 1953067619u;
+
         /// <summary>
         /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtHeader"/>.
         /// </summary>
@@ -28,13 +35,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowFormatException_MalformedJson();
             }
 
-            return ReadJwtHeader(ref reader, policy);
-        }
-
-        internal static JwtHeader ReadJwtHeader(ref Utf8JsonReader reader, TokenValidationPolicy policy)
-        {
-            var current = new JwtObject(3);
-            var header = new JwtHeader(current);
+            var header = new JwtHeader();
             while (reader.Read())
             {
                 if (!(reader.TokenType is JsonTokenType.PropertyName))
@@ -45,169 +46,170 @@ namespace JsonWebToken
                 var name = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                 reader.Read();
                 var type = reader.TokenType;
-                switch (type)
+
+
+                if (name.Length == 3)
                 {
-                    case JsonTokenType.StartObject:
-                        current.Add(name, JsonParser.ReadJsonObject(ref reader));
-                        break;
-                    case JsonTokenType.StartArray:
-                        if (name.Length == 4 && Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(name)) == 1953067619u /* crit */)
+                    if (reader.TokenType == JsonTokenType.String)
+                    {
+                        var refName = IntegerMarshal.ReadUInt24(name);
+                        switch (refName)
                         {
-                            var handlers = policy.CriticalHandlers;
-                            if (handlers.Count != 0)
-                            {
-                                header.CriticalHeaderHandlers = new List<KeyValuePair<string, ICriticalHeaderHandler>>(handlers.Count);
-                                var criticals = new List<JwtValue>();
-                                while (reader.Read() && reader.TokenType == JsonTokenType.String)
+                            case Alg:
+                                var alg = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
+                                if (SignatureAlgorithm.TryParse(alg, out var signatureAlgorithm))
                                 {
-                                    string criticalHeader = reader.GetString();
-                                    criticals.Add(new JwtValue(criticalHeader));
-                                    if (handlers.TryGetValue(criticalHeader, out var handler))
-                                    {
-                                        header.CriticalHeaderHandlers.Add(new KeyValuePair<string, ICriticalHeaderHandler>(criticalHeader, handler));
-                                    }
-                                    else
-                                    {
-                                        header.CriticalHeaderHandlers.Add(new KeyValuePair<string, ICriticalHeaderHandler>(criticalHeader, null!));
-                                    }
+                                    header.SignatureAlgorithm = signatureAlgorithm;
+                                }
+                                else if (KeyManagementAlgorithm.TryParse(alg, out var keyManagementAlgorithm))
+                                {
+                                    header.KeyManagementAlgorithm = keyManagementAlgorithm;
+                                }
+                                else if (SignatureAlgorithm.TryParseSlow(ref reader, out signatureAlgorithm))
+                                {
+                                    header.SignatureAlgorithm = signatureAlgorithm;
+                                }
+                                else if (KeyManagementAlgorithm.TryParseSlow(ref reader, out keyManagementAlgorithm))
+                                {
+                                    header.KeyManagementAlgorithm = keyManagementAlgorithm;
+                                }
+                                else
+                                {
+                                    header.SignatureAlgorithm = SignatureAlgorithm.Create(reader.GetString());
                                 }
 
-                                if (reader.TokenType != JsonTokenType.EndArray)
+                                continue;
+
+                            case Enc:
+                                var enc = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
+                                if (EncryptionAlgorithm.TryParse(enc, out var encryptionAlgorithm))
                                 {
-                                    ThrowHelper.ThrowFormatException_MalformedJson("The 'crit' header parameter must be an array of string.");
+                                    header.EncryptionAlgorithm = encryptionAlgorithm;
+                                }
+                                else if (EncryptionAlgorithm.TryParseSlow(ref reader, out encryptionAlgorithm))
+                                {
+                                    header.EncryptionAlgorithm = encryptionAlgorithm;
+                                }
+                                else
+                                {
+                                    header.EncryptionAlgorithm = EncryptionAlgorithm.Create(reader.GetString());
                                 }
 
-                                current.Add(new JwtProperty(name, new JwtArray(criticals)));
-                            }
-                            else
+                                continue;
+
+                            case Zip:
+                                var zip = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
+                                if (CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm))
+                                {
+                                    header.CompressionAlgorithm = compressionAlgorithm;
+                                }
+                                else if (CompressionAlgorithm.TryParseSlow(ref reader, out compressionAlgorithm))
+                                {
+                                    header.CompressionAlgorithm = compressionAlgorithm;
+                                }
+                                else
+                                {
+                                    header.CompressionAlgorithm = CompressionAlgorithm.Create(reader.GetString());
+                                }
+
+                                continue;
+
+                            case Cty:
+                                header.Cty = reader.GetString();
+                                continue;
+
+                            case Typ:
+                                header.Typ = reader.GetString();
+                                continue;
+
+                            case Kid:
+                                header.Kid = reader.GetString();
+                                continue;
+                        }
+                    }
+                }
+                else if (name.Length == 4)
+                {
+                    if (reader.TokenType == JsonTokenType.StartArray && IntegerMarshal.ReadUInt32(name) == Crit)
+                    {
+                        var handlers = policy.CriticalHandlers;
+                        if (handlers.Count != 0)
+                        {
+                            var criticalHeaderHandlers = new List<KeyValuePair<string, ICriticalHeaderHandler>>(handlers.Count);
+                            var criticals = new List<JwtValue>();
+                            while (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
-                                current.Add(name, JsonParser.ReadJsonArray(ref reader));
+                                string criticalHeader = reader.GetString();
+                                criticals.Add(new JwtValue(criticalHeader));
+                                if (handlers.TryGetValue(criticalHeader, out var handler))
+                                {
+                                    criticalHeaderHandlers.Add(new KeyValuePair<string, ICriticalHeaderHandler>(criticalHeader, handler));
+                                }
+                                else
+                                {
+                                    criticalHeaderHandlers.Add(new KeyValuePair<string, ICriticalHeaderHandler>(criticalHeader, null!));
+                                }
                             }
+
+                            header.CriticalHeaderHandlers = criticalHeaderHandlers;
+
+                            if (reader.TokenType != JsonTokenType.EndArray)
+                            {
+                                ThrowHelper.ThrowFormatException_MalformedJson("The 'crit' header parameter must be an array of string.");
+                            }
+
+                            header.Inner.Add(name, new JwtArray(criticals));
                         }
                         else
                         {
-                            current.Add(name, JsonParser.ReadJsonArray(ref reader));
+                            var criticals = new List<JwtValue>();
+                            while (reader.Read() && reader.TokenType == JsonTokenType.String)
+                            {
+                                string criticalHeader = reader.GetString();
+                                criticals.Add(new JwtValue(criticalHeader));
+                            }
+
+                            if (reader.TokenType != JsonTokenType.EndArray)
+                            {
+                                ThrowHelper.ThrowFormatException_MalformedJson("The 'crit' header parameter must be an array of string.");
+                            }
+
+                            header.Inner.Add(name, new JwtArray(criticals));
                         }
 
+                        continue;
+                    }
+                }
+
+
+                switch (type)
+                {
+                    case JsonTokenType.StartObject:
+                        header.Inner.Add(name, JsonParser.ReadJsonObject(ref reader));
+                        break;
+                    case JsonTokenType.StartArray:
+                        header.Inner.Add(name, JsonParser.ReadJsonArray(ref reader));
                         break;
                     case JsonTokenType.String:
-                        if (name.Length == 3)
-                        {
-                            var refName = Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(name)) & 0x00ffffffu;
-                            switch (refName)
-                            {
-                                /* alg */
-                                case 6777953u:
-                                    var alg = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
-                                    if (SignatureAlgorithm.TryParse(alg, out var signatureAlgorithm))
-                                    {
-                                        header.SignatureAlgorithm = signatureAlgorithm;
-                                    }
-                                    else if (KeyManagementAlgorithm.TryParse(alg, out var keyManagementAlgorithm))
-                                    {
-                                        header.KeyManagementAlgorithm = keyManagementAlgorithm;
-                                    }
-                                    else if (SignatureAlgorithm.TryParseSlow(ref reader, out signatureAlgorithm))
-                                    {
-                                        header.SignatureAlgorithm = signatureAlgorithm;
-                                    }
-                                    else if (KeyManagementAlgorithm.TryParseSlow(ref reader, out keyManagementAlgorithm))
-                                    {
-                                        header.KeyManagementAlgorithm = keyManagementAlgorithm;
-                                    }
-                                    else
-                                    {
-                                        // TODO : Fix when the Utf8JsonReader will allow
-                                        // to read an unescaped string without allocating a string
-                                        current.Add(new JwtProperty(WellKnownProperty.Alg, Utf8.GetBytes(reader.GetString())));
-                                    }
-
-                                    continue;
-                                /* enc */
-                                case 6516325u:
-                                    var enc = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
-                                    if (EncryptionAlgorithm.TryParse(enc, out var encryptionAlgorithm))
-                                    {
-                                        header.EncryptionAlgorithm = encryptionAlgorithm;
-                                    }
-                                    else if (EncryptionAlgorithm.TryParseSlow(ref reader, out encryptionAlgorithm))
-                                    {
-                                        header.EncryptionAlgorithm = encryptionAlgorithm;
-                                    }
-                                    else
-                                    {
-                                        // TODO : Fix when the Utf8JsonReader will allow
-                                        // to read an unescaped string without allocating a string
-                                        current.Add(new JwtProperty(WellKnownProperty.Enc, Utf8.GetBytes(reader.GetString())));
-                                    }
-
-                                    continue;
-                                /* zip */
-                                case 7367034u:
-                                    var zip = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
-                                    if (CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm))
-                                    {
-                                        header.CompressionAlgorithm = compressionAlgorithm;
-                                    }
-                                    else if (CompressionAlgorithm.TryParseSlow(ref reader, out compressionAlgorithm))
-                                    {
-                                        header.CompressionAlgorithm = compressionAlgorithm;
-                                    }
-                                    else
-                                    {
-                                        // TODO : Fix when the Utf8JsonReader will allow
-                                        // to read an unescaped string without allocating a string
-                                        current.Add(new JwtProperty(WellKnownProperty.Zip, Utf8.GetBytes(reader.GetString())));
-                                    }
-
-                                    continue;
-                                /* cty */
-                                case 7959651u:
-                                    // TODO : Fix when the Utf8JsonReader will allow
-                                    // to read an unescaped string without allocating a string
-                                    current.Add(new JwtProperty(WellKnownProperty.Cty, Utf8.GetBytes(reader.GetString())));
-                                    continue;
-                                /* typ */
-                                case 7371124u:
-                                    // TODO : Fix when the Utf8JsonReader will allow
-                                    // to read an unescaped string without allocating a string
-                                    current.Add(new JwtProperty(WellKnownProperty.Typ, Utf8.GetBytes(reader.GetString())));
-                                    continue;
-                                /* kid */
-                                case 6580587u:
-                                    // TODO : Fix when the Utf8JsonReader will allow
-                                    // to read an unescaped string without allocating a string
-                                    current.Add(new JwtProperty(WellKnownProperty.Kid, reader.GetString()));
-                                    continue;
-                            }
-                        }
-
-                        current.Add(name, reader.GetString());
+                        header.Inner.Add(name, reader.GetString());
                         break;
                     case JsonTokenType.True:
-                        current.Add(name, true);
+                        header.Inner.Add(name, true);
                         break;
                     case JsonTokenType.False:
-                        current.Add(name, false);
+                        header.Inner.Add(name, false);
                         break;
                     case JsonTokenType.Null:
-                        current.Add(name);
+                        header.Inner.Add(name);
                         break;
                     case JsonTokenType.Number:
                         if (reader.TryGetInt64(out long longValue))
                         {
-                            current.Add(name, longValue);
+                            header.Inner.Add(name, longValue);
                         }
                         else
                         {
-                            if (reader.TryGetDouble(out double doubleValue))
-                            {
-                                current.Add(name, doubleValue);
-                            }
-                            else
-                            {
-                                ThrowHelper.ThrowFormatException_NotSupportedNumberValue(name);
-                            }
+                            header.Inner.Add(name, reader.GetDouble());
                         }
                         break;
                     default:

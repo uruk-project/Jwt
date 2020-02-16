@@ -24,7 +24,7 @@ namespace JsonWebToken
 
         private byte _control;
         private byte[]? _issuer;
-        private int _clockSkrew;
+        private int _clockSkew;
         private readonly List<byte[]> _audiences = new List<byte[]>();
 
         /// <summary>
@@ -266,9 +266,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentOutOfRangeException_MustBeGreaterThanTimeSpanZero(ExceptionArgument.clockSkew, clockSkew);
             }
 
-            //RemoveValidator<LifetimeValidator>();
-            //AddValidator(new LifetimeValidator(requireExpirationTime, clockSkew));
-            _clockSkrew = clockSkew;
+            _clockSkew = clockSkew;
             _control |= TokenValidationPolicy.ExpirationTimeFlag | TokenValidationPolicy.NotBeforeFlag;
             if (requireExpirationTime)
             {
@@ -312,10 +310,10 @@ namespace JsonWebToken
                 if (audience != null)
                 {
                     _audiences.Add(Utf8.GetBytes(audience));
+                    _control |= TokenValidationPolicy.AudienceFlag;
                 }
             }
 
-            _control |= TokenValidationPolicy.AudienceFlag;
             return this;
         }
 
@@ -348,7 +346,6 @@ namespace JsonWebToken
                 throw new ArgumentNullException(nameof(tokenReplayCache));
             }
 
-            RemoveValidator<TokenReplayValidator>();
             AddValidator(new TokenReplayValidator(tokenReplayCache));
             return this;
         }
@@ -408,14 +405,14 @@ namespace JsonWebToken
             Validate();
 
             var policy = new TokenValidationPolicy(
-                _validators.ToArray(), 
-                _criticalHeaderHandlers, 
-                _maximumTokenSizeInBytes, 
-                _ignoreCriticalHeader, 
+                _validators.ToArray(),
+                _criticalHeaderHandlers,
+                _maximumTokenSizeInBytes,
+                _ignoreCriticalHeader,
                 _signatureValidation,
                 _issuer,
-                _audiences?.ToArray(), 
-                _clockSkrew,
+                _audiences.ToArray(),
+                _clockSkew,
                 _control);
             return policy;
         }

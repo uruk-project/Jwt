@@ -15,6 +15,8 @@ namespace JsonWebToken
     /// </summary>
     public sealed class CompressionAlgorithm : IEquatable<CompressionAlgorithm>, IAlgorithm
     {
+        private const uint DEF = 4605252u;
+
         /// <summary>
         /// Deflate
         /// </summary>
@@ -184,9 +186,8 @@ namespace JsonWebToken
         {
             if (value.Length == 3)
             {
-                var zip = Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(value)) & 0x00ffffffu;
-                // DEF
-                if (zip == 4605252u)
+                var zip = IntegerMarshal.ReadUInt24(value);
+                if (zip == DEF)
                 {
                     algorithm = Deflate;
                     return true;
@@ -249,5 +250,8 @@ namespace JsonWebToken
         {
             return Name;
         }
+
+        internal static CompressionAlgorithm Create(string name)
+            => new CompressionAlgorithm(127, name, Compressor.Null);
     }
 }

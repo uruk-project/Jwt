@@ -377,7 +377,7 @@ namespace JsonWebToken
         public void Serialize(IBufferWriter<byte> bufferWriter)
         {
             using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
-            WriteTo(writer);
+            WriteObjectTo(writer);
             writer.Flush();
         }
 
@@ -387,11 +387,11 @@ namespace JsonWebToken
         /// <param name="writer"></param>
         public void Serialize(Utf8JsonWriter writer)
         {
-            WriteTo(writer);
+            WriteObjectTo(writer);
             writer.Flush();
         }
 
-        internal void WriteTo(Utf8JsonWriter writer)
+        internal void WriteObjectTo(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
             var properties = _properties;
@@ -401,6 +401,15 @@ namespace JsonWebToken
             }
 
             writer.WriteEndObject();
+        }
+
+        internal void WriteTo(Utf8JsonWriter writer)
+        {
+            var properties = _properties;
+            for (int i = 0; i < properties.Count; i++)
+            {
+                properties[i].WriteTo(writer);
+            }
         }
 
         internal void WriteTo(Utf8JsonWriter writer, ReadOnlySpan<byte> utf8Name)
@@ -426,7 +435,7 @@ namespace JsonWebToken
             using var bufferWriter = new PooledByteBufferWriter();
             using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
             {
-                WriteTo(writer);
+                WriteObjectTo(writer);
             }
 
             var input = bufferWriter.WrittenSpan;

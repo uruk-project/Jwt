@@ -19,6 +19,8 @@ namespace JsonWebToken
     /// </summary>
     public sealed class ECJwk : AsymmetricJwk
     {
+        private const uint crv = 7762531u;
+
         /// <summary>
         /// Initializes a new instance of <see cref="ECJwk"/>.
         /// </summary>
@@ -490,32 +492,26 @@ namespace JsonWebToken
             var key = new ECJwk();
             while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
-                var propertyName = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
+                var propertyName = reader.ValueSpan;
                 ref byte propertyNameRef = ref MemoryMarshal.GetReference(propertyName);
                 reader.Read();
                 switch (reader.TokenType)
                 {
-                    case JsonTokenType.StartObject:
-                        PopulateObject(ref reader);
-                        break;
-                    case JsonTokenType.StartArray:
-                        PopulateArray(ref reader, ref propertyNameRef, propertyName.Length, key);
-                        break;
                     case JsonTokenType.String:
                         switch (propertyName.Length)
                         {
                             case 1 when propertyNameRef == (byte)'x':
-                                key.X = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
+                                key.X = Base64Url.Decode(reader.ValueSpan);
                                 break;
                             case 1 when propertyNameRef == (byte)'y':
-                                key.Y = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
+                                key.Y = Base64Url.Decode(reader.ValueSpan);
                                 break;
                             case 1 when propertyNameRef == (byte)'d':
-                                key.D = Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
+                                key.D = Base64Url.Decode(reader.ValueSpan);
                                 break;
 
-                            case 3 when (Unsafe.ReadUnaligned<uint>(ref propertyNameRef) & 0x00ffffff) == 7762531u:
-                                key.Crv = EllipticalCurve.FromSpan(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */);
+                            case 3 when IntegerMarshal.ReadUInt24(ref propertyNameRef) == crv:
+                                key.Crv = EllipticalCurve.FromSpan(reader.ValueSpan);
                                 break;
                             case 3:
                                 PopulateThree(ref reader, ref propertyNameRef, key);
@@ -527,6 +523,12 @@ namespace JsonWebToken
                             default:
                                 break;
                         }
+                        break;
+                    case JsonTokenType.StartObject:
+                        PopulateObject(ref reader);
+                        break;
+                    case JsonTokenType.StartArray:
+                        PopulateArray(ref reader, ref propertyNameRef, propertyName.Length, key);
                         break;
                     default:
                         break;
@@ -550,9 +552,6 @@ namespace JsonWebToken
                 var name = property.Utf8Name;
                 switch (property.Type)
                 {
-                    case JwtTokenType.Array:
-                        key.Populate(name, (JwtArray)property.Value!);
-                        break;
                     case JwtTokenType.String:
                         if (name.SequenceEqual(JwkParameterNames.CrvUtf8))
                         {
@@ -578,6 +577,9 @@ namespace JsonWebToken
                     case JwtTokenType.Utf8String:
                         key.Populate(name, (byte[])property.Value!);
                         break;
+                    case JwtTokenType.Array:
+                        key.Populate(name, (JwtArray)property.Value!);
+                        break;
                     default:
                         break;
                 }
@@ -591,18 +593,14 @@ namespace JsonWebToken
         {
             base.WriteTo(writer);
             writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
-          
+
             // X & Y & D have the same length
             Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(X.Length)];
-            Base64Url.Encode(X, buffer);
-            writer.WriteString(JwkParameterNames.XUtf8, buffer);
-            Base64Url.Encode(Y, buffer);
-            writer.WriteString(JwkParameterNames.YUtf8, buffer);
-            if (D != null)
-            {
-                int bytesWritten = Base64Url.Encode(D, buffer);
-                writer.WriteString(JwkParameterNames.DUtf8, buffer);
-            }
+
+            WriteBase64UrlProperty(writer, buffer, X, JwkParameterNames.XUtf8);
+            WriteBase64UrlProperty(writer, buffer, Y, JwkParameterNames.YUtf8);
+
+            WriteOptionalBase64UrlProperty(writer, buffer, D, JwkParameterNames.DUtf8);
         }
 
         /// <inheritsdoc />
@@ -669,7 +667,6 @@ namespace JsonWebToken
             if (D != null)
             {
                 CryptographicOperations.ZeroMemory(D);
-
             }
         }
     }

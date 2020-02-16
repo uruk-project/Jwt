@@ -4,6 +4,7 @@
 #if NETCOREAPP || NETSTANDARD
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace JsonWebToken
@@ -14,6 +15,9 @@ namespace JsonWebToken
     /// </summary>
     public readonly struct EllipticalCurve
     {
+        private const uint _256 = 909455917u;
+        private const uint _384 = 876098349u;
+        private const uint _521 = 825373997u;
         private static readonly byte[] P256Name = new byte[] { (byte)'P', (byte)'-', (byte)'2', (byte)'5', (byte)'6' };
         private static readonly byte[] P384Name = new byte[] { (byte)'P', (byte)'-', (byte)'3', (byte)'8', (byte)'4' };
         private static readonly byte[] P521Name = new byte[] { (byte)'P', (byte)'-', (byte)'5', (byte)'2', (byte)'1' };
@@ -103,18 +107,19 @@ namespace JsonWebToken
         /// <returns></returns>
         public static EllipticalCurve FromSpan(ReadOnlySpan<byte> crv)
         {
-            if (crv.Length == 5 && crv[0] == (byte)'P')
+            ref byte crvRef = ref MemoryMarshal.GetReference(crv);
+            if (crv.Length == 5 && crvRef == (byte)'P')
             {
-                var crvSuffix = Unsafe.ReadUnaligned<uint>(ref Unsafe.AsRef(crv[1]));
-                if (crvSuffix == 909455917u /* -256 */ )
+                var crvSuffix = IntegerMarshal.ReadUInt32(ref crvRef, 1);
+                if (crvSuffix == _256)
                 {
                     return P256;
                 }
-                if (crvSuffix == 876098349u /* -384 */ )
+                if (crvSuffix == _384)
                 {
                     return P384;
                 }
-                if (crvSuffix == 825373997u /* -521 */ )
+                if (crvSuffix == _521)
                 {
                     return P521;
                 }

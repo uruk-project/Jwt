@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using JsonWebToken;
 
 namespace MultiIssuersValidationSample
@@ -47,7 +46,7 @@ namespace MultiIssuersValidationSample
                     break;
                 }
 
-                Console.WriteLine($"Failed to read the token for the issuer '{Encoding.UTF8.GetString(policies[i].RequiredIssuer)}'.");
+                Console.WriteLine($"Failed to read the token for the issuer '{policies[i].RequiredIssuer}'.");
                 Console.WriteLine("  Reason: " + result.Status);
             }
         }

@@ -14,6 +14,33 @@ namespace JsonWebToken
     /// </summary>
     public sealed class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>, IAlgorithm
     {
+        private const uint dir = 7498084u;
+        private const uint KW = 22347u;
+        private const uint A128 = 942813505u;
+        private const uint A192 = 842608961u;
+        private const uint A256 = 909455937u;
+        private const ulong ECDH_ES = 23438483855262533u;
+        private const ulong RSA_OAEP = 5784101104744747858u;
+        private const uint RSA1 = 826364754u;
+        private const uint _5 = 13663u;
+        private const ulong _128GCMKW = 6290206255906042417u;
+        private const ulong _192GCMKW = 6290206255905650993u;
+        private const ulong _256GCMKW = 6290206255905912114u;
+        private const uint _256 = 909455917u;
+        private const uint _384 = 876098349u;
+        private const uint _512 = 842085677u;
+        private const ulong ECDH_ES_ = 3121915027486163781u;
+        private const ulong S_A128KW = 6290183092778904403u;
+        private const ulong S_A192KW = 6290176525773908819u;
+        private const ulong S_A256KW = 6290180906657327955u;
+        private const ulong ECDH_ES_UTF8 = 6652737135344632645u;
+        private const ulong u002bA12 = 3616743865759838325u;
+        private const uint _28KW = 1464547378u;
+        private const ulong u002bA19 = 4121147024025333877u;
+        private const uint _92KW = 1464545849u;
+        private const ulong u002bA25 = 3833198122850332789u;
+        private const uint _56KW = 1464546869u;
+
         /// <summary>
         /// Empty
         /// </summary>
@@ -411,6 +438,7 @@ namespace JsonWebToken
             return false;
         }
 
+
         /// <summary>
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="KeyManagementAlgorithm"/> representation.
         /// </summary>
@@ -421,89 +449,86 @@ namespace JsonWebToken
             ref byte valueRef = ref MemoryMarshal.GetReference(value);
             switch (value.Length)
             {
-                case 3 when (Unsafe.ReadUnaligned<uint>(ref valueRef) & 0x00ffffff) == 7498084u: /* dir */
+                case 3 when IntegerMarshal.ReadUInt24(ref valueRef) == dir:
                     algorithm = Direct;
                     return true;
-                case 6 when Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref valueRef, 4)) == 22347u: /* A128 */
-                    switch (Unsafe.ReadUnaligned<uint>(ref valueRef))
+                case 6 when IntegerMarshal.ReadUInt16(ref valueRef, 4) == KW:
+                    switch (IntegerMarshal.ReadUInt32(ref valueRef))
                     {
-                        case 942813505u:
+                        case A128:
                             algorithm = Aes128KW;
                             return true;
-                        case 842608961u:
+                        case A192:
                             algorithm = Aes192KW;
                             return true;
-                        case 909455937u:
+                        case A256:
                             algorithm = Aes256KW;
                             return true;
                     }
                     break;
-                case 6 when Unsafe.ReadUnaligned<uint>(ref valueRef) == 826364754u && Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref valueRef, 4)) == 13663u  /* RSA1_5 */:
+                case 6 when IntegerMarshal.ReadUInt32(ref valueRef) == RSA1 && IntegerMarshal.ReadUInt16(ref valueRef, 4) == _5:
                     algorithm = RsaPkcs1;
                     return true;
-                case 7 when (Unsafe.ReadUnaligned<ulong>(ref valueRef) & 0x00ffffffffffffff) == 23438483855262533u /* ECDH-ES */ :
+                case 7 when IntegerMarshal.ReadUInt56(ref valueRef) == ECDH_ES:
                     algorithm = EcdhEs;
                     return true;
-                case 8 when Unsafe.ReadUnaligned<ulong>(ref valueRef) == 5784101104744747858u  /* RSA-OAEP */ :
+                case 8 when IntegerMarshal.ReadUInt64(ref valueRef) == RSA_OAEP:
                     algorithm = RsaOaep;
                     return true;
                 case 9 when valueRef == (byte)'A':
-                    switch (Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref valueRef, 1)))
+                    switch (IntegerMarshal.ReadUInt64(ref valueRef, 1))
                     {
-                        /* A128GCMKW */
-                        case 6290206255906042417u:
+                        case _128GCMKW:
                             algorithm = Aes128GcmKW;
                             return true;
-                        /* A192GCMKW */
-                        case 6290206255905650993u:
+                        case _192GCMKW:
                             algorithm = Aes192GcmKW;
                             return true;
-                        /* A256GCMKW */
-                        case 6290206255905912114u:
+                        case _256GCMKW:
                             algorithm = Aes256GcmKW;
                             return true;
                     }
                     break;
-                case 12 when Unsafe.ReadUnaligned<ulong>(ref valueRef) == 5784101104744747858u:
-                    switch (Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref valueRef, 8)))
+                case 12 when IntegerMarshal.ReadUInt64(ref valueRef) == RSA_OAEP:
+                    switch (IntegerMarshal.ReadUInt32(ref valueRef, 8))
                     {
-                        case 909455917u:
+                        case _256:
                             algorithm = RsaOaep256;
                             return true;
-                        case 876098349u:
+                        case _384:
                             algorithm = RsaOaep384;
                             return true;
-                        case 842085677u:
+                        case _512:
                             algorithm = RsaOaep512;
                             return true;
                     }
                     break;
-                case 14 when Unsafe.ReadUnaligned<ulong>(ref valueRef) == 3121915027486163781u /* ECDH-ES+ */ :
-                    switch (Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref valueRef, 6)))
+                case 14 when IntegerMarshal.ReadUInt64(ref valueRef) == ECDH_ES_:
+                    switch (IntegerMarshal.ReadUInt64(ref valueRef, 6))
                     {
-                        case 6290183092778904403u:
+                        case S_A128KW:
                             algorithm = EcdhEsAes128KW;
                             return true;
-                        case 6290176525773908819u:
+                        case S_A192KW:
                             algorithm = EcdhEsAes192KW;
                             return true;
-                        case 6290180906657327955u:
+                        case S_A256KW:
                             algorithm = EcdhEsAes256KW;
                             return true;
                     }
                     break;
 
                 // Special case for escaped 'ECDH-ES\u002bAxxxKW' 
-                case 19 when Unsafe.ReadUnaligned<ulong>(ref valueRef) == 6652737135344632645u /* ECDH-ES\ */ :
-                    switch (Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref valueRef, 8)))
+                case 19 when IntegerMarshal.ReadUInt64(ref valueRef) == ECDH_ES_UTF8 /* ECDH-ES\ */ :
+                    switch (IntegerMarshal.ReadUInt64(ref valueRef, 8))
                     {
-                        case 3616743865759838325u when Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref valueRef, 15)) == 1464547378u:
+                        case u002bA12 when IntegerMarshal.ReadUInt32(ref valueRef, 15) == _28KW:
                             algorithm = EcdhEsAes128KW;
                             return true;
-                        case 4121147024025333877u when Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref valueRef, 15)) == 1464545849u:
+                        case u002bA19 when IntegerMarshal.ReadUInt32(ref valueRef, 15) == _92KW:
                             algorithm = EcdhEsAes192KW;
                             return true;
-                        case 3833198122850332789u when Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref valueRef, 15)) == 1464546869u:
+                        case u002bA25 when IntegerMarshal.ReadUInt32(ref valueRef, 15) == _56KW:
                             algorithm = EcdhEsAes256KW;
                             return true;
                     }
