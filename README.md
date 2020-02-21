@@ -4,17 +4,32 @@ JSON Web Token  for .Net
 Provides support for JWT. 
 This library aims to propose performant JWT primitives. 
 
-[![Build Status](https://yanncrumeyrolle.visualstudio.com/ycrumeyrolle/_apis/build/status/JWT?branchName=master)](https://yanncrumeyrolle.visualstudio.com/ycrumeyrolle/_build/latest?definitionId=12?branchName=master)
+[![Build Status](https://yanncrumeyrolle.visualstudio.com/ycrumeyrolle/_apis/build/status/JWT?branchName=master)](https://yanncrumeyrolle.visualstudio.com/ycrumeyrolle/_build/latest?definitionId=12?branchName=master) [![CodeFactor](https://www.codefactor.io/repository/github/ycrumeyrolle/jwt/badge)](https://www.codefactor.io/repository/github/ycrumeyrolle/jwt) [![NuGet](https://img.shields.io/nuget/v/JsonWebToken.svg?style=flat)](https://www.nuget.org/packages/JsonWebToken/)
 
- [![CodeFactor](https://www.codefactor.io/repository/github/ycrumeyrolle/jwt/badge)](https://www.codefactor.io/repository/github/ycrumeyrolle/jwt)
- 
-[![NuGet](https://img.shields.io/nuget/v/JsonWebToken.svg?style=flat)](https://www.nuget.org/packages/JsonWebToken/)
+## Installation
+Install the [JsonWebToken NuGet Package](https://www.nuget.org/packages/JsonWebToken/).
+
+### Package Manager Console
+Install-Package JsonWebToken -Version 1.1.0
+### .NET CLI
+dotnet add package JsonWebToken
 
 ## Usage
 See the [samples](https://github.com/ycrumeyrolle/Jwt/tree/master/samples) for more details.
 
+The `JwtReader` class is used for reading and validating tokens:
+```
+    var reader = new JwtReader();
+    var result = reader.TryReadToken("eyJhbGc[...]sWBedk", policy);
+```
+
+The `JwtWriter` is used for writing tokens:
+```
+    var writer = new JwtWriter();
+    var token = writer.WriteTokenString(descriptor);
+```
 ### JWT validation
-````
+```
     var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
     var policy = new TokenValidationPolicyBuilder()
 					.RequireSignature(key, SignatureAlgorithm.HmacSha256)
