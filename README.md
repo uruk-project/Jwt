@@ -10,10 +10,13 @@ This library aims to propose performant JWT primitives.
 Install the [JsonWebToken NuGet Package](https://www.nuget.org/packages/JsonWebToken/).
 
 ### Package Manager Console
+```
 Install-Package JsonWebToken -Version 1.1.0
+```
 ### .NET CLI
+```
 dotnet add package JsonWebToken
-
+```
 ## Usage
 See the [samples](https://github.com/ycrumeyrolle/Jwt/tree/master/samples) for more details.
 
