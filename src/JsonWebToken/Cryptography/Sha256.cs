@@ -58,27 +58,50 @@ namespace JsonWebToken
                 0x1f83d9abu,
                 0x5be0cd19u
             };
+            int dataLength = source.Length + prepend.Length;
+            int remaining = dataLength & (Sha256BlockSize - 1);
+            Span<byte> lastBlock = stackalloc byte[Sha256BlockSize];
+            ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
             Span<uint> wTemp = w.IsEmpty ? stackalloc uint[64] : w;
             ref uint wRef = ref MemoryMarshal.GetReference(wTemp);
             ref uint stateRef = ref MemoryMarshal.GetReference(state);
+            ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
+            ref byte srcRef = ref srcStartRef;
             if (!prepend.IsEmpty)
             {
-                if (prepend.Length != Sha256BlockSize)
+                if (prepend.Length == Sha256BlockSize)
                 {
-                    ThrowHelper.ThrowArgumentException_PrependMustBeEqualToBlockSize(prepend, Sha256BlockSize);
+                    Transform(ref stateRef, ref MemoryMarshal.GetReference(prepend), ref wRef);
                 }
-
-                Transform(ref stateRef, ref MemoryMarshal.GetReference(prepend), ref wRef);
+                else if (prepend.Length < Sha256BlockSize)
+                {
+                    Unsafe.CopyBlockUnaligned(ref lastBlockRef, ref MemoryMarshal.GetReference(prepend), (uint)prepend.Length);
+                    int srcRemained = Sha256BlockSize - prepend.Length;
+                    if (dataLength >= Sha256BlockSize)
+                    {
+                        Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref lastBlockRef, prepend.Length), ref srcRef, (uint)srcRemained);
+                        Transform(ref stateRef, ref lastBlockRef, ref wRef);
+                        srcRef = ref Unsafe.Add(ref srcRef, srcRemained);
+                    }
+                    else
+                    {
+                        Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref lastBlockRef, prepend.Length), ref srcRef, (uint)source.Length);
+                        goto Final;
+                    }
+                }
+                else
+                {
+                    ThrowHelper.ThrowArgumentException_PrependMustBeLessOrEqualToBlockSize(prepend, Sha256BlockSize);
+                }
             }
 
-            ref byte srcRef = ref MemoryMarshal.GetReference(source);
-            ref byte srcEndRef = ref Unsafe.Add(ref srcRef, source.Length - Sha256BlockSize + 1);
+            ref byte srcEndRef = ref Unsafe.Add(ref srcStartRef, source.Length - Sha256BlockSize + 1);
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Ssse3.IsSupported)
             {
-                ref byte src128EndRef = ref Unsafe.Add(ref srcRef, source.Length - 4 * Sha256BlockSize + 1);
+                ref byte src128EndRef = ref Unsafe.Add(ref srcStartRef, source.Length - 4 * Sha256BlockSize + 1);
                 if (Unsafe.IsAddressLessThan(ref srcRef, ref src128EndRef))
                 {
                     Vector128<uint>[] returnToPool;
@@ -105,14 +128,9 @@ namespace JsonWebToken
                 srcRef = ref Unsafe.Add(ref srcRef, Sha256BlockSize);
             }
 
-            // final
-            int dataLength = source.Length + prepend.Length;
-            int remaining = dataLength & (Sha256BlockSize - 1);
-
-            Span<byte> lastBlock = stackalloc byte[Sha256BlockSize];
-            ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
+        // final
             Unsafe.CopyBlockUnaligned(ref lastBlockRef, ref srcRef, (uint)remaining);
-
+        Final:
             // Pad the last block
             Unsafe.Add(ref lastBlockRef, remaining) = 0x80;
             lastBlock.Slice(remaining + 1).Clear();
@@ -134,7 +152,7 @@ namespace JsonWebToken
             }
             else if (Ssse3.IsSupported)
             {
-                Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<uint, byte>(ref stateRef)), _shuffleMask128));
+                Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>   (ref Unsafe.As<uint, byte>(ref stateRef)), _shuffleMask128));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 16), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<uint, byte>(ref stateRef), 16)), _shuffleMask128));
             }
             else

@@ -59,27 +59,50 @@ namespace JsonWebToken
                 0x1f83d9abfb41bd6bul,
                 0x5be0cd19137e2179ul
             };
+            int dataLength = source.Length + prepend.Length;
+            int remaining = dataLength & (Sha512BlockSize - 1);
+            Span<byte> lastBlock = stackalloc byte[Sha512BlockSize];
+            ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
             Span<ulong> wTemp = w.IsEmpty ? stackalloc ulong[80] : w;
             ref ulong wRef = ref MemoryMarshal.GetReference(wTemp);
             ref ulong stateRef = ref MemoryMarshal.GetReference(state);
+            ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
+            ref byte srcRef = ref srcStartRef;
             if (!prepend.IsEmpty)
             {
-                if (prepend.Length != Sha512BlockSize)
+                if (prepend.Length == Sha512BlockSize)
                 {
-                    ThrowHelper.ThrowArgumentException_PrependMustBeEqualToBlockSize(prepend, Sha512BlockSize);
+                    Transform(ref stateRef, ref MemoryMarshal.GetReference(prepend), ref wRef);
                 }
-
-                Transform(ref stateRef, ref MemoryMarshal.GetReference(prepend), ref wRef);
+                else if (prepend.Length < Sha512BlockSize)
+                {
+                    Unsafe.CopyBlockUnaligned(ref lastBlockRef, ref MemoryMarshal.GetReference(prepend), (uint)prepend.Length);
+                    int srcRemained = Sha512BlockSize - prepend.Length;
+                    if (dataLength >= Sha512BlockSize)
+                    {
+                        Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref lastBlockRef, prepend.Length), ref srcRef, (uint)srcRemained);
+                        Transform(ref stateRef, ref lastBlockRef, ref wRef);
+                        srcRef = ref Unsafe.Add(ref srcRef, srcRemained);
+                    }
+                    else
+                    {
+                        Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref lastBlockRef, prepend.Length), ref srcRef, (uint)source.Length);
+                        goto Final;
+                    }
+                }
+                else
+                {
+                    ThrowHelper.ThrowArgumentException_PrependMustBeLessOrEqualToBlockSize(prepend, Sha512BlockSize);
+                }
             }
 
-            ref byte srcRef = ref MemoryMarshal.GetReference(source);
-            ref byte srcEndRef = ref Unsafe.Add(ref srcRef, source.Length - Sha512BlockSize + 1);
+            ref byte srcEndRef = ref Unsafe.Add(ref srcStartRef, source.Length - Sha512BlockSize + 1);
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
-                ref byte srcSimdEndRef = ref Unsafe.Add(ref srcRef, source.Length - 4 * Sha512BlockSize + 1);
+                ref byte srcSimdEndRef = ref Unsafe.Add(ref srcStartRef, source.Length - 4 * Sha512BlockSize + 1);
                 if (Unsafe.IsAddressLessThan(ref srcRef, ref srcSimdEndRef))
                 {
                     Vector256<ulong>[] returnToPool;
@@ -108,13 +131,9 @@ namespace JsonWebToken
             }
 
             // final
-            int dataLength = source.Length + prepend.Length;
-            int remaining = dataLength & (Sha512BlockSize - 1);
-
-            Span<byte> lastBlock = stackalloc byte[Sha512BlockSize];
-            ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
             Unsafe.CopyBlockUnaligned(ref lastBlockRef, ref srcRef, (uint)remaining);
 
+        Final:
             // Pad the last block
             Unsafe.Add(ref lastBlockRef, remaining) = 0x80;
             lastBlock.Slice(remaining + 1).Clear();
