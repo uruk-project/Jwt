@@ -72,22 +72,26 @@ namespace JsonWebToken
             {
                 if (prepend.Length == Sha384BlockSize)
                 {
+                    // Consider the prepend as the first block
                     Sha512.Transform(ref stateRef, ref MemoryMarshal.GetReference(prepend), ref wRef);
                 }
                 else if (prepend.Length < Sha384BlockSize)
                 {
+                    // Copy the prepend into the buffer
                     Unsafe.CopyBlockUnaligned(ref lastBlockRef, ref MemoryMarshal.GetReference(prepend), (uint)prepend.Length);
                     int srcRemained = Sha384BlockSize - prepend.Length;
                     if (dataLength >= Sha384BlockSize)
                     {
-                        Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref lastBlockRef, prepend.Length), ref srcRef, (uint)srcRemained);
+                        // Copy the fist bytes of the source into the buffer, transform this block and increment the source offset
+                        Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref lastBlockRef, (IntPtr)prepend.Length), ref srcRef, (uint)srcRemained);
                         Sha512.Transform(ref stateRef, ref lastBlockRef, ref wRef);
-                        srcRef = ref Unsafe.Add(ref srcRef, srcRemained);
+                        srcRef = ref Unsafe.Add(ref srcRef, (IntPtr)srcRemained);
                     }
                     else
                     {
-                        Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref lastBlockRef, prepend.Length), ref srcRef, (uint)source.Length);
-                        goto Final;
+                        // Copy the source into the buffer and go to the padding part of the hashing
+                        Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref lastBlockRef, (IntPtr)prepend.Length), ref srcRef, (uint)source.Length);
+                        goto Padding;
                     }
                 }
                 else
@@ -96,11 +100,11 @@ namespace JsonWebToken
                 }
             }
 
-            ref byte srcEndRef = ref Unsafe.Add(ref srcStartRef, source.Length - Sha384BlockSize + 1);
+            ref byte srcEndRef = ref Unsafe.Add(ref srcStartRef, (IntPtr)(source.Length - Sha384BlockSize + 1));
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
-                ref byte srcSimdEndRef = ref Unsafe.Add(ref srcStartRef, source.Length - 4 * Sha384BlockSize + 1);
+                ref byte srcSimdEndRef = ref Unsafe.Add(ref srcStartRef, (IntPtr)(source.Length - 4 * Sha384BlockSize + 1));
                 if (Unsafe.IsAddressLessThan(ref srcRef, ref srcSimdEndRef))
                 {
                     Vector256<ulong>[] returnToPool;
@@ -131,9 +135,9 @@ namespace JsonWebToken
             // final
             Unsafe.CopyBlockUnaligned(ref lastBlockRef, ref srcRef, (uint)remaining);
 
-        Final:
+        Padding:
             // Pad the last block
-            Unsafe.Add(ref lastBlockRef, remaining) = 0x80;
+            Unsafe.Add(ref lastBlockRef, (IntPtr)remaining) = 0x80;
             lastBlock.Slice(remaining + 1).Clear();
             if (remaining >= Sha384BlockSize - 2 * sizeof(ulong))
             {
@@ -152,14 +156,17 @@ namespace JsonWebToken
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
-                Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), Sha512._littleEndianMask256));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), Sha512._littleEndianMask128));
+                var shuffleMask = ReadVector256(LittleEndianMask);
+                var shuffleMask2 = ReadVector128(LittleEndianMask);
+                Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), shuffleMask));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), shuffleMask2));
             }
             else if (Ssse3.IsSupported)
             {
-                Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), Sha512._littleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 16), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 16)), Sha512._littleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), Sha512._littleEndianMask128));
+                var shuffleMask = ReadVector128(LittleEndianMask);
+                Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), shuffleMask));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 16), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 16)), shuffleMask));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), shuffleMask));
             }
             else
 #endif

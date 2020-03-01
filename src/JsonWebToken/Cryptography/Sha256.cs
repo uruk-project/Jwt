@@ -81,13 +81,13 @@ namespace JsonWebToken
                     int srcRemained = Sha256BlockSize - prepend.Length;
                     if (dataLength >= Sha256BlockSize)
                     {
-                        Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref lastBlockRef, prepend.Length), ref srcRef, (uint)srcRemained);
+                        Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref lastBlockRef, (IntPtr)prepend.Length), ref srcRef, (uint)srcRemained);
                         Transform(ref stateRef, ref lastBlockRef, ref wRef);
-                        srcRef = ref Unsafe.Add(ref srcRef, srcRemained);
+                        srcRef = ref Unsafe.Add(ref srcRef, (IntPtr)srcRemained);
                     }
                     else
                     {
-                        Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref lastBlockRef, prepend.Length), ref srcRef, (uint)source.Length);
+                        Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref lastBlockRef, (IntPtr)prepend.Length), ref srcRef, (uint)source.Length);
                         goto Final;
                     }
                 }
@@ -101,7 +101,7 @@ namespace JsonWebToken
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Ssse3.IsSupported)
             {
-                ref byte src128EndRef = ref Unsafe.Add(ref srcStartRef, source.Length - 4 * Sha256BlockSize + 1);
+                ref byte src128EndRef = ref Unsafe.Add(ref srcStartRef, (IntPtr)(source.Length - 4 * Sha256BlockSize + 1));
                 if (Unsafe.IsAddressLessThan(ref srcRef, ref src128EndRef))
                 {
                     Vector128<uint>[] returnToPool;
@@ -128,11 +128,11 @@ namespace JsonWebToken
                 srcRef = ref Unsafe.Add(ref srcRef, Sha256BlockSize);
             }
 
-        // final
+            // final
             Unsafe.CopyBlockUnaligned(ref lastBlockRef, ref srcRef, (uint)remaining);
         Final:
             // Pad the last block
-            Unsafe.Add(ref lastBlockRef, remaining) = 0x80;
+            Unsafe.Add(ref lastBlockRef, (IntPtr)remaining) = 0x80;
             lastBlock.Slice(remaining + 1).Clear();
             if (remaining >= Sha256BlockSize - sizeof(ulong))
             {
@@ -152,7 +152,7 @@ namespace JsonWebToken
             }
             else if (Ssse3.IsSupported)
             {
-                Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>   (ref Unsafe.As<uint, byte>(ref stateRef)), _shuffleMask128));
+                Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<uint, byte>(ref stateRef)), _shuffleMask128));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 16), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<uint, byte>(ref stateRef), 16)), _shuffleMask128));
             }
             else
@@ -170,13 +170,12 @@ namespace JsonWebToken
         }
 
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+        internal static Vector256<long> GatherMask = Vector256.Create(0L, 16, 32, 48);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<uint> Gather(ref byte message)
+        private static unsafe Vector128<uint> Gather(ref byte message)
         {
-            var temp = Sse2.ConvertScalarToVector128UInt32(Unsafe.ReadUnaligned<uint>(ref message));
-            temp = Sse41.Insert(temp, Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref message, 16 * 4)), 1);
-            temp = Sse41.Insert(temp, Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref message, 32 * 4)), 2);
-            return Sse41.Insert(temp, Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref message, 48 * 4)), 3);
+            return Avx2.GatherVector128((uint*)Unsafe.AsPointer(ref message), GatherMask, 8);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -192,15 +191,16 @@ namespace JsonWebToken
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<uint> Schedule(in Vector128<uint> w0, in Vector128<uint> w1, in Vector128<uint> w9, in Vector128<uint> w14, int i, ref Vector128<uint> schedule)
+        private static Vector128<uint> Schedule(in Vector128<uint> w0, in Vector128<uint> w1, in Vector128<uint> w9, in Vector128<uint> w14, IntPtr i, ref Vector128<uint> schedule)
         {
             Unsafe.Add(ref schedule, i) = Sse2.Add(w0, K128(i));
             return Sse2.Add(Sse2.Add(w0, w9), Sse2.Add(Sigma0(w1), Sigma1(w14)));
         }
 
-        private void Schedule(ref Vector128<uint> schedule, ref byte message)
+        private static unsafe void Schedule(ref Vector128<uint> schedule, ref byte message)
         {
             Vector128<uint> W0, W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W11, W12, W13, W14, W15;
+            var _littleEndianMask128 = ReadVector128(LittleEndianMask);
             W0 = Ssse3.Shuffle(Gather(ref message).AsByte(), _littleEndianMask128).AsUInt32();
             W1 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 1)).AsByte(), _littleEndianMask128).AsUInt32();
             W2 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 2)).AsByte(), _littleEndianMask128).AsUInt32();
@@ -217,69 +217,98 @@ namespace JsonWebToken
             W13 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 13)).AsByte(), _littleEndianMask128).AsUInt32();
             W14 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 14)).AsByte(), _littleEndianMask128).AsUInt32();
             W15 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 15)).AsByte(), _littleEndianMask128).AsUInt32();
-            int i = 0;
+            IntPtr i = (IntPtr)0;
             do
             {
-                W0 = Schedule(W0, W1, W9, W14, i++, ref schedule);
-                W1 = Schedule(W1, W2, W10, W15, i++, ref schedule);
-                W2 = Schedule(W2, W3, W11, W0, i++, ref schedule);
-                W3 = Schedule(W3, W4, W12, W1, i++, ref schedule);
-                W4 = Schedule(W4, W5, W13, W2, i++, ref schedule);
-                W5 = Schedule(W5, W6, W14, W3, i++, ref schedule);
-                W6 = Schedule(W6, W7, W15, W4, i++, ref schedule);
-                W7 = Schedule(W7, W8, W0, W5, i++, ref schedule);
-                W8 = Schedule(W8, W9, W1, W6, i++, ref schedule);
-                W9 = Schedule(W9, W10, W2, W7, i++, ref schedule);
-                W10 = Schedule(W10, W11, W3, W8, i++, ref schedule);
-                W11 = Schedule(W11, W12, W4, W9, i++, ref schedule);
-                W12 = Schedule(W12, W13, W5, W10, i++, ref schedule);
-                W13 = Schedule(W13, W14, W6, W11, i++, ref schedule);
-                W14 = Schedule(W14, W15, W7, W12, i++, ref schedule);
-                W15 = Schedule(W15, W0, W8, W13, i++, ref schedule);
-            }
-            while (i < 32);
+                W0 = Schedule(W0, W1, W9, W14, i, ref schedule);
+                i += 1;
+                W1 = Schedule(W1, W2, W10, W15, i, ref schedule);
+                i += 1;
+                W2 = Schedule(W2, W3, W11, W0, i, ref schedule);
+                i += 1;
+                W3 = Schedule(W3, W4, W12, W1, i, ref schedule);
+                i += 1;
+                W4 = Schedule(W4, W5, W13, W2, i, ref schedule);
+                i += 1;
+                W5 = Schedule(W5, W6, W14, W3, i, ref schedule);
+                i += 1;
+                W6 = Schedule(W6, W7, W15, W4, i, ref schedule);
+                i += 1;
+                W7 = Schedule(W7, W8, W0, W5, i, ref schedule);
+                i += 1;
+                W8 = Schedule(W8, W9, W1, W6, i, ref schedule);
+                i += 1;
+                W9 = Schedule(W9, W10, W2, W7, i, ref schedule);
+                i += 1;
+                W10 = Schedule(W10, W11, W3, W8, i, ref schedule);
+                i += 1;
+                W11 = Schedule(W11, W12, W4, W9, i, ref schedule);
+                i += 1;
+                W12 = Schedule(W12, W13, W5, W10, i, ref schedule);
+                i += 1;
+                W13 = Schedule(W13, W14, W6, W11, i, ref schedule);
+                i += 1;
+                W14 = Schedule(W14, W15, W7, W12, i, ref schedule);
+                i += 1;
+                W15 = Schedule(W15, W0, W8, W13, i, ref schedule);
+                i += 1;
+            } while ((byte*)i < (byte*)32);
 
-            W0 = Schedule(W0, W1, W9, W14, i++, ref schedule);
-            Unsafe.Add(ref schedule, 48) = Sse2.Add(W0, K128(48));
-            W1 = Schedule(W1, W2, W10, W15, i++, ref schedule);
-            Unsafe.Add(ref schedule, 49) = Sse2.Add(W1, K128(49));
-            W2 = Schedule(W2, W3, W11, W0, i++, ref schedule);
-            Unsafe.Add(ref schedule, 50) = Sse2.Add(W2, K128(50));
-            W3 = Schedule(W3, W4, W12, W1, i++, ref schedule);
-            Unsafe.Add(ref schedule, 51) = Sse2.Add(W3, K128(51));
-            W4 = Schedule(W4, W5, W13, W2, i++, ref schedule);
-            Unsafe.Add(ref schedule, 52) = Sse2.Add(W4, K128(52));
-            W5 = Schedule(W5, W6, W14, W3, i++, ref schedule);
-            Unsafe.Add(ref schedule, 53) = Sse2.Add(W5, K128(53));
-            W6 = Schedule(W6, W7, W15, W4, i++, ref schedule);
-            Unsafe.Add(ref schedule, 54) = Sse2.Add(W6, K128(54));
-            W7 = Schedule(W7, W8, W0, W5, i++, ref schedule);
-            Unsafe.Add(ref schedule, 55) = Sse2.Add(W7, K128(55));
-            W8 = Schedule(W8, W9, W1, W6, i++, ref schedule);
-            Unsafe.Add(ref schedule, 56) = Sse2.Add(W8, K128(56));
-            W9 = Schedule(W9, W10, W2, W7, i++, ref schedule);
-            Unsafe.Add(ref schedule, 57) = Sse2.Add(W9, K128(57));
-            W10 = Schedule(W10, W11, W3, W8, i++, ref schedule);
-            Unsafe.Add(ref schedule, 58) = Sse2.Add(W10, K128(58));
-            W11 = Schedule(W11, W12, W4, W9, i++, ref schedule);
-            Unsafe.Add(ref schedule, 59) = Sse2.Add(W11, K128(59));
-            W12 = Schedule(W12, W13, W5, W10, i++, ref schedule);
-            Unsafe.Add(ref schedule, 60) = Sse2.Add(W12, K128(60));
-            W13 = Schedule(W13, W14, W6, W11, i++, ref schedule);
-            Unsafe.Add(ref schedule, 61) = Sse2.Add(W13, K128(61));
-            W14 = Schedule(W14, W15, W7, W12, i++, ref schedule);
-            Unsafe.Add(ref schedule, 62) = Sse2.Add(W14, K128(62));
+            W0 = Schedule(W0, W1, W9, W14, i, ref schedule);
+            i += 1;
+            Unsafe.Add(ref schedule, 48) = Sse2.Add(W0, K128((IntPtr)48));
+            W1 = Schedule(W1, W2, W10, W15, i, ref schedule);
+            i += 1;
+            Unsafe.Add(ref schedule, 49) = Sse2.Add(W1, K128((IntPtr)49));
+            W2 = Schedule(W2, W3, W11, W0, i, ref schedule);
+            i += 1;
+            Unsafe.Add(ref schedule, 50) = Sse2.Add(W2, K128((IntPtr)50));
+            W3 = Schedule(W3, W4, W12, W1, i, ref schedule);
+            i += 1;
+            Unsafe.Add(ref schedule, 51) = Sse2.Add(W3, K128((IntPtr)51));
+            W4 = Schedule(W4, W5, W13, W2, i, ref schedule);
+            i += 1;
+            Unsafe.Add(ref schedule, 52) = Sse2.Add(W4, K128((IntPtr)52));
+            W5 = Schedule(W5, W6, W14, W3, i, ref schedule);
+            i += 1;
+            Unsafe.Add(ref schedule, 53) = Sse2.Add(W5, K128((IntPtr)53));
+            W6 = Schedule(W6, W7, W15, W4, i, ref schedule);
+            i += 1;
+            Unsafe.Add(ref schedule, 54) = Sse2.Add(W6, K128((IntPtr)54));
+            W7 = Schedule(W7, W8, W0, W5, i, ref schedule);
+            i += 1;
+            Unsafe.Add(ref schedule, 55) = Sse2.Add(W7, K128((IntPtr)55));
+            W8 = Schedule(W8, W9, W1, W6, i, ref schedule);
+            i += 1;
+            Unsafe.Add(ref schedule, 56) = Sse2.Add(W8, K128((IntPtr)56));
+            W9 = Schedule(W9, W10, W2, W7, i, ref schedule);
+            i += 1;
+            Unsafe.Add(ref schedule, 57) = Sse2.Add(W9, K128((IntPtr)57));
+            W10 = Schedule(W10, W11, W3, W8, i, ref schedule);
+            i += 1;
+            Unsafe.Add(ref schedule, 58) = Sse2.Add(W10, K128((IntPtr)58));
+            W11 = Schedule(W11, W12, W4, W9, i, ref schedule);
+            i += 1;
+            Unsafe.Add(ref schedule, 59) = Sse2.Add(W11, K128((IntPtr)59));
+            W12 = Schedule(W12, W13, W5, W10, i, ref schedule);
+            i += 1;
+            Unsafe.Add(ref schedule, 60) = Sse2.Add(W12, K128((IntPtr)60));
+            W13 = Schedule(W13, W14, W6, W11, i, ref schedule);
+            i += 1;
+            Unsafe.Add(ref schedule, 61) = Sse2.Add(W13, K128((IntPtr)61));
+            W14 = Schedule(W14, W15, W7, W12, i, ref schedule);
+            i += 1;
+            Unsafe.Add(ref schedule, 62) = Sse2.Add(W14, K128((IntPtr)62));
             W15 = Schedule(W15, W0, W8, W13, i, ref schedule);
-            Unsafe.Add(ref schedule, 63) = Sse2.Add(W15, K128(63));
+            Unsafe.Add(ref schedule, 63) = Sse2.Add(W15, K128((IntPtr)63));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        private void Transform(ref uint state, ref byte currentBlock, ref Vector128<uint> w)
+        private static unsafe void Transform(ref uint state, ref byte currentBlock, ref Vector128<uint> w)
         {
             ref uint wEnd = ref Unsafe.As<Vector128<uint>, uint>(ref Unsafe.Add(ref w, 64));
             uint a, b, c, d, e, f, g, h;
             Schedule(ref w, ref currentBlock);
-            for (int j = 0; j < 4; j++)
+            for (IntPtr j = (IntPtr)0; (byte*)j < (byte*)4; j += 1)
             {
                 a = state;
                 b = Unsafe.Add(ref state, 1);
@@ -331,17 +360,19 @@ namespace JsonWebToken
         }
 #endif
 
-        private void Transform(ref uint state, ref byte currentBlock, ref uint w)
+        private static void Transform(ref uint state, ref byte currentBlock, ref uint w)
         {
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             ref byte wRef = ref Unsafe.As<uint, byte>(ref w);
             if (Avx2.IsSupported)
             {
+                var LittleEndianMask256 = ReadVector256(LittleEndianMask);
                 Unsafe.WriteUnaligned(ref wRef, Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref currentBlock), LittleEndianMask256));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 32)), LittleEndianMask256));
             }
             else if (Ssse3.IsSupported)
             {
+                var _littleEndianMask128 = ReadVector128(LittleEndianMask);
                 Unsafe.WriteUnaligned(ref wRef, Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref currentBlock), _littleEndianMask128));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 16), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 16)), _littleEndianMask128));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 32)), _littleEndianMask128));
@@ -350,9 +381,12 @@ namespace JsonWebToken
             else
 #endif
             {
-                for (int i = 0, j = 0; i < 16; ++i, j += 4)
+                unsafe
                 {
-                    Unsafe.Add(ref w, i) = BinaryPrimitives.ReverseEndianness(Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref currentBlock, j)));
+                    for (IntPtr i = (IntPtr)0, j = (IntPtr)0; (byte*)i < (byte*)16; i += 1, j += sizeof(uint))
+                    {
+                        Unsafe.Add(ref w, i) = BinaryPrimitives.ReverseEndianness(Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref currentBlock, j)));
+                    }
                 }
             }
 
@@ -468,26 +502,8 @@ namespace JsonWebToken
         };
 
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
-        // 3, 2, 1, 0, 7, 6, 5, 4,
-        // 11, 10, 9, 8, 15, 14, 13, 12,
-        // 19, 18, 17, 16, 23, 22, 21, 20,
-        // 27, 26, 25, 24, 31, 30, 29, 28
-        private static readonly Vector256<byte> LittleEndianMask256 = Vector256.Create(
-                289644378169868803,
-                868365760874482187,
-                1447087143579095571,
-                2025808526283708955
-                ).AsByte();
-
-        // 3, 2, 1, 0, 7, 6, 5, 4,
-        // 11, 10, 9, 8, 15, 14, 13, 12
-        private static readonly Vector128<byte> _littleEndianMask128 = Vector128.Create(
-                289644378169868803,
-                868365760874482187
-                ).AsByte();
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<uint> K128(int i) => Unsafe.Add(ref _k128[0], i);
+        private static Vector128<uint> K128(IntPtr i) => Unsafe.Add(ref _k128[0], i);
 
         private static readonly Vector128<uint>[] _k128 = {
             Vector128.Create(0x428a2f98u),
@@ -573,8 +589,6 @@ namespace JsonWebToken
                 289644378169868803,
                 868365760874482187
                 ).AsByte();
-
 #endif
-
     }
 }

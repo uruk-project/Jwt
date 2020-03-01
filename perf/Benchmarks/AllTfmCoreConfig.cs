@@ -33,7 +33,7 @@ namespace JsonWebToken.Performance
             //    .With(new GcMode { Server = true }));
 
             Add(Job.Default
-                .With(CoreRuntime.Core30)
+                .With(CoreRuntime.Core31)
                 .With(new GcMode { Server = true }));
         }
     }
