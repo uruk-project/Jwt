@@ -170,12 +170,12 @@ namespace JsonWebToken
         }
 
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
-        internal static Vector256<long> GatherMask = Vector256.Create(0L, 16, 32, 48);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe Vector128<uint> Gather(ref byte message)
+        private static Vector128<uint> Gather(ref byte message)
         {
-            return Avx2.GatherVector128((uint*)Unsafe.AsPointer(ref message), GatherMask, 8);
+            var temp = Sse2.ConvertScalarToVector128UInt32(Unsafe.ReadUnaligned<uint>(ref message));
+            temp = Sse41.Insert(temp, Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref message, 16 * 4)), 1);
+            temp = Sse41.Insert(temp, Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref message, 32 * 4)), 2);
+            return Sse41.Insert(temp, Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref message, 48 * 4)), 3);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
