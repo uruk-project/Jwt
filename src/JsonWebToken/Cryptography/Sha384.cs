@@ -72,26 +72,22 @@ namespace JsonWebToken
             {
                 if (prepend.Length == Sha384BlockSize)
                 {
-                    // Consider the prepend as the first block
                     Sha512.Transform(ref stateRef, ref MemoryMarshal.GetReference(prepend), ref wRef);
                 }
                 else if (prepend.Length < Sha384BlockSize)
                 {
-                    // Copy the prepend into the buffer
                     Unsafe.CopyBlockUnaligned(ref lastBlockRef, ref MemoryMarshal.GetReference(prepend), (uint)prepend.Length);
-                    int srcRemained = Sha384BlockSize - prepend.Length;
                     if (dataLength >= Sha384BlockSize)
                     {
-                        // Copy the fist bytes of the source into the buffer, transform this block and increment the source offset
-                        Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref lastBlockRef, (IntPtr)prepend.Length), ref srcRef, (uint)srcRemained);
+                        int srcRemained = Sha384BlockSize - prepend.Length;
+                        Unsafe.CopyBlockUnaligned(ref Unsafe.AddByteOffset(ref lastBlockRef, (IntPtr)prepend.Length), ref srcRef, (uint)srcRemained);
                         Sha512.Transform(ref stateRef, ref lastBlockRef, ref wRef);
-                        srcRef = ref Unsafe.Add(ref srcRef, (IntPtr)srcRemained);
+                        srcRef = ref Unsafe.AddByteOffset(ref srcRef, (IntPtr)srcRemained);
                     }
                     else
                     {
-                        // Copy the source into the buffer and go to the padding part of the hashing
-                        Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref lastBlockRef, (IntPtr)prepend.Length), ref srcRef, (uint)source.Length);
-                        goto Padding;
+                        Unsafe.CopyBlockUnaligned(ref Unsafe.AddByteOffset(ref lastBlockRef, (IntPtr)prepend.Length), ref srcRef, (uint)source.Length);
+                        goto Final;
                     }
                 }
                 else
@@ -100,11 +96,11 @@ namespace JsonWebToken
                 }
             }
 
-            ref byte srcEndRef = ref Unsafe.Add(ref srcStartRef, (IntPtr)(source.Length - Sha384BlockSize + 1));
+            ref byte srcEndRef = ref Unsafe.AddByteOffset(ref srcStartRef, (IntPtr)(source.Length - Sha384BlockSize + 1));
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
-                ref byte srcSimdEndRef = ref Unsafe.Add(ref srcStartRef, (IntPtr)(source.Length - 4 * Sha384BlockSize + 1));
+                ref byte srcSimdEndRef = ref Unsafe.AddByteOffset(ref srcStartRef, (IntPtr)(source.Length - 4 * Sha384BlockSize + 1));
                 if (Unsafe.IsAddressLessThan(ref srcRef, ref srcSimdEndRef))
                 {
                     Vector256<ulong>[] returnToPool;
@@ -115,7 +111,7 @@ namespace JsonWebToken
                         do
                         {
                             Sha512.Transform(ref stateRef, ref srcRef, ref w4Ref);
-                            srcRef = ref Unsafe.Add(ref srcRef, Sha384BlockSize * 4);
+                            srcRef = ref Unsafe.AddByteOffset(ref srcRef, (IntPtr)(Sha384BlockSize * 4));
                         } while (Unsafe.IsAddressLessThan(ref srcRef, ref srcSimdEndRef));
                     }
                     finally
@@ -129,15 +125,15 @@ namespace JsonWebToken
             while (Unsafe.IsAddressLessThan(ref srcRef, ref srcEndRef))
             {
                 Sha512.Transform(ref stateRef, ref srcRef, ref wRef);
-                srcRef = ref Unsafe.Add(ref srcRef, Sha384BlockSize);
+                srcRef = ref Unsafe.AddByteOffset(ref srcRef, (IntPtr)Sha384BlockSize);
             }
 
             // final
             Unsafe.CopyBlockUnaligned(ref lastBlockRef, ref srcRef, (uint)remaining);
 
-        Padding:
+        Final:
             // Pad the last block
-            Unsafe.Add(ref lastBlockRef, (IntPtr)remaining) = 0x80;
+            Unsafe.AddByteOffset(ref lastBlockRef, (IntPtr)remaining) = 0x80;
             lastBlock.Slice(remaining + 1).Clear();
             if (remaining >= Sha384BlockSize - 2 * sizeof(ulong))
             {
@@ -147,8 +143,8 @@ namespace JsonWebToken
 
             // Append to the padding the total message's length in bits and transform.
             ulong bitLength = (ulong)dataLength << 3;
-            Unsafe.WriteUnaligned(ref Unsafe.Add(ref lastBlockRef, Sha384BlockSize - 16), 0ul); // Don't support input length > 2^64
-            Unsafe.WriteUnaligned(ref Unsafe.Add(ref lastBlockRef, Sha384BlockSize - 8), BinaryPrimitives.ReverseEndianness(bitLength));
+            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref lastBlockRef, (IntPtr)(Sha384BlockSize - 16)), 0ul); // Don't support input length > 2^64
+            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref lastBlockRef, (IntPtr)(Sha384BlockSize - 8)), BinaryPrimitives.ReverseEndianness(bitLength));
             Sha512.Transform(ref stateRef, ref lastBlockRef, ref wRef);
 
             // reverse all the bytes when copying the final state to the output hash.
@@ -156,27 +152,24 @@ namespace JsonWebToken
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
-                var shuffleMask = ReadVector256(LittleEndianMask);
-                var shuffleMask2 = ReadVector128(LittleEndianMask);
-                Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), shuffleMask));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), shuffleMask2));
+                Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), Sha512._littleEndianMask256));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref Unsafe.As<ulong, byte>(ref stateRef), (IntPtr)32)), Sha512._littleEndianMask128));
             }
             else if (Ssse3.IsSupported)
             {
-                var shuffleMask = ReadVector128(LittleEndianMask);
-                Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), shuffleMask));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 16), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 16)), shuffleMask));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), shuffleMask));
+                Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), Sha512._littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)16), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref Unsafe.As<ulong, byte>(ref stateRef), (IntPtr)16)), Sha512._littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref Unsafe.As<ulong, byte>(ref stateRef), (IntPtr)32)), Sha512._littleEndianMask128));
             }
             else
 #endif
             {
                 Unsafe.WriteUnaligned(ref destinationRef, BinaryPrimitives.ReverseEndianness(stateRef));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 8), BinaryPrimitives.ReverseEndianness(Unsafe.Add(ref stateRef, 1)));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 16), BinaryPrimitives.ReverseEndianness(Unsafe.Add(ref stateRef, 2)));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 24), BinaryPrimitives.ReverseEndianness(Unsafe.Add(ref stateRef, 3)));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), BinaryPrimitives.ReverseEndianness(Unsafe.Add(ref stateRef, 4)));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 40), BinaryPrimitives.ReverseEndianness(Unsafe.Add(ref stateRef, 5)));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)8), BinaryPrimitives.ReverseEndianness(Unsafe.AddByteOffset(ref stateRef, (IntPtr)1)));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)16), BinaryPrimitives.ReverseEndianness(Unsafe.AddByteOffset(ref stateRef, (IntPtr)2)));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)24), BinaryPrimitives.ReverseEndianness(Unsafe.AddByteOffset(ref stateRef, (IntPtr)3)));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)32), BinaryPrimitives.ReverseEndianness(Unsafe.AddByteOffset(ref stateRef, (IntPtr)4)));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)40), BinaryPrimitives.ReverseEndianness(Unsafe.AddByteOffset(ref stateRef, (IntPtr)5)));
             }
         }
     }
