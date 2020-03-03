@@ -16,7 +16,7 @@ namespace JsonWebToken
     /// <summary>
     /// Computes SHA2-512 hash values.
     /// </summary>
-    public class Sha384 : Sha2
+    public sealed class Sha384 : Sha2
     {
         private const int Sha384HashSize = 48;
         private const int Sha384BlockSize = 128;
@@ -33,13 +33,22 @@ namespace JsonWebToken
         public override int BlockSize => Sha384BlockSize;
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<uint> w)
+        public override int GetWorkingSetSize(int sourceLength)
         {
-            throw new NotImplementedException();
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+            if (Ssse3.IsSupported)
+            {
+                return sourceLength >= 4 * Sha384BlockSize ? 80 * 32 : 80 * 8;
+            }
+            else
+#endif
+            {
+                return 80 * 8;
+            }
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<ulong> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> workingSet)
         {
             if (destination.Length < Sha384HashSize)
             {
@@ -63,8 +72,8 @@ namespace JsonWebToken
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
-            Span<ulong> wTemp = w.IsEmpty ? stackalloc ulong[80] : w;
-            ref ulong wRef = ref MemoryMarshal.GetReference(wTemp);
+            Span<byte> wTemp = workingSet.Length < 80 * sizeof(ulong) ? stackalloc byte[80 * sizeof(ulong)] : workingSet;
+            ref ulong wRef = ref Unsafe.As<byte, ulong>(ref MemoryMarshal.GetReference(wTemp));
             ref ulong stateRef = ref MemoryMarshal.GetReference(state);
             ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
             ref byte srcRef = ref srcStartRef;
@@ -103,11 +112,11 @@ namespace JsonWebToken
                 ref byte srcSimdEndRef = ref Unsafe.AddByteOffset(ref srcStartRef, (IntPtr)(source.Length - 4 * Sha384BlockSize + 1));
                 if (Unsafe.IsAddressLessThan(ref srcRef, ref srcSimdEndRef))
                 {
-                    Vector256<ulong>[] returnToPool;
-                    Span<Vector256<ulong>> w4 = returnToPool = ArrayPool<Vector256<ulong>>.Shared.Rent(80);
+                    byte[]? returnToPool = null;
+                    Span<byte> w4 = workingSet.Length < 80 * 32 ? (returnToPool = ArrayPool<byte>.Shared.Rent(80 * 32)) : workingSet;
                     try
                     {
-                        ref Vector256<ulong> w4Ref = ref MemoryMarshal.GetReference(w4);
+                        ref Vector256<ulong> w4Ref = ref Unsafe.As<byte, Vector256<ulong>>(ref MemoryMarshal.GetReference(w4));
                         do
                         {
                             Sha512.Transform(ref stateRef, ref srcRef, ref w4Ref);
@@ -116,7 +125,10 @@ namespace JsonWebToken
                     }
                     finally
                     {
-                        ArrayPool<Vector256<ulong>>.Shared.Return(returnToPool);
+                        if (returnToPool != null)
+                        {
+                            ArrayPool<byte>.Shared.Return(returnToPool);
+                        }
                     }
                 }
             }
@@ -152,14 +164,14 @@ namespace JsonWebToken
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
-                Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.As<ulong, Vector256<byte>>(ref stateRef), Sha512._littleEndianMask256));
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)32), Ssse3.Shuffle(Unsafe.AddByteOffset(ref Unsafe.As<ulong, Vector128<byte>>(ref stateRef), (IntPtr)32), Sha512._littleEndianMask128));
+                Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.As<ulong, Vector256<byte>>(ref stateRef), EndiannessMask256UInt64));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)32), Ssse3.Shuffle(Unsafe.AddByteOffset(ref Unsafe.As<ulong, Vector128<byte>>(ref stateRef), (IntPtr)32), EndiannessMask128UInt64));
             }
             else if (Ssse3.IsSupported)
             {
-                Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.As<ulong, Vector128<byte>>(ref stateRef), Sha512._littleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)16), Ssse3.Shuffle(Unsafe.AddByteOffset(ref Unsafe.As<ulong, Vector128<byte>>(ref stateRef), (IntPtr)16), Sha512._littleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)32), Ssse3.Shuffle(Unsafe.AddByteOffset(ref Unsafe.As<ulong, Vector128<byte>>(ref stateRef), (IntPtr)32), Sha512._littleEndianMask128));
+                Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.As<ulong, Vector128<byte>>(ref stateRef), EndiannessMask128UInt64));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)16), Ssse3.Shuffle(Unsafe.AddByteOffset(ref Unsafe.As<ulong, Vector128<byte>>(ref stateRef), (IntPtr)16), EndiannessMask128UInt64));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)32), Ssse3.Shuffle(Unsafe.AddByteOffset(ref Unsafe.As<ulong, Vector128<byte>>(ref stateRef), (IntPtr)32), EndiannessMask128UInt64));
             }
             else
 #endif

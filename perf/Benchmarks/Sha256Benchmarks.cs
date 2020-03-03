@@ -14,7 +14,6 @@ using System.Text;
 
 namespace JsonWebToken.Performance
 {
-    [MemoryDiagnoser]
     public class Sha256Benchmarks
     {
         private static readonly SHA256 _clrSha256 = SHA256.Create();
@@ -44,7 +43,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetData))]
         public byte[] Sha256_Original(byte[] value)
         {
-            _sha256_Original.ComputeHash(value, _buffer, default, default(Span<uint>));
+            _sha256_Original.ComputeHash(value, _buffer, default, default);
             return _buffer;
         }
 
@@ -52,7 +51,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetData))]
         public byte[] Sha256_Original_IntPtr(byte[] value)
         {
-            _sha256_Original_IntPtr.ComputeHash(value, _buffer, default, default(Span<uint>));
+            _sha256_Original_IntPtr.ComputeHash(value, _buffer, default, default);
             return _buffer;
         }
 
@@ -61,7 +60,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetData))]
         public byte[] Sha256_Original_IntPtr_KROS(byte[] value)
         {
-            _sha256_Original_IntPtr_KROS.ComputeHash(value, _buffer, default, default(Span<uint>));
+            _sha256_Original_IntPtr_KROS.ComputeHash(value, _buffer, default, default);
             return _buffer;
         }
 
@@ -70,7 +69,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetData))]
         public byte[] Sha256_Original_IntPtr_MaskROS(byte[] value)
         {
-            _sha256_Original_IntPtr_MaskROS.ComputeHash(value, _buffer, default, default(Span<uint>));
+            _sha256_Original_IntPtr_MaskROS.ComputeHash(value, _buffer, default, default);
             return _buffer;
         }
 
@@ -92,7 +91,7 @@ namespace JsonWebToken.Performance
         }
     }
 
-    public class Sha256_Original : Sha2
+    public sealed class Sha256_Original : Sha2
     {
         private const int Sha256HashSize = 32;
         private const int Sha256BlockSize = 64;
@@ -107,15 +106,25 @@ namespace JsonWebToken.Performance
 
         /// <inheritsdoc />
         public override int BlockSize => Sha256BlockSize;
-
+       
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<ulong> W)
+        public override int GetWorkingSetSize(int sourceLength)
         {
-            throw new NotImplementedException();
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+            if (Ssse3.IsSupported)
+            {
+                return sourceLength >= 4 * Sha256BlockSize ? 64 * 16 : 64 * 4;
+            }
+            else
+#endif
+            {
+                return 64 * 4;
+            }
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<uint> w)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
         {
             if (destination.Length < Sha256HashSize)
             {
@@ -139,8 +148,8 @@ namespace JsonWebToken.Performance
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
-            Span<uint> wTemp = w.IsEmpty ? stackalloc uint[64] : w;
-            ref uint wRef = ref MemoryMarshal.GetReference(wTemp);
+            Span<byte> wTemp = w.Length < 64 * sizeof(uint) ? stackalloc byte[64 * sizeof(uint)] : w;
+            ref uint wRef = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(wTemp));
             ref uint stateRef = ref MemoryMarshal.GetReference(state);
             ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
             ref byte srcRef = ref srcStartRef;
@@ -652,7 +661,7 @@ namespace JsonWebToken.Performance
 #endif
     }
 
-    public class Sha256_Original_IntPtr : Sha2
+    public sealed class Sha256_Original_IntPtr : Sha2
     {
         private const int Sha256HashSize = 32;
         private const int Sha256BlockSize = 64;
@@ -669,13 +678,22 @@ namespace JsonWebToken.Performance
         public override int BlockSize => Sha256BlockSize;
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<ulong> W)
+        public override int GetWorkingSetSize(int sourceLength)
         {
-            throw new NotImplementedException();
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+            if (Ssse3.IsSupported)
+            {
+                return sourceLength >= 4 * Sha256BlockSize ? 64 * 16 : 64 * 4;
+            }
+            else
+#endif
+            {
+                return 64 * 4;
+            }
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<uint> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
         {
             if (destination.Length < Sha256HashSize)
             {
@@ -699,8 +717,8 @@ namespace JsonWebToken.Performance
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
-            Span<uint> wTemp = w.IsEmpty ? stackalloc uint[64] : w;
-            ref uint wRef = ref MemoryMarshal.GetReference(wTemp);
+            Span<byte> wTemp = w.Length < 64 * sizeof(uint) ? stackalloc byte[64 * sizeof(uint)] : w;
+            ref uint wRef = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(wTemp));
             ref uint stateRef = ref MemoryMarshal.GetReference(state);
             ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
             ref byte srcRef = ref srcStartRef;
@@ -1259,13 +1277,22 @@ namespace JsonWebToken.Performance
         public override int BlockSize => Sha256BlockSize;
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<ulong> W)
+        public override int GetWorkingSetSize(int sourceLength)
         {
-            throw new NotImplementedException();
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+            if (Ssse3.IsSupported)
+            {
+                return sourceLength >= 4 * Sha256BlockSize ? 64 * 16 : 64 * 4;
+            }
+            else
+#endif
+            {
+                return 64 * 4;
+            }
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<uint> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
         {
             if (destination.Length < Sha256HashSize)
             {
@@ -1289,8 +1316,8 @@ namespace JsonWebToken.Performance
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
-            Span<uint> wTemp = w.IsEmpty ? stackalloc uint[64] : w;
-            ref uint wRef = ref MemoryMarshal.GetReference(wTemp);
+            Span<byte> wTemp = w.Length < 64 * sizeof(uint) ? stackalloc byte[64 * sizeof(uint)] : w;
+            ref uint wRef = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(wTemp));
             ref uint stateRef = ref MemoryMarshal.GetReference(state);
             ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
             ref byte srcRef = ref srcStartRef;
@@ -1426,7 +1453,7 @@ namespace JsonWebToken.Performance
         private unsafe void Schedule(ref Vector128<uint> schedule, ref byte message)
         {
             Vector128<uint> W0, W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W11, W12, W13, W14, W15;
-            var _littleEndianMask128 = ReadVector128(LittleEndianMask);
+            var _littleEndianMask128 = EndiannessMask128UInt32;
             W0 = Ssse3.Shuffle(Gather(ref message).AsByte(), _littleEndianMask128).AsUInt32();
             W1 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 1)).AsByte(), _littleEndianMask128).AsUInt32();
             W2 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 2)).AsByte(), _littleEndianMask128).AsUInt32();
@@ -1594,13 +1621,13 @@ namespace JsonWebToken.Performance
             ref byte wRef = ref Unsafe.As<uint, byte>(ref w);
             if (Avx2.IsSupported)
             {
-                var LittleEndianMask256 = ReadVector256(LittleEndianMask);
+                var LittleEndianMask256 = EndianessnMask256UInt32;
                 Unsafe.WriteUnaligned(ref wRef, Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref currentBlock), LittleEndianMask256));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 32)), LittleEndianMask256));
             }
             else if (Ssse3.IsSupported)
             {
-                var _littleEndianMask128 = ReadVector128(LittleEndianMask);
+                var _littleEndianMask128 = EndiannessMask128UInt32;
                 Unsafe.WriteUnaligned(ref wRef, Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref currentBlock), _littleEndianMask128));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 16), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 16)), _littleEndianMask128));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 32)), _littleEndianMask128));
@@ -1835,13 +1862,22 @@ namespace JsonWebToken.Performance
         public override int BlockSize => Sha256BlockSize;
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<ulong> W)
+        public override int GetWorkingSetSize(int sourceLength)
         {
-            throw new NotImplementedException();
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+            if (Ssse3.IsSupported)
+            {
+                return sourceLength >= 4 * Sha256BlockSize ? 64 * 16 : 64 * 4;
+            }
+            else
+#endif
+            {
+                return 64 * 4;
+            }
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<uint> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
         {
             if (destination.Length < Sha256HashSize)
             {
@@ -1865,8 +1901,8 @@ namespace JsonWebToken.Performance
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
-            Span<uint> wTemp = w.IsEmpty ? stackalloc uint[64] : w;
-            ref uint wRef = ref MemoryMarshal.GetReference(wTemp);
+            Span<byte> wTemp = w.Length < 64 * sizeof(uint) ? stackalloc byte[64 * sizeof(uint)] : w;
+            ref uint wRef = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(wTemp));
             ref uint stateRef = ref MemoryMarshal.GetReference(state);
             ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
             ref byte srcRef = ref srcStartRef;

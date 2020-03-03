@@ -2,12 +2,6 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
-#endif
 
 namespace JsonWebToken
 {
@@ -23,24 +17,6 @@ namespace JsonWebToken
         public HmacSha384(ReadOnlySpan<byte> key)
             : base(Sha384.Shared, key)
         {
-        }
-
-        /// <inheritsdoc />
-        public override int BlockSize => 128;
-
-        /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination)
-        {
-            // hash(o_key_pad ∥ hash(i_key_pad ∥ message));
-            Span<ulong> w = stackalloc ulong[80];
-            Sha2.ComputeHash(source, destination, _innerPadKey.Span, w);
-            Sha2.ComputeHash(destination, destination, _outerPadKey.Span, w);
-        }
-
-        /// <inheritsdoc />
-        protected override void ComputeKeyHash(ReadOnlySpan<byte> key, Span<byte> keyPrime)
-        {
-            Sha2.ComputeHash(key, keyPrime, default, default(Span<ulong>));
         }
     }
 }

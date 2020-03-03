@@ -18,23 +18,5 @@ namespace JsonWebToken
             : base(Sha256.Shared, key)
         {
         }
-
-        /// <inheritsdoc />
-        public override int BlockSize => 64;
-
-        /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination)
-        {
-            // hash(o_key_pad ∥ hash(i_key_pad ∥ message));         
-            Span<uint> W = stackalloc uint[64];
-            Sha2.ComputeHash(source, destination, _innerPadKey.Span, W);
-            Sha2.ComputeHash(destination, destination, _outerPadKey.Span, W);
-        }
-
-        /// <inheritsdoc />
-        protected override void ComputeKeyHash(ReadOnlySpan<byte> key, Span<byte> keyPrime)
-        {
-            Sha2.ComputeHash(key, keyPrime, default, default(Span<uint>));
-        }
     }
 }

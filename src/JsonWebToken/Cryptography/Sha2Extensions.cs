@@ -14,76 +14,26 @@ namespace JsonWebToken
         /// <summary>
         /// Computes the hash value for the specified <paramref name="source"/>.
         /// </summary>
-        /// <param name="sha256">The SHA-2 algorithm.</param>
+        /// <param name="sha2">The SHA-2 algorithm.</param>
         /// <param name="source">The data to hash.</param>
         /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ComputeHash(this Sha256 sha256, ReadOnlySpan<byte> source, Span<byte> destination)
+        public static void ComputeHash(this Sha2 sha2, ReadOnlySpan<byte> source, Span<byte> destination)
         {
-            sha256.ComputeHash(source, destination, default, default(Span<uint>));
-        } 
-        
+            sha2.ComputeHash(source, destination, default, default);
+        }
+
         /// <summary>
         /// Computes the hash value for the specified <paramref name="source"/>.
         /// </summary>
-        /// <param name="sha256">The SHA-2 algorithm.</param>
+        /// <param name="sha2">The SHA-2 algorithm.</param>
         /// <param name="source">The data to hash.</param>
         /// <param name="prepend">The data to concatenated to <paramref name="source"/> before to hash.</param>
         /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ComputeHash(this Sha256 sha256, ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination)
+        public static void ComputeHash(this Sha2 sha2, ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination)
         {
-            sha256.ComputeHash(source, destination, prepend, default(Span<uint>));
-        }
-
-        /// <summary>
-        /// Computes the hash value for the specified <paramref name="source"/>.
-        /// </summary>
-        /// <param name="sha384">The SHA-2 algorithm.</param>
-        /// <param name="source">The data to hash.</param>
-        /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ComputeHash(this Sha384 sha384, ReadOnlySpan<byte> source, Span<byte> destination)
-        {
-            sha384.ComputeHash(source, destination, default, default(Span<ulong>));
-        }
-
-        /// <summary>
-        /// Computes the hash value for the specified <paramref name="source"/>.
-        /// </summary>
-        /// <param name="sha384">The SHA-2 algorithm.</param>
-        /// <param name="source">The data to hash.</param>
-        /// <param name="prepend">The data to concatenated to <paramref name="source"/> before to hash.</param>
-        /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ComputeHash(this Sha384 sha384, ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination)
-        {
-            sha384.ComputeHash(source, destination, prepend, default(Span<ulong>));
-        }
-
-        /// <summary>
-        /// Computes the hash value for the specified <paramref name="source"/>.
-        /// </summary>
-        /// <param name="sha512">The SHA-2 algorithm.</param>
-        /// <param name="source">The data to hash.</param>
-        /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ComputeHash(this Sha512 sha512, ReadOnlySpan<byte> source, Span<byte> destination)
-        {
-            sha512.ComputeHash(source, destination, default, default(Span<ulong>));
-        }
-
-        /// <summary>
-        /// Computes the hash value for the specified <paramref name="source"/>.
-        /// </summary>
-        /// <param name="sha512">The SHA-2 algorithm.</param>
-        /// <param name="source">The data to hash.</param>
-        /// <param name="prepend">The data to concatenated to <paramref name="source"/> before to hash.</param>
-        /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ComputeHash(this Sha512 sha512, ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination)
-        {
-            sha512.ComputeHash(source, destination, prepend, default(Span<ulong>));
+            sha2.ComputeHash(source, destination, prepend, default);
         }
 
         /// <summary>
@@ -92,20 +42,9 @@ namespace JsonWebToken
         /// <param name="sha2">The SHA-2 algorithm.</param>
         /// <param name="source">The data to hash.</param>
         /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
-        /// <param name="W">The working set. Optionnal.</param>
+        /// <param name="workingSet">The working set. Optionnal.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ComputeHash(this Sha2 sha2, ReadOnlySpan<byte> source, Span<byte> destination, Span<uint> W)
-            => sha2.ComputeHash(source, destination, default, W);
-
-        /// <summary>
-        /// Computes the hash value for the specified <paramref name="source"/>.
-        /// </summary>
-        /// <param name="sha2">The SHA-2 algorithm.</param>
-        /// <param name="source">The data to hash.</param>
-        /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
-        /// <param name="W">The working set. Optionnal.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ComputeHash(this Sha2 sha2, ReadOnlySpan<byte> source, Span<byte> destination, Span<ulong> W)
-            => sha2.ComputeHash(source, destination, default, W);
+        public static void ComputeHash(this Sha2 sha2, ReadOnlySpan<byte> source, Span<byte> destination, Span<byte> workingSet)
+            => sha2.ComputeHash(source, destination, default, workingSet);
     }
 }

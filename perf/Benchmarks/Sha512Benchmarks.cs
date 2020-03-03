@@ -41,7 +41,7 @@ namespace JsonWebToken.Performance
             return _buffer;
         }
 
-        private static readonly ulong[] W = new ulong[80];
+        private static readonly byte[] W = new byte[80*8];
 
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetData))]
@@ -126,13 +126,22 @@ namespace JsonWebToken.Performance
         public override int BlockSize => Sha512BlockSize;
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<uint> W)
+        public override int GetWorkingSetSize(int sourceLength)
         {
-            throw new NotImplementedException();
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+            if (Ssse3.IsSupported)
+            {
+                return sourceLength >= 4 * Sha512BlockSize ? 80 * 32 : 80 * 8;
+            }
+            else
+#endif
+            {
+                return 80 * 8;
+            }
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<ulong> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -156,8 +165,8 @@ namespace JsonWebToken.Performance
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
-            Span<ulong> wTemp = w.IsEmpty ? stackalloc ulong[80] : w;
-            ref ulong wRef = ref MemoryMarshal.GetReference(wTemp);
+            Span<byte> wTemp = w.Length < 80 * sizeof(ulong) ? stackalloc byte[80 * sizeof(ulong)] : w;
+            ref ulong wRef = ref Unsafe.As<byte, ulong>(ref MemoryMarshal.GetReference(wTemp));
             ref ulong stateRef = ref MemoryMarshal.GetReference(state);
             ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
             ref byte srcRef = ref srcStartRef;
@@ -673,13 +682,22 @@ namespace JsonWebToken.Performance
         public override int BlockSize => Sha512BlockSize;
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<uint> W)
+        public override int GetWorkingSetSize(int sourceLength)
         {
-            throw new NotImplementedException();
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+            if (Ssse3.IsSupported)
+            {
+                return sourceLength >= 4 * Sha512BlockSize ? 80 * 32 : 80 * 8;
+            }
+            else
+#endif
+            {
+                return 80 * 8;
+            }
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<ulong> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -703,8 +721,8 @@ namespace JsonWebToken.Performance
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
-            Span<ulong> wTemp = w.IsEmpty ? stackalloc ulong[80] : w;
-            ref ulong wRef = ref MemoryMarshal.GetReference(wTemp);
+            Span<byte> wTemp = w.Length < 80 * sizeof(ulong) ? stackalloc byte[80 * sizeof(ulong)] : w;
+            ref ulong wRef = ref Unsafe.As<byte, ulong>(ref MemoryMarshal.GetReference(wTemp));
             ref ulong stateRef = ref MemoryMarshal.GetReference(state);
             ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
             ref byte srcRef = ref srcStartRef;
@@ -796,13 +814,13 @@ namespace JsonWebToken.Performance
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
-                var littleEndianMask = ReadVector256(LittleEndianMask);
+                var littleEndianMask = EndiannessMask256UInt64;
                 Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), littleEndianMask));
             }
             else if (Ssse3.IsSupported)
             {
-                var littleEndianMask = ReadVector128(LittleEndianMask);
+                var littleEndianMask = EndiannessMask128UInt64;
                 Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 16), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 16)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), littleEndianMask));
@@ -823,16 +841,10 @@ namespace JsonWebToken.Performance
         }
 
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
-        internal static ReadOnlySpan<byte> GatherMask => new byte[16]
-        {
-            0, 0, 0, 0,
-            16, 0, 0, 0,
-            32, 0, 0, 0,
-            48, 0, 0, 0,
-        };
+        private static readonly Vector256<long> GatherMask = Vector256.Create(0L, 16, 32, 48);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe Vector256<ulong> Gather(ref byte message, Vector128<int> gatherMask)
+        private static unsafe Vector256<ulong> Gather(ref byte message, Vector256<long> gatherMask)
         {
             return Avx2.GatherVector256((ulong*)Unsafe.AsPointer(ref message), gatherMask, 8);
         }
@@ -860,8 +872,8 @@ namespace JsonWebToken.Performance
         {
             int i = 0;
             Vector256<ulong> W0, W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W11, W12, W13, W14, W15;
-            var littleEndianMask = ReadVector256(LittleEndianMask);
-            var gatherMask = ReadVector128(GatherMask).AsInt32();
+            var littleEndianMask = EndiannessMask256UInt64;
+            var gatherMask = GatherMask;
             W0 = Avx2.Shuffle(Gather(ref message, gatherMask).AsByte(), littleEndianMask).AsUInt64();
             W1 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 1), gatherMask).AsByte(), littleEndianMask).AsUInt64();
             W2 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 2), gatherMask).AsByte(), littleEndianMask).AsUInt64();
@@ -980,7 +992,7 @@ namespace JsonWebToken.Performance
             ref byte wRef = ref Unsafe.As<ulong, byte>(ref w);
             if (Avx2.IsSupported)
             {
-                var littleEndianMask = ReadVector256(LittleEndianMask);
+                var littleEndianMask = EndiannessMask256UInt64;
                 Unsafe.WriteUnaligned(ref wRef, Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref currentBlock), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 32)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 64), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 64)), littleEndianMask));
@@ -988,7 +1000,7 @@ namespace JsonWebToken.Performance
             }
             else if (Ssse3.IsSupported)
             {
-                var littleEndianMask = ReadVector128(LittleEndianMask);
+                var littleEndianMask = EndiannessMask128UInt64;
                 Unsafe.WriteUnaligned(ref wRef, Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref currentBlock), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 16), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 16)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 32)), littleEndianMask));
@@ -1214,13 +1226,22 @@ namespace JsonWebToken.Performance
         public override int BlockSize => Sha512BlockSize;
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<uint> W)
+        public override int GetWorkingSetSize(int sourceLength)
         {
-            throw new NotImplementedException();
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+            if (Ssse3.IsSupported)
+            {
+                return sourceLength >= 4 * Sha512BlockSize ? 80 * 32 : 80 * 8;
+            }
+            else
+#endif
+            {
+                return 80 * 8;
+            }
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<ulong> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -1244,8 +1265,8 @@ namespace JsonWebToken.Performance
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
-            Span<ulong> wTemp = w.IsEmpty ? stackalloc ulong[80] : w;
-            ref ulong wRef = ref MemoryMarshal.GetReference(wTemp);
+            Span<byte> wTemp = w.Length < 80 * sizeof(ulong) ? stackalloc byte[80 * sizeof(ulong)] : w;
+            ref ulong wRef = ref Unsafe.As<byte, ulong>(ref MemoryMarshal.GetReference(wTemp));
             ref ulong stateRef = ref MemoryMarshal.GetReference(state);
             ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
             ref byte srcRef = ref srcStartRef;
@@ -1337,13 +1358,13 @@ namespace JsonWebToken.Performance
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
-                var littleEndianMask = ReadVector256(LittleEndianMask);
+                var littleEndianMask = EndiannessMask256UInt64;
                 Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), littleEndianMask));
             }
             else if (Ssse3.IsSupported)
             {
-                var littleEndianMask = ReadVector128(LittleEndianMask);
+                var littleEndianMask = EndiannessMask128UInt64;
                 Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 16), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 16)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), littleEndianMask));
@@ -1364,16 +1385,10 @@ namespace JsonWebToken.Performance
         }
 
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
-        internal static ReadOnlySpan<byte> GatherMask => new byte[16]
-        {
-            0, 0, 0, 0,
-            16, 0, 0, 0,
-            32, 0, 0, 0,
-            48, 0, 0, 0,
-        };
+        private static readonly Vector256<long> GatherMask = Vector256.Create(0L, 16, 32, 48);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe Vector256<ulong> Gather(ref byte message, Vector128<int> gatherMask)
+        private static unsafe Vector256<ulong> Gather(ref byte message, Vector256<long> gatherMask)
         {
             return Avx2.GatherVector256((ulong*)Unsafe.AsPointer(ref message), gatherMask, 8);
         }
@@ -1401,8 +1416,8 @@ namespace JsonWebToken.Performance
         {
             IntPtr i = (IntPtr)0;
             Vector256<ulong> W0, W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W11, W12, W13, W14, W15;
-            var littleEndianMask = ReadVector256(LittleEndianMask);
-            var gatherMask = ReadVector128(GatherMask).AsInt32();
+            var littleEndianMask = EndiannessMask256UInt64;
+            var gatherMask = GatherMask;
             W0 = Avx2.Shuffle(Gather(ref message, gatherMask).AsByte(), littleEndianMask).AsUInt64();
             W1 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 1), gatherMask).AsByte(), littleEndianMask).AsUInt64();
             W2 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 2), gatherMask).AsByte(), littleEndianMask).AsUInt64();
@@ -1573,7 +1588,7 @@ namespace JsonWebToken.Performance
             ref byte wRef = ref Unsafe.As<ulong, byte>(ref w);
             if (Avx2.IsSupported)
             {
-                var littleEndianMask = ReadVector256(LittleEndianMask);
+                var littleEndianMask = EndiannessMask256UInt64;
                 Unsafe.WriteUnaligned(ref wRef, Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref currentBlock), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 32)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 64), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 64)), littleEndianMask));
@@ -1581,7 +1596,7 @@ namespace JsonWebToken.Performance
             }
             else if (Ssse3.IsSupported)
             {
-                var littleEndianMask = ReadVector128(LittleEndianMask);
+                var littleEndianMask = EndiannessMask128UInt64;
                 Unsafe.WriteUnaligned(ref wRef, Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref currentBlock), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 16), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 16)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 32)), littleEndianMask));
@@ -1811,13 +1826,22 @@ namespace JsonWebToken.Performance
         public override int BlockSize => Sha512BlockSize;
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<uint> W)
+        public override int GetWorkingSetSize(int sourceLength)
         {
-            throw new NotImplementedException();
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+            if (Ssse3.IsSupported)
+            {
+                return sourceLength >= 4 * Sha512BlockSize ? 80 * 32 : 80 * 8;
+            }
+            else
+#endif
+            {
+                return 80 * 8;
+            }
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<ulong> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -1841,8 +1865,8 @@ namespace JsonWebToken.Performance
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
-            Span<ulong> wTemp = w.IsEmpty ? stackalloc ulong[80] : w;
-            ref ulong wRef = ref MemoryMarshal.GetReference(wTemp);
+            Span<byte> wTemp = w.Length < 80 * sizeof(ulong) ? stackalloc byte[80 * sizeof(ulong)] : w;
+            ref ulong wRef = ref Unsafe.As<byte, ulong>(ref MemoryMarshal.GetReference(wTemp));
             ref ulong stateRef = ref MemoryMarshal.GetReference(state);
             ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
             ref byte srcRef = ref srcStartRef;
@@ -1934,13 +1958,13 @@ namespace JsonWebToken.Performance
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
-                var littleEndianMask = ReadVector256(LittleEndianMask);
+                var littleEndianMask = EndiannessMask256UInt64;
                 Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), littleEndianMask));
             }
             else if (Ssse3.IsSupported)
             {
-                var littleEndianMask = ReadVector128(LittleEndianMask);
+                var littleEndianMask = EndiannessMask128UInt64;
                 Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 16), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 16)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), littleEndianMask));
@@ -1961,16 +1985,10 @@ namespace JsonWebToken.Performance
         }
 
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
-        internal static ReadOnlySpan<byte> GatherMask => new byte[16]
-        {
-            0, 0, 0, 0,
-            16, 0, 0, 0,
-            32, 0, 0, 0,
-            48, 0, 0, 0,
-        };
+        private static readonly Vector256<long> GatherMask = Vector256.Create(0L, 16, 32, 48);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe Vector256<ulong> Gather(ref byte message, Vector128<int> gatherMask)
+        private static unsafe Vector256<ulong> Gather(ref byte message, Vector256<long> gatherMask)
         {
             return Avx2.GatherVector256((ulong*)Unsafe.AsPointer(ref message), gatherMask, 8);
         }
@@ -1998,8 +2016,8 @@ namespace JsonWebToken.Performance
         {
             IntPtr i = (IntPtr)0;
             Vector256<ulong> W0, W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W11, W12, W13, W14, W15;
-            var littleEndianMask = ReadVector256(LittleEndianMask);
-            var gatherMask = ReadVector128(GatherMask).AsInt32();
+            var littleEndianMask = EndiannessMask256UInt64;
+            var gatherMask = GatherMask;
             W0 = Avx2.Shuffle(Gather(ref message, gatherMask).AsByte(), littleEndianMask).AsUInt64();
             W1 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 1), gatherMask).AsByte(), littleEndianMask).AsUInt64();
             W2 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 2), gatherMask).AsByte(), littleEndianMask).AsUInt64();
@@ -2139,7 +2157,7 @@ namespace JsonWebToken.Performance
             ref byte wRef = ref Unsafe.As<ulong, byte>(ref w);
             if (Avx2.IsSupported)
             {
-                var littleEndianMask = ReadVector256(LittleEndianMask);
+                var littleEndianMask = EndiannessMask256UInt64;
                 Unsafe.WriteUnaligned(ref wRef, Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref currentBlock), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 32)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 64), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 64)), littleEndianMask));
@@ -2147,7 +2165,7 @@ namespace JsonWebToken.Performance
             }
             else if (Ssse3.IsSupported)
             {
-                var littleEndianMask = ReadVector128(LittleEndianMask);
+                var littleEndianMask = EndiannessMask128UInt64;
                 Unsafe.WriteUnaligned(ref wRef, Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref currentBlock), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 16), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 16)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 32)), littleEndianMask));
@@ -2377,13 +2395,22 @@ namespace JsonWebToken.Performance
         public override int BlockSize => Sha512BlockSize;
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<uint> W)
+        public override int GetWorkingSetSize(int sourceLength)
         {
-            throw new NotImplementedException();
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+            if (Ssse3.IsSupported)
+            {
+                return sourceLength >= 4 * Sha512BlockSize ? 80 * 32 : 80 * 8;
+            }
+            else
+#endif
+            {
+                return 80 * 8;
+            }
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<ulong> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -2407,8 +2434,8 @@ namespace JsonWebToken.Performance
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
-            Span<ulong> wTemp = w.IsEmpty ? stackalloc ulong[80] : w;
-            ref ulong wRef = ref MemoryMarshal.GetReference(wTemp);
+            Span<byte> wTemp = w.Length < 80 * sizeof(ulong) ? stackalloc byte[80 * sizeof(ulong)] : w;
+            ref ulong wRef = ref Unsafe.As<byte, ulong>(ref MemoryMarshal.GetReference(wTemp));
             ref ulong stateRef = ref MemoryMarshal.GetReference(state);
             ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
             ref byte srcRef = ref srcStartRef;
@@ -2891,13 +2918,22 @@ namespace JsonWebToken.Performance
         public override int BlockSize => Sha512BlockSize;
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<uint> W)
+        public override int GetWorkingSetSize(int sourceLength)
         {
-            throw new NotImplementedException();
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+            if (Ssse3.IsSupported)
+            {
+                return sourceLength >= 4 * Sha512BlockSize ? 80 * 32 : 80 * 8;
+            }
+            else
+#endif
+            {
+                return 80 * 8;
+            }
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<ulong> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -2921,8 +2957,8 @@ namespace JsonWebToken.Performance
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
-            Span<ulong> wTemp = w.IsEmpty ? stackalloc ulong[80] : w;
-            ref ulong wRef = ref MemoryMarshal.GetReference(wTemp);
+            Span<byte> wTemp = w.Length < 80 * sizeof(ulong) ? stackalloc byte[80 * sizeof(ulong)] : w;
+            ref ulong wRef = ref Unsafe.As<byte, ulong>(ref MemoryMarshal.GetReference(wTemp));
             ref ulong stateRef = ref MemoryMarshal.GetReference(state);
             ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
             ref byte srcRef = ref srcStartRef;
@@ -3014,13 +3050,13 @@ namespace JsonWebToken.Performance
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
-                var littleEndianMask = ReadVector256(LittleEndianMask);
+                var littleEndianMask = EndiannessMask256UInt64;
                 Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), littleEndianMask));
             }
             else if (Ssse3.IsSupported)
             {
-                var littleEndianMask = ReadVector128(LittleEndianMask);
+                var littleEndianMask = EndiannessMask128UInt64;
                 Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 16), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 16)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), littleEndianMask));
@@ -3072,7 +3108,7 @@ namespace JsonWebToken.Performance
         {
             int i = 0;
             Vector256<ulong> W0, W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W11, W12, W13, W14, W15;
-            var littleEndianMask = ReadVector256(LittleEndianMask);
+            var littleEndianMask = EndiannessMask256UInt64;
             W0 = Avx2.Shuffle(Gather(ref message).AsByte(), littleEndianMask).AsUInt64();
             W1 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 1)).AsByte(), littleEndianMask).AsUInt64();
             W2 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 2)).AsByte(), littleEndianMask).AsUInt64();
@@ -3191,7 +3227,7 @@ namespace JsonWebToken.Performance
             ref byte wRef = ref Unsafe.As<ulong, byte>(ref w);
             if (Avx2.IsSupported)
             {
-                var littleEndianMask = ReadVector256(LittleEndianMask);
+                var littleEndianMask = EndiannessMask256UInt64;
                 Unsafe.WriteUnaligned(ref wRef, Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref currentBlock), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 32)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 64), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 64)), littleEndianMask));
@@ -3199,7 +3235,7 @@ namespace JsonWebToken.Performance
             }
             else if (Ssse3.IsSupported)
             {
-                var littleEndianMask = ReadVector128(LittleEndianMask);
+                var littleEndianMask = EndiannessMask128UInt64;
                 Unsafe.WriteUnaligned(ref wRef, Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref currentBlock), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 16), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 16)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 32)), littleEndianMask));
@@ -3448,13 +3484,22 @@ namespace JsonWebToken.Performance
         public override int BlockSize => Sha512BlockSize;
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<uint> W)
+        public override int GetWorkingSetSize(int sourceLength)
         {
-            throw new NotImplementedException();
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+            if (Ssse3.IsSupported)
+            {
+                return sourceLength >= 4 * Sha512BlockSize ? 80 * 32 : 80 * 8;
+            }
+            else
+#endif
+            {
+                return 80 * 8;
+            }
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<ulong> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -3478,8 +3523,8 @@ namespace JsonWebToken.Performance
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
-            Span<ulong> wTemp = w.IsEmpty ? stackalloc ulong[80] : w;
-            ref ulong wRef = ref MemoryMarshal.GetReference(wTemp);
+            Span<byte> wTemp = w.Length < 80 * sizeof(ulong) ? stackalloc byte[80 * sizeof(ulong)] : w;
+            ref ulong wRef = ref Unsafe.As<byte, ulong>(ref MemoryMarshal.GetReference(wTemp));
             ref ulong stateRef = ref MemoryMarshal.GetReference(state);
             ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
             ref byte srcRef = ref srcStartRef;
@@ -3571,13 +3616,13 @@ namespace JsonWebToken.Performance
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
-                var littleEndianMask = ReadVector256(LittleEndianMask);
+                var littleEndianMask = EndiannessMask256UInt64;
                 Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), littleEndianMask));
             }
             else if (Ssse3.IsSupported)
             {
-                var littleEndianMask = ReadVector128(LittleEndianMask);
+                var littleEndianMask = EndiannessMask128UInt64;
                 Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 16), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 16)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref destinationRef, 32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref Unsafe.As<ulong, byte>(ref stateRef), 32)), littleEndianMask));
@@ -3598,16 +3643,10 @@ namespace JsonWebToken.Performance
         }
 
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
-        internal static ReadOnlySpan<byte> GatherMask => new byte[16]
-        {
-            0, 0, 0, 0,
-            16, 0, 0, 0,
-            32, 0, 0, 0,
-            48, 0, 0, 0,
-        };
+        private static readonly Vector256<long> GatherMask = Vector256.Create(0L, 16, 32, 48);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe Vector256<ulong> Gather(ref byte message, Vector128<int> gatherMask)
+        private static unsafe Vector256<ulong> Gather(ref byte message, Vector256<long> gatherMask)
         {
             return Avx2.GatherVector256((ulong*)Unsafe.AsPointer(ref message), gatherMask, 8);
         }
@@ -3635,8 +3674,8 @@ namespace JsonWebToken.Performance
         {
             int i = 0;
             Vector256<ulong> W0, W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W11, W12, W13, W14, W15;
-            var littleEndianMask = ReadVector256(LittleEndianMask);
-            var gatherMask = ReadVector128(GatherMask).AsInt32();
+            var littleEndianMask = EndiannessMask256UInt64;
+            var gatherMask = GatherMask;
             W0 = Avx2.Shuffle(Gather(ref message, gatherMask).AsByte(), littleEndianMask).AsUInt64();
             W1 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 1), gatherMask).AsByte(), littleEndianMask).AsUInt64();
             W2 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 2), gatherMask).AsByte(), littleEndianMask).AsUInt64();
@@ -3755,7 +3794,7 @@ namespace JsonWebToken.Performance
             ref byte wRef = ref Unsafe.As<ulong, byte>(ref w);
             if (Avx2.IsSupported)
             {
-                var littleEndianMask = ReadVector256(LittleEndianMask);
+                var littleEndianMask = EndiannessMask256UInt64;
                 Unsafe.WriteUnaligned(ref wRef, Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref currentBlock), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 32)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 64), Avx2.Shuffle(Unsafe.As<byte, Vector256<byte>>(ref Unsafe.Add(ref currentBlock, 64)), littleEndianMask));
@@ -3763,7 +3802,7 @@ namespace JsonWebToken.Performance
             }
             else if (Ssse3.IsSupported)
             {
-                var littleEndianMask = ReadVector128(LittleEndianMask);
+                var littleEndianMask = EndiannessMask128UInt64;
                 Unsafe.WriteUnaligned(ref wRef, Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref currentBlock), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 16), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 16)), littleEndianMask));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref wRef, 32), Ssse3.Shuffle(Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref currentBlock, 32)), littleEndianMask));
@@ -4013,13 +4052,22 @@ namespace JsonWebToken.Performance
         public override int BlockSize => Sha512BlockSize;
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<uint> W)
+        public override int GetWorkingSetSize(int sourceLength)
         {
-            throw new NotImplementedException();
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+            if (Ssse3.IsSupported)
+            {
+                return sourceLength >= 4 * Sha512BlockSize ? 80 * 32 : 80 * 8;
+            }
+            else
+#endif
+            {
+                return 80 * 8;
+            }
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<ulong> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -4043,8 +4091,8 @@ namespace JsonWebToken.Performance
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
-            Span<ulong> wTemp = w.IsEmpty ? stackalloc ulong[80] : w;
-            ref ulong wRef = ref MemoryMarshal.GetReference(wTemp);
+            Span<byte> wTemp = w.Length < 80 * sizeof(ulong) ? stackalloc byte[80 * sizeof(ulong)] : w;
+            ref ulong wRef = ref Unsafe.As<byte, ulong>(ref MemoryMarshal.GetReference(wTemp));
             ref ulong stateRef = ref MemoryMarshal.GetReference(state);
             ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
             ref byte srcRef = ref srcStartRef;
