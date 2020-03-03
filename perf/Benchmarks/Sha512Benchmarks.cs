@@ -26,20 +26,20 @@ namespace JsonWebToken.Performance
         private static readonly Sha512_ROS_IntPtr_Unroll _sha512_ROS_IntPtr_Unroll = new Sha512_ROS_IntPtr_Unroll();
         private readonly byte[] _buffer = new byte[64];
 
-        //[Benchmark(Baseline = false)]
-        //[ArgumentsSource(nameof(GetData))]
-        //public byte[] Sha512_Clr(byte[] value)
-        //{
-        //    return _clrSha512.ComputeHash(value);
-        //}
+        [Benchmark(Baseline = false)]
+        [ArgumentsSource(nameof(GetData))]
+        public byte[] Sha512_Clr(byte[] value)
+        {
+            return _clrSha512.ComputeHash(value);
+        }
 
-        //[Benchmark(Baseline = true)]
-        //[ArgumentsSource(nameof(GetData))]
-        //public byte[] Sha512_Optimized(byte[] value)
-        //{
-        //    _sha512.ComputeHash(value, _buffer);
-        //    return _buffer;
-        //}
+        [Benchmark(Baseline = true)]
+        [ArgumentsSource(nameof(GetData))]
+        public byte[] Sha512_Optimized(byte[] value)
+        {
+            _sha512.ComputeHash(value, _buffer);
+            return _buffer;
+        }
 
         private static readonly ulong[] W = new ulong[80];
 

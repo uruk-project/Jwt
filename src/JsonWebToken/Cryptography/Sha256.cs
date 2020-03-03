@@ -159,13 +159,13 @@ namespace JsonWebToken
 #endif
             {
                 Unsafe.WriteUnaligned(ref destinationRef, BinaryPrimitives.ReverseEndianness(stateRef));
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)4), BinaryPrimitives.ReverseEndianness(Unsafe.Add(ref stateRef, (IntPtr)1)));
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)8), BinaryPrimitives.ReverseEndianness(Unsafe.Add(ref stateRef, (IntPtr)2)));
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)12), BinaryPrimitives.ReverseEndianness(Unsafe.Add(ref stateRef, (IntPtr)3)));
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)16), BinaryPrimitives.ReverseEndianness(Unsafe.Add(ref stateRef, (IntPtr)4)));
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)20), BinaryPrimitives.ReverseEndianness(Unsafe.Add(ref stateRef, (IntPtr)5)));
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)24), BinaryPrimitives.ReverseEndianness(Unsafe.Add(ref stateRef, (IntPtr)6)));
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)28), BinaryPrimitives.ReverseEndianness(Unsafe.Add(ref stateRef, (IntPtr)7)));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)4), BinaryPrimitives.ReverseEndianness(Unsafe.AddByteOffset(ref stateRef, (IntPtr)4)));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)8), BinaryPrimitives.ReverseEndianness(Unsafe.AddByteOffset(ref stateRef, (IntPtr)8)));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)12), BinaryPrimitives.ReverseEndianness(Unsafe.AddByteOffset(ref stateRef, (IntPtr)12)));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)16), BinaryPrimitives.ReverseEndianness(Unsafe.AddByteOffset(ref stateRef, (IntPtr)16)));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)20), BinaryPrimitives.ReverseEndianness(Unsafe.AddByteOffset(ref stateRef, (IntPtr)20)));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)24), BinaryPrimitives.ReverseEndianness(Unsafe.AddByteOffset(ref stateRef, (IntPtr)24)));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)28), BinaryPrimitives.ReverseEndianness(Unsafe.AddByteOffset(ref stateRef, (IntPtr)28)));
             }
         }
 
@@ -193,7 +193,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector128<uint> Schedule(in Vector128<uint> w0, in Vector128<uint> w1, in Vector128<uint> w9, in Vector128<uint> w14, IntPtr i, ref Vector128<uint> schedule)
         {
-            Unsafe.Add(ref schedule, i) = Sse2.Add(w0, K128(i));
+            Unsafe.AddByteOffset(ref schedule, i) = Sse2.Add(w0, K128(i));
             return Sse2.Add(Sse2.Add(w0, w9), Sse2.Add(Sigma0(w1), Sigma1(w14)));
         }
 
@@ -221,133 +221,133 @@ namespace JsonWebToken
             do
             {
                 W0 = Schedule(W0, W1, W9, W14, i, ref schedule);
-                i += 1;
+                i += 16;
                 W1 = Schedule(W1, W2, W10, W15, i, ref schedule);
-                i += 1;
+                i += 16;
                 W2 = Schedule(W2, W3, W11, W0, i, ref schedule);
-                i += 1;
+                i += 16;
                 W3 = Schedule(W3, W4, W12, W1, i, ref schedule);
-                i += 1;
+                i += 16;
                 W4 = Schedule(W4, W5, W13, W2, i, ref schedule);
-                i += 1;
+                i += 16;
                 W5 = Schedule(W5, W6, W14, W3, i, ref schedule);
-                i += 1;
+                i += 16;
                 W6 = Schedule(W6, W7, W15, W4, i, ref schedule);
-                i += 1;
+                i += 16;
                 W7 = Schedule(W7, W8, W0, W5, i, ref schedule);
-                i += 1;
+                i += 16;
                 W8 = Schedule(W8, W9, W1, W6, i, ref schedule);
-                i += 1;
+                i += 16;
                 W9 = Schedule(W9, W10, W2, W7, i, ref schedule);
-                i += 1;
+                i += 16;
                 W10 = Schedule(W10, W11, W3, W8, i, ref schedule);
-                i += 1;
+                i += 16;
                 W11 = Schedule(W11, W12, W4, W9, i, ref schedule);
-                i += 1;
+                i += 16;
                 W12 = Schedule(W12, W13, W5, W10, i, ref schedule);
-                i += 1;
+                i += 16;
                 W13 = Schedule(W13, W14, W6, W11, i, ref schedule);
-                i += 1;
+                i += 16;
                 W14 = Schedule(W14, W15, W7, W12, i, ref schedule);
-                i += 1;
+                i += 16;
                 W15 = Schedule(W15, W0, W8, W13, i, ref schedule);
-                i += 1;
-            } while ((byte*)i < (byte*)32);
+                i += 16;
+            } while ((byte*)i < (byte*)(32*16));
 
             W0 = Schedule(W0, W1, W9, W14, i, ref schedule);
-            i += 1;
-            Unsafe.Add(ref schedule, (IntPtr)48) = Sse2.Add(W0, K128((IntPtr)48));
+            i += 16;
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(48 * 16)) = Sse2.Add(W0, K128((IntPtr)(48 * 16)));
             W1 = Schedule(W1, W2, W10, W15, i, ref schedule);
-            i += 1;
-            Unsafe.Add(ref schedule, (IntPtr)49) = Sse2.Add(W1, K128((IntPtr)49));
+            i += 16;
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(49 * 16)) = Sse2.Add(W1, K128((IntPtr)(49 * 16)));
             W2 = Schedule(W2, W3, W11, W0, i, ref schedule);
-            i += 1;
-            Unsafe.Add(ref schedule, (IntPtr)50) = Sse2.Add(W2, K128((IntPtr)50));
+            i += 16;
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(50 * 16)) = Sse2.Add(W2, K128((IntPtr)(50 * 16)));
             W3 = Schedule(W3, W4, W12, W1, i, ref schedule);
-            i += 1;
-            Unsafe.Add(ref schedule, (IntPtr)51) = Sse2.Add(W3, K128((IntPtr)51));
+            i += 16;
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(51 * 16)) = Sse2.Add(W3, K128((IntPtr)(51 * 16)));
             W4 = Schedule(W4, W5, W13, W2, i, ref schedule);
-            i += 1;
-            Unsafe.Add(ref schedule, (IntPtr)52) = Sse2.Add(W4, K128((IntPtr)52));
+            i += 16;
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(52 * 16)) = Sse2.Add(W4, K128((IntPtr)(52 * 16)));
             W5 = Schedule(W5, W6, W14, W3, i, ref schedule);
-            i += 1;
-            Unsafe.Add(ref schedule, (IntPtr)53) = Sse2.Add(W5, K128((IntPtr)53));
+            i += 16;
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(53 * 16)) = Sse2.Add(W5, K128((IntPtr)(53 * 16)));
             W6 = Schedule(W6, W7, W15, W4, i, ref schedule);
-            i += 1;
-            Unsafe.Add(ref schedule, (IntPtr)54) = Sse2.Add(W6, K128((IntPtr)54));
+            i += 16;
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(54 * 16)) = Sse2.Add(W6, K128((IntPtr)(54 * 16)));
             W7 = Schedule(W7, W8, W0, W5, i, ref schedule);
-            i += 1;
-            Unsafe.Add(ref schedule, (IntPtr)55) = Sse2.Add(W7, K128((IntPtr)55));
+            i += 16;
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(55 * 16)) = Sse2.Add(W7, K128((IntPtr)(55 * 16)));
             W8 = Schedule(W8, W9, W1, W6, i, ref schedule);
-            i += 1;
-            Unsafe.Add(ref schedule, (IntPtr)56) = Sse2.Add(W8, K128((IntPtr)56));
+            i += 16;
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(56 * 16)) = Sse2.Add(W8, K128((IntPtr)(56 * 16)));
             W9 = Schedule(W9, W10, W2, W7, i, ref schedule);
-            i += 1;
-            Unsafe.Add(ref schedule, (IntPtr)57) = Sse2.Add(W9, K128((IntPtr)57));
+            i += 16;
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(57 * 16)) = Sse2.Add(W9, K128((IntPtr)(57 * 16)));
             W10 = Schedule(W10, W11, W3, W8, i, ref schedule);
-            i += 1;
-            Unsafe.Add(ref schedule, (IntPtr)58) = Sse2.Add(W10, K128((IntPtr)58));
+            i += 16;
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(58 * 16)) = Sse2.Add(W10, K128((IntPtr)(58 * 16)));
             W11 = Schedule(W11, W12, W4, W9, i, ref schedule);
-            i += 1;
-            Unsafe.Add(ref schedule, (IntPtr)59) = Sse2.Add(W11, K128((IntPtr)59));
+            i += 16;
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(59 * 16)) = Sse2.Add(W11, K128((IntPtr)(59 * 16)));
             W12 = Schedule(W12, W13, W5, W10, i, ref schedule);
-            i += 1;
-            Unsafe.Add(ref schedule, (IntPtr)60) = Sse2.Add(W12, K128((IntPtr)60));
+            i += 16;
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(60 * 16)) = Sse2.Add(W12, K128((IntPtr)(60 * 16)));
             W13 = Schedule(W13, W14, W6, W11, i, ref schedule);
-            i += 1;
-            Unsafe.Add(ref schedule, (IntPtr)61) = Sse2.Add(W13, K128((IntPtr)61));
+            i += 16;
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(61 * 16)) = Sse2.Add(W13, K128((IntPtr)(61 * 16)));
             W14 = Schedule(W14, W15, W7, W12, i, ref schedule);
-            i += 1;
-            Unsafe.Add(ref schedule, (IntPtr)62) = Sse2.Add(W14, K128((IntPtr)62));
+            i += 16;
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(62 * 16)) = Sse2.Add(W14, K128((IntPtr)(62 * 16)));
             W15 = Schedule(W15, W0, W8, W13, i, ref schedule);
-            Unsafe.Add(ref schedule, (IntPtr)63) = Sse2.Add(W15, K128((IntPtr)63));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(63 * 16)) = Sse2.Add(W15, K128((IntPtr)(63 * 16)));
         }
 
         private static unsafe void Transform(ref uint state, ref byte currentBlock, ref Vector128<uint> w)
         {
-            ref uint wEnd = ref Unsafe.As<Vector128<uint>, uint>(ref Unsafe.Add(ref w, (IntPtr)64));
+            ref uint wEnd = ref Unsafe.As<Vector128<uint>, uint>(ref Unsafe.AddByteOffset(ref w, (IntPtr)(64 * 16)));
             uint a, b, c, d, e, f, g, h;
             Schedule(ref w, ref currentBlock);
-            for (IntPtr j = (IntPtr)0; (byte*)j < (byte*)4; j += 1)
+            for (IntPtr j = (IntPtr)0; (byte*)j < (byte*)16; j += sizeof(uint))
             {
                 a = state;
-                b = Unsafe.Add(ref state, (IntPtr)1);
-                c = Unsafe.Add(ref state, (IntPtr)2);
-                d = Unsafe.Add(ref state, (IntPtr)3);
-                e = Unsafe.Add(ref state, (IntPtr)4);
-                f = Unsafe.Add(ref state, (IntPtr)5);
-                g = Unsafe.Add(ref state, (IntPtr)6);
-                h = Unsafe.Add(ref state, (IntPtr)7);
-                ref uint w0 = ref Unsafe.Add(ref Unsafe.As<Vector128<uint>, uint>(ref w), j);
+                b = Unsafe.AddByteOffset(ref state, (IntPtr)4);
+                c = Unsafe.AddByteOffset(ref state, (IntPtr)8);
+                d = Unsafe.AddByteOffset(ref state, (IntPtr)12);
+                e = Unsafe.AddByteOffset(ref state, (IntPtr)16);
+                f = Unsafe.AddByteOffset(ref state, (IntPtr)20);
+                g = Unsafe.AddByteOffset(ref state, (IntPtr)24);
+                h = Unsafe.AddByteOffset(ref state, (IntPtr)28);
+                ref uint w0 = ref Unsafe.AddByteOffset(ref Unsafe.As<Vector128<uint>, uint>(ref w), j);
                 do
                 {
                     Round(a, b, c, ref d, e, f, g, ref h, w0);
-                    w0 = ref Unsafe.Add(ref w0, (IntPtr)4);
+                    w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)16);
                     Round(h, a, b, ref c, d, e, f, ref g, w0);
-                    w0 = ref Unsafe.Add(ref w0, (IntPtr)4);
+                    w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)16);
                     Round(g, h, a, ref b, c, d, e, ref f, w0);
-                    w0 = ref Unsafe.Add(ref w0, (IntPtr)4);
+                    w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)16);
                     Round(f, g, h, ref a, b, c, d, ref e, w0);
-                    w0 = ref Unsafe.Add(ref w0, (IntPtr)4);
+                    w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)16);
                     Round(e, f, g, ref h, a, b, c, ref d, w0);
-                    w0 = ref Unsafe.Add(ref w0, (IntPtr)4);
+                    w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)16);
                     Round(d, e, f, ref g, h, a, b, ref c, w0);
-                    w0 = ref Unsafe.Add(ref w0, (IntPtr)4);
+                    w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)16);
                     Round(c, d, e, ref f, g, h, a, ref b, w0);
-                    w0 = ref Unsafe.Add(ref w0, (IntPtr)4);
+                    w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)16);
                     Round(b, c, d, ref e, f, g, h, ref a, w0);
-                    w0 = ref Unsafe.Add(ref w0, (IntPtr)4);
+                    w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)16);
                 }
                 while (Unsafe.IsAddressLessThan(ref w0, ref wEnd));
 
                 state += a;
-                Unsafe.Add(ref state, (IntPtr)1) += b;
-                Unsafe.Add(ref state, (IntPtr)2) += c;
-                Unsafe.Add(ref state, (IntPtr)3) += d;
-                Unsafe.Add(ref state, (IntPtr)4) += e;
-                Unsafe.Add(ref state, (IntPtr)5) += f;
-                Unsafe.Add(ref state, (IntPtr)6) += g;
-                Unsafe.Add(ref state, (IntPtr)7) += h;
+                Unsafe.AddByteOffset(ref state, (IntPtr)4) += b;
+                Unsafe.AddByteOffset(ref state, (IntPtr)8) += c;
+                Unsafe.AddByteOffset(ref state, (IntPtr)12) += d;
+                Unsafe.AddByteOffset(ref state, (IntPtr)16) += e;
+                Unsafe.AddByteOffset(ref state, (IntPtr)20) += f;
+                Unsafe.AddByteOffset(ref state, (IntPtr)24) += g;
+                Unsafe.AddByteOffset(ref state, (IntPtr)28) += h;
             }
         }
 
@@ -383,70 +383,70 @@ namespace JsonWebToken
             {
                 unsafe
                 {
-                    for (IntPtr i = (IntPtr)0, j = (IntPtr)0; (byte*)i < (byte*)16; i += 1, j += sizeof(uint))
+                    for (IntPtr i = (IntPtr)0; (byte*)i < (byte*)(16*4); i += sizeof(uint))
                     {
-                        Unsafe.Add(ref w, i) = BinaryPrimitives.ReverseEndianness(Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref currentBlock, j)));
+                        Unsafe.AddByteOffset(ref w, i) = BinaryPrimitives.ReverseEndianness(Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref currentBlock, i)));
                     }
                 }
             }
 
-            ref uint wEnd = ref Unsafe.Add(ref w, (IntPtr)64);
-            ref uint w0 = ref Unsafe.Add(ref w, (IntPtr)16);
+            ref uint wEnd = ref Unsafe.AddByteOffset(ref w, (IntPtr)(64 * 4));
+            ref uint w0 = ref Unsafe.AddByteOffset(ref w, (IntPtr)(16 * 4));
             do
             {
-                w0 = Unsafe.Subtract(ref w0, (IntPtr)16) + Sigma0(Unsafe.Subtract(ref w0, (IntPtr)15)) + Unsafe.Subtract(ref w0, (IntPtr)7) + Sigma1(Unsafe.Subtract(ref w0, (IntPtr)2));
-                Unsafe.Add(ref w0, (IntPtr)1) = Unsafe.Subtract(ref w0, (IntPtr)15) + Sigma0(Unsafe.Subtract(ref w0, (IntPtr)14)) + Unsafe.Subtract(ref w0, (IntPtr)6) + Sigma1(Unsafe.Subtract(ref w0, (IntPtr)1));
-                w0 = ref Unsafe.Add(ref w0, (IntPtr)2);
+                w0 = Unsafe.SubtractByteOffset(ref w0, (IntPtr)(16 * 4)) + Sigma0(Unsafe.SubtractByteOffset(ref w0, (IntPtr)(15 * 4))) + Unsafe.SubtractByteOffset(ref w0, (IntPtr)(7 * 4)) + Sigma1(Unsafe.SubtractByteOffset(ref w0, (IntPtr)(2 * 4)));
+                Unsafe.AddByteOffset(ref w0, (IntPtr)(1*4)) = Unsafe.SubtractByteOffset(ref w0, (IntPtr)(15 * 4)) + Sigma0(Unsafe.SubtractByteOffset(ref w0, (IntPtr)(14 * 4))) + Unsafe.SubtractByteOffset(ref w0, (IntPtr)(6 * 4)) + Sigma1(Unsafe.SubtractByteOffset(ref w0, (IntPtr)(1 * 4)));
+                w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)(2*4));
             }
             while (Unsafe.IsAddressLessThan(ref w0, ref wEnd));
 
             uint a = state;
-            uint b = Unsafe.Add(ref state, (IntPtr)1);
-            uint c = Unsafe.Add(ref state, (IntPtr)2);
-            uint d = Unsafe.Add(ref state, (IntPtr)3);
-            uint e = Unsafe.Add(ref state, (IntPtr)4);
-            uint f = Unsafe.Add(ref state, (IntPtr)5);
-            uint g = Unsafe.Add(ref state, (IntPtr)6);
-            uint h = Unsafe.Add(ref state, (IntPtr)7);
+            uint b = Unsafe.AddByteOffset(ref state, (IntPtr)4);
+            uint c = Unsafe.AddByteOffset(ref state, (IntPtr)8);
+            uint d = Unsafe.AddByteOffset(ref state, (IntPtr)12);
+            uint e = Unsafe.AddByteOffset(ref state, (IntPtr)16);
+            uint f = Unsafe.AddByteOffset(ref state, (IntPtr)20);
+            uint g = Unsafe.AddByteOffset(ref state, (IntPtr)24);
+            uint h = Unsafe.AddByteOffset(ref state, (IntPtr)28);
             w0 = ref w;
             ref uint k0 = ref k[0];
             do
             {
                 Round(a, b, c, ref d, e, f, g, ref h, w0, k0);
-                w0 = ref Unsafe.Add(ref w0, (IntPtr)1);
-                k0 = ref Unsafe.Add(ref k0, (IntPtr)1);
+                w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)4);
+                k0 = ref Unsafe.AddByteOffset(ref k0, (IntPtr)4);
                 Round(h, a, b, ref c, d, e, f, ref g, w0, k0);
-                w0 = ref Unsafe.Add(ref w0, (IntPtr)1);
-                k0 = ref Unsafe.Add(ref k0, (IntPtr)1);
+                w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)4);
+                k0 = ref Unsafe.AddByteOffset(ref k0, (IntPtr)4);
                 Round(g, h, a, ref b, c, d, e, ref f, w0, k0);
-                w0 = ref Unsafe.Add(ref w0, (IntPtr)1);
-                k0 = ref Unsafe.Add(ref k0, (IntPtr)1);
+                w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)4);
+                k0 = ref Unsafe.AddByteOffset(ref k0, (IntPtr)4);
                 Round(f, g, h, ref a, b, c, d, ref e, w0, k0);
-                w0 = ref Unsafe.Add(ref w0, (IntPtr)1);
-                k0 = ref Unsafe.Add(ref k0, (IntPtr)1);
+                w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)4);
+                k0 = ref Unsafe.AddByteOffset(ref k0, (IntPtr)4);
                 Round(e, f, g, ref h, a, b, c, ref d, w0, k0);
-                w0 = ref Unsafe.Add(ref w0, (IntPtr)1);
-                k0 = ref Unsafe.Add(ref k0, (IntPtr)1);
+                w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)4);
+                k0 = ref Unsafe.AddByteOffset(ref k0, (IntPtr)4);
                 Round(d, e, f, ref g, h, a, b, ref c, w0, k0);
-                w0 = ref Unsafe.Add(ref w0, (IntPtr)1);
-                k0 = ref Unsafe.Add(ref k0, (IntPtr)1);
+                w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)4);
+                k0 = ref Unsafe.AddByteOffset(ref k0, (IntPtr)4);
                 Round(c, d, e, ref f, g, h, a, ref b, w0, k0);
-                w0 = ref Unsafe.Add(ref w0, (IntPtr)1);
-                k0 = ref Unsafe.Add(ref k0, (IntPtr)1);
+                w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)4);
+                k0 = ref Unsafe.AddByteOffset(ref k0, (IntPtr)4);
                 Round(b, c, d, ref e, f, g, h, ref a, w0, k0);
-                w0 = ref Unsafe.Add(ref w0, (IntPtr)1);
-                k0 = ref Unsafe.Add(ref k0, (IntPtr)1);
+                w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)4);
+                k0 = ref Unsafe.AddByteOffset(ref k0, (IntPtr)4);
             }
             while (Unsafe.IsAddressLessThan(ref w0, ref wEnd));
 
             state += a;
-            Unsafe.Add(ref state, (IntPtr)1) += b;
-            Unsafe.Add(ref state, (IntPtr)2) += c;
-            Unsafe.Add(ref state, (IntPtr)3) += d;
-            Unsafe.Add(ref state, (IntPtr)4) += e;
-            Unsafe.Add(ref state, (IntPtr)5) += f;
-            Unsafe.Add(ref state, (IntPtr)6) += g;
-            Unsafe.Add(ref state, (IntPtr)7) += h;
+            Unsafe.AddByteOffset(ref state, (IntPtr)4) += b;
+            Unsafe.AddByteOffset(ref state, (IntPtr)8) += c;
+            Unsafe.AddByteOffset(ref state, (IntPtr)12) += d;
+            Unsafe.AddByteOffset(ref state, (IntPtr)16) += e;
+            Unsafe.AddByteOffset(ref state, (IntPtr)20) += f;
+            Unsafe.AddByteOffset(ref state, (IntPtr)24) += g;
+            Unsafe.AddByteOffset(ref state, (IntPtr)28) += h;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -503,7 +503,7 @@ namespace JsonWebToken
 
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<uint> K128(IntPtr i) => Unsafe.Add(ref _k128[0], i);
+        private static Vector128<uint> K128(IntPtr i) => Unsafe.AddByteOffset(ref _k128[0], i);
 
         private static readonly Vector128<uint>[] _k128 = {
             Vector128.Create(0x428a2f98u),
