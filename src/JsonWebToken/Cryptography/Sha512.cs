@@ -157,15 +157,15 @@ namespace JsonWebToken
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
-                Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), _littleEndianMask256));
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)32), Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.AddByteOffset(ref Unsafe.As<ulong, byte>(ref stateRef), (IntPtr)32)), _littleEndianMask256));
+                Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.As<ulong, Vector256<byte>>(ref stateRef), _littleEndianMask256));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)32), Avx2.Shuffle(Unsafe.AddByteOffset(ref Unsafe.As<ulong, Vector256<byte>>(ref stateRef), (IntPtr)32), _littleEndianMask256));
             }
             else if (Ssse3.IsSupported)
             {
                 Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<ulong, byte>(ref stateRef)), _littleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)16), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref Unsafe.As<ulong, byte>(ref stateRef), (IntPtr)16)), _littleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)32), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref Unsafe.As<ulong, byte>(ref stateRef), (IntPtr)32)), _littleEndianMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)48), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref Unsafe.As<ulong, byte>(ref stateRef), (IntPtr)48)), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)16), Ssse3.Shuffle(Unsafe.AddByteOffset(ref Unsafe.As<ulong, Vector128<byte>>(ref stateRef), (IntPtr)16), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)32), Ssse3.Shuffle(Unsafe.AddByteOffset(ref Unsafe.As<ulong, Vector128<byte>>(ref stateRef), (IntPtr)32), _littleEndianMask128));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)48), Ssse3.Shuffle(Unsafe.AddByteOffset(ref Unsafe.As<ulong, Vector128<byte>>(ref stateRef), (IntPtr)48), _littleEndianMask128));
             }
             else
 #endif
@@ -375,13 +375,13 @@ namespace JsonWebToken
                 }
             }
 
-            ref ulong wEnd = ref Unsafe.AddByteOffset(ref w, (IntPtr)(80*8));
-            ref ulong w0 = ref Unsafe.AddByteOffset(ref w, (IntPtr)(16*8));
+            ref ulong wEnd = ref Unsafe.AddByteOffset(ref w, (IntPtr)(80 * 8));
+            ref ulong w0 = ref Unsafe.AddByteOffset(ref w, (IntPtr)(16 * 8));
             do
             {
-                w0 = Unsafe.SubtractByteOffset(ref w0, (IntPtr)(16*8)) + Sigma0(Unsafe.SubtractByteOffset(ref w0, (IntPtr)(15*8))) + Unsafe.SubtractByteOffset(ref w0, (IntPtr)(7*8)) + Sigma1(Unsafe.SubtractByteOffset(ref w0, (IntPtr)(2*8)));
-                Unsafe.AddByteOffset(ref w0, (IntPtr)(1*8)) = Unsafe.SubtractByteOffset(ref w0, (IntPtr)(15*8)) + Sigma0(Unsafe.SubtractByteOffset(ref w0, (IntPtr)(14*8))) + Unsafe.SubtractByteOffset(ref w0, (IntPtr)(6*8)) + Sigma1(Unsafe.SubtractByteOffset(ref w0, (IntPtr)(1*8)));
-                w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)(2*8));
+                w0 = Unsafe.SubtractByteOffset(ref w0, (IntPtr)(16 * 8)) + Sigma0(Unsafe.SubtractByteOffset(ref w0, (IntPtr)(15 * 8))) + Unsafe.SubtractByteOffset(ref w0, (IntPtr)(7 * 8)) + Sigma1(Unsafe.SubtractByteOffset(ref w0, (IntPtr)(2 * 8)));
+                Unsafe.AddByteOffset(ref w0, (IntPtr)(1 * 8)) = Unsafe.SubtractByteOffset(ref w0, (IntPtr)(15 * 8)) + Sigma0(Unsafe.SubtractByteOffset(ref w0, (IntPtr)(14 * 8))) + Unsafe.SubtractByteOffset(ref w0, (IntPtr)(6 * 8)) + Sigma1(Unsafe.SubtractByteOffset(ref w0, (IntPtr)(1 * 8)));
+                w0 = ref Unsafe.AddByteOffset(ref w0, (IntPtr)(2 * 8));
             }
             while (Unsafe.IsAddressLessThan(ref w0, ref wEnd));
 

@@ -148,12 +148,14 @@ namespace JsonWebToken
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
-                Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(state))), _shuffleMask256));
+                var shuffleMask = ReadVector256(LittleEndianMask);
+                Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.As<uint, Vector256<byte>>(ref stateRef), shuffleMask));
             }
             else if (Ssse3.IsSupported)
             {
-                Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<uint, byte>(ref stateRef)), _shuffleMask128));
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)16), Ssse3.Shuffle(Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref Unsafe.As<uint, byte>(ref stateRef), (IntPtr)16)), _shuffleMask128));
+                var shuffleMask = ReadVector128(LittleEndianMask);
+                Unsafe.WriteUnaligned(ref destinationRef, Ssse3.Shuffle(Unsafe.As<uint, Vector128<byte>>(ref stateRef), shuffleMask));
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)16), Ssse3.Shuffle(Unsafe.AddByteOffset(ref Unsafe.As<uint, Vector128<byte>>(ref stateRef), (IntPtr)16), shuffleMask));
             }
             else
 #endif
@@ -200,23 +202,23 @@ namespace JsonWebToken
         private static unsafe void Schedule(ref Vector128<uint> schedule, ref byte message)
         {
             Vector128<uint> W0, W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W11, W12, W13, W14, W15;
-            var _littleEndianMask128 = ReadVector128(LittleEndianMask);
-            W0 = Ssse3.Shuffle(Gather(ref message).AsByte(), _littleEndianMask128).AsUInt32();
-            W1 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)4)).AsByte(), _littleEndianMask128).AsUInt32();
-            W2 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)8)).AsByte(), _littleEndianMask128).AsUInt32();
-            W3 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)12)).AsByte(), _littleEndianMask128).AsUInt32();
-            W4 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)16)).AsByte(), _littleEndianMask128).AsUInt32();
-            W5 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)20)).AsByte(), _littleEndianMask128).AsUInt32();
-            W6 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)24)).AsByte(), _littleEndianMask128).AsUInt32();
-            W7 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)28)).AsByte(), _littleEndianMask128).AsUInt32();
-            W8 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)32)).AsByte(), _littleEndianMask128).AsUInt32();
-            W9 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)36)).AsByte(), _littleEndianMask128).AsUInt32();
-            W10 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)40)).AsByte(), _littleEndianMask128).AsUInt32();
-            W11 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)44)).AsByte(), _littleEndianMask128).AsUInt32();
-            W12 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)48)).AsByte(), _littleEndianMask128).AsUInt32();
-            W13 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)52)).AsByte(), _littleEndianMask128).AsUInt32();
-            W14 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)56)).AsByte(), _littleEndianMask128).AsUInt32();
-            W15 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)60)).AsByte(), _littleEndianMask128).AsUInt32();
+            var shuffleMask = ReadVector128(LittleEndianMask);
+            W0 = Ssse3.Shuffle(Gather(ref message).AsByte(), shuffleMask).AsUInt32();
+            W1 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)4)).AsByte(), shuffleMask).AsUInt32();
+            W2 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)8)).AsByte(), shuffleMask).AsUInt32();
+            W3 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)12)).AsByte(), shuffleMask).AsUInt32();
+            W4 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)16)).AsByte(), shuffleMask).AsUInt32();
+            W5 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)20)).AsByte(), shuffleMask).AsUInt32();
+            W6 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)24)).AsByte(), shuffleMask).AsUInt32();
+            W7 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)28)).AsByte(), shuffleMask).AsUInt32();
+            W8 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)32)).AsByte(), shuffleMask).AsUInt32();
+            W9 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)36)).AsByte(), shuffleMask).AsUInt32();
+            W10 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)40)).AsByte(), shuffleMask).AsUInt32();
+            W11 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)44)).AsByte(), shuffleMask).AsUInt32();
+            W12 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)48)).AsByte(), shuffleMask).AsUInt32();
+            W13 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)52)).AsByte(), shuffleMask).AsUInt32();
+            W14 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)56)).AsByte(), shuffleMask).AsUInt32();
+            W15 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)60)).AsByte(), shuffleMask).AsUInt32();
             IntPtr i = (IntPtr)0;
             do
             {
@@ -383,7 +385,7 @@ namespace JsonWebToken
             {
                 unsafe
                 {
-                    for (IntPtr i = (IntPtr)0; (byte*)i < (byte*)(16*4); i += sizeof(uint))
+                    for (IntPtr i = (IntPtr)0; (byte*)i < (byte*)(16 * 4); i += sizeof(uint))
                     {
                         Unsafe.AddByteOffset(ref w, i) = BinaryPrimitives.ReverseEndianness(Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref currentBlock, i)));
                     }
@@ -571,24 +573,6 @@ namespace JsonWebToken
             Vector128.Create(0xbef9a3f7u),
             Vector128.Create(0xc67178f2u)
         };
-
-        // 3, 2, 1, 0, 7, 6, 5, 4,
-        // 11, 10, 9, 8, 15, 14, 13, 12,
-        // 19, 18, 17, 16, 23, 22, 21, 20,
-        // 27, 26, 25, 24, 31, 30, 29, 28
-        private static readonly Vector256<byte> _shuffleMask256 = Vector256.Create(
-                289644378169868803,
-                868365760874482187,
-                1447087143579095571,
-                2025808526283708955
-                ).AsByte();
-
-        // 3, 2, 1, 0, 7, 6, 5, 4,
-        // 11, 10, 9, 8, 15, 14, 13, 12
-        private static readonly Vector128<byte> _shuffleMask128 = Vector128.Create(
-                289644378169868803,
-                868365760874482187
-                ).AsByte();
 #endif
     }
 }
