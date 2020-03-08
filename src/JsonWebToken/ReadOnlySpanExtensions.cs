@@ -12,6 +12,7 @@ namespace JsonWebToken
 {
     internal static class ReadOnlySpanExtensions
     {
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector256<T> AsVector256<T>(this ReadOnlySpan<byte> span) where T : struct
         {
@@ -59,6 +60,7 @@ namespace JsonWebToken
         {
             return ref Unsafe.AddByteOffset(ref Unsafe.As<byte, Vector128<T>>(ref span), offset);
         }
+#endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref T ReadUnaligned<T>(this ref byte span, IntPtr offset) where T : struct

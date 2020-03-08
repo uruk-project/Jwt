@@ -110,10 +110,10 @@ namespace JsonWebToken.Internal
             Unsafe.CopyBlockUnaligned(ref rRef, ref input, (uint)n);
             byte[] block = new byte[16];
             ref byte blockRef = ref MemoryMarshal.GetReference((Span<byte>)block);
-            ref byte block2Ref = ref Unsafe.Add(ref blockRef, 8);
+            ref byte block2Ref = ref Unsafe.AddByteOffset(ref blockRef, (IntPtr)8);
             Span<byte> t = stackalloc byte[8];
             ref byte tRef = ref MemoryMarshal.GetReference(t);
-            ref byte tRef7 = ref Unsafe.Add(ref tRef, 7);
+            ref byte tRef7 = ref Unsafe.AddByteOffset(ref tRef, (IntPtr)7);
             Unsafe.WriteUnaligned<ulong>(ref tRef, 0L);
             int n3 = n >> 3;
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
@@ -129,9 +129,9 @@ namespace JsonWebToken.Internal
                     for (var i = 0; i < n3; i++)
                     {
                         Unsafe.WriteUnaligned(ref blockRef, a);
-                        Unsafe.WriteUnaligned(ref block2Ref, Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref rRef, i << 3)));
+                        Unsafe.WriteUnaligned(ref block2Ref, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3))));
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
-                    _encryptor.EncryptBlock(ref blockRef, ref bRef);
+                        _encryptor.EncryptBlock(ref blockRef, ref bRef);
 #else
                         Span<byte> b = encryptor.TransformFinalBlock(block, 0, 16);
                         ref byte bRef = ref MemoryMarshal.GetReference(b);
@@ -139,7 +139,7 @@ namespace JsonWebToken.Internal
                         a = Unsafe.ReadUnaligned<ulong>(ref bRef);
                         Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i + 1));
                         a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
-                        Unsafe.WriteUnaligned(ref Unsafe.Add(ref rRef, i << 3), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref bRef, 8)));
+                        Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3)), Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
                     }
                 }
 #if NETSTANDARD2_0 || NET461 || NETCOREAPP2_1
@@ -151,7 +151,7 @@ namespace JsonWebToken.Internal
 #endif
             ref byte keyBytes = ref MemoryMarshal.GetReference(destination);
             Unsafe.WriteUnaligned(ref keyBytes, a);
-            Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref keyBytes, 8), ref rRef, (uint)n);
+            Unsafe.CopyBlockUnaligned(ref Unsafe.AddByteOffset(ref keyBytes, (IntPtr)8), ref rRef, (uint)n);
 
             return contentEncryptionKey;
         }

@@ -102,15 +102,15 @@ namespace JsonWebToken.Internal
             // The set of input blocks
             Span<byte> r = stackalloc byte[n];
             ref byte rRef = ref MemoryMarshal.GetReference(r);
-            Unsafe.CopyBlockUnaligned(ref rRef, ref Unsafe.Add(ref input, 8), (uint)n);
+            Unsafe.CopyBlockUnaligned(ref rRef, ref Unsafe.AddByteOffset(ref input, (IntPtr)8), (uint)n);
             byte[] block = new byte[16];
             ref byte blockRef = ref MemoryMarshal.GetReference((Span<byte>)block);
             Span<byte> t = stackalloc byte[8];
             ref byte tRef = ref MemoryMarshal.GetReference(t);
             Unsafe.WriteUnaligned(ref tRef, 0);
             int n3 = n >> 3;
-            ref byte blockEndRef = ref Unsafe.Add(ref blockRef, 8);
-            ref byte tRef7 = ref Unsafe.Add(ref tRef, 7);
+            ref byte blockEndRef = ref Unsafe.AddByteOffset(ref blockRef, (IntPtr)8);
+            ref byte tRef7 = ref Unsafe.AddByteOffset(ref tRef, (IntPtr)7);
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             Span<byte> b = stackalloc byte[16];
             ref byte bRef = ref MemoryMarshal.GetReference(b);
@@ -119,26 +119,26 @@ namespace JsonWebToken.Internal
             try
             {
 #endif
-                for (var j = 5; j >= 0; j--)
+            for (var j = 5; j >= 0; j--)
+            {
+                for (var i = n3; i > 0; i--)
                 {
-                    for (var i = n3; i > 0; i--)
-                    {
-                        Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i));
+                    Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i));
 
-                        a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
-                        Unsafe.WriteUnaligned(ref blockRef, a);
-                        ref byte rCurrent = ref Unsafe.Add(ref rRef, (i - 1) << 3);
-                        Unsafe.WriteUnaligned(ref blockEndRef, Unsafe.ReadUnaligned<ulong>(ref rCurrent));
+                    a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
+                    Unsafe.WriteUnaligned(ref blockRef, a);
+                    ref byte rCurrent = ref Unsafe.AddByteOffset(ref rRef, (IntPtr)((i - 1) << 3));
+                    Unsafe.WriteUnaligned(ref blockEndRef, Unsafe.ReadUnaligned<ulong>(ref rCurrent));
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
-                        _decryptor.DecryptBlock(ref blockRef, ref bRef);
+                    _decryptor.DecryptBlock(ref blockRef, ref bRef);
 #else
-                        Span<byte> b = decryptor.TransformFinalBlock(block, 0, 16);
-                        ref byte bRef = ref MemoryMarshal.GetReference(b);
+                    Span<byte> b = decryptor.TransformFinalBlock(block, 0, 16);
+                    ref byte bRef = ref MemoryMarshal.GetReference(b);
 #endif
-                        a = Unsafe.ReadUnaligned<ulong>(ref bRef);
-                        Unsafe.WriteUnaligned(ref rCurrent, Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref bRef, 8)));
-                    }
+                    a = Unsafe.ReadUnaligned<ulong>(ref bRef);
+                    Unsafe.WriteUnaligned(ref rCurrent, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
                 }
+            }
 #if NETSTANDARD2_0 || NET461 || NETCOREAPP2_1
             }
             finally
@@ -157,10 +157,10 @@ namespace JsonWebToken.Internal
             return ThrowHelper.TryWriteError(out bytesWritten);
         }
 
-        public override int GetKeyUnwrapSize(int wrappedKeySize) 
+        public override int GetKeyUnwrapSize(int wrappedKeySize)
             => GetKeyUnwrappedSize(wrappedKeySize);
 
-        public static int GetKeyUnwrappedSize(int wrappedKeySize) 
+        public static int GetKeyUnwrappedSize(int wrappedKeySize)
             => wrappedKeySize - BlockSizeInBytes;
 
 #if NETSTANDARD2_0 || NET461 || NETCOREAPP2_1
