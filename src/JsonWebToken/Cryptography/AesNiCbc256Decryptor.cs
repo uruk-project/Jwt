@@ -64,18 +64,24 @@ namespace JsonWebToken.Internal
                 offset += BlockSize;
             }
 
-            ref byte padding = ref Unsafe.AddByteOffset(ref output, offset - 1);
-            var mask = Vector128.Create(padding);
-            mask = Sse2.ShiftLeftLogical128BitLane(mask, (byte)(16 - padding));
+            byte padding = Unsafe.AddByteOffset(ref output, offset - 1);
+            if (padding > BlockSize)
+            {
+                goto Invalid;
+            }
 
+            var mask = GetPaddingMask(padding);
             if (!Sse2.And(mask, state).Equals(mask))
             {
-                bytesWritten = 0;
-                return false;
+                goto Invalid;
             }
 
             bytesWritten = ciphertext.Length - padding;
             return true;
+
+        Invalid:
+            bytesWritten = 0;
+            return false;
         }
 
         public override void DecryptBlock(ref byte ciphertext, ref byte plaintext)
