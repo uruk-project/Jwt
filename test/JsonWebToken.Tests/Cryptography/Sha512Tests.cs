@@ -5,11 +5,18 @@ namespace JsonWebToken.Tests.Cryptography
 {
     public class Sha512Tests : ShaAlgorithmTest
     {
-        protected override void ComputeHash(Span<byte> source, Span<byte> destination)
+        protected override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination)
         {
             var sha512 = new Sha512();
             sha512.ComputeHash(source, destination);
         }
+
+        protected override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> preprend, Span<byte> destination)
+        {
+            var sha512 = new Sha512();
+            sha512.ComputeHash(source, preprend, destination);
+        }
+
 
         [Fact]
         public void Sha512_Empty()
@@ -43,6 +50,48 @@ namespace JsonWebToken.Tests.Cryptography
                 'a',
                 1000000,
                 "e718483d0ce769644e2e42c7bc15b4638e1f98b13b2044285632a803afa973ebde0ff244877ea60a4cb0432ce577c31beb009c5c2c49aa2e4eadb217ad8cc09b");
+        }
+
+        [Fact]
+        public void Sha512_Fips180_3_Prepend1()
+        {
+            Verify(
+                'a',
+                1000000 - 128,
+                'a',
+                128,
+                "e718483d0ce769644e2e42c7bc15b4638e1f98b13b2044285632a803afa973ebde0ff244877ea60a4cb0432ce577c31beb009c5c2c49aa2e4eadb217ad8cc09b");
+        }
+
+        [Fact]
+        public void Sha512_Fips180_3_Prepend2()
+        {
+            Verify(
+                'a',
+                1000000 - 1,
+                'a',
+                1,
+                "e718483d0ce769644e2e42c7bc15b4638e1f98b13b2044285632a803afa973ebde0ff244877ea60a4cb0432ce577c31beb009c5c2c49aa2e4eadb217ad8cc09b");
+        }
+
+        [Fact]
+        public void Sha512_Fips180_3_Prepend3()
+        {
+            Verify(
+                'a',
+                1000000 - 127,
+                'a',
+                127,
+                "e718483d0ce769644e2e42c7bc15b4638e1f98b13b2044285632a803afa973ebde0ff244877ea60a4cb0432ce577c31beb009c5c2c49aa2e4eadb217ad8cc09b");
+        }
+
+        [Fact]
+        public void Sha512_Fips180_1_Prepend1()
+        {
+            Verify(
+                "bc",
+                "a",
+                "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f");
         }
     }
 }
