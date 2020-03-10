@@ -55,9 +55,8 @@ namespace JsonWebToken.Internal
         {
             ref var inputRef = ref MemoryMarshal.GetReference(plaintext);
             ref var outputRef = ref MemoryMarshal.GetReference(ciphertext);
-            ref var nonceRef = ref MemoryMarshal.GetReference(nonce);
 
-            var state = Unsafe.ReadUnaligned<Vector128<byte>>(ref nonceRef);
+            var state = nonce.AsVector128<byte>();
             ref var inputEndRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr)plaintext.Length - BlockSize + 1);
 
             while (Unsafe.IsAddressLessThan(ref inputRef, ref inputEndRef))
@@ -86,7 +85,7 @@ namespace JsonWebToken.Internal
                 outputRef = ref Unsafe.AddByteOffset(ref outputRef, (IntPtr)BlockSize);
             }
 
-            int left = plaintext.Length & 15;
+            int left = plaintext.Length & BlockSize - 1;
 
             // Reuse the destination buffer as last block buffer
             Unsafe.CopyBlockUnaligned(ref outputRef, ref inputRef, (uint)left);

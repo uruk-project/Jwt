@@ -27,7 +27,7 @@ namespace JsonWebToken.Internal
             _keys.Clear();
         }
 
-        public override unsafe void DecryptBlock(ref byte ciphertext, ref byte plaintext)
+        public override void DecryptBlock(ref byte ciphertext, ref byte plaintext)
         {
             var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref ciphertext);
 
@@ -45,18 +45,17 @@ namespace JsonWebToken.Internal
             Unsafe.WriteUnaligned(ref plaintext, block);
         }
 
-        public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> nonce, Span<byte> plaintext, out int bytesWritten)
+        public override unsafe bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> nonce, Span<byte> plaintext, out int bytesWritten)
         {
-            ref var inputRef = ref MemoryMarshal.GetReference(ciphertext);
-            ref var outputRef = ref MemoryMarshal.GetReference(plaintext);
-            ref var ivRef = ref MemoryMarshal.GetReference(nonce);
+            ref byte input = ref MemoryMarshal.GetReference(ciphertext);
+            ref byte output = ref MemoryMarshal.GetReference(plaintext);
             Vector128<byte> state = default;
-            var feedback = Unsafe.ReadUnaligned<Vector128<byte>>(ref ivRef);
+            var feedback = nonce.AsVector128<byte>();
 
-            ref var inputEndRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr)ciphertext.Length);
-            while (Unsafe.IsAddressLessThan(ref inputRef, ref inputEndRef))
+            IntPtr offset = (IntPtr)0;
+            while ((byte*)offset < (byte*)ciphertext.Length)
             {
-                var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref inputRef);
+                var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref input, offset));
                 var lastIn = block;
                 state = Sse2.Xor(block, _keys.Key0);
 
@@ -71,16 +70,14 @@ namespace JsonWebToken.Internal
                 state = Aes.Decrypt(state, _keys.Key9);
                 state = Aes.DecryptLast(state, Sse2.Xor(_keys.Key10, feedback));
 
-                Unsafe.WriteUnaligned(ref outputRef, state);
+                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref output, offset), state);
 
                 feedback = lastIn;
 
-                inputRef = ref Unsafe.Add(ref inputRef, (IntPtr)BlockSize);
-                outputRef = ref Unsafe.Add(ref outputRef, (IntPtr)BlockSize);
+                offset += BlockSize;
             }
 
-            ref byte paddingRef = ref Unsafe.Subtract(ref outputRef, 1);
-            byte padding = paddingRef;
+            ref byte padding = ref Unsafe.AddByteOffset(ref output, offset - 1);
             var mask = Vector128.Create(padding);
             mask = Sse2.ShiftLeftLogical128BitLane(mask, (byte)(BlockSize - padding));
 
@@ -90,7 +87,7 @@ namespace JsonWebToken.Internal
                 return false;
             }
 
-            bytesWritten = ciphertext.Length - paddingRef;
+            bytesWritten = ciphertext.Length - padding;
             return true;
         }
 
@@ -117,9 +114,7 @@ namespace JsonWebToken.Internal
                     ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes128CbcHmacSha256, 128, key.Length * 8);
                 }
 
-                ref var keyRef = ref MemoryMarshal.GetReference(key);
-
-                var tmp = Unsafe.ReadUnaligned<Vector128<byte>>(ref keyRef);
+                var tmp = Unsafe.ReadUnaligned<Vector128<byte>>(ref MemoryMarshal.GetReference(key));
                 Key10 = tmp;
 
                 tmp = KeyGenAssist(tmp, 0x01);
