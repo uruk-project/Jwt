@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Buffers;
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -43,7 +44,7 @@ namespace JsonWebToken
         /// <summary>
         /// The block size.
         /// </summary>
-        public abstract int BlockSize { get; }
+        public int BlockSize => Sha2.BlockSize;
 
         /// <summary>
         /// The size of the resulting hash.
@@ -69,7 +70,7 @@ namespace JsonWebToken
             if (key.Length > BlockSize)
             {
                 Span<byte> keyPrime = stackalloc byte[sha2.HashSize];
-                ComputeKeyHash(key, keyPrime);
+                Sha2.ComputeHash(key, keyPrime, default, default);
                 InitializeIOKeys(keyPrime);
                 keyPrime.Clear();
             }
@@ -78,13 +79,6 @@ namespace JsonWebToken
                 InitializeIOKeys(key);
             }
         }
-
-        /// <summary>
-        /// Computes the hash of the key, used when key size is greater than the <see cref="BlockSize"/>.
-        /// </summary>
-        /// <param name="key">The original key.</param>
-        /// <param name="keyPrime">The derived key. The derived key length equals to <see cref="BlockSize"/>.</param>
-        protected abstract void ComputeKeyHash(ReadOnlySpan<byte> key, Span<byte> keyPrime);
 
         private void InitializeIOKeys(ReadOnlySpan<byte> key)
         {
@@ -145,7 +139,27 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="source"></param>
         /// <param name="destination"></param>
-        public abstract void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination);
+        public void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination)
+        {
+            // hash(o_key_pad ∥ hash(i_key_pad ∥ message));         
+            int size = Sha2.GetWorkingSetSize(source.Length);
+            byte[]? arrayToReturn = null;
+            try
+            {
+                Span<byte> W = size > Constants.MaxStackallocBytes
+                    ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(size))
+                    : stackalloc byte[size];
+                Sha2.ComputeHash(source, destination, _innerPadKey.Span, W);
+                Sha2.ComputeHash(destination, destination, _outerPadKey.Span, W);
+            }
+            finally
+            {
+                if (arrayToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturn);
+                }
+            }
+        }
 
         /// <summary>
         /// Clears the keys.

@@ -23,6 +23,9 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="JsonWebToken.xml" />
   </ItemGroup>

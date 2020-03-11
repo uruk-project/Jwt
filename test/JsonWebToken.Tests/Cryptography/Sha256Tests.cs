@@ -5,10 +5,16 @@ namespace JsonWebToken.Tests.Cryptography
 {
     public class Sha256Tests : ShaAlgorithmTest
     {
-        protected override void ComputeHash(Span<byte> source, Span<byte> destination)
+        protected override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination)
         {
-            var sha256 =new Sha256();
+            var sha256 = new Sha256();
             sha256.ComputeHash(source, destination);
+        }
+
+        protected override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> preprend, Span<byte> destination)
+        {
+            var sha256 = new Sha256();
+            sha256.ComputeHash(source, preprend, destination);
         }
 
         [Fact]
@@ -43,6 +49,48 @@ namespace JsonWebToken.Tests.Cryptography
                 'a',
                 1000000,
                 "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0");
+        }
+
+        [Fact]
+        public void Sha256_Fips180_3_Prepend1()
+        {
+            Verify(
+                'a',
+                1000000 - 64,
+                'a',
+                64,
+                "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0");
+        }
+
+        [Fact]
+        public void Sha256_Fips180_3_Prepend2()
+        {
+            Verify(
+                'a',
+                1000000 - 1,
+                'a',
+                1,
+                "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0");
+        }
+
+        [Fact]
+        public void Sha256_Fips180_3_Prepend3()
+        {
+            Verify(
+                'a',
+                1000000 - 63,
+                'a',
+                63,
+                "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0");
+        }
+
+        [Fact]
+        public void Sha256_Fips180_1_Prepend1()
+        {
+            Verify(
+                "bc",
+                "a",
+                "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
         }
     }
 }
