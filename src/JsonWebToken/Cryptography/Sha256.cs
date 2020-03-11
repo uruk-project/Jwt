@@ -35,18 +35,11 @@ namespace JsonWebToken
 
         /// <inheritsdoc />
         public override int GetWorkingSetSize(int sourceLength)
-        {
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
-            if (Ssse3.IsSupported)
-            {
-                return sourceLength >= 4 * Sha256BlockSize ? 64 * 16 : 64 * 4;
-            }
-            else
+            => Ssse3.IsSupported && sourceLength >= 4 * Sha256BlockSize ? 64 * 16 : 64 * 4;
+#else
+            => 64 * 4;
 #endif
-            {
-                return 64 * 4;
-            }
-        }
 
         /// <inheritsdoc />
         public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> workingSet)
