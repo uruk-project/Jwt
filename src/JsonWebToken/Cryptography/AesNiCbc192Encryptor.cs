@@ -35,16 +35,15 @@ namespace JsonWebToken.Internal
         /// <inheritsdoc />
         public override void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, Span<byte> ciphertext)
         {
-            ref var inputRef = ref MemoryMarshal.GetReference(plaintext);
-            ref var outputRef = ref MemoryMarshal.GetReference(ciphertext);
-            ref var nonceRef = ref MemoryMarshal.GetReference(nonce);
+            ref byte input = ref MemoryMarshal.GetReference(plaintext);
+            ref byte output = ref MemoryMarshal.GetReference(ciphertext);
+            
+            var state = nonce.AsVector128<byte>();
+            ref byte inputEnd = ref Unsafe.AddByteOffset(ref input, (IntPtr)plaintext.Length - BlockSize + 1);
 
-            var state = Unsafe.ReadUnaligned<Vector128<byte>>(ref nonceRef);
-            ref var inputEndRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr)plaintext.Length - BlockSize + 1);
-
-            while (Unsafe.IsAddressLessThan(ref inputRef, ref inputEndRef))
+            while (Unsafe.IsAddressLessThan(ref input, ref inputEnd))
             {
-                var src = Unsafe.ReadUnaligned<Vector128<byte>>(ref inputRef);
+                var src = Unsafe.ReadUnaligned<Vector128<byte>>(ref input);
                 src = Sse2.Xor(src, state);
 
                 state = Sse2.Xor(src, _keys.Key0);
@@ -60,19 +59,19 @@ namespace JsonWebToken.Internal
                 state = Aes.Encrypt(state, _keys.Key10);
                 state = Aes.Encrypt(state, _keys.Key11);
                 state = Aes.EncryptLast(state, _keys.Key12);
-                Unsafe.WriteUnaligned(ref outputRef, state);
+                Unsafe.WriteUnaligned(ref output, state);
 
-                inputRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr)BlockSize);
-                outputRef = ref Unsafe.AddByteOffset(ref outputRef, (IntPtr)BlockSize);
+                input = ref Unsafe.AddByteOffset(ref input, (IntPtr)BlockSize);
+                output = ref Unsafe.AddByteOffset(ref output, (IntPtr)BlockSize);
             }
 
-            int left = plaintext.Length & 15;
+            int left = plaintext.Length & BlockSize - 1;
 
             // Reuse the destination buffer as last block buffer
-            Unsafe.CopyBlockUnaligned(ref outputRef, ref inputRef, (uint)left);
+            Unsafe.CopyBlockUnaligned(ref output, ref input, (uint)left);
             byte padding = (byte)(BlockSize - left);
-            Unsafe.InitBlockUnaligned(ref Unsafe.AddByteOffset(ref outputRef, (IntPtr)left), padding, padding);
-            var srcLast = Unsafe.ReadUnaligned<Vector128<byte>>(ref outputRef);
+            Unsafe.InitBlockUnaligned(ref Unsafe.AddByteOffset(ref output, (IntPtr)left), padding, padding);
+            var srcLast = Unsafe.ReadUnaligned<Vector128<byte>>(ref output);
 
             srcLast = Sse2.Xor(srcLast, state);
 
@@ -89,7 +88,7 @@ namespace JsonWebToken.Internal
             state = Aes.Encrypt(state, _keys.Key10);
             state = Aes.Encrypt(state, _keys.Key11);
             state = Aes.EncryptLast(state, _keys.Key12);
-            Unsafe.WriteUnaligned(ref outputRef, state);
+            Unsafe.WriteUnaligned(ref output, state);
         }
 
         public override void EncryptBlock(ref byte plaintext, ref byte ciphertext)

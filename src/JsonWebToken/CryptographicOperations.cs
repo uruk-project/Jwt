@@ -3,19 +3,94 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
+#endif
 
 namespace JsonWebToken
 {
-#if NETSTANDARD2_0 || NET461
     internal static class CryptographicOperations
     {
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public static void ZeroMemory(Span<byte> buffer)
         {
-            // NoOptimize to prevent the optimizer from deciding this call is unnecessary
-            // NoInlining to prevent the inliner from forgetting that the method was no-optimize
             buffer.Clear();
         }
-    }
+
+        // Optimized byte-based FixedTimeEquals. Inspired from https://github.com/dotnet/corefx/blob/master/src/Common/src/CoreLib/System/SpanHelpers.Byte.cs
+        public unsafe static bool FixedTimeEquals(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
+        {
+            int length = left.Length;
+            if (length != right.Length)
+            {
+                return false;
+            }
+
+            ref byte first = ref MemoryMarshal.GetReference(left);
+            ref byte second = ref MemoryMarshal.GetReference(right);
+            bool result;
+#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+            if (Avx2.IsSupported && length >= sizeof(Vector256<byte>))
+            {
+                int accumulator = unchecked((int)0b1111_1111_1111_1111_1111_1111_1111_1111);
+                IntPtr offset = (IntPtr)0;
+                int end = length - sizeof(Vector256<byte>);
+                while ((int)(byte*)offset < end)
+                {
+
+                    accumulator &= Avx2.MoveMask(Avx2.CompareEqual(first.AsVector256<byte>(offset), second.AsVector256<byte>(offset)));
+                    offset += sizeof(Vector256<byte>);
+                }
+
+                accumulator &= Avx2.MoveMask(Avx2.CompareEqual(first.AsVector256<byte>((IntPtr)end), second.AsVector256<byte>((IntPtr)end)));
+                result = accumulator == unchecked((int)0b1111_1111_1111_1111_1111_1111_1111_1111);
+            }
+            else if (Sse2.IsSupported && length >= sizeof(Vector128<byte>))
+            {
+                int accumulator = 0b1111_1111_1111_1111;
+                IntPtr offset = (IntPtr)0;
+                int end = length - sizeof(Vector128<byte>);
+                while ((int)(byte*)offset < end)
+                {
+                    accumulator &= Sse2.MoveMask(Sse2.CompareEqual(first.AsVector128<byte>(offset), second.AsVector128<byte>(offset)));
+                    offset += sizeof(Vector128<byte>);
+                }
+
+                accumulator &= Sse2.MoveMask(Sse2.CompareEqual(first.AsVector128<byte>((IntPtr)end), second.AsVector128<byte>((IntPtr)end)));
+                result = accumulator == 0b1111_1111_1111_1111;
+            }
+            else
 #endif
+            if (length >= sizeof(ulong))
+            {
+                ulong accumulator = 0L;
+                IntPtr offset = (IntPtr)0;
+                int end = length - sizeof(ulong);
+
+                while ((int)(byte*)offset < end)
+                {
+                    accumulator |= first.ReadUnaligned<ulong>(offset) ^ second.ReadUnaligned<ulong>(offset);
+                    offset += sizeof(ulong);
+                }
+
+                accumulator |= first.ReadUnaligned<ulong>((IntPtr)end) ^ second.ReadUnaligned<ulong>((IntPtr)end);
+                result = accumulator == 0L;
+            }
+            else
+            {
+                int accumulator = 0;
+                IntPtr offset = (IntPtr)0;
+                while ((int)(byte*)offset < length)
+                {
+                    accumulator |= Unsafe.AddByteOffset(ref first, offset) - Unsafe.AddByteOffset(ref second, offset);
+                    offset += 1;
+                }
+
+                result = accumulator == 0;
+            }
+
+            return result;
+        }
+    }
 }

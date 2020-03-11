@@ -107,76 +107,7 @@ namespace JsonWebToken.Internal
 
             Span<byte> hash = stackalloc byte[_hashSizeInBytes];
             _hashAlgorithm.ComputeHash(input, hash);
-            return AreFixedTimeEqual(signature, hash);
-        }
-
-        // Optimized byte-based AreEqual. Inspired from https://github.com/dotnet/corefx/blob/master/src/Common/src/CoreLib/System/SpanHelpers.Byte.cs
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        private static bool AreFixedTimeEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
-        {
-            int length = a.Length;
-            ref byte first = ref MemoryMarshal.GetReference(a);
-            ref byte second = ref MemoryMarshal.GetReference(b);
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
-            if (Avx2.IsSupported && length == 64)
-            {
-                return
-                    Avx2.MoveMask(Avx2.CompareEqual(Unsafe.ReadUnaligned<Vector256<byte>>(ref first), Unsafe.ReadUnaligned<Vector256<byte>>(ref second))) == unchecked((int)0b1111_1111_1111_1111_1111_1111_1111_1111)
-                 & Avx2.MoveMask(Avx2.CompareEqual(Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.Add(ref first, 32)), Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.Add(ref second, 32)))) == unchecked((int)0b1111_1111_1111_1111_1111_1111_1111_1111);
-            }
-            else if (Avx2.IsSupported && length == 32)
-            {
-                return Avx2.MoveMask(Avx2.CompareEqual(Unsafe.ReadUnaligned<Vector256<byte>>(ref first), Unsafe.ReadUnaligned<Vector256<byte>>(ref second))) == unchecked((int)0b1111_1111_1111_1111_1111_1111_1111_1111);
-            }
-            else if (Sse2.IsSupported && length == 16)
-            {
-                return Sse2.MoveMask(Sse2.CompareEqual(Unsafe.ReadUnaligned<Vector128<byte>>(ref first), Unsafe.ReadUnaligned<Vector128<byte>>(ref second))) == 0b1111_1111_1111_1111;
-            }
-            else
-#endif
-            if (Vector.IsHardwareAccelerated && length >= Vector<byte>.Count)
-            {
-                Vector<byte> equals = new Vector<byte>();
-                ref byte firstEnd = ref Unsafe.Add(ref first, length - Vector<byte>.Count);
-                ref byte secondEnd = ref Unsafe.Add(ref second, length - Vector<byte>.Count);
-                while (Unsafe.IsAddressLessThan(ref first, ref firstEnd))
-                {
-                    equals |= Unsafe.ReadUnaligned<Vector<byte>>(ref first) - Unsafe.ReadUnaligned<Vector<byte>>(ref second);
-                    first = ref Unsafe.Add(ref first, Vector<byte>.Count);
-                    second = ref Unsafe.Add(ref second, Vector<byte>.Count);
-                }
-
-                equals |= Unsafe.ReadUnaligned<Vector<byte>>(ref firstEnd) - Unsafe.ReadUnaligned<Vector<byte>>(ref secondEnd);
-                return equals == Vector<byte>.Zero;
-            }
-            else if (length >= sizeof(long))
-            {
-                long equals = 0L;
-                ref byte firstEnd = ref Unsafe.Add(ref first, length - sizeof(long));
-                ref byte secondEnd = ref Unsafe.Add(ref second, length - sizeof(long));
-                while (Unsafe.IsAddressLessThan(ref first, ref firstEnd))
-                {
-                    equals |= Unsafe.ReadUnaligned<long>(ref first) - Unsafe.ReadUnaligned<long>(ref second);
-                    first = ref Unsafe.Add(ref first, sizeof(long));
-                    second = ref Unsafe.Add(ref second, sizeof(long));
-                }
-
-                equals |= Unsafe.ReadUnaligned<long>(ref firstEnd) - Unsafe.ReadUnaligned<long>(ref secondEnd);
-                return equals == 0L;
-            }
-            else
-            {
-                int equals = 0;
-                ref byte firstEnd = ref Unsafe.Add(ref first, length);
-                while (Unsafe.IsAddressLessThan(ref first, ref firstEnd))
-                {
-                    equals |= first - second;
-                    first = ref Unsafe.Add(ref first, 1);
-                    second = ref Unsafe.Add(ref second, 1);
-                }
-
-                return equals == 0;
-            }
+            return CryptographicOperations.FixedTimeEquals(signature, hash);
         }
 
         /// <inheritsdoc />
@@ -200,23 +131,23 @@ namespace JsonWebToken.Internal
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm.Name);
             }
-        }
 
-        private sealed class ShaNull : Sha2
-        {
-            public static readonly ShaNull Shared = new ShaNull();
-
-            public override int HashSize => 0;
-
-            public override int BlockSize => 0;
-
-            public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
+            private sealed class ShaNull : Sha2
             {
-            }
+                public static readonly ShaNull Shared = new ShaNull();
 
-            public override int GetWorkingSetSize(int sourceLength)
-            {
-                return 0;
+                public override int HashSize => 0;
+
+                public override int BlockSize => 0;
+
+                public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
+                {
+                }
+
+                public override int GetWorkingSetSize(int sourceLength)
+                {
+                    return 0;
+                }
             }
         }
     }
