@@ -37,7 +37,7 @@ namespace JsonWebToken
 
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
         /// <summary>
-        /// Gets the padding mask used to validate the padding of the ciphertext.
+        /// Gets the padding mask used to validate the padding of the ciphertext. The padding value MUST be between 0 and 16 included.
         /// </summary>
         /// <param name="padding"></param>
         /// <returns></returns>
