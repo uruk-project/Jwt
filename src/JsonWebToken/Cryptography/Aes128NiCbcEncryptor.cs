@@ -10,13 +10,13 @@ using System.Runtime.Intrinsics.X86;
 
 namespace JsonWebToken.Internal
 {
-    internal sealed class AesNiCbc128Encryptor : AesEncryptor
+    internal sealed class Aes128NiCbcEncryptor : AesEncryptor
     {
         private readonly Aes128EncryptionKeys _keys;
 
         private const int BlockSize = 16;
 
-        public AesNiCbc128Encryptor(ReadOnlySpan<byte> key)
+        public Aes128NiCbcEncryptor(ReadOnlySpan<byte> key)
         {
             _keys = new Aes128EncryptionKeys(key);
         }

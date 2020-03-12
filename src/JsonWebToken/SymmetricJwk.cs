@@ -349,15 +349,15 @@ namespace JsonWebToken
                 {
                     if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
                     {
-                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 16), encryptionAlgorithm, new AesNiCbc128Encryptor(_k.AsSpan(16)));
+                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 16), encryptionAlgorithm, new Aes128NiCbcEncryptor(_k.AsSpan(16)));
                     }
                     else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
                     {
-                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new AesNiCbc256Encryptor(_k.AsSpan(32)));
+                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new Aes256NiCbcEncryptor(_k.AsSpan(32)));
                     }
                     else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
                     {
-                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 24), encryptionAlgorithm, new AesNiCbc192Encryptor(_k.AsSpan(24)));
+                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 24), encryptionAlgorithm, new Aes192NiCbcEncryptor(_k.AsSpan(24)));
                     }
                 }
                 else
@@ -387,15 +387,15 @@ namespace JsonWebToken
                 {
                     if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
                     {
-                        return new AesCbcHmacDecryptor(_k.AsSpan(0, 16), encryptionAlgorithm, new AesNiCbc128Decryptor(_k.AsSpan(16)));
+                        return new AesCbcHmacDecryptor(_k.AsSpan(0, 16), encryptionAlgorithm, new Aes128NiCbcDecryptor(_k.AsSpan(16)));
                     }
                     else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
                     {
-                        return new AesCbcHmacDecryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new AesNiCbc256Decryptor(_k.AsSpan(32)));
+                        return new AesCbcHmacDecryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new Aes256NiCbcDecryptor(_k.AsSpan(32)));
                     }
                     else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
                     {
-                        return new AesCbcHmacDecryptor(_k.AsSpan(0, 24), encryptionAlgorithm, new AesNiCbc192Decryptor(_k.AsSpan(24)));
+                        return new AesCbcHmacDecryptor(_k.AsSpan(0, 24), encryptionAlgorithm, new Aes192NiCbcDecryptor(_k.AsSpan(24)));
                     }
                 }
                 else

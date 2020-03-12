@@ -13,7 +13,7 @@ namespace JsonWebToken.Performance
         private static AesCbcEncryptor _encryptor;
         private static AesCbcDecryptor _decryptor;
 #if NETCOREAPP3_0
-        private static AesNiCbc128Decryptor _decryptorNi;
+        private static Aes128NiCbcDecryptor _decryptorNi;
 #endif
         private static byte[] plaintext;
         private static byte[] nonce;
@@ -26,30 +26,30 @@ namespace JsonWebToken.Performance
             _encryptor = new AesCbcEncryptor(key.K, EncryptionAlgorithm.Aes128CbcHmacSha256);
             _decryptor = new AesCbcDecryptor(key.K, EncryptionAlgorithm.Aes128CbcHmacSha256);
 #if NETCOREAPP3_0
-            _decryptorNi = new AesNiCbc128Decryptor(key.K);
+            _decryptorNi = new Aes128NiCbcDecryptor(key.K);
 #endif
         }
 
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetData))]
-        public bool Decrypt(byte[] ciphertext)
+        public bool Decrypt(Item data)
         {
-            return _decryptor.TryDecrypt(ciphertext, nonce, plaintext, out int bytesWritten);
+            return _decryptor.TryDecrypt(data.Ciphertext, nonce, plaintext, out int bytesWritten);
         }
 
 #if NETCOREAPP3_0
         [Benchmark(Baseline = false)]
         [ArgumentsSource(nameof(GetData))]
-        public bool Decrypt_Simd(byte[] ciphertext)
+        public bool Decrypt_Simd(Item data)
         {
-            return _decryptorNi.TryDecrypt(ciphertext, nonce, plaintext, out int bytesWritten);
+            return _decryptorNi.TryDecrypt(data.Ciphertext, nonce, plaintext, out int bytesWritten);
         }
 
-        public static IEnumerable<byte[]> GetData()
+        public static IEnumerable<Item> GetData()
         {
-            yield return GetCiphertext(Encoding.UTF8.GetBytes(Enumerable.Repeat('a', 1).ToArray()));
-            yield return GetCiphertext(Encoding.UTF8.GetBytes(Enumerable.Repeat('a', 2048).ToArray()));
-            yield return GetCiphertext(Encoding.UTF8.GetBytes(Enumerable.Repeat('a', 2048 * 16).ToArray()));
+            yield return new Item(GetCiphertext(Encoding.UTF8.GetBytes(Enumerable.Repeat('a', 1).ToArray())));
+            yield return new Item(GetCiphertext(Encoding.UTF8.GetBytes(Enumerable.Repeat('a', 2048).ToArray())));
+            yield return new Item(GetCiphertext(Encoding.UTF8.GetBytes(Enumerable.Repeat('a', 2048 * 16).ToArray())));
         }
 
         private static byte[] GetCiphertext(byte[] plaintext)
@@ -58,6 +58,21 @@ namespace JsonWebToken.Performance
 
             _encryptor.Encrypt(plaintext, nonce, ciphertext);
             return ciphertext;
+        }
+
+        public class Item
+        {
+            public Item(byte[] ciphertext)
+            {
+                Ciphertext = ciphertext;
+            }
+
+            public byte[] Ciphertext { get; }
+
+            public override string ToString()
+            {
+                return Ciphertext.Length.ToString();
+            }
         }
 #endif
     }
