@@ -37,20 +37,20 @@ namespace JsonWebToken.Internal
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
             if (algorithm == KeyManagementAlgorithm.Aes128KW)
             {
-                _decryptor = new AesNiCbc128Decryptor(key.K);
+                _decryptor = new Aes128NiCbcDecryptor(key.K);
             }
             else if (algorithm == KeyManagementAlgorithm.Aes256KW)
             {
-                _decryptor = new AesNiCbc256Decryptor(key.K);
+                _decryptor = new Aes256NiCbcDecryptor(key.K);
             }
             else if (algorithm == KeyManagementAlgorithm.Aes192KW)
             {
-                _decryptor = new AesNiCbc192Decryptor(key.K);
+                _decryptor = new Aes192NiCbcDecryptor(key.K);
             }
             else
             {
                 ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-                _decryptor = new AesNiCbc128Decryptor(default);
+                _decryptor = new Aes128NiCbcDecryptor(default);
             }
 #else
             _aes = GetSymmetricAlgorithm(key, algorithm);

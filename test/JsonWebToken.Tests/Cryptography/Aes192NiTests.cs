@@ -7,10 +7,10 @@ namespace JsonWebToken.Tests.Cryptography
     public class Aes192NiTests : Aes192Tests
     {
         protected override AesDecryptor CreateDecryptor(ReadOnlySpan<byte> key)
-          => new AesNiCbc192Decryptor(key);
+          => new Aes192NiCbcDecryptor(key);
 
         protected override AesEncryptor CreateEncryptor(ReadOnlySpan<byte> key)
-            => new AesNiCbc192Encryptor(key);
+            => new Aes192NiCbcEncryptor(key);
     }
 #endif
 }

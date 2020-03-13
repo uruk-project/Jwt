@@ -67,14 +67,14 @@ namespace JsonWebToken.Tests
             var plaintext = new Span<byte>(new byte[ciphertext.Length]);
             var key = new SymmetricJwk(Encoding.UTF8.GetBytes("ThisIsA128bitKey" + "ThisIsA128bitKey"));
             var nonce = Encoding.UTF8.GetBytes("ThisIsAnInitVect");
-            var encryptorNi = new AesCbcHmacEncryptor(key.K.Slice(0, 16), EncryptionAlgorithm.Aes128CbcHmacSha256, new AesNiCbc128Encryptor(key.K.Slice(16)));
+            var encryptorNi = new AesCbcHmacEncryptor(key.K.Slice(0, 16), EncryptionAlgorithm.Aes128CbcHmacSha256, new Aes128NiCbcEncryptor(key.K.Slice(16)));
             encryptorNi.Encrypt(data, nonce, nonce, ciphertext, authenticationTag);
             var decryptor = new AesCbcHmacDecryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
             bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag, plaintext, out int bytesWritten);
             Assert.True(decrypted);
             Assert.Equal(data, plaintext.Slice(0, bytesWritten).ToArray());
 
-            var decryptorNi = new AesCbcHmacDecryptor(key.K.Slice(0, 16), EncryptionAlgorithm.Aes128CbcHmacSha256, new AesNiCbc128Decryptor(key.K.Slice(16)));
+            var decryptorNi = new AesCbcHmacDecryptor(key.K.Slice(0, 16), EncryptionAlgorithm.Aes128CbcHmacSha256, new Aes128NiCbcDecryptor(key.K.Slice(16)));
             plaintext.Clear();
             decrypted = decryptorNi.TryDecrypt(ciphertext, nonce, nonce, authenticationTag, plaintext, out bytesWritten);
             Assert.True(decrypted);
@@ -145,14 +145,14 @@ namespace JsonWebToken.Tests
             var plaintext = new Span<byte>(new byte[ciphertext.Length]);
             var key = new SymmetricJwk(Encoding.UTF8.GetBytes("ThisIsA128bitKey" + "ThisIsA128bitKey" + "ThisIsA128bitKey"));
             var nonce = Encoding.UTF8.GetBytes("ThisIsAnInitVect");
-            var encryptorNi = new AesCbcHmacEncryptor(key.K.Slice(0, 24), EncryptionAlgorithm.Aes192CbcHmacSha384, new AesNiCbc192Encryptor(key.K.Slice(24)));
+            var encryptorNi = new AesCbcHmacEncryptor(key.K.Slice(0, 24), EncryptionAlgorithm.Aes192CbcHmacSha384, new Aes192NiCbcEncryptor(key.K.Slice(24)));
             encryptorNi.Encrypt(data, nonce, nonce, ciphertext, authenticationTag);
             var decryptor = new AesCbcHmacDecryptor(key.K.Slice(0, 24), EncryptionAlgorithm.Aes192CbcHmacSha384, new AesCbcDecryptor(key.K.Slice(24), EncryptionAlgorithm.Aes192CbcHmacSha384));
             bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag, plaintext, out int bytesWritten);
             Assert.True(decrypted);
             Assert.Equal(data, plaintext.Slice(0, bytesWritten).ToArray());
 
-            var decryptorNi = new AesCbcHmacDecryptor(key.K.Slice(0, 24), EncryptionAlgorithm.Aes192CbcHmacSha384, new AesNiCbc192Decryptor(key.K.Slice(24)));
+            var decryptorNi = new AesCbcHmacDecryptor(key.K.Slice(0, 24), EncryptionAlgorithm.Aes192CbcHmacSha384, new Aes192NiCbcDecryptor(key.K.Slice(24)));
             plaintext.Clear();
             decrypted = decryptorNi.TryDecrypt(ciphertext, nonce, nonce, authenticationTag, plaintext, out bytesWritten);
             Assert.True(decrypted);
@@ -223,14 +223,14 @@ namespace JsonWebToken.Tests
             var plaintext = new Span<byte>(new byte[ciphertext.Length]);
             var key = new SymmetricJwk(Encoding.UTF8.GetBytes("ThisIsA128bitKey" + "ThisIsA128bitKey" + "ThisIsA128bitKey" + "ThisIsA128bitKey"));
             var nonce = Encoding.UTF8.GetBytes("ThisIsAnInitVect");
-            var encryptorNi = new AesCbcHmacEncryptor(key.K.Slice(0, 32), EncryptionAlgorithm.Aes256CbcHmacSha512, new AesNiCbc256Encryptor(key.K.Slice(32)));
+            var encryptorNi = new AesCbcHmacEncryptor(key.K.Slice(0, 32), EncryptionAlgorithm.Aes256CbcHmacSha512, new Aes256NiCbcEncryptor(key.K.Slice(32)));
             encryptorNi.Encrypt(data, nonce, nonce, ciphertext, authenticationTag);
             var decryptor = new AesCbcHmacDecryptor(key, EncryptionAlgorithm.Aes256CbcHmacSha512);
             bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag, plaintext, out int bytesWritten);
             Assert.True(decrypted);
             Assert.Equal(data, plaintext.Slice(0, bytesWritten).ToArray());
 
-            var decryptorNi = new AesCbcHmacDecryptor(key.K.Slice(0, 32), EncryptionAlgorithm.Aes256CbcHmacSha512, new AesNiCbc256Decryptor(key.K.Slice(32)));
+            var decryptorNi = new AesCbcHmacDecryptor(key.K.Slice(0, 32), EncryptionAlgorithm.Aes256CbcHmacSha512, new Aes256NiCbcDecryptor(key.K.Slice(32)));
             plaintext.Clear();
             decrypted = decryptorNi.TryDecrypt(ciphertext, nonce, nonce, authenticationTag, plaintext, out bytesWritten);
             Assert.True(decrypted);
