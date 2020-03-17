@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
@@ -13,7 +14,7 @@ namespace JsonWebToken
     /// Represents a JSON object.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
-    public sealed class JwtObject
+    public sealed class JwtObject : IEnumerable<JwtProperty>
     {
         private readonly List<JwtProperty> _properties;
 
@@ -440,6 +441,31 @@ namespace JsonWebToken
 
             var input = bufferWriter.WrittenSpan;
             return Utf8.GetString(input);
+        }
+
+        /// <summary>
+        /// Merge the <paramref name="other"/> into this <see cref="JwtObject"/>.
+        /// </summary>
+        /// <param name="other"></param>
+        public void Merge(JwtObject other)
+        {
+            var srcProperties = other._properties;
+            var dstProperties = _properties;
+            for (int i = 0; i < srcProperties.Count; i++)
+            {
+                dstProperties.Add(srcProperties[i]);
+            }
+        }
+
+        /// <inheritsdoc />
+        public IEnumerator<JwtProperty> GetEnumerator()
+        {
+            return ((IEnumerable<JwtProperty>)_properties).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable<JwtProperty>)_properties).GetEnumerator();
         }
     }
 }
