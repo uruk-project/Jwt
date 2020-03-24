@@ -34,11 +34,6 @@ namespace JsonWebToken
 
 #if NETSTANDARD2_0
         /// <summary>
-        /// Gets the current index.
-        /// </summary>
-        public int Index => _index;
-
-        /// <summary>
         /// Gets the output as a <see cref="byte" /> array.
         /// </summary>
         public byte[] Buffer
