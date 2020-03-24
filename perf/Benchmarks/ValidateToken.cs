@@ -96,9 +96,9 @@ namespace JsonWebToken.Performance
             return Handler.ValidateToken(token, parameters, out var securityToken);
         }
 
-        public abstract Microsoft.IdentityModel.JsonWebTokens.TokenValidationResult WilsonJwt(BenchmarkToken token);
+        public abstract Microsoft.IdentityModel.Tokens.TokenValidationResult WilsonJwt(BenchmarkToken token);
 
-        protected Microsoft.IdentityModel.JsonWebTokens.TokenValidationResult WilsonJwtCore(string token, TokenValidationParameters parameters)
+        protected Microsoft.IdentityModel.Tokens.TokenValidationResult WilsonJwtCore(string token, TokenValidationParameters parameters)
         {
             return Handler2.ValidateToken(token, parameters);
         }
