@@ -421,7 +421,7 @@ namespace JsonWebToken
                 criticalHandlers: _criticalHeaderHandlers,
                 maximumTokenSizeInBytes: _maximumTokenSizeInBytes,
                 ignoreCriticalHeader: _ignoreCriticalHeader,
-                ignoreNestedToken: !_ignoreNestedToken,
+                ignoreNestedToken: _ignoreNestedToken,
                 signatureValidation: _signatureValidation,
                 issuer: _issuer,
                 audiences: _audiences.ToArray(),

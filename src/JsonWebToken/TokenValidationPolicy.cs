@@ -132,6 +132,9 @@ namespace JsonWebToken
         /// </summary>
         public Dictionary<string, ICriticalHeaderHandler> CriticalHandlers => _criticalHandlers;
 
+        /// <summary>
+        /// Ignores the nested token reading and validation. 
+        /// </summary>
         public bool IgnoreNestedToken { get; }
 
         /// <summary>
