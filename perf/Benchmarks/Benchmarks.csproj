@@ -36,7 +36,7 @@
     <PackageReference Include="BenchmarkDotNet" Version="0.12.0" />
     <PackageReference Include="jose-jwt" Version="2.5.0" />
     <PackageReference Include="JWT" Version="6.1.0" />
-    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="5.6.0" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.5.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.6.0" />
     <PackageReference Include="gfoidl.Base64" Version="1.0.1" />
   </ItemGroup>
