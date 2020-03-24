@@ -321,23 +321,30 @@ namespace JsonWebToken
                 }
 
                 Jwt jwe;
-                var decryptionResult = compressed
-                    ? TryReadToken(decompressedBytes, policy)
-                    : TryReadToken(decryptedBytes, policy);
-                if (!(decryptionResult.Token is null) && decryptionResult.Succedeed)
+                if (policy.IgnoreNestedToken)
                 {
-                    jwe = new Jwt(header, decryptionResult.Token, decryptionKey);
+                    jwe = new Jwt(header, compressed ? decompressedBytes.ToArray() : decryptedBytes.ToArray(), decryptionKey);
                 }
                 else
                 {
-                    if (decryptionResult.Status == TokenValidationStatus.MalformedToken)
+                    var decryptionResult = compressed
+                        ? TryReadToken(decompressedBytes, policy)
+                        : TryReadToken(decryptedBytes, policy);
+                    if (!(decryptionResult.Token is null) && decryptionResult.Succedeed)
                     {
-                        // The decrypted payload is not a nested JWT
-                        jwe = new Jwt(header, compressed ? decompressedBytes.ToArray() : decryptedBytes.ToArray(), decryptionKey);
+                        jwe = new Jwt(header, decryptionResult.Token, decryptionKey);
                     }
                     else
                     {
-                        return decryptionResult;
+                        if (decryptionResult.Status == TokenValidationStatus.MalformedToken)
+                        {
+                            // The decrypted payload is not a nested JWT
+                            jwe = new Jwt(header, compressed ? decompressedBytes.ToArray() : decryptedBytes.ToArray(), decryptionKey);
+                        }
+                        else
+                        {
+                            return decryptionResult;
+                        }
                     }
                 }
 
