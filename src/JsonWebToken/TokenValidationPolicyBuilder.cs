@@ -20,7 +20,8 @@ namespace JsonWebToken
         private int _maximumTokenSizeInBytes = DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
         private SignatureValidationPolicy? _signatureValidation = SignatureValidationPolicy.IgnoreSignature;
-        private bool _ignoreCriticalHeader;
+        private bool _ignoreCriticalHeader = false;
+        private bool _ignoreNestedToken;
 
         private byte _control;
         private byte[]? _issuer;
@@ -38,6 +39,7 @@ namespace JsonWebToken
             _signatureValidation = SignatureValidationPolicy.IgnoreSignature;
             _maximumTokenSizeInBytes = DefaultMaximumTokenSizeInBytes;
             _hasSignatureValidation = false;
+            _ignoreNestedToken = false;
             return this;
         }
 
@@ -388,6 +390,16 @@ namespace JsonWebToken
             return this;
         }
 
+        /// <summary>
+        /// Ignores the nested token. If present like a JWE containing a nested JWS, the nested token will be leaved as uncompress and decrypted binary data.
+        /// </summary>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder IgnoreNestedToken()
+        {
+            _ignoreNestedToken = true;
+            return this;
+        }
+
         private void Validate()
         {
             if (!_hasSignatureValidation)
@@ -405,15 +417,16 @@ namespace JsonWebToken
             Validate();
 
             var policy = new TokenValidationPolicy(
-                _validators.ToArray(),
-                _criticalHeaderHandlers,
-                _maximumTokenSizeInBytes,
-                _ignoreCriticalHeader,
-                _signatureValidation,
-                _issuer,
-                _audiences.ToArray(),
-                _clockSkew,
-                _control);
+                validators: _validators.ToArray(),
+                criticalHandlers: _criticalHeaderHandlers,
+                maximumTokenSizeInBytes: _maximumTokenSizeInBytes,
+                ignoreCriticalHeader: _ignoreCriticalHeader,
+                ignoreNestedToken: !_ignoreNestedToken,
+                signatureValidation: _signatureValidation,
+                issuer: _issuer,
+                audiences: _audiences.ToArray(),
+                clockSkew: _clockSkew,
+                control: _control);
             return policy;
         }
 
