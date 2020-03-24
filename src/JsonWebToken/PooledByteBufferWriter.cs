@@ -32,6 +32,24 @@ namespace JsonWebToken
             _index = 0;
         }
 
+#if NETSTANDARD2_0
+        /// <summary>
+        /// Gets the current index.
+        /// </summary>
+        public int Index => _index;
+
+        /// <summary>
+        /// Gets the output as a <see cref="byte" /> array.
+        /// </summary>
+        public byte[] Buffer
+        {
+            get
+            {
+                return _rentedBuffer;
+            }
+        }
+#endif
+
         /// <summary>
         /// Gets the output as a <see cref="Memory{T}"/>.
         /// </summary>
