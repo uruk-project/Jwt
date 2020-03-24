@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
@@ -12,7 +13,7 @@ namespace JsonWebToken
     /// Represents a JSON array.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
-    public readonly struct JwtArray
+    public readonly struct JwtArray : IEnumerable<JwtValue>
     {
         private readonly List<JwtValue> _inner;
 
@@ -134,6 +135,31 @@ namespace JsonWebToken
 
             var input = bufferWriter.WrittenSpan;
             return Utf8.GetString(input);
+        }
+
+        /// <summary>
+        /// Merge the <paramref name="other"/> into this <see cref="JwtArray"/>.
+        /// </summary>
+        /// <param name="other"></param>
+        public void Merge(JwtArray other)
+        {
+            var srcProperties = other._inner;
+            var dstProperties = _inner;
+            for (int i = 0; i < srcProperties.Count; i++)
+            {
+                dstProperties.Add(srcProperties[i]);
+            }
+        }
+
+        /// <inheritsdoc />
+        public IEnumerator<JwtValue> GetEnumerator()
+        {
+            return ((IEnumerable<JwtValue>)_inner).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable<JwtValue>)_inner).GetEnumerator();
         }
     }
 }

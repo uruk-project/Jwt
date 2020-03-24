@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines a signed JWT with a JSON payload.
     /// </summary>
-    public partial class JwsDescriptor : JwtDescriptor<JwtObject>
+    public partial class JwsDescriptor : JwtDescriptor<JwtObject>, IEnumerable<JwtProperty>
     {
         private JwtProperty _alg;
 
@@ -329,6 +330,24 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Set a claim to null.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        public void SetClaimToNull(ReadOnlySpan<byte> utf8Name)
+        {
+            Payload.Replace(new JwtProperty(utf8Name));
+        }
+
+        /// <summary>
+        /// Set a claim to null.
+        /// </summary>
+        /// <param name="name"></param>
+        public void SetClaimToNull(string name)
+        {
+            SetClaimToNull(Utf8.GetBytes(name));
+        }
+
+        /// <summary>
         /// Gets a claim as <see cref="string"/>.
         /// </summary>
         /// <param name="utf8Name"></param>
@@ -618,6 +637,17 @@ namespace JsonWebToken
             {
                 Algorithm = key.SignatureAlgorithm;
             }
+        }
+
+        /// <inheritsdoc />
+        public IEnumerator<JwtProperty> GetEnumerator()
+        {
+            return Payload.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return Payload.GetEnumerator();
         }
     }
 }

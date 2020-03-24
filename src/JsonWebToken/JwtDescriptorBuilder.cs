@@ -291,6 +291,105 @@ namespace JsonWebToken
             => AddClaim(Utf8.GetBytes(name), value);
 
         /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddClaim(string name, JwtObject value)
+            => AddClaim(Utf8.GetBytes(name), value);
+
+        private JwtDescriptorBuilder AddClaim(ReadOnlySpan<byte> utf8Name, JwtObject value)
+        {
+            if (_jsonPayload == null)
+            {
+                _jsonPayload = new JwtObject();
+            }
+
+            if (_jsonPayload.TryGetValue(utf8Name, out var property))
+            {
+                if (property.Type != JwtTokenType.Object)
+                {
+                    ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, JwtTokenType.Object);
+                }
+
+                ((JwtObject)property.Value!).Merge(value);
+            }
+            else
+            {
+                property = new JwtProperty(utf8Name, value);
+                _jsonPayload.Add(property);
+            }
+
+            return this;
+        }
+
+        /// <summary>
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public JwtDescriptorBuilder AddClaim(string name, JwtArray value)
+                => AddClaim(Utf8.GetBytes(name), value);
+
+        private JwtDescriptorBuilder AddClaim(ReadOnlySpan<byte> utf8Name, JwtArray value)
+        {
+            if (_jsonPayload == null)
+            {
+                _jsonPayload = new JwtObject();
+            }
+
+            if (_jsonPayload.TryGetValue(utf8Name, out var property))
+            {
+                if (property.Type != JwtTokenType.Array)
+                {
+                    ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, JwtTokenType.Array);
+                }
+
+                ((JwtArray)property.Value!).Merge(value);
+            }
+            else
+            {
+                property = new JwtProperty(utf8Name, value);
+                _jsonPayload.Add(property);
+            }
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public void AddClaim(string name, JwtProperty value)
+            => AddClaim(Utf8.GetBytes(name), value);
+
+        private void AddClaim(ReadOnlySpan<byte> utf8Name, JwtProperty value)
+        {
+            if (_jsonPayload == null)
+            {
+                _jsonPayload = new JwtObject();
+            }
+
+            JwtObject jwtObject;
+            if (_jsonPayload.TryGetValue(utf8Name, out JwtProperty property) && property.Type == JwtTokenType.Object && !(property.Value is null))
+            {
+                jwtObject = (JwtObject)property.Value;
+            }
+            else
+            {
+                jwtObject = new JwtObject();
+                _jsonPayload.Add(new JwtProperty(utf8Name, jwtObject));
+            }
+
+            jwtObject.Add(value);
+        }
+
+        /// <summary>
         /// Build the <see cref="JwtDescriptor"/>.
         /// </summary>
         /// <returns></returns>
