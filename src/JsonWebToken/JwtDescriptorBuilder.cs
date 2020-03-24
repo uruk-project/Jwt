@@ -325,7 +325,6 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// <summary>
         /// Adds a claim.
         /// </summary>
         /// <param name="name"></param>
