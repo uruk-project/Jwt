@@ -32,7 +32,6 @@ namespace JsonWebToken
             _index = 0;
         }
 
-#if NETSTANDARD2_0
         /// <summary>
         /// Gets the output as a <see cref="byte" /> array.
         /// </summary>
@@ -43,7 +42,6 @@ namespace JsonWebToken
                 return _rentedBuffer;
             }
         }
-#endif
 
         /// <summary>
         /// Gets the output as a <see cref="Memory{T}"/>.

@@ -138,7 +138,7 @@ namespace JsonWebToken.Internal
 
             public AesDecryption192Keys(ReadOnlySpan<byte> key)
             {
-                if (key.Length != 24)
+                if (key.Length < 24)
                 {
                     ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes192CbcHmacSha384, 192, key.Length * 8);
                 }

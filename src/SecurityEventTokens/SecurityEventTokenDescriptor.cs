@@ -1,9 +1,9 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Text;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -26,14 +26,20 @@ namespace JsonWebToken
         /// </summary>
         public JwtObject? Events => GetClaim(SetClaims.EventsUtf8);
 
+
+        public void AddEvent(JwtProperty @event)
+        {
+            AddClaim(SetClaims.EventsUtf8, @event);
+        }
+
         public void AddEvent(string eventName, JwtObject @event)
         {
-            AddEvent(Encoding.UTF8.GetBytes(eventName).AsSpan(), @event);
+            AddEvent(Encoding.UTF8.GetBytes(eventName), @event);
         }
-        
+
         public void AddEvent(ReadOnlySpan<byte> utf8EventName, JwtObject @event)
         {
-            AddClaim(SetClaims.EventsUtf8, new JwtProperty(utf8EventName, @event));
+            AddEvent(new JwtProperty(utf8EventName, @event));
         }
 
         /// <summary>

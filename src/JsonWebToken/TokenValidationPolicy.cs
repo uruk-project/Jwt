@@ -42,6 +42,7 @@ namespace JsonWebToken
             Dictionary<string, ICriticalHeaderHandler> criticalHandlers,
             int maximumTokenSizeInBytes,
             bool ignoreCriticalHeader,
+            bool ignoreNestedToken,
             SignatureValidationPolicy? signatureValidation,
             byte[]? issuer,
             byte[][] audiences,
@@ -52,6 +53,7 @@ namespace JsonWebToken
             _criticalHandlers = criticalHandlers ?? throw new ArgumentNullException(nameof(criticalHandlers));
             SignatureValidationPolicy = signatureValidation ?? throw new ArgumentNullException(nameof(signatureValidation));
             _ignoreCriticalHeader = ignoreCriticalHeader;
+            IgnoreNestedToken = ignoreNestedToken;
             MaximumTokenSizeInBytes = maximumTokenSizeInBytes;
             ClockSkew = clockSkew;
             _control = control;
@@ -129,6 +131,11 @@ namespace JsonWebToken
         /// Gets the extension points used to handle the critical headers.
         /// </summary>
         public Dictionary<string, ICriticalHeaderHandler> CriticalHandlers => _criticalHandlers;
+
+        /// <summary>
+        /// Ignores the nested token reading and validation. 
+        /// </summary>
+        public bool IgnoreNestedToken { get; }
 
         /// <summary>
         /// Try to validate the token, according to the <paramref name="jwt"/>.
