@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpFuzz" Version="1.6.1" />
+    <PackageReference Include="SharpFuzz" Version="1.6.2" />
     <PackageReference Include="Sigil" Version="5.0.0" />
   </ItemGroup>
 
