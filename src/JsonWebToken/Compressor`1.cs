@@ -42,8 +42,10 @@ namespace JsonWebToken
 
             public DecompressionSegment Add(ReadOnlyMemory<byte> memory)
             {
-                var segment = new DecompressionSegment(memory);
-                segment.RunningIndex = RunningIndex + Memory.Length;
+                var segment = new DecompressionSegment(memory)
+                {
+                    RunningIndex = RunningIndex + Memory.Length
+                };
                 Next = segment;
                 return segment;
             }

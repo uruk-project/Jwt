@@ -19,10 +19,10 @@ namespace JsonWebToken
         /// Computes the hash value for the specified <paramref name="source"/>.
         /// </summary>
         /// <param name="source">The data to hash.</param>
+        /// <param name="prepend">Optionnal. The data to hash before the source. Must be of the length of <see cref="BlockSize"/> or less.</param>
         /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
-        /// <param name="prepend">The data to hash before the source. Optionnal. Must be of the length of <see cref="BlockSize"/> or less.</param>
-        /// <param name="workingSet">The working set. Optionnal.</param>
-        public abstract void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> workingSet);
+        /// <param name="workingSet">Optionnal. The working set used for computing the hash. Useful if you expect to chain hashing in the same thread and you want to avoid memory allocations. Use the method <see cref="GetWorkingSetSize(int)"/> for getting the required size. </param>
+        public abstract void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> workingSet);
 
         /// <summary>
         /// Computes the required working set size.

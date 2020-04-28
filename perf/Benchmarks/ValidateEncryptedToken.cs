@@ -9,7 +9,7 @@ namespace JsonWebToken.Performance
     [Config(typeof(DefaultCoreConfig))]
     public class ValidateEncryptedToken : ValidateToken
     {
-        private static byte[] encryptionKey = Tokens.EncryptionKey.ToArray();
+        private static readonly byte[] encryptionKey = Tokens.EncryptionKey.ToArray();
 
         [GlobalSetup]
         public void Setup()
