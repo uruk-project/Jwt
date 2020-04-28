@@ -83,7 +83,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FuzzTest", "fuzz\FuzzTest\F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MultiIssuersValidationSample", "samples\MultiIssuersValidationSample\MultiIssuersValidationSample.csproj", "{36269BC7-CFC5-42F4-A63B-A7F6614B9820}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "JsonWebToken.FSharp.Tests", "test\JsonWebToken.FSharp\JsonWebToken.FSharp.Tests.fsproj", "{5E728F4F-D3B6-425B-8A4C-B6240650B70A}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "JsonWebToken.FSharp.Tests", "test\JsonWebToken.FSharp.Tests\JsonWebToken.FSharp.Tests.fsproj", "{5E728F4F-D3B6-425B-8A4C-B6240650B70A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
