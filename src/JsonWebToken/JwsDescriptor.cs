@@ -330,6 +330,26 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void AddClaim(string name, JwtArray value)
+        {
+            Payload.Add(name, value);
+        }
+
+        /// <summary>
+        /// Adds a claim.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        public void AddClaim(ReadOnlySpan<byte> utf8Name, JwtArray value)
+        {
+            Payload.Add(utf8Name, value);
+        }
+
+        /// <summary>
         /// Set a claim to null.
         /// </summary>
         /// <param name="utf8Name"></param>
