@@ -104,7 +104,17 @@ namespace JsonWebToken
         public List<string>? Audiences
         {
             get { return GetListClaims<string>(Claims.AudUtf8); }
-            set { AddClaim(Claims.AudUtf8, value); }
+            set
+            {
+                if (value is null)
+                {
+                    SetClaimToNull(Claims.AudUtf8);
+                }
+                else
+                {
+                    AddClaim(Claims.AudUtf8, value);
+                }
+            }
         }
 
         /// <summary>
@@ -141,6 +151,26 @@ namespace JsonWebToken
         {
             get { return GetDateTime(Claims.NbfUtf8); }
             set { AddClaim(Claims.NbfUtf8, value); }
+        }
+
+        /// <summary>
+        /// Add a claim with the value <c>null</c>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <returns></returns>
+        public void AddNullClaim(ReadOnlySpan<byte> utf8Name)
+        {
+            Payload.Add(new JwtProperty(utf8Name));
+        }
+
+        /// <summary>
+        /// Add a claim with the value <c>null</c>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public void AddNullClaim(string name)
+        {
+            Payload.Add(new JwtProperty(name));
         }
 
         /// <summary>
@@ -350,6 +380,28 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Add a claim as a list of <see cref="string"/>.
+        /// </summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public void AddClaim(ReadOnlySpan<byte> utf8Name, List<string> value)
+        {
+            AddClaim(utf8Name, new JwtArray(value));
+        }
+
+        /// <summary>
+        /// Add a claim as a list of <see cref="string"/>.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public void AddClaim(string name, List<string> value)
+        {
+            AddClaim(Utf8.GetBytes(name), value);
+        }
+
+        /// <summary>
         /// Set a claim to null.
         /// </summary>
         /// <param name="utf8Name"></param>
@@ -492,24 +544,6 @@ namespace JsonWebToken
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Add a claim as a list of <see cref="string"/>.
-        /// </summary>
-        /// <param name="utf8Name"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        protected void AddClaim(ReadOnlySpan<byte> utf8Name, List<string>? value)
-        {
-            if (value is null)
-            {
-                Payload.Add(new JwtProperty(utf8Name));
-            }
-            else
-            {
-                Payload.Add(new JwtProperty(utf8Name, new JwtArray(value)));
-            }
         }
 
         /// <summary>
