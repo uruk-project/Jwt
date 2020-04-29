@@ -117,9 +117,9 @@ namespace JsonWebToken
         private static Exception CreateInvalidOperationException_NoSigningKeyDefined() => new InvalidOperationException("No signing key is defined.");
 
         [DoesNotReturn]
-        internal static void ThrowInvalidOperationException_ConcurrentOperationsNotSupported() => CreateInvalidOperationException_ConcurrentOperationsNotSupported();
+        internal static void ThrowInvalidOperationException_ConcurrentOperationsNotSupported() => throw CreateInvalidOperationException_ConcurrentOperationsNotSupported();
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void CreateInvalidOperationException_ConcurrentOperationsNotSupported() => throw new InvalidOperationException("Operations that change non-concurrent collections must have exclusive access. A concurrent update was performed on this collection and corrupted its state. The collection's state is no longer correct.");
+        private static Exception CreateInvalidOperationException_ConcurrentOperationsNotSupported() => new InvalidOperationException("Operations that change non-concurrent collections must have exclusive access. A concurrent update was performed on this collection and corrupted its state. The collection's state is no longer correct.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(ExceptionArgument argument, int value) => throw CreateArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(argument, value);

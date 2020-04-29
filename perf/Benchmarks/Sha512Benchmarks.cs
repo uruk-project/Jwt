@@ -47,7 +47,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetData))]
         public byte[] Sha512_Optimized_SharedBuffer(byte[] value)
         {
-            _sha512.ComputeHash(value, _buffer, default, W);
+            _sha512.ComputeHash(value, default, _buffer, W);
             return _buffer;
         }
 
@@ -141,7 +141,7 @@ namespace JsonWebToken.Performance
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -697,7 +697,7 @@ namespace JsonWebToken.Performance
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -1241,7 +1241,7 @@ namespace JsonWebToken.Performance
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -1414,7 +1414,6 @@ namespace JsonWebToken.Performance
 
         internal static unsafe void Schedule(ref Vector256<ulong> schedule, ref byte message)
         {
-            IntPtr i = (IntPtr)0;
             Vector256<ulong> W0, W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W11, W12, W13, W14, W15;
             var littleEndianMask = EndiannessMask256UInt64;
             var gatherMask = GatherMask;
@@ -1434,7 +1433,7 @@ namespace JsonWebToken.Performance
             W13 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 13), gatherMask).AsByte(), littleEndianMask).AsUInt64();
             W14 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 14), gatherMask).AsByte(), littleEndianMask).AsUInt64();
             W15 = Avx2.Shuffle(Gather(ref Unsafe.Add(ref message, 8 * 15), gatherMask).AsByte(), littleEndianMask).AsUInt64();
-            Schedule(ref schedule, ref i, ref W0, ref W1, ref W2, ref W3, ref W4, ref W5, ref W6, ref W7, ref W8, ref W9, ref W10, ref W11, ref W12, ref W13, ref W14, ref W15);
+            Schedule(ref schedule, ref W0, ref W1, ref W2, ref W3, ref W4, ref W5, ref W6, ref W7, ref W8, ref W9, ref W10, ref W11, ref W12, ref W13, ref W14, ref W15);
 
             Unsafe.Add(ref schedule, 64) = Avx2.Add(W0, K256((IntPtr)64));
             Unsafe.Add(ref schedule, 65) = Avx2.Add(W1, K256((IntPtr)65));
@@ -1454,7 +1453,7 @@ namespace JsonWebToken.Performance
             Unsafe.Add(ref schedule, 79) = Avx2.Add(W15, K256((IntPtr)79));
         }
 
-        private static unsafe void Schedule(ref Vector256<ulong> schedule, ref IntPtr i, ref Vector256<ulong> W0, ref Vector256<ulong> W1, ref Vector256<ulong> W2, ref Vector256<ulong> W3, ref Vector256<ulong> W4, ref Vector256<ulong> W5, ref Vector256<ulong> W6, ref Vector256<ulong> W7, ref Vector256<ulong> W8, ref Vector256<ulong> W9, ref Vector256<ulong> W10, ref Vector256<ulong> W11, ref Vector256<ulong> W12, ref Vector256<ulong> W13, ref Vector256<ulong> W14, ref Vector256<ulong> W15)
+        private static unsafe void Schedule(ref Vector256<ulong> schedule, ref Vector256<ulong> W0, ref Vector256<ulong> W1, ref Vector256<ulong> W2, ref Vector256<ulong> W3, ref Vector256<ulong> W4, ref Vector256<ulong> W5, ref Vector256<ulong> W6, ref Vector256<ulong> W7, ref Vector256<ulong> W8, ref Vector256<ulong> W9, ref Vector256<ulong> W10, ref Vector256<ulong> W11, ref Vector256<ulong> W12, ref Vector256<ulong> W13, ref Vector256<ulong> W14, ref Vector256<ulong> W15)
         {
             W0 = Schedule(W0, W1, W9, W14, (IntPtr)0, ref schedule);
             W1 = Schedule(W1, W2, W10, W15, (IntPtr)1, ref schedule);
@@ -1841,7 +1840,7 @@ namespace JsonWebToken.Performance
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -2410,7 +2409,7 @@ namespace JsonWebToken.Performance
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -2933,7 +2932,7 @@ namespace JsonWebToken.Performance
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -3499,7 +3498,7 @@ namespace JsonWebToken.Performance
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {
@@ -4067,7 +4066,7 @@ namespace JsonWebToken.Performance
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
         {
             if (destination.Length < Sha512HashSize)
             {

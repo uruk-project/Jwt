@@ -70,7 +70,7 @@ namespace JsonWebToken
             if (key.Length > BlockSize)
             {
                 Span<byte> keyPrime = stackalloc byte[sha2.HashSize];
-                Sha2.ComputeHash(key, keyPrime, default, default);
+                Sha2.ComputeHash(key, default, keyPrime, default);
                 InitializeIOKeys(keyPrime);
                 keyPrime.Clear();
             }
@@ -149,8 +149,8 @@ namespace JsonWebToken
                 Span<byte> W = size > Constants.MaxStackallocBytes
                     ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(size))
                     : stackalloc byte[size];
-                Sha2.ComputeHash(source, destination, _innerPadKey.Span, W);
-                Sha2.ComputeHash(destination, destination, _outerPadKey.Span, W);
+                Sha2.ComputeHash(source, _innerPadKey.Span, destination, W);
+                Sha2.ComputeHash(destination, _outerPadKey.Span, destination, W);
             }
             finally
             {

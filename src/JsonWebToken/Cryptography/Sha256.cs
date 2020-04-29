@@ -19,8 +19,17 @@ namespace JsonWebToken
     /// </summary>
     public sealed class Sha256 : Sha2
     {
-        private const int Sha256HashSize = 32;
-        private const int Sha256BlockSize = 64;
+        /// <summary>
+        /// The resulting hash size of the <see cref="Sha256"/> algorithm.
+        /// </summary>
+        public const int Sha256HashSize = 32;
+
+        /// <summary>
+        /// The required  block size of the <see cref="Sha256"/> algorithm.
+        /// </summary>
+        public const int Sha256BlockSize = 64;
+
+        private const int IterationCount = 64;
 
         /// <summary>
         /// Gets the default instance of the <see cref="Sha256"/> class.
@@ -36,13 +45,40 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override int GetWorkingSetSize(int sourceLength)
 #if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
-            => Ssse3.IsSupported && sourceLength >= 4 * Sha256BlockSize ? 64 * 16 : 64 * 4;
+            => Ssse3.IsSupported && sourceLength >= 4 * Sha256BlockSize ? IterationCount * 16 : IterationCount * 4;
 #else
-            => 64 * 4;
+            => IterationCount * 4;
 #endif
 
+        /// <summary>
+        /// Computes the hash value for the specified <paramref name="source"/>.
+        /// </summary>
+        /// <param name="source">The data to hash.</param>
+        /// <param name="prepend">Optionnal. The data to hash before the source. Must be of the length of <see cref="BlockSize"/> or less.</param>
+        /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
+        /// <param name="workingSet">Optionnal. The working set used for computing the hash. Useful if you expect to chain hashing in the same thread and you want to avoid memory allocations. Use the method <see cref="GetWorkingSetSize(int)"/> for getting the required size. </param>
+        public static void Hash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> workingSet)
+            => Shared.ComputeHash(source, prepend, destination, workingSet);
+
+        /// <summary>
+        /// Computes the hash value for the specified <paramref name="source"/>.
+        /// </summary>
+        /// <param name="source">The data to hash.</param>
+        /// <param name="prepend">Optionnal. The data to hash before the source. Must be of the length of <see cref="BlockSize"/> or less.</param>
+        /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
+        public static void Hash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination)
+           => Shared.ComputeHash(source, prepend, destination);
+        
+        /// <summary>
+        /// Computes the hash value for the specified <paramref name="source"/>.
+        /// </summary>
+        /// <param name="source">The data to hash.</param>
+        /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
+        public static void Hash(ReadOnlySpan<byte> source, Span<byte> destination)
+            => Shared.ComputeHash(source, destination);
+
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> workingSet)
+        public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> workingSet)
         {
             if (destination.Length < Sha256HashSize)
             {
@@ -66,7 +102,7 @@ namespace JsonWebToken
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
-            Span<byte> wTemp = workingSet.Length < 64 * sizeof(uint) ? stackalloc byte[64 * sizeof(uint)] : workingSet;
+            Span<byte> wTemp = workingSet.Length < IterationCount * sizeof(uint) ? stackalloc byte[IterationCount * sizeof(uint)] : workingSet;
             ref uint wRef = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(wTemp));
             ref uint stateRef = ref MemoryMarshal.GetReference(state);
             ref byte srcStartRef = ref MemoryMarshal.GetReference(source);
@@ -107,7 +143,7 @@ namespace JsonWebToken
                 if (Unsafe.IsAddressLessThan(ref srcRef, ref src128EndRef))
                 {
                     byte[]? returnToPool = null;
-                    Span<byte> w4 = workingSet.Length < 64 * 16 ? (returnToPool = ArrayPool<byte>.Shared.Rent(64 * 16)) : workingSet;
+                    Span<byte> w4 = workingSet.Length < IterationCount * 16 ? (returnToPool = ArrayPool<byte>.Shared.Rent(IterationCount * 16)) : workingSet;
                     try
                     {
                         ref Vector128<uint> w4Ref = ref Unsafe.As<byte, Vector128<uint>>(ref MemoryMarshal.GetReference(w4));
@@ -312,7 +348,7 @@ namespace JsonWebToken
 
         private static unsafe void Transform(ref uint state, ref byte currentBlock, ref Vector128<uint> w)
         {
-            ref uint wEnd = ref Unsafe.As<Vector128<uint>, uint>(ref Unsafe.AddByteOffset(ref w, (IntPtr)(64 * 16)));
+            ref uint wEnd = ref Unsafe.As<Vector128<uint>, uint>(ref Unsafe.AddByteOffset(ref w, (IntPtr)(IterationCount * 16)));
             uint a, b, c, d, e, f, g, h;
             Schedule(ref w, ref currentBlock);
             for (IntPtr j = (IntPtr)0; (byte*)j < (byte*)16; j += sizeof(uint))
@@ -397,7 +433,7 @@ namespace JsonWebToken
                 }
             }
 
-            ref uint wEnd = ref Unsafe.AddByteOffset(ref w, (IntPtr)(64 * 4));
+            ref uint wEnd = ref Unsafe.AddByteOffset(ref w, (IntPtr)(IterationCount * 4));
             ref uint w0 = ref Unsafe.AddByteOffset(ref w, (IntPtr)(16 * 4));
             do
             {

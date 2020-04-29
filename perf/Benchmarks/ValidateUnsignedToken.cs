@@ -9,7 +9,7 @@ namespace JsonWebToken.Performance
     [Config(typeof(DefaultCoreConfig))]
     public class ValidateUnsignedToken : ValidateToken
     {
-        private static byte[] signingKey = Tokens.SigningKey.ToArray();
+        private static readonly byte[] signingKey = Tokens.SigningKey.ToArray();
 
         [GlobalSetup]
         public void Setup()

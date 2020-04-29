@@ -106,7 +106,7 @@ namespace JsonWebToken.Performance
 
         /// <inheritsdoc />
         public override int BlockSize => Sha256BlockSize;
-       
+
         /// <inheritsdoc />
         public override int GetWorkingSetSize(int sourceLength)
         {
@@ -124,7 +124,7 @@ namespace JsonWebToken.Performance
 
         /// <inheritsdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
         {
             if (destination.Length < Sha256HashSize)
             {
@@ -693,7 +693,7 @@ namespace JsonWebToken.Performance
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
         {
             if (destination.Length < Sha256HashSize)
             {
@@ -1292,7 +1292,7 @@ namespace JsonWebToken.Performance
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
         {
             if (destination.Length < Sha256HashSize)
             {
@@ -1877,7 +1877,7 @@ namespace JsonWebToken.Performance
         }
 
         /// <inheritsdoc />
-        public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
+        public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
         {
             if (destination.Length < Sha256HashSize)
             {
@@ -2061,13 +2061,12 @@ namespace JsonWebToken.Performance
             W14 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 14)).AsByte(), _littleEndianMask128).AsUInt32();
             W15 = Ssse3.Shuffle(Gather(ref Unsafe.Add(ref message, 4 * 15)).AsByte(), _littleEndianMask128).AsUInt32();
 
-            IntPtr i = (IntPtr)0;
-            SchedulStep1(ref schedule, ref W0, ref W1, ref W2, ref W3, ref W4, ref W5, ref W6, ref W7, ref W8, ref W9, ref W10, ref W11, ref W12, ref W13, ref W14, ref W15, ref i);
+            SchedulStep1(ref schedule, ref W0, ref W1, ref W2, ref W3, ref W4, ref W5, ref W6, ref W7, ref W8, ref W9, ref W10, ref W11, ref W12, ref W13, ref W14, ref W15);
 
             ScheduleStep2(ref schedule, ref W0, ref W1, ref W2, ref W3, ref W4, ref W5, ref W6, ref W7, ref W8, ref W9, ref W10, ref W11, ref W12, ref W13, ref W14, ref W15);
         }
 
-        private static unsafe void SchedulStep1(ref Vector128<uint> schedule, ref Vector128<uint> W0, ref Vector128<uint> W1, ref Vector128<uint> W2, ref Vector128<uint> W3, ref Vector128<uint> W4, ref Vector128<uint> W5, ref Vector128<uint> W6, ref Vector128<uint> W7, ref Vector128<uint> W8, ref Vector128<uint> W9, ref Vector128<uint> W10, ref Vector128<uint> W11, ref Vector128<uint> W12, ref Vector128<uint> W13, ref Vector128<uint> W14, ref Vector128<uint> W15, ref IntPtr i)
+        private static unsafe void SchedulStep1(ref Vector128<uint> schedule, ref Vector128<uint> W0, ref Vector128<uint> W1, ref Vector128<uint> W2, ref Vector128<uint> W3, ref Vector128<uint> W4, ref Vector128<uint> W5, ref Vector128<uint> W6, ref Vector128<uint> W7, ref Vector128<uint> W8, ref Vector128<uint> W9, ref Vector128<uint> W10, ref Vector128<uint> W11, ref Vector128<uint> W12, ref Vector128<uint> W13, ref Vector128<uint> W14, ref Vector128<uint> W15)
         {
             W0 = Schedule(W0, W1, W9, W14, (IntPtr)0, ref schedule);
             W1 = Schedule(W1, W2, W10, W15, (IntPtr)1, ref schedule);

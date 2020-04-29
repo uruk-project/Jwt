@@ -140,7 +140,7 @@ namespace JsonWebToken.Internal
 
                 public override int BlockSize => 0;
 
-                public override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> prepend, Span<byte> w)
+                public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
                 {
                 }
 
