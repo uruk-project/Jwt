@@ -42,33 +42,33 @@ namespace JsonWebToken.Tests
             yield return new object[]
             {
                 @"{
-  ""keys"": [
-    {
-      ""kty"": ""RSA"",
-      ""n"": ""zZ6iZhgNHEgGA_U2ipme9C9qDJRTxSzTwjAE0g2-zZg7KBsTcJ7zNKcCS9b-9J-l5y500_75IAsnC-c7qUHw46SYqPWBZKosg5cEGyC_pB1coQzPq1NNbmSfg4gRwThCmmyp_bypK22-F5hdJp3dRZn7_moQ71hPstTc9MTZgyD5xi9l-PFuD5iDhtAqXKP9yE8ktVAvU8FRcf2DeA1DD3EzjtV-to23_rbynXfY3Bv42lLEstMIbZ0tQ_K4XxCSoc0GP4tp1JAXEIpPXNY6Zt2a0wk5MSmZkvQk9ty-r94SA-0rYmXQ6VOt_WaWufIynJBhKqKn_CvQl4EDXBbEBhG16dgs8vYhj_JAP83syY5XDVWAkHs05nMZoE4rfAw3meb-AyDwOCi-MV11GBslRIfJPmxVitIdHnO2_6YzXAu53fIuC5i7eqBxqOju7GNaceaQDSFDSxr4pUR5DuskDiNrQ3YmoSLgdGITIfzdYsbWj2QdeO9nPy9SlngPZYv73rvXF7eghCNvOo8hptG_h4G5ScmJ8wPUDH2VuLtdIbyg476oY3elAWu3YtTT3SGos-Mk4rxwAjWbddoOrMFnK6ShWahZwxEyBA9xPddAM7hJXq8FuJenANg2waKqhIFuWre7JylezAFOXKZW0rzhF6jurCYui7p79YyZqHugEiE"",
-      ""e"": ""AQAB"",
-      ""alg"": ""RS256"",
-      ""use"": ""sig"",
-      ""kid"": ""216""
-    },
-    {
-      ""kty"": ""RSA"",
-      ""n"": ""yb3JETE4C4THs29DLZlysUhv1Ftwqck7-WBEPNqFEy5UmwP26DZ3spSjY0iG7Zp9-gTfMLF1ygLUqT-7FBSjx1nJkx3rda8xJUUsqLmrZok7K623dvd6E8kbAyGnpgRsqTL-KTketHv-aDy8Sg9DvITLrp9_5oYqp4i_7jLQuJyHrFwgP7U7HJzPaNdgu1wQ4UkZobc4qt2aw4ux7F0cLw8gmUBzCLos1xe8_RzxkYYQv3j5Q3aNxlpDGFLZlFGJLSwbV3aNLMacAEDHrZNyyE_DvHj8VingSXLl68C3iRR2vGKIxoyG1MWn7a2E0ruwnr9djMHyFD97l85OHNk_wx_uHBisX44KRnW24qQSptgk4g_5ZEI-Mjwk0_MyAoaEhoFplarhMm87bFZTlEb0UvWr6oQN4ZqYIriRDEQwHFk17P2YzD5OvmihyyfsBHURYKYTEOVgSgQZIhmfmrf8DXbAXuvQz0rSfu2gGq2li4Y0sPUR9pnuRyCeZGJ3N4iYSTiTFhLXvq3Xjv4TUReDICoxpQLRnX2wFBC5erts0bmscMt15w1ZqyRtSN77hkKwRpcCSH_Frd1MP5GduyUyfZGsCp45D-9LEhnLSMSNDtQj0mqx3F7opyphqz6675P99qQALF0tQBN4mUYVapuNWvWgDtrYOHIswx3fPHYmBi8"",
-      ""e"": ""AQAB"",
-      ""alg"": ""RS256"",
-      ""use"": ""sig"",
-      ""kid"": ""220""
-    },
-    {
-      ""kty"": ""RSA"",
-      ""n"": ""oDkKtNtFuHrGXiQOZmeKJvFot5NggosQf37wpxM5Mwem575SyI4y8aZsZB5W9-5fIdWwANljYEKbRYscIG2F8v6Cp4CHSMdx4e6U26zY-6aJ9msyefghlgnGegPgEYqS8oPBgWBQ7C6D8tmfvr9OZ6UpD7BoKgmhELlxUiR-3wmBfhBW_OZQIJ6l4dk5lyf1I9bCWY7rLkg8VSpkihAwewPhN3FvP-zngxkUgUG-ayuwP77VSSu3dwfs4wTbjrL0juXINXOU0CwHp49JpIr184ofWY6UfrsfvIMXenCBkuzAUaGSSKSixNM-bXFq3lxGbJINZ-GiF0wNGKXTRQmGQYWTHdIJkEvYxFUo90Mqcd_IHJpPfb3_9vM1jbB5DWl1YgrAoXR3U1bIEZ3AAaqP5XynhbKu-XJI4YwC0pvhICEjs3lSxKN9Wt1Ivl33K-Tlgg6ukqpgB2yqSb3TRRYD4c98N0zGEP_Wt7RHKtf7vdeo2i7WYk-hI8Lh1ljxVJKruZoIRpDJYIwpvar89UEe3F1q_oqFE0o1SYBM3zW_mkgeUx4e1Ijerd5fKYStJ4he9pn8pIb-e9kBKG9RjzwbbDkar5DiqGIj_C77ezlewLw4Cr5zoDp7l4lANmG4mYMdCvilthB3dQVftrJdPq8gHUALD3oheBvCpRw0-D3VYxc"",
-      ""e"": ""AQAB"",
-      ""alg"": ""RS256"",
-      ""use"": ""sig"",
-      ""kid"": ""218""
-    }
-  ]
-}", 3 };
+                    ""keys"": [
+                    {
+                        ""kty"": ""RSA"",
+                        ""n"": ""zZ6iZhgNHEgGA_U2ipme9C9qDJRTxSzTwjAE0g2-zZg7KBsTcJ7zNKcCS9b-9J-l5y500_75IAsnC-c7qUHw46SYqPWBZKosg5cEGyC_pB1coQzPq1NNbmSfg4gRwThCmmyp_bypK22-F5hdJp3dRZn7_moQ71hPstTc9MTZgyD5xi9l-PFuD5iDhtAqXKP9yE8ktVAvU8FRcf2DeA1DD3EzjtV-to23_rbynXfY3Bv42lLEstMIbZ0tQ_K4XxCSoc0GP4tp1JAXEIpPXNY6Zt2a0wk5MSmZkvQk9ty-r94SA-0rYmXQ6VOt_WaWufIynJBhKqKn_CvQl4EDXBbEBhG16dgs8vYhj_JAP83syY5XDVWAkHs05nMZoE4rfAw3meb-AyDwOCi-MV11GBslRIfJPmxVitIdHnO2_6YzXAu53fIuC5i7eqBxqOju7GNaceaQDSFDSxr4pUR5DuskDiNrQ3YmoSLgdGITIfzdYsbWj2QdeO9nPy9SlngPZYv73rvXF7eghCNvOo8hptG_h4G5ScmJ8wPUDH2VuLtdIbyg476oY3elAWu3YtTT3SGos-Mk4rxwAjWbddoOrMFnK6ShWahZwxEyBA9xPddAM7hJXq8FuJenANg2waKqhIFuWre7JylezAFOXKZW0rzhF6jurCYui7p79YyZqHugEiE"",
+                        ""e"": ""AQAB"",
+                        ""alg"": ""RS256"",
+                        ""use"": ""sig"",
+                        ""kid"": ""216""
+                    },
+                    {
+                        ""kty"": ""RSA"",
+                        ""n"": ""yb3JETE4C4THs29DLZlysUhv1Ftwqck7-WBEPNqFEy5UmwP26DZ3spSjY0iG7Zp9-gTfMLF1ygLUqT-7FBSjx1nJkx3rda8xJUUsqLmrZok7K623dvd6E8kbAyGnpgRsqTL-KTketHv-aDy8Sg9DvITLrp9_5oYqp4i_7jLQuJyHrFwgP7U7HJzPaNdgu1wQ4UkZobc4qt2aw4ux7F0cLw8gmUBzCLos1xe8_RzxkYYQv3j5Q3aNxlpDGFLZlFGJLSwbV3aNLMacAEDHrZNyyE_DvHj8VingSXLl68C3iRR2vGKIxoyG1MWn7a2E0ruwnr9djMHyFD97l85OHNk_wx_uHBisX44KRnW24qQSptgk4g_5ZEI-Mjwk0_MyAoaEhoFplarhMm87bFZTlEb0UvWr6oQN4ZqYIriRDEQwHFk17P2YzD5OvmihyyfsBHURYKYTEOVgSgQZIhmfmrf8DXbAXuvQz0rSfu2gGq2li4Y0sPUR9pnuRyCeZGJ3N4iYSTiTFhLXvq3Xjv4TUReDICoxpQLRnX2wFBC5erts0bmscMt15w1ZqyRtSN77hkKwRpcCSH_Frd1MP5GduyUyfZGsCp45D-9LEhnLSMSNDtQj0mqx3F7opyphqz6675P99qQALF0tQBN4mUYVapuNWvWgDtrYOHIswx3fPHYmBi8"",
+                        ""e"": ""AQAB"",
+                        ""alg"": ""RS256"",
+                        ""use"": ""sig"",
+                        ""kid"": ""220""
+                    },
+                    {
+                        ""kty"": ""RSA"",
+                        ""n"": ""oDkKtNtFuHrGXiQOZmeKJvFot5NggosQf37wpxM5Mwem575SyI4y8aZsZB5W9-5fIdWwANljYEKbRYscIG2F8v6Cp4CHSMdx4e6U26zY-6aJ9msyefghlgnGegPgEYqS8oPBgWBQ7C6D8tmfvr9OZ6UpD7BoKgmhELlxUiR-3wmBfhBW_OZQIJ6l4dk5lyf1I9bCWY7rLkg8VSpkihAwewPhN3FvP-zngxkUgUG-ayuwP77VSSu3dwfs4wTbjrL0juXINXOU0CwHp49JpIr184ofWY6UfrsfvIMXenCBkuzAUaGSSKSixNM-bXFq3lxGbJINZ-GiF0wNGKXTRQmGQYWTHdIJkEvYxFUo90Mqcd_IHJpPfb3_9vM1jbB5DWl1YgrAoXR3U1bIEZ3AAaqP5XynhbKu-XJI4YwC0pvhICEjs3lSxKN9Wt1Ivl33K-Tlgg6ukqpgB2yqSb3TRRYD4c98N0zGEP_Wt7RHKtf7vdeo2i7WYk-hI8Lh1ljxVJKruZoIRpDJYIwpvar89UEe3F1q_oqFE0o1SYBM3zW_mkgeUx4e1Ijerd5fKYStJ4he9pn8pIb-e9kBKG9RjzwbbDkar5DiqGIj_C77ezlewLw4Cr5zoDp7l4lANmG4mYMdCvilthB3dQVftrJdPq8gHUALD3oheBvCpRw0-D3VYxc"",
+                        ""e"": ""AQAB"",
+                        ""alg"": ""RS256"",
+                        ""use"": ""sig"",
+                        ""kid"": ""218""
+                    }
+                    ]
+                }", 3 };
 
             // https://login.microsoftonline.com/common/discovery/v2.0/keys
             yield return new object[]
@@ -81,53 +81,80 @@ namespace JsonWebToken.Tests
             yield return new object[]
             {
                 @"{
- ""keys"": [
-  {
-   ""kty"": ""RSA"",
-   ""alg"": ""RS256"",
-   ""use"": ""sig"",
-   ""kid"": ""16e6c7334cf754186f877ff1f4a0bc128e1c97ca"",
-   ""n"": ""ALk6-zOoZqVpGNvuEcJWBzDsPdwGwxl8M-c2acIMFkqPPdP9IJt0W3KUd5fHdyl1v_pO05kzQPGkKfgTrAL6X0dD2_48xzkkLN2ieiemc-DcfN971XX5Z0ITprPM1BiofYx_h_pJMiydHLQSJ485oyt0ZHPGysHa8w00x7D1OtqMToxfiwFsxcCyBlcPMOs7aijVWz7NGZxpgTb8OJZmOzVF0oVIhjek0oqXIQzQRlivBLhU4yYPnGdQ1g0Lcj5lkry5sZrNVijqn2E3yHDgiBSk-mKhLhCNwj3pQ4EfP42Kv_o-Gg-l2FRqQ1M0DJMcZiYv_vCteJY-HLpClS-BeF8"",
-   ""e"": ""AQAB""
-  },
-  {
-   ""kty"": ""RSA"",
-   ""alg"": ""RS256"",
-   ""use"": ""sig"",
-   ""kid"": ""f75b64243cd5243febeb9540c3afd7b7ad15f291"",
-   ""n"": ""AIqA49-acaWGnxQf-U9VCaMsPVkzd4Qw3DocPRmtP-L1jVNV_Dm7FCFsg3jfF0uCSw9C6o9vSkmhtOKRUHwKG34AZuwK9XmcwFTVtXIzxRR8f1y30x7bygTWyEEa4NlENQuXiLXFVqpgKRD6iegusuuyglnAPJsAefDXiBBsuzIP607YDmmGMYWq__FjDpkzvN1v-6GcqmMMDmIeT_qUuEh6uTzzA1DJNj3GBSeDCGmUabaPt8UMhBqkrg-w3WW6zFC4JJfNxLEbMHDvLCKIukp9hH0apZVkX8NPo_NX3Kn9HatoFXXVbquPIGsnCz1DB_EB4Il3aPyXgZoMKhsB3b0"",
-   ""e"": ""AQAB""
-  }
- ]
-}", 2
+                    ""keys"": [
+                        {
+                            ""kty"": ""RSA"",
+                            ""alg"": ""RS256"",
+                            ""use"": ""sig"",
+                            ""kid"": ""16e6c7334cf754186f877ff1f4a0bc128e1c97ca"",
+                            ""n"": ""ALk6-zOoZqVpGNvuEcJWBzDsPdwGwxl8M-c2acIMFkqPPdP9IJt0W3KUd5fHdyl1v_pO05kzQPGkKfgTrAL6X0dD2_48xzkkLN2ieiemc-DcfN971XX5Z0ITprPM1BiofYx_h_pJMiydHLQSJ485oyt0ZHPGysHa8w00x7D1OtqMToxfiwFsxcCyBlcPMOs7aijVWz7NGZxpgTb8OJZmOzVF0oVIhjek0oqXIQzQRlivBLhU4yYPnGdQ1g0Lcj5lkry5sZrNVijqn2E3yHDgiBSk-mKhLhCNwj3pQ4EfP42Kv_o-Gg-l2FRqQ1M0DJMcZiYv_vCteJY-HLpClS-BeF8"",
+                            ""e"": ""AQAB""
+                        },
+                        {
+                            ""kty"": ""RSA"",
+                            ""alg"": ""RS256"",
+                            ""use"": ""sig"",
+                            ""kid"": ""f75b64243cd5243febeb9540c3afd7b7ad15f291"",
+                            ""n"": ""AIqA49-acaWGnxQf-U9VCaMsPVkzd4Qw3DocPRmtP-L1jVNV_Dm7FCFsg3jfF0uCSw9C6o9vSkmhtOKRUHwKG34AZuwK9XmcwFTVtXIzxRR8f1y30x7bygTWyEEa4NlENQuXiLXFVqpgKRD6iegusuuyglnAPJsAefDXiBBsuzIP607YDmmGMYWq__FjDpkzvN1v-6GcqmMMDmIeT_qUuEh6uTzzA1DJNj3GBSeDCGmUabaPt8UMhBqkrg-w3WW6zFC4JJfNxLEbMHDvLCKIukp9hH0apZVkX8NPo_NX3Kn9HatoFXXVbquPIGsnCz1DB_EB4Il3aPyXgZoMKhsB3b0"",
+                            ""e"": ""AQAB""
+                        }
+                    ]
+                }", 2
             };
 
             // https://www.googleapis.com/oauth2/v3/certs
             yield return new object[]
             {
                 @"{
-  ""keys"": [
-    {
-      ""kid"": ""6fb05f742366ee4cf4bcf49f984c487e45c8c83d"", 
-      ""e"": ""AQAB"",
-      ""kty"": ""RSA"",
-      ""alg"": ""RS256"",
-      ""n"": ""48Or9wBEvmkgLBHCjkH3ave8R3aC7Nts0On-xVG9WejR1zt2WZhP7grwMx2jNUWwjkodSQe1EX0XxxBYPwJuy28hyLbNmt0jyXtKKIyzDIW3vB2eR12UA87vjLZZISryXJ1wV35zj_J-KZCJgNLRKsKIyJ1jVTKZev10selGI75S13bQ77eb5sGs5IDl5DxOMhHUBopPWPy4JQA_9-UGlTEBTtnXpgBuvVJFlOmHfCRaFZ85T145A4C3Hyblov9aZLVHuTEZ_MQDzXMm4NyaggBGIk8KLg6f-gMdqHa1-c_p0NU73cgxfvOStPigtVknKf-CxdmYQsQLj_PjVE95Qw"",
-      ""use"": ""sig""
-    },
-    {
-      ""use"": ""sig"",
-      ""kid"": ""7c309e3a1c1999cb0404ab7125ee40b7cdbcaf7d"",
-      ""e"": ""AQAB"",
-      ""kty"": ""RSA"",
-      ""alg"": ""RS256"",
-      ""n"": ""3MdFK4pXPvehMipDL_COfqn6o9soHgSaq_V1o8U_5gTZ-j9DxO9PV7BVncXBgHFctnp3JQ1QTDF7txeHeuLOS4KziRw5r4ohaj2WoOTqXh7lqVMR2YDAcBK46asS177NpkQ1CqHIsy3kNfqhXLwTaKfdlwdA_XUfRbKORWbq0kDxV35egx35nHl5qJ6aP6fcpsnnPvHf7KWO0zkdvwuR-IX79HjqUAEg5UERd5FK4y06PRbxuXHjAgVhHu_sk4reNXNp1HRuTYtQ26DFbVaIjsWb8-nQC8-7FkTjlw9FteAwLVGOm9sTLFp73jAf0pWLh7sJ02pBxZKjsxLO1Lvg7w""
-    }
-  ]
-}", 2
+                    ""keys"": [
+                        {
+                            ""kid"": ""6fb05f742366ee4cf4bcf49f984c487e45c8c83d"", 
+                            ""e"": ""AQAB"",
+                            ""kty"": ""RSA"",
+                            ""alg"": ""RS256"",
+                            ""n"": ""48Or9wBEvmkgLBHCjkH3ave8R3aC7Nts0On-xVG9WejR1zt2WZhP7grwMx2jNUWwjkodSQe1EX0XxxBYPwJuy28hyLbNmt0jyXtKKIyzDIW3vB2eR12UA87vjLZZISryXJ1wV35zj_J-KZCJgNLRKsKIyJ1jVTKZev10selGI75S13bQ77eb5sGs5IDl5DxOMhHUBopPWPy4JQA_9-UGlTEBTtnXpgBuvVJFlOmHfCRaFZ85T145A4C3Hyblov9aZLVHuTEZ_MQDzXMm4NyaggBGIk8KLg6f-gMdqHa1-c_p0NU73cgxfvOStPigtVknKf-CxdmYQsQLj_PjVE95Qw"",
+                            ""use"": ""sig""
+                        },
+                        {
+                            ""use"": ""sig"",
+                            ""kid"": ""7c309e3a1c1999cb0404ab7125ee40b7cdbcaf7d"",
+                            ""e"": ""AQAB"",
+                            ""kty"": ""RSA"",
+                            ""alg"": ""RS256"",
+                            ""n"": ""3MdFK4pXPvehMipDL_COfqn6o9soHgSaq_V1o8U_5gTZ-j9DxO9PV7BVncXBgHFctnp3JQ1QTDF7txeHeuLOS4KziRw5r4ohaj2WoOTqXh7lqVMR2YDAcBK46asS177NpkQ1CqHIsy3kNfqhXLwTaKfdlwdA_XUfRbKORWbq0kDxV35egx35nHl5qJ6aP6fcpsnnPvHf7KWO0zkdvwuR-IX79HjqUAEg5UERd5FK4y06PRbxuXHjAgVhHu_sk4reNXNp1HRuTYtQ26DFbVaIjsWb8-nQC8-7FkTjlw9FteAwLVGOm9sTLFp73jAf0pWLh7sJ02pBxZKjsxLO1Lvg7w""
+                        }
+                    ]
+                }", 2
+            };
+
+            // issue #427, https://login.eveonline.com/oauth/jwks
+            yield return new object[]
+            {
+                @"{
+                    ""keys"": [
+                        {
+                            ""alg"": ""ES256"",
+                            ""crv"": ""P-256"",
+                            ""kid"": ""0C0029DE-B898-4EFC-8586-DD4AA948AE22"",
+                            ""kty"": ""EC"",
+                            ""use"": ""sig"",
+                            ""x"": ""cRs59CHa39w6m48qqhqygXNXLmAbfp8yteQTjGBie9I"",
+                            ""y"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSiMk0""
+                        },
+                        {
+                            ""alg"": ""RS256"",
+                            ""e"": ""AQAB"",
+                            ""kid"": ""JWT-Signature-Key"",
+                            ""kty"": ""RSA"",
+                            ""n"": ""nehPQ7FQ1YK-leKyIg-aACZaT-DbTL5V1XpXghtLX_bEC-fwxhdE_4yQKDF6cA-V4c-5kh8wMZbfYw5xxgM9DynhMkVrmQFyYB3QMZwydr922UWs3kLz-nO6vi0ldCn-ffM9odUPRHv9UbhM5bB4SZtCrpr9hWQgJ3FjzWO2KosGQ8acLxLtDQfU_lq0OGzoj_oWwUKaN_OVfu80zGTH7mxVeGMJqWXABKd52ByvYZn3wL_hG60DfDWGV_xfLlHMt_WoKZmrXT4V3BCBmbitJ6lda3oNdNeHUh486iqaL43bMR2K4TzrspGMRUYXcudUQ9TycBQBrUlT85NRY9TeOw"",
+                            ""use"": ""sig""
+                        }
+                    ],
+                    ""SkipUnresolvedJsonWebKeys"": true
+                }",
+                2
             };
         }
-
 
         public static IEnumerable<object[]> GetInvalidJwks()
         {
@@ -139,73 +166,72 @@ namespace JsonWebToken.Tests
             // Malformed JSON - Missing closing square bracket.
             yield return new object[]
             {
-@"{
- ""keys"": [
-  {
-   ""kty"": ""RSA"",
-   ""alg"": ""RS256"",
-   ""use"": ""sig"",
-   ""kid"": ""16e6c7334cf754186f877ff1f4a0bc128e1c97ca"",
-   ""n"": ""ALk6-zOoZqVpGNvuEcJWBzDsPdwGwxl8M-c2acIMFkqPPdP9IJt0W3KUd5fHdyl1v_pO05kzQPGkKfgTrAL6X0dD2_48xzkkLN2ieiemc-DcfN971XX5Z0ITprPM1BiofYx_h_pJMiydHLQSJ485oyt0ZHPGysHa8w00x7D1OtqMToxfiwFsxcCyBlcPMOs7aijVWz7NGZxpgTb8OJZmOzVF0oVIhjek0oqXIQzQRlivBLhU4yYPnGdQ1g0Lcj5lkry5sZrNVijqn2E3yHDgiBSk-mKhLhCNwj3pQ4EfP42Kv_o-Gg-l2FRqQ1M0DJMcZiYv_vCteJY-HLpClS-BeF8"",
-   ""e"": ""AQAB""
-  },
-  {
-   ""kty"": ""RSA"",
-   ""alg"": ""RS256"",
-   ""use"": ""sig"",
-   ""kid"": ""f75b64243cd5243febeb9540c3afd7b7ad15f291"",
-   ""n"": ""AIqA49-acaWGnxQf-U9VCaMsPVkzd4Qw3DocPRmtP-L1jVNV_Dm7FCFsg3jfF0uCSw9C6o9vSkmhtOKRUHwKG34AZuwK9XmcwFTVtXIzxRR8f1y30x7bygTWyEEa4NlENQuXiLXFVqpgKRD6iegusuuyglnAPJsAefDXiBBsuzIP607YDmmGMYWq__FjDpkzvN1v-6GcqmMMDmIeT_qUuEh6uTzzA1DJNj3GBSeDCGmUabaPt8UMhBqkrg-w3WW6zFC4JJfNxLEbMHDvLCKIukp9hH0apZVkX8NPo_NX3Kn9HatoFXXVbquPIGsnCz1DB_EB4Il3aPyXgZoMKhsB3b0"",
-   ""e"": ""AQAB""
-  }
-}"
+                @"{
+                    ""keys"": [
+                        {
+                            ""kty"": ""RSA"",
+                            ""alg"": ""RS256"",
+                            ""use"": ""sig"",
+                            ""kid"": ""16e6c7334cf754186f877ff1f4a0bc128e1c97ca"",
+                            ""n"": ""ALk6-zOoZqVpGNvuEcJWBzDsPdwGwxl8M-c2acIMFkqPPdP9IJt0W3KUd5fHdyl1v_pO05kzQPGkKfgTrAL6X0dD2_48xzkkLN2ieiemc-DcfN971XX5Z0ITprPM1BiofYx_h_pJMiydHLQSJ485oyt0ZHPGysHa8w00x7D1OtqMToxfiwFsxcCyBlcPMOs7aijVWz7NGZxpgTb8OJZmOzVF0oVIhjek0oqXIQzQRlivBLhU4yYPnGdQ1g0Lcj5lkry5sZrNVijqn2E3yHDgiBSk-mKhLhCNwj3pQ4EfP42Kv_o-Gg-l2FRqQ1M0DJMcZiYv_vCteJY-HLpClS-BeF8"",
+                            ""e"": ""AQAB""
+                        },
+                        {
+                            ""kty"": ""RSA"",
+                            ""alg"": ""RS256"",
+                            ""use"": ""sig"",
+                            ""kid"": ""f75b64243cd5243febeb9540c3afd7b7ad15f291"",
+                            ""n"": ""AIqA49-acaWGnxQf-U9VCaMsPVkzd4Qw3DocPRmtP-L1jVNV_Dm7FCFsg3jfF0uCSw9C6o9vSkmhtOKRUHwKG34AZuwK9XmcwFTVtXIzxRR8f1y30x7bygTWyEEa4NlENQuXiLXFVqpgKRD6iegusuuyglnAPJsAefDXiBBsuzIP607YDmmGMYWq__FjDpkzvN1v-6GcqmMMDmIeT_qUuEh6uTzzA1DJNj3GBSeDCGmUabaPt8UMhBqkrg-w3WW6zFC4JJfNxLEbMHDvLCKIukp9hH0apZVkX8NPo_NX3Kn9HatoFXXVbquPIGsnCz1DB_EB4Il3aPyXgZoMKhsB3b0"",
+                            ""e"": ""AQAB""
+                        }
+                }"
             };
             // Malformed JSON - Missing closing curly bracket.
             yield return new object[]
             {
-@"{
- ""keys"": [
-  {
-   ""kty"": ""RSA"",
-   ""alg"": ""RS256"",
-   ""use"": ""sig"",
-   ""kid"": ""16e6c7334cf754186f877ff1f4a0bc128e1c97ca"",
-   ""n"": ""ALk6-zOoZqVpGNvuEcJWBzDsPdwGwxl8M-c2acIMFkqPPdP9IJt0W3KUd5fHdyl1v_pO05kzQPGkKfgTrAL6X0dD2_48xzkkLN2ieiemc-DcfN971XX5Z0ITprPM1BiofYx_h_pJMiydHLQSJ485oyt0ZHPGysHa8w00x7D1OtqMToxfiwFsxcCyBlcPMOs7aijVWz7NGZxpgTb8OJZmOzVF0oVIhjek0oqXIQzQRlivBLhU4yYPnGdQ1g0Lcj5lkry5sZrNVijqn2E3yHDgiBSk-mKhLhCNwj3pQ4EfP42Kv_o-Gg-l2FRqQ1M0DJMcZiYv_vCteJY-HLpClS-BeF8"",
-   ""e"": ""AQAB""
-  },
-  {
-   ""kty"": ""RSA"",
-   ""alg"": ""RS256"",
-   ""use"": ""sig"",
-   ""kid"": ""f75b64243cd5243febeb9540c3afd7b7ad15f291"",
-   ""n"": ""AIqA49-acaWGnxQf-U9VCaMsPVkzd4Qw3DocPRmtP-L1jVNV_Dm7FCFsg3jfF0uCSw9C6o9vSkmhtOKRUHwKG34AZuwK9XmcwFTVtXIzxRR8f1y30x7bygTWyEEa4NlENQuXiLXFVqpgKRD6iegusuuyglnAPJsAefDXiBBsuzIP607YDmmGMYWq__FjDpkzvN1v-6GcqmMMDmIeT_qUuEh6uTzzA1DJNj3GBSeDCGmUabaPt8UMhBqkrg-w3WW6zFC4JJfNxLEbMHDvLCKIukp9hH0apZVkX8NPo_NX3Kn9HatoFXXVbquPIGsnCz1DB_EB4Il3aPyXgZoMKhsB3b0"",
-   ""e"": ""AQAB""
-  }
- ]
-"
+                @"{
+                    ""keys"": [
+                        {
+                            ""kty"": ""RSA"",
+                            ""alg"": ""RS256"",
+                            ""use"": ""sig"",
+                            ""kid"": ""16e6c7334cf754186f877ff1f4a0bc128e1c97ca"",
+                            ""n"": ""ALk6-zOoZqVpGNvuEcJWBzDsPdwGwxl8M-c2acIMFkqPPdP9IJt0W3KUd5fHdyl1v_pO05kzQPGkKfgTrAL6X0dD2_48xzkkLN2ieiemc-DcfN971XX5Z0ITprPM1BiofYx_h_pJMiydHLQSJ485oyt0ZHPGysHa8w00x7D1OtqMToxfiwFsxcCyBlcPMOs7aijVWz7NGZxpgTb8OJZmOzVF0oVIhjek0oqXIQzQRlivBLhU4yYPnGdQ1g0Lcj5lkry5sZrNVijqn2E3yHDgiBSk-mKhLhCNwj3pQ4EfP42Kv_o-Gg-l2FRqQ1M0DJMcZiYv_vCteJY-HLpClS-BeF8"",
+                            ""e"": ""AQAB""
+                        },
+                        {
+                            ""kty"": ""RSA"",
+                            ""alg"": ""RS256"",
+                            ""use"": ""sig"",
+                            ""kid"": ""f75b64243cd5243febeb9540c3afd7b7ad15f291"",
+                            ""n"": ""AIqA49-acaWGnxQf-U9VCaMsPVkzd4Qw3DocPRmtP-L1jVNV_Dm7FCFsg3jfF0uCSw9C6o9vSkmhtOKRUHwKG34AZuwK9XmcwFTVtXIzxRR8f1y30x7bygTWyEEa4NlENQuXiLXFVqpgKRD6iegusuuyglnAPJsAefDXiBBsuzIP607YDmmGMYWq__FjDpkzvN1v-6GcqmMMDmIeT_qUuEh6uTzzA1DJNj3GBSeDCGmUabaPt8UMhBqkrg-w3WW6zFC4JJfNxLEbMHDvLCKIukp9hH0apZVkX8NPo_NX3Kn9HatoFXXVbquPIGsnCz1DB_EB4Il3aPyXgZoMKhsB3b0"",
+                            ""e"": ""AQAB""
+                        }
+                    ]"
             };
             // Malformed JSON - invalid key.",
             yield return new object[]
             {
-@"{
- ""keys"": [
-  {
-   ""kty"": ""RSAX"",
-   ""alg"": ""RS256"",
-   ""use"": ""sig"",
-   ""kid"": ""16e6c7334cf754186f877ff1f4a0bc128e1c97ca"",
-   ""n"": ""ALk6-zOoZqVpGNvuEcJWBzDsPdwGwxl8M-c2acIMFkqPPdP9IJt0W3KUd5fHdyl1v_pO05kzQPGkKfgTrAL6X0dD2_48xzkkLN2ieiemc-DcfN971XX5Z0ITprPM1BiofYx_h_pJMiydHLQSJ485oyt0ZHPGysHa8w00x7D1OtqMToxfiwFsxcCyBlcPMOs7aijVWz7NGZxpgTb8OJZmOzVF0oVIhjek0oqXIQzQRlivBLhU4yYPnGdQ1g0Lcj5lkry5sZrNVijqn2E3yHDgiBSk-mKhLhCNwj3pQ4EfP42Kv_o-Gg-l2FRqQ1M0DJMcZiYv_vCteJY-HLpClS-BeF8"",
-   ""e"": ""AQAB""
-  },
-  {
-   ""kty"": ""RSA"",
-   ""alg"": ""RS256"",
-   ""use"": ""sig"",
-   ""kid"": ""f75b64243cd5243febeb9540c3afd7b7ad15f291"",
-   ""n"": ""AIqA49-acaWGnxQf-U9VCaMsPVkzd4Qw3DocPRmtP-L1jVNV_Dm7FCFsg3jfF0uCSw9C6o9vSkmhtOKRUHwKG34AZuwK9XmcwFTVtXIzxRR8f1y30x7bygTWyEEa4NlENQuXiLXFVqpgKRD6iegusuuyglnAPJsAefDXiBBsuzIP607YDmmGMYWq__FjDpkzvN1v-6GcqmMMDmIeT_qUuEh6uTzzA1DJNj3GBSeDCGmUabaPt8UMhBqkrg-w3WW6zFC4JJfNxLEbMHDvLCKIukp9hH0apZVkX8NPo_NX3Kn9HatoFXXVbquPIGsnCz1DB_EB4Il3aPyXgZoMKhsB3b0"",
-   ""e"": ""AQAB""
-  }
- ]
-}"
+                @"{
+                    ""keys"": [
+                        {
+                            ""kty"": ""RSAX"",
+                            ""alg"": ""RS256"",
+                            ""use"": ""sig"",
+                            ""kid"": ""16e6c7334cf754186f877ff1f4a0bc128e1c97ca"",
+                            ""n"": ""ALk6-zOoZqVpGNvuEcJWBzDsPdwGwxl8M-c2acIMFkqPPdP9IJt0W3KUd5fHdyl1v_pO05kzQPGkKfgTrAL6X0dD2_48xzkkLN2ieiemc-DcfN971XX5Z0ITprPM1BiofYx_h_pJMiydHLQSJ485oyt0ZHPGysHa8w00x7D1OtqMToxfiwFsxcCyBlcPMOs7aijVWz7NGZxpgTb8OJZmOzVF0oVIhjek0oqXIQzQRlivBLhU4yYPnGdQ1g0Lcj5lkry5sZrNVijqn2E3yHDgiBSk-mKhLhCNwj3pQ4EfP42Kv_o-Gg-l2FRqQ1M0DJMcZiYv_vCteJY-HLpClS-BeF8"",
+                            ""e"": ""AQAB""
+                        },
+                        {
+                            ""kty"": ""RSA"",
+                            ""alg"": ""RS256"",
+                            ""use"": ""sig"",
+                            ""kid"": ""f75b64243cd5243febeb9540c3afd7b7ad15f291"",
+                            ""n"": ""AIqA49-acaWGnxQf-U9VCaMsPVkzd4Qw3DocPRmtP-L1jVNV_Dm7FCFsg3jfF0uCSw9C6o9vSkmhtOKRUHwKG34AZuwK9XmcwFTVtXIzxRR8f1y30x7bygTWyEEa4NlENQuXiLXFVqpgKRD6iegusuuyglnAPJsAefDXiBBsuzIP607YDmmGMYWq__FjDpkzvN1v-6GcqmMMDmIeT_qUuEh6uTzzA1DJNj3GBSeDCGmUabaPt8UMhBqkrg-w3WW6zFC4JJfNxLEbMHDvLCKIukp9hH0apZVkX8NPo_NX3Kn9HatoFXXVbquPIGsnCz1DB_EB4Il3aPyXgZoMKhsB3b0"",
+                            ""e"": ""AQAB""
+                        }
+                    ]
+                }"
             };
         }
     }

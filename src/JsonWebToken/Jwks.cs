@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using JsonWebToken.Internal;
@@ -265,30 +264,50 @@ namespace JsonWebToken
             var jwks = new Jwks();
             var reader = new Utf8JsonReader(json, true, default);
 
-            if (reader.Read()
-                && reader.TokenType is JsonTokenType.StartObject
-                && reader.Read()
-                && reader.TokenType is JsonTokenType.PropertyName)
+            if (reader.Read() && reader.TokenType is JsonTokenType.StartObject && reader.Read())
             {
-                var propertyName = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
-                if (propertyName.Length == 4)
+                while (reader.TokenType is JsonTokenType.PropertyName)
                 {
-                    ref byte propertyNameRef = ref MemoryMarshal.GetReference(propertyName);
-                    if (IntegerMarshal.ReadUInt32(ref propertyNameRef) == keys /* keys */)
+                    var propertyName = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
+                    if (propertyName.Length == 4)
                     {
-                        if (reader.Read() && reader.TokenType is JsonTokenType.StartArray)
+                        ref byte propertyNameRef = ref MemoryMarshal.GetReference(propertyName);
+                        if (IntegerMarshal.ReadUInt32(ref propertyNameRef) == keys /* keys */)
                         {
-                            while (reader.Read() && reader.TokenType is JsonTokenType.StartObject)
+                            if (reader.Read() && reader.TokenType is JsonTokenType.StartArray)
                             {
-                                Jwk jwk = Jwk.FromJsonReader(ref reader);
-                                jwks.Add(jwk);
+                                while (reader.Read() && reader.TokenType is JsonTokenType.StartObject)
+                                {
+                                    Jwk jwk = Jwk.FromJsonReader(ref reader);
+                                    jwks.Add(jwk);
+                                }
+
+                                if (!(reader.TokenType is JsonTokenType.EndArray) || !reader.Read())
+                                {
+                                    ThrowHelper.ThrowInvalidOperationException_MalformedJwks();
+                                }
                             }
 
-                            if (!(reader.TokenType is JsonTokenType.EndArray) || !reader.Read())
-                            {
-                                ThrowHelper.ThrowInvalidOperationException_MalformedJwks();
-                            }
+                            continue;
                         }
+                    }
+
+                    reader.Read();
+                    if (reader.TokenType >= JsonTokenType.String && reader.TokenType <= JsonTokenType.Null)
+                    {
+                        reader.Read();
+                    }
+                    else if (reader.TokenType == JsonTokenType.StartObject)
+                    {
+                        JsonParser.ConsumeJsonObject(ref reader);
+                    }
+                    else if (reader.TokenType == JsonTokenType.StartArray)
+                    {
+                        JsonParser.ConsumeJsonArray(ref reader);
+                    }
+                    else
+                    {
+                        ThrowHelper.ThrowInvalidOperationException_MalformedJwks();
                     }
                 }
             }
