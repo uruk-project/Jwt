@@ -22,14 +22,6 @@ namespace JsonWebToken
         internal const byte MissingExpirationFlag = 0x20;
         internal const byte NotYetFlag = 0x40;
 
-        private static readonly JsonEncodedText AudEncodedText = JsonEncodedText.Encode("aud");
-        private static readonly JsonEncodedText IssEncodedText = JsonEncodedText.Encode("iss");
-        private static readonly JsonEncodedText JtiEncodedText = JsonEncodedText.Encode("jti");
-        private static readonly JsonEncodedText ExpEncodedText = JsonEncodedText.Encode("exp");
-        private static readonly JsonEncodedText IatEncodedText = JsonEncodedText.Encode("Iat");
-        private static readonly JsonEncodedText NbfEncodedText = JsonEncodedText.Encode("nbf");
-        private static readonly JsonEncodedText SubEncodedText = JsonEncodedText.Encode("sub");
-
         private JwtObject? _inner;
         private byte _control;
         private string[]? _aud;
@@ -424,11 +416,11 @@ namespace JsonWebToken
                 {
                     if (_aud.Length == 1)
                     {
-                        writer.WriteString(AudEncodedText, _aud[0]);
+                        writer.WriteString(Claims.AudUtf8, _aud[0]);
                     }
                     else
                     {
-                        writer.WriteStartArray(AudEncodedText);
+                        writer.WriteStartArray(Claims.AudUtf8);
                         for (int i = 0; i < _aud.Length; i++)
                         {
                             writer.WriteStringValue(_aud[i]);
@@ -439,27 +431,27 @@ namespace JsonWebToken
                 }
                 if (!(_iss is null))
                 {
-                    writer.WriteString(IssEncodedText, _iss);
+                    writer.WriteString(Claims.IssUtf8, _iss);
                 }
                 if (!(_jti is null))
                 {
-                    writer.WriteString(JtiEncodedText, _jti);
+                    writer.WriteString(Claims.JtiUtf8, _jti);
                 }
                 if (_exp.HasValue)
                 {
-                    writer.WriteNumber(ExpEncodedText, _exp.Value);
+                    writer.WriteNumber(Claims.ExpUtf8, _exp.Value);
                 }
                 if (_iat.HasValue)
                 {
-                    writer.WriteNumber(IatEncodedText, _iat.Value);
+                    writer.WriteNumber(Claims.IatUtf8, _iat.Value);
                 }
                 if (_nbf.HasValue)
                 {
-                    writer.WriteNumber(NbfEncodedText, _nbf.Value);
+                    writer.WriteNumber(Claims.NbfUtf8, _nbf.Value);
                 }
                 if (!(_sub is null))
                 {
-                    writer.WriteString(SubEncodedText, _sub);
+                    writer.WriteString(Claims.SubUtf8, _sub);
                 }
                 if (!(_inner is null))
                 {
