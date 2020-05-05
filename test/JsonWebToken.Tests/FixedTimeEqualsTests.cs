@@ -111,7 +111,7 @@ namespace JsonWebToken.Tests
         {
 #if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
             RandomNumberGenerator.Fill(data);
-
+#else
             using var rnd = RandomNumberGenerator.Create();
             rnd.GetBytes(data);
 #endif
