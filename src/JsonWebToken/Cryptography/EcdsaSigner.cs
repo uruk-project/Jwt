@@ -61,7 +61,7 @@ namespace JsonWebToken.Internal
             }
 
             var ecdsa = _ecdsaPool.Get();
-#if !NETSTANDARD2_0 && !NET461
+#if !NETSTANDARD2_0 && !NET47
             return ecdsa.TrySignData(data, destination, _hashAlgorithm, out bytesWritten);
 #else
             var result = ecdsa.SignData(data.ToArray(), _hashAlgorithm);
@@ -90,7 +90,7 @@ namespace JsonWebToken.Internal
             }
 
             var ecdsa = _ecdsaPool.Get();
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NET47
             return ecdsa.VerifyData(data.ToArray(), signature.ToArray(), _hashAlgorithm);
 #else
             return ecdsa.VerifyData(data, signature, _hashAlgorithm);

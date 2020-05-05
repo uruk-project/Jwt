@@ -14,7 +14,7 @@ namespace JsonWebToken
     /// </summary>
     public abstract class EncryptedJwtDescriptor<TPayload> : JwtDescriptor<TPayload>
     {
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NET461 || NET47
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 #endif
 

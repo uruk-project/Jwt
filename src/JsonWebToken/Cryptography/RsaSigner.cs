@@ -99,7 +99,7 @@ namespace JsonWebToken
             var rsa = _rsaPool.Get();
             try
             {
-#if !NETSTANDARD2_0 && !NET461
+#if !NETSTANDARD2_0 && !NET461 && !NET47
                 return rsa.TrySignData(data, destination, _hashAlgorithm, _signaturePadding, out bytesWritten);
 #else
                 var result = rsa.SignData(data.ToArray(), _hashAlgorithm, _signaturePadding);
@@ -134,7 +134,7 @@ namespace JsonWebToken
             var rsa = _rsaPool.Get();
             try
             {
-#if !NETSTANDARD2_0 && !NET461
+#if !NETSTANDARD2_0 && !NET461 && !NET47
                 return rsa.VerifyData(data, signature, _hashAlgorithm, _signaturePadding);
 #else
                 return rsa.VerifyData(data.ToArray(), signature.ToArray(), _hashAlgorithm, _signaturePadding);
@@ -170,7 +170,7 @@ namespace JsonWebToken
 
             public override RSA Create()
             {
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NET461 || NET47
                 var rsa = new RSACng();
                 rsa.ImportParameters(_parameters);
                 return rsa;
