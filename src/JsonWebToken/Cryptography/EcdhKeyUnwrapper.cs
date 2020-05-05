@@ -1,10 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-#if NETCOREAPP
-// Copyright (c) 2018 Yann Crumeyrolle. All rights reserved.
-// Licensed under the MIT license. See the LICENSE file in the project root for more information.
-
+#if NETCOREAPP || NET47
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
