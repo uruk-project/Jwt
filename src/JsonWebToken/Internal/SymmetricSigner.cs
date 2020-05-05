@@ -5,7 +5,7 @@ using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 #endif

@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
 using System.Runtime.Intrinsics;
 #endif
 
@@ -12,7 +12,7 @@ namespace JsonWebToken
 {
     internal static class ReadOnlySpanExtensions
     {
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector256<T> AsVector256<T>(this ReadOnlySpan<byte> span) where T : struct
         {

@@ -24,13 +24,15 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Write()
         {
-            var descriptor = new SecurityEventTokenDescriptor();
-            descriptor.Type = "secevent+jwt";
-            descriptor.Algorithm = SignatureAlgorithm.None;
-            descriptor.Issuer = "https://scim.example.com";
-            descriptor.IssuedAt = EpochTime.ToDateTime(1458496404);
-            descriptor.JwtId = "4d3559ec67504aaba65d40b0363faad8";
-            descriptor.Audiences = new List<string> { "https://scim.example.com/Feeds/98d52461fa5bbc879593b7754", "https://scim.example.com/Feeds/5d7604516b1d08641d7676ee7" };
+            var descriptor = new SecurityEventTokenDescriptor
+            {
+                Type = "secevent+jwt",
+                Algorithm = SignatureAlgorithm.None,
+                Issuer = "https://scim.example.com",
+                IssuedAt = EpochTime.ToDateTime(1458496404),
+                JwtId = "4d3559ec67504aaba65d40b0363faad8",
+                Audiences = new List<string> { "https://scim.example.com/Feeds/98d52461fa5bbc879593b7754", "https://scim.example.com/Feeds/5d7604516b1d08641d7676ee7" }
+            };
 
             var @event = new ScimCreateEvent
             {
@@ -42,7 +44,7 @@ namespace JsonWebToken.Tests
             var writer = new JwtWriter();
             var jwt = writer.WriteTokenString(descriptor);
 
-#if NETCOREAPP
+#if !NETSTANDARD2_0
             Assert.Equal("eyJ0eXAiOiJzZWNldmVudCtqd3QiLCJhbGciOiJub25lIn0.eyJpc3MiOiJodHRwczovL3NjaW0uZXhhbXBsZS5jb20iLCJpYXQiOjE0NTg0OTY0MDQsImp0aSI6IjRkMzU1OWVjNjc1MDRhYWJhNjVkNDBiMDM2M2ZhYWQ4IiwiYXVkIjpbImh0dHBzOi8vc2NpbS5leGFtcGxlLmNvbS9GZWVkcy85OGQ1MjQ2MWZhNWJiYzg3OTU5M2I3NzU0IiwiaHR0cHM6Ly9zY2ltLmV4YW1wbGUuY29tL0ZlZWRzLzVkNzYwNDUxNmIxZDA4NjQxZDc2NzZlZTciXSwiZXZlbnRzIjp7InVybjppZXRmOnBhcmFtczpzY2ltOmV2ZW50OmNyZWF0ZSI6eyJyZWYiOiJodHRwczovL3NjaW0uZXhhbXBsZS5jb20vVXNlcnMvNDRmNjE0MmRmOTZiZDZhYjYxZTc1MjFkOSIsImF0dHJpYnV0ZSI6WyJpZCIsIm5hbWUiLCJ1c2VyTmFtZSIsInBhc3N3b3JkIiwiZW1haWxzIl19fX0.", jwt);
 #else
             Assert.Equal("eyJ0eXAiOiJzZWNldmVudFx1MDAyQmp3dCIsImFsZyI6Im5vbmUifQ.eyJpc3MiOiJodHRwczovL3NjaW0uZXhhbXBsZS5jb20iLCJpYXQiOjE0NTg0OTY0MDQsImp0aSI6IjRkMzU1OWVjNjc1MDRhYWJhNjVkNDBiMDM2M2ZhYWQ4IiwiYXVkIjpbImh0dHBzOi8vc2NpbS5leGFtcGxlLmNvbS9GZWVkcy85OGQ1MjQ2MWZhNWJiYzg3OTU5M2I3NzU0IiwiaHR0cHM6Ly9zY2ltLmV4YW1wbGUuY29tL0ZlZWRzLzVkNzYwNDUxNmIxZDA4NjQxZDc2NzZlZTciXSwiZXZlbnRzIjp7InVybjppZXRmOnBhcmFtczpzY2ltOmV2ZW50OmNyZWF0ZSI6eyJyZWYiOiJodHRwczovL3NjaW0uZXhhbXBsZS5jb20vVXNlcnMvNDRmNjE0MmRmOTZiZDZhYjYxZTc1MjFkOSIsImF0dHJpYnV0ZSI6WyJpZCIsIm5hbWUiLCJ1c2VyTmFtZSIsInBhc3N3b3JkIiwiZW1haWxzIl19fX0.", jwt);
@@ -52,7 +54,7 @@ namespace JsonWebToken.Tests
         [JsonObject]
         private class ScimCreateEvent
         {
-            private List<string> _attributes = new List<string>();
+            private readonly List<string> _attributes = new List<string>();
 
             [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = "ref", Required = Required.Default)]
             public string Ref { get; set; }
@@ -62,9 +64,11 @@ namespace JsonWebToken.Tests
 
             public static implicit operator JwtObject(ScimCreateEvent @event)
             {
-                var jwtObject = new JwtObject();
-                jwtObject.Add(new JwtProperty("ref", @event.Ref));
-                jwtObject.Add(new JwtProperty("attribute", new JwtArray(@event._attributes)));
+                var jwtObject = new JwtObject
+                {
+                    new JwtProperty("ref", @event.Ref),
+                    new JwtProperty("attribute", new JwtArray(@event._attributes))
+                };
 
                 return jwtObject;
             }

@@ -28,7 +28,7 @@ namespace JsonWebToken.Tests
         {
             byte[] rented = ArrayPool<byte>.Shared.Rent(byteLength);
             Span<byte> testSpan = new Span<byte>(rented, 0, byteLength);
-            Fill(testSpan);
+            Fill(rented, 0, byteLength);
 
             byte[] rented2 = ArrayPool<byte>.Shared.Rent(byteLength);
             Span<byte> testSpan2 = new Span<byte>(rented2, 0, byteLength);
@@ -63,7 +63,7 @@ namespace JsonWebToken.Tests
         {
             byte[] rented = ArrayPool<byte>.Shared.Rent(byteLength);
             Span<byte> testSpan = new Span<byte>(rented, 0, byteLength);
-            Fill(testSpan);
+            Fill(rented, 0, byteLength);
 
             byte[] rented2 = ArrayPool<byte>.Shared.Rent(byteLength);
             Span<byte> testSpan2 = new Span<byte>(rented2, 0, byteLength);
@@ -90,7 +90,7 @@ namespace JsonWebToken.Tests
         {
             byte[] rented = ArrayPool<byte>.Shared.Rent(byteLength);
             Span<byte> testSpan = new Span<byte>(rented, 0, byteLength);
-            Fill(testSpan);
+            Fill(rented, 0, byteLength);
 
             byte[] rented2 = ArrayPool<byte>.Shared.Rent(byteLength);
             Span<byte> testSpan2 = new Span<byte>(rented2, 0, byteLength);
@@ -107,14 +107,10 @@ namespace JsonWebToken.Tests
             Assert.False(isEqualB, "value missing last byte, value");
         }
 
-        private static void Fill(Span<byte> data)
+        private static void Fill(byte[] data, int offset, int count)
         {
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
-            RandomNumberGenerator.Fill(data);
-
             using var rnd = RandomNumberGenerator.Create();
-            rnd.GetBytes(data);
-#endif
+            rnd.GetBytes(data, offset, count);
         }
     }
 }

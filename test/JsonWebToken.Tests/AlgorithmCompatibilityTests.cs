@@ -252,7 +252,7 @@ namespace JsonWebToken.Tests
                 case "RSA1_5":
                     yield return _keys.PrivateRsa2048Key;
                     break;
-#if !NET461
+#if !NET461 && !NET47
                 case "ECDH-ES+A128KW":
                 case "ECDH-ES+A192KW":
                 case "ECDH-ES+A256KW":

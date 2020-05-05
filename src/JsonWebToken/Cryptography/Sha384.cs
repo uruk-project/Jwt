@@ -6,7 +6,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 #endif
@@ -42,7 +42,7 @@ namespace JsonWebToken
 
         /// <inheritsdoc />
         public override int GetWorkingSetSize(int sourceLength)
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
             => Ssse3.IsSupported && sourceLength >= 4 * Sha384BlockSize ? IterationCount * 32 : IterationCount * 8;
 #else
             => IterationCount * 8;
@@ -134,7 +134,7 @@ namespace JsonWebToken
             }
 
             ref byte srcEndRef = ref Unsafe.AddByteOffset(ref srcStartRef, (IntPtr)(source.Length - Sha384BlockSize + 1));
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
                 ref byte srcSimdEndRef = ref Unsafe.AddByteOffset(ref srcStartRef, (IntPtr)(source.Length - 4 * Sha384BlockSize + 1));
@@ -189,7 +189,7 @@ namespace JsonWebToken
 
             // reverse all the bytes when copying the final state to the output hash.
             ref byte destinationRef = ref MemoryMarshal.GetReference(destination);
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
             if (Avx2.IsSupported)
             {
                 Unsafe.WriteUnaligned(ref destinationRef, Avx2.Shuffle(Unsafe.As<ulong, Vector256<byte>>(ref stateRef), EndiannessMask256UInt64));

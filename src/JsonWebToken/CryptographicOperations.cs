@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 #endif
@@ -30,7 +30,7 @@ namespace JsonWebToken
             ref byte first = ref MemoryMarshal.GetReference(left);
             ref byte second = ref MemoryMarshal.GetReference(right);
             bool result;
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
             if (Avx2.IsSupported && length >= sizeof(Vector256<byte>))
             {
                 int accumulator = unchecked((int)0b1111_1111_1111_1111_1111_1111_1111_1111);
