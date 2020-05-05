@@ -18,7 +18,7 @@ namespace JsonWebToken.Internal
         // The default initialization vector from RFC3394
         private const ulong _defaultIV = 0XA6A6A6A6A6A6A6A6;
 
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
         private readonly AesEncryptor _encryptor;
 #else
         private readonly Aes _aes;
@@ -29,7 +29,7 @@ namespace JsonWebToken.Internal
         public AesKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
             if (algorithm == KeyManagementAlgorithm.Aes128KW)
             {
                 _encryptor = new Aes128NiCbcEncryptor(key.K);
@@ -64,7 +64,7 @@ namespace JsonWebToken.Internal
             {
                 if (disposing)
                 {
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
                     _encryptor.Dispose();
 #else
                     _encryptorPool.Dispose();
@@ -116,7 +116,7 @@ namespace JsonWebToken.Internal
             ref byte tRef7 = ref Unsafe.AddByteOffset(ref tRef, (IntPtr)7);
             Unsafe.WriteUnaligned<ulong>(ref tRef, 0L);
             int n3 = n >> 3;
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
             Span<byte> b = stackalloc byte[16];
             ref byte bRef = ref MemoryMarshal.GetReference(b);
 #else
@@ -130,7 +130,7 @@ namespace JsonWebToken.Internal
                     {
                         Unsafe.WriteUnaligned(ref blockRef, a);
                         Unsafe.WriteUnaligned(ref block2Ref, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3))));
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
                         _encryptor.EncryptBlock(ref blockRef, ref bRef);
 #else
                         Span<byte> b = encryptor.TransformFinalBlock(block, 0, 16);

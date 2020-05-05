@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
 using System.Runtime.Intrinsics;
 #endif
 
@@ -41,7 +41,7 @@ namespace JsonWebToken
         /// </summary>
         public abstract int BlockSize { get; }
 
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
         private static ReadOnlySpan<byte> LittleEndianUInt64 => new byte[32]
         {
             7, 6, 5, 4, 3, 2, 1, 0,
