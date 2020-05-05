@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-#if NETCOREAPP ||NETSTANDARD
+#if NETCOREAPP ||NETSTANDARD || NET47
 using System;
 using System.Security.Cryptography;
 

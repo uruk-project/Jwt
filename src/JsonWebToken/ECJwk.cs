@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-#if NETSTANDARD || NETCOREAPP 
+#if NETSTANDARD || NETCOREAPP || NET47
 using System;
 using System.Buffers;
 using System.Diagnostics;
@@ -333,6 +333,7 @@ namespace JsonWebToken
             return parameters;
         }
 
+#if !NET461
         /// <summary>
         /// Generates a private <see cref="ECJwk"/>.
         /// </summary>
@@ -378,10 +379,11 @@ namespace JsonWebToken
         private static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, byte[]? algorithm)
         {
             using var ecdsa = ECDsa.Create();
-            ecdsa.GenerateKey(curve.CurveParameters);
+            ecdsa.GenerateKey.GenerateKey(curve.CurveParameters);
             var parameters = ecdsa.ExportParameters(withPrivateKey);
             return FromParameters(parameters, algorithm, false);
         }
+#endif
 
         /// <inheritdoc />
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
