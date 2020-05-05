@@ -133,7 +133,7 @@ namespace JsonWebToken
             return utf8Encoded;
         }
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET47
         /// <summary>
         /// Encodes a string of UTF-8 text.
         /// </summary>

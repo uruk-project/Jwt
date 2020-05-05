@@ -14,13 +14,6 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtHeader
     {
-        private static readonly JsonEncodedText AlgEncodedText = JsonEncodedText.Encode("alg");
-        private static readonly JsonEncodedText EncEncodedText = JsonEncodedText.Encode("enc");
-        private static readonly JsonEncodedText ZipEncodedText = JsonEncodedText.Encode("zip");
-        private static readonly JsonEncodedText KidEncodedText = JsonEncodedText.Encode("kid");
-        private static readonly JsonEncodedText CtyEncodedText = JsonEncodedText.Encode("cty");
-        private static readonly JsonEncodedText TypEncodedText = JsonEncodedText.Encode("typ");
-
         private JwtObject? _inner;
         private SignatureAlgorithm? _signatureAlgorithm;
         private KeyManagementAlgorithm? _keyManagementAlgorithm;
@@ -199,7 +192,7 @@ namespace JsonWebToken
 
         internal List<KeyValuePair<string, ICriticalHeaderHandler>>? CriticalHeaderHandlers { get; set; }
 
-#if NETCOREAPP
+#if NETCOREAPP || NET47
         /// <summary>
         /// Gets the ephemeral key used for ECDH key agreement.
         /// </summary>
@@ -346,36 +339,36 @@ namespace JsonWebToken
                 writer.WriteStartObject();
                 if (!(_signatureAlgorithm is null))
                 {
-                    writer.WriteString(AlgEncodedText, _signatureAlgorithm.Utf8Name);
+                    writer.WriteString(HeaderParameters.AlgUtf8, _signatureAlgorithm.Utf8Name);
                 }
                 else if (!(_keyManagementAlgorithm is null))
                 {
-                    writer.WriteString(AlgEncodedText, _keyManagementAlgorithm.Utf8Name);
+                    writer.WriteString(HeaderParameters.AlgUtf8, _keyManagementAlgorithm.Utf8Name);
                 }
 
                 if (!(_encryptionAlgorithm is null))
                 {
-                    writer.WriteString(EncEncodedText, _encryptionAlgorithm.Utf8Name);
+                    writer.WriteString(HeaderParameters.EncUtf8, _encryptionAlgorithm.Utf8Name);
                 }
                 
                 if (!(_compressionAlgorithm is null))
                 {
-                    writer.WriteString(ZipEncodedText, _compressionAlgorithm.Utf8Name);
+                    writer.WriteString(HeaderParameters.ZipUtf8, _compressionAlgorithm.Utf8Name);
                 }
                 
                 if (!(_kid is null))
                 {
-                    writer.WriteString(KidEncodedText, _kid);
+                    writer.WriteString(HeaderParameters.KidUtf8, _kid);
                 }
                 
                 if (!(_cty is null))
                 {
-                    writer.WriteString(CtyEncodedText, _cty);
+                    writer.WriteString(HeaderParameters.CtyUtf8, _cty);
                 }
 
                 if (!(_typ is null))
                 {
-                    writer.WriteString(TypEncodedText, _typ);
+                    writer.WriteString(HeaderParameters.TypUtf8, _typ);
                 }
                 
                 if (!(_inner is null))

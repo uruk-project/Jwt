@@ -1,4 +1,4 @@
-﻿#if NETCOREAPP3_0
+﻿#if NETCOREAPP3_0 ||NET47
 using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
