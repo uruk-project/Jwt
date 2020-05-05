@@ -379,7 +379,7 @@ namespace JsonWebToken
         private static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, byte[]? algorithm)
         {
             using var ecdsa = ECDsa.Create();
-            ecdsa.GenerateKey.GenerateKey(curve.CurveParameters);
+            ecdsa.GenerateKey(curve.CurveParameters);
             var parameters = ecdsa.ExportParameters(withPrivateKey);
             return FromParameters(parameters, algorithm, false);
         }
