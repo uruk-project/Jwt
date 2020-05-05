@@ -16,7 +16,7 @@ namespace JsonWebToken
     /// </summary>
     public sealed class SymmetricJwk : Jwk
     {
-#if NETSTANDARD2_0 || NET461 || NETCOREAPP2_1
+#if NETSTANDARD2_0 || NET461 || NET47 || NETCOREAPP2_1
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 #endif
 

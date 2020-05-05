@@ -142,7 +142,7 @@ namespace JsonWebToken.Internal
                         Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3)), Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
                     }
                 }
-#if NETSTANDARD2_0 || NET461 || NETCOREAPP2_1
+#if NETSTANDARD2_0 || NET461 || NET47 || NETCOREAPP2_1
             }
             finally
             {
@@ -165,7 +165,7 @@ namespace JsonWebToken.Internal
         public static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm) 
             => encryptionAlgorithm.KeyWrappedSizeInBytes;
 
-#if NETSTANDARD2_0 || NET461 || NETCOREAPP2_1
+#if NETSTANDARD2_0 || NET461 || NET47 || NETCOREAPP2_1
         private static Aes GetSymmetricAlgorithm(SymmetricJwk key, KeyManagementAlgorithm algorithm)
         {
             if (algorithm.RequiredKeySizeInBits != key.KeySizeInBits)
