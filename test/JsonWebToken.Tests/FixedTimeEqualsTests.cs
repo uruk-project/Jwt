@@ -109,7 +109,7 @@ namespace JsonWebToken.Tests
 
         private static void Fill(Span<byte> data)
         {
-#if !NETSTANDARD2_0 && !NET461 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
             RandomNumberGenerator.Fill(data);
 
             using var rnd = RandomNumberGenerator.Create();
