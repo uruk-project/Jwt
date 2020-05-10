@@ -555,10 +555,10 @@ namespace JsonWebToken
         /// <returns></returns>
         public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, byte[]? algorithm)
         {
-#if NETSTANDARD2_0 || NET461 || NET47
-            using RSA rsa = new RSACng(sizeInBits);
-#else
+#if SUPPORT_SPAN_CRYPTO
             using RSA rsa = RSA.Create(sizeInBits);
+#else
+            using RSA rsa = new RSACng(sizeInBits);
 #endif
             RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
 

@@ -16,7 +16,7 @@ namespace JsonWebToken
     /// </summary>
     public sealed class SymmetricJwk : Jwk
     {
-#if NETSTANDARD2_0 || NET461 || NET47 || NETCOREAPP2_1
+#if !SUPPORT_SPAN_CRYPTO
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 #endif
 
@@ -344,7 +344,7 @@ namespace JsonWebToken
         {
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
                 if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
                 {
                     if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
@@ -382,7 +382,7 @@ namespace JsonWebToken
         {
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
                 if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
                 {
                     if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
@@ -491,7 +491,7 @@ namespace JsonWebToken
         private static byte[] GenerateKeyBytes(int sizeInBits)
         {
             byte[] key = new byte[sizeInBits >> 3];
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SPAN_CRYPTO
             RandomNumberGenerator.Fill(key);
 #else
             _randomNumberGenerator.GetBytes(key);

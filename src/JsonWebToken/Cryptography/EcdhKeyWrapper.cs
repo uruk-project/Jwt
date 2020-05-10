@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-#if NETCOREAPP || NET47
+#if SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
 using System;
 using System.Buffers.Binary;
 using System.Security.Cryptography;
@@ -51,7 +51,7 @@ namespace JsonWebToken.Internal
                     {
                         return AesKeyWrapper.GetKeyWrappedSize(EncryptionAlgorithm);
                     }
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_AES_GCM
                     else if (wrappedAlgorithm.Category == AlgorithmCategory.AesGcm)
                     {
                         //return AesGcmKeyWrapper.GetKeyWrapSize(Key);
@@ -78,7 +78,7 @@ namespace JsonWebToken.Internal
                 }
                 else
                 {
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_AES_GCM
                     if (EncryptionAlgorithm.Category == EncryptionType.AesGcm)
                     {
                         return _keySizeInBytes + 8;

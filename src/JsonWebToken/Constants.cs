@@ -1,7 +1,7 @@
 // Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-#if !NETSTANDARD2_0
+#if SUPPORT_JAVASCRIPT_ENCODER
 using System.Text.Encodings.Web;
 #endif
 using System.Text.Json;
@@ -20,13 +20,13 @@ namespace JsonWebToken
 
         internal const byte ByteDot = (byte)'.';
 
-#if !NETSTANDARD2_0
+#if SUPPORT_JAVASCRIPT_ENCODER
         public static readonly JavaScriptEncoder JsonEncoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
 #endif
 
         internal static readonly JsonWriterOptions NoJsonValidation = new JsonWriterOptions
         {
-#if !NETSTANDARD2_0
+#if SUPPORT_JAVASCRIPT_ENCODER
             Encoder = JsonEncoder,
 #endif
             SkipValidation = true

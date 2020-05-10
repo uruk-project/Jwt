@@ -371,16 +371,15 @@ namespace JsonWebToken.Internal
 #if NETCOREAPP
                     success = _dictionary.TryAdd(key, value);
 #else
-                success = !_dictionary.ContainsKey(key);
-                if (_dictionary.ContainsKey(key))
-                {
-                    success = false;
-                }
-                else
-                {
-                    _dictionary[key] = value;
-                    success = true;
-                }
+                    if (_dictionary.ContainsKey(key))
+                    {
+                        success = false;
+                    }
+                    else
+                    {
+                        _dictionary[key] = value;
+                        success = true;
+                    }
 #endif
 
                     return this;

@@ -7,7 +7,7 @@ using System.Buffers.Binary;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 #endif
@@ -44,7 +44,7 @@ namespace JsonWebToken
 
         /// <inheritsdoc />
         public override int GetWorkingSetSize(int sourceLength)
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
             => Ssse3.IsSupported && sourceLength >= 4 * Sha256BlockSize ? IterationCount * 16 : IterationCount * 4;
 #else
             => IterationCount * 4;
@@ -136,7 +136,7 @@ namespace JsonWebToken
             }
 
             ref byte srcEndRef = ref Unsafe.AddByteOffset(ref srcStartRef, (IntPtr)(source.Length - Sha256BlockSize + 1));
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
             if (Ssse3.IsSupported)
             {
                 ref byte src128EndRef = ref Unsafe.AddByteOffset(ref srcStartRef, (IntPtr)(source.Length - 4 * Sha256BlockSize + 1));
@@ -186,7 +186,7 @@ namespace JsonWebToken
             Transform(ref stateRef, ref lastBlockRef, ref wRef);
 
             ref byte destinationRef = ref MemoryMarshal.GetReference(destination);
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
             if (Avx2.IsSupported)
             {
                 var littleEndianMask = EndianessnMask256UInt32;
@@ -212,7 +212,7 @@ namespace JsonWebToken
             }
         }
 
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
         private static Vector128<uint> Gather(ref byte message)
         {
             var temp = Sse2.ConvertScalarToVector128UInt32(Unsafe.ReadUnaligned<uint>(ref message));
@@ -405,7 +405,7 @@ namespace JsonWebToken
 
         private static void Transform(ref uint state, ref byte currentBlock, ref uint w)
         {
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
             ref byte wRef = ref Unsafe.As<uint, byte>(ref w);
             if (Avx2.IsSupported)
             {
@@ -502,7 +502,7 @@ namespace JsonWebToken
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint RotateRight(uint a, byte b)
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
             => BitOperations.RotateRight(a, b);
 #else
             => (a >> b) | (a << (32 - b));
@@ -544,7 +544,7 @@ namespace JsonWebToken
             0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
         };
 
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector128<uint> K128(IntPtr i) => Unsafe.AddByteOffset(ref _k128[0], i);
 

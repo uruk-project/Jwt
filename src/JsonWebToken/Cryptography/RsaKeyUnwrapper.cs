@@ -18,7 +18,7 @@ namespace JsonWebToken.Internal
         public RsaKeyUnwrapper(RsaJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
             : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
-#if !NETSTANDARD2_0 && !NET461 && !NET47
+#if SUPPORT_SPAN_CRYPTO
             _rsa = RSA.Create(key.ExportParameters());
 #else
             _rsa = RSA.Create();
@@ -72,7 +72,7 @@ namespace JsonWebToken.Internal
 
             try
             {
-#if !NETSTANDARD2_0 && !NET461 && !NET47
+#if SUPPORT_SPAN_CRYPTO
                 return _rsa.TryDecrypt(key, destination, _padding, out bytesWritten);
 #else
                 var result = _rsa.Decrypt(key.ToArray(), _padding);

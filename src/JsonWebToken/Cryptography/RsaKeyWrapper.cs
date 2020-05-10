@@ -18,7 +18,7 @@ namespace JsonWebToken.Internal
         public RsaKeyWrapper(RsaJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
             : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
-#if !NETSTANDARD2_0 && !NET461 && !NET47 
+#if SUPPORT_SPAN_CRYPTO
             _rsa = RSA.Create(key.ExportParameters());
 #else
             _rsa = RSA.Create();
@@ -61,7 +61,7 @@ namespace JsonWebToken.Internal
             }
 
             var cek = CreateSymmetricKey(EncryptionAlgorithm, staticKey);
-#if !NETSTANDARD2_0 && !NET461 && !NET47
+#if SUPPORT_SPAN_CRYPTO
             if (!_rsa.TryEncrypt(cek.AsSpan(), destination, _padding, out int bytesWritten) || bytesWritten != destination.Length)
             {
                 ThrowHelper.ThrowCryptographicException_KeyWrapFailed();

@@ -3,7 +3,7 @@
 
 using System;
 using System.Buffers;
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -17,7 +17,7 @@ namespace JsonWebToken
     /// </summary>
     public abstract class HmacSha2
     {
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
         private static readonly Vector256<byte> _innerKeyInit = Vector256.Create((byte)0x36);
         private static readonly Vector256<byte> _outerKeyInit = Vector256.Create((byte)0x5c);
 #endif  
@@ -82,7 +82,7 @@ namespace JsonWebToken
 
         private void InitializeIOKeys(ReadOnlySpan<byte> key)
         {
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
             if (Avx2.IsSupported && (key.Length & 31) == 0)
             {
                 ref byte keyRef = ref MemoryMarshal.GetReference(key);

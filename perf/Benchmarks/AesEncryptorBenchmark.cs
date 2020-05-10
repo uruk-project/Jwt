@@ -10,12 +10,12 @@ namespace JsonWebToken.Performance
     [MemoryDiagnoser]
     public class AesEncryptorBenchmark
     {
-        private static AesCbcEncryptor _encryptor;
+        private readonly static AesCbcEncryptor _encryptor;
 #if NETCOREAPP3_0
-        private static Aes128NiCbcEncryptor _encryptorNi;
+        private readonly static Aes128NiCbcEncryptor _encryptorNi;
 #endif
-        private static byte[] ciphertext;
-        private static byte[] nonce;
+        private readonly static byte[] ciphertext;
+        private readonly static byte[] nonce;
 
         static AesEncryptorBenchmark()
         {

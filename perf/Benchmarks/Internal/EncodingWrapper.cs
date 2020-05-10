@@ -1,7 +1,4 @@
-﻿#if NETCOREAPP3_0
-#endif
-
-namespace JsonWebToken.Performance
+﻿namespace JsonWebToken.Performance
 {
     public class EncodingWrapper
     {

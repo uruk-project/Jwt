@@ -280,7 +280,7 @@ namespace JsonWebToken
                     var valueSpan = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
                     switch (valueSpan.Length)
                     {
-#if !NET461
+#if SUPPORT_ELLIPTIC_CURVE
                         /* EC */
                         case 2:
                             if (IntegerMarshal.ReadUInt16(valueSpan) == EC)
@@ -416,7 +416,7 @@ namespace JsonWebToken
                 {
                     return new SymmetricJwk(jwk);
                 }
-#if !NET461
+#if SUPPORT_ELLIPTIC_CURVE
                 else if (kty.SequenceEqual(JwkTypeNames.EllipticCurve))
                 {
                     return ECJwk.Populate(jwk);
@@ -749,7 +749,7 @@ namespace JsonWebToken
                     var rsaParameters = rsa.ExportParameters(false);
                     key = new RsaJwk(rsaParameters);
                 }
-#if !NET461
+#if SUPPORT_ELLIPTIC_CURVE
                 else
                 {
                     using var ecdsa = certificate.GetECDsaPrivateKey();
@@ -769,7 +769,7 @@ namespace JsonWebToken
                     var rsaParameters = rsa.ExportParameters(false);
                     key = new RsaJwk(rsaParameters);
                 }
-#if !NET461
+#if SUPPORT_ELLIPTIC_CURVE
                 else
                 {
                     using var ecdsa = certificate.GetECDsaPublicKey();

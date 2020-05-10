@@ -190,10 +190,7 @@ namespace JsonWebToken
         /// Returns the hash code for this <see cref="SignatureAlgorithm"/>.
         /// </summary>
         /// <returns></returns>
-        public override int GetHashCode()
-        {
-            return _id.GetHashCode();
-        }
+        public override int GetHashCode() => _id.GetHashCode();
 
         /// <summary>
         /// Determines whether two specified <see cref="SignatureAlgorithm"/> have the same value.

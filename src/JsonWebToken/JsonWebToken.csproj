@@ -58,9 +58,8 @@
     <PackageReference Include="System.Security.Cryptography.Cng" Version="4.7.0" />
     <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
     <PackageReference Include="System.Text.Json" Version="4.7.1" />
-    <!--<Reference Include="System.Security.Cryptography.Algorithms, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />-->
   </ItemGroup>
-  
+
   <ItemGroup Condition="'$(TargetFramework)' == 'net47'">
     <PackageReference Include="System.Runtime" Version="4.3.1" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
@@ -70,13 +69,33 @@
     <PackageReference Include="System.Security.Cryptography.Cng" Version="4.7.0" />
     <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
     <PackageReference Include="System.Text.Json" Version="4.7.1" />
-    <!--<Reference Include="System.Security.Cryptography.Algorithms, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />-->
   </ItemGroup>
 
+  <!--
+  SUPPORT_ELLIPTIC_CURVE
+  SUPPORT_ELLIPTIC_CURVE_SIGNATURE
+  SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
+  SUPPORT_SIMD
+  SUPPORT_AESGCM
+  SUPPORT_JAVASCRIPT_ENCODER
+  SUPPORT_SPAN_CRYPTO
+  -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net461'">
+    <DefineConstants>$(DefineConstants);SUPPORT_JAVASCRIPT_ENCODER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net47'">
+    <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING;SUPPORT_JAVASCRIPT_ENCODER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
-    <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING;SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE_SIGNATURE</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING;SUPPORT_SIMD;SUPPORT_AESGCM;SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+    <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING;SUPPORT_SIMD;SUPPORT_AESGCM;SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO</DefineConstants>
+  </PropertyGroup> 
 </Project>
