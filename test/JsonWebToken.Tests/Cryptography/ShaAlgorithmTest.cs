@@ -6,6 +6,8 @@ namespace JsonWebToken.Tests.Cryptography
 {
     public abstract class ShaAlgorithmTest
     {
+        public abstract Sha2 Sha { get; }
+
         protected void Verify(string input, string output)
         {
             Verify(ByteUtils.AsciiBytes(input), output);
@@ -23,18 +25,14 @@ namespace JsonWebToken.Tests.Cryptography
 
         protected void Verify(char input, int count, char prependInput, int prependCount, string output)
         {
-            Verify(Enumerable.Repeat((byte)input, count).ToArray(), Enumerable.Repeat((byte)prependInput, prependCount).ToArray(),output);
+            Verify(Enumerable.Repeat((byte)input, count).ToArray(), Enumerable.Repeat((byte)prependInput, prependCount).ToArray(), output);
         }
 
         [Fact]
         public void InvalidInput_ComputeHash()
         {
-            Assert.Throws<ArgumentException>("destination", () => ComputeHash(Span<byte>.Empty, Span<byte>.Empty));
+            Assert.Throws<ArgumentException>("destination", () => Sha.ComputeHash(Span<byte>.Empty, Span<byte>.Empty));
         }
-
-        protected abstract void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination);
-
-        protected abstract void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination);
 
         protected void Verify(byte[] input, string output)
         {
@@ -43,17 +41,17 @@ namespace JsonWebToken.Tests.Cryptography
 
             // Too small
             actual = new byte[expected.Length - 1];
-            Assert.Throws<ArgumentException>("destination", () => ComputeHash(input, actual));
+            Assert.Throws<ArgumentException>("destination", () => Sha.ComputeHash(input, actual));
 
             // Just right
             actual = new byte[expected.Length];
-            ComputeHash(input, actual);
+            Sha.ComputeHash(input, actual);
             Assert.Equal(expected, actual);
 
             // Bigger than needed
             actual = new byte[expected.Length + 1];
             actual[actual.Length - 1] = 42;
-            ComputeHash(input, actual);
+            Sha.ComputeHash(input, actual);
             Assert.Equal(expected, actual.AsSpan(0, expected.Length).ToArray());
             Assert.Equal(42, actual[actual.Length - 1]);
         }
@@ -65,25 +63,46 @@ namespace JsonWebToken.Tests.Cryptography
 
             // Too small
             actual = new byte[expected.Length - 1];
-            Assert.Throws<ArgumentException>("destination", () => ComputeHash(input, prepend, actual));
+            Assert.Throws<ArgumentException>("destination", () => Sha.ComputeHash(input, prepend, actual));
 
             // Just right
             actual = new byte[expected.Length];
-            ComputeHash(input, prepend, actual);
+            Sha.ComputeHash(input, prepend, actual);
             Assert.Equal(expected, actual);
 
             // Bigger than needed
             actual = new byte[expected.Length + 1];
             actual[actual.Length - 1] = 42;
-            ComputeHash(input, prepend, actual);
+            Sha.ComputeHash(input, prepend, actual);
             Assert.Equal(expected, actual.AsSpan(0, expected.Length).ToArray());
             Assert.Equal(42, actual[actual.Length - 1]);
         }
 
         [Fact]
-        public void InvalidInput_Null()
+        public void InvalidInput_Null_ThrowArgumentException()
         {
-            Assert.Throws<ArgumentException>("destination", () => ComputeHash(null, null));
+            Assert.Throws<ArgumentException>("destination", () => Sha.ComputeHash(null, null));
+        }
+
+        [Fact]
+        public void Hash_InPlace_Success()
+        {
+            var source = new byte[Sha.HashSize];
+            var source2 = new byte[Sha.HashSize];
+            var destination = new byte[Sha.HashSize];
+
+            Sha.ComputeHash(source, destination);
+            Sha.ComputeHash(source2, source2);
+
+            Assert.Equal(source2, destination);
+
+            Array.Clear(source2, 0, Sha.HashSize);
+            Array.Clear(destination, 0, Sha.HashSize);
+
+            Sha.ComputeHash(source, new byte[] { 0, 1, 2, 3 }, destination);
+            Sha.ComputeHash(source2, new byte[] { 0, 1, 2, 3 }, source2);
+
+            Assert.Equal(source2, destination);
         }
     }
 }

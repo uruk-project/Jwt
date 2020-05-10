@@ -5,18 +5,8 @@ namespace JsonWebToken.Tests.Cryptography
 {
     public class Sha384Tests : ShaAlgorithmTest
     {
-        protected override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination)
-        {
-            var sha384 = new Sha384();
-            sha384.ComputeHash(source, destination);
-        }
-
-        protected override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> preprend, Span<byte> destination)
-        {
-            var sha384 = new Sha384();
-            sha384.ComputeHash(source, preprend, destination);
-        }
-        
+        public override Sha2 Sha => Sha384.Shared;
+     
         [Fact]
         public void Sha384_Empty()
         {
