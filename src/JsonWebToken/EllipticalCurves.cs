@@ -1,9 +1,8 @@
 // Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-#if NETCOREAPP || NETSTANDARD || NET47
+#if SUPPORT_ELLIPTIC_CURVE
 using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 

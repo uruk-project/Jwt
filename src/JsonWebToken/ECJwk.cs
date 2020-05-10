@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-#if NETSTANDARD || NETCOREAPP || NET47
+#if SUPPORT_ELLIPTIC_CURVE
 using System;
 using System.Buffers;
 using System.Diagnostics;
@@ -481,10 +481,12 @@ namespace JsonWebToken
 
         internal JwtObject AsJwtObject()
         {
-            var jwtObject = new JwtObject();
-            jwtObject.Add(new JwtProperty(JwkParameterNames.CrvUtf8, Crv.Name));
-            jwtObject.Add(new JwtProperty(JwkParameterNames.XUtf8, Base64Url.Encode(X)));
-            jwtObject.Add(new JwtProperty(JwkParameterNames.YUtf8, Base64Url.Encode(Y)));
+            var jwtObject = new JwtObject
+            {
+                new JwtProperty(JwkParameterNames.CrvUtf8, Crv.Name),
+                new JwtProperty(JwkParameterNames.XUtf8, Base64Url.Encode(X)),
+                new JwtProperty(JwkParameterNames.YUtf8, Base64Url.Encode(Y))
+            };
 
             return jwtObject;
         }

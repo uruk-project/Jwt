@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-#if NETCOREAPP || NET47
+#if SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
 using System;
 using System.Buffers;
 using System.Buffers.Binary;

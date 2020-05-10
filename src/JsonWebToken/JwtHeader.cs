@@ -192,7 +192,7 @@ namespace JsonWebToken
 
         internal List<KeyValuePair<string, ICriticalHeaderHandler>>? CriticalHeaderHandlers { get; set; }
 
-#if NETCOREAPP || NET47
+#if SUPPORT_ELLIPTIC_CURVE
         /// <summary>
         /// Gets the ephemeral key used for ECDH key agreement.
         /// </summary>

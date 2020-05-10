@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
 using System.Runtime.Intrinsics;
 #endif
 
@@ -35,7 +35,7 @@ namespace JsonWebToken
         /// <param name="plaintext"></param>
         public abstract void DecryptBlock(ref byte ciphertext, ref byte plaintext);
 
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
         /// <summary>
         /// Gets the padding mask used to validate the padding of the ciphertext. The padding value MUST be between 0 and 16 included.
         /// </summary>

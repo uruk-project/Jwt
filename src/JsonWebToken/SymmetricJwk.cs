@@ -344,7 +344,7 @@ namespace JsonWebToken
         {
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
                 if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
                 {
                     if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
@@ -382,7 +382,7 @@ namespace JsonWebToken
         {
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if SUPPORT_SIMD
                 if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
                 {
                     if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)

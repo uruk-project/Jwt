@@ -289,10 +289,7 @@ namespace JsonWebToken
         /// Returns the hash code for this <see cref="KeyManagementAlgorithm"/>.
         /// </summary>
         /// <returns></returns>
-        public override int GetHashCode()
-        {
-            return _id.GetHashCode();
-        }
+        public override int GetHashCode() => _id.GetHashCode();
 
         /// <summary>
         /// Determines whether two specified <see cref="KeyManagementAlgorithm"/> have the same value.
