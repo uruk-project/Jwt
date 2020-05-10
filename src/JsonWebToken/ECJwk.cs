@@ -333,7 +333,6 @@ namespace JsonWebToken
             return parameters;
         }
 
-#if !NET461
         /// <summary>
         /// Generates a private <see cref="ECJwk"/>.
         /// </summary>
@@ -383,7 +382,6 @@ namespace JsonWebToken
             var parameters = ecdsa.ExportParameters(withPrivateKey);
             return FromParameters(parameters, algorithm, false);
         }
-#endif
 
         /// <inheritdoc />
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
