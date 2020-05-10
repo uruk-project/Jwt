@@ -5,18 +5,7 @@ namespace JsonWebToken.Tests.Cryptography
 {
     public class Sha512Tests : ShaAlgorithmTest
     {
-        protected override void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination)
-        {
-            var sha512 = new Sha512();
-            sha512.ComputeHash(source, destination);
-        }
-
-        protected override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> preprend, Span<byte> destination)
-        {
-            var sha512 = new Sha512();
-            sha512.ComputeHash(source, preprend, destination);
-        }
-
+        public override Sha2 Sha => Sha512.Shared;
 
         [Fact]
         public void Sha512_Empty()
