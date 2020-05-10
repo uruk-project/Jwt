@@ -13,18 +13,19 @@ namespace JsonWebToken.Performance
     {
         public DefaultCoreConfig()
         {
-            Add(ConsoleLogger.Default);
-            Add(MarkdownExporter.GitHub);
-            Add(MemoryDiagnoser.Default);
-            Add(StatisticColumn.OperationsPerSecond);
-            Add(DefaultColumnProviders.Instance);
+            AddLogger(ConsoleLogger.Default);
+            AddExporter(MarkdownExporter.GitHub);
+            AddDiagnoser(MemoryDiagnoser.Default);
+            AddColumn(StatisticColumn.OperationsPerSecond);
+            AddColumnProvider(DefaultColumnProviders.Instance);
 
-            Add(JitOptimizationsValidator.FailOnError);
-            Add(BenchmarkLogicalGroupRule.ByCategory);
 
-            Add(Job.Default
-                .With(CoreRuntime.Core30)
-                .With(new GcMode { Server = true }));
+            AddValidator(JitOptimizationsValidator.FailOnError);
+            AddLogicalGroupRules(BenchmarkLogicalGroupRule.ByCategory);
+
+            AddJob(Job.Default
+                .WithGcMode(new GcMode { Server = true })
+                .WithRuntime(CoreRuntime.Core31));
         }
     }
 }
