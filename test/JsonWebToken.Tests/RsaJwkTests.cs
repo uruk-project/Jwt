@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using System.Numerics;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using JsonWebToken.Internal;
@@ -104,6 +104,224 @@ namespace JsonWebToken.Tests
             Assert.Equal("https://example.com", jwk.X5u);
         }
 
+        [Fact]
+        public void FromPrivatePem()
+        {
+            string pem = @"
+-----BEGIN PRIVATE KEY-----
+MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEAtz9Z9e6L1V4kt/8C
+mtFqhUPJbSU+VDGbk1MsQcPBR3uJ2y0vM9e5qHRYSOBqjmg7UERRHhvKNiUn4Xz0
+KzgGFQIDAQABAkEAr+byNi+cr17FpJH4MCEiPXaKnmkH4c4U52EJtL9yg2gijBrp
+Ykat3c2nWb0EGGi5aWgXxQHoi7z97/ACD4X3KQIhAPNyex6GdiBVlNPHOgInTU8a
+mARKKVHIXM0SxvxXrRl7AiEAwLI66OpSqftDTv1KUfNe6+hyoh23ggzUSYiWuVT0
+Ya8CHwiO/cUU9RIt8A2B84gf2ZfuV2nPMaSuZpTPFC/K5UsCIQCsJMzx1JuilQAN
+acPiMCuFTnRSFYAhozpmsqoLyTREqwIhAMLJlZTGjEB2N+sEazH5ToEczQzKqp7t
+9juGNbOPhoEL
+-----END PRIVATE KEY-----";
+
+            var key = RsaJwk.FromPkcs8PrivateKey(pem);
+            AssertKeyEquals(DiminishedDPParameters, key.ExportParameters());
+        }
+
+        [Fact]
+        public void FromPrivateRsaPem()
+        {
+            string pem = @"
+-----BEGIN RSA PRIVATE KEY-----
+MIIBOwIBAAJBALc/WfXui9VeJLf/AprRaoVDyW0lPlQxm5NTLEHDwUd7idstLzPX
+uah0WEjgao5oO1BEUR4byjYlJ+F89Cs4BhUCAwEAAQJBAK/m8jYvnK9exaSR+DAh
+Ij12ip5pB+HOFOdhCbS/coNoIowa6WJGrd3Np1m9BBhouWloF8UB6Iu8/e/wAg+F
+9ykCIQDzcnsehnYgVZTTxzoCJ01PGpgESilRyFzNEsb8V60ZewIhAMCyOujqUqn7
+Q079SlHzXuvocqIdt4IM1EmIlrlU9GGvAh8Ijv3FFPUSLfANgfOIH9mX7ldpzzGk
+rmaUzxQvyuVLAiEArCTM8dSbopUADWnD4jArhU50UhWAIaM6ZrKqC8k0RKsCIQDC
+yZWUxoxAdjfrBGsx+U6BHM0Myqqe7fY7hjWzj4aBCw==
+-----END RSA PRIVATE KEY-----";
+
+            var key = RsaJwk.FromPkcs1PrivateKey(pem);
+            AssertKeyEquals(DiminishedDPParameters, key.ExportParameters());
+        }
+
+        [Fact]
+        public void FromPublicPem()
+        {
+            string pem = @"
+-----BEGIN PUBLIC KEY-----
+MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALc/WfXui9VeJLf/AprRaoVDyW0lPlQx
+m5NTLEHDwUd7idstLzPXuah0WEjgao5oO1BEUR4byjYlJ+F89Cs4BhUCAwEAAQ==
+-----END PUBLIC KEY-----";
+
+            var key = RsaJwk.FromPkcs8PublicKey(pem);
+            AssertKeyEquals(ToPublic(DiminishedDPParameters), key.ExportParameters());
+        }
+
+        [Fact]
+        public void FromRsaPublicPem()
+        {
+            string pem = @"
+-----BEGIN RSA PUBLIC KEY-----
+MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
+4GqOaDtQRFEeG8o2JSfhfPQrOAYVAgMBAAE=
+-----END RSA PUBLIC KEY-----";
+
+            var key = RsaJwk.FromPkcs1PublicKey(pem);
+            AssertKeyEquals(ToPublic(DiminishedDPParameters), key.ExportParameters());
+        }
+
+        private static void AssertKeyEquals(in RSAParameters expected, in RSAParameters actual)
+        {
+            Assert.Equal(expected.Modulus, actual.Modulus);
+            Assert.Equal(expected.Exponent, actual.Exponent);
+
+            Assert.Equal(expected.P, actual.P);
+            Assert.Equal(expected.DP, actual.DP);
+            Assert.Equal(expected.Q, actual.Q);
+            Assert.Equal(expected.DQ, actual.DQ);
+            Assert.Equal(expected.InverseQ, actual.InverseQ);
+
+            if (expected.D == null)
+            {
+                Assert.Null(actual.D);
+            }
+            else
+            {
+                Assert.NotNull(actual.D);
+
+                // If the value matched expected, take that as valid and shortcut the math.
+                // If it didn't, we'll test that the value is at least legal.
+                if (!expected.D.AsSpan().SequenceEqual(actual.D))
+                {
+                    VerifyDValue(actual);
+                }
+            }
+        }
+
+        private static void VerifyDValue(in RSAParameters rsaParams)
+        {
+            if (rsaParams.P == null)
+            {
+                return;
+            }
+
+            // Verify that the formula (D * E) % LCM(p - 1, q - 1) == 1
+            // is true.
+            //
+            // This is NOT the same as saying D = ModInv(E, LCM(p - 1, q - 1)),
+            // because D = ModInv(E, (p - 1) * (q - 1)) is a valid choice, but will
+            // still work through this formula.
+            BigInteger p = PositiveBigInteger(rsaParams.P);
+            BigInteger q = PositiveBigInteger(rsaParams.Q);
+            BigInteger e = PositiveBigInteger(rsaParams.Exponent);
+            BigInteger d = PositiveBigInteger(rsaParams.D);
+
+            BigInteger lambda = LeastCommonMultiple(p - 1, q - 1);
+
+            BigInteger modProduct = (d * e) % lambda;
+            Assert.Equal(BigInteger.One, modProduct);
+        }
+
+        private static BigInteger PositiveBigInteger(byte[] bigEndianBytes)
+        {
+            byte[] littleEndianBytes;
+
+            if (bigEndianBytes[0] >= 0x80)
+            {
+                // Insert a padding 00 byte so the number is treated as positive.
+                littleEndianBytes = new byte[bigEndianBytes.Length + 1];
+                Buffer.BlockCopy(bigEndianBytes, 0, littleEndianBytes, 1, bigEndianBytes.Length);
+            }
+            else
+            {
+                littleEndianBytes = (byte[])bigEndianBytes.Clone();
+
+            }
+
+            Array.Reverse(littleEndianBytes);
+            return new BigInteger(littleEndianBytes);
+        }
+
+        private static BigInteger LeastCommonMultiple(BigInteger a, BigInteger b)
+        {
+            BigInteger gcd = BigInteger.GreatestCommonDivisor(a, b);
+            return BigInteger.Abs(a) / gcd * BigInteger.Abs(b);
+        }
+
+        private static RSAParameters ToPublic(RSAParameters rsaParams)
+        {
+            return new RSAParameters
+            {
+                Exponent = rsaParams.Exponent,
+                Modulus = rsaParams.Modulus
+            };
+        }
+
+        public static readonly RSAParameters DiminishedDPParameters = new RSAParameters
+        {
+            Modulus = new byte[]
+            {
+                0xB7, 0x3F, 0x59, 0xF5, 0xEE, 0x8B, 0xD5, 0x5E,
+                0x24, 0xB7, 0xFF, 0x02, 0x9A, 0xD1, 0x6A, 0x85,
+                0x43, 0xC9, 0x6D, 0x25, 0x3E, 0x54, 0x31, 0x9B,
+                0x93, 0x53, 0x2C, 0x41, 0xC3, 0xC1, 0x47, 0x7B,
+                0x89, 0xDB, 0x2D, 0x2F, 0x33, 0xD7, 0xB9, 0xA8,
+                0x74, 0x58, 0x48, 0xE0, 0x6A, 0x8E, 0x68, 0x3B,
+                0x50, 0x44, 0x51, 0x1E, 0x1B, 0xCA, 0x36, 0x25,
+                0x27, 0xE1, 0x7C, 0xF4, 0x2B, 0x38, 0x06, 0x15,
+            },
+            Exponent = new byte[]
+            {
+                0x01, 0x00, 0x01,
+            },
+            D = new byte[]
+            {
+                0xAF, 0xE6, 0xF2, 0x36, 0x2F, 0x9C, 0xAF, 0x5E,
+                0xC5, 0xA4, 0x91, 0xF8, 0x30, 0x21, 0x22, 0x3D,
+                0x76, 0x8A, 0x9E, 0x69, 0x07, 0xE1, 0xCE, 0x14,
+                0xE7, 0x61, 0x09, 0xB4, 0xBF, 0x72, 0x83, 0x68,
+                0x22, 0x8C, 0x1A, 0xE9, 0x62, 0x46, 0xAD, 0xDD,
+                0xCD, 0xA7, 0x59, 0xBD, 0x04, 0x18, 0x68, 0xB9,
+                0x69, 0x68, 0x17, 0xC5, 0x01, 0xE8, 0x8B, 0xBC,
+                0xFD, 0xEF, 0xF0, 0x02, 0x0F, 0x85, 0xF7, 0x29,
+            },
+            P = new byte[]
+            {
+                0xF3, 0x72, 0x7B, 0x1E, 0x86, 0x76, 0x20, 0x55,
+                0x94, 0xD3, 0xC7, 0x3A, 0x02, 0x27, 0x4D, 0x4F,
+                0x1A, 0x98, 0x04, 0x4A, 0x29, 0x51, 0xC8, 0x5C,
+                0xCD, 0x12, 0xC6, 0xFC, 0x57, 0xAD, 0x19, 0x7B,
+            },
+            DP = new byte[]
+            {
+                // Note the leading 0x00 byte.
+                0x00, 0x08, 0x8E, 0xFD, 0xC5, 0x14, 0xF5, 0x12,
+                0x2D, 0xF0, 0x0D, 0x81, 0xF3, 0x88, 0x1F, 0xD9,
+                0x97, 0xEE, 0x57, 0x69, 0xCF, 0x31, 0xA4, 0xAE,
+                0x66, 0x94, 0xCF, 0x14, 0x2F, 0xCA, 0xE5, 0x4B,
+            },
+            Q = new byte[]
+            {
+                0xC0, 0xB2, 0x3A, 0xE8, 0xEA, 0x52, 0xA9, 0xFB,
+                0x43, 0x4E, 0xFD, 0x4A, 0x51, 0xF3, 0x5E, 0xEB,
+                0xE8, 0x72, 0xA2, 0x1D, 0xB7, 0x82, 0x0C, 0xD4,
+                0x49, 0x88, 0x96, 0xB9, 0x54, 0xF4, 0x61, 0xAF,
+            },
+            DQ = new byte[]
+            {
+                0xAC, 0x24, 0xCC, 0xF1, 0xD4, 0x9B, 0xA2, 0x95,
+                0x00, 0x0D, 0x69, 0xC3, 0xE2, 0x30, 0x2B, 0x85,
+                0x4E, 0x74, 0x52, 0x15, 0x80, 0x21, 0xA3, 0x3A,
+                0x66, 0xB2, 0xAA, 0x0B, 0xC9, 0x34, 0x44, 0xAB,
+            },
+            InverseQ = new byte[]
+            {
+                0xC2, 0xC9, 0x95, 0x94, 0xC6, 0x8C, 0x40, 0x76,
+                0x37, 0xEB, 0x04, 0x6B, 0x31, 0xF9, 0x4E, 0x81,
+                0x1C, 0xCD, 0x0C, 0xCA, 0xAA, 0x9E, 0xED, 0xF6,
+                0x3B, 0x86, 0x35, 0xB3, 0x8F, 0x86, 0x81, 0x0B,
+            }
+        };
+
+
+
         public static IEnumerable<object[]> GetWrappingKeys()
         {
             yield return new object[] { _privateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep };
@@ -190,5 +408,10 @@ namespace JsonWebToken.Tests
             n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
             e: "AQAB"
         );
+
+        private static readonly string rsaPrivatePem = "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCLq6o58Pv1lwSgyvywPr0JyIu+dFOq7Ql0DEZjuwoFZQ+cpJH85iZPToi1JLLbQsFLDYaN2egmiiLnMjN0u82UdUzOlyXIestasOxKr9kFmWQdb2JTKe+ECFnhR1kbkAoVV1W905hd/11ZWH8TAAOcUMB0YkawJIdBmvgVJImq45i3kwzyAmKY91LZN9RAVGa0mszV7HtGKyPvB69AJuZdBUB0GT/4DVt0qp8H42NmqCKpZmwJQ11H22sFplnSWWBSL2NKsr/bBsjdI8vwEt2EJNVXqYnzqQNEyefRfQlqeYp+LxS9JpiDValSOUhVzs7nrVcKGslxwJrdcCtCMVRVAgMBAAECggEAK7vX9Iahzne4KkUFNIagmLSkFUHFhQrt39mMHORPMftAFTNuxvql2kVkBxxzqLZRYhfdHwOxbofof+43MIEx0R+dqj6nxQu2KzKk+onvcZJjR9g9uH60EeqvghveKgRDNAWBwovD9QLmDvjn6WIiv0qFyKuRKMx3UbKdpbkoJkrgV1s2SE/DQuSnU/ZwmHFZjclsFixURV8BEJWelcqgqYvWlc9zr8Cl8sIBV6UregLnt1z11enBv9hTVUN4s7fahKWpEV7q4AT/OodVxGq8pqN0HQdttNYOSJvn5uXJeRfQjOG2rJ2CCkRzQreq9/vn+po3SAMvnS/bioLtA4LnLQKBgQDY+zEUTtKxrRMeXzIOtWWCfgWEvlXewxPGwZ5V++fzy9kxJAMn/q5tGDda73NvWxkc/mH7Air+EjYivhe4LCjfRDA6QVQFPJP2Pd/2ZnrM3scCRF5O0nkiw5N6aFXHNJdWyNf+zphtSsTr1GVg5nzZD1iljYic1ePYQ6+mWpkwdwKBgQCkyXManOX4EiDheP1xn+q2XaSKRvaZ5WQa2lG+a+OMwZgKwFk9kj+CnyrSgJKLhvHD7ww2AowB05QaHVTlv3tdIgEiiWbChDPiFaiNxZFQsCTET7dUk0yOOUEZgZVVaToq95d8vzXZllJSMRUQpOoX/s0nUqYp9aByYa710rmAkwKBgBZLiTl69+9Fx2chhPU58lo8NLj1DcG77bZIgsp2/dhxI7oG50QeyTFwgY+YdxYEGEqAYPT3vg8pM+LSAYHtF64JRaNWvxliphlxNigNU6TlZzF2cPJMciH+UpMLUXUMlFhYfskx1Tu1qRJKWrhgNoffKc6pAlaLK8Q3AD9po7/1AoGABnoknBcusuGDiVlIHP88Ko7juMuxRbtOg/+w1ttGxnGVmFaXK2RkOq4m8L89A176gckTocvX1PqMB7q/a4hrQO3lPYZJE7w+jdRsG6Z4X8OMrmqzug9QIwb9GBOP2xuXvbidq7mYVEUkVza2rUDOMsNBLRqCjYOqGtTcG618vSECgYEAld1Kpkpd3sxNbFzcnTrAC7hVaCPPBxYfu9M7Cf8+D37GWfPE9eH3PhDYzfkv7IvzcA0U92Mx/4dJKoxEUNpM2X1JfIDEIHXwBekrAaYqkPUvRie5UeOARzQdEb6DNflNHFasCbYHuepLTAeeCLwUfkQ9njRe9iie4s4YsDIOro0=\n-----END PRIVATE KEY-----\n";
+        private static readonly string rsaPublicPem = "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAi6uqOfD79ZcEoMr8sD69CciLvnRTqu0JdAxGY7sKBWUPnKSR/OYmT06ItSSy20LBSw2GjdnoJooi5zIzdLvNlHVMzpclyHrLWrDsSq/ZBZlkHW9iUynvhAhZ4UdZG5AKFVdVvdOYXf9dWVh/EwADnFDAdGJGsCSHQZr4FSSJquOYt5MM8gJimPdS2TfUQFRmtJrM1ex7Risj7wevQCbmXQVAdBk/+A1bdKqfB+NjZqgiqWZsCUNdR9trBaZZ0llgUi9jSrK/2wbI3SPL8BLdhCTVV6mJ86kDRMnn0X0JanmKfi8UvSaYg1WpUjlIVc7O561XChrJccCa3XArQjFUVQIDAQAB\n-----END PUBLIC KEY-----\n";
+        //private static readonly string rsaPrivatePem = "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCkMXuKvXbJVogj\nnNtAglFApXCSP/EI/AV3RkWY7D2lhJG2uAn4s0WMmhKy9NnO59kqFx0sWmkYVEr+\nlCJWmVVQ7vo5aR6B/q4tfRgjuggX7oBNqQvOiEsqiONaFVvwarBUAMt/OT1OWINR\n4RkIwQcLnkiX5YuiIg/fpkayjPhygTDqeIPNIZDu8yZ1xvSSEOlI+wolPEh8bkcy\nMpMLE9DP7hm3xSV1POog+sNzVyBDGlGMqGt96SRFALcUJ0H1srdKm0KRY3SNjg/Q\n5ThVMlCQsE+LRxWui/oj2dVz4xKiK6U4xsrQy/PvgBem/wo84Cs/rSDfiDRLzcyd\nX/IzB9tPAgMBAAECggEAFDnINyH5pPmU0ZY75+llqun2QP3BalLpNXUhk6HeQipf\nbLuk9s7WjWhZT1QcFIG43Zd1T4ZfldCkYFHNHQ/MU6jsh+/sAyVlPVNAiv4aiyAl\nC+v7+VgOslGkd+9ToPzzdZWXe7eIVsNOgeKRm+NzQ7oexR9QoQtDG1C3Or1kyW3w\nHtzxj/f/M4sP0tmXei7Ga65aO2N3Z8s83sCAYZWNwGiZAqkZvNAO7GfWU3PuLxT/\n1lrY3D9V4oXCZ1WsRzkBB1c9TqdTRVo2tSv+WYvOIeQNnu/UB56lK49eodEeHuWQ\ntazQuu7dXYjB7sfxJdLACawQrtUBh6ydUpyn78cr8QKBgQDNmHZAhLbjPaUoytYW\nUNIhj5ASO1K3EI7J95HMILIQx9kWdND4gB2SxaYtXRQYL0a5WPoy/1LRskbY3f1Z\n/vfq5Oa4AsOU9NLmizpNdVEzjKhmx44SHIyJMnaT9Po+ZlJ3Y+1yaAyHM5qfrSPO\nVN9HFm0y/G2zGKcDexpG36wWKQKBgQDMcoq7X7TQBKHCPqrndUY+qAwwJRgP+GTo\nD/9FP37JUvCYe862dSUOuYTDZGuh+AKv+T9y1szMF8NybJOkQ88uLpVpnPgognRx\n0FkGKQfn2L1vubAatHIlLgBYIZfPcezJ51HVOvBQJmiTzQWBrVePk1GMkgd/n9nb\nEy211vxktwKBgDRQayaXnoHMGc57bmZXQmDPyvUYqz9xsyOpHyw11Zl3gMG6D8Jr\ntxq1uEcqvAY7YV+gSGnZlhVNq8FbGzBfNG5MuHhyG5o3gcKwArHa/EKFtAQTGw94\nvDnc4VdcqqBeIPXIM4888pMkil+/CrFh3z6Tck3a9X7w8u5r0I/gMkWhAoGBAMiu\nnnMyjL+r7ERJU2UDfsI+HkicALScdCA+o6oLm55u5XAoB06eSpPbkvBhAC3qzmiB\n1sAZDMpBgT4uSfZyAUopu8wBoq3Q8BBQHTKoz/PKkpi6wpxUB79rGjdoMiYUhAPk\nJjWSNxXVvc1m8ELMLijmyKOdK/Mgq64Zc0MNFo6dAoGAe0/2Q2V1W1xMWG8TdCnK\nunPdnidBHkUA4E+70ID94NBanShkH1BtdKqMkAP1sHJEcw53KJ6z95gh/41NyeOO\ndtIbGqhwRSRrUGASa+eOM/dOEXqMH2wjNw2sr/4CDtC091SaVUEjdR61cx5K6Aak\nGVLUd1E1XPIFGsIQg6T+G8g=\n-----END PRIVATE KEY-----\n";
+        //private static readonly string rsaPublicPem = "-----BEGIN PUBLIC KEY-----\nMIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgHwOjh2Y9pN3U+VScjBk+CJQ6cIH\n2maI3eJsy2w+FGsjCbvhJ3w6CD5z+OouEZKmjO7CSBld7O/m4gMrYSTtwhnaXHMP\nyfpUCaB0QldTH30MTRtog2hAU48R+EhEQPgFNHOiqEJAAS/Bd2CHSzjJLOOa6C5g\nu+m0EnVMMgIOFME1AgMBAAE=\n-----END PUBLIC KEY-----\n";
     }
 }

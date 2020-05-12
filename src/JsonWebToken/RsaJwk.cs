@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
+using JsonWebToken.Cryptography;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -595,6 +596,42 @@ namespace JsonWebToken
         /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
         public static RsaJwk FromParameters(RSAParameters parameters) => FromParameters(parameters, false);
 
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="pem">A PEM-encoded private key in PKCS8 format.</param>
+        public static RsaJwk FromPkcs8PrivateKey(string pem)
+        {
+            return Pkcs8.FromPrivateKey(pem);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="pem">A PEM-encoded public key in PKCS8 format.</param>
+        public static RsaJwk FromPkcs8PublicKey(string pem)
+        {
+            return Pkcs8.FromPublicKey(pem);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="pem">A PEM-encoded private key in PKCS1 format.</param>
+        public static RsaJwk FromPkcs1PrivateKey(string pem)
+        {
+            return Pkcs1.FromPrivateKey(pem);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="pem">A PEM-encoded public key in PKCS1 format.</param>
+        public static RsaJwk FromPkcs1PublicKey(string pem)
+        {
+            return Pkcs1.FromPublicKey(pem);
+        }
+
         /// <inheritdoc />
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
@@ -811,7 +848,7 @@ namespace JsonWebToken
                 Span<byte> buffer = requiredBufferSize > Constants.MaxStackallocBytes
                                     ? stackalloc byte[requiredBufferSize]
                                     : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
-                
+
                 WriteBase64UrlProperty(writer, buffer, E, JwkParameterNames.EUtf8);
                 WriteBase64UrlProperty(writer, buffer, N, JwkParameterNames.NUtf8);
 
