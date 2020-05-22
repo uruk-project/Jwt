@@ -221,7 +221,7 @@ Isuk92Ner/JmgKjYoSumHVmSNfZ9nLTVjxeD08pD548KWrqmJAeZNsDDqQ==
         }
 
         [Fact]
-        public void Pem_UnexpectedKeyType_ThrowArgumentException()
+        public void FromPem_UnexpectedKeyType_ThrowArgumentException()
         {
             string pem = @"
 -----BEGIN RSA PUBLIC KEY-----

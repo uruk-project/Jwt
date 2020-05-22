@@ -59,7 +59,8 @@ namespace JsonWebToken.Cryptography
             }
 #endif
 
-            return ReadRsaPrivateKey(ref reader);
+            ThrowHelper.ThrowInvalidOperationException_InvalidPem();
+            return null!;
         }
 
         // SEQUENCE

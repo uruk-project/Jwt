@@ -161,7 +161,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
         }
 
         [Fact]
-        public void Pem_UnexpectedKeyType_ThrowArgumentException()
+        public void FromPem_UnexpectedKeyType_ThrowArgumentException()
         {
             string pem = @"
 -----BEGIN PRIVATE KEY-----
