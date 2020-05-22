@@ -203,8 +203,6 @@ namespace JsonWebToken.Cryptography
             return reader;
         }
 
-        public AsnTokenType NextTokenType => (AsnTokenType)(_bytes[_index + 1] & 0x1f);
-
         private AsnTokenType ReadTokenType()
         {
             byte b = _bytes[_index++];
