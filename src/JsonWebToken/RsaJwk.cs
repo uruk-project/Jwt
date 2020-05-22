@@ -599,37 +599,17 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="RsaJwk"/>.
         /// </summary>
-        /// <param name="pem">A PEM-encoded private key in PKCS8 format.</param>
-        public static RsaJwk FromPkcs8PrivateKey(string pem)
+        /// <param name="pem">A PEM-encoded key in PKCS1 or PKCS8 format.</param>
+        public static RsaJwk FromPem(string pem)
         {
-            return Pkcs8.FromPrivateKey(pem);
-        }
+            AsymmetricJwk jwk = PemParser.Read(pem);
+            if (!(jwk is RsaJwk rsaJwk))
+            {
+                ThrowHelper.ThrowArgumentException_UnexpectedKeyType(jwk, Utf8.GetString(JwkTypeNames.Rsa));
+                return null;
+            }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="pem">A PEM-encoded public key in PKCS8 format.</param>
-        public static RsaJwk FromPkcs8PublicKey(string pem)
-        {
-            return Pkcs8.FromPublicKey(pem);
-        }
-
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="pem">A PEM-encoded private key in PKCS1 format.</param>
-        public static RsaJwk FromPkcs1PrivateKey(string pem)
-        {
-            return Pkcs1.FromPrivateKey(pem);
-        }
-
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="pem">A PEM-encoded public key in PKCS1 format.</param>
-        public static RsaJwk FromPkcs1PublicKey(string pem)
-        {
-            return Pkcs1.FromPublicKey(pem);
+            return rsaJwk;
         }
 
         /// <inheritdoc />

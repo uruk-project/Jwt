@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
+using JsonWebToken.Cryptography;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -475,6 +476,18 @@ namespace JsonWebToken
             }
 
             return new ECJwk(EllipticalCurve.FromString((string)crv.Value), (string)x.Value, (string)y.Value);
+        }
+
+        public static ECJwk FromPem(string pem)
+        {
+            AsymmetricJwk jwk = PemParser.Read(pem);
+            if (!(jwk is ECJwk ecJwk))
+            {
+                ThrowHelper.ThrowArgumentException_UnexpectedKeyType(jwk, Utf8.GetString(JwkTypeNames.EllipticCurve));
+                return null;
+            }
+
+            return ecJwk;
         }
 
         internal JwtObject AsJwtObject()

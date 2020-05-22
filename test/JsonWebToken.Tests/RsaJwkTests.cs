@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using JsonWebToken.Cryptography;
 using JsonWebToken.Internal;
 using Xunit;
 
@@ -104,10 +105,7 @@ namespace JsonWebToken.Tests
             Assert.Equal("https://example.com", jwk.X5u);
         }
 
-        [Fact]
-        public void FromPrivatePem()
-        {
-            string pem = @"
+        private const string Pkcs8PemRsaPrivateKey = @"
 -----BEGIN PRIVATE KEY-----
 MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEAtz9Z9e6L1V4kt/8C
 mtFqhUPJbSU+VDGbk1MsQcPBR3uJ2y0vM9e5qHRYSOBqjmg7UERRHhvKNiUn4Xz0
@@ -119,14 +117,7 @@ acPiMCuFTnRSFYAhozpmsqoLyTREqwIhAMLJlZTGjEB2N+sEazH5ToEczQzKqp7t
 9juGNbOPhoEL
 -----END PRIVATE KEY-----";
 
-            var key = RsaJwk.FromPkcs8PrivateKey(pem);
-            AssertKeyEquals(DiminishedDPParameters, key.ExportParameters());
-        }
-
-        [Fact]
-        public void FromPrivateRsaPem()
-        {
-            string pem = @"
+        private const string Pkcs1PemRsaPrivateKey = @"
 -----BEGIN RSA PRIVATE KEY-----
 MIIBOwIBAAJBALc/WfXui9VeJLf/AprRaoVDyW0lPlQxm5NTLEHDwUd7idstLzPX
 uah0WEjgao5oO1BEUR4byjYlJ+F89Cs4BhUCAwEAAQJBAK/m8jYvnK9exaSR+DAh
@@ -137,34 +128,49 @@ rmaUzxQvyuVLAiEArCTM8dSbopUADWnD4jArhU50UhWAIaM6ZrKqC8k0RKsCIQDC
 yZWUxoxAdjfrBGsx+U6BHM0Myqqe7fY7hjWzj4aBCw==
 -----END RSA PRIVATE KEY-----";
 
-            var key = RsaJwk.FromPkcs1PrivateKey(pem);
-            AssertKeyEquals(DiminishedDPParameters, key.ExportParameters());
-        }
-
-        [Fact]
-        public void FromPublicPem()
-        {
-            string pem = @"
+        private const string Pkcs8PemRsaPublicKey = @"
 -----BEGIN PUBLIC KEY-----
 MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALc/WfXui9VeJLf/AprRaoVDyW0lPlQx
 m5NTLEHDwUd7idstLzPXuah0WEjgao5oO1BEUR4byjYlJ+F89Cs4BhUCAwEAAQ==
 -----END PUBLIC KEY-----";
 
-            var key = RsaJwk.FromPkcs8PublicKey(pem);
-            AssertKeyEquals(ToPublic(DiminishedDPParameters), key.ExportParameters());
-        }
-
-        [Fact]
-        public void FromRsaPublicPem()
-        {
-            string pem = @"
+        private const string Pkcs1PemRsaPublicKey = @"
 -----BEGIN RSA PUBLIC KEY-----
 MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
 4GqOaDtQRFEeG8o2JSfhfPQrOAYVAgMBAAE=
 -----END RSA PUBLIC KEY-----";
 
-            var key = RsaJwk.FromPkcs1PublicKey(pem);
+        [Theory]
+        [InlineData(Pkcs1PemRsaPrivateKey)]
+        [InlineData(Pkcs8PemRsaPrivateKey)]
+        public void FromPem_PrivateKey(string pem)
+        {
+            var key = RsaJwk.FromPem(pem);
+            AssertKeyEquals(DiminishedDPParameters, key.ExportParameters());
+            Assert.True(key.HasPrivateKey);
+        }
+
+        [Theory]
+        [InlineData(Pkcs1PemRsaPublicKey)]
+        [InlineData(Pkcs8PemRsaPublicKey)]
+        public void FromPem_PublicKey(string pem)
+        {
+            var key = RsaJwk.FromPem(pem);
             AssertKeyEquals(ToPublic(DiminishedDPParameters), key.ExportParameters());
+            Assert.False(key.HasPrivateKey);
+        }
+
+        [Fact]
+        public void Pem_UnexpectedKeyType_ThrowArgumentException()
+        {
+            string pem = @"
+-----BEGIN PRIVATE KEY-----
+MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgcKEsLbFoRe1W/2jP
+whpHKz8E19aFG/Y0ny19WzRSs4qhRANCAASBAezkdGSm6tcM9ppuK9PYhpGjJi0i
+y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
+-----END PRIVATE KEY-----";
+
+            Assert.Throws<ArgumentException>(() => RsaJwk.FromPem(pem));
         }
 
         private static void AssertKeyEquals(in RSAParameters expected, in RSAParameters actual)

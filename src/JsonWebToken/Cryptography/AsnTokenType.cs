@@ -8,6 +8,7 @@
         Null = 5,
         ObjectIdentifier = 6,
         Sequence = 16,
+
         Undefined = -1,
     }
 }

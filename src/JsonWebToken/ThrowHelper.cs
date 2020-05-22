@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -272,9 +273,14 @@ namespace JsonWebToken
         private static Exception CreateArgumentException_InvalidRsaKey(Jwk key) => new ArgumentException($"Invalid RSA key: '{key.Kid}'. Both modulus (N) and exponent (E) must be present.", nameof(key));
      
         [DoesNotReturn]
+        internal static void ThrowArgumentException_UnexpectedKeyType(Jwk key, string expectedType) => throw CreateArgumentException_UnexpectedKeyType(key, expectedType);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateArgumentException_UnexpectedKeyType(Jwk key, string expectedType) => new ArgumentException($"Unexpected key type: '{Utf8.GetString(key.Kty)}'. Expected a key of type '{expectedType}'.", nameof(key));
+     
+        [DoesNotReturn]
         internal static void ThrowInvalidOperationException_RequirePrivateKey() => throw CreateInvalidOperationException_RequirePrivateKey();
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateInvalidOperationException_RequirePrivateKey() => new InvalidOperationException("THe operation require a private key.");
+        private static Exception CreateInvalidOperationException_RequirePrivateKey() => new InvalidOperationException("The operation require a private key.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentException_DestinationTooSmall(int size, int requiredSize) => throw CreateArgumentException_DestinationTooSmall(size, requiredSize);

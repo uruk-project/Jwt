@@ -69,6 +69,11 @@ namespace JsonWebToken.Cryptography
 
         public AsnReader ReadBitString()
         {
+            return new AsnReader(ReadBitStringBytes());
+        }   
+        
+        public ReadOnlySpan<byte> ReadBitStringBytes()
+        {
             if (!Read())
             {
                 throw new InvalidOperationException("No more data to read.");
@@ -85,7 +90,7 @@ namespace JsonWebToken.Cryptography
             if (source.Length == 1)
             {
                 Debug.Assert(unusedBitCount == 0);
-                return new AsnReader(ReadOnlySpan<byte>.Empty);
+                return ReadOnlySpan<byte>.Empty;
             }
 
             int mask = -1 << unusedBitCount;
@@ -93,10 +98,15 @@ namespace JsonWebToken.Cryptography
             byte maskedByte = (byte)(lastByte & mask);
             Debug.Assert(maskedByte == lastByte);
 
-            return new AsnReader(source.Slice(1));
+            return source.Slice(1);
         }
 
         public AsnReader ReadOctetString()
+        {;
+            return new AsnReader(ReadOctetStringBytes());
+        }
+
+        public ReadOnlySpan<byte> ReadOctetStringBytes()
         {
             if (!Read())
             {
@@ -108,8 +118,7 @@ namespace JsonWebToken.Cryptography
                 throw new InvalidOperationException($"Expect {AsnTokenType.OctetString} structure, got {TokenType}.");
             }
 
-            var bytes = ReadLengthPrefixedBytes();
-            return new AsnReader(bytes);
+            return ReadLengthPrefixedBytes();
         }
 
         public void ReadNull()
@@ -166,17 +175,18 @@ namespace JsonWebToken.Cryptography
                     result.Add(subId);
                 }
             }
+
             return result.ToArray();
         }
 
-        public AsnReader ReadSequence()
+        public AsnReader ReadSequence(bool ignoreTypeValidation = false)
         {
             if (!Read())
             {
                 throw new InvalidOperationException("No more data to read.");
             }
 
-            if (TokenType != AsnTokenType.Sequence)
+            if (!ignoreTypeValidation && TokenType != AsnTokenType.Sequence)
             {
                 throw new InvalidOperationException($"Expect {AsnTokenType.Sequence} structure, got {TokenType}.");
             }
@@ -192,6 +202,8 @@ namespace JsonWebToken.Cryptography
             _index += length;
             return reader;
         }
+
+        public AsnTokenType NextTokenType => (AsnTokenType)(_bytes[_index + 1] & 0x1f);
 
         private AsnTokenType ReadTokenType()
         {
