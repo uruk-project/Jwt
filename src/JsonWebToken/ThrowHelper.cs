@@ -273,9 +273,9 @@ namespace JsonWebToken
         private static Exception CreateArgumentException_InvalidRsaKey(Jwk key) => new ArgumentException($"Invalid RSA key: '{key.Kid}'. Both modulus (N) and exponent (E) must be present.", nameof(key));
      
         [DoesNotReturn]
-        internal static void ThrowArgumentException_UnexpectedKeyType(Jwk key, string expectedType) => throw CreateArgumentException_UnexpectedKeyType(key, expectedType);
+        internal static void ThrowInvalidOperationException_UnexpectedKeyType(Jwk key, string expectedType) => throw CreateInvalidOperationException_UnexpectedKeyType(key, expectedType);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentException_UnexpectedKeyType(Jwk key, string expectedType) => new ArgumentException($"Unexpected key type: '{Utf8.GetString(key.Kty)}'. Expected a key of type '{expectedType}'.", nameof(key));
+        private static Exception CreateInvalidOperationException_UnexpectedKeyType(Jwk key, string expectedType) => new InvalidOperationException($"Unexpected key type: '{Utf8.GetString(key.Kty)}'. Expected a key of type '{expectedType}'.");
      
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_RequirePrivateKey() => throw CreateInvalidOperationException_RequirePrivateKey();

@@ -229,7 +229,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
 4GqOaDtQRFEeG8o2JSfhfPQrOAYVAgMBAAE=
 -----END RSA PUBLIC KEY-----";
 
-            Assert.Throws<ArgumentException>(() => ECJwk.FromPem(pem));
+            Assert.Throws<InvalidOperationException>(() => ECJwk.FromPem(pem));
         }
 
         internal static void AssertEqual(in ECParameters p1, in ECParameters p2)

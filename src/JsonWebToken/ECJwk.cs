@@ -483,7 +483,7 @@ namespace JsonWebToken
             AsymmetricJwk jwk = PemParser.Read(pem);
             if (!(jwk is ECJwk ecJwk))
             {
-                ThrowHelper.ThrowArgumentException_UnexpectedKeyType(jwk, Utf8.GetString(JwkTypeNames.EllipticCurve));
+                ThrowHelper.ThrowInvalidOperationException_UnexpectedKeyType(jwk, Utf8.GetString(JwkTypeNames.EllipticCurve));
                 return null;
             }
 
