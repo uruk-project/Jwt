@@ -42,7 +42,7 @@ namespace JsonWebToken.Cryptography
                 throw new ArgumentOutOfRangeException(nameof(length), "length must be positive.");
             }
 
-            if (_bytes.Length - length < 0)
+            if (_bytes.Length < length)
             {
                 throw new ArgumentException("Cannot read past end of buffer.");
             }
@@ -102,7 +102,7 @@ namespace JsonWebToken.Cryptography
         }
 
         public AsnReader ReadOctetString()
-        {;
+        {
             return new AsnReader(ReadOctetStringBytes());
         }
 
@@ -162,6 +162,7 @@ namespace JsonWebToken.Cryptography
                     {
                         throw new NotSupportedException("Oid subId > 2^31 not supported.");
                     }
+
                     subId = (subId << 7) | (b & 0x7f);
                 } while ((b & 0x80) != 0);
                 if (first)
