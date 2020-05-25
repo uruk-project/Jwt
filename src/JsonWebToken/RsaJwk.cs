@@ -599,8 +599,11 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="RsaJwk"/>.
         /// </summary>
-        /// <param name="pem">A PEM-encoded key in PKCS1 or PKCS8 format.</param>
-        public static RsaJwk FromPem(string pem)
+        /// <param name="pem">A PEM-encoded key in PKCS1 (BEGIN RSA PUBLIC/PRIVATE KEY) or PKCS8 (BEGIN PUBLIC/PRIVATE KEY) format.</param>
+        /// Support unencrypted PKCS#1 public RSA key, unencrypted PKCS#1 private RSA key,
+        /// unencrypted PKCS#8 public RSA key, unencrypted PKCS#8 private RSA key. 
+        /// Password-protected key is not supported.
+        public new static RsaJwk FromPem(string pem)
         {
             AsymmetricJwk jwk = PemParser.Read(pem);
             if (!(jwk is RsaJwk rsaJwk))

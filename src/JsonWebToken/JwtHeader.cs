@@ -48,7 +48,7 @@ namespace JsonWebToken
             return JwtHeaderParser.ParseHeader(Utf8.GetBytes(json), TokenValidationPolicy.NoValidation);
         }
 
-        internal JwtObject Inner => _inner ?? (_inner = new JwtObject());
+        internal JwtObject Inner => _inner ??= new JwtObject();
 
         /// <summary>
         /// Gets the signature algorithm that was used to create the signature.

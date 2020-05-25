@@ -478,9 +478,16 @@ namespace JsonWebToken
             return new ECJwk(EllipticalCurve.FromString((string)crv.Value), (string)x.Value, (string)y.Value);
         }
 
-        public static ECJwk FromPem(string pem)
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="pem">A PEM-encoded key in PKCS1 (BEGIN EC PRIVATE KEY) or PKCS8 (BEGIN PUBLIC/PRIVATE KEY) format.</param>
+        /// Support unencrypted PKCS#1 private EC key, unencrypted PKCS#8 public EC key and unencrypted PKCS#8 private EC key. 
+        /// Unencrypted PKCS#1 public EC key is not supported.
+        /// Password-protected key is not supported.
+        public new static ECJwk FromPem(string pem)
         {
-            AsymmetricJwk jwk = PemParser.Read(pem);
+            Jwk jwk = Jwk.FromPem(pem);
             if (!(jwk is ECJwk ecJwk))
             {
                 ThrowHelper.ThrowInvalidOperationException_UnexpectedKeyType(jwk, Utf8.GetString(JwkTypeNames.EllipticCurve));
