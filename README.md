@@ -33,7 +33,7 @@ The `JwtWriter` is used for writing tokens:
 ```
 ### JWT validation
 ```
-    var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
+    var key = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
     var policy = new TokenValidationPolicyBuilder()
 					.RequireSignature(key, SignatureAlgorithm.HmacSha256)
 					.RequireAudience("636C69656E745F6964")
@@ -56,7 +56,7 @@ The `JwtWriter` is used for writing tokens:
 ### JWT creation
 ````
     // Creates a symmetric key defined for the 'HS256' algorithm
-    var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU", SignatureAlgorithm.HmacSha256);
+    var key = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU", SignatureAlgorithm.HmacSha256);
 
     // Creates a JWS descriptor with all its properties
     var descriptor = new JwsDescriptor()
