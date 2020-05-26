@@ -35,7 +35,7 @@ namespace JsonWebToken
         /// 'P-521'.
         /// </summary>    
         public static EllipticalCurve P521 => new EllipticalCurve(3, ECCurve.NamedCurves.nistP521, P521Name, 521, 132);
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="EllipticalCurve"/> struct.
         /// </summary>

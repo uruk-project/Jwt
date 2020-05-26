@@ -48,7 +48,7 @@ namespace JsonWebToken
         {
         }
 
-        internal JwtObject Inner => _inner ?? (_inner = new JwtObject());
+        internal JwtObject Inner => _inner ??= new JwtObject();
 
         /// <summary>
         ///  Gets the claim for a specified key in the current <see cref="JwtPayload"/>.

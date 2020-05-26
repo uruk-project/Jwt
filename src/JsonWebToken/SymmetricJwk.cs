@@ -25,6 +25,7 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
+        /// <param name="k">The binary key material.</param>
         public SymmetricJwk(ReadOnlySpan<byte> k)
         {
             _k = k.ToArray();
@@ -33,6 +34,7 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
+        /// <param name="k">The binary key material.</param>
         public SymmetricJwk(byte[] k)
         {
             if (k is null)
@@ -46,6 +48,7 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
+        /// <param name="k">The key material encoded in Base64-URL.</param>
         public SymmetricJwk(string k)
         {
             if (k is null)
@@ -150,6 +153,8 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
+        /// <param name="k">The binary key material.</param>
+        /// <param name="alg">The <see cref="SignatureAlgorithm"/>.</param>
         public SymmetricJwk(byte[] k, SignatureAlgorithm alg)
             : base(alg)
         {
@@ -164,6 +169,8 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
+        /// <param name="k">The key material encoded in Base64-URL.</param>
+        /// <param name="alg">The <see cref="SignatureAlgorithm"/>.</param>
         public SymmetricJwk(string k, SignatureAlgorithm alg)
             : base(alg)
         {
@@ -178,6 +185,8 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
+        /// <param name="k">The binary key material.</param>
+        /// <param name="alg">The <see cref="SignatureAlgorithm"/>.</param>
         public SymmetricJwk(byte[] k, KeyManagementAlgorithm alg)
             : base(alg)
         {
@@ -192,6 +201,19 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
+        /// <param name="k">The binary key material.</param>
+        /// <param name="alg">The <see cref="SignatureAlgorithm"/>.</param>
+        public SymmetricJwk(ReadOnlySpan<byte> k, KeyManagementAlgorithm alg)
+            : base(alg)
+        {
+            _k = k.ToArray();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="k">The key material encoded in Base64-URL.</param>
+        /// <param name="alg">The <see cref="KeyManagementAlgorithm"/>.</param>
         public SymmetricJwk(string k, KeyManagementAlgorithm alg)
             : base(alg)
         {

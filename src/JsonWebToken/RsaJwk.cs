@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
+using JsonWebToken.Cryptography;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -595,6 +596,25 @@ namespace JsonWebToken
         /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
         public static RsaJwk FromParameters(RSAParameters parameters) => FromParameters(parameters, false);
 
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="pem">A PEM-encoded key in PKCS1 (BEGIN RSA PUBLIC/PRIVATE KEY) or PKCS8 (BEGIN PUBLIC/PRIVATE KEY) format.</param>
+        /// Support unencrypted PKCS#1 public RSA key, unencrypted PKCS#1 private RSA key,
+        /// unencrypted PKCS#8 public RSA key, unencrypted PKCS#8 private RSA key. 
+        /// Password-protected key is not supported.
+        public new static RsaJwk FromPem(string pem)
+        {
+            AsymmetricJwk jwk = PemParser.Read(pem);
+            if (!(jwk is RsaJwk rsaJwk))
+            {
+                ThrowHelper.ThrowInvalidOperationException_UnexpectedKeyType(jwk, Utf8.GetString(JwkTypeNames.Rsa));
+                return null;
+            }
+
+            return rsaJwk;
+        }
+
         /// <inheritdoc />
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
@@ -811,7 +831,7 @@ namespace JsonWebToken
                 Span<byte> buffer = requiredBufferSize > Constants.MaxStackallocBytes
                                     ? stackalloc byte[requiredBufferSize]
                                     : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
-                
+
                 WriteBase64UrlProperty(writer, buffer, E, JwkParameterNames.EUtf8);
                 WriteBase64UrlProperty(writer, buffer, N, JwkParameterNames.NUtf8);
 

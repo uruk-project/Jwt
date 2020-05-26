@@ -81,7 +81,7 @@ namespace JsonWebToken.Performance
         public int GetEncodedLength(int length)
         {
             if ((uint)length > MaximumEncodeLength)
-                ThrowHelper.ThrowArgumentOutOfRangeException();
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(length));
 
             return (((int)FastDiv3(length + 2)) << 2) - GetNumBase64PaddingCharsAddedByEncode(length);
         }
