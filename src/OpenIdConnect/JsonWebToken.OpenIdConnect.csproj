@@ -24,4 +24,13 @@ Provides ID Token primitives.</Description>
     <ProjectReference Include="..\JsonWebToken\JsonWebToken.csproj" />
   </ItemGroup>
 
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net47'">
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
+
 </Project>
