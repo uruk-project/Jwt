@@ -77,7 +77,7 @@ namespace JsonWebToken.Internal
                     return new OneElementMap(key, value);
                 }
 
-                public override bool TryGetValue(int key, out TMapValue? value)
+                public override bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
                 {
                     // Nothing here
                     value = null;
@@ -117,7 +117,7 @@ namespace JsonWebToken.Internal
                     }
                 }
 
-                public override bool TryGetValue(int key, out TMapValue? value)
+                public override bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
                 {
                     if (key == _key1)
                     {
@@ -174,7 +174,7 @@ namespace JsonWebToken.Internal
                     }
                 }
 
-                public override bool TryGetValue(int key, out TMapValue? value)
+                public override bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
                 {
                     if (key == _key1)
                     {
@@ -251,7 +251,7 @@ namespace JsonWebToken.Internal
                     }
                 }
 
-                public override bool TryGetValue(int key, out TMapValue? value)
+                public override bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
                 {
                     if (key == _key1)
                     {
@@ -331,7 +331,7 @@ namespace JsonWebToken.Internal
                     return many;
                 }
 
-                public override bool TryGetValue(int key, out TMapValue? value)
+                public override bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
                 {
                     foreach (KeyValuePair<int, TMapValue> pair in _keyValues)
                     {
@@ -385,7 +385,7 @@ namespace JsonWebToken.Internal
                     return this;
                 }
 
-                public override bool TryGetValue(int key, out TMapValue? value)
+                public override bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
                 {
                     return _dictionary.TryGetValue(key, out value);
                 }

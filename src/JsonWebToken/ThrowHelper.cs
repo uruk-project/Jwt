@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -270,11 +271,16 @@ namespace JsonWebToken
         internal static void ThrowArgumentException_InvalidRsaKey(Jwk key) => throw CreateArgumentException_InvalidRsaKey(key);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentException_InvalidRsaKey(Jwk key) => new ArgumentException($"Invalid RSA key: '{key.Kid}'. Both modulus (N) and exponent (E) must be present.", nameof(key));
-
+     
+        [DoesNotReturn]
+        internal static void ThrowInvalidOperationException_UnexpectedKeyType(Jwk key, string expectedType) => throw CreateInvalidOperationException_UnexpectedKeyType(key, expectedType);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateInvalidOperationException_UnexpectedKeyType(Jwk key, string expectedType) => new InvalidOperationException($"Unexpected key type: '{Utf8.GetString(key.Kty)}'. Expected a key of type '{expectedType}'.");
+     
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_RequirePrivateKey() => throw CreateInvalidOperationException_RequirePrivateKey();
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateInvalidOperationException_RequirePrivateKey() => new InvalidOperationException("THe operation require a private key.");
+        private static Exception CreateInvalidOperationException_RequirePrivateKey() => new InvalidOperationException("The operation require a private key.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentException_DestinationTooSmall(int size, int requiredSize) => throw CreateArgumentException_DestinationTooSmall(size, requiredSize);
@@ -297,9 +303,9 @@ namespace JsonWebToken
         private static Exception CreateObjectDisposedException(Type type) => new ObjectDisposedException(type.ToString());
 
         [DoesNotReturn]
-        internal static void ThrowArgumentOutOfRangeException() => throw CreateArgumentOutOfRangeException();
+        internal static void ThrowArgumentOutOfRangeException(string name) => throw CreateArgumentOutOfRangeException(name);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static ArgumentOutOfRangeException CreateArgumentOutOfRangeException() => new ArgumentOutOfRangeException("name");
+        private static ArgumentOutOfRangeException CreateArgumentOutOfRangeException(string name) => new ArgumentOutOfRangeException(name);
 
         [DoesNotReturn]
         internal static void ThrowFormatException_MalformdedInput(int inputLength) => throw CreateFormatException_MalformdedInput(inputLength);
@@ -343,6 +349,18 @@ namespace JsonWebToken
         internal static void ThrowArgumentException_PrependMustBeLessOrEqualToBlockSize(ReadOnlySpan<byte> prepend, int blockSize) => throw CreateArgumentException_PrependMustBeLessOrEqualToBlockSize(prepend, blockSize);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentException_PrependMustBeLessOrEqualToBlockSize(ReadOnlySpan<byte> prepend, int blockSize) => new ArgumentException($"The length of the prepend must be of the same size than the block size, or less. Prepend length is: '{prepend.Length}' bytes, block size is: {blockSize}.", nameof(prepend));
+              
+        [DoesNotReturn]
+        internal static void ThrowArgumentException_EncryptedPem(string name) => throw CreateArgumentException_EncryptedPem(name);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateArgumentException_EncryptedPem(string name) => new ArgumentException("An encrypted key was found, but no password was provided. Use ImportFromEncryptedPem to import this key.", name);
+
+                             
+        [DoesNotReturn]
+        internal static void ThrowInvalidOperationException_InvalidPem() => throw CreateInvalidOperationException_InvalidPem();
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateInvalidOperationException_InvalidPem() => new InvalidOperationException("The PEM-encoded key is invalid.");
+
 
         private static string GetArgumentName(ExceptionArgument argument)
         {

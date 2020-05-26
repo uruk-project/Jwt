@@ -583,7 +583,7 @@ namespace JsonWebToken
         private static int GetBase64EncodedLength(int sourceLength)
         {
             if ((uint)sourceLength > 1610612733)
-                ThrowHelper.ThrowArgumentOutOfRangeException();
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(sourceLength));
 
             return (int)FastDiv3(sourceLength + 2) * 4;
         }

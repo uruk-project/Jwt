@@ -104,9 +104,7 @@ namespace JsonWebToken
         /// </summary>
         /// <returns></returns>
         public override int GetHashCode()
-        {
-            return Id.GetHashCode();
-        }
+            => Id.GetHashCode();
 
         /// <summary>
         /// Determines whether two specified <see cref="CompressionAlgorithm"/> have the same value.

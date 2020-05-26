@@ -8,9 +8,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
+using JsonWebToken.Cryptography;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -825,6 +825,21 @@ namespace JsonWebToken
                     ArrayPool<byte>.Shared.Return(jsonToReturn);
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="pem">A PEM-encoded key in PKCS1 or PKCS8 format.</param>
+        /// <remarks>
+        /// Support unencrypted PKCS#1 public RSA key, unencrypted PKCS#1 private RSA key, unencrypted PKCS#1 private EC key, 
+        /// unencrypted PKCS#8 public RSA key, unencrypted PKCS#8 private RSA key, unencrypted PKCS#8 public EC key and unencrypted PKCS#8 private EC key. 
+        /// Unencrypted PKCS#1 public EC key is not supported.
+        /// Password-protected key is not supported.
+        /// </remarks>
+        public static AsymmetricJwk FromPem(string pem)
+        {
+            return PemParser.Read(pem);
         }
 
         internal void Populate(ReadOnlySpan<byte> name, string value)

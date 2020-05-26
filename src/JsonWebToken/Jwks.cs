@@ -204,7 +204,7 @@ namespace JsonWebToken
         {
             if (kid is null)
             {
-                return _keyArray ?? (_keyArray = _keys.ToArray());
+                return _keyArray ??= _keys.ToArray();
             }
 
             if (IdentifiedKeys.TryGetValue(kid, out var jwks))

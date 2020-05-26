@@ -83,6 +83,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FuzzTest", "fuzz\FuzzTest\F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MultiIssuersValidationSample", "samples\MultiIssuersValidationSample\MultiIssuersValidationSample.csproj", "{36269BC7-CFC5-42F4-A63B-A7F6614B9820}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JwkSample", "samples\JwkSample\JwkSample.csproj", "{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -177,6 +179,10 @@ Global
 		{36269BC7-CFC5-42F4-A63B-A7F6614B9820}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36269BC7-CFC5-42F4-A63B-A7F6614B9820}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36269BC7-CFC5-42F4-A63B-A7F6614B9820}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -206,6 +212,7 @@ Global
 		{E5027F77-CCE9-4014-9F3D-05584AF590C2} = {8905D2E3-4499-4A86-BF3E-F098F228DD59}
 		{3D743A21-CCCE-41B1-B9E9-CEBF0A3D7942} = {9B57A379-AA34-40CB-BEB1-F9EA38792A3B}
 		{36269BC7-CFC5-42F4-A63B-A7F6614B9820} = {F682D324-E173-48DF-819B-D3811CFAA68D}
+		{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE} = {F682D324-E173-48DF-819B-D3811CFAA68D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2F681326-7ED4-45F6-BD1D-1119EA388F42}
