@@ -76,12 +76,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public override bool Equals(object? obj)
         {
-            if (obj is CompressionAlgorithm alg)
-            {
-                return Equals(alg);
-            }
-
-            return false;
+            return Equals(obj as CompressionAlgorithm);
         }
 
         /// <summary>
@@ -114,7 +109,8 @@ namespace JsonWebToken
         /// <returns></returns>
         public static bool operator ==(CompressionAlgorithm? x, CompressionAlgorithm? y)
         {
-            if (x is null && y is null)
+            // Fast path: should be singletons
+            if (ReferenceEquals(x, y))
             {
                 return true;
             }
@@ -124,12 +120,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            if (y is null)
-            {
-                return false;
-            }
-
-            return x.Id == y.Id;
+            return x.Equals(y);
         }
 
         /// <summary>
@@ -139,8 +130,9 @@ namespace JsonWebToken
         /// <param name="y"></param>
         /// <returns></returns>
         public static bool operator !=(CompressionAlgorithm? x, CompressionAlgorithm? y)
-        {
-            if (x is null && y is null)
+        {        
+            // Fast path: should be singletons
+            if (ReferenceEquals(x, y))
             {
                 return false;
             }
@@ -150,12 +142,7 @@ namespace JsonWebToken
                 return true;
             }
 
-            if (y is null)
-            {
-                return true;
-            }
-
-            return x.Id != y.Id;
+            return !x.Equals(y);
         }
 
         /// <summary>

@@ -329,31 +329,31 @@ y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
 
         public static IEnumerable<object[]> GetWrappingKeys()
         {
-            yield return new object[] { _privateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep };
-            yield return new object[] { _privateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep256 };
-            yield return new object[] { _privateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep384 };
-            yield return new object[] { _privateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep512 };
-            yield return new object[] { _privateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaPkcs1 };
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep };
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep256 };
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep384 };
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep512 };
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaPkcs1 };
         }
 
         public static IEnumerable<object[]> GetSignatureValidationKeys()
         {
-            yield return new object[] { _publicRsa2048Key, SignatureAlgorithm.RsaSha256 };
-            yield return new object[] { _publicRsa2048Key, SignatureAlgorithm.RsaSha384 };
-            yield return new object[] { _publicRsa2048Key, SignatureAlgorithm.RsaSha512 };
-            yield return new object[] { _publicRsa2048Key, SignatureAlgorithm.RsaSsaPssSha256 };
-            yield return new object[] { _publicRsa2048Key, SignatureAlgorithm.RsaSsaPssSha384 };
-            yield return new object[] { _publicRsa2048Key, SignatureAlgorithm.RsaSsaPssSha512 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSha256 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSha384 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSha512 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSsaPssSha256 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSsaPssSha384 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSsaPssSha512 };
         }
 
         public static IEnumerable<object[]> GetSignatureCreationKeys()
         {
-            yield return new object[] { _privateRsa2048Key, SignatureAlgorithm.RsaSha256 };
-            yield return new object[] { _privateRsa2048Key, SignatureAlgorithm.RsaSha384 };
-            yield return new object[] { _privateRsa2048Key, SignatureAlgorithm.RsaSha512 };
-            yield return new object[] { _privateRsa2048Key, SignatureAlgorithm.RsaSsaPssSha256 };
-            yield return new object[] { _privateRsa2048Key, SignatureAlgorithm.RsaSsaPssSha384 };
-            yield return new object[] { _privateRsa2048Key, SignatureAlgorithm.RsaSsaPssSha512 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSha256 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSha384 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSha512 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSsaPssSha256 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSsaPssSha384 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSsaPssSha512 };
         }
 
         [Fact]
@@ -396,7 +396,7 @@ y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
             Assert.Contains("\"qi\":\"" + Encoding.UTF8.GetString(Base64Url.Encode(key.QI)) + "\"", json);
         }
 
-        private static RsaJwk _privateRsa2048Key => new RsaJwk
+        private static RsaJwk PrivateRsa2048Key => new RsaJwk
         (
             n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
             e: "AQAB",
@@ -408,15 +408,10 @@ y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
             qi: "GyM_p6JrXySiz1toFgKbWV-JdI3jQ4ypu9rbMWx3rQJBfmt0FoYzgUIZEVFEcOqwemRN81zoDAaa-Bk0KWNGDjJHZDdDmFhW3AN7lI-puxk_mHZGJ11rxyR8O55XLSe3SPmRfKwZI6yU24ZxvQKFYItdldUKGzO6Ia6zTKhAVRU"
         );
 
-        private static RsaJwk _publicRsa2048Key => new RsaJwk
+        private static RsaJwk PublicRsa2048Key => new RsaJwk
         (
             n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
             e: "AQAB"
         );
-
-        private static readonly string rsaPrivatePem = "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCLq6o58Pv1lwSgyvywPr0JyIu+dFOq7Ql0DEZjuwoFZQ+cpJH85iZPToi1JLLbQsFLDYaN2egmiiLnMjN0u82UdUzOlyXIestasOxKr9kFmWQdb2JTKe+ECFnhR1kbkAoVV1W905hd/11ZWH8TAAOcUMB0YkawJIdBmvgVJImq45i3kwzyAmKY91LZN9RAVGa0mszV7HtGKyPvB69AJuZdBUB0GT/4DVt0qp8H42NmqCKpZmwJQ11H22sFplnSWWBSL2NKsr/bBsjdI8vwEt2EJNVXqYnzqQNEyefRfQlqeYp+LxS9JpiDValSOUhVzs7nrVcKGslxwJrdcCtCMVRVAgMBAAECggEAK7vX9Iahzne4KkUFNIagmLSkFUHFhQrt39mMHORPMftAFTNuxvql2kVkBxxzqLZRYhfdHwOxbofof+43MIEx0R+dqj6nxQu2KzKk+onvcZJjR9g9uH60EeqvghveKgRDNAWBwovD9QLmDvjn6WIiv0qFyKuRKMx3UbKdpbkoJkrgV1s2SE/DQuSnU/ZwmHFZjclsFixURV8BEJWelcqgqYvWlc9zr8Cl8sIBV6UregLnt1z11enBv9hTVUN4s7fahKWpEV7q4AT/OodVxGq8pqN0HQdttNYOSJvn5uXJeRfQjOG2rJ2CCkRzQreq9/vn+po3SAMvnS/bioLtA4LnLQKBgQDY+zEUTtKxrRMeXzIOtWWCfgWEvlXewxPGwZ5V++fzy9kxJAMn/q5tGDda73NvWxkc/mH7Air+EjYivhe4LCjfRDA6QVQFPJP2Pd/2ZnrM3scCRF5O0nkiw5N6aFXHNJdWyNf+zphtSsTr1GVg5nzZD1iljYic1ePYQ6+mWpkwdwKBgQCkyXManOX4EiDheP1xn+q2XaSKRvaZ5WQa2lG+a+OMwZgKwFk9kj+CnyrSgJKLhvHD7ww2AowB05QaHVTlv3tdIgEiiWbChDPiFaiNxZFQsCTET7dUk0yOOUEZgZVVaToq95d8vzXZllJSMRUQpOoX/s0nUqYp9aByYa710rmAkwKBgBZLiTl69+9Fx2chhPU58lo8NLj1DcG77bZIgsp2/dhxI7oG50QeyTFwgY+YdxYEGEqAYPT3vg8pM+LSAYHtF64JRaNWvxliphlxNigNU6TlZzF2cPJMciH+UpMLUXUMlFhYfskx1Tu1qRJKWrhgNoffKc6pAlaLK8Q3AD9po7/1AoGABnoknBcusuGDiVlIHP88Ko7juMuxRbtOg/+w1ttGxnGVmFaXK2RkOq4m8L89A176gckTocvX1PqMB7q/a4hrQO3lPYZJE7w+jdRsG6Z4X8OMrmqzug9QIwb9GBOP2xuXvbidq7mYVEUkVza2rUDOMsNBLRqCjYOqGtTcG618vSECgYEAld1Kpkpd3sxNbFzcnTrAC7hVaCPPBxYfu9M7Cf8+D37GWfPE9eH3PhDYzfkv7IvzcA0U92Mx/4dJKoxEUNpM2X1JfIDEIHXwBekrAaYqkPUvRie5UeOARzQdEb6DNflNHFasCbYHuepLTAeeCLwUfkQ9njRe9iie4s4YsDIOro0=\n-----END PRIVATE KEY-----\n";
-        private static readonly string rsaPublicPem = "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAi6uqOfD79ZcEoMr8sD69CciLvnRTqu0JdAxGY7sKBWUPnKSR/OYmT06ItSSy20LBSw2GjdnoJooi5zIzdLvNlHVMzpclyHrLWrDsSq/ZBZlkHW9iUynvhAhZ4UdZG5AKFVdVvdOYXf9dWVh/EwADnFDAdGJGsCSHQZr4FSSJquOYt5MM8gJimPdS2TfUQFRmtJrM1ex7Risj7wevQCbmXQVAdBk/+A1bdKqfB+NjZqgiqWZsCUNdR9trBaZZ0llgUi9jSrK/2wbI3SPL8BLdhCTVV6mJ86kDRMnn0X0JanmKfi8UvSaYg1WpUjlIVc7O561XChrJccCa3XArQjFUVQIDAQAB\n-----END PUBLIC KEY-----\n";
-        //private static readonly string rsaPrivatePem = "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCkMXuKvXbJVogj\nnNtAglFApXCSP/EI/AV3RkWY7D2lhJG2uAn4s0WMmhKy9NnO59kqFx0sWmkYVEr+\nlCJWmVVQ7vo5aR6B/q4tfRgjuggX7oBNqQvOiEsqiONaFVvwarBUAMt/OT1OWINR\n4RkIwQcLnkiX5YuiIg/fpkayjPhygTDqeIPNIZDu8yZ1xvSSEOlI+wolPEh8bkcy\nMpMLE9DP7hm3xSV1POog+sNzVyBDGlGMqGt96SRFALcUJ0H1srdKm0KRY3SNjg/Q\n5ThVMlCQsE+LRxWui/oj2dVz4xKiK6U4xsrQy/PvgBem/wo84Cs/rSDfiDRLzcyd\nX/IzB9tPAgMBAAECggEAFDnINyH5pPmU0ZY75+llqun2QP3BalLpNXUhk6HeQipf\nbLuk9s7WjWhZT1QcFIG43Zd1T4ZfldCkYFHNHQ/MU6jsh+/sAyVlPVNAiv4aiyAl\nC+v7+VgOslGkd+9ToPzzdZWXe7eIVsNOgeKRm+NzQ7oexR9QoQtDG1C3Or1kyW3w\nHtzxj/f/M4sP0tmXei7Ga65aO2N3Z8s83sCAYZWNwGiZAqkZvNAO7GfWU3PuLxT/\n1lrY3D9V4oXCZ1WsRzkBB1c9TqdTRVo2tSv+WYvOIeQNnu/UB56lK49eodEeHuWQ\ntazQuu7dXYjB7sfxJdLACawQrtUBh6ydUpyn78cr8QKBgQDNmHZAhLbjPaUoytYW\nUNIhj5ASO1K3EI7J95HMILIQx9kWdND4gB2SxaYtXRQYL0a5WPoy/1LRskbY3f1Z\n/vfq5Oa4AsOU9NLmizpNdVEzjKhmx44SHIyJMnaT9Po+ZlJ3Y+1yaAyHM5qfrSPO\nVN9HFm0y/G2zGKcDexpG36wWKQKBgQDMcoq7X7TQBKHCPqrndUY+qAwwJRgP+GTo\nD/9FP37JUvCYe862dSUOuYTDZGuh+AKv+T9y1szMF8NybJOkQ88uLpVpnPgognRx\n0FkGKQfn2L1vubAatHIlLgBYIZfPcezJ51HVOvBQJmiTzQWBrVePk1GMkgd/n9nb\nEy211vxktwKBgDRQayaXnoHMGc57bmZXQmDPyvUYqz9xsyOpHyw11Zl3gMG6D8Jr\ntxq1uEcqvAY7YV+gSGnZlhVNq8FbGzBfNG5MuHhyG5o3gcKwArHa/EKFtAQTGw94\nvDnc4VdcqqBeIPXIM4888pMkil+/CrFh3z6Tck3a9X7w8u5r0I/gMkWhAoGBAMiu\nnnMyjL+r7ERJU2UDfsI+HkicALScdCA+o6oLm55u5XAoB06eSpPbkvBhAC3qzmiB\n1sAZDMpBgT4uSfZyAUopu8wBoq3Q8BBQHTKoz/PKkpi6wpxUB79rGjdoMiYUhAPk\nJjWSNxXVvc1m8ELMLijmyKOdK/Mgq64Zc0MNFo6dAoGAe0/2Q2V1W1xMWG8TdCnK\nunPdnidBHkUA4E+70ID94NBanShkH1BtdKqMkAP1sHJEcw53KJ6z95gh/41NyeOO\ndtIbGqhwRSRrUGASa+eOM/dOEXqMH2wjNw2sr/4CDtC091SaVUEjdR61cx5K6Aak\nGVLUd1E1XPIFGsIQg6T+G8g=\n-----END PRIVATE KEY-----\n";
-        //private static readonly string rsaPublicPem = "-----BEGIN PUBLIC KEY-----\nMIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgHwOjh2Y9pN3U+VScjBk+CJQ6cIH\n2maI3eJsy2w+FGsjCbvhJ3w6CD5z+OouEZKmjO7CSBld7O/m4gMrYSTtwhnaXHMP\nyfpUCaB0QldTH30MTRtog2hAU48R+EhEQPgFNHOiqEJAAS/Bd2CHSzjJLOOa6C5g\nu+m0EnVMMgIOFME1AgMBAAE=\n-----END PUBLIC KEY-----\n";
     }
 }

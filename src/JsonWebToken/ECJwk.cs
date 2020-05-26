@@ -73,7 +73,7 @@ namespace JsonWebToken
         public ECJwk(ECParameters parameters, SignatureAlgorithm alg)
             : base(alg)
         {
-            Initialize(parameters);
+            Initialize(parameters, alg);
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace JsonWebToken
         public ECJwk(in EllipticalCurve crv, byte[] d, byte[] x, byte[] y, SignatureAlgorithm alg)
             : base(d, alg)
         {
-            Initialize(crv, x, y);
+            Initialize(crv, x, y, alg);
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace JsonWebToken
         public ECJwk(in EllipticalCurve crv, string d, string x, string y, SignatureAlgorithm alg)
             : base(d, alg)
         {
-            Initialize(crv, x, y);
+            Initialize(crv, x, y, alg);
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace JsonWebToken
         public ECJwk(in EllipticalCurve crv, byte[] x, byte[] y, SignatureAlgorithm alg)
             : base(alg)
         {
-            Initialize(crv, x, y);
+            Initialize(crv, x, y, alg);
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace JsonWebToken
         public ECJwk(in EllipticalCurve crv, string x, string y, SignatureAlgorithm alg)
             : base(alg)
         {
-            Initialize(crv, x, y);
+            Initialize(crv, x, y, alg);
         }
 
         /// <summary>
@@ -167,6 +167,11 @@ namespace JsonWebToken
         }
 #nullable enable
 
+        private void Initialize(ECParameters parameters, SignatureAlgorithm alg)
+        {
+            Initialize(parameters, alg);
+        }
+
         private void Initialize(ECParameters parameters)
         {
             parameters.Validate();
@@ -194,7 +199,17 @@ namespace JsonWebToken
             }
         }
 
-        private void Initialize(EllipticalCurve crv, string x, string y)
+        private void Initialize(in EllipticalCurve crv, string x, string y, SignatureAlgorithm alg)
+        {
+            if (crv.SupportedSignatureAlgorithm != alg)
+            {
+                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(alg, crv);
+            }
+
+            Initialize(crv, x, y);
+        }
+
+        private void Initialize(in EllipticalCurve crv, string x, string y)
         {
             if (x == null)
             {
@@ -211,7 +226,17 @@ namespace JsonWebToken
             Y = Base64Url.Decode(y);
         }
 
-        private void Initialize(EllipticalCurve crv, byte[] x, byte[] y)
+        private void Initialize(in EllipticalCurve crv, byte[] x, byte[] y, SignatureAlgorithm alg)
+        {
+            if (crv.SupportedSignatureAlgorithm != alg)
+            {
+                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(alg, crv);
+            }
+
+            Initialize(crv, x, y);
+        }
+
+        private void Initialize(in EllipticalCurve crv, byte[] x, byte[] y)
         {
             if (x is null)
             {

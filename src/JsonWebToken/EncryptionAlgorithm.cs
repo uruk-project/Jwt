@@ -208,12 +208,8 @@ namespace JsonWebToken
         /// <returns></returns>
         public override bool Equals(object? obj)
         {
-            if (obj is EncryptionAlgorithm alg)
-            {
-                return Equals(alg);
-            }
+            return Equals(obj as EncryptionAlgorithm);
 
-            return false;
         }
 
         /// <summary>
@@ -236,9 +232,7 @@ namespace JsonWebToken
         /// </summary>
         /// <returns></returns>
         public override int GetHashCode()
-        {
-            return _id.GetHashCode();
-        }
+            => _id.GetHashCode();
 
         /// <summary>
         /// Determines whether two specified <see cref="EncryptionAlgorithm"/> have the same value.
@@ -249,9 +243,10 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(EncryptionAlgorithm? x, EncryptionAlgorithm? y)
         {
-            if (y is null)
+            // Fast path: should be singletons
+            if (ReferenceEquals(x, y))
             {
-                return x is null;
+                return true;
             }
 
             if (x is null)
@@ -259,7 +254,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            return x._id == y._id;
+            return x.Equals(y);
         }
 
         /// <summary>
@@ -271,7 +266,18 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(EncryptionAlgorithm? x, EncryptionAlgorithm? y)
         {
-            return !(x == y);
+            // Fast path: should be singletons
+            if (ReferenceEquals(x, y))
+            {
+                return false;
+            }
+
+            if (x is null)
+            {
+                return true;
+            }
+
+            return !x.Equals(y);
         }
 
         /// <summary>
