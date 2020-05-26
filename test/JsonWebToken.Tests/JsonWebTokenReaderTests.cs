@@ -29,9 +29,10 @@ namespace JsonWebToken.Tests
 
             public TokenSegment<T> Add(ReadOnlyMemory<T> mem)
             {
-                var segment = new TokenSegment<T>(mem);
-                segment.RunningIndex = RunningIndex +
-                            Memory.Length;
+                var segment = new TokenSegment<T>(mem)
+                {
+                    RunningIndex = RunningIndex + Memory.Length
+                };
                 Next = segment;
                 return segment;
             }
@@ -263,16 +264,16 @@ namespace JsonWebToken.Tests
 
     public class TestCriticalHeaderHandler : ICriticalHeaderHandler
     {
-        private readonly bool value;
+        private readonly bool _value;
 
         public TestCriticalHeaderHandler(bool value)
         {
-            this.value = value;
+            _value = value;
         }
 
         public bool TryHandle(JwtHeader heade, string headerName)
         {
-            return value;
+            return _value;
         }
     }
 }

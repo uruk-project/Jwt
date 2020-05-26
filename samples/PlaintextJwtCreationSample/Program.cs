@@ -8,7 +8,7 @@ namespace PlaintextJwtCreationSample
         static void Main()
         {
             // Creates a symmetric key for encryption
-            var encryptionKey = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4T");
+            var encryptionKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4T");
 
             // Creates a JWE descriptor with all its properties
             var payload = "Life long and prosper.hello.world";

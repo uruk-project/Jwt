@@ -163,12 +163,8 @@ namespace JsonWebToken
         /// <returns></returns>
         public override bool Equals(object? obj)
         {
-            if (obj is SignatureAlgorithm alg)
-            {
-                return Equals(alg);
-            }
+            return Equals(obj as SignatureAlgorithm);
 
-            return false;
         }
 
         /// <summary>
@@ -200,9 +196,10 @@ namespace JsonWebToken
         /// <returns></returns>
         public static bool operator ==(SignatureAlgorithm? x, SignatureAlgorithm? y)
         {
-            if (y is null)
+            // Fast path: should be singletons
+            if (ReferenceEquals(x, y))
             {
-                return x is null;
+                return true;
             }
 
             if (x is null)
@@ -210,7 +207,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            return x._id == y._id;
+            return x.Equals(y);
         }
 
         /// <summary>
@@ -221,7 +218,18 @@ namespace JsonWebToken
         /// <returns></returns>
         public static bool operator !=(SignatureAlgorithm? x, SignatureAlgorithm? y)
         {
-            return !(x == y);
+            // Fast path: should be singletons
+            if (ReferenceEquals(x, y))
+            {
+                return false;
+            }
+
+            if (x is null)
+            {
+                return true;
+            }
+
+            return !x.Equals(y);
         }
 
         /// <summary>

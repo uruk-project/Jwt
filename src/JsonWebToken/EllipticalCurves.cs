@@ -24,18 +24,18 @@ namespace JsonWebToken
         /// <summary>
         /// 'P-256'.
         /// </summary>
-        public static EllipticalCurve P256 => new EllipticalCurve(1, ECCurve.NamedCurves.nistP256, P256Name, 256, 64);
+        public static readonly EllipticalCurve P256 = new EllipticalCurve(1, ECCurve.NamedCurves.nistP256, P256Name, 256, 64, SignatureAlgorithm.EcdsaSha256);
 
         /// <summary>
         /// 'P-384'.
         /// </summary>
-        public static EllipticalCurve P384 => new EllipticalCurve(2, ECCurve.NamedCurves.nistP384, P384Name, 384, 96);
+        public static readonly EllipticalCurve P384 = new EllipticalCurve(2, ECCurve.NamedCurves.nistP384, P384Name, 384, 96, SignatureAlgorithm.EcdsaSha384);
 
         /// <summary>
         /// 'P-521'.
         /// </summary>    
-        public static EllipticalCurve P521 => new EllipticalCurve(3, ECCurve.NamedCurves.nistP521, P521Name, 521, 132);
-        
+        public static readonly EllipticalCurve P521 = new EllipticalCurve(3, ECCurve.NamedCurves.nistP521, P521Name, 521, 132, SignatureAlgorithm.EcdsaSha512);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="EllipticalCurve"/> struct.
         /// </summary>
@@ -44,13 +44,15 @@ namespace JsonWebToken
         /// <param name="name"></param>
         /// <param name="keySizeInBits"></param>
         /// <param name="hashSize"></param>
-        public EllipticalCurve(byte id, ECCurve namedCurve, byte[] name, int keySizeInBits, int hashSize)
+        /// <param name="supportedSignatureAlgorithm"></param>
+        public EllipticalCurve(byte id, ECCurve namedCurve, byte[] name, int keySizeInBits, int hashSize, SignatureAlgorithm supportedSignatureAlgorithm)
         {
             Id = id;
             KeySizeInBits = keySizeInBits;
             Name = name;
             CurveParameters = namedCurve;
             HashSize = hashSize;
+            SupportedSignatureAlgorithm = supportedSignatureAlgorithm;
         }
 
         /// <summary>
@@ -77,6 +79,11 @@ namespace JsonWebToken
         /// The size of the resulting hash.
         /// </summary>
         public readonly int HashSize;
+
+        /// <summary>
+        /// The supported <see cref="SignatureAlgorithm"/> for this curve.
+        /// </summary>
+        public readonly SignatureAlgorithm SupportedSignatureAlgorithm;
 
         /// <summary>
         /// Returns the <see cref="EllipticalCurve"/> corresponding to the <paramref name="crv"/>.

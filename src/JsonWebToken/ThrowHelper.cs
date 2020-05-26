@@ -206,7 +206,7 @@ namespace JsonWebToken
         internal static void ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(Jwk key, EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => throw CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(key, algorithm, minimalValue, currentKeySize);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(Jwk key, EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), $"The key '{key.Kid}' for encryption with algorithm '{algorithm}' cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'.");
-        
+
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => throw CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(algorithm, minimalValue, currentKeySize);
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -231,6 +231,13 @@ namespace JsonWebToken
         internal static void ThrowNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm) => throw CreateNotSupportedException_SignatureAlgorithm(algorithm);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm) => new NotSupportedException($"Signature failed. No support for: Algorithm: '{algorithm}'.");
+
+#if SUPPORT_ELLIPTIC_CURVE
+        [DoesNotReturn]
+        internal static void ThrowNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm, in EllipticalCurve curve) => throw CreateNotSupportedException_SignatureAlgorithm(algorithm, curve);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm, in EllipticalCurve curve) => new NotSupportedException($"Signature failed. No support for: Algorithm: '{algorithm}' with curve '{curve}'.");
+#endif
 
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_Curve(string curve) => throw CreateNotSupportedException_Curve(curve);
@@ -271,12 +278,12 @@ namespace JsonWebToken
         internal static void ThrowArgumentException_InvalidRsaKey(Jwk key) => throw CreateArgumentException_InvalidRsaKey(key);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentException_InvalidRsaKey(Jwk key) => new ArgumentException($"Invalid RSA key: '{key.Kid}'. Both modulus (N) and exponent (E) must be present.", nameof(key));
-     
+
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_UnexpectedKeyType(Jwk key, string expectedType) => throw CreateInvalidOperationException_UnexpectedKeyType(key, expectedType);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateInvalidOperationException_UnexpectedKeyType(Jwk key, string expectedType) => new InvalidOperationException($"Unexpected key type: '{Utf8.GetString(key.Kty)}'. Expected a key of type '{expectedType}'.");
-     
+
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_RequirePrivateKey() => throw CreateInvalidOperationException_RequirePrivateKey();
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -344,18 +351,18 @@ namespace JsonWebToken
         internal static string ThrowNotSupportedException_RequireAesNi() => throw CreateNotSupportedException_RequireAesNi();
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateNotSupportedException_RequireAesNi() => new NotSupportedException("The AES New Instructions set is not supported on the executing CPU.");
-      
+
         [DoesNotReturn]
         internal static void ThrowArgumentException_PrependMustBeLessOrEqualToBlockSize(ReadOnlySpan<byte> prepend, int blockSize) => throw CreateArgumentException_PrependMustBeLessOrEqualToBlockSize(prepend, blockSize);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentException_PrependMustBeLessOrEqualToBlockSize(ReadOnlySpan<byte> prepend, int blockSize) => new ArgumentException($"The length of the prepend must be of the same size than the block size, or less. Prepend length is: '{prepend.Length}' bytes, block size is: {blockSize}.", nameof(prepend));
-              
+
         [DoesNotReturn]
         internal static void ThrowArgumentException_EncryptedPem(string name) => throw CreateArgumentException_EncryptedPem(name);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentException_EncryptedPem(string name) => new ArgumentException("An encrypted key was found, but no password was provided. Use ImportFromEncryptedPem to import this key.", name);
 
-                             
+
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_InvalidPem() => throw CreateInvalidOperationException_InvalidPem();
         [MethodImpl(MethodImplOptions.NoInlining)]

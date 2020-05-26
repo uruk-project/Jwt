@@ -7,7 +7,7 @@ namespace JwsValidationSample
     {
         static void Main()
         {
-            var key = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
+            var key = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
             var policy = new TokenValidationPolicyBuilder()
                            .RequireSignature(key, SignatureAlgorithm.HmacSha256)
                            .RequireAudience("636C69656E745F6964")

@@ -59,50 +59,50 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetWrappingKeys()
         {
-            yield return new object[] { _privateEcc256Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW };
-            yield return new object[] { _privateEcc256Key, EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.EcdhEsAes192KW };
-            yield return new object[] { _privateEcc256Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEsAes256KW };
-            yield return new object[] { _privateEcc256Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs };
+            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW };
+            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.EcdhEsAes192KW };
+            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEsAes256KW };
+            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs };
 
-            yield return new object[] { _privateEcc384Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW };
-            yield return new object[] { _privateEcc384Key, EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.EcdhEsAes192KW };
-            yield return new object[] { _privateEcc384Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEsAes256KW };
-            yield return new object[] { _privateEcc384Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs };
+            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW };
+            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.EcdhEsAes192KW };
+            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEsAes256KW };
+            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs };
 
-            yield return new object[] { _privateEcc521Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW };
-            yield return new object[] { _privateEcc521Key, EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.EcdhEsAes192KW };
-            yield return new object[] { _privateEcc521Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEsAes256KW };
-            yield return new object[] { _privateEcc521Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs };
+            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW };
+            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.EcdhEsAes192KW };
+            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEsAes256KW };
+            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs };
         }
 
         public static IEnumerable<object[]> GetSignatureValidationKeys()
         {
-            yield return new object[] { _publicEcc256Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { _publicEcc256Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { _publicEcc256Key, SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { PublicEcc256Key, SignatureAlgorithm.EcdsaSha256 };
+            yield return new object[] { PublicEcc256Key, SignatureAlgorithm.EcdsaSha384 };
+            yield return new object[] { PublicEcc256Key, SignatureAlgorithm.EcdsaSha512 };
 
-            yield return new object[] { _publicEcc384Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { _publicEcc384Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { _publicEcc384Key, SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { PublicEcc384Key, SignatureAlgorithm.EcdsaSha256 };
+            yield return new object[] { PublicEcc384Key, SignatureAlgorithm.EcdsaSha384 };
+            yield return new object[] { PublicEcc384Key, SignatureAlgorithm.EcdsaSha512 };
 
-            yield return new object[] { _publicEcc521Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { _publicEcc521Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { _publicEcc521Key, SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { PublicEcc521Key, SignatureAlgorithm.EcdsaSha256 };
+            yield return new object[] { PublicEcc521Key, SignatureAlgorithm.EcdsaSha384 };
+            yield return new object[] { PublicEcc521Key, SignatureAlgorithm.EcdsaSha512 };
         }
 
         public static IEnumerable<object[]> GetSignatureCreationKeys()
         {
-            yield return new object[] { _privateEcc256Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { _privateEcc256Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { _privateEcc256Key, SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha256 };
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha384 };
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha512 };
 
-            yield return new object[] { _privateEcc384Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { _privateEcc384Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { _privateEcc384Key, SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha256 };
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha384 };
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha512 };
 
-            yield return new object[] { _privateEcc521Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { _privateEcc521Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { _privateEcc521Key, SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha256 };
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha384 };
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha512 };
         }
 
         [Theory]
@@ -337,7 +337,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             return parameters;
         }
 
-        private static ECJwk _privateEcc256Key => new ECJwk
+        private static ECJwk PrivateEcc256Key => new ECJwk
         (
             crv: EllipticalCurve.P256,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
@@ -345,14 +345,14 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             d: "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
         );
 
-        private static ECJwk _publicEcc256Key => new ECJwk
+        private static ECJwk PublicEcc256Key => new ECJwk
         (
             crv: EllipticalCurve.P256,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
             y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck"
         );
 
-        private static ECJwk _publicEcc384Key => new ECJwk
+        private static ECJwk PublicEcc384Key => new ECJwk
         (
             crv: EllipticalCurve.P384,
             d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
@@ -360,7 +360,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         );
 
-        private static ECJwk _privateEcc384Key => new ECJwk
+        private static ECJwk PrivateEcc384Key => new ECJwk
         (
             crv: EllipticalCurve.P384,
             d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
@@ -368,7 +368,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         );
 
-        private static ECJwk _privateEcc521Key => new ECJwk
+        private static ECJwk PrivateEcc521Key => new ECJwk
         (
             crv: EllipticalCurve.P521,
             d: "Adri8PbGJBWN5upp_67cKF8E0ADCF-w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HISTMh_RSmFFhTfBH",
@@ -376,7 +376,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             y: "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y"
         );
 
-        private static ECJwk _publicEcc521Key => new ECJwk
+        private static ECJwk PublicEcc521Key => new ECJwk
         (
             crv: EllipticalCurve.P521,
             x: "AEeo_Y06znu6MVjyvJW2_SX_JKK2DxbxF3QjAqkZhMTvwgLc3Z073vFwwiCHKcOwK2b5H8H4a7PDN6DGJ6YJjpN0",

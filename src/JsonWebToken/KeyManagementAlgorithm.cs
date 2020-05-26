@@ -262,12 +262,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public override bool Equals(object? obj)
         {
-            if (obj is KeyManagementAlgorithm alg)
-            {
-                return Equals(alg);
-            }
-
-            return false;
+            return Equals(obj as KeyManagementAlgorithm);
         }
 
         /// <summary>
@@ -289,7 +284,8 @@ namespace JsonWebToken
         /// Returns the hash code for this <see cref="KeyManagementAlgorithm"/>.
         /// </summary>
         /// <returns></returns>
-        public override int GetHashCode() => _id.GetHashCode();
+        public override int GetHashCode()
+            => _id.GetHashCode();
 
         /// <summary>
         /// Determines whether two specified <see cref="KeyManagementAlgorithm"/> have the same value.
@@ -299,24 +295,18 @@ namespace JsonWebToken
         /// <returns></returns>
         public static bool operator ==(KeyManagementAlgorithm? x, KeyManagementAlgorithm? y)
         {
-            if (x is null && y is null)
+            // Fast path: should be singletons
+            if (ReferenceEquals(x, y))
             {
                 return true;
             }
 
             if (x is null)
             {
-                goto NotEqual;
+                return false;
             }
 
-            if (y is null)
-            {
-                goto NotEqual;
-            }
-
-            return x._id == y._id;
-        NotEqual:
-            return false;
+            return x.Equals(y);
         }
 
         /// <summary>
@@ -327,24 +317,18 @@ namespace JsonWebToken
         /// <returns></returns>
         public static bool operator !=(KeyManagementAlgorithm? x, KeyManagementAlgorithm? y)
         {
-            if (x is null && y is null)
+            // Fast path: should be singletons
+            if (ReferenceEquals(x, y))
             {
                 return false;
             }
 
             if (x is null)
             {
-                goto Equal;
+                return true;
             }
 
-            if (y is null)
-            {
-                goto Equal;
-            }
-
-            return x._id != y._id;
-        Equal:
-            return true;
+            return !x.Equals(y);
         }
 
         /// <summary>
