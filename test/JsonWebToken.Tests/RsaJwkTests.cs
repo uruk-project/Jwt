@@ -169,7 +169,7 @@ MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgcKEsLbFoRe1W/2jP
 whpHKz8E19aFG/Y0ny19WzRSs4qhRANCAASBAezkdGSm6tcM9ppuK9PYhpGjJi0i
 y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
 -----END PRIVATE KEY-----";
-            Assert.Throws<ArgumentException>(() => RsaJwk.FromPem(pem));
+            Assert.Throws<InvalidOperationException>(() => RsaJwk.FromPem(pem));
         }
 
         private static void AssertKeyEquals(in RSAParameters expected, in RSAParameters actual)
