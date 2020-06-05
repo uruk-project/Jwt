@@ -31,6 +31,11 @@ namespace JsonWebToken.Tests
         {
             var jwk = Jwk.FromX509Certificate(certificate, hasPrivateKey);
             Assert.Equal(keySize, jwk.KeySizeInBits);
+
+            if (hasPrivateKey)
+            {
+                Assert.True(jwk.HasPrivateKey);
+            }
         }
 
         public static IEnumerable<object[]> GetJsonKeys()
