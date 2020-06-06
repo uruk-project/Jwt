@@ -746,7 +746,7 @@ namespace JsonWebToken
                 using var rsa = certificate.GetRSAPrivateKey();
                 if (!(rsa is null))
                 {
-                    var rsaParameters = rsa.ExportParameters(false);
+                    var rsaParameters = rsa.ExportParameters(withPrivateKey);
                     key = new RsaJwk(rsaParameters);
                 }
 #if SUPPORT_ELLIPTIC_CURVE
@@ -755,7 +755,7 @@ namespace JsonWebToken
                     using var ecdsa = certificate.GetECDsaPrivateKey();
                     if (!(ecdsa is null))
                     {
-                        var ecParameters = ecdsa.ExportParameters(false);
+                        var ecParameters = ecdsa.ExportParameters(withPrivateKey);
                         key = new ECJwk(ecParameters);
                     }
                 }
@@ -766,7 +766,7 @@ namespace JsonWebToken
                 using var rsa = certificate.GetRSAPublicKey();
                 if (!(rsa is null))
                 {
-                    var rsaParameters = rsa.ExportParameters(false);
+                    var rsaParameters = rsa.ExportParameters(withPrivateKey);
                     key = new RsaJwk(rsaParameters);
                 }
 #if SUPPORT_ELLIPTIC_CURVE
@@ -775,7 +775,7 @@ namespace JsonWebToken
                     using var ecdsa = certificate.GetECDsaPublicKey();
                     if (!(ecdsa is null))
                     {
-                        var ecParameters = ecdsa.ExportParameters(false);
+                        var ecParameters = ecdsa.ExportParameters(withPrivateKey);
                         key = new ECJwk(ecParameters);
                     }
                 }
