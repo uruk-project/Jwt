@@ -22,61 +22,61 @@ See the [samples](https://github.com/ycrumeyrolle/Jwt/tree/master/samples) for m
 
 The `JwtReader` class is used for reading and validating tokens:
 ```
-    var reader = new JwtReader();
-    var result = reader.TryReadToken("eyJhbGc[...]sWBedk", policy);
+var reader = new JwtReader();
+var result = reader.TryReadToken("eyJhbGc[...]sWBedk", policy);
 ```
 
 The `JwtWriter` is used for writing tokens:
 ```
-    var writer = new JwtWriter();
-    var token = writer.WriteTokenString(descriptor);
+var writer = new JwtWriter();
+var token = writer.WriteTokenString(descriptor);
 ```
 ### JWT validation
 ```
-    var key = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
-    var policy = new TokenValidationPolicyBuilder()
-					.RequireSignature(key, SignatureAlgorithm.HmacSha256)
-					.RequireAudience("636C69656E745F6964")
-					.RequireIssuer("https://idp.example.com/")
-					.Build();
+var key = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
+var policy = new TokenValidationPolicyBuilder()
+                     .RequireSignature(key, SignatureAlgorithm.HmacSha256)
+                     .RequireAudience("636C69656E745F6964")
+                     .RequireIssuer("https://idp.example.com/")
+                     .Build();
 
-    var reader = new JwtReader();
-    var result = reader.TryReadToken("eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MDAwMDcyMDAsImlhdCI6MjAwMDAwNzIwMCwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiYXVkIjoiNjM2QzY5NjU2RTc0NUY2OTY0In0.YrrT1Ddp1ampsDd2GwYZoTz_bUnLt_h--f16wsWBedk", policy);
-          
-    if (result.Success)
-    {
-		Console.WriteLine("The token is " + result.Token);
-    }
-    else
-    {      
-		Console.WriteLine("Failed to read the token. Reason: " + result.Status);
-    }
+var reader = new JwtReader();
+var result = reader.TryReadToken("eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MDAwMDcyMDAsImlhdCI6MjAwMDAwNzIwMCwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiYXVkIjoiNjM2QzY5NjU2RTc0NUY2OTY0In0.YrrT1Ddp1ampsDd2GwYZoTz_bUnLt_h--f16wsWBedk", policy);
+
+if (result.Success)
+{
+    Console.WriteLine("The token is " + result.Token);
+}
+else
+{      
+    Console.WriteLine("Failed to read the token. Reason: " + result.Status);
+}
 ````
 
 ### JWT creation
 ````
-    // Creates a symmetric key defined for the 'HS256' algorithm
-    var key = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU", SignatureAlgorithm.HmacSha256);
+// Creates a symmetric key defined for the 'HS256' algorithm
+var key = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU", SignatureAlgorithm.HmacSha256);
 
-    // Creates a JWS descriptor with all its properties
-    var descriptor = new JwsDescriptor()
-    {
-        SigningKey = key,
-        IssuedAt = DateTime.UtcNow,
-        ExpirationTime = DateTime.UtcNow.AddHours(1),
-        Issuer = "https://idp.example.com/",
-        Audience = "636C69656E745F6964"
-    };        
+// Creates a JWS descriptor with all its properties
+var descriptor = new JwsDescriptor()
+{
+    SigningKey = key,
+    IssuedAt = DateTime.UtcNow,
+    ExpirationTime = DateTime.UtcNow.AddHours(1),
+    Issuer = "https://idp.example.com/",
+    Audience = "636C69656E745F6964"
+};        
 
-    // Generates the UTF-8 string representation of the JWT
-    var writer = new JwtWriter();
-    var token = writer.WriteTokenString(descriptor);
+// Generates the UTF-8 string representation of the JWT
+var writer = new JwtWriter();
+var token = writer.WriteTokenString(descriptor);
 
-    Console.WriteLine("The JWT is:");
-    Console.WriteLine(descriptor);
-    Console.WriteLine();
-    Console.WriteLine("Its compact form is:");
-    Console.WriteLine(token);
+Console.WriteLine("The JWT is:");
+Console.WriteLine(descriptor);
+Console.WriteLine();
+Console.WriteLine("Its compact form is:");
+Console.WriteLine(token);
 ````
 ## Performances
 See [benchmarks](Benchmark.md) for details. 
