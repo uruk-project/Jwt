@@ -106,6 +106,25 @@ namespace JsonWebToken.Tests
             Assert.False(isEqualA, "value, value missing last byte");
             Assert.False(isEqualB, "value missing last byte, value");
         }
+        
+        [Fact]
+        public static void EmptyReturnTrue()
+        {
+            int byteLength = 0;
+            byte[] rented = ArrayPool<byte>.Shared.Rent(byteLength);
+            Span<byte> testSpan = new Span<byte>(rented, 0, byteLength);
+            Fill(rented, 0, byteLength);
+
+            ReadOnlySpan<byte> emptySpan = ReadOnlySpan<byte>.Empty;
+
+            bool isEqualA = CryptographicOperations.FixedTimeEquals(testSpan, emptySpan);
+            bool isEqualB = CryptographicOperations.FixedTimeEquals(emptySpan, testSpan);
+
+            ArrayPool<byte>.Shared.Return(rented);
+
+            Assert.True(isEqualA, "FixedTimeEquals(testSpan, emptySpan)");
+            Assert.True(isEqualB, "FixedTimeEquals(emptySpan, testSpan)");
+        }
 
         private static void Fill(byte[] data, int offset, int count)
         {

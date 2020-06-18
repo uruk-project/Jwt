@@ -22,5 +22,15 @@ namespace JsonWebToken.Tests
             var unwrapped = kuwp.TryUnwrapKey(wrappedKey, unwrappedKey, null, out int keyWrappedBytesWritten);
             Assert.True(unwrapped);
         }
+
+        [Fact]
+        public void EmptyWrappedKey_ThrowsException()
+        {
+            var kuwp = new AesKeyUnwrapper(_key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes128KW);
+            var unwrappedKey = new byte[0];
+            Assert.Throws<ArgumentNullException>(() => kuwp.TryUnwrapKey(ReadOnlySpan<byte>.Empty, unwrappedKey, null, out int keyWrappedBytesWritten));
+            Assert.Throws<ArgumentNullException>(() => kuwp.TryUnwrapKey(Array.Empty<byte>(), unwrappedKey, null, out int keyWrappedBytesWritten));
+            Assert.Throws<ArgumentNullException>(() => kuwp.TryUnwrapKey(default, unwrappedKey, null, out int keyWrappedBytesWritten));
+        }
     }
 }

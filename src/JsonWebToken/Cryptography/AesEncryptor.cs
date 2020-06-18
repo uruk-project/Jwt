@@ -11,6 +11,11 @@ namespace JsonWebToken
     public abstract class AesEncryptor : IDisposable
     {
         /// <summary>
+        /// The size of the AES block.
+        /// </summary>
+        protected const int BlockSize = 16;
+
+        /// <summary>
         /// Encrypts the <paramref name="plaintext"/>.
         /// </summary>
         /// <param name="plaintext">The plaintext to encrypt.</param>
@@ -27,5 +32,12 @@ namespace JsonWebToken
 
         /// <inheritdoc />
         public abstract void Dispose();
+
+        /// <summary>
+        /// Returns the required ciphertext length.
+        /// </summary>
+        /// <param name="plaintextLength"></param>
+        protected int GetCiphertextLength(int plaintextLength)
+            => (plaintextLength + BlockSize) & ~(BlockSize - 1);
     }
 }

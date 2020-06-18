@@ -18,12 +18,16 @@ namespace JsonWebToken
             => Unsafe.ReadUnaligned<ulong>(ref value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ulong ReadUInt64(ReadOnlySpan<byte> value, int elementOffset)
+            => ReadUInt64(ref MemoryMarshal.GetReference(value), elementOffset);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ulong ReadUInt64(ref byte value, int elementOffset)
             => Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref value, elementOffset));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ulong ReadUInt56(ReadOnlySpan<byte> value)
-            => ReadUInt64(ref MemoryMarshal.GetReference(value));
+            => ReadUInt56(ref MemoryMarshal.GetReference(value));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ulong ReadUInt56(ref byte value)
@@ -40,6 +44,10 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static uint ReadUInt32(ref byte value)
             => Unsafe.ReadUnaligned<uint>(ref value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static uint ReadUInt32(ReadOnlySpan<byte> value, int elementOffset)
+            => ReadUInt32(ref MemoryMarshal.GetReference(value), elementOffset);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static uint ReadUInt32(ref byte value, int elementOffset)
@@ -62,7 +70,15 @@ namespace JsonWebToken
             => Unsafe.ReadUnaligned<ushort>(ref value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ushort ReadUInt16(ReadOnlySpan<byte> value, int elementOffset)
+            => ReadUInt16(ref MemoryMarshal.GetReference(value), elementOffset);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ushort ReadUInt16(ref byte value, int elementOffset)
             => Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref value, elementOffset));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static byte ReadUInt8(ReadOnlySpan<byte> value)
+            => MemoryMarshal.GetReference(value);
     }
 }

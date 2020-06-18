@@ -111,7 +111,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="crv"></param>
         /// <returns></returns>
-        public static EllipticalCurve FromSpan(ReadOnlySpan<byte> crv)
+        internal static EllipticalCurve FromSpan(ReadOnlySpan<byte> crv)
         {
             ref byte crvRef = ref MemoryMarshal.GetReference(crv);
             if (crv.Length == 5 && crvRef == (byte)'P')

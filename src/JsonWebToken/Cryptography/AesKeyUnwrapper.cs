@@ -83,7 +83,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            if ((key.Length & 7) != 0)
+            if ((key.Length & 7) != 0 || key.Length == 0)
             {
                 ThrowHelper.ThrowArgumentException_KeySizeMustBeMultipleOf64(key);
             }
@@ -132,7 +132,7 @@ namespace JsonWebToken.Internal
 #if SUPPORT_SIMD
                     _decryptor.DecryptBlock(ref blockRef, ref bRef);
 #else
-                        Span<byte> b = decryptor.TransformFinalBlock(block, 0, 16);
+                    Span<byte> b = decryptor.TransformFinalBlock(block, 0, 16);
                     ref byte bRef = ref MemoryMarshal.GetReference(b);
 #endif
                     a = Unsafe.ReadUnaligned<ulong>(ref bRef);
@@ -146,8 +146,13 @@ namespace JsonWebToken.Internal
                 _decryptorPool.Return(decryptor);
             }
 #endif
-                if (a == _defaultIV)
+            if (a == _defaultIV)
             {
+                if (destination.Length < n)
+                {
+                    ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, n);
+                }
+
                 ref byte destinationRef = ref MemoryMarshal.GetReference(destination);
                 Unsafe.CopyBlockUnaligned(ref destinationRef, ref rRef, (uint)n);
                 bytesWritten = n;

@@ -12,8 +12,6 @@ namespace JsonWebToken.Internal
 {
     internal sealed class Aes192NiCbcDecryptor : AesDecryptor
     {
-        private const int BlockSize = 16;
-
         private readonly AesDecryption192Keys _keys;
 
         public Aes192NiCbcDecryptor(ReadOnlySpan<byte> key)
@@ -66,39 +64,48 @@ namespace JsonWebToken.Internal
 
         public override unsafe bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> nonce, Span<byte> plaintext, out int bytesWritten)
         {
-            ref byte input = ref MemoryMarshal.GetReference(ciphertext);
-            ref byte output = ref MemoryMarshal.GetReference(plaintext);
-            Vector128<byte> state = default;
-            var feedback = nonce.AsVector128<byte>();
-
-            IntPtr offset = (IntPtr)0;
-            while ((byte*)offset < (byte*)ciphertext.Length)
+            if (nonce.Length != 16)
             {
-                var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref input, offset));
-                var lastIn = block;
-                state = Sse2.Xor(block, _keys.Key0);
-
-                state = Aes.Decrypt(state, _keys.Key1);
-                state = Aes.Decrypt(state, _keys.Key2);
-                state = Aes.Decrypt(state, _keys.Key3);
-                state = Aes.Decrypt(state, _keys.Key4);
-                state = Aes.Decrypt(state, _keys.Key5);
-                state = Aes.Decrypt(state, _keys.Key6);
-                state = Aes.Decrypt(state, _keys.Key7);
-                state = Aes.Decrypt(state, _keys.Key8);
-                state = Aes.Decrypt(state, _keys.Key9);
-                state = Aes.Decrypt(state, _keys.Key10);
-                state = Aes.Decrypt(state, _keys.Key11);
-                state = Aes.DecryptLast(state, Sse2.Xor(_keys.Key12, feedback));
-
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref output, offset), state);
-
-                feedback = lastIn;
-
-                offset += BlockSize;
+                ThrowHelper.ThrowArgumentOutOfRangeException_MustBeAtLeast(ExceptionArgument.nonce, 16);
             }
 
-            byte padding = Unsafe.AddByteOffset(ref output, offset - 1);
+            ref byte output = ref MemoryMarshal.GetReference(plaintext);
+            Vector128<byte> state = default;
+            if (!ciphertext.IsEmpty)
+            {
+                ref byte input = ref MemoryMarshal.GetReference(ciphertext);
+                var feedback = nonce.AsVector128<byte>();
+                ref byte inputEnd = ref Unsafe.AddByteOffset(ref input, (IntPtr)ciphertext.Length - BlockSize + 1);
+
+                while (Unsafe.IsAddressLessThan(ref input, ref inputEnd))
+                {
+                    var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref input);
+                    var lastIn = block;
+                    state = Sse2.Xor(block, _keys.Key0);
+
+                    state = Aes.Decrypt(state, _keys.Key1);
+                    state = Aes.Decrypt(state, _keys.Key2);
+                    state = Aes.Decrypt(state, _keys.Key3);
+                    state = Aes.Decrypt(state, _keys.Key4);
+                    state = Aes.Decrypt(state, _keys.Key5);
+                    state = Aes.Decrypt(state, _keys.Key6);
+                    state = Aes.Decrypt(state, _keys.Key7);
+                    state = Aes.Decrypt(state, _keys.Key8);
+                    state = Aes.Decrypt(state, _keys.Key9);
+                    state = Aes.Decrypt(state, _keys.Key10);
+                    state = Aes.Decrypt(state, _keys.Key11);
+                    state = Aes.DecryptLast(state, Sse2.Xor(_keys.Key12, feedback));
+
+                    Unsafe.WriteUnaligned(ref output, state);
+
+                    feedback = lastIn;
+
+                    input = ref Unsafe.AddByteOffset(ref input, (IntPtr)BlockSize);
+                    output = ref Unsafe.AddByteOffset(ref output, (IntPtr)BlockSize);
+                }
+            }
+
+            byte padding = Unsafe.SubtractByteOffset(ref output, (IntPtr)1);
             if (padding > BlockSize)
             {
                 goto Invalid;

@@ -3,8 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -427,14 +425,13 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         public static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
         {
-            ref byte valueRef = ref MemoryMarshal.GetReference(value);
             switch (value.Length)
             {
-                case 3 when IntegerMarshal.ReadUInt24(ref valueRef) == dir:
+                case 3 when IntegerMarshal.ReadUInt24(value) == dir:
                     algorithm = Direct;
                     return true;
-                case 6 when IntegerMarshal.ReadUInt16(ref valueRef, 4) == KW:
-                    switch (IntegerMarshal.ReadUInt32(ref valueRef))
+                case 6 when IntegerMarshal.ReadUInt16(value, 4) == KW:
+                    switch (IntegerMarshal.ReadUInt32(value))
                     {
                         case A128:
                             algorithm = Aes128KW;
@@ -447,17 +444,17 @@ namespace JsonWebToken
                             return true;
                     }
                     break;
-                case 6 when IntegerMarshal.ReadUInt32(ref valueRef) == RSA1 && IntegerMarshal.ReadUInt16(ref valueRef, 4) == _5:
+                case 6 when IntegerMarshal.ReadUInt32(value) == RSA1 && IntegerMarshal.ReadUInt16(value, 4) == _5:
                     algorithm = RsaPkcs1;
                     return true;
-                case 7 when IntegerMarshal.ReadUInt56(ref valueRef) == ECDH_ES:
+                case 7 when IntegerMarshal.ReadUInt56(value) == ECDH_ES:
                     algorithm = EcdhEs;
                     return true;
-                case 8 when IntegerMarshal.ReadUInt64(ref valueRef) == RSA_OAEP:
+                case 8 when IntegerMarshal.ReadUInt64(value) == RSA_OAEP:
                     algorithm = RsaOaep;
                     return true;
-                case 9 when valueRef == (byte)'A':
-                    switch (IntegerMarshal.ReadUInt64(ref valueRef, 1))
+                case 9 when IntegerMarshal.ReadUInt8(value) == (byte)'A':
+                    switch (IntegerMarshal.ReadUInt64(value, 1))
                     {
                         case _128GCMKW:
                             algorithm = Aes128GcmKW;
@@ -470,8 +467,8 @@ namespace JsonWebToken
                             return true;
                     }
                     break;
-                case 12 when IntegerMarshal.ReadUInt64(ref valueRef) == RSA_OAEP:
-                    switch (IntegerMarshal.ReadUInt32(ref valueRef, 8))
+                case 12 when IntegerMarshal.ReadUInt64(value) == RSA_OAEP:
+                    switch (IntegerMarshal.ReadUInt32(value, 8))
                     {
                         case _256:
                             algorithm = RsaOaep256;
@@ -484,8 +481,8 @@ namespace JsonWebToken
                             return true;
                     }
                     break;
-                case 14 when IntegerMarshal.ReadUInt64(ref valueRef) == ECDH_ES_:
-                    switch (IntegerMarshal.ReadUInt64(ref valueRef, 6))
+                case 14 when IntegerMarshal.ReadUInt64(value) == ECDH_ES_:
+                    switch (IntegerMarshal.ReadUInt64(value, 6))
                     {
                         case S_A128KW:
                             algorithm = EcdhEsAes128KW;
@@ -500,16 +497,16 @@ namespace JsonWebToken
                     break;
 
                 // Special case for escaped 'ECDH-ES\u002bAxxxKW' 
-                case 19 when IntegerMarshal.ReadUInt64(ref valueRef) == ECDH_ES_UTF8 /* ECDH-ES\ */ :
-                    switch (IntegerMarshal.ReadUInt64(ref valueRef, 8))
+                case 19 when IntegerMarshal.ReadUInt64(value) == ECDH_ES_UTF8 /* ECDH-ES\ */ :
+                    switch (IntegerMarshal.ReadUInt64(value, 8))
                     {
-                        case u002bA12 when IntegerMarshal.ReadUInt32(ref valueRef, 15) == _28KW:
+                        case u002bA12 when IntegerMarshal.ReadUInt32(value, 15) == _28KW:
                             algorithm = EcdhEsAes128KW;
                             return true;
-                        case u002bA19 when IntegerMarshal.ReadUInt32(ref valueRef, 15) == _92KW:
+                        case u002bA19 when IntegerMarshal.ReadUInt32(value, 15) == _92KW:
                             algorithm = EcdhEsAes192KW;
                             return true;
-                        case u002bA25 when IntegerMarshal.ReadUInt32(ref valueRef, 15) == _56KW:
+                        case u002bA25 when IntegerMarshal.ReadUInt32(value, 15) == _56KW:
                             algorithm = EcdhEsAes256KW;
                             return true;
                     }

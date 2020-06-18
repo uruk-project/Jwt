@@ -27,12 +27,12 @@ namespace JsonWebToken
                 return false;
             }
 
-            ref byte first = ref MemoryMarshal.GetReference(left);
-            ref byte second = ref MemoryMarshal.GetReference(right);
             bool result;
 #if SUPPORT_SIMD
             if (Avx2.IsSupported && length >= sizeof(Vector256<byte>))
             {
+                ref byte first = ref MemoryMarshal.GetReference(left);
+                ref byte second = ref MemoryMarshal.GetReference(right);
                 int accumulator = unchecked((int)0b1111_1111_1111_1111_1111_1111_1111_1111);
                 IntPtr offset = (IntPtr)0;
                 int end = length - sizeof(Vector256<byte>);
@@ -48,6 +48,8 @@ namespace JsonWebToken
             }
             else if (Sse2.IsSupported && length >= sizeof(Vector128<byte>))
             {
+                ref byte first = ref MemoryMarshal.GetReference(left);
+                ref byte second = ref MemoryMarshal.GetReference(right);
                 int accumulator = 0b1111_1111_1111_1111;
                 IntPtr offset = (IntPtr)0;
                 int end = length - sizeof(Vector128<byte>);
@@ -64,6 +66,8 @@ namespace JsonWebToken
 #endif
             if (length >= sizeof(ulong))
             {
+                ref byte first = ref MemoryMarshal.GetReference(left);
+                ref byte second = ref MemoryMarshal.GetReference(right);
                 ulong accumulator = 0L;
                 IntPtr offset = (IntPtr)0;
                 int end = length - sizeof(ulong);
@@ -77,10 +81,12 @@ namespace JsonWebToken
                 accumulator |= first.ReadUnaligned<ulong>((IntPtr)end) ^ second.ReadUnaligned<ulong>((IntPtr)end);
                 result = accumulator == 0L;
             }
-            else
+            else if (length != 0)
             {
                 int accumulator = 0;
                 IntPtr offset = (IntPtr)0;
+                ref byte first = ref MemoryMarshal.GetReference(left);
+                ref byte second = ref MemoryMarshal.GetReference(right);
                 while ((int)(byte*)offset < length)
                 {
                     accumulator |= Unsafe.AddByteOffset(ref first, offset) - Unsafe.AddByteOffset(ref second, offset);
@@ -88,6 +94,10 @@ namespace JsonWebToken
                 }
 
                 result = accumulator == 0;
+            }
+            else
+            {
+                result = true;
             }
 
             return result;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -31,6 +32,14 @@ namespace JsonWebToken.Tests
             Assert.True(parsed);
             Assert.NotNull(algorithm);
             Assert.Same(expected, algorithm);
+        }
+
+        [Fact]
+        public void TryParseEmpty_ThrowException()
+        {
+            var parsed = TryParse(ReadOnlySpan<byte>.Empty, out var algorithm);
+            Assert.False(parsed);
+            Assert.Null(algorithm);
         }
     }
 

@@ -34,14 +34,21 @@ namespace JsonWebToken.Tests.Cryptography
             Assert.Throws<ArgumentException>("destination", () => Sha.ComputeHash(Span<byte>.Empty, Span<byte>.Empty));
         }
 
-        protected void Verify(byte[] input, string output)
+        protected void Verify(ReadOnlySpan<byte> input, string output)
         {
             byte[] expected = ByteUtils.HexToByteArray(output);
             byte[] actual;
 
             // Too small
             actual = new byte[expected.Length - 1];
-            Assert.Throws<ArgumentException>("destination", () => Sha.ComputeHash(input, actual));
+            try
+            {
+                Sha.ComputeHash(input, actual);
+            }
+            catch (ArgumentException e)
+            {
+                Assert.Equal("destination", e.ParamName);
+            }
 
             // Just right
             actual = new byte[expected.Length];
