@@ -14,8 +14,6 @@ namespace JsonWebToken.Internal
     {
         private readonly Aes128EncryptionKeys _keys;
 
-        private const int BlockSize = 16;
-
         public Aes128NiCbcEncryptor(ReadOnlySpan<byte> key)
         {
             _keys = new Aes128EncryptionKeys(key);
@@ -31,38 +29,50 @@ namespace JsonWebToken.Internal
         /// <inheritsdoc />
         public override void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, Span<byte> ciphertext)
         {
-            ref byte input = ref MemoryMarshal.GetReference(plaintext);
-            ref byte output = ref MemoryMarshal.GetReference(ciphertext);
-
-            var state = nonce.AsVector128<byte>();
-            ref byte inputEnd = ref Unsafe.AddByteOffset(ref input, (IntPtr)plaintext.Length - BlockSize + 1);
-
-            while (Unsafe.IsAddressLessThan(ref input, ref inputEnd))
+            if (nonce.Length != 16)
             {
-                var src = Unsafe.ReadUnaligned<Vector128<byte>>(ref input);
-                src = Sse2.Xor(src, state);
-
-                state = Sse2.Xor(src, _keys.Key0);
-                state = Aes.Encrypt(state, _keys.Key1);
-                state = Aes.Encrypt(state, _keys.Key2);
-                state = Aes.Encrypt(state, _keys.Key3);
-                state = Aes.Encrypt(state, _keys.Key4);
-                state = Aes.Encrypt(state, _keys.Key5);
-                state = Aes.Encrypt(state, _keys.Key6);
-                state = Aes.Encrypt(state, _keys.Key7);
-                state = Aes.Encrypt(state, _keys.Key8);
-                state = Aes.Encrypt(state, _keys.Key9);
-                state = Aes.EncryptLast(state, _keys.Key10);
-                Unsafe.WriteUnaligned(ref output, state);
-
-                input = ref Unsafe.AddByteOffset(ref input, (IntPtr)BlockSize);
-                output = ref Unsafe.AddByteOffset(ref output, (IntPtr)BlockSize);
+                ThrowHelper.ThrowArgumentOutOfRangeException_MustBeAtLeast(ExceptionArgument.nonce, 16);
             }
 
-            int left = plaintext.Length & BlockSize - 1;
+            if (ciphertext.Length < GetCiphertextLength(plaintext.Length))
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException_MustBeAtLeast(ExceptionArgument.ciphertext, GetCiphertextLength(plaintext.Length));
+            }
 
-            // Reuse the destination buffer as last block buffer
-            Unsafe.CopyBlockUnaligned(ref output, ref input, (uint)left);
+            var state = nonce.AsVector128<byte>();
+            int left = plaintext.Length & BlockSize - 1;
+            ref byte output = ref MemoryMarshal.GetReference(ciphertext);
+            if (!plaintext.IsEmpty)
+            {
+                ref byte input = ref MemoryMarshal.GetReference(plaintext);
+                ref byte inputEnd = ref Unsafe.AddByteOffset(ref input, (IntPtr)plaintext.Length - BlockSize + 1);
+
+                while (Unsafe.IsAddressLessThan(ref input, ref inputEnd))
+                {
+                    var src = Unsafe.ReadUnaligned<Vector128<byte>>(ref input);
+                    src = Sse2.Xor(src, state);
+
+                    state = Sse2.Xor(src, _keys.Key0);
+                    state = Aes.Encrypt(state, _keys.Key1);
+                    state = Aes.Encrypt(state, _keys.Key2);
+                    state = Aes.Encrypt(state, _keys.Key3);
+                    state = Aes.Encrypt(state, _keys.Key4);
+                    state = Aes.Encrypt(state, _keys.Key5);
+                    state = Aes.Encrypt(state, _keys.Key6);
+                    state = Aes.Encrypt(state, _keys.Key7);
+                    state = Aes.Encrypt(state, _keys.Key8);
+                    state = Aes.Encrypt(state, _keys.Key9);
+                    state = Aes.EncryptLast(state, _keys.Key10);
+                    Unsafe.WriteUnaligned(ref output, state);
+
+                    input = ref Unsafe.AddByteOffset(ref input, (IntPtr)BlockSize);
+                    output = ref Unsafe.AddByteOffset(ref output, (IntPtr)BlockSize);
+                }
+
+                // Reuse the destination buffer as last block buffer
+                Unsafe.CopyBlockUnaligned(ref output, ref input, (uint)left);
+            }
+
             byte padding = (byte)(BlockSize - left);
             Unsafe.InitBlockUnaligned(ref Unsafe.AddByteOffset(ref output, (IntPtr)left), padding, padding);
             var srcLast = Unsafe.ReadUnaligned<Vector128<byte>>(ref output);

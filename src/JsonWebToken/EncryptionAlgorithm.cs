@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -165,24 +164,22 @@ namespace JsonWebToken
         {
             if (value.Length == 13)
             {
-                ref byte refValue = ref MemoryMarshal.GetReference(value);
-                ulong endValue = IntegerMarshal.ReadUInt64(ref refValue, 5);
-                switch (IntegerMarshal.ReadUInt64(ref refValue))
+                switch (IntegerMarshal.ReadUInt64(value))
                 {
-                    case A128CBC_ when endValue == BC_HS256:
+                    case A128CBC_ when IntegerMarshal.ReadUInt64(value, 5) == BC_HS256:
                         algorithm = Aes128CbcHmacSha256;
                         return true;
-                    case A192CBC_ when endValue == BC_HS384:
+                    case A192CBC_ when IntegerMarshal.ReadUInt64(value, 5) == BC_HS384:
                         algorithm = Aes192CbcHmacSha384;
                         return true;
-                    case A256CBC_ when endValue == BC_HS512:
+                    case A256CBC_ when IntegerMarshal.ReadUInt64(value, 5) == BC_HS512:
                         algorithm = Aes256CbcHmacSha512;
                         return true;
                 }
             }
             else if (value.Length == 7)
             {
-                switch (IntegerMarshal.ReadUInt56(ref MemoryMarshal.GetReference(value)))
+                switch (IntegerMarshal.ReadUInt56(value))
                 {
                     case A128GCM:
                         algorithm = Aes128Gcm;

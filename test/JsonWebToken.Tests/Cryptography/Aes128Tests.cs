@@ -180,6 +180,12 @@ namespace JsonWebToken.Tests.Cryptography
             VerifyVarTxtKat("00000000000000000000000000000000".HexToByteArray(), plaintext.HexToByteArray(), "00000000000000000000000000000000".HexToByteArray(), expectedCiphertext.HexToByteArray());
         }
 
+        [Fact]
+        public void EmptySpan()
+        {
+            VerifyEmptySpan("00000000000000000000000000000000".HexToByteArray(), "00000000000000000000000000000000".HexToByteArray());
+        }
+
         protected override AesDecryptor CreateDecryptor(ReadOnlySpan<byte> key)
             => new AesCbcDecryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
 

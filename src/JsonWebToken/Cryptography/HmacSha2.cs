@@ -83,27 +83,24 @@ namespace JsonWebToken
         private void InitializeIOKeys(ReadOnlySpan<byte> key)
         {
 #if SUPPORT_SIMD
-            if (Avx2.IsSupported && (key.Length & 31) == 0)
+            if (Avx2.IsSupported && key.Length != 0 && (key.Length & 31) == 0)
             {
                 ref byte keyRef = ref MemoryMarshal.GetReference(key);
                 ref byte keyEndRef = ref Unsafe.Add(ref keyRef, key.Length);
                 ref byte innerKeyRef = ref Unsafe.AsRef(_keys[0]);
                 ref byte outerKeyRef = ref Unsafe.Add(ref innerKeyRef, BlockSize);
                 ref byte innerKeyEndRef = ref outerKeyRef;
-                if (Unsafe.IsAddressLessThan(ref keyRef, ref keyEndRef))
+                do
                 {
-                    do
-                    {
-                        var k1 = Unsafe.ReadUnaligned<Vector256<byte>>(ref keyRef);
-                        Unsafe.WriteUnaligned(ref innerKeyRef, Avx2.Xor(k1, _innerKeyInit));
-                        Unsafe.WriteUnaligned(ref outerKeyRef, Avx2.Xor(k1, _outerKeyInit));
+                    var k1 = Unsafe.ReadUnaligned<Vector256<byte>>(ref keyRef);
+                    Unsafe.WriteUnaligned(ref innerKeyRef, Avx2.Xor(k1, _innerKeyInit));
+                    Unsafe.WriteUnaligned(ref outerKeyRef, Avx2.Xor(k1, _outerKeyInit));
 
-                        // assume the IO keys are Modulo 32
-                        keyRef = ref Unsafe.Add(ref keyRef, 32);
-                        innerKeyRef = ref Unsafe.Add(ref innerKeyRef, 32);
-                        outerKeyRef = ref Unsafe.Add(ref outerKeyRef, 32);
-                    } while (Unsafe.IsAddressLessThan(ref keyRef, ref keyEndRef));
-                }
+                    // assume the IO keys are Modulo 32
+                    keyRef = ref Unsafe.Add(ref keyRef, 32);
+                    innerKeyRef = ref Unsafe.Add(ref innerKeyRef, 32);
+                    outerKeyRef = ref Unsafe.Add(ref outerKeyRef, 32);
+                } while (Unsafe.IsAddressLessThan(ref keyRef, ref keyEndRef));
 
                 // treat the remain
                 while (Unsafe.IsAddressLessThan(ref innerKeyRef, ref innerKeyEndRef))

@@ -43,5 +43,13 @@ namespace JsonWebToken.Tests.Cryptography
             // The last 16 bytes are ignored as the test data sets are for ECB mode
             Assert.Equal(expectedCiphertext.ToArray(), ciphertext.Slice(0, ciphertext.Length - 16).ToArray());
         }
+
+        protected void VerifyEmptySpan(ReadOnlySpan<byte> key, ReadOnlySpan<byte> iv)
+        {
+            var encryptor = CreateEncryptor(key);
+            ReadOnlySpan<byte> plaintext = new byte[0];// ReadOnlySpan<byte>.Empty;
+            Span<byte> ciphertext = new byte[(plaintext.Length + 16) & ~15];
+            encryptor.Encrypt(plaintext, iv, ciphertext);
+        }
     }
 }

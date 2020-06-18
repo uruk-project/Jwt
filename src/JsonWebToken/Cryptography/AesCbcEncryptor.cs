@@ -41,11 +41,6 @@ namespace JsonWebToken.Internal
             ReadOnlySpan<byte> nonce,
             Span<byte> ciphertext)
         {
-            if (plaintext.IsEmpty)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.plaintext);
-            }
-
             if (_disposed)
             {
                 ThrowHelper.ThrowObjectDisposedException(GetType());

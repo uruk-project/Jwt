@@ -16,6 +16,11 @@ namespace JsonWebToken
     public abstract class AesDecryptor : IDisposable
     {
         /// <summary>
+        /// The size of the AES block.
+        /// </summary>
+        protected const int BlockSize = 16;
+
+        /// <summary>
         /// Try to decrypt the <paramref name="ciphertext"/>. 
         /// </summary>
         /// <param name="ciphertext">The ciphertext to decrypt.</param>

@@ -35,6 +35,22 @@ namespace JsonWebToken.Tests.Cryptography
 
         protected abstract int BlockSize { get; }
 
+        protected void VerifyHmac_Empty(string digest)
+        {
+            // using ReadOnlySpan<byte>.Empty may throw NRE if length not validated correctly
+            var hmac = Create(ReadOnlySpan<byte>.Empty);
+            byte[] digestBytes = ByteUtils.HexToByteArray(digest);
+            byte[] computedDigest = new byte[hmac.HashSize];
+            hmac.ComputeHash(ByteUtils.AsciiBytes("Empty key"), computedDigest);
+
+            Assert.Equal(digestBytes, computedDigest);
+
+            hmac = Create(Array.Empty<byte>());
+            hmac.ComputeHash(ByteUtils.AsciiBytes("Empty key"), computedDigest);
+
+            Assert.Equal(digestBytes, computedDigest);
+        }
+
         protected void VerifyHmac(
             int testCaseId,
             string digest,

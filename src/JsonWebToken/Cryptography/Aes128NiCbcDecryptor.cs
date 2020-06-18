@@ -47,50 +47,62 @@ namespace JsonWebToken.Internal
 
         public override unsafe bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> nonce, Span<byte> plaintext, out int bytesWritten)
         {
-            ref byte input = ref MemoryMarshal.GetReference(ciphertext);
+            if (nonce.Length != 16)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException_MustBeAtLeast(ExceptionArgument.nonce, 16);
+            }
+
             ref byte output = ref MemoryMarshal.GetReference(plaintext);
             Vector128<byte> state = default;
-            var feedback = nonce.AsVector128<byte>();
-
-            IntPtr offset = (IntPtr)0;
-            while ((byte*)offset < (byte*)ciphertext.Length)
+            if (!ciphertext.IsEmpty)
             {
-                var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref input, offset));
-                var lastIn = block;
-                state = Sse2.Xor(block, _keys.Key0);
+                ref byte input = ref MemoryMarshal.GetReference(ciphertext);
+                var feedback = nonce.AsVector128<byte>();
+                ref byte inputEnd = ref Unsafe.AddByteOffset(ref input, (IntPtr)ciphertext.Length - BlockSize + 1);
 
-                state = Aes.Decrypt(state, _keys.Key1);
-                state = Aes.Decrypt(state, _keys.Key2);
-                state = Aes.Decrypt(state, _keys.Key3);
-                state = Aes.Decrypt(state, _keys.Key4);
-                state = Aes.Decrypt(state, _keys.Key5);
-                state = Aes.Decrypt(state, _keys.Key6);
-                state = Aes.Decrypt(state, _keys.Key7);
-                state = Aes.Decrypt(state, _keys.Key8);
-                state = Aes.Decrypt(state, _keys.Key9);
-                state = Aes.DecryptLast(state, Sse2.Xor(_keys.Key10, feedback));
+                while (Unsafe.IsAddressLessThan(ref input, ref inputEnd))
+                {
+                    var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref input);
+                    var lastIn = block;
+                    state = Sse2.Xor(block, _keys.Key0);
 
-                Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref output, offset), state);
+                    state = Aes.Decrypt(state, _keys.Key1);
+                    state = Aes.Decrypt(state, _keys.Key2);
+                    state = Aes.Decrypt(state, _keys.Key3);
+                    state = Aes.Decrypt(state, _keys.Key4);
+                    state = Aes.Decrypt(state, _keys.Key5);
+                    state = Aes.Decrypt(state, _keys.Key6);
+                    state = Aes.Decrypt(state, _keys.Key7);
+                    state = Aes.Decrypt(state, _keys.Key8);
+                    state = Aes.Decrypt(state, _keys.Key9);
+                    state = Aes.DecryptLast(state, Sse2.Xor(_keys.Key10, feedback));
 
-                feedback = lastIn;
+                    Unsafe.WriteUnaligned(ref output, state);
 
-                offset += BlockSize;
+                    feedback = lastIn;
+
+                    input = ref Unsafe.AddByteOffset(ref input, (IntPtr)BlockSize);
+                    output = ref Unsafe.AddByteOffset(ref output, (IntPtr)BlockSize);
+                }
+
+                byte padding = Unsafe.SubtractByteOffset(ref output, (IntPtr)1);
+                if (padding > BlockSize)
+                {
+                    goto Invalid;
+                }
+
+                var mask = GetPaddingMask(padding);
+                if (!Sse2.And(mask, state).Equals(mask))
+                {
+                    goto Invalid;
+                }
+
+                bytesWritten = ciphertext.Length - padding;
+                return true;
             }
 
-            byte padding = Unsafe.AddByteOffset(ref output, offset - 1);
-            if (padding > BlockSize)
-            {
-                goto Invalid;
-            }
-
-            var mask = GetPaddingMask(padding);
-            if (!Sse2.And(mask, state).Equals(mask))
-            {
-                goto Invalid;
-            }
-
-            bytesWritten = ciphertext.Length - padding;
-            return true;
+            int left = plaintext.Length & BlockSize - 1;
+         
 
         Invalid:
             bytesWritten = 0;

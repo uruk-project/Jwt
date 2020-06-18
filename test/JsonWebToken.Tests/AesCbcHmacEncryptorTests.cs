@@ -71,13 +71,13 @@ namespace JsonWebToken.Tests
             encryptorNi.Encrypt(data, nonce, nonce, ciphertext, authenticationTag);
             var decryptor = new AesCbcHmacDecryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
             bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag, plaintext, out int bytesWritten);
-            Assert.True(decrypted);
+            Assert.True(decrypted, "decrypted");
             Assert.Equal(data, plaintext.Slice(0, bytesWritten).ToArray());
 
             var decryptorNi = new AesCbcHmacDecryptor(key.K.Slice(0, 16), EncryptionAlgorithm.Aes128CbcHmacSha256, new Aes128NiCbcDecryptor(key.K.Slice(16)));
             plaintext.Clear();
             decrypted = decryptorNi.TryDecrypt(ciphertext, nonce, nonce, authenticationTag, plaintext, out bytesWritten);
-            Assert.True(decrypted);
+            Assert.True(decrypted, "decrypted NI");
             Assert.Equal(data, plaintext.Slice(0, bytesWritten).ToArray());
         }
 #endif
@@ -178,6 +178,7 @@ namespace JsonWebToken.Tests
             bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag, plaintext, out int bytesWritten);
             Assert.True(decrypted);
         }
+
 #if NETCOREAPP3_0
         [Fact]
         public void EncryptFast_Decrypt()

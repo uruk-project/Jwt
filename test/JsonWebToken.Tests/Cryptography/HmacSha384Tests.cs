@@ -59,5 +59,11 @@ namespace JsonWebToken.Tests.Cryptography
         {
             VerifyHmac(7, "6617178e941f020d351e2f254e8fd32c602420feb0b8fb9adccebb82461e99c5a678cc31e799176d3860e6110c46523e");
         }
+
+        [Fact]
+        public void HmacSha384_EmptyKey()
+        {
+            VerifyHmac_Empty("9C6F468D44E2AA9EBEEDBB972F9D30839B6FD9E8982E71076A02E9B61A63DB98D6B692FF8F8D52F999A67EF248C1E573");
+        }
     }
 }

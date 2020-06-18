@@ -83,6 +83,12 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, Sha384HashSize);
             }
 
+            if (source.IsEmpty)
+            {
+                EmptyHash.CopyTo(destination);
+                return;
+            }
+
             // init
             Span<ulong> state = stackalloc ulong[] {
                 0xcbbb9d5dc1059ed8ul,
@@ -212,5 +218,15 @@ namespace JsonWebToken
                 Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)40), BinaryPrimitives.ReverseEndianness(Unsafe.AddByteOffset(ref stateRef, (IntPtr)40)));
             }
         }
+
+        private static ReadOnlySpan<byte> EmptyHash => new byte[48]
+        {
+            56, 176, 96, 167, 81, 172, 150, 56, 
+            76, 217, 50, 126, 177, 177, 227, 106, 
+            33, 253, 183, 17, 20, 190, 7, 67, 
+            76, 12, 199, 191, 99, 246, 225, 218, 
+            39, 78, 222, 191, 231, 111, 101, 251, 
+            213, 26, 210, 241, 72, 152, 185, 91
+        };
     }
 }
