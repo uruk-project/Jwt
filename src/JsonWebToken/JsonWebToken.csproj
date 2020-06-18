@@ -74,7 +74,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="gfoidl.Base64" Version="1.1.0" />
+    <PackageReference Include="gfoidl.Base64" Version="1.1.1" />
   </ItemGroup>
 
   <!--
