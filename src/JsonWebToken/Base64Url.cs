@@ -4,7 +4,7 @@
 using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
-using JsonWebToken.Internal;
+using gfoidl.Base64;
 
 namespace JsonWebToken
 {
@@ -15,10 +15,6 @@ namespace JsonWebToken
     /// </remarks>
     public static class Base64Url
     {
-        private static readonly Base64UrlEncoder _base64 = new Base64UrlEncoder();
-
-        private static readonly byte[] EmptyBytes = Array.Empty<byte>();
-
         /// <summary>
         /// Decodes a string of UTF-8 base64url-encoded text.
         /// </summary>
@@ -103,7 +99,7 @@ namespace JsonWebToken
         /// </summary>
         public static OperationStatus Decode(ReadOnlySpan<byte> base64Url, Span<byte> data, out int bytesConsumed, out int bytesWritten)
         {
-            return _base64.TryDecode(base64Url, data, out bytesConsumed, out bytesWritten);
+            return Base64.Url.Decode(base64Url, data, out bytesConsumed, out bytesWritten);
         }
 
         /// <summary>
@@ -112,7 +108,7 @@ namespace JsonWebToken
         /// <returns>The number of the bytes written to <paramref name="base64Url"/>.</returns>
         public static int Encode(ReadOnlySpan<byte> utf8Data, Span<byte> base64Url)
         {
-            var status = _base64.TryEncode(utf8Data, base64Url, out _, out var bytesWritten);
+            var status = Base64.Url.Encode(utf8Data, base64Url, out _, out var bytesWritten);
             if (status != OperationStatus.Done)
             {
                 ThrowHelper.ThrowOperationNotDoneException(status);
@@ -127,7 +123,7 @@ namespace JsonWebToken
         /// <returns>The base64-url encoded string.</returns>
         public static byte[] Encode(ReadOnlySpan<byte> utf8Data)
         {
-            int base64UrlLength = _base64.GetEncodedLength(utf8Data.Length);
+            int base64UrlLength = Base64.Url.GetEncodedLength(utf8Data.Length);
             var utf8Encoded = new byte[base64UrlLength];
             Encode(utf8Data, utf8Encoded);
             return utf8Encoded;
@@ -184,7 +180,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetArraySizeRequiredToDecode(int count)
         {
-            return _base64.GetMaxDecodedLength(count);
+            return Base64.Url.GetMaxDecodedLength(count);
         }
 
         /// <summary>
@@ -197,7 +193,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetArraySizeRequiredToEncode(int count)
         {
-            return _base64.GetEncodedLength(count);
+            return Base64.Url.GetEncodedLength(count);
         }
     }
 }

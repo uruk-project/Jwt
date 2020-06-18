@@ -73,6 +73,10 @@
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="gfoidl.Base64" Version="1.1.1" />
+  </ItemGroup>
+
   <!--
   SUPPORT_ELLIPTIC_CURVE
   SUPPORT_ELLIPTIC_CURVE_SIGNATURE

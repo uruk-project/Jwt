@@ -28,18 +28,11 @@ namespace JsonWebToken.Performance
 
 
         private static readonly OldBase64UrlEncoder _old = new OldBase64UrlEncoder();
-        private static readonly Base64UrlEncoder _new = new Base64UrlEncoder();
 
         [Benchmark(Baseline = true)]
         public OperationStatus Old()
         {
-            return _old.Encode(Data.Source, Data.Destination, out _, out _);
-        }
-
-        [Benchmark]
-        public OperationStatus New()
-        {
-            return _new.TryEncode(Data.Source, Data.Destination, out _, out _);
+            return _old.TryEncode(Data.Source, Data.Destination, out _, out _);
         }
 
         [Benchmark]

@@ -29,18 +29,11 @@ namespace JsonWebToken.Performance
         private static int[] sizes = new[] { 0, 32, 64, 128, 256, 512, 1024, 4096, 16384, 65536 };
 
         private static readonly OldBase64UrlEncoder _old = new OldBase64UrlEncoder();
-        private static readonly Base64UrlEncoder _new = new Base64UrlEncoder();
 
         [Benchmark(Baseline = true)]
         public OperationStatus Old()
         {
-            return _old.Decode(Data.Source, Data.Destination, out _, out _);
-        }
-
-        [Benchmark]
-        public OperationStatus New()
-        {
-            return _new.TryDecode(Data.Source, Data.Destination, out _, out _);
+            return _old.TryDecode(Data.Source, Data.Destination, out _, out _);
         }
 
         [Benchmark]
