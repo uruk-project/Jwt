@@ -122,7 +122,7 @@ namespace JsonWebToken
             if (destLength < decodedLength - 2)
             {
                 // For overflow see comment below
-                maxSrcLength = (int)FastDiv3(destLength) * 4;
+                maxSrcLength = (int)((uint)destLength / 3) * 4;
             }
 
             ref byte destBytes = ref MemoryMarshal.GetReference(data);
@@ -154,7 +154,7 @@ namespace JsonWebToken
             }
             else
             {
-                maxSrcLength = (int)FastDiv3(destLength) * 4;
+                maxSrcLength = (int)((uint)destLength / 3) * 4;
             }
 
             ref sbyte decodingMap = ref MemoryMarshal.GetReference(DecodingMap);
@@ -585,7 +585,7 @@ namespace JsonWebToken
             if ((uint)sourceLength > 1610612733)
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(sourceLength));
 
-            return (int)FastDiv3(sourceLength + 2) * 4;
+            return (int)((uint)(sourceLength + 2) / 3) * 4;
         }
 
         public OperationStatus TryEncode(ReadOnlySpan<byte> data, Span<byte> encoded, out int consumed, out int written)
@@ -951,27 +951,6 @@ namespace JsonWebToken
 
             Debug.Assert(high == value % 3);
             return high;
-        }
-
-        // Replace the divide by 3 by an optimized version
-        // value / 3;
-        //   L0000: mov ecx, 0x55555556
-        //   L0005: mov eax, ecx
-        //   L0007: imul edx
-        //   L0009: mov eax, edx
-        //   L000b: shr eax, 0x1f
-        //   L000e: add eax, edx
-        //   L0010: movsxd rax, eax
-        // 
-        // (0xAAAAAAABUL * (uint)value) >> 33;
-        //   L0000: mov eax, edx
-        //   L0002: mov edx, 0xaaaaaaab
-        //   L0007: imul rax, rdx
-        //   L000b: shr rax, 0x21
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static uint FastDiv3(int value)
-        {
-            return (uint)((0xAAAAAAABUL * (uint)value) >> 33);
         }
 
 #if NETCOREAPP3_0

@@ -13,8 +13,8 @@ namespace JsonWebToken.Internal
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class EpochTime
     {
-        private const long UnixEpochTicks = 621355968000000000;
-        private const long MaxValue = 9223372036854775807;
+        private const ulong UnixEpochTicks = 621355968000000000;
+        private const ulong MaxValue = 9223372036854775807;
         private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 
         private static readonly DateTime MaxValueUtc = new DateTime(DateTime.MaxValue.Ticks, DateTimeKind.Utc);
@@ -33,13 +33,13 @@ namespace JsonWebToken.Internal
                 datetime = datetime.ToUniversalTime();
             }
 
-            var ticks = datetime.Ticks;
+            var ticks = (ulong)datetime.Ticks;
             if (ticks <= UnixEpochTicks)
             {
                 return 0;
             }
 
-            return (ticks - UnixEpochTicks) / 10000000;
+            return (long)((ticks - UnixEpochTicks) / 10000000);
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace JsonWebToken.Internal
                 return UnixEpoch;
             }
 
-            if (MaxValue - UnixEpochTicks <= secondsSinceUnixEpoch)
+            if (MaxValue <= (ulong)secondsSinceUnixEpoch + UnixEpochTicks)
             {
                 return MaxValueUtc;
             }
@@ -83,7 +83,7 @@ namespace JsonWebToken.Internal
         public static long UtcNow
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => (DateTime.UtcNow.Ticks - UnixEpochTicks) / 10000000;
+            get => (long)(((ulong)DateTime.UtcNow.Ticks - UnixEpochTicks) / 10000000);
         }
     }
 }
