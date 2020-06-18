@@ -12,8 +12,6 @@ namespace JsonWebToken.Internal
 {
     internal sealed class Aes128NiCbcDecryptor : AesDecryptor
     {
-        private const int BlockSize = 16;
-
         private readonly Aes128DecryptionKeys _keys;
 
         public Aes128NiCbcDecryptor(ReadOnlySpan<byte> key)
