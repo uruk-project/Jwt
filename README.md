@@ -11,7 +11,7 @@ Install the [JsonWebToken NuGet Package](https://www.nuget.org/packages/JsonWebT
 
 ### Package Manager Console
 ```
-Install-Package JsonWebToken -Version 1.6.0
+Install-Package JsonWebToken -Version 1.6.1
 ```
 ### .NET CLI
 ```
