@@ -82,5 +82,23 @@ namespace JsonWebToken.Tests.Cryptography
                 "a",
                 "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f");
         }
+
+        [Fact]
+        public void Sha512_EmptyWithoutPrepend()
+        {
+            Verify(
+                "",
+                "",
+                "CF83E1357EEFB8BDF1542850D66D8007D620E4050B5715DC83F4A921D36CE9CE47D0D13C5D85F2B0FF8318D2877EEC2F63B931BD47417A81A538327AF927DA3E");
+        }
+
+        [Fact]
+        public void Sha512_EmptyWithPrepend()
+        {
+            Verify(
+                "",
+                "\u0000",
+                "B8244D028981D693AF7B456AF8EFA4CAD63D282E19FF14942C246E50D9351D22704A802A71C3580B6370DE4CEB293C324A8423342557D4E5C38438F0E36910EE");
+        }
     }
 }

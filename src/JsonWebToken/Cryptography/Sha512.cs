@@ -87,7 +87,15 @@ namespace JsonWebToken
 
             if (source.IsEmpty)
             {
-                EmptyHash.CopyTo(destination);
+                if (prepend.IsEmpty)
+                {
+                    EmptyHash.CopyTo(destination);
+                }
+                else
+                {
+                    ComputeHash(prepend, default, destination, workingSet);
+                }
+
                 return;
             }
 
@@ -529,12 +537,12 @@ namespace JsonWebToken
         private static ReadOnlySpan<byte> EmptyHash => new byte[64]
         {
             207, 131, 225, 53, 126, 239, 184, 189,
-            241, 84, 40, 80, 214, 109, 128, 7, 
-            214, 32, 228, 5, 11, 87, 21, 220, 
-            131, 244, 169, 33, 211, 108, 233, 206, 
-            71, 208, 209, 60, 93, 133, 242, 176, 
-            255, 131, 24, 210, 135, 126, 236, 47, 
-            99, 185, 49, 189, 71, 65, 122, 129, 
+            241, 84, 40, 80, 214, 109, 128, 7,
+            214, 32, 228, 5, 11, 87, 21, 220,
+            131, 244, 169, 33, 211, 108, 233, 206,
+            71, 208, 209, 60, 93, 133, 242, 176,
+            255, 131, 24, 210, 135, 126, 236, 47,
+            99, 185, 49, 189, 71, 65, 122, 129,
             165, 56, 50, 122, 249, 39, 218, 62
         };
 
