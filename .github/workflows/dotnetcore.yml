@@ -135,5 +135,5 @@ jobs:
           asset_path: ./${{ matrix.rid }}.zip
           asset_name: ${{ steps.get_release_info.outputs.file_name }}-${{ matrix.rid }}-core3.1.zip
           asset_content_type: application/zip
-    - name: Pack
+      - name: Pack
         run: dotnet pack -c ${{ matrix.configuration }} -c Release --output=nuget_packed
