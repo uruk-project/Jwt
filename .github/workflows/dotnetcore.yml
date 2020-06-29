@@ -58,7 +58,7 @@ jobs:
       - name: Build
         run: dotnet build -c ${{ matrix.configuration }}
       - name: Test
-        if: configuration == '3.1.x'
+        if: matrix.configuration == '3.1.x'
         run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       - name: Upload coverage to Codecov
         if: matrix.is-main
