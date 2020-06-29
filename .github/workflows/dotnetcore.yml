@@ -19,7 +19,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
         dotnet: [ '2.2.x', '3.0', '3.1.x', '5.0.x' ]
         configuration: [Debug, Release]
         include:
