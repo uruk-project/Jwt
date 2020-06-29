@@ -24,8 +24,8 @@ jobs:
         configuration: [Debug, Release]
         include:
           - os: ubuntu-latest
-            configuration: Release
             dotnet:'3.1.x'
+            configuration: Release
             is-main: true
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
