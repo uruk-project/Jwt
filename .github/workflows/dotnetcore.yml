@@ -38,7 +38,7 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           version: ${{ matrix.dotnet }}
-    - name: DOTNET HACK
+      - name: DOTNET HACK
 #  https://github.com/actions/setup-dotnet/issues/25
         shell: pwsh
         run: |
