@@ -72,7 +72,6 @@ jobs:
         run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       - name: Upload coverage to Codecov
         if: ${{ matrix.os }} == windows-latest && ${{ matrix.configuration }} == Release
-            configuration: Release
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
