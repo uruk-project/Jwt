@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netcoreapp3.0;netcoreapp2.1;net461;net47</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp3.0;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp3.0</TargetFrameworks>
 
     <IsPackable>false</IsPackable>
 
