@@ -9,7 +9,7 @@
     <!--<VersionSuffix>-preview-1</VersionSuffix>-->
     <VersionSuffix Condition="'$(VersionSuffix)' != ''">-$(VersionSuffix)</VersionSuffix>
     <PackageVersion>$(VersionMajor).$(VersionMinor).$(VersionPatch)$(VersionSuffix)</PackageVersion>
-    <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(VersionMajor).$(VersionMinor).$(BuildNumber)</AssemblyVersion>
+    <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(VersionMajor).$(VersionMinor).$(VersionPatch)</AssemblyVersion>
     
     <Authors>Yann Crumeyrolle</Authors>
     <Company>Yann Crumeyrolle</Company>
