@@ -66,9 +66,6 @@ jobs:
               Copy-Item "$from\*" $to -Recurse -Force;
             }
           
-      - name: Restore Tool
-        if: matrix.is-main
-        run: dotnet tool restore
       - name: Build
         run: dotnet build -c ${{ matrix.configuration }}
       - name: Test

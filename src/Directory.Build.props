@@ -23,9 +23,4 @@
     <sumary>High-performance JWT library.</sumary>
     <PackageLicense>MIT</PackageLicense>
   </PropertyGroup>
-
-  <Target Name="VersionInfo" BeforeTargets="BeforeBuild">
-    <Message Importance="high" Text="$(MSBuildProjectName) BuildNumber: $(BuildNumber) --> Version: $(Version), AssemblyVersion: $(AssemblyVersion)" />
-    <Message Importance="high" Text=" " Condition="'$(Configuration)' == 'Debug'" />
-  </Target>
 </Project>
