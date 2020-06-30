@@ -72,7 +72,7 @@ jobs:
       - name: Build
         run: dotnet build -c ${{ matrix.configuration }}
       - name: Test
-        run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+        run: dotnet test -c ${{ matrix.configuration }} --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       - name: Upload coverage to Codecov
         if: matrix.is-netfx
         uses: codecov/codecov-action@v1
