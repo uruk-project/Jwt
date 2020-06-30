@@ -1,0 +1,153 @@
+name: .NET Core CI/CD
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+    paths:
+      - '**'
+      - '!**.md'
+  pull_request:
+    paths:
+      - '**'
+      - '!**.md'
+
+jobs:
+  test:
+    name: Build & Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        configuration: [ Debug, Release ]
+        include:
+          - os: ubuntu-latest
+            configuration: Release
+            is-main: true
+          - os: windows-latest
+            configuration: Release
+            is-netfx: true
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      NUGET_XMLDOC_MODE: skip
+      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+    steps:
+      - uses: actions/checkout@master
+      - name: Setup dotnet '2.0.x'
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '2.0.x'
+      - name: Setup dotnet '2.2.x'
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '2.2.x'
+      - name: Setup dotnet '3.1.x'
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Setup dotnet '5.0.100-preview.6.20318.15'
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.100-preview.6.20318.15'
+
+      - name: DOTNET HACK
+#  https://github.com/actions/setup-dotnet/issues/25
+        shell: pwsh
+        run: |
+            $version = Split-Path (Split-Path $ENV:DOTNET_ROOT -Parent) -Leaf;
+            $root = Split-Path (Split-Path $ENV:DOTNET_ROOT -Parent) -Parent;
+            $directories = Get-ChildItem $root | Where-Object { $_.Name -ne $version };
+            foreach ($dir in $directories) {
+              $from = $dir.FullName;
+              $to = "$root/$version";
+              Write-Host Copying from $from to $to;
+              Copy-Item "$from\*" $to -Recurse -Force;
+            }
+          
+      - name: Restore Tool
+        if: matrix.is-main
+        run: dotnet tool restore
+      - name: Build
+        run: dotnet build -c ${{ matrix.configuration }}
+      - name: Test
+        run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+      - name: Upload coverage to Codecov
+        if: matrix.is-netfx
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+ 
+  release:
+    name: Create Github Release
+    if: contains(github.ref, 'tags/v')
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Output Release URL File
+        run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
+      - name: Save Release URL File for publish
+        uses: actions/upload-artifact@v1
+        with:
+          name: release_url
+          path: release_url.txt
+
+  publish:
+    if: contains(github.ref, 'tags/v')
+    needs: [test, release]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rid: [win-x64, linux-x64, osx-x64]
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      NUGET_XMLDOC_MODE: skip
+      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+    steps:
+      - uses: actions/checkout@v2
+      - name: Restore File from release job
+        uses: actions/download-artifact@v1
+        with:
+          name: release_url
+      - name: Get Release File Name & Upload URL
+        id: get_release_info
+        run: |
+          echo ::set-output name=file_name::${REPOSITORY_NAME##*/}-${TAG_REF_NAME##*/v}
+          value=`cat release_url/release_url.txt`
+          echo ::set-output name=upload_url::$value
+          echo ::set-output name=version::${TAG_REF_NAME##*/v}
+        env:
+          TAG_REF_NAME: ${{ github.ref }}
+          REPOSITORY_NAME: ${{ github.repository }}
+      - name: Setup .NET Core 3.1
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.201
+      - name: Build
+        run: |
+          dotnet publish -c Release -r ${{ matrix.rid }} /p\:Version=${{ steps.get_release_info.outputs.version }} /p\:PublishSingleFile=true /p\:PublishTrimmed=true -o ./${{ matrix.rid }}
+          zip -r ${{ matrix.rid }} ./${{ matrix.rid }}
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: ./${{ matrix.rid }}.zip
+          asset_name: ${{ steps.get_release_info.outputs.file_name }}-${{ matrix.rid }}-core3.1.zip
+          asset_content_type: application/zip
+      - name: Pack
+        run: dotnet pack -c ${{ matrix.configuration }} -c Release --output=nuget_packed 
