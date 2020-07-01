@@ -53,6 +53,11 @@ namespace JsonWebToken.Internal
                 Base64Url.Decode(encodedIV, nonce);
                 Base64Url.Decode(encodedTag, tag);
                 using var aesGcm = new AesGcm(Key.AsSpan());
+                if (destination.Length > keyBytes.Length)
+                {
+                    destination = destination.Slice(0, keyBytes.Length);
+                }
+
                 aesGcm.Decrypt(nonce, keyBytes, tag, destination);
                 bytesWritten = destination.Length;
 
