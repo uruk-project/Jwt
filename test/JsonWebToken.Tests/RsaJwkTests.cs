@@ -19,16 +19,17 @@ namespace JsonWebToken.Tests
             var parameters = key.ExportParameters();
             RSA rsa = RSA.Create();
             rsa.ImportParameters(parameters);
-            var data = new byte[] { 0x01, 0x02, 0x3, 0x04 };
+            var jwk = new SymmetricJwk("-PYUNdvLXVnc8yJQw7iQkSlNmAb202ZO-rfCyrAc1Lo");
+            var data = jwk.AsSpan().ToArray();
 
             var encryptedData = rsa.Encrypt(data, RSAEncryptionPadding.Pkcs1);
             var decryptedData = rsa.Decrypt(encryptedData, RSAEncryptionPadding.Pkcs1);
-            Assert.Equal(data, decryptedData); 
-            
+            Assert.Equal(data, decryptedData);
+
             encryptedData = rsa.Encrypt(data, RSAEncryptionPadding.OaepSHA1);
             decryptedData = rsa.Decrypt(encryptedData, RSAEncryptionPadding.OaepSHA1);
             Assert.Equal(data, decryptedData);
-            
+
             encryptedData = rsa.Encrypt(data, RSAEncryptionPadding.OaepSHA256);
             decryptedData = rsa.Decrypt(encryptedData, RSAEncryptionPadding.OaepSHA256);
             Assert.Equal(data, decryptedData);
