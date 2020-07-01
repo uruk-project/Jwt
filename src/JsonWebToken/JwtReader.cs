@@ -553,8 +553,9 @@ namespace JsonWebToken
             }
             else
             {
-                byte[] arrayToReturn;
-                Span<byte> encryptedKey = arrayToReturn = ArrayPool<byte>.Shared.Rent(Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length));
+                byte[] encryptedKeyToReturnToPool;
+                byte[] unwrappedKeyToReturnToPool;
+                Span<byte> encryptedKey = encryptedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length));
                 try
                 {
                     var operationResult = Base64Url.Decode(rawEncryptedKey, encryptedKey, out _, out int bytesWritten);
@@ -585,7 +586,7 @@ namespace JsonWebToken
                     }
 
                     keys = new List<Jwk>(1);
-                    Span<byte> unwrappedKey = stackalloc byte[maxKeyUnwrapSize];
+                    Span<byte> unwrappedKey = unwrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(maxKeyUnwrapSize);
                     for (int i = 0; i < keyUnwrappers.Count; i++)
                     {
                         if (keyUnwrappers[i].TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyUnwrappedBytesWritten))
@@ -597,7 +598,8 @@ namespace JsonWebToken
                 }
                 finally
                 {
-                    ArrayPool<byte>.Shared.Return(arrayToReturn, true);
+                    ArrayPool<byte>.Shared.Return(encryptedKeyToReturnToPool, true);
+                    ArrayPool<byte>.Shared.Return(unwrappedKeyToReturnToPool, true);
                 }
             }
 
