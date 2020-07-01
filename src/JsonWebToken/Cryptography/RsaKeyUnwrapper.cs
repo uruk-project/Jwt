@@ -84,7 +84,6 @@ namespace JsonWebToken.Internal
             }
             catch (CryptographicException)
             {
-                throw;
                 bytesWritten = 0;
                 return false;
             }
