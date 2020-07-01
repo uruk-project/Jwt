@@ -47,10 +47,10 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '3.1.x'
-      - name: Setup dotnet '5.0.100-preview.6.20318.15'
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '5.0.100-preview.6.20318.15'
+#      - name: Setup dotnet '5.0.100-preview.6.20318.15'
+#        uses: actions/setup-dotnet@v1
+#        with:
+#          dotnet-version: '5.0.100-preview.6.20318.15'
 
       - name: DOTNET HACK
 #  https://github.com/actions/setup-dotnet/issues/25
@@ -69,7 +69,7 @@ jobs:
       - name: Build
         run: dotnet build -c ${{ matrix.configuration }}
       - name: Test
-        run: dotnet test -c ${{ matrix.configuration }} --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+        run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       - name: Upload coverage to Codecov
         if: matrix.is-netfx
         uses: codecov/codecov-action@v1
