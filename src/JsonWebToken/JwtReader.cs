@@ -554,7 +554,7 @@ namespace JsonWebToken
             else
             {
                 byte[] encryptedKeyToReturnToPool;
-                byte[]? unwrappedKeyToReturnToPool=null;
+                byte[]? unwrappedKeyToReturnToPool = null;
                 Span<byte> encryptedKey = encryptedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length));
                 try
                 {
