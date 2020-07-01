@@ -59,7 +59,8 @@ namespace JsonWebToken.Internal
             catch (CryptographicException)
             {
                 plaintext.Clear();
-                return ThrowHelper.TryWriteError(out bytesWritten);
+                throw;
+               // return ThrowHelper.TryWriteError(out bytesWritten);
             }
         }
 

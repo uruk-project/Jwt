@@ -22,7 +22,6 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool TryWriteError(out int bytesWritten)
         {
-            throw new CryptographicException();
             bytesWritten = 0;
             return false;
         }
