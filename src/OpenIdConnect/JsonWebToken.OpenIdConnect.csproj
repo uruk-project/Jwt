@@ -5,15 +5,18 @@
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.0;netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>../../jwt.snk</AssemblyOriginatorKeyFile>
+    <NoWarn>3021</NoWarn>
+  </PropertyGroup>
 
+  <PropertyGroup>
     <PackageTags>jwt OpenID Connect</PackageTags>
     <Description>High-performance JWT library for OpenID Connect. 
 Provides ID Token primitives.</Description>
     <sumary>High-performance JWT library for OpenID Connect.</sumary>
-
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>../../jwt.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

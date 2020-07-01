@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenIdConnect\JsonWebToken.csproj" />
     <ProjectReference Include="..\..\src\OpenIdConnect\JsonWebToken.OpenIdConnect.csproj" />
     <ProjectReference Include="..\JsonWebToken.Tests.Common\JsonWebToken.Tests.Common.csproj" />
   </ItemGroup>
