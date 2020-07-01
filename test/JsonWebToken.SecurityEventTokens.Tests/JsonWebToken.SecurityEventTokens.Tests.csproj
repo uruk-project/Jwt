@@ -6,7 +6,7 @@
 
     <IsPackable>false</IsPackable>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>../../key.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>../../jwt.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
