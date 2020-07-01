@@ -12,6 +12,20 @@ namespace JsonWebToken.Tests
 {
     public class RsaJwkTests : JwkTestsBase
     {
+        [Fact]
+        public void RsaTest()
+        {
+            RsaJwk key = RsaJwk.GenerateKey(2048, true);
+            var parameters = key.ExportParameters();
+            RSA rsa = RSA.Create();
+            rsa.ImportParameters(parameters);
+            var data = new byte[] { 0x01, 0x02, 0x3, 0x04 };
+            var encryptedData = rsa.Encrypt(data, RSAEncryptionPadding.Pkcs1);
+            var decryptedData = rsa.Decrypt(data, RSAEncryptionPadding.Pkcs1);
+
+            Assert.Equal(data, decryptedData);
+        }
+
         [Theory]
         [MemberData(nameof(GetWrappingKeys))]
         public override KeyWrapper CreateKeyWrapper_Succeed(Jwk key, EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
