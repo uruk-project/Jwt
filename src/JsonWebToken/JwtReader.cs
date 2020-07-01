@@ -553,7 +553,7 @@ namespace JsonWebToken
             }
             else
             {
-                Span<byte> encryptedKey = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length)];
+                Span<byte> encryptedKey = new byte[Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length)];
                 var operationResult = Base64Url.Decode(rawEncryptedKey, encryptedKey, out _, out _);
                 Debug.Assert(operationResult == OperationStatus.Done);
 
