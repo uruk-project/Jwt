@@ -21,7 +21,7 @@ namespace JsonWebToken.Tests
             rsa.ImportParameters(parameters);
             var data = new byte[] { 0x01, 0x02, 0x3, 0x04 };
             var encryptedData = rsa.Encrypt(data, RSAEncryptionPadding.Pkcs1);
-            var decryptedData = rsa.Decrypt(data, RSAEncryptionPadding.Pkcs1);
+            var decryptedData = rsa.Decrypt(encryptedData, RSAEncryptionPadding.Pkcs1);
 
             Assert.Equal(data, decryptedData);
         }
