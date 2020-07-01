@@ -352,11 +352,13 @@ y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
 
         public static IEnumerable<object[]> GetWrappingKeys()
         {
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaPkcs1 };
             yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep };
+#if !NET461 && !NET47
             yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep256 };
             yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep384 };
             yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep512 };
-            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaPkcs1 };
+#endif
         }
 
         public static IEnumerable<object[]> GetSignatureValidationKeys()

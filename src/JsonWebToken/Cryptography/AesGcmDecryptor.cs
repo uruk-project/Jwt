@@ -52,6 +52,11 @@ namespace JsonWebToken.Internal
             try
             {
                 using var aes = new AesGcm(_key.K);
+                if (plaintext.Length > ciphertext.Length)
+                {
+                    plaintext = plaintext.Slice(0, ciphertext.Length);
+                }
+
                 aes.Decrypt(nonce, ciphertext, authenticationTag, plaintext, associatedData);
                 bytesWritten = plaintext.Length;
                 return true;
@@ -59,8 +64,7 @@ namespace JsonWebToken.Internal
             catch (CryptographicException)
             {
                 plaintext.Clear();
-                throw;
-               // return ThrowHelper.TryWriteError(out bytesWritten);
+                return ThrowHelper.TryWriteError(out bytesWritten);
             }
         }
 

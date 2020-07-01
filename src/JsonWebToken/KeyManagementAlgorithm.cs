@@ -89,6 +89,7 @@ namespace JsonWebToken
         /// </summary>
         public static readonly KeyManagementAlgorithm RsaOaep = new KeyManagementAlgorithm(id: 32, "RSA-OAEP", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
 
+#if !NET461 && !NET47
         /// <summary>
         /// 'RSA-OAEP-128'
         /// </summary>
@@ -103,6 +104,7 @@ namespace JsonWebToken
         /// 'RSA-OAEP-256'
         /// </summary>
         public static readonly KeyManagementAlgorithm RsaOaep512 = new KeyManagementAlgorithm(id: 35, "RSA-OAEP-512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
+#endif
 
         /// <summary>
         /// 'ECDH-ES'

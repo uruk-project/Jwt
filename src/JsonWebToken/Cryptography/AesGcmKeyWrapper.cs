@@ -44,7 +44,13 @@ namespace JsonWebToken.Internal
 
             using (var aesGcm = new AesGcm(Key.AsSpan()))
             {
-                aesGcm.Encrypt(nonce, cek.AsSpan(), destination, tag);
+                var keyBytes = cek.AsSpan();
+                if (destination.Length > keyBytes.Length)
+                {
+                    destination = destination.Slice(0, keyBytes.Length);
+                }
+
+                aesGcm.Encrypt(nonce, keyBytes, destination, tag);
 
                 header.Add(new JwtProperty(HeaderParameters.IVUtf8, Base64Url.Encode(nonce)));
                 header.Add(new JwtProperty(HeaderParameters.TagUtf8, Base64Url.Encode(tag)));

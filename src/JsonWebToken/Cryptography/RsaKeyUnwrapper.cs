@@ -33,6 +33,7 @@ namespace JsonWebToken.Internal
             {
                 _padding = RSAEncryptionPadding.Pkcs1;
             }
+#if !NET461 && !NET47
             else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep256)
             {
                 _padding = RSAEncryptionPadding.OaepSHA256;
@@ -45,6 +46,7 @@ namespace JsonWebToken.Internal
             {
                 _padding = RSAEncryptionPadding.OaepSHA512;
             }
+#endif
             else
             {
                 ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(contentEncryptionAlgorithm);
