@@ -553,42 +553,51 @@ namespace JsonWebToken
             }
             else
             {
-                Span<byte> encryptedKey = new byte[Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length)];
-                var operationResult = Base64Url.Decode(rawEncryptedKey, encryptedKey, out _, out _);
-                Debug.Assert(operationResult == OperationStatus.Done);
-
-                var keyUnwrappers = new List<KeyUnwrapper>(1);
-                int maxKeyUnwrapSize = 0;
-                for (int i = 0; i < _encryptionKeyProviders.Length; i++)
+                byte[] arrayToReturn;
+                Span<byte> encryptedKey = arrayToReturn = ArrayPool<byte>.Shared.Rent(Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length));
+                try
                 {
-                    var keySet = _encryptionKeyProviders[i].GetKeys(header);
-                    for (int j = 0; j < keySet.Length; j++)
+                    var operationResult = Base64Url.Decode(rawEncryptedKey, encryptedKey, out _, out int bytesWritten);
+                    Debug.Assert(operationResult == OperationStatus.Done);
+                    encryptedKey = encryptedKey.Slice(0, bytesWritten);
+
+                    var keyUnwrappers = new List<KeyUnwrapper>(1);
+                    int maxKeyUnwrapSize = 0;
+                    for (int i = 0; i < _encryptionKeyProviders.Length; i++)
                     {
-                        var key = keySet[j];
-                        if (key.CanUseForKeyWrapping(alg))
+                        var keySet = _encryptionKeyProviders[i].GetKeys(header);
+                        for (int j = 0; j < keySet.Length; j++)
                         {
-                            if (key.TryGetKeyUnwrapper(enc, alg, out var keyUnwrapper))
+                            var key = keySet[j];
+                            if (key.CanUseForKeyWrapping(alg))
                             {
-                                keyUnwrappers.Add(keyUnwrapper);
-                                int keyUnwrapSize = keyUnwrapper.GetKeyUnwrapSize(encryptedKey.Length);
-                                if (maxKeyUnwrapSize < keyUnwrapSize)
+                                if (key.TryGetKeyUnwrapper(enc, alg, out var keyUnwrapper))
                                 {
-                                    maxKeyUnwrapSize = keyUnwrapSize;
+                                    keyUnwrappers.Add(keyUnwrapper);
+                                    int keyUnwrapSize = keyUnwrapper.GetKeyUnwrapSize(encryptedKey.Length);
+                                    if (maxKeyUnwrapSize < keyUnwrapSize)
+                                    {
+                                        maxKeyUnwrapSize = keyUnwrapSize;
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                keys = new List<Jwk>(1);
-                Span<byte> unwrappedKey = stackalloc byte[maxKeyUnwrapSize];
-                for (int i = 0; i < keyUnwrappers.Count; i++)
-                {
-                    if (keyUnwrappers[i].TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyUnwrappedBytesWritten))
+                    keys = new List<Jwk>(1);
+                    Span<byte> unwrappedKey = stackalloc byte[maxKeyUnwrapSize];
+                    for (int i = 0; i < keyUnwrappers.Count; i++)
                     {
-                        Jwk jwk = new SymmetricJwk(unwrappedKey.Slice(0, keyUnwrappedBytesWritten));
-                        keys.Add(jwk);
+                        if (keyUnwrappers[i].TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyUnwrappedBytesWritten))
+                        {
+                            Jwk jwk = new SymmetricJwk(unwrappedKey.Slice(0, keyUnwrappedBytesWritten));
+                            keys.Add(jwk);
+                        }
                     }
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturn, true);
                 }
             }
 
