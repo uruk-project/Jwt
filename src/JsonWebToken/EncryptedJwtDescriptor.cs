@@ -90,16 +90,17 @@ namespace JsonWebToken
             if (key.TryGetKeyWrapper(encryptionAlgorithm, contentEncryptionAlgorithm, out var keyWrapper))
             {
                 var header = Header;
-                byte[] wrappedKeyToReturnToPool;
+                byte[]? wrappedKeyToReturnToPool = null;
                 byte[]? buffer64HeaderToReturnToPool = null;
                 byte[]? arrayCiphertextToReturnToPool = null;
                 int keyWrapSize = keyWrapper.GetKeyWrapSize();
-                Span<byte> wrappedKey = wrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(keyWrapSize);
-                wrappedKey = wrappedKey.Slice(0, keyWrapSize);
+                Span<byte> wrappedKey = keyWrapSize <= Constants.MaxStackallocBytes ?
+                    stackalloc byte[keyWrapSize] :
+                    new Span<byte>(wrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(keyWrapSize), 0, keyWrapSize);
                 var cek = keyWrapper.WrapKey(null, header, wrappedKey);
                 if (cek.TryGetAuthenticatedEncryptor(encryptionAlgorithm, out AuthenticatedEncryptor? encryptor))
                 {
-                    if (header.ContainsKey(WellKnownProperty.Kid) && key.Kid != null)
+                    if (header.ContainsKey(WellKnownProperty.Kid) && !(key.Kid is null))
                     {
                         header.Replace(new JwtProperty(WellKnownProperty.Kid, key.Kid));
                     }
@@ -175,7 +176,11 @@ namespace JsonWebToken
                         }
                         finally
                         {
-                            ArrayPool<byte>.Shared.Return(wrappedKeyToReturnToPool);
+                            if (wrappedKeyToReturnToPool != null)
+                            {
+                                ArrayPool<byte>.Shared.Return(wrappedKeyToReturnToPool);
+                            }
+
                             if (buffer64HeaderToReturnToPool != null)
                             {
                                 ArrayPool<byte>.Shared.Return(buffer64HeaderToReturnToPool);
