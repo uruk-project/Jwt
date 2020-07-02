@@ -621,6 +621,7 @@ namespace JsonWebToken
             }
 
             keyUnwrapper = null;
+            throw new Exception("encryptionAlgorithm is null || algorithm is null");
             return false;
         }
 
