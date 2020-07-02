@@ -33,6 +33,8 @@ jobs:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       NUGET_XMLDOC_MODE: skip
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+      COMPlus_EnableAVX: 0
+      COMPlus_EnableSSE: 0
     steps:
       - uses: actions/checkout@master
       - name: setup dotnet '2.0.x'
