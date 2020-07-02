@@ -553,9 +553,13 @@ namespace JsonWebToken
             }
             else
             {
-                byte[] encryptedKeyToReturnToPool;
+                int decodedSize = Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length);
+
+                byte[]? encryptedKeyToReturnToPool = null;
                 byte[]? unwrappedKeyToReturnToPool = null;
-                Span<byte> encryptedKey = encryptedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length));
+                Span<byte> encryptedKey = decodedSize <= Constants.MaxStackallocBytes ?
+                    stackalloc byte[decodedSize] :
+                    encryptedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(decodedSize);
                 try
                 {
                     var operationResult = Base64Url.Decode(rawEncryptedKey, encryptedKey, out _, out int bytesWritten);
@@ -586,21 +590,27 @@ namespace JsonWebToken
                     }
 
                     keys = new List<Jwk>(1);
-                    Span<byte> unwrappedKey = unwrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(maxKeyUnwrapSize);
+                    Span<byte> unwrappedKey = maxKeyUnwrapSize <= Constants.MaxStackallocBytes ?
+                        stackalloc byte[maxKeyUnwrapSize] :
+                        unwrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(maxKeyUnwrapSize);
                     for (int i = 0; i < keyUnwrappers.Count; i++)
                     {
                         var kpv = keyUnwrappers[i];
                         var temporaryUnwrappedKey = unwrappedKey.Length != kpv.Item1 ? unwrappedKey.Slice(0, kpv.Item1) : unwrappedKey;
                         if (kpv.Item2.TryUnwrapKey(encryptedKey, temporaryUnwrappedKey, header, out int keyUnwrappedBytesWritten))
                         {
-                            Jwk jwk = new SymmetricJwk(unwrappedKey.Slice(0, keyUnwrappedBytesWritten));
+                            Jwk jwk = new SymmetricJwk(unwrappedKey.Slice(0, keyUnwrappedBytesWritten).ToArray());
                             keys.Add(jwk);
                         }
                     }
                 }
                 finally
                 {
-                    ArrayPool<byte>.Shared.Return(encryptedKeyToReturnToPool, true);
+                    if (encryptedKeyToReturnToPool != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(encryptedKeyToReturnToPool, true);
+                    }
+
                     if (unwrappedKeyToReturnToPool != null)
                     {
                         ArrayPool<byte>.Shared.Return(unwrappedKeyToReturnToPool, true);
