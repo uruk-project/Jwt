@@ -61,12 +61,12 @@ namespace JsonWebToken.Internal
             }
 
             var cek = CreateSymmetricKey(EncryptionAlgorithm, staticKey);
-//#if SUPPORT_SPAN_CRYPTO
-//            if (!_rsa.TryEncrypt(cek.AsSpan(), destination, _padding, out int bytesWritten) || bytesWritten != destination.Length)
-//            {
-//                ThrowHelper.ThrowCryptographicException_KeyWrapFailed();
-//            }
-//#else
+#if SUPPORT_SPAN_CRYPTO
+            if (!_rsa.TryEncrypt(cek.AsSpan(), destination, _padding, out int bytesWritten) || bytesWritten != destination.Length)
+            {
+                ThrowHelper.ThrowCryptographicException_KeyWrapFailed();
+            }
+#else
             var result = _rsa.Encrypt(cek.AsSpan().ToArray(), _padding);
             if (destination.Length < result.Length)
             {
@@ -74,7 +74,7 @@ namespace JsonWebToken.Internal
             }
 
             result.CopyTo(destination);
-//#endif
+#endif
 
             return cek;
         }
