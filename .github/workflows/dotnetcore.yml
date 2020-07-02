@@ -35,14 +35,14 @@ jobs:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
       - uses: actions/checkout@master
-#      - name: Setup dotnet '2.0.x'
-#        uses: actions/setup-dotnet@v1
-#        with:
-#          dotnet-version: '2.0.x'
-#      - name: Setup dotnet '2.2.x'
-#        uses: actions/setup-dotnet@v1
-#        with:
-#          dotnet-version: '2.2.x'
+      - name: setup dotnet '2.0.x'
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '2.0.x'
+      - name: setup dotnet '2.2.x'
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '2.2.x'
       - name: Setup dotnet '3.1.x'
         uses: actions/setup-dotnet@v1
         with:
