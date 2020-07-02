@@ -562,7 +562,7 @@ namespace JsonWebToken
                     Debug.Assert(operationResult == OperationStatus.Done);
                     encryptedKey = encryptedKey.Slice(0, bytesWritten);
 
-                    var keyUnwrappers = new List<KeyUnwrapper>(1);
+                    var keyUnwrappers = new List<Tuple<int, KeyUnwrapper>>(1);
                     int maxKeyUnwrapSize = 0;
                     for (int i = 0; i < _encryptionKeyProviders.Length; i++)
                     {
@@ -574,8 +574,8 @@ namespace JsonWebToken
                             {
                                 if (key.TryGetKeyUnwrapper(enc, alg, out var keyUnwrapper))
                                 {
-                                    keyUnwrappers.Add(keyUnwrapper);
                                     int keyUnwrapSize = keyUnwrapper.GetKeyUnwrapSize(encryptedKey.Length);
+                                    keyUnwrappers.Add(new Tuple<int, KeyUnwrapper>(keyUnwrapSize, keyUnwrapper));
                                     if (maxKeyUnwrapSize < keyUnwrapSize)
                                     {
                                         maxKeyUnwrapSize = keyUnwrapSize;
@@ -589,7 +589,9 @@ namespace JsonWebToken
                     Span<byte> unwrappedKey = unwrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(maxKeyUnwrapSize);
                     for (int i = 0; i < keyUnwrappers.Count; i++)
                     {
-                        if (keyUnwrappers[i].TryUnwrapKey(encryptedKey, unwrappedKey, header, out int keyUnwrappedBytesWritten))
+                        var kpv = keyUnwrappers[i];
+                        var temporaryUnwrappedKey = unwrappedKey.Length != kpv.Item1 ? unwrappedKey.Slice(0, kpv.Item1) : unwrappedKey;
+                        if (kpv.Item2.TryUnwrapKey(encryptedKey, temporaryUnwrappedKey, header, out int keyUnwrappedBytesWritten))
                         {
                             Jwk jwk = new SymmetricJwk(unwrappedKey.Slice(0, keyUnwrappedBytesWritten));
                             keys.Add(jwk);

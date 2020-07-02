@@ -21,7 +21,11 @@ namespace JsonWebToken.Internal
 #if SUPPORT_SPAN_CRYPTO
             _rsa = RSA.Create(key.ExportParameters());
 #else
+#if NET461 || NET47
+            _rsa = new RSACng();
+#else
             _rsa = RSA.Create();
+#endif
             _rsa.ImportParameters(key.ExportParameters());
 #endif
 
@@ -33,7 +37,6 @@ namespace JsonWebToken.Internal
             {
                 _padding = RSAEncryptionPadding.Pkcs1;
             }
-#if !NET461 && !NET47
             else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep256)
             {
                 _padding = RSAEncryptionPadding.OaepSHA256;
@@ -46,7 +49,6 @@ namespace JsonWebToken.Internal
             {
                 _padding = RSAEncryptionPadding.OaepSHA512;
             }
-#endif
             else
             {
                 ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(contentEncryptionAlgorithm);
@@ -92,7 +94,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override int GetKeyUnwrapSize(int wrappedKeySize) 
+        public override int GetKeyUnwrapSize(int wrappedKeySize)
             => EncryptionAlgorithm.RequiredKeySizeInBytes;
 
         /// <inheritsdoc />

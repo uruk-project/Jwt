@@ -29,10 +29,6 @@ namespace JsonWebToken.Tests
             encryptedData = rsa.Encrypt(data, RSAEncryptionPadding.OaepSHA1);
             decryptedData = rsa.Decrypt(encryptedData, RSAEncryptionPadding.OaepSHA1);
             Assert.Equal(data, decryptedData);
-
-            encryptedData = rsa.Encrypt(data, RSAEncryptionPadding.OaepSHA256);
-            decryptedData = rsa.Decrypt(encryptedData, RSAEncryptionPadding.OaepSHA256);
-            Assert.Equal(data, decryptedData);
         }
 
         [Theory]
