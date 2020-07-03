@@ -83,7 +83,7 @@ namespace JsonWebToken.Internal
                 {
                     if (bytesWritten > destination.Length)
                     {
-                        throw new Exception("bytesWritten > destination.Length");
+                        throw new Exception($"bytesWritten > destination.Length ({bytesWritten} > {destination.Length}" );
                     }
 
                     tmp.CopyTo(destination);
