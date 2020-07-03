@@ -76,21 +76,8 @@ namespace JsonWebToken.Internal
 
             try
             {
-#if SUPPORT_SPAN_CRYPTO
-                Span<byte> tmp = stackalloc byte[destination.Length * 2];
-                var res= _rsa.TryDecrypt(key, tmp, _padding, out bytesWritten);
-                if (res)
-                {
-                    if (bytesWritten > destination.Length)
-                    {
-                        throw new Exception($"bytesWritten > destination.Length ({bytesWritten} > {destination.Length}" );
-                    }
-
-                    tmp = tmp.Slice(0, bytesWritten);
-                    tmp.CopyTo(destination);
-                }
-
-                return res;
+#if SUPPORT_SPAN_CRYPTO && !NETCOREAPP2_1 && !NETCOREAPP3_0
+                return _rsa.TryDecrypt(key, tmp, _padding, out bytesWritten);
 #else
                 var result = _rsa.Decrypt(key.ToArray(), _padding);
                 bytesWritten = result.Length;
