@@ -86,6 +86,7 @@ namespace JsonWebToken.Internal
                         throw new Exception($"bytesWritten > destination.Length ({bytesWritten} > {destination.Length}" );
                     }
 
+                    tmp = tmp.Slice(0, bytesWritten);
                     tmp.CopyTo(destination);
                 }
 
