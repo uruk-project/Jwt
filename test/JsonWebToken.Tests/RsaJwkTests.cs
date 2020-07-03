@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using JsonWebToken.Cryptography;
 using JsonWebToken.Internal;
+using JsonWebToken.Tests.Cryptography;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -15,20 +16,26 @@ namespace JsonWebToken.Tests
         [Fact]
         public void RsaTest()
         {
-            RsaJwk key = RsaJwk.GenerateKey(2048, true);
+            RsaJwk key = (RsaJwk)Jwk.FromJson("{\r\n  \"kty\": \"RSA\",\r\n  \"e\": \"AQAB\",\r\n  \"n\": \"80mC34wTp_AXmleVeOXYvk8iLFe87otu0KLdLE8C-YVvIWu0YQntuFbqU_8GUGEQTJBSe94tse5yTR-OrHN_omW5Hfy0M6oIQLnS6m2cm3WN8ToZVye7mM5AtD5jRtMMob_C84P1D2JpE4hf1JrXJFRkw4by1kXY0GI0-p5LhW82IWPnya5UXEoqIP4ZN9uB0K3q4KIb34phCU64FQlLUas6syipG-WTocM8z0OdlGwAYKlmJPlmSmjUrOAEkxBs9fq549q2d-Fs14i3Gw-1YQxeEl8ghNeG3BVWjJuKh_ZNJ5mrPRIMydVu4A0VYzgr6Zw1q3Wf4y2qddoL-aYrkQ\",\r\n  \"d\": \"V7CZcYYF17RcbY9AGxGNrBrN0HnXaYvsZ1ssqTnZcqK7yaoOnCN-AcGiOKBlYDd8LnyennMYuVee71l-jX4b9ScBMGPTeAPDccEI2uKjXg1jGh284IM7xPoirFUIZ5DOrsZ1uFxJyj_Ia_ftwq4E-d1JbIiJot4OJh4fxm2j_vXA9fZahkT5DLZeUEshWDDg8EuP3cTkY6WAsPnL9MoTfCInAuf05FvOj0lAt-IgwJkToEVZlXDrNe35UFPf0bTtTb5oQZZixTbH8Dbt19v75k7p7UlKx_--gyE_ZGt0YRg-REvrnsRW52t5UlA9X39-PSOl8CnEWutw1glNi8y0WQ\",\r\n  \"dp\": \"Qk6sHCAVBzPrdUU3fG8sSSjTXEV06hJVfAkydkkSXoSGBjqabqkWLztFggi_aDjsML18gvcsxLn74JxGcgq8nnNDvCb4OQ2y-p2n9FfjaZaRcZBSgfQu3JWVwmf3jPSJAVuJMoNs2IJEFkCIsfQz3cKxOGgL3r6LsTusLDg5Lg0\",\r\n  \"dq\": \"N-s6TyzgwBaQ2kr3r63P8O1YCAUnnridaxcA-OytM_J-L7Yxcs7ypcDLPYS2_cKh0KysCVxkvN-i2b8Z_LDh_-yBUPkQMCqn3MB_hPS1emI8xYPxFwGXrio7m9suklMQGBdSvGjDH6dDEVEjih8ZZyaltVzO7eWiRT-Zo-CHDmk\",\r\n  \"p\": \"9Kf5AcLZRuVRKUJWrGpRsk1gF2sL5e5LcR8Uxpn-5hHhMkCFbEpwmOlwsrGHWZ-c-rEB0pD9JRSednmwIP5Wb6srQkBYF2BdSLxw6OiPsB_AeGatgVJPDQG8B3Y97j6jLhmTh7Dks4NPIjmUDiMxhZX2_lFKyPL6JS0EWeJFrOc\",\r\n  \"q\": \"_pFJ8pzp0wh7NsR_p-U_f1jcCDN-Cqx-rce8kRCutWDY2JmpzqRoycnQ4aBWigXTPxDxGUJUz37SSZWDKWDJLCVLbM0pfb0jMwHarqFeO3XZTOe4NdKYW6aMhUcaWF-klPALu1mLoyU_9Pp3js58BWgmn84ADFDOwe-ewTrgnMc\",\r\n  \"qi\": \"qjCyZAXJd_ga3HWOli4Ceje3vnDv2wwqfs4AfT-HYou9M_G9AfLxx2CUsLL7P8Y2lEhU-L6vRiUyHqGz5EkD1DUSdnfqT0LAndcw2EnLooX1GcPqCbi-BwjxiPiF5z2flwjYQQQ3yodv-ToTDxy3b9hVq-W1lLPlfhrJIwcEBuo\"\r\n}");
             var parameters = key.ExportParameters();
             RSA rsa = RSA.Create();
             rsa.ImportParameters(parameters);
-            var jwk = new SymmetricJwk("-PYUNdvLXVnc8yJQw7iQkSlNmAb202ZO-rfCyrAc1Lo");
-            var data = jwk.AsSpan().ToArray();
 
-            var encryptedData = rsa.Encrypt(data, RSAEncryptionPadding.Pkcs1);
-            var decryptedData = rsa.Decrypt(encryptedData, RSAEncryptionPadding.Pkcs1);
-            Assert.Equal(data, decryptedData);
+            var rsaKeyWrapper = new RsaKeyWrapper(key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaPkcs1);
+            int keyWrapSize = rsaKeyWrapper.GetKeyWrapSize();
+            Span<byte> wrappedKey = new byte[keyWrapSize];
 
-            encryptedData = rsa.Encrypt(data, RSAEncryptionPadding.OaepSHA1);
-            decryptedData = rsa.Decrypt(encryptedData, RSAEncryptionPadding.OaepSHA1);
-            Assert.Equal(data, decryptedData);
+            var cek = rsaKeyWrapper.WrapKey(null, new JwtObject(), wrappedKey);
+            var data = cek.AsSpan().ToArray();
+            var rsaKeyUnwrapper = new RsaKeyUnwrapper(key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaPkcs1);
+            var expectedData = new byte[cek.AsSpan().Length];
+
+            var unwrapped = rsaKeyUnwrapper.TryUnwrapKey(wrappedKey, expectedData, new JwtHeader(), out int bytesWritten);
+
+            Assert.True(unwrapped);
+            Assert.Equal(data.Length, bytesWritten);
+            Assert.Equal("92F88029FD3753B80550DF21683B240CD127299D12696A00CA22431370F9A794", data.ByteArrayToHex());
+            Assert.Equal("92F88029FD3753B80550DF21683B240CD127299D12696A00CA22431370F9A794", expectedData.ByteArrayToHex());
         }
 
         [Theory]
