@@ -25,7 +25,8 @@ namespace JsonWebToken.Tests
             int keyWrapSize = rsaKeyWrapper.GetKeyWrapSize();
             Span<byte> wrappedKey = new byte[keyWrapSize];
 
-            var cek = rsaKeyWrapper.WrapKey(null, new JwtObject(), wrappedKey);
+            var cek = new SymmetricJwk("-PYUNdvLXVnc8yJQw7iQkSlNmAb202ZO-rfCyrAc1Lo");
+            rsaKeyWrapper.WrapKey(cek, new JwtObject(), wrappedKey);
             var data = cek.AsSpan().ToArray();
             var rsaKeyUnwrapper = new RsaKeyUnwrapper(key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaPkcs1);
             var expectedData = new byte[cek.AsSpan().Length];
@@ -34,8 +35,8 @@ namespace JsonWebToken.Tests
 
             Assert.True(unwrapped);
             Assert.Equal(data.Length, bytesWritten);
-            Assert.Equal("92F88029FD3753B80550DF21683B240CD127299D12696A00CA22431370F9A794", data.ByteArrayToHex());
-            Assert.Equal("92F88029FD3753B80550DF21683B240CD127299D12696A00CA22431370F9A794", expectedData.ByteArrayToHex());
+            Assert.Equal("F8F61435DBCB5D59DCF32250C3B89091294D9806F6D3664EFAB7C2CAB01CD4BA", data.ByteArrayToHex());
+            Assert.Equal("F8F61435DBCB5D59DCF32250C3B89091294D9806F6D3664EFAB7C2CAB01CD4BA", expectedData.ByteArrayToHex());
         }
 
         [Theory]
