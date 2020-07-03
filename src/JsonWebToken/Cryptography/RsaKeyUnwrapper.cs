@@ -76,15 +76,27 @@ namespace JsonWebToken.Internal
 
             try
             {
-//#if SUPPORT_SPAN_CRYPTO
-//                return _rsa.TryDecrypt(key, destination, _padding, out bytesWritten);
-//#else
+#if SUPPORT_SPAN_CRYPTO
+                Span<byte> tmp = stackalloc byte[destination.Length * 2];
+                var res= _rsa.TryDecrypt(key, tmp, _padding, out bytesWritten);
+                if (res)
+                {
+                    if (bytesWritten > destination.Length)
+                    {
+                        throw new Exception("bytesWritten > destination.Length");
+                    }
+
+                    tmp.CopyTo(destination);
+                }
+
+                return res;
+#else
                 var result = _rsa.Decrypt(key.ToArray(), _padding);
                 bytesWritten = result.Length;
                 result.CopyTo(destination);
 
                 return true;
-//#endif
+#endif
             }
             catch (CryptographicException)
             {
