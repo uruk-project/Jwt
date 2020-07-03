@@ -33,8 +33,8 @@ namespace JsonWebToken.Tests
 
             var unwrapped = rsaKeyUnwrapper.TryUnwrapKey(wrappedKey, expectedData, new JwtHeader(), out int bytesWritten);
 
-            Assert.Equal(data.Length, bytesWritten);
             Assert.Equal("F8F61435DBCB5D59DCF32250C3B89091294D9806F6D3664EFAB7C2CAB01CD4BA", data.ByteArrayToHex());
+            Assert.Equal(data.Length, bytesWritten);
             Assert.Equal("F8F61435DBCB5D59DCF32250C3B89091294D9806F6D3664EFAB7C2CAB01CD4BA", expectedData.ByteArrayToHex());
             Assert.True(unwrapped);
         }
