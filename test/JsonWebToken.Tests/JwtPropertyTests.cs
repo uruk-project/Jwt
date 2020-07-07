@@ -51,7 +51,8 @@ namespace JsonWebToken.Tests
                     writer.WriteEndObject();
                 }
 
-                Assert.Equal(expected, Encoding.UTF8.GetString(bufferWriter.WrittenSpan.ToArray()));
+                string json = Encoding.UTF8.GetString(bufferWriter.WrittenSpan.ToArray());
+                Assert.Equal(expected.NormalizeToJsonNetFormat(), json.NormalizeToJsonNetFormat());
             }
         }
 
@@ -83,6 +84,71 @@ namespace JsonWebToken.Tests
             yield return new object[] { new JwtProperty("utf8String", new[] { (byte)'h', (byte)'e', (byte)'l', (byte)'l', (byte)'o' }), "{\"utf8String\":\"hello\"}" };
             yield return new object[] { new JwtProperty("boolean", true), "{\"boolean\":true}" };
             yield return new object[] { new JwtProperty("null"), "{\"null\":null}" };
+        }
+    }
+
+
+    internal static class JsonExtensions
+    {
+        // Normalize comparisons against Json.NET.
+        // Includes uppercasing the \u escaped hex characters and escaping forward slash to "\/" instead of "\u002f".
+        public static string NormalizeToJsonNetFormat(this string json, bool relaxedEscaping = true)
+        {
+            var sb = new StringBuilder(json.Length);
+            int i = 0;
+            while (i < json.Length)
+            {
+                if (json[i] == '\\')
+                {
+                    sb.Append(json[i++]);
+
+                    if (i < json.Length - 1 && json[i] == 'u')
+                    {
+                        sb.Append(json[i++]);
+
+                        if (i < json.Length - 4)
+                        {
+                            string temp = json.Substring(i, 4).ToLowerInvariant();
+                            sb.Append(temp);
+                            i += 4;
+                        }
+                    }
+                    if (i < json.Length - 1 && json[i] == '/')
+                    {
+                        // Convert / to u002f
+                        i++;
+                        sb.Append("u002f");
+                    }
+                }
+                else if (!relaxedEscaping)
+                {
+                    // Convert > to \u003e
+                    if (json[i] == '>')
+                    {
+                        i++;
+                        sb.Append("\\u003e");
+                    }
+                    // Convert < to \u003c
+                    else if (json[i] == '<')
+                    {
+                        i++;
+                        sb.Append("\\u003c");
+                    }
+                    // Remove .0
+                    else if (json[i] == '.' && json[i + 1] == '0' &&
+                        (json[i + 2] == ',' || json[i + 2] == '\n' ||
+                        json[i + 2] == ']' || json[i + 2] == '}'))
+                    {
+                        i += 2;
+                    }
+                }
+                else
+                {
+                    sb.Append(json[i++]);
+                }
+            }
+
+            return sb.ToString();
         }
     }
 }
