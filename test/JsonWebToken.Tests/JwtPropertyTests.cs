@@ -64,22 +64,22 @@ namespace JsonWebToken.Tests
             yield return new object[] { new JwtProperty("int32", 1), "{\"int32\":1}" };
             yield return new object[] { new JwtProperty("int16", (short)1), "{\"int16\":1}" };
             yield return new object[] { new JwtProperty("int8", (byte)1), "{\"int8\":1}" };
-//#if !NETCOREAPP3_0
+#if NETCOREAPP3_0
+            byte[] destination = new byte[256];
+            Utf8Formatter.TryFormat(1.0f, destination, out int bytesWritten);
+            yield return new object[] { new JwtProperty("float", 1.0f), "{\"float\":" + Encoding.UTF8.GetString(destination.AsSpan().Slice(0, bytesWritten)) + "}" };
+            Utf8Formatter.TryFormat(1.1f, destination, out  bytesWritten);
+            yield return new object[] { new JwtProperty("float", 1.1f), "{\"float\":" + Encoding.UTF8.GetString(destination.AsSpan().Slice(0, bytesWritten)) + "}" };
+            Utf8Formatter.TryFormat(1.0d, destination, out bytesWritten);
+            yield return new object[] { new JwtProperty("double", 1.0d), "{\"double\":" + Encoding.UTF8.GetString(destination.AsSpan().Slice(0, bytesWritten)) + "}" };
+            Utf8Formatter.TryFormat(1.1d, destination, out bytesWritten);
+            yield return new object[] { new JwtProperty("double", 1.1d), "{\"double\":" + Encoding.UTF8.GetString(destination.AsSpan().Slice(0, bytesWritten)) + "}" };
+#else
             yield return new object[] { new JwtProperty("float", 1.0f), "{\"float\":1}" };
             yield return new object[] { new JwtProperty("float", 1.1f), "{\"float\":" + (1.1f).ToString("G9", CultureInfo.InvariantCulture) + "}" };
             yield return new object[] { new JwtProperty("double", 1.0d), "{\"double\":1}" };
             yield return new object[] { new JwtProperty("double", 1.1d), "{\"double\":" + (1.1d).ToString("G17", CultureInfo.InvariantCulture) + "}" };
-//#else
-//            byte[] destination = new byte[256];
-//            Utf8Formatter.TryFormat(1.0f, destination, out int bytesWritten);
-//            yield return new object[] { new JwtProperty("float", 1.0f), "{\"float\":" + Encoding.UTF8.GetString(destination.AsSpan().Slice(0, bytesWritten)) + "}" };
-//            Utf8Formatter.TryFormat(1.1f, destination, out  bytesWritten);
-//            yield return new object[] { new JwtProperty("float", 1.1f), "{\"float\":" + Encoding.UTF8.GetString(destination.AsSpan().Slice(0, bytesWritten)) + "}" };
-//            Utf8Formatter.TryFormat(1.0d, destination, out bytesWritten);
-//            yield return new object[] { new JwtProperty("double", 1.0d), "{\"double\":" + Encoding.UTF8.GetString(destination.AsSpan().Slice(0, bytesWritten)) + "}" };
-//            Utf8Formatter.TryFormat(1.1d, destination, out bytesWritten);
-//            yield return new object[] { new JwtProperty("double", 1.1d), "{\"double\":" + Encoding.UTF8.GetString(destination.AsSpan().Slice(0, bytesWritten)) + "}" };
-//#endif
+#endif
             yield return new object[] { new JwtProperty("string", "hello"), "{\"string\":\"hello\"}" };
             yield return new object[] { new JwtProperty("utf8String", new[] { (byte)'h', (byte)'e', (byte)'l', (byte)'l', (byte)'o' }), "{\"utf8String\":\"hello\"}" };
             yield return new object[] { new JwtProperty("boolean", true), "{\"boolean\":true}" };
