@@ -1,4 +1,4 @@
-name: .NET Core CI/CD
+name: .NET Core CI/CD 
 on:
   push:
     branches:
