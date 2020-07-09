@@ -65,10 +65,10 @@ jobs:
           
       - name: Build
         run: dotnet build -c ${{ matrix.configuration }}
+
       - name: Test
         run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       - name: Upload test results to Artifacts
-        if: matrix.is-main
         uses: actions/upload-artifact@v2
         with:
           name: test-results
