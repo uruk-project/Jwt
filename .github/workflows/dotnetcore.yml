@@ -19,8 +19,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-#        os: [ ubuntu-latest, windows-latest, macos-latest ]
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
         configuration: [ Debug, Release ]
         include:
           - os: ubuntu-latest
@@ -66,8 +65,15 @@ jobs:
           
       - name: Build
         run: dotnet build -c ${{ matrix.configuration }}
+
       - name: Test
         run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+      - name: Upload coverage to Codecov
+        if: matrix.is-netfx
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          
       - name: Creates NuGet packages
         if: matrix.is-main
         run: dotnet pack -c ${{ matrix.configuration }} --output=nuget_packed --no-build
@@ -77,15 +83,11 @@ jobs:
         with:
           name: nuget-packages
           path: nuget_packed/*.nupkg
-      - name: Upload coverage to Codecov
-#        if: matrix.is-netfx
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+
 
   publish:
     name: Publish packages
-#    if: contains(github.ref, 'tags/v')
+    if: contains(github.ref, 'tags/v')
     needs: [build]
     runs-on: ubuntu-latest
     env:
