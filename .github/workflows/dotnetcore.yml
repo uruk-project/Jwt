@@ -1,4 +1,4 @@
-name: .NET Core CI/CD 
+name: .NET Core CI/CD
 on:
   push:
     branches:
@@ -68,11 +68,11 @@ jobs:
 
       - name: Test
         run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
-      - name: Upload test results to Artifacts
-        uses: actions/upload-artifact@v2
+      - name: Upload coverage to Codecov
+#        if: matrix.is-netfx
+        uses: codecov/codecov-action@v1
         with:
-          name: test-results
-          path: '**/coverage.opencover.xml'
+          token: ${{ secrets.CODECOV_TOKEN }}
           
       - name: Creates NuGet packages
         if: matrix.is-main
@@ -102,18 +102,3 @@ jobs:
           name: nuget-packages
       - name: Push packages to api.nuget.org
         run: dotnet nuget push **/*.nupkg --api-key=${{ secrets.NUGET_APIKEY }} --source=https://api.nuget.org/v3/index.json --skip-duplicate
-
-  publish-test:
-    name: Publish tests
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download generated test results
-        uses: actions/download-artifact@v2
-        with:
-          name: test-results
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
