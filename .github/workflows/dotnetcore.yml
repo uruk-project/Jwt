@@ -19,8 +19,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-#        os: [ ubuntu-latest, windows-latest, macos-latest ]
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
         configuration: [ Debug, Release ]
         include:
           - os: ubuntu-latest
@@ -68,6 +67,13 @@ jobs:
         run: dotnet build -c ${{ matrix.configuration }}
       - name: Test
         run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+      - name: Upload test results to Artifacts
+        if: matrix.is-main
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-results
+          path: /**/coverage.opencover.xml
+          
       - name: Creates NuGet packages
         if: matrix.is-main
         run: dotnet pack -c ${{ matrix.configuration }} --output=nuget_packed --no-build
@@ -77,15 +83,11 @@ jobs:
         with:
           name: nuget-packages
           path: nuget_packed/*.nupkg
-      - name: Upload coverage to Codecov
-#        if: matrix.is-netfx
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+
 
   publish:
     name: Publish packages
-#    if: contains(github.ref, 'tags/v')
+    if: contains(github.ref, 'tags/v')
     needs: [build]
     runs-on: ubuntu-latest
     env:
@@ -100,3 +102,18 @@ jobs:
           name: nuget-packages
       - name: Push packages to api.nuget.org
         run: dotnet nuget push **/*.nupkg --api-key=${{ secrets.NUGET_APIKEY }} --source=https://api.nuget.org/v3/index.json --skip-duplicate
+
+  publish-test:
+    name: Publish tests
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download generated test results
+        uses: actions/download-artifact@v2
+        with:
+          name: test-results
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
