@@ -19,7 +19,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+#        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ ubuntu-latest ]
         configuration: [ Debug, Release ]
         include:
           - os: ubuntu-latest
@@ -49,10 +50,6 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '3.1.x'
-#      - name: Setup dotnet '5.0.100-preview.6.20318.15'
-#        uses: actions/setup-dotnet@v1
-#        with:
-#          dotnet-version: '5.0.100-preview.6.20318.15'
       - name: DOTNET HACK
 #  https://github.com/actions/setup-dotnet/issues/25
         shell: pwsh
@@ -87,14 +84,9 @@ jobs:
       NUGET_XMLDOC_MODE: skip
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup .NET Core 3.1
-        uses: actions/setup-dotnet@v1
+      - name: Download math result for job 2
+        uses: actions/download-artifact@v1
         with:
-          dotnet-version: 3.1.x
-      - name: Build
-        run: dotnet build -c Release
-      - name: Creates NuGet packages
-        run: dotnet pack -c Release --output=nuget_packed --no-build
+          name: nuget-packages
       - name: Push packages to api.nuget.org
         run: dotnet nuget push **/*.nupkg --api-key=${{ secrets.NUGET_APIKEY }} --source=https://api.nuget.org/v3/index.json
