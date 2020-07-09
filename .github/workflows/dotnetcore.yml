@@ -72,7 +72,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: test-results
-          path: /**/coverage.opencover.xml
+          path: '**/coverage.opencover.xml'
           
       - name: Creates NuGet packages
         if: matrix.is-main
