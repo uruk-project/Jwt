@@ -180,10 +180,10 @@ namespace JsonWebToken
             Aes256GcmKW,
             Direct,
             RsaOaep,
+            RsaPkcs1,
             RsaOaep256,
             RsaOaep384,
-            RsaOaep512,
-            RsaPkcs1
+            RsaOaep512
         };
 
         /// <summary>

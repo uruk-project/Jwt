@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
@@ -21,7 +23,11 @@ namespace JsonWebToken.Internal
 #if SUPPORT_SPAN_CRYPTO
             _rsa = RSA.Create(key.ExportParameters());
 #else
+#if NET461 || NET47
+            _rsa = new RSACng();
+#else
             _rsa = RSA.Create();
+#endif
             _rsa.ImportParameters(key.ExportParameters());
 #endif
 
@@ -73,7 +79,73 @@ namespace JsonWebToken.Internal
             try
             {
 #if SUPPORT_SPAN_CRYPTO
-                return _rsa.TryDecrypt(key, destination, _padding, out bytesWritten);
+#if !NETCOREAPP2_1 && !NETCOREAPP3_0
+                ret = _rsa.TryDecrypt(key, destination, _padding, out bytesWritten);
+#else
+                // https://github.com/dotnet/corefx/pull/36601
+                bool decrypted;
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    int keySizeBytes = Key.KeySizeInBits / 8;
+
+                    // OpenSSL does not take a length value for the destination, so it can write out of bounds.
+                    // To prevent the OOB write, decrypt into a temporary buffer.
+                    if (destination.Length < keySizeBytes)
+                    {
+                        Span<byte> tmp = stackalloc byte[0];
+                        byte[]? rent = null;
+
+                        try
+                        {
+                            // RSA up through 4096 stackalloc
+                            if (Key.KeySizeInBits <= 4096)
+                            {
+                                tmp = stackalloc byte[keySizeBytes];
+                            }
+                            else
+                            {
+                                rent = ArrayPool<byte>.Shared.Rent(keySizeBytes);
+                                tmp = rent;
+                            }
+
+                            decrypted = _rsa.TryDecrypt(key, tmp, _padding, out bytesWritten);
+                            if (decrypted)
+                            {
+                                if (bytesWritten > destination.Length)
+                                {
+                                    decrypted = false;
+                                    bytesWritten = 0;
+                                }
+                                else
+                                {
+                                    tmp = tmp.Slice(0, bytesWritten);
+                                    tmp.CopyTo(destination);
+                                }
+
+                                CryptographicOperations.ZeroMemory(tmp);
+                            }
+                        }
+                        finally
+                        {
+                            if (rent != null)
+                            {
+                                // Already cleared
+                                ArrayPool<byte>.Shared.Return(rent);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        decrypted = _rsa.TryDecrypt(key, destination, _padding, out bytesWritten);
+                    }
+                }
+                else
+                {
+                    decrypted = _rsa.TryDecrypt(key, destination, _padding, out bytesWritten);
+                }
+
+                return decrypted;
+#endif
 #else
                 var result = _rsa.Decrypt(key.ToArray(), _padding);
                 bytesWritten = result.Length;
@@ -90,7 +162,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override int GetKeyUnwrapSize(int wrappedKeySize) 
+        public override int GetKeyUnwrapSize(int wrappedKeySize)
             => EncryptionAlgorithm.RequiredKeySizeInBytes;
 
         /// <inheritsdoc />

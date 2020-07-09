@@ -33,13 +33,15 @@ jobs:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       NUGET_XMLDOC_MODE: skip
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+#      COMPlus_EnableAVX: 0
+#      COMPlus_EnableSSE: 0
     steps:
       - uses: actions/checkout@master
-      - name: Setup dotnet '2.0.x'
+      - name: setup dotnet '2.0.x'
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '2.0.x'
-      - name: Setup dotnet '2.2.x'
+      - name: setup dotnet '2.2.x'
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '2.2.x'
@@ -47,10 +49,10 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '3.1.x'
-      - name: Setup dotnet '5.0.100-preview.6.20318.15'
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '5.0.100-preview.6.20318.15'
+#      - name: Setup dotnet '5.0.100-preview.6.20318.15'
+#        uses: actions/setup-dotnet@v1
+#        with:
+#          dotnet-version: '5.0.100-preview.6.20318.15'
 
       - name: DOTNET HACK
 #  https://github.com/actions/setup-dotnet/issues/25
@@ -66,9 +68,6 @@ jobs:
               Copy-Item "$from\*" $to -Recurse -Force;
             }
           
-      - name: Restore Tool
-        if: matrix.is-main
-        run: dotnet tool restore
       - name: Build
         run: dotnet build -c ${{ matrix.configuration }}
       - name: Test

@@ -51,7 +51,8 @@ namespace JsonWebToken.Tests
                     writer.WriteEndObject();
                 }
 
-                Assert.Equal(expected, Encoding.UTF8.GetString(bufferWriter.WrittenSpan.ToArray()));
+                string json = Encoding.UTF8.GetString(bufferWriter.WrittenSpan.ToArray());
+                Assert.Equal(expected, json);
             }
         }
 
@@ -63,7 +64,7 @@ namespace JsonWebToken.Tests
             yield return new object[] { new JwtProperty("int32", 1), "{\"int32\":1}" };
             yield return new object[] { new JwtProperty("int16", (short)1), "{\"int16\":1}" };
             yield return new object[] { new JwtProperty("int8", (byte)1), "{\"int8\":1}" };
-#if !NETCOREAPP3_0
+#if NETCOREAPP2_1 || NETFRAMEWORK || NETSTANDARD
             yield return new object[] { new JwtProperty("float", 1.0f), "{\"float\":1}" };
             yield return new object[] { new JwtProperty("float", 1.1f), "{\"float\":" + (1.1f).ToString("G9", CultureInfo.InvariantCulture) + "}" };
             yield return new object[] { new JwtProperty("double", 1.0d), "{\"double\":1}" };

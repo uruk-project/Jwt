@@ -26,6 +26,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.KeyVault", "sr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{81504C49-6E6B-499F-B2EE-10C5E5B69614}"
 	ProjectSection(SolutionItems) = preProject
+		.github\workflows\dotnetcore.yml = .github\workflows\dotnetcore.yml
 		global.json = global.json
 	EndProjectSection
 EndProject
@@ -83,7 +84,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FuzzTest", "fuzz\FuzzTest\F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MultiIssuersValidationSample", "samples\MultiIssuersValidationSample\MultiIssuersValidationSample.csproj", "{36269BC7-CFC5-42F4-A63B-A7F6614B9820}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JwkSample", "samples\JwkSample\JwkSample.csproj", "{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwkSample", "samples\JwkSample\JwkSample.csproj", "{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

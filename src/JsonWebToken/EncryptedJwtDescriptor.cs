@@ -90,11 +90,17 @@ namespace JsonWebToken
             if (key.TryGetKeyWrapper(encryptionAlgorithm, contentEncryptionAlgorithm, out var keyWrapper))
             {
                 var header = Header;
-                Span<byte> wrappedKey = stackalloc byte[keyWrapper.GetKeyWrapSize()];
+                byte[]? wrappedKeyToReturnToPool = null;
+                byte[]? buffer64HeaderToReturnToPool = null;
+                byte[]? arrayCiphertextToReturnToPool = null;
+                int keyWrapSize = keyWrapper.GetKeyWrapSize();
+                Span<byte> wrappedKey = keyWrapSize <= Constants.MaxStackallocBytes ?
+                    stackalloc byte[keyWrapSize] :
+                    new Span<byte>(wrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(keyWrapSize), 0, keyWrapSize);
                 var cek = keyWrapper.WrapKey(null, header, wrappedKey);
                 if (cek.TryGetAuthenticatedEncryptor(encryptionAlgorithm, out AuthenticatedEncryptor? encryptor))
                 {
-                    if (header.ContainsKey(WellKnownProperty.Kid) && key.Kid != null)
+                    if (header.ContainsKey(WellKnownProperty.Kid) && !(key.Kid is null))
                     {
                         header.Replace(new JwtProperty(WellKnownProperty.Kid, key.Kid));
                     }
@@ -107,8 +113,6 @@ namespace JsonWebToken
                         int headerJsonLength = headerJson.Length;
                         int base64EncodedHeaderLength = Base64Url.GetArraySizeRequiredToEncode(headerJsonLength);
 
-                        byte[]? buffer64HeaderToReturnToPool = null;
-                        byte[]? arrayCiphertextToReturnToPool = null;
 
                         Span<byte> base64EncodedHeader = base64EncodedHeaderLength > Constants.MaxStackallocBytes
                                ? (buffer64HeaderToReturnToPool = ArrayPool<byte>.Shared.Rent(base64EncodedHeaderLength)).AsSpan(0, base64EncodedHeaderLength)
@@ -172,6 +176,11 @@ namespace JsonWebToken
                         }
                         finally
                         {
+                            if (wrappedKeyToReturnToPool != null)
+                            {
+                                ArrayPool<byte>.Shared.Return(wrappedKeyToReturnToPool);
+                            }
+
                             if (buffer64HeaderToReturnToPool != null)
                             {
                                 ArrayPool<byte>.Shared.Return(buffer64HeaderToReturnToPool);

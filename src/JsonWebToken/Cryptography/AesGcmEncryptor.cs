@@ -50,6 +50,11 @@ namespace JsonWebToken.Internal
             }
 
             using var aes = new AesGcm(_key.K);
+            if (ciphertext.Length > plaintext.Length)
+            {
+                ciphertext = ciphertext.Slice(0, plaintext.Length);
+            }
+
             aes.Encrypt(nonce, plaintext, ciphertext, authenticationTag, associatedData);
         }
 
