@@ -68,6 +68,15 @@ jobs:
         run: dotnet build -c ${{ matrix.configuration }}
       - name: Test
         run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+      - name: Creates NuGet packages
+        if: matrix.is-main
+        run: dotnet pack -c ${{ matrix.configuration }} --output=nuget_packed --no-build
+      - name: Upload NuGet packages to Artifacts
+        if: matrix.is-main
+        uses: actions/upload-artifact@v1
+        with:
+          name: nuget-packages
+          path: nuget_packed/**/*.nupkg
       - name: Upload coverage to Codecov
         if: matrix.is-netfx
         uses: codecov/codecov-action@v1
