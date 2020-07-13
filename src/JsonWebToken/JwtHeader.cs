@@ -350,17 +350,17 @@ namespace JsonWebToken
                 {
                     writer.WriteString(HeaderParameters.EncUtf8, _encryptionAlgorithm.Utf8Name);
                 }
-                
+
                 if (!(_compressionAlgorithm is null))
                 {
                     writer.WriteString(HeaderParameters.ZipUtf8, _compressionAlgorithm.Utf8Name);
                 }
-                
+
                 if (!(_kid is null))
                 {
                     writer.WriteString(HeaderParameters.KidUtf8, _kid);
                 }
-                
+
                 if (!(_cty is null))
                 {
                     writer.WriteString(HeaderParameters.CtyUtf8, _cty);
@@ -370,7 +370,7 @@ namespace JsonWebToken
                 {
                     writer.WriteString(HeaderParameters.TypUtf8, _typ);
                 }
-                
+
                 if (!(_inner is null))
                 {
                     _inner.WriteTo(writer);

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Security.Cryptography;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -76,7 +76,7 @@ namespace JsonWebToken
         /// <summary>
         /// Encrypt the token.
         /// </summary>
-        protected void EncryptToken(EncodingContext context, ReadOnlySpan<byte> payload, IBufferWriter<byte> output)
+        protected void EncryptToken(ReadOnlySpan<byte> payload, IBufferWriter<byte> output)
         {
             EncryptionAlgorithm? encryptionAlgorithm = EncryptionAlgorithm;
             var key = Key;

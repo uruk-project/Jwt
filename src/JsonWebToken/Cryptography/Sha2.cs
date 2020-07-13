@@ -48,8 +48,8 @@ namespace JsonWebToken
             15, 14, 13, 12, 11, 10, 9, 8,
             23, 22, 21, 20, 19, 18, 17, 16,
             31, 30, 29, 28, 27, 26, 25, 24
-        };    
-        
+        };
+
         private static ReadOnlySpan<byte> LittleEndianUInt32 => new byte[32]
         {
             3, 2, 1, 0, 7, 6, 5, 4,

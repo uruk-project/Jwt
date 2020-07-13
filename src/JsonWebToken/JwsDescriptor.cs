@@ -562,7 +562,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override void Encode(EncodingContext context, IBufferWriter<byte> output)
+        public override void Encode(EncodingContext context)
         {
             var key = Key;
             var alg = (Algorithm ?? key?.SignatureAlgorithm) ?? SignatureAlgorithm.None;
@@ -604,7 +604,7 @@ namespace JsonWebToken
                     length += Base64Url.GetArraySizeRequiredToEncode(headerJson.Length);
                 }
 
-                var buffer = output.GetSpan(length).Slice(0, length);
+                var buffer = context.BufferWriter.GetSpan(length).Slice(0, length);
                 int offset;
                 if (cachedHeader != null)
                 {
@@ -628,7 +628,7 @@ namespace JsonWebToken
                 int bytesWritten = Base64Url.Encode(signature, buffer.Slice(++offset));
 
                 Debug.Assert(length == offset + bytesWritten);
-                output.Advance(length);
+                context.BufferWriter.Advance(length);
             }
             else
             {

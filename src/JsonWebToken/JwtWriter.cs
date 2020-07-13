@@ -82,8 +82,8 @@ namespace JsonWebToken
                 descriptor.Validate();
             }
 
-            var encodingContext = new EncodingContext(EnableHeaderCaching ? _headerCache : null, TokenLifetimeInSeconds, GenerateIssuedTime);
-            descriptor.Encode(encodingContext, output);
+            var encodingContext = new EncodingContext(output, EnableHeaderCaching ? _headerCache : null, TokenLifetimeInSeconds, GenerateIssuedTime);
+            descriptor.Encode(encodingContext);
         }
 
         /// <summary>

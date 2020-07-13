@@ -608,6 +608,7 @@ namespace JsonWebToken
             AsymmetricJwk jwk = PemParser.Read(pem);
             if (!(jwk is RsaJwk rsaJwk))
             {
+                jwk.Dispose();
                 ThrowHelper.ThrowInvalidOperationException_UnexpectedKeyType(jwk, Utf8.GetString(JwkTypeNames.Rsa));
                 return null;
             }

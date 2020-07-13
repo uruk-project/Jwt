@@ -56,6 +56,6 @@ namespace JsonWebToken.Internal
         public override void Dispose()
         {
         }
-    } 
+    }
 }
 #endif

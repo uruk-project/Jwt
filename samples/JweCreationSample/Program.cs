@@ -9,7 +9,7 @@ namespace JweCreationSample
         {
             // Creates a symmetric key defined for the 'HS256' algorithm
             var signatureKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
-            
+
             // Creates a symmetric key for encryption
             var encryptionKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4T");
 

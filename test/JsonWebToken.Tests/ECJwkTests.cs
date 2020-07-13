@@ -22,11 +22,17 @@ namespace JsonWebToken.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetSignatureValidationKeys))]
-        [MemberData(nameof(GetSignatureCreationKeys))]
+        [MemberData(nameof(GetValidSignatureKeys))]
         public override Signer CreateSigner_Succeed(Jwk key, SignatureAlgorithm alg)
         {
             return base.CreateSigner_Succeed(key, alg);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetInvalidKeys))]
+        public override Signer CreateSigner_Failed(Jwk key, SignatureAlgorithm alg)
+        {
+            return base.CreateSigner_Failed(key, alg);
         }
 
         [Fact]
@@ -51,7 +57,7 @@ namespace JsonWebToken.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetSignatureCreationKeys))]
+        [MemberData(nameof(GetValidSignatureKeys))]
         public override void IsSupportedSignature_Success(Jwk key, SignatureAlgorithm alg)
         {
             Assert.True(key.SupportSignature(alg));
@@ -75,34 +81,31 @@ namespace JsonWebToken.Tests
             yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs };
         }
 
-        public static IEnumerable<object[]> GetSignatureValidationKeys()
+        public static IEnumerable<object[]> GetValidSignatureKeys()
         {
             yield return new object[] { PublicEcc256Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { PublicEcc256Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { PublicEcc256Key, SignatureAlgorithm.EcdsaSha512 };
 
-            yield return new object[] { PublicEcc384Key, SignatureAlgorithm.EcdsaSha256 };
             yield return new object[] { PublicEcc384Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { PublicEcc384Key, SignatureAlgorithm.EcdsaSha512 };
 
-            yield return new object[] { PublicEcc521Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { PublicEcc521Key, SignatureAlgorithm.EcdsaSha384 };
             yield return new object[] { PublicEcc521Key, SignatureAlgorithm.EcdsaSha512 };
+
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha256 };
+
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha384 };
+
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha512 };
         }
 
-        public static IEnumerable<object[]> GetSignatureCreationKeys()
+        public static IEnumerable<object[]> GetInvalidKeys()
         {
-            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha256 };
             yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha384 };
             yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha512 };
 
             yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha384 };
             yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha512 };
 
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha256 };
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha512 };
         }
 
         [Theory]

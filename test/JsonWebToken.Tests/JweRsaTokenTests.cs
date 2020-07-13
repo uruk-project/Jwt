@@ -71,6 +71,6 @@ namespace JsonWebToken.Tests
             yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.RsaOaep384 };
             yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.RsaOaep512 };
 #endif
-            }
+        }
     }
 }

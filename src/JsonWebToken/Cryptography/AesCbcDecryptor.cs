@@ -69,7 +69,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        public override void DecryptBlock(ref byte ciphertext, ref byte plaintext) 
+        public override void DecryptBlock(ref byte ciphertext, ref byte plaintext)
             => throw new NotSupportedException();
 
         /// <inheritdoc />

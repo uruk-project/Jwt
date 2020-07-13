@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Buffers;
-using System.IO;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace JsonWebToken.Tests

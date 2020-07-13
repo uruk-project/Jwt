@@ -299,7 +299,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override bool SupportSignature(SignatureAlgorithm algorithm)
         {
-            return algorithm.Category == AlgorithmCategory.EllipticCurve;
+            return algorithm.Category == AlgorithmCategory.EllipticCurve && algorithm.RequiredKeySizeInBits == KeySizeInBits;
         }
 
         /// <inheritdoc />
@@ -515,6 +515,7 @@ namespace JsonWebToken
             Jwk jwk = Jwk.FromPem(pem);
             if (!(jwk is ECJwk ecJwk))
             {
+                jwk.Dispose();
                 ThrowHelper.ThrowInvalidOperationException_UnexpectedKeyType(jwk, Utf8.GetString(JwkTypeNames.EllipticCurve));
                 return null;
             }

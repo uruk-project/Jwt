@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Xunit;
-using System.Buffers.Text;
 
 namespace JsonWebToken.Tests
 {
@@ -72,7 +72,7 @@ namespace JsonWebToken.Tests
             byte[] destination = new byte[256];
             Utf8Formatter.TryFormat(1.0f, destination, out int bytesWritten);
             yield return new object[] { new JwtProperty("float", 1.0f), "{\"float\":" + Encoding.UTF8.GetString(destination.AsSpan().Slice(0, bytesWritten)) + "}" };
-            Utf8Formatter.TryFormat(1.1f, destination, out  bytesWritten);
+            Utf8Formatter.TryFormat(1.1f, destination, out bytesWritten);
             yield return new object[] { new JwtProperty("float", 1.1f), "{\"float\":" + Encoding.UTF8.GetString(destination.AsSpan().Slice(0, bytesWritten)) + "}" };
             Utf8Formatter.TryFormat(1.0d, destination, out bytesWritten);
             yield return new object[] { new JwtProperty("double", 1.0d), "{\"double\":" + Encoding.UTF8.GetString(destination.AsSpan().Slice(0, bytesWritten)) + "}" };

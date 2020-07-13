@@ -132,8 +132,8 @@ namespace JsonWebToken.Internal
 #if SUPPORT_SIMD
                     _decryptor.DecryptBlock(ref blockRef, ref bRef);
 #else
-                    Span<byte> b = decryptor.TransformFinalBlock(block, 0, 16);
-                    ref byte bRef = ref MemoryMarshal.GetReference(b);
+                        Span<byte> b = decryptor.TransformFinalBlock(block, 0, 16);
+                        ref byte bRef = ref MemoryMarshal.GetReference(b);
 #endif
                     a = Unsafe.ReadUnaligned<ulong>(ref bRef);
                     Unsafe.WriteUnaligned(ref rCurrent, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
@@ -214,7 +214,7 @@ namespace JsonWebToken.Internal
                 _aes = aes;
             }
 
-            public override ICryptoTransform Create() 
+            public override ICryptoTransform Create()
                 => _aes.CreateDecryptor();
         }
 #endif

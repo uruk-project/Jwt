@@ -1,11 +1,26 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Xunit;
+
+/* Unmerged change from project 'JsonWebToken.SecurityEventTokens.Tests (net461)'
+Before:
 using System.Text;
 using JsonWebToken.Internal;
+After:
+using JsonWebToken.Internal;
+using Newtonsoft.Internal;
+*/
+
+/* Unmerged change from project 'JsonWebToken.SecurityEventTokens.Tests (netcoreapp2.2)'
+Before:
+using System.Text;
+using JsonWebToken.Internal;
+After:
+using JsonWebToken.Internal;
+using Newtonsoft.Internal;
+*/
+using Xunit;
 #if NETCOREAPP3_0
 using System.Text.Json;
 #endif

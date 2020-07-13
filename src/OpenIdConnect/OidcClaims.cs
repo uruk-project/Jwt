@@ -108,9 +108,9 @@ namespace JsonWebToken
         /// </summary>
         public static ReadOnlySpan<byte> WebsiteUtf8 => new[] { (byte)'w', (byte)'e', (byte)'b', (byte)'s', (byte)'i', (byte)'t', (byte)'e' };
 
-    /// <summary>
-    /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
-    /// </summary>
+        /// <summary>
+        /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+        /// </summary>
         public static ReadOnlySpan<byte> EmailVerifiedUtf8 => new[] { (byte)'e', (byte)'m', (byte)'a', (byte)'i', (byte)'l', (byte)'_', (byte)'v', (byte)'e', (byte)'r', (byte)'i', (byte)'f', (byte)'i', (byte)'e', (byte)'d' };
 
         /// <summary>
@@ -126,11 +126,11 @@ namespace JsonWebToken
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         /// </summary>
-        public static ReadOnlySpan<byte> PhoneNumberUtf8  => new[] { (byte)'p', (byte)'h', (byte)'o', (byte)'n', (byte)'e', (byte)'_', (byte)'n', (byte)'u', (byte)'m', (byte)'b', (byte)'e', (byte)'r' };
+        public static ReadOnlySpan<byte> PhoneNumberUtf8 => new[] { (byte)'p', (byte)'h', (byte)'o', (byte)'n', (byte)'e', (byte)'_', (byte)'n', (byte)'u', (byte)'m', (byte)'b', (byte)'e', (byte)'r' };
 
-    /// <summary>
-    /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
-    /// </summary>
+        /// <summary>
+        /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+        /// </summary>
         public static ReadOnlySpan<byte> PhoneNumberVerifiedUtf8 => new[] { (byte)'p', (byte)'h', (byte)'o', (byte)'n', (byte)'e', (byte)'_', (byte)'n', (byte)'u', (byte)'m', (byte)'b', (byte)'e', (byte)'r', (byte)'_', (byte)'v', (byte)'e', (byte)'r', (byte)'i', (byte)'f', (byte)'i', (byte)'e', (byte)'d' };
 
         /// <summary>

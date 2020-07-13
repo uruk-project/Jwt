@@ -62,7 +62,7 @@ namespace JsonWebToken
         /// A encryption algorithm.
         /// </summary>
         EncryptionAlgorithm = 11,
-        
+
         /// <summary>
         /// A compression algorithm.
         /// </summary>

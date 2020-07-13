@@ -24,6 +24,6 @@ namespace JsonWebToken
         /// <summary>
         /// https://tools.ietf.org/html/rfc8417#section-2.2
         /// </summary>
-        public static ReadOnlySpan<byte> ToeUtf8 => new byte[]{(byte)'t', (byte)'o', (byte)'e'};
+        public static ReadOnlySpan<byte> ToeUtf8 => new byte[] { (byte)'t', (byte)'o', (byte)'e' };
     }
 }

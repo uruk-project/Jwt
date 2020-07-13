@@ -13,7 +13,7 @@ namespace JsonWebToken.Tests
 
         public JsonWebTokenWriterTests(KeyFixture keys, TokenFixture tokens)
         {
-            _keys=keys;
+            _keys = keys;
             _tokens = tokens;
         }
 

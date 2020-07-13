@@ -32,7 +32,7 @@ namespace JsonWebToken
         {
             return Get(address, new HttpDocumentRetriever(httpClient), cancellationToken);
         }
-        
+
         /// <summary>
         /// Retrieves a populated <see cref="OpenIdConnectConfiguration"/> given an address and an <see cref="DocumentRetriever"/>.
         /// </summary>

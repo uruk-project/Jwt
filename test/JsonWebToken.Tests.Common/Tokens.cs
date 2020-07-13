@@ -1,10 +1,10 @@
-﻿using JsonWebToken.Internal;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using JsonWebToken.Internal;
+using Newtonsoft.Json.Linq;
 
 namespace JsonWebToken.Tests
 {

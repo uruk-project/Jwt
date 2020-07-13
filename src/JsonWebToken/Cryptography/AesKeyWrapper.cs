@@ -124,24 +124,24 @@ namespace JsonWebToken.Internal
             try
             {
 #endif
-                for (var j = 0; j < 6; j++)
+            for (var j = 0; j < 6; j++)
+            {
+                for (var i = 0; i < n3; i++)
                 {
-                    for (var i = 0; i < n3; i++)
-                    {
-                        Unsafe.WriteUnaligned(ref blockRef, a);
-                        Unsafe.WriteUnaligned(ref block2Ref, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3))));
+                    Unsafe.WriteUnaligned(ref blockRef, a);
+                    Unsafe.WriteUnaligned(ref block2Ref, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3))));
 #if SUPPORT_SIMD
-                        _encryptor.EncryptBlock(ref blockRef, ref bRef);
+                    _encryptor.EncryptBlock(ref blockRef, ref bRef);
 #else
                         Span<byte> b = encryptor.TransformFinalBlock(block, 0, 16);
                         ref byte bRef = ref MemoryMarshal.GetReference(b);
 #endif
-                        a = Unsafe.ReadUnaligned<ulong>(ref bRef);
-                        Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i + 1));
-                        a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
-                        Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3)), Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
-                    }
+                    a = Unsafe.ReadUnaligned<ulong>(ref bRef);
+                    Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i + 1));
+                    a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
+                    Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3)), Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
                 }
+            }
 #if !SUPPORT_SIMD
             }
             finally
@@ -156,13 +156,13 @@ namespace JsonWebToken.Internal
             return contentEncryptionKey;
         }
 
-        public override int GetKeyWrapSize() 
+        public override int GetKeyWrapSize()
             => GetKeyWrappedSize(EncryptionAlgorithm);
 
-        public static int GetKeyUnwrappedSize(int wrappedKeySize) 
+        public static int GetKeyUnwrappedSize(int wrappedKeySize)
             => wrappedKeySize - BlockSizeInBytes;
 
-        public static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm) 
+        public static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm)
             => encryptionAlgorithm.KeyWrappedSizeInBytes;
 
 #if !SUPPORT_SIMD
@@ -211,7 +211,7 @@ namespace JsonWebToken.Internal
                 _aes = aes;
             }
 
-            public override ICryptoTransform Create() 
+            public override ICryptoTransform Create()
                 => _aes.CreateEncryptor();
         }
 #endif

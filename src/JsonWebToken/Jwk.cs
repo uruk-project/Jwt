@@ -21,7 +21,9 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class Jwk : IEquatable<Jwk>, IDisposable
     {
+#if SUPPORT_ELLIPTIC_CURVE
         private const uint EC = 17221u;
+#endif
         private const uint RSA = 4281170u;
         private const uint oct = 7627631u;
         private const uint alg = 6777953u;
@@ -36,7 +38,7 @@ namespace JsonWebToken
         /// <summary>
         /// An empty <see cref="Jwk"/>.
         /// </summary>
-        public static Jwk Empty = new NullJwk();
+        public static readonly Jwk Empty = new NullJwk();
 
         private CryptographicStore<Signer>? _signers;
         private CryptographicStore<KeyWrapper>? _keyWrappers;

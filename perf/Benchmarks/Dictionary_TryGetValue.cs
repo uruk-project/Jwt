@@ -1,11 +1,10 @@
-﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
-using JsonWebToken.Internal;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Diagnosers;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken.Performance
 {

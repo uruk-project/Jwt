@@ -24,9 +24,9 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             }
 
-            if (key.KeySizeInBits < 256)
+            if (key.KeySizeInBits != algorithm.RequiredKeySizeInBits)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_SigningKeyTooSmall(key, 256);
+                ThrowHelper.ThrowArgumentOutOfRangeException_InvalidSigningKeySize(key, algorithm.RequiredKeySizeInBits);
             }
 
             _canOnlyVerify = !key.HasPrivateKey;

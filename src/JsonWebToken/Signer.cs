@@ -60,7 +60,7 @@ namespace JsonWebToken
         /// <param name="signature">signature to compare against.</param>
         /// <returns>true if the computed signature matches the signature parameter, false otherwise.</returns>
         public abstract bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature);
-    
+
         /// <summary>
         /// Calls <see cref="Dispose(bool)"/> and <see cref="GC.SuppressFinalize"/>
         /// </summary>

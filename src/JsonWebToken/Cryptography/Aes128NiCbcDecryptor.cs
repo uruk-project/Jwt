@@ -100,7 +100,7 @@ namespace JsonWebToken.Internal
             }
 
             int left = plaintext.Length & BlockSize - 1;
-         
+
 
         Invalid:
             bytesWritten = 0;

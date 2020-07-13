@@ -80,7 +80,7 @@ namespace JsonWebToken.Performance
             {
                 return JwtDotNetCore(token.InvalidTokenString, SigningKey, true);
             }
-            catch (Exception )
+            catch (Exception)
             {
                 return null!;
             }

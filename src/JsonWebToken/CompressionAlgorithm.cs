@@ -128,7 +128,7 @@ namespace JsonWebToken
         /// <param name="y"></param>
         /// <returns></returns>
         public static bool operator !=(CompressionAlgorithm? x, CompressionAlgorithm? y)
-        {        
+        {
             // Fast path: should be singletons
             if (ReferenceEquals(x, y))
             {

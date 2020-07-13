@@ -1,9 +1,5 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Xunit;
@@ -30,7 +26,7 @@ namespace JsonWebToken.Tests
         public void CreateFromCertificate(X509Certificate2 certificate, bool hasPrivateKey, int keySize)
         {
             var jwk = Jwk.FromX509Certificate(certificate, hasPrivateKey);
-            
+
             Assert.Equal(keySize, jwk.KeySizeInBits);
             Assert.Equal(hasPrivateKey, jwk.HasPrivateKey);
         }

@@ -1,5 +1,4 @@
-﻿using BenchmarkDotNet.Attributes;
-using System;
+﻿using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -11,6 +10,7 @@ using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using System.Security.Cryptography;
 using System.Text;
+using BenchmarkDotNet.Attributes;
 
 namespace JsonWebToken.Performance
 {
@@ -41,7 +41,7 @@ namespace JsonWebToken.Performance
             return _buffer;
         }
 
-        private static readonly byte[] W = new byte[80*8];
+        private static readonly byte[] W = new byte[80 * 8];
 
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetData))]

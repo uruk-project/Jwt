@@ -1,8 +1,6 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using System.Buffers;
-
 namespace JsonWebToken
 {
     /// <summary>
@@ -30,9 +28,9 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
-        public override void Encode(EncodingContext context, IBufferWriter<byte> output)
+        public override void Encode(EncodingContext context)
         {
-            EncryptToken(context, Payload, output);
+            EncryptToken(Payload, context.BufferWriter);
         }
     }
 }

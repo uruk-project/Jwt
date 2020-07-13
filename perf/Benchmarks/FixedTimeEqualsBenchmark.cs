@@ -67,7 +67,7 @@ namespace JsonWebToken.Performance
             System.Security.Cryptography.RandomNumberGenerator.Fill(a);
             System.Security.Cryptography.RandomNumberGenerator.Fill(b);
 
-            return  new FixedTimeEqualsBenchmarkItem(a, b);
+            return new FixedTimeEqualsBenchmarkItem(a, b);
         }
 
         public class FixedTimeEqualsBenchmarkItem

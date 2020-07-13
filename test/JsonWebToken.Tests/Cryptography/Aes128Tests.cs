@@ -17,7 +17,7 @@ namespace JsonWebToken.Tests.Cryptography
         public void GfsBoxKatv(string plaintext, string expectedCiphertext)
         {
             VerifyGfsBoxKat(plaintext.HexToByteArray(), expectedCiphertext.HexToByteArray(), "00000000000000000000000000000000".HexToByteArray());
-        }   
+        }
 
         [Theory]
         [InlineData("10a58869d74be5a374cf867cfb473859", "6d251e6944b051e04eaa6fb4dbf78465")]

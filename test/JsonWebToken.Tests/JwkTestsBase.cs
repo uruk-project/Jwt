@@ -1,7 +1,7 @@
-﻿using JsonWebToken.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using JsonWebToken.Internal;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -19,6 +19,15 @@ namespace JsonWebToken.Tests
             return encryptor;
         }
 
+        public virtual AuthenticatedEncryptor CreateAuthenticatedEncryptor_Failed(Jwk key, EncryptionAlgorithm enc)
+        {
+            var created = key.TryGetAuthenticatedEncryptor(enc, out var encryptor);
+            _disposables.Add(encryptor);
+            Assert.False(created);
+            Assert.Null(encryptor);
+            return encryptor;
+        }
+
         public virtual KeyWrapper CreateKeyWrapper_Succeed(Jwk key, EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
             bool created = key.TryGetKeyWrapper(enc, alg, out var keyWrapper);
@@ -26,14 +35,32 @@ namespace JsonWebToken.Tests
             Assert.True(created);
             Assert.NotNull(keyWrapper);
             return keyWrapper;
-
         }
+
+        public virtual KeyWrapper CreateKeyWrapper_Failed(Jwk key, EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
+        {
+            bool created = key.TryGetKeyWrapper(enc, alg, out var keyWrapper);
+            _disposables.Add(keyWrapper);
+            Assert.False(created);
+            Assert.Null(keyWrapper);
+            return keyWrapper;
+        }
+
         public virtual Signer CreateSigner_Succeed(Jwk key, SignatureAlgorithm alg)
         {
             var created = key.TryGetSigner(alg, out var signer);
             _disposables.Add(signer);
             Assert.True(created);
             Assert.NotNull(signer);
+            return signer;
+        }
+
+        public virtual Signer CreateSigner_Failed(Jwk key, SignatureAlgorithm alg)
+        {
+            var created = key.TryGetSigner(alg, out var signer);
+            _disposables.Add(signer);
+            Assert.False(created);
+            Assert.Null(signer);
             return signer;
         }
 

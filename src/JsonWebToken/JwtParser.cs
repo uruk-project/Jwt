@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -141,7 +139,7 @@ namespace JsonWebToken
             ThrowHelper.ThrowFormatException_MalformedJson();
             return default;
         }
-        
+
         /// <summary>
         /// Use the <paramref name="reader"/> as JSON input and returns a <see cref="JwtArray"/>.
         /// </summary>

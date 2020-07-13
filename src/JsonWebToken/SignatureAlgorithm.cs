@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
 
@@ -186,7 +185,7 @@ namespace JsonWebToken
         /// Returns the hash code for this <see cref="SignatureAlgorithm"/>.
         /// </summary>
         /// <returns></returns>
-        public override int GetHashCode() 
+        public override int GetHashCode()
             => _id.GetHashCode();
 
         /// <summary>

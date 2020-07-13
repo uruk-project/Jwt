@@ -1,8 +1,8 @@
-﻿#if NETCOREAPP3_0 ||NET47
-using JsonWebToken.Internal;
-using Newtonsoft.Json.Linq;
+﻿#if NETCOREAPP3_0 || NET47
 using System.Collections.Generic;
 using System.Text;
+using JsonWebToken.Internal;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace JsonWebToken.Tests

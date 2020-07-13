@@ -12,7 +12,7 @@ namespace JsonWebToken.Internal
         {
         }
 
-        public override int GetKeyWrapSize() 
+        public override int GetKeyWrapSize()
             => 0;
 
         public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)

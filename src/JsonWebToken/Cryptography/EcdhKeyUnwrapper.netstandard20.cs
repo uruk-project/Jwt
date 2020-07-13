@@ -6,7 +6,7 @@ using System;
 
 namespace JsonWebToken.Internal
 {
-   internal sealed class EcdhKeyUnwrapper : KeyUnwrapper
+    internal sealed class EcdhKeyUnwrapper : KeyUnwrapper
     {
         public EcdhKeyUnwrapper(Jwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)

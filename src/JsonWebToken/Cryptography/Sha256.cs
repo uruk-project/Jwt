@@ -7,7 +7,6 @@ using System.Buffers.Binary;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 #if SUPPORT_SIMD
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
