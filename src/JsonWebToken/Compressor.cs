@@ -27,7 +27,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public abstract ReadOnlySequence<byte> Decompress(ReadOnlySpan<byte> compressedData);
 
-        private class NullCompressor : Compressor
+        private sealed class NullCompressor : Compressor
         {
             public override Span<byte> Compress(ReadOnlySpan<byte> data)
             {

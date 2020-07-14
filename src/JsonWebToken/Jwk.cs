@@ -1114,7 +1114,7 @@ namespace JsonWebToken
             writer.WriteString(propertyName, buffer.Slice(0, bytesWritten));
         }
 
-        internal class NullJwk : Jwk
+        internal sealed class NullJwk : Jwk
         {
             public override ReadOnlySpan<byte> Kty => ReadOnlySpan<byte>.Empty;
 

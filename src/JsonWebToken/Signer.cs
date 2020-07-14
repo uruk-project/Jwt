@@ -76,7 +76,7 @@ namespace JsonWebToken
         /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer</param>     
         protected abstract void Dispose(bool disposing);
 
-        private class EmptySigner : Signer
+        private sealed class EmptySigner : Signer
         {
             public EmptySigner()
                 : base(SignatureAlgorithm.None)
