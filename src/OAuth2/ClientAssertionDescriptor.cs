@@ -34,8 +34,8 @@ namespace JsonWebToken
 
             base.Validate();
 
-            RequireClaim(Claims.IssUtf8, JwtTokenType.String );
-            RequireClaim(Claims.SubUtf8, JwtTokenType.String );
+            RequireClaim(Claims.IssUtf8, JwtTokenType.String);
+            RequireClaim(Claims.SubUtf8, JwtTokenType.String);
             ValidateClaim(Claims.AudUtf8, new[] { JwtTokenType.String, JwtTokenType.Array });
             RequireClaim(Claims.ExpUtf8, JwtTokenType.Integer);
         }

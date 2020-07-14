@@ -1,12 +1,14 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
+using System;
+
 namespace JsonWebToken.Internal
 {
     /// <summary>
     /// Represents a <see cref="IValidator"/> verifying the JWT has a required claim.
     /// </summary>
-    internal class RequiredStringClaimValidator : IValidator
+    internal sealed class RequiredStringClaimValidator : IValidator
     {
         private readonly string _claim;
         private readonly string _value;
@@ -51,7 +53,7 @@ namespace JsonWebToken.Internal
                 return TokenValidationResult.MissingClaim(jwt, _claim);
             }
 
-            if (!string.Equals(_value, (string?)claim))
+            if (!string.Equals(_value, (string?)claim, StringComparison.Ordinal))
             {
                 return TokenValidationResult.InvalidClaim(jwt, _claim);
             }

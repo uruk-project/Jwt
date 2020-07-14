@@ -1,8 +1,8 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
 using System;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -51,7 +51,7 @@ namespace JsonWebToken
                 {
                     return null;
                 }
-                
+
                 return Payload.TryGetValue(SetClaims.ToeUtf8, out var property) ? EpochTime.ToDateTime((long?)property.Value) : null;
             }
         }

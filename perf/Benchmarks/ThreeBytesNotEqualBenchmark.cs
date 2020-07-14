@@ -1,10 +1,10 @@
 ﻿#if NETCOREAPP3_0
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Diagnosers;
 
 namespace JsonWebToken.Performance
 {
@@ -39,7 +39,7 @@ namespace JsonWebToken.Performance
         [Benchmark]
         public void NotEquals2()
         {
-            ThreeBytesEqual2(ref MemoryMarshal.GetReference(valueSpan.AsSpan()), ref notEqual[0], valueSpan.Length); 
+            ThreeBytesEqual2(ref MemoryMarshal.GetReference(valueSpan.AsSpan()), ref notEqual[0], valueSpan.Length);
         }
 
         [Benchmark]
@@ -79,7 +79,7 @@ namespace JsonWebToken.Performance
 
             return true;
 
-            NotEqual: // Workaround for https://github.com/dotnet/coreclr/issues/13549
+        NotEqual: // Workaround for https://github.com/dotnet/coreclr/issues/13549
             return false;
         }
 
@@ -108,7 +108,7 @@ namespace JsonWebToken.Performance
 
             return true;
 
-            NotEqual: // Workaround for https://github.com/dotnet/coreclr/issues/13549
+        NotEqual: // Workaround for https://github.com/dotnet/coreclr/issues/13549
             return false;
         }
 
@@ -123,7 +123,7 @@ namespace JsonWebToken.Performance
             return ((uint)first << 16 | (uint)Unsafe.Add(ref first, 1) << 8 | Unsafe.Add(ref first, 2))
                 == ((uint)second << 16 | (uint)Unsafe.Add(ref second, 1) << 8 | Unsafe.Add(ref second, 2));
 
-            NotEqual: // Workaround for https://github.com/dotnet/coreclr/issues/13549
+        NotEqual: // Workaround for https://github.com/dotnet/coreclr/issues/13549
             return false;
         }
 
@@ -144,7 +144,7 @@ namespace JsonWebToken.Performance
 
             return Unsafe.Add(ref first, 2).Equals(Unsafe.Add(ref second, 2));
 
-            NotEqual: // Workaround for https://github.com/dotnet/coreclr/issues/13549
+        NotEqual: // Workaround for https://github.com/dotnet/coreclr/issues/13549
             return false;
         }
     }

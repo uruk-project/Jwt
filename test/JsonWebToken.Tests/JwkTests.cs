@@ -1,6 +1,4 @@
-﻿using Xunit;
-
-namespace JsonWebToken.Tests
+﻿namespace JsonWebToken.Tests
 {
     public class JwkTests
     {

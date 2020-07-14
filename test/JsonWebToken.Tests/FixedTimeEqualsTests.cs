@@ -106,7 +106,7 @@ namespace JsonWebToken.Tests
             Assert.False(isEqualA, "value, value missing last byte");
             Assert.False(isEqualB, "value missing last byte, value");
         }
-        
+
         [Fact]
         public static void EmptyReturnTrue()
         {

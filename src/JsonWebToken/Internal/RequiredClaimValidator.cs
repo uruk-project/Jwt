@@ -6,7 +6,7 @@ namespace JsonWebToken.Internal
     /// <summary>
     /// Represents a <see cref="IValidator"/> verifying the JWT has a required claim.
     /// </summary>
-    internal class RequiredClaimValidator : IValidator
+    internal sealed class RequiredClaimValidator : IValidator
     {
         private readonly string _claim;
 

@@ -1,14 +1,14 @@
-﻿using Xunit;
-using System;
-using JsonWebToken.Internal;
+﻿using System;
 using System.Text;
+using JsonWebToken.Internal;
+using Xunit;
 
 namespace JsonWebToken.Tests
 {
     public class KwTests
     {
         private readonly SymmetricJwk _keyToWrap = SymmetricJwk.FromBase64Url("U1oK6e4BAR4kKTdyA1OqEFYwX9pIrswuUMNt8qW4z-k");
-        private readonly SymmetricJwk _key= SymmetricJwk.FromByteArray(Encoding.UTF8.GetBytes("gXoKEcss-xFuZceE"));
+        private readonly SymmetricJwk _key = SymmetricJwk.FromByteArray(Encoding.UTF8.GetBytes("gXoKEcss-xFuZceE"));
 
         [Fact]
         public void WrapUnwrap()

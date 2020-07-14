@@ -18,7 +18,7 @@ namespace JsonWebToken
         /// <param name="header"></param>
         /// <returns></returns>
         public Jwk[] GetKeys(JwtHeader header)
-        {            
+        {
             return _empty;
         }
     }

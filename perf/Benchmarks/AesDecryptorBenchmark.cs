@@ -54,7 +54,7 @@ namespace JsonWebToken.Performance
 
         private static byte[] GetCiphertext(byte[] plaintext)
         {
-           var ciphertext = (new byte[(plaintext.Length + 16) & ~15]);
+            var ciphertext = (new byte[(plaintext.Length + 16) & ~15]);
 
             _encryptor.Encrypt(plaintext, nonce, ciphertext);
             return ciphertext;

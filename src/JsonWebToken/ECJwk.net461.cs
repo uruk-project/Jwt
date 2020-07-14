@@ -13,9 +13,6 @@ namespace JsonWebToken
     public sealed class ECJwk : AsymmetricJwk
     {
         /// <inheritsdoc />
-        public override bool HasPrivateKey => throw new NotImplementedException();
-
-        /// <inheritsdoc />
         public override ReadOnlySpan<byte> Kty => throw new NotImplementedException();
 
         /// <inheritsdoc />

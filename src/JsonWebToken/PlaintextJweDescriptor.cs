@@ -31,7 +31,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override void Encode(EncodingContext context, IBufferWriter<byte> output)
+        public override void Encode(EncodingContext context)
         {
             int payloadLength = Utf8.GetMaxByteCount(Payload.Length);
             byte[]? payloadToReturnToPool = null;
@@ -42,7 +42,7 @@ namespace JsonWebToken
             try
             {
                 int bytesWritten = Utf8.GetBytes(Payload, encodedPayload);
-                EncryptToken(context, encodedPayload.Slice(0, bytesWritten), output);
+                EncryptToken(encodedPayload.Slice(0, bytesWritten), context.BufferWriter);
             }
             finally
             {

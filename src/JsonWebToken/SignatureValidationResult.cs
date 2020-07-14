@@ -36,7 +36,7 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of the <see cref="SignatureValidationResult"/> class.
         /// </summary>
-        public SignatureValidationResult(TokenValidationStatus status, Jwk signingKey) 
+        public SignatureValidationResult(TokenValidationStatus status, Jwk signingKey)
         {
             Status = status;
             SigningKey = signingKey;
@@ -101,7 +101,7 @@ namespace JsonWebToken
         /// <summary>
         /// The signature is not base64url encoded.
         /// </summary>
-        public static SignatureValidationResult MalformedSignature() 
+        public static SignatureValidationResult MalformedSignature()
             => _signatureValidationResult;
     }
 }

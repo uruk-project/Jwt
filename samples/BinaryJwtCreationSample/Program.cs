@@ -1,5 +1,5 @@
-﻿using JsonWebToken;
-using System;
+﻿using System;
+using JsonWebToken;
 
 namespace BinaryJwtCreationSample
 {

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using JsonWebToken.Internal;
@@ -142,9 +141,8 @@ namespace JsonWebToken
         /// Encodes the current <see cref="JwtDescriptor"/> into it <see cref="string"/> representation.
         /// </summary>
         /// <param name="context"></param>
-        /// <param name="output"></param>
         /// <returns></returns>
-        public abstract void Encode(EncodingContext context, IBufferWriter<byte> output);
+        public abstract void Encode(EncodingContext context);
 
         /// <summary>
         /// Gets the header parameter for a specified header name.

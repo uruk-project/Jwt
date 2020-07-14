@@ -70,8 +70,8 @@ namespace JsonWebToken.Cryptography
         public AsnReader ReadBitString()
         {
             return new AsnReader(ReadBitStringBytes());
-        }   
-        
+        }
+
         public ReadOnlySpan<byte> ReadBitStringBytes()
         {
             if (!Read())

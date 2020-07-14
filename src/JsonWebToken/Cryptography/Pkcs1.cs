@@ -2,7 +2,7 @@
 
 namespace JsonWebToken.Cryptography
 {
-    internal class Pkcs1
+    internal static class Pkcs1
     {
         public const string PublicRsaKeyPrefix = "-----BEGIN RSA PUBLIC KEY-----";
         public const string PublicRsaKeySuffix = "-----END RSA PUBLIC KEY-----";

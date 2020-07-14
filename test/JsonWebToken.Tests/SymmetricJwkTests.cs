@@ -1,8 +1,8 @@
-﻿using JsonWebToken.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using JsonWebToken.Internal;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -33,7 +33,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public override void Canonicalize()
         {
-            var jwk = SymmetricJwk.GenerateKey(256);
+            var jwk = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256);
             var canonicalizedKey = (SymmetricJwk)CanonicalizeKey(jwk);
             Assert.NotEqual(0, canonicalizedKey.K.Length);
         }
@@ -118,7 +118,7 @@ namespace JsonWebToken.Tests
             Assert.NotNull(key);
             var jwk = Assert.IsType<SymmetricJwk>(key);
 
-            Assert.Equal(KeyManagementAlgorithm.Aes128KW.Utf8Name, jwk.Alg);
+            Assert.Equal(KeyManagementAlgorithm.Aes128KW, jwk.KeyManagementAlgorithm);
             Assert.Equal("kid1", jwk.Kid);
             Assert.True(jwk.K.SequenceEqual(Base64Url.Decode("GawgguFyGrWKav7AX4VKUg")));
             Assert.True(JwkUseNames.Sig.SequenceEqual(jwk.Use));
@@ -150,7 +150,7 @@ namespace JsonWebToken.Tests
             var key = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256);
             key.Kid = "kid1";
             key.KeyOps.Add("sign");
-            key.Use = JwkUseNames.Sig.ToArray();
+            key.Use = JwkUseNames.Sig;
             key.X5t = Base64Url.Decode("dGhpcyBpcyBhIFNIQTEgdGVzdCE");
             key.X5tS256 = Base64Url.Decode("dGhpcyBpcyBhIFNIQTI1NiB0ZXN0ISAgICAgICAgICAgIA");
             key.X5u = "https://example.com";

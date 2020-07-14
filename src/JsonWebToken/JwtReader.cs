@@ -359,7 +359,7 @@ namespace JsonWebToken
             }
         }
 
-        private TokenValidationResult TryReadJws(
+        private static TokenValidationResult TryReadJws(
             ReadOnlySpan<byte> utf8Buffer,
             TokenValidationPolicy policy,
             ref TokenSegment segments,
@@ -446,7 +446,7 @@ namespace JsonWebToken
             }
         }
 
-        private bool TryDecryptToken(
+        private static bool TryDecryptToken(
             ReadOnlySpan<byte> rawHeader,
             ReadOnlySpan<byte> rawCiphertext,
             ReadOnlySpan<byte> rawInitializationVector,

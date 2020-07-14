@@ -3,9 +3,9 @@
 
 using System;
 using System.Buffers;
-using System.Security.Cryptography;
-using System.Diagnostics;
 using System.Buffers.Binary;
+using System.Diagnostics;
+using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
 {

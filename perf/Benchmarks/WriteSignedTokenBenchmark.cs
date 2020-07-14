@@ -1,5 +1,5 @@
-﻿using BenchmarkDotNet.Attributes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using BenchmarkDotNet.Attributes;
 
 namespace JsonWebToken.Performance
 {

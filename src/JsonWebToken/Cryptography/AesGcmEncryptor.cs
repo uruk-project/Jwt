@@ -37,7 +37,7 @@ namespace JsonWebToken.Internal
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
             }
-      
+
             _key = key;
         }
 
@@ -78,6 +78,6 @@ namespace JsonWebToken.Internal
         {
             _disposed = true;
         }
-    } 
+    }
 }
 #endif

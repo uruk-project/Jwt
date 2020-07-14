@@ -15,7 +15,7 @@ namespace JsonWebToken.Internal
         {
             throw new NotSupportedException();
         }
-        
+
         /// <inheritdoc />
         public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
         {

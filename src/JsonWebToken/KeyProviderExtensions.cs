@@ -9,7 +9,7 @@ namespace JsonWebToken
     public static class KeyProviderExtensions
     {
         private static readonly JwtHeader emptyHeader = new JwtHeader();
-     
+
         /// <summary>
         /// Gets a list of <see cref="Jwk"/>.
         /// </summary>

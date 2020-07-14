@@ -28,7 +28,7 @@ namespace JsonWebToken.Performance
         public static readonly JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler();
         public static readonly JsonWebTokenHandler Handler2 = new JsonWebTokenHandler();
 
-        public static readonly SigningCredentials signingCredentials = new SigningCredentials(JsonWebKey.Create(Tokens.SigningKey.ToString()), ((SignatureAlgorithm)Tokens.SigningKey.Alg!).Name);
+        public static readonly SigningCredentials signingCredentials = new SigningCredentials(JsonWebKey.Create(Tokens.SigningKey.ToString()), Tokens.SigningKey.SignatureAlgorithm!.Name);
         public static readonly EncryptingCredentials encryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(Tokens.EncryptionKey.ToArray()), "A128KW", "A128CBC-HS256");
 
         public static readonly JwtWriter Writer = new JwtWriter() { EnableHeaderCaching = true };
@@ -312,7 +312,7 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new SecurityTokenDescriptor()
                 {
-                    SigningCredentials = new SigningCredentials(WilsonSharedKey, ((SignatureAlgorithm)SigningKey.Alg!).Name),
+                    SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.SignatureAlgorithm!.Name),
                     Subject = new ClaimsIdentity(),
                     Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
                     IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
@@ -339,7 +339,7 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new SecurityTokenDescriptor()
                 {
-                    SigningCredentials = new SigningCredentials(WilsonSharedKey, ((SignatureAlgorithm)SigningKey.Alg!).Name),
+                    SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.SignatureAlgorithm!.Name),
                     EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.Aes128KW.Name, EncryptionAlgorithm.Aes128CbcHmacSha256.Name),
                     Subject = new ClaimsIdentity(),
                     Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
@@ -367,7 +367,7 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new SecurityTokenDescriptor()
                 {
-                    SigningCredentials = new SigningCredentials(WilsonSharedKey, ((SignatureAlgorithm)SigningKey.Alg!).Name),
+                    SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.SignatureAlgorithm!.Name),
                     EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.Aes128KW.Name, EncryptionAlgorithm.Aes128CbcHmacSha256.Name),
                     Subject = new ClaimsIdentity(),
                     Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),

@@ -51,7 +51,7 @@ namespace JsonWebToken.Tests
             Assert.Null(jws.NotBefore);
             Assert.Null(jws.Subject);
             Assert.Null(jws.KeyId);
-            Assert.Null(jws.Audience); 
+            Assert.Null(jws.Audience);
             Assert.Equal(SignatureAlgorithm.RsaSsaPssSha256, jws.Algorithm);
         }
 
@@ -81,7 +81,7 @@ namespace JsonWebToken.Tests
             Assert.InRange((jws.NotBefore - now).Value.TotalSeconds - 5, -10, 10);
             Assert.Null(jws.Subject);
             Assert.Null(jws.KeyId);
-            Assert.Null(jws.Audience); 
+            Assert.Null(jws.Audience);
             Assert.Equal(SignatureAlgorithm.RsaSsaPssSha256, jws.Algorithm);
         }
 

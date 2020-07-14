@@ -2,7 +2,7 @@
 
 namespace JsonWebToken.Cryptography
 {
-    internal class Pkcs8
+    internal static class Pkcs8
     {
         internal const string PublicKeyPrefix = "-----BEGIN PUBLIC KEY-----";
         internal const string PublicKeySuffix = "-----END PUBLIC KEY-----";

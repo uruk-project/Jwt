@@ -1,8 +1,7 @@
-﻿using BenchmarkDotNet.Attributes;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using BenchmarkDotNet.Attributes;
 
 namespace JsonWebToken.Performance
 {
@@ -183,7 +182,7 @@ namespace JsonWebToken.Performance
 
             return 0;
         }
-        
+
         // L0000: push ebp
         // L0001: mov ebp, esp
         // L0003: push eax

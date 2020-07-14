@@ -1,6 +1,8 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
+using System;
+
 namespace JsonWebToken
 {
     /// <summary>
@@ -8,6 +10,11 @@ namespace JsonWebToken
     /// </summary>
     public abstract class AsymmetricJwk : Jwk
     {
+        /// <summary>
+        /// The 'd' (ECC - Private Key OR RSA - Private Exponent).
+        /// </summary>
+        protected internal byte[]? _d;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AsymmetricJwk"/> class.
         /// </summary>
@@ -25,7 +32,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
-            D = d;
+            _d = d;
         }
 
         /// <summary>
@@ -38,7 +45,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
-            D = Base64Url.Decode(d);
+            _d = Base64Url.Decode(d);
         }
 
         /// <summary>
@@ -60,7 +67,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
-            D = d;
+            _d = d;
         }
 
         /// <summary>
@@ -74,7 +81,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
-            D = Base64Url.Decode(d);
+            _d = Base64Url.Decode(d);
         }
 
         /// <summary>
@@ -96,7 +103,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
-            D = d;
+            _d = d;
         }
 
         /// <summary>
@@ -110,32 +117,42 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
             }
 
-            D = Base64Url.Decode(d);
+            _d = Base64Url.Decode(d);
         }
 
         /// <summary>
-        /// Gets or sets the 'd' (ECC - Private Key OR RSA - Private Exponent).
+        /// Gets the 'd' (ECC - Private Key OR RSA - Private Exponent).
         /// </summary>
-        public byte[]? D { get; internal set; }
+        public ReadOnlySpan<byte> D => _d;
 
         /// <summary>
         /// Gets a bool indicating if a private key exists.
         /// </summary>
         /// <return>true if it has a private key; otherwise, false.</return>
-        public abstract bool HasPrivateKey { get; }
+        public bool HasPrivateKey => !(_d is null);
 
         /// <inheritsdoc />
         protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
-            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm); 
+            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
             return null;
         }
 
         /// <inheritsdoc />
         protected override AuthenticatedDecryptor CreateAuthenticatedDecryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
-            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm); 
+            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
             return null;
+        }
+
+        /// <inheritsdoc />
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (_d != null)
+            {
+                CryptographicOperations.ZeroMemory(_d);
+            }
         }
     }
 }

@@ -10,7 +10,7 @@ namespace JwkSample
         static void Main()
         {
             GenerateKeys();
-        
+
             ReadKeyFromJson();
             ReadKeyFromPem();
             ReadKeyFromX509Certificate();

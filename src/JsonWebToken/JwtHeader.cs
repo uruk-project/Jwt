@@ -54,7 +54,7 @@ namespace JsonWebToken
         /// Gets the signature algorithm that was used to create the signature.
         /// </summary>
         public ReadOnlySpan<byte> Alg
-            => _signatureAlgorithm?.Utf8Name ?? _keyManagementAlgorithm?.Utf8Name;
+            => _signatureAlgorithm is null ? _keyManagementAlgorithm is null ? default : _keyManagementAlgorithm.Utf8Name : _signatureAlgorithm.Utf8Name;
 
         /// <summary>
         /// Gets the signature algorithm (alg) that was used to create the signature.
@@ -86,7 +86,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the encryption algorithm (enc) of the token.
         /// </summary>
-        public ReadOnlySpan<byte> Enc => _encryptionAlgorithm?.Utf8Name;
+        public ReadOnlySpan<byte> Enc => _encryptionAlgorithm is null ? default : _encryptionAlgorithm.Utf8Name;
 
         /// <summary>
         /// Gets the encryption algorithm (enc) of the token.
@@ -133,7 +133,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the algorithm used to compress the token.
         /// </summary>
-        public ReadOnlySpan<byte> Zip => _compressionAlgorithm?.Utf8Name;
+        public ReadOnlySpan<byte> Zip => _compressionAlgorithm is null ? default : _compressionAlgorithm.Utf8Name;
 
         /// <summary>
         /// Gets the compression algorithm (zip) of the token.
@@ -350,17 +350,17 @@ namespace JsonWebToken
                 {
                     writer.WriteString(HeaderParameters.EncUtf8, _encryptionAlgorithm.Utf8Name);
                 }
-                
+
                 if (!(_compressionAlgorithm is null))
                 {
                     writer.WriteString(HeaderParameters.ZipUtf8, _compressionAlgorithm.Utf8Name);
                 }
-                
+
                 if (!(_kid is null))
                 {
                     writer.WriteString(HeaderParameters.KidUtf8, _kid);
                 }
-                
+
                 if (!(_cty is null))
                 {
                     writer.WriteString(HeaderParameters.CtyUtf8, _cty);
@@ -370,7 +370,7 @@ namespace JsonWebToken
                 {
                     writer.WriteString(HeaderParameters.TypUtf8, _typ);
                 }
-                
+
                 if (!(_inner is null))
                 {
                     _inner.WriteTo(writer);

@@ -13,7 +13,7 @@ namespace JsonWebToken.Internal
         {
             _tokenReplayCache = tokenReplayCache ?? throw new ArgumentNullException(nameof(tokenReplayCache));
         }
-        
+
         /// <inheritdoc />
         public TokenValidationResult TryValidate(Jwt jwt)
         {

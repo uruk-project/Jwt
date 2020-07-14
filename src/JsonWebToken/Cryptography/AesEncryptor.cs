@@ -37,7 +37,7 @@ namespace JsonWebToken
         /// Returns the required ciphertext length.
         /// </summary>
         /// <param name="plaintextLength"></param>
-        protected int GetCiphertextLength(int plaintextLength)
+        protected static int GetCiphertextLength(int plaintextLength)
             => (plaintextLength + BlockSize) & ~(BlockSize - 1);
     }
 }

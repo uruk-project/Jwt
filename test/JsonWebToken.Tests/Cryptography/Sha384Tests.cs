@@ -6,7 +6,7 @@ namespace JsonWebToken.Tests.Cryptography
     public class Sha384Tests : ShaAlgorithmTest
     {
         public override Sha2 Sha => Sha384.Shared;
-     
+
         [Fact]
         public void Sha384_Empty()
         {

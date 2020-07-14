@@ -96,7 +96,6 @@ namespace JsonWebToken.Internal
 
             var contentEncryptionKey = CreateSymmetricKey(EncryptionAlgorithm, staticKey);
             ReadOnlySpan<byte> inputBuffer = contentEncryptionKey.AsSpan();
-
             int n = inputBuffer.Length;
             if (destination.Length != (n + 8))
             {
@@ -108,47 +107,7 @@ namespace JsonWebToken.Internal
             Span<byte> r = stackalloc byte[n];
             ref byte rRef = ref MemoryMarshal.GetReference(r);
             Unsafe.CopyBlockUnaligned(ref rRef, ref input, (uint)n);
-            byte[] block = new byte[16];
-            ref byte blockRef = ref MemoryMarshal.GetReference((Span<byte>)block);
-            ref byte block2Ref = ref Unsafe.AddByteOffset(ref blockRef, (IntPtr)8);
-            Span<byte> t = stackalloc byte[8];
-            ref byte tRef = ref MemoryMarshal.GetReference(t);
-            ref byte tRef7 = ref Unsafe.AddByteOffset(ref tRef, (IntPtr)7);
-            Unsafe.WriteUnaligned<ulong>(ref tRef, 0L);
-            int n3 = n >> 3;
-#if SUPPORT_SIMD
-            Span<byte> b = stackalloc byte[16];
-            ref byte bRef = ref MemoryMarshal.GetReference(b);
-#else
-            var encryptor = _encryptorPool.Get();
-            try
-            {
-#endif
-                for (var j = 0; j < 6; j++)
-                {
-                    for (var i = 0; i < n3; i++)
-                    {
-                        Unsafe.WriteUnaligned(ref blockRef, a);
-                        Unsafe.WriteUnaligned(ref block2Ref, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3))));
-#if SUPPORT_SIMD
-                        _encryptor.EncryptBlock(ref blockRef, ref bRef);
-#else
-                        Span<byte> b = encryptor.TransformFinalBlock(block, 0, 16);
-                        ref byte bRef = ref MemoryMarshal.GetReference(b);
-#endif
-                        a = Unsafe.ReadUnaligned<ulong>(ref bRef);
-                        Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i + 1));
-                        a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
-                        Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3)), Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
-                    }
-                }
-#if !SUPPORT_SIMD
-            }
-            finally
-            {
-                _encryptorPool.Return(encryptor);
-            }
-#endif
+            TryWrapKey(ref a, n, ref rRef);
             ref byte keyBytes = ref MemoryMarshal.GetReference(destination);
             Unsafe.WriteUnaligned(ref keyBytes, a);
             Unsafe.CopyBlockUnaligned(ref Unsafe.AddByteOffset(ref keyBytes, (IntPtr)8), ref rRef, (uint)n);
@@ -156,13 +115,78 @@ namespace JsonWebToken.Internal
             return contentEncryptionKey;
         }
 
-        public override int GetKeyWrapSize() 
+#if SUPPORT_SIMD
+        private ulong TryWrapKey(ref ulong a, int n, ref byte rRef)
+        {
+            Span<byte> block = stackalloc byte[16];
+            ref byte blockRef = ref MemoryMarshal.GetReference(block);
+            ref byte block2Ref = ref Unsafe.AddByteOffset(ref blockRef, (IntPtr)8);
+            Span<byte> t = stackalloc byte[8];
+            ref byte tRef = ref MemoryMarshal.GetReference(t);
+            ref byte tRef7 = ref Unsafe.AddByteOffset(ref tRef, (IntPtr)7);
+            Unsafe.WriteUnaligned<ulong>(ref tRef, 0L);
+            int n3 = n >> 3;
+            Span<byte> b = stackalloc byte[16];
+            ref byte bRef = ref MemoryMarshal.GetReference(b);
+            for (var j = 0; j < 6; j++)
+            {
+                for (var i = 0; i < n3; i++)
+                {
+                    Unsafe.WriteUnaligned(ref blockRef, a);
+                    Unsafe.WriteUnaligned(ref block2Ref, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3))));
+                    _encryptor.EncryptBlock(ref blockRef, ref bRef);
+                    a = Unsafe.ReadUnaligned<ulong>(ref bRef);
+                    Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i + 1));
+                    a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
+                    Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3)), Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
+                }
+            }
+            return a;
+        }
+#else
+        private ulong TryWrapKey(ref ulong a, int n, ref byte rRef)
+        {
+            byte[] block = new byte[16];
+            ref byte blockRef = ref block[0];
+            ref byte block2Ref = ref Unsafe.AddByteOffset(ref blockRef, (IntPtr)8);
+            Span<byte> t = stackalloc byte[8];
+            ref byte tRef = ref MemoryMarshal.GetReference(t);
+            ref byte tRef7 = ref Unsafe.AddByteOffset(ref tRef, (IntPtr)7);
+            Unsafe.WriteUnaligned<ulong>(ref tRef, 0L);
+            int n3 = n >> 3;
+            var encryptor = _encryptorPool.Get();
+            try
+            {
+                for (var j = 0; j < 6; j++)
+                {
+                    for (var i = 0; i < n3; i++)
+                    {
+                        Unsafe.WriteUnaligned(ref blockRef, a);
+                        Unsafe.WriteUnaligned(ref block2Ref, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3))));
+                        Span<byte> b = encryptor.TransformFinalBlock(block, 0, 16);
+                        ref byte bRef = ref MemoryMarshal.GetReference(b);
+                        a = Unsafe.ReadUnaligned<ulong>(ref bRef);
+                        Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i + 1));
+                        a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
+                        Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3)), Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
+                    }
+                }
+            }
+            finally
+            {
+                _encryptorPool.Return(encryptor);
+            }
+            return a;
+        }
+#endif
+
+        public override int GetKeyWrapSize()
             => GetKeyWrappedSize(EncryptionAlgorithm);
 
-        public static int GetKeyUnwrappedSize(int wrappedKeySize) 
+        public static int GetKeyUnwrappedSize(int wrappedKeySize)
             => wrappedKeySize - BlockSizeInBytes;
 
-        public static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm) 
+        public static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm)
             => encryptionAlgorithm.KeyWrappedSizeInBytes;
 
 #if !SUPPORT_SIMD
@@ -211,7 +235,7 @@ namespace JsonWebToken.Internal
                 _aes = aes;
             }
 
-            public override ICryptoTransform Create() 
+            public override ICryptoTransform Create()
                 => _aes.CreateEncryptor();
         }
 #endif

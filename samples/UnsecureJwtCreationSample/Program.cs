@@ -16,7 +16,7 @@ namespace UnsecureJwtCreationSample
                 Issuer = "https://idp.example.com/",
                 Audience = "636C69656E745F6964"
             };
-            
+
             // Generates the UTF-8 string representation of the JWT
             var writer = new JwtWriter();
             var token = writer.WriteTokenString(descriptor);

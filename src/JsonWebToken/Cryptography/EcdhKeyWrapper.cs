@@ -5,7 +5,6 @@
 using System;
 using System.Buffers.Binary;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace JsonWebToken.Internal
 {
@@ -13,7 +12,7 @@ namespace JsonWebToken.Internal
     {
         private static readonly byte[] _secretPreprend = { 0x0, 0x0, 0x0, 0x1 };
 
-        private readonly byte[] _algorithmName;
+        private readonly IAlgorithm _algorithm;
         private readonly int _algorithmNameLength;
         private readonly int _keySizeInBytes;
         private readonly HashAlgorithmName _hashAlgorithm;
@@ -25,16 +24,16 @@ namespace JsonWebToken.Internal
         {
             if (contentEncryptionAlgorithm.WrappedAlgorithm is null)
             {
-                _algorithmName = encryptionAlgorithm.Utf8Name;
+                _algorithm = encryptionAlgorithm;
                 _keySizeInBytes = encryptionAlgorithm.RequiredKeySizeInBytes;
             }
             else
             {
-                _algorithmName = contentEncryptionAlgorithm.Utf8Name;
+                _algorithm = contentEncryptionAlgorithm;
                 _keySizeInBytes = contentEncryptionAlgorithm.WrappedAlgorithm.RequiredKeySizeInBits >> 3;
             }
 
-            _algorithmNameLength = _algorithmName.Length;
+            _algorithmNameLength = _algorithm.Utf8Name.Length;
             _hashAlgorithm = GetHashAlgorithm(encryptionAlgorithm);
         }
 
@@ -200,7 +199,7 @@ namespace JsonWebToken.Internal
         private void WriteAlgorithmId(Span<byte> destination)
         {
             BinaryPrimitives.WriteInt32BigEndian(destination, _algorithmNameLength);
-            _algorithmName.CopyTo(destination.Slice(sizeof(int)));
+            _algorithm.Utf8Name.CopyTo(destination.Slice(sizeof(int)));
         }
 
         private byte[] BuildSecretAppend(byte[]? apu, byte[]? apv)

@@ -1,11 +1,9 @@
-﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Running;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Diagnosers;
+using Newtonsoft.Json.Linq;
 
 namespace JsonWebToken.Performance
 {

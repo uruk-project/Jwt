@@ -84,7 +84,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override int GetKeyWrapSize() 
+        public override int GetKeyWrapSize()
             => Key.KeySizeInBits >> 3;
 
         /// <inheritsdoc />
@@ -100,5 +100,5 @@ namespace JsonWebToken.Internal
                 _disposed = true;
             }
         }
-    } 
+    }
 }

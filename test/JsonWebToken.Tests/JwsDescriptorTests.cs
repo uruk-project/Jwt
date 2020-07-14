@@ -1,5 +1,4 @@
-﻿using JsonWebToken.Internal;
-using Xunit;
+﻿using Xunit;
 
 namespace JsonWebToken.Tests
 {
@@ -9,10 +8,10 @@ namespace JsonWebToken.Tests
         public void Encode()
         {
             var descriptor = new JwsDescriptor();
-            var context = new EncodingContext(new JsonHeaderCache(), 60, true);
             using (var bufferWriter = new PooledByteBufferWriter())
             {
-                descriptor.Encode(context, bufferWriter);
+                var context = new EncodingContext(bufferWriter, new JsonHeaderCache(), 60, true);
+                descriptor.Encode(context);
 
                 var reader = new JwtReader();
                 var result = reader.TryReadToken(bufferWriter.WrittenSpan, TokenValidationPolicy.NoValidation);

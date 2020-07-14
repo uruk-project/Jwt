@@ -116,7 +116,7 @@ namespace JsonWebToken.Tests
 #endif
         }
 
-            private (Jwk, Jwk) SelectKeys(string alg)
+        private (Jwk, Jwk) SelectKeys(string alg)
         {
             switch (alg)
             {

@@ -22,24 +22,30 @@ namespace JsonWebToken.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetSignatureValidationKeys))]
-        [MemberData(nameof(GetSignatureCreationKeys))]
+        [MemberData(nameof(GetValidSignatureKeys))]
         public override Signer CreateSigner_Succeed(Jwk key, SignatureAlgorithm alg)
         {
             return base.CreateSigner_Succeed(key, alg);
         }
 
+        [Theory]
+        [MemberData(nameof(GetInvalidKeys))]
+        public override Signer CreateSigner_Failed(Jwk key, SignatureAlgorithm alg)
+        {
+            return base.CreateSigner_Failed(key, alg);
+        }
+
         [Fact]
         public override void Canonicalize()
         {
-            var jwk = ECJwk.GenerateKey(EllipticalCurve.P256, true);
+            var jwk = ECJwk.GenerateKey(EllipticalCurve.P256, true, SignatureAlgorithm.EcdsaSha256);
             var canonicalizedKey = (ECJwk)CanonicalizeKey(jwk);
 
-            Assert.Null(canonicalizedKey.D);
+            Assert.True(canonicalizedKey.D.IsEmpty);
 
             Assert.Equal(EllipticalCurve.P256.Id, canonicalizedKey.Crv.Id);
-            Assert.NotEmpty(canonicalizedKey.X);
-            Assert.NotEmpty(canonicalizedKey.Y);
+            Assert.False(canonicalizedKey.X.IsEmpty);
+            Assert.False(canonicalizedKey.Y.IsEmpty);
         }
 
         [Theory]
@@ -51,7 +57,7 @@ namespace JsonWebToken.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetSignatureCreationKeys))]
+        [MemberData(nameof(GetValidSignatureKeys))]
         public override void IsSupportedSignature_Success(Jwk key, SignatureAlgorithm alg)
         {
             Assert.True(key.SupportSignature(alg));
@@ -75,34 +81,31 @@ namespace JsonWebToken.Tests
             yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs };
         }
 
-        public static IEnumerable<object[]> GetSignatureValidationKeys()
+        public static IEnumerable<object[]> GetValidSignatureKeys()
         {
             yield return new object[] { PublicEcc256Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { PublicEcc256Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { PublicEcc256Key, SignatureAlgorithm.EcdsaSha512 };
 
-            yield return new object[] { PublicEcc384Key, SignatureAlgorithm.EcdsaSha256 };
             yield return new object[] { PublicEcc384Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { PublicEcc384Key, SignatureAlgorithm.EcdsaSha512 };
 
-            yield return new object[] { PublicEcc521Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { PublicEcc521Key, SignatureAlgorithm.EcdsaSha384 };
             yield return new object[] { PublicEcc521Key, SignatureAlgorithm.EcdsaSha512 };
+
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha256 };
+
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha384 };
+
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha512 };
         }
 
-        public static IEnumerable<object[]> GetSignatureCreationKeys()
+        public static IEnumerable<object[]> GetInvalidKeys()
         {
-            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha256 };
             yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha384 };
             yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha512 };
 
             yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha384 };
             yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha512 };
 
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha256 };
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha512 };
         }
 
         [Theory]
@@ -121,8 +124,8 @@ namespace JsonWebToken.Tests
             Assert.True(JwkUseNames.Enc.SequenceEqual(jwk.Use));
 
             Assert.Equal(Encoding.UTF8.GetBytes("P-256"), jwk.Crv.Name);
-            Assert.Equal(jwk.X, Base64Url.Decode("MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4"));
-            Assert.Equal(jwk.Y, Base64Url.Decode("4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM"));
+            Assert.Equal(jwk.X.ToArray(), Base64Url.Decode("MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4"));
+            Assert.Equal(jwk.Y.ToArray(), Base64Url.Decode("4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM"));
         }
 
         [Theory]
@@ -150,7 +153,7 @@ namespace JsonWebToken.Tests
             var key = ECJwk.GenerateKey(EllipticalCurve.P256, true, SignatureAlgorithm.EcdsaSha256);
             key.Kid = "kid-ec";
             key.KeyOps.Add("sign");
-            key.Use = JwkUseNames.Sig.ToArray();
+            key.Use = JwkUseNames.Sig;
             key.X5t = Base64Url.Decode("dGhpcyBpcyBhIFNIQTEgdGVzdCE");
             key.X5tS256 = Base64Url.Decode("dGhpcyBpcyBhIFNIQTI1NiB0ZXN0ISAgICAgICAgICAgIA");
             key.X5u = "https://example.com";

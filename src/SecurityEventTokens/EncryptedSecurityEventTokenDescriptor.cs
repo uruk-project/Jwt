@@ -4,6 +4,6 @@
 namespace JsonWebToken
 {
     public sealed class EncryptedSecurityEventTokenDescriptor : JweDescriptor<SecurityEventTokenDescriptor>
-    {        
+    {
     }
 }

@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
 
@@ -121,7 +120,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the signature algorithm.
         /// </summary>
-        public byte[] Utf8Name => _utf8Name;
+        public ReadOnlySpan<byte> Utf8Name => _utf8Name;
 
         /// <summary>
         /// Gets the algorithm category.
@@ -186,7 +185,7 @@ namespace JsonWebToken
         /// Returns the hash code for this <see cref="SignatureAlgorithm"/>.
         /// </summary>
         /// <returns></returns>
-        public override int GetHashCode() 
+        public override int GetHashCode()
             => _id.GetHashCode();
 
         /// <summary>
@@ -390,19 +389,19 @@ namespace JsonWebToken
             return value._id;
         }
 
-        /// <summary>
-        /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="byte"/> array representation.
-        /// </summary>
-        /// <param name="value"></param>
-        public static explicit operator byte[]?(SignatureAlgorithm? value)
-        {
-            if (value is null)
-            {
-                return null;
-            }
+        ///// <summary>
+        ///// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="byte"/> array representation.
+        ///// </summary>
+        ///// <param name="value"></param>
+        //public static explicit operator byte[]?(SignatureAlgorithm? value)
+        //{
+        //    if (value is null)
+        //    {
+        //        return null;
+        //    }
 
-            return value.Utf8Name;
-        }
+        //    return value.Utf8Name;
+        //}
 
         /// <inheritsddoc />
         public override string ToString()

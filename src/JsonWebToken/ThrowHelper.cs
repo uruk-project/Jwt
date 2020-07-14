@@ -4,7 +4,6 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -200,12 +199,17 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_SigningKeyTooSmall(Jwk key, int minimalValue) => throw CreateArgumentOutOfRangeException_SigningKeyTooSmall(key, minimalValue);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_SigningKeyTooSmall(Jwk key, int minimalValue) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), $"The key '{key.Kid}' for signing cannot be smaller than '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'.");
+        private static Exception CreateArgumentOutOfRangeException_SigningKeyTooSmall(Jwk key, int minimalValue) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), key.Kid is null ? $"The signing key cannot be smaller than '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'." : $"The signing key '{key.Kid}' cannot be smaller than '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'.");
+
+        [DoesNotReturn]
+        internal static void ThrowArgumentOutOfRangeException_InvalidSigningKeySize(Jwk key, int minimalValue) => throw CreateArgumentOutOfRangeException_InvalidSigningKeySize(key, minimalValue);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateArgumentOutOfRangeException_InvalidSigningKeySize(Jwk key, int minimalValue) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), key.Kid is null ? $"The signing key must be of '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'." : $"The signing key '{key.Kid}' must be of '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(Jwk key, EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => throw CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(key, algorithm, minimalValue, currentKeySize);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(Jwk key, EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), $"The key '{key.Kid}' for encryption with algorithm '{algorithm}' cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'.");
+        private static Exception CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(Jwk key, EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), key.Kid is null ? $"The key encryption with algorithm '{algorithm}' cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'." : $"The key encryption '{key.Kid}' with algorithm '{algorithm}' cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => throw CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(algorithm, minimalValue, currentKeySize);

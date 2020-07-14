@@ -159,7 +159,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the key management algorithm.
         /// </summary>
-        public byte[] Utf8Name => _utf8Name;
+        public ReadOnlySpan<byte> Utf8Name => _utf8Name;
 
         /// <summary>
         /// Gets whether the algorithm produce an encryption key.
@@ -516,6 +516,22 @@ namespace JsonWebToken
 
             algorithm = null;
             return false;
+        }
+
+        /// <summary>
+        /// Parse the current value of the <see cref="Utf8JsonReader"/> into its <see cref="KeyManagementAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="algorithm"></param>
+        public static bool TryParse(ref Utf8JsonReader reader, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
+        {
+            var value = reader.ValueSpan;
+            if (TryParse(value, out algorithm))
+            {
+                return true;
+            }
+
+            return TryParseSlow(ref reader, out algorithm);
         }
     }
 }
