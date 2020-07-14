@@ -12,13 +12,6 @@
     <NoWarn>3021</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
   <PropertyGroup>
     <PackageTags>jwt security jsonwebtoken cryptography</PackageTags>
     <Description>High-performance JWT library. Provides Json Web Token primitives.</Description>
