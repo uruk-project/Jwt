@@ -29,7 +29,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public override void Canonicalize()
         {
-            var jwk = RsaJwk.GenerateKey(2048, true);
+            var jwk = RsaJwk.GenerateKey(2048, true, SignatureAlgorithm.RsaSha256);
             var canonicalizedKey = (RsaJwk)CanonicalizeKey(jwk);
             Assert.False(canonicalizedKey.E.IsEmpty);
             Assert.False(canonicalizedKey.N.IsEmpty);
@@ -356,10 +356,10 @@ y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
         [Fact]
         public override void WriteTo()
         {
-            var key = RsaJwk.GenerateKey(2048, true, SignatureAlgorithm.RsaSha256.Utf8Name);
+            var key = RsaJwk.GenerateKey(2048, true, SignatureAlgorithm.RsaSha256);
             key.Kid = "kid-rsa";
             key.KeyOps.Add("sign");
-            key.Use = JwkUseNames.Sig.ToArray();
+            key.Use = JwkUseNames.Sig;
             key.X5t = Base64Url.Decode("dGhpcyBpcyBhIFNIQTEgdGVzdCE");
             key.X5tS256 = Base64Url.Decode("dGhpcyBpcyBhIFNIQTI1NiB0ZXN0ISAgICAgICAgICAgIA");
             key.X5u = "https://example.com";

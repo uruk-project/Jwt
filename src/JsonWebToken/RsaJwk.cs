@@ -465,7 +465,8 @@ namespace JsonWebToken
         /// <param name="sizeInBits"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static RsaJwk GeneratePrivateKey(int sizeInBits, byte[] algorithm) => GenerateKey(sizeInBits, true, algorithm);
+        public static RsaJwk GeneratePrivateKey(int sizeInBits, SignatureAlgorithm algorithm) 
+            => GenerateKey(sizeInBits, withPrivateKey: true, algorithm);
 
         /// <summary>
         /// Generates a new random private <see cref="RsaJwk"/>.
@@ -473,22 +474,16 @@ namespace JsonWebToken
         /// <param name="sizeInBits"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static RsaJwk GeneratePrivateKey(int sizeInBits, SignatureAlgorithm algorithm) => GenerateKey(sizeInBits, true, algorithm?.Utf8Name);
-
-        /// <summary>
-        /// Generates a new random private <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="sizeInBits"></param>
-        /// <param name="algorithm"></param>
-        /// <returns></returns>
-        public static RsaJwk GeneratePrivateKey(int sizeInBits, KeyManagementAlgorithm algorithm) => GenerateKey(sizeInBits, true, algorithm?.Utf8Name);
+        public static RsaJwk GeneratePrivateKey(int sizeInBits, KeyManagementAlgorithm algorithm)
+            => GenerateKey(sizeInBits, withPrivateKey: true, algorithm);
 
         /// <summary>
         /// Generates a new random private <see cref="RsaJwk"/>.
         /// </summary>
         /// <param name="sizeInBits"></param>
         /// <returns></returns>
-        public static RsaJwk GeneratePrivateKey(int sizeInBits) => GenerateKey(sizeInBits, true, (byte[]?)null);
+        public static RsaJwk GeneratePrivateKey(int sizeInBits)
+            => GenerateKey(sizeInBits, true);
 
         /// <summary>
         /// Generates a new random public <see cref="RsaJwk"/>.
@@ -496,7 +491,8 @@ namespace JsonWebToken
         /// <param name="sizeInBits"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static RsaJwk GeneratePublicKey(int sizeInBits, byte[] algorithm) => GenerateKey(sizeInBits, false, algorithm);
+        public static RsaJwk GeneratePublicKey(int sizeInBits, SignatureAlgorithm algorithm) 
+            => GenerateKey(sizeInBits, withPrivateKey: false, algorithm);
 
         /// <summary>
         /// Generates a new random public <see cref="RsaJwk"/>.
@@ -504,22 +500,16 @@ namespace JsonWebToken
         /// <param name="sizeInBits"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static RsaJwk GeneratePublicKey(int sizeInBits, SignatureAlgorithm algorithm) => GenerateKey(sizeInBits, false, algorithm?.Utf8Name);
-
-        /// <summary>
-        /// Generates a new random public <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="sizeInBits"></param>
-        /// <param name="algorithm"></param>
-        /// <returns></returns>
-        public static RsaJwk GeneratePublicKey(int sizeInBits, KeyManagementAlgorithm algorithm) => GenerateKey(sizeInBits, false, algorithm?.Utf8Name);
+        public static RsaJwk GeneratePublicKey(int sizeInBits, KeyManagementAlgorithm algorithm) 
+            => GenerateKey(sizeInBits, withPrivateKey: false, algorithm);
 
         /// <summary>
         /// Generates a new random private <see cref="RsaJwk"/>.
         /// </summary>
         /// <param name="sizeInBits"></param>
         /// <returns></returns>
-        public static RsaJwk GeneratePublicKey(int sizeInBits) => GenerateKey(sizeInBits, false, (byte[]?)null);
+        public static RsaJwk GeneratePublicKey(int sizeInBits) 
+            => GenerateKey(sizeInBits, false);
 
         /// <summary>
         /// Generates a new RSA key.
@@ -527,34 +517,7 @@ namespace JsonWebToken
         /// <param name="sizeInBits">The key size in bits.</param>
         /// <param name="withPrivateKey"></param>
         /// <returns></returns>
-        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey) => GenerateKey(sizeInBits, withPrivateKey, (byte[]?)null);
-
-        /// <summary>
-        /// Generates a new random <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="sizeInBits"></param>
-        /// <param name="withPrivateKey"></param>
-        /// <param name="algorithm"></param>
-        /// <returns></returns>
-        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, SignatureAlgorithm algorithm) => GenerateKey(sizeInBits, withPrivateKey, algorithm?.Utf8Name);
-
-        /// <summary>
-        /// Generates a new random <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="sizeInBits"></param>
-        /// <param name="withPrivateKey"></param>
-        /// <param name="algorithm"></param>
-        /// <returns></returns>
-        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, KeyManagementAlgorithm algorithm) => GenerateKey(sizeInBits, withPrivateKey, algorithm?.Utf8Name);
-
-        /// <summary>
-        /// Generates a new random <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="sizeInBits"></param>
-        /// <param name="withPrivateKey"></param>
-        /// <param name="algorithm"></param>
-        /// <returns></returns>
-        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, byte[]? algorithm)
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey)
         {
 #if SUPPORT_SPAN_CRYPTO
             using RSA rsa = RSA.Create(sizeInBits);
@@ -563,10 +526,76 @@ namespace JsonWebToken
 #endif
             RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
 
-            var key = FromParameters(rsaParameters, false);
-            if (algorithm != null)
+            return FromParameters(rsaParameters, false);
+        }
+
+        /// <summary>
+        /// Generates a new random <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="withPrivateKey"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, SignatureAlgorithm algorithm)
+        {
+#if SUPPORT_SPAN_CRYPTO
+            using RSA rsa = RSA.Create(sizeInBits);
+#else
+            using RSA rsa = new RSACng(sizeInBits);
+#endif
+            RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
+
+            return FromParameters(rsaParameters, algorithm, false);
+        }
+
+        /// <summary>
+        /// Generates a new random <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="sizeInBits"></param>
+        /// <param name="withPrivateKey"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, KeyManagementAlgorithm algorithm)
+        {
+#if SUPPORT_SPAN_CRYPTO
+            using RSA rsa = RSA.Create(sizeInBits);
+#else
+            using RSA rsa = new RSACng(sizeInBits);
+#endif
+            RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
+
+            return FromParameters(rsaParameters, algorithm, false);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
+        /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/></param>
+        /// <param name="computeThumbprint">Defines whether the thumbprint of the key should be computed </param>
+        public static RsaJwk FromParameters(RSAParameters parameters, KeyManagementAlgorithm algorithm, bool computeThumbprint)
+        {
+            var key = new RsaJwk(parameters, algorithm);
+            if (computeThumbprint)
             {
-                key.Alg = algorithm;
+                FillThumbprint(key);
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
+        /// <param name="algorithm">The <see cref="SignatureAlgorithm"/></param>
+        /// <param name="computeThumbprint">Defines whether the thumbprint of the key should be computed </param>
+        public static RsaJwk FromParameters(RSAParameters parameters, SignatureAlgorithm algorithm, bool computeThumbprint)
+        {
+            var key = new RsaJwk(parameters, algorithm);
+            if (computeThumbprint)
+            {
+                FillThumbprint(key);
             }
 
             return key;
@@ -582,9 +611,7 @@ namespace JsonWebToken
             var key = new RsaJwk(parameters);
             if (computeThumbprint)
             {
-                Span<byte> thumbprint = stackalloc byte[43];
-                key.ComputeThumbprint(thumbprint);
-                key.Kid = Utf8.GetString(thumbprint);
+                FillThumbprint(key);
             }
 
             return key;
@@ -594,7 +621,8 @@ namespace JsonWebToken
         /// Returns a new instance of <see cref="RsaJwk"/>.
         /// </summary>
         /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
-        public static RsaJwk FromParameters(RSAParameters parameters) => FromParameters(parameters, false);
+        public static RsaJwk FromParameters(RSAParameters parameters)
+            => FromParameters(parameters, false);
 
         /// <summary>
         /// Returns a new instance of <see cref="RsaJwk"/>.

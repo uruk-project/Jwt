@@ -234,7 +234,7 @@ namespace JsonWebToken
         public ReadOnlySpan<byte> K => _k;
 
         /// <inheritsdoc />
-        public override int KeySizeInBits => _k.Length != 0 ? _k.Length << 3 : 0;
+        public override int KeySizeInBits => _k.Length << 3;
 
         /// <summary>
         /// Creates a new <see cref="SymmetricJwk"/> from the <paramref name="bytes"/>.
@@ -263,9 +263,51 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes);
             if (computeThumbprint)
             {
-                Span<byte> thumbprint = stackalloc byte[43];
-                key.ComputeThumbprint(thumbprint);
-                key.Kid = Utf8.GetString(thumbprint);
+                FillThumbprint(key);
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="bytes">An array of <see cref="byte"/> that contains the key in binary.</param>
+        /// <param name="algorithm">The <see cref="SignatureAlgorithm"/>.</param>
+        /// <param name="computeThumbprint"></param>
+        public static SymmetricJwk FromByteArray(byte[] bytes, SignatureAlgorithm algorithm, bool computeThumbprint)
+        {
+            if (bytes is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.bytes);
+            }
+
+            var key = new SymmetricJwk(bytes, algorithm);
+            if (computeThumbprint)
+            {
+                FillThumbprint(key);
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="bytes">An array of <see cref="byte"/> that contains the key in binary.</param>
+        /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/>.</param>
+        /// <param name="computeThumbprint"></param>
+        public static SymmetricJwk FromByteArray(byte[] bytes, KeyManagementAlgorithm algorithm, bool computeThumbprint)
+        {
+            if (bytes is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.bytes);
+            }
+
+            var key = new SymmetricJwk(bytes, algorithm);
+            if (computeThumbprint)
+            {
+                FillThumbprint(key);
             }
 
             return key;
@@ -473,24 +515,8 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="sizeInBits"></param>
         /// <returns></returns>
-        public static SymmetricJwk GenerateKey(int sizeInBits) => GenerateKey(sizeInBits, algorithm: (byte[]?)null);
-
-        /// <summary>
-        /// Generates a new <see cref="SymmetricJwk"/>.
-        /// </summary>
-        /// <param name="sizeInBits"></param>
-        /// <param name="algorithm"></param>
-        /// <returns></returns>
-        public static SymmetricJwk GenerateKey(int sizeInBits, byte[]? algorithm)
-        {
-            var key = FromByteArray(GenerateKeyBytes(sizeInBits), false);
-            if (!(algorithm is null))
-            {
-                key.Alg = algorithm;
-            }
-
-            return key;
-        }
+        public static SymmetricJwk GenerateKey(int sizeInBits)
+            => FromByteArray(GenerateKeyBytes(sizeInBits), false);
 
         /// <summary>
         /// Generates a new <see cref="SymmetricJwk"/>.
@@ -499,7 +525,7 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         /// <returns></returns>
         public static SymmetricJwk GenerateKey(int sizeInBits, SignatureAlgorithm algorithm)
-                  => GenerateKey(sizeInBits, algorithm?.Utf8Name);
+           => FromByteArray(GenerateKeyBytes(sizeInBits), algorithm, false);
 
         /// <summary>
         /// Generates a new <see cref="SymmetricJwk"/>.
@@ -508,7 +534,7 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         /// <returns></returns>
         public static SymmetricJwk GenerateKey(int sizeInBits, KeyManagementAlgorithm algorithm)
-            => GenerateKey(sizeInBits, algorithm?.Utf8Name);
+           => FromByteArray(GenerateKeyBytes(sizeInBits), algorithm, false);
 
         private static byte[] GenerateKeyBytes(int sizeInBits)
         {

@@ -120,7 +120,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the signature algorithm.
         /// </summary>
-        public byte[] Utf8Name => _utf8Name;
+        public ReadOnlySpan<byte> Utf8Name => _utf8Name;
 
         /// <summary>
         /// Gets the algorithm category.
@@ -389,19 +389,19 @@ namespace JsonWebToken
             return value._id;
         }
 
-        /// <summary>
-        /// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="byte"/> array representation.
-        /// </summary>
-        /// <param name="value"></param>
-        public static explicit operator byte[]?(SignatureAlgorithm? value)
-        {
-            if (value is null)
-            {
-                return null;
-            }
+        ///// <summary>
+        ///// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="byte"/> array representation.
+        ///// </summary>
+        ///// <param name="value"></param>
+        //public static explicit operator byte[]?(SignatureAlgorithm? value)
+        //{
+        //    if (value is null)
+        //    {
+        //        return null;
+        //    }
 
-            return value.Utf8Name;
-        }
+        //    return value.Utf8Name;
+        //}
 
         /// <inheritsddoc />
         public override string ToString()

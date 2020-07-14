@@ -68,7 +68,6 @@ namespace JsonWebToken.Tests
 
         public Jwk CanonicalizeKey(Jwk key)
         {
-            key.Alg = SignatureAlgorithm.HmacSha256.Utf8Name;
             key.Kid = "kid";
             key.Use = JwkUseNames.Sig.ToArray();
             key.X5c.Add(new byte[0]);
@@ -79,9 +78,9 @@ namespace JsonWebToken.Tests
             var canonicalizedKey = Jwk.FromJson(Encoding.UTF8.GetString(json));
             Assert.NotNull(canonicalizedKey);
 
-            Assert.Null(canonicalizedKey.Alg);
+            Assert.True(canonicalizedKey.Alg.IsEmpty);
             Assert.Null(canonicalizedKey.Kid);
-            Assert.Null(canonicalizedKey.Use);
+            Assert.True(canonicalizedKey.Use.IsEmpty);
             Assert.Empty(canonicalizedKey.X5c);
             Assert.Null(canonicalizedKey.X5t);
             Assert.Null(canonicalizedKey.X5tS256);

@@ -40,10 +40,13 @@ namespace JsonWebToken
         /// </summary>
         public static readonly Jwk Empty = new NullJwk();
 
+        private static readonly EmptyAlgorithm EmptyAlg = new EmptyAlgorithm();
+
         private CryptographicStore<Signer>? _signers;
         private CryptographicStore<KeyWrapper>? _keyWrappers;
         private CryptographicStore<KeyUnwrapper>? _keyUnwrappers;
 
+        private IAlgorithm _algorithm;
         private bool? _isSigningKey;
         private SignatureAlgorithm? _signatureAlgorithm;
         private bool? _isEncryptionKey;
@@ -57,6 +60,7 @@ namespace JsonWebToken
         /// </summary>
         protected Jwk()
         {
+            _algorithm = EmptyAlg;
         }
 
         /// <summary>
@@ -65,7 +69,12 @@ namespace JsonWebToken
         /// <param name="alg"></param>
         protected Jwk(SignatureAlgorithm alg)
         {
-            Alg = alg.Utf8Name;
+            if (alg is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.algorithm);
+            }
+
+            _algorithm = alg;
             _signatureAlgorithm = alg;
         }
 
@@ -75,32 +84,41 @@ namespace JsonWebToken
         /// <param name="alg"></param>
         protected Jwk(KeyManagementAlgorithm alg)
         {
-            Alg = alg.Utf8Name;
+            if (alg is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.algorithm);
+            }
+
+            _algorithm = alg;
             _keyManagementAlgorithm = alg;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Jwk"/> class.
-        /// </summary>
-        /// <param name="alg"></param>
-        protected Jwk(byte[] alg)
-        {
-            Alg = alg;
-        }
+        ///// <summary>
+        ///// Initializes a new instance of the <see cref="Jwk"/> class.
+        ///// </summary>
+        ///// <param name="alg"></param>
+        //protected Jwk(byte[] alg)
+        //{
+        //    if (SignatureAlgorithm.TryParse()
+        //    {
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Jwk"/> class.
-        /// </summary>
-        /// <param name="alg"></param>
-        protected Jwk(string alg)
-        {
-            Alg = Utf8.GetBytes(alg);
-        }
+        //    }
+        //    Alg = alg;
+        //}
+
+        ///// <summary>
+        ///// Initializes a new instance of the <see cref="Jwk"/> class.
+        ///// </summary>
+        ///// <param name="alg"></param>
+        //protected Jwk(string alg)
+        //{
+        //    Alg = Utf8.GetBytes(alg);
+        //}
 
         /// <summary>
         /// Gets or sets the 'alg' (KeyType).
         /// </summary>
-        public byte[]? Alg { get; set; }
+        public ReadOnlySpan<byte> Alg { get => _algorithm.Utf8Name; }
 
         /// <summary>
         /// Gets the 'key_ops' (Key Operations).
@@ -130,12 +148,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'use' (Public Key Use).
         /// </summary>
-        public byte[]? Use
+        public ReadOnlySpan<byte> Use
         {
             get => _use;
             set
             {
-                _use = value;
+                _use = value.ToArray();
                 _isSigningKey = value == null || JwkUseNames.Sig.SequenceEqual(value);
                 _isEncryptionKey = value == null || JwkUseNames.Enc.SequenceEqual(value);
             }
@@ -209,7 +227,7 @@ namespace JsonWebToken
                 if (!_isSigningKey.HasValue)
                 {
                     var use = Use;
-                    _isSigningKey = use == null || JwkUseNames.Sig.SequenceEqual(use);
+                    _isSigningKey = use.IsEmpty || JwkUseNames.Sig.SequenceEqual(use);
                 }
 
                 return _isSigningKey.Value;
@@ -223,7 +241,7 @@ namespace JsonWebToken
                 if (_signatureAlgorithm is null)
                 {
                     var alg = Alg;
-                    if (alg != null)
+                    if (!alg.IsEmpty)
                     {
                         SignatureAlgorithm.TryParse(alg, out _signatureAlgorithm);
                     }
@@ -240,7 +258,7 @@ namespace JsonWebToken
                 if (!_isEncryptionKey.HasValue)
                 {
                     var use = Use;
-                    _isEncryptionKey = use == null || JwkUseNames.Enc.SequenceEqual(use);
+                    _isEncryptionKey = use.IsEmpty || JwkUseNames.Enc.SequenceEqual(use);
                 }
 
                 return _isEncryptionKey.Value;
@@ -254,7 +272,7 @@ namespace JsonWebToken
                 if (_keyManagementAlgorithm is null)
                 {
                     var alg = Alg;
-                    if (alg != null)
+                    if (!alg.IsEmpty)
                     {
                         KeyManagementAlgorithm.TryParse(alg, out _keyManagementAlgorithm);
                     }
@@ -884,11 +902,11 @@ namespace JsonWebToken
             }
         }
 
-        internal void Populate(ReadOnlySpan<byte> name, byte[]? value)
+        internal void Populate(ReadOnlySpan<byte> name, byte[] value)
         {
             if (name.SequenceEqual(JwkParameterNames.AlgUtf8))
             {
-                Alg = value;
+                _algorithm = new UnknownAlgorithm(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.UseUtf8))
             {
@@ -956,13 +974,25 @@ namespace JsonWebToken
             switch (pPropertyNameShort)
             {
                 case alg:
-                    key.Alg = reader.ValueSpan.ToArray();
+                    if (SignatureAlgorithm.TryParse(ref reader, out var signatureAlgorithm))
+                    {
+                        key._algorithm = signatureAlgorithm;
+                    }
+                    else if (KeyManagementAlgorithm.TryParse(ref reader, out var keyManagementAlgorithm))
+                    {
+                        key._algorithm = keyManagementAlgorithm;
+                    }
+                    else
+                    {
+                        key._algorithm = new UnknownAlgorithm(reader.ValueSpan.ToArray());
+                    }
+
                     break;
                 case kid:
                     key.Kid = reader.GetString();
                     break;
                 case use:
-                    key.Use = reader.ValueSpan.ToArray();
+                    key.Use = reader.ValueSpan;
                     break;
                 case x5t:
                     key.X5t = Base64Url.Decode(reader.ValueSpan);
@@ -1054,6 +1084,13 @@ namespace JsonWebToken
             return Utf8.GetString(input);
         }
 
+        protected static void FillThumbprint(Jwk key)
+        {
+            Span<byte> thumbprint = stackalloc byte[43];
+            key.ComputeThumbprint(thumbprint);
+            key.Kid = Utf8.GetString(thumbprint);
+        }
+
         internal bool CanUseForSignature(SignatureAlgorithm? signatureAlgorithm)
         {
             if (IsSigningKey)
@@ -1116,6 +1153,11 @@ namespace JsonWebToken
 
         internal sealed class NullJwk : Jwk
         {
+            public NullJwk()
+            {
+                _algorithm = new EmptyAlgorithm();
+            }
+
             public override ReadOnlySpan<byte> Kty => ReadOnlySpan<byte>.Empty;
 
             public override int KeySizeInBits => 0;
@@ -1177,6 +1219,27 @@ namespace JsonWebToken
             {
                 return Signer.None;
             }
+        }
+
+        private sealed class UnknownAlgorithm : IAlgorithm
+        {
+            private readonly byte[] _alg;
+
+            public UnknownAlgorithm(byte[] alg)
+            {
+                _alg = alg ?? throw new ArgumentNullException(nameof(alg));
+            }
+
+            public ReadOnlySpan<byte> Utf8Name => _alg;
+
+            public string Name => Utf8.GetString(_alg);
+        }
+
+        private sealed class EmptyAlgorithm : IAlgorithm
+        {
+            public ReadOnlySpan<byte> Utf8Name => default;
+
+            public string Name => string.Empty;
         }
     }
 }

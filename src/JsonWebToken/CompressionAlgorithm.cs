@@ -33,7 +33,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the signature algorithm.
         /// </summary>
-        public byte[] Utf8Name => _utf8Name;
+        public ReadOnlySpan<byte> Utf8Name => _utf8Name;
 
         /// <summary>
         /// Gets the <see cref="Compressor"/>.
@@ -225,7 +225,7 @@ namespace JsonWebToken
                 return null;
             }
 
-            return value.Utf8Name;
+            return value._utf8Name;
         }
 
         /// <inheritsddoc />

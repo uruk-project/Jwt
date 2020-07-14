@@ -75,7 +75,7 @@ namespace JsonWebToken
         public ECJwk(ECParameters parameters, SignatureAlgorithm alg)
             : base(alg)
         {
-            Initialize(parameters, alg);
+            Initialize(parameters);
         }
 
         /// <summary>
@@ -168,11 +168,6 @@ namespace JsonWebToken
         {
         }
 #nullable enable
-
-        private void Initialize(ECParameters parameters, SignatureAlgorithm alg)
-        {
-            Initialize(parameters, alg);
-        }
 
         private void Initialize(ECParameters parameters)
         {
@@ -363,14 +358,16 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="curve"></param>
         /// <returns></returns>
-        public static ECJwk GeneratePrivateKey(in EllipticalCurve curve) => GenerateKey(curve, true, algorithm: (SignatureAlgorithm?)null);
+        public static ECJwk GeneratePrivateKey(in EllipticalCurve curve)
+            => GenerateKey(curve, true);
 
         /// <summary>
         /// Generates a public <see cref="ECJwk"/>.
         /// </summary>
         /// <param name="curve"></param>
         /// <returns></returns>
-        public static ECJwk GeneratePublicKey(in EllipticalCurve curve) => GenerateKey(curve, false, algorithm: (SignatureAlgorithm?)null);
+        public static ECJwk GeneratePublicKey(in EllipticalCurve curve)
+            => GenerateKey(curve, false);
 
         /// <summary>
         /// Generates a <see cref="ECJwk"/>.
@@ -378,34 +375,43 @@ namespace JsonWebToken
         /// <param name="curve"></param>
         /// <param name="withPrivateKey"></param>
         /// <returns></returns>
-        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey) => GenerateKey(curve, withPrivateKey, algorithm: (SignatureAlgorithm?)null);
-
-        /// <summary>
-        /// Generates a <see cref="ECJwk"/>.
-        /// </summary>
-        /// <param name="curve"></param>
-        /// <param name="withPrivateKey"></param>
-        /// <param name="algorithm"></param>
-        /// <returns></returns>
-        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, SignatureAlgorithm? algorithm)
-            => GenerateKey(curve, withPrivateKey, algorithm?.Utf8Name);
-
-        /// <summary>
-        /// Generates a <see cref="ECJwk"/>.
-        /// </summary>
-        /// <param name="curve"></param>
-        /// <param name="withPrivateKey"></param>
-        /// <param name="algorithm"></param>
-        /// <returns></returns>
-        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, KeyManagementAlgorithm? algorithm)
-            => GenerateKey(curve, withPrivateKey, algorithm?.Utf8Name);
-
-        private static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, byte[]? algorithm)
+        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey)
         {
-            using var ecdsa = ECDsa.Create();
-            ecdsa.GenerateKey(curve.CurveParameters);
-            var parameters = ecdsa.ExportParameters(withPrivateKey);
+            ECParameters parameters = GenerateParameters(curve, withPrivateKey);
+            return FromParameters(parameters, false);
+        }
+
+        /// <summary>
+        /// Generates a <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curve"></param>
+        /// <param name="withPrivateKey"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, SignatureAlgorithm algorithm)
+        {
+            ECParameters parameters = GenerateParameters(curve, withPrivateKey);
             return FromParameters(parameters, algorithm, false);
+        }
+
+        /// <summary>
+        /// Generates a <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curve"></param>
+        /// <param name="withPrivateKey"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, KeyManagementAlgorithm algorithm)
+        {
+            ECParameters parameters = GenerateParameters(curve, withPrivateKey);
+            return FromParameters(parameters, algorithm, false);
+        }
+
+        private static ECParameters GenerateParameters(in EllipticalCurve curve, bool withPrivateKey)
+        {
+            using ECDsa ecdsa = ECDsa.Create();
+            ecdsa.GenerateKey(curve.CurveParameters);
+            return ecdsa.ExportParameters(withPrivateKey);
         }
 
         /// <inheritdoc />
@@ -427,31 +433,18 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
+        public static ECJwk FromParameters(ECParameters parameters, KeyManagementAlgorithm algorithm)
+            => FromParameters(parameters, algorithm, computeThumbprint: false);
+
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
         public static ECJwk FromParameters(ECParameters parameters, KeyManagementAlgorithm algorithm, bool computeThumbprint)
-            => FromParameters(parameters, algorithm?.Utf8Name, computeThumbprint);
-
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
-        public static ECJwk FromParameters(ECParameters parameters, SignatureAlgorithm algorithm, bool computeThumbprint)
-            => FromParameters(parameters, algorithm?.Utf8Name, computeThumbprint);
-
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
-        public static ECJwk FromParameters(ECParameters parameters, byte[]? algorithm, bool computeThumbprint)
         {
-            var key = new ECJwk(parameters);
+            var key = new ECJwk(parameters, algorithm);
             if (computeThumbprint)
             {
-                Span<byte> thumbprint = stackalloc byte[43];
-                key.ComputeThumbprint(thumbprint);
-                key.Kid = Utf8.GetString(thumbprint);
-            }
-
-            if (algorithm != null)
-            {
-                key.Alg = algorithm;
+                FillThumbprint(key);
             }
 
             return key;
@@ -460,12 +453,42 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public static ECJwk FromParameters(ECParameters parameters) => FromParameters(parameters, (byte[]?)null, false);
+        public static ECJwk FromParameters(ECParameters parameters, SignatureAlgorithm algorithm)
+            => FromParameters(parameters, algorithm, computeThumbprint: false);
 
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint) => FromParameters(parameters, (byte[]?)null, computeThumbprint);
+        public static ECJwk FromParameters(ECParameters parameters, SignatureAlgorithm algorithm, bool computeThumbprint)
+        {
+            var key = new ECJwk(parameters, algorithm);
+            if (computeThumbprint)
+            {
+                FillThumbprint(key);
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
+        public static ECJwk FromParameters(ECParameters parameters)
+            => FromParameters(parameters, computeThumbprint: false);
+
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
+        public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint)
+        {
+            var key = new ECJwk(parameters);
+            if (computeThumbprint)
+            {
+                FillThumbprint(key);
+            }
+
+            return key;
+        }
 
         /// <inheritdoc />
         public override ReadOnlySpan<byte> AsSpan()

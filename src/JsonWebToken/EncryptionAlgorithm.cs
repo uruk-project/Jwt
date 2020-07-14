@@ -113,7 +113,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the signature algorithm.
         /// </summary>
-        public byte[] Utf8Name => _utf8Name;
+        public ReadOnlySpan<byte> Utf8Name => _utf8Name;
 
         /// <summary>
         /// Initializes a new instance of <see cref="EncryptionAlgorithm"/>. 

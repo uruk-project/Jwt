@@ -208,9 +208,9 @@ namespace JsonWebToken
         /// <inheritsdoc />
         protected override void OnKeyChanged(Jwk? key)
         {
-            if (!(key is null) && !(key.Alg is null))
+            if (!(key is null) && !(key.KeyManagementAlgorithm is null))
             {
-                Algorithm = (KeyManagementAlgorithm?)key.Alg;
+                Algorithm = key.KeyManagementAlgorithm;
             }
         }
     }

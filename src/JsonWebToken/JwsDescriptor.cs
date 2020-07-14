@@ -57,7 +57,7 @@ namespace JsonWebToken
 
             set
             {
-                SetHeaderParameter(HeaderParameters.AlgUtf8, value?.Utf8Name);
+                SetHeaderParameter(HeaderParameters.AlgUtf8, value is null ? default : value.Utf8Name);
                 _alg = default;
             }
         }
@@ -687,7 +687,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         protected override void OnKeyChanged(Jwk? key)
         {
-            if (!(key is null) && !(key.Alg is null))
+            if (!(key is null) && !key.Alg.IsEmpty)
             {
                 Algorithm = key.SignatureAlgorithm;
             }
