@@ -21,6 +21,14 @@ namespace JsonWebToken
         private const ushort dp = (ushort)28772u;
         private const ushort dq = (ushort)29028u;
 
+        private byte[] _e;
+        private byte[] _n;
+        private byte[]? _dp;
+        private byte[]? _dq;
+        private byte[]? _p;
+        private byte[]? _q;
+        private byte[]? _qi;
+
 #nullable disable
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
@@ -251,13 +259,13 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
-            DP = dp;
-            DQ = dq;
-            QI = qi;
-            P = p;
-            Q = q;
-            E = e;
-            N = n;
+            _dp = dp;
+            _dq = dq;
+            _qi = qi;
+            _p = p;
+            _q = q;
+            _e = e;
+            _n = n;
         }
 
         private void Initialize(string p, string q, string dp, string dq, string qi, string e, string n)
@@ -297,25 +305,25 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
-            DP = Base64Url.Decode(dp);
-            DQ = Base64Url.Decode(dq);
-            QI = Base64Url.Decode(qi);
-            P = Base64Url.Decode(p);
-            Q = Base64Url.Decode(q);
-            E = Base64Url.Decode(e);
-            N = Base64Url.Decode(n);
+            _dp = Base64Url.Decode(dp);
+            _dq = Base64Url.Decode(dq);
+            _qi = Base64Url.Decode(qi);
+            _p = Base64Url.Decode(p);
+            _q = Base64Url.Decode(q);
+            _e = Base64Url.Decode(e);
+            _n = Base64Url.Decode(n);
         }
 
         private void Initialize(RSAParameters rsaParameters)
         {
-            D = rsaParameters.D;
-            DP = rsaParameters.DP;
-            DQ = rsaParameters.DQ;
-            QI = rsaParameters.InverseQ;
-            P = rsaParameters.P;
-            Q = rsaParameters.Q;
-            E = rsaParameters.Exponent;
-            N = rsaParameters.Modulus;
+            _d = rsaParameters.D;
+            _dp = rsaParameters.DP;
+            _dq = rsaParameters.DQ;
+            _qi = rsaParameters.InverseQ;
+            _p = rsaParameters.P;
+            _q = rsaParameters.Q;
+            _e = rsaParameters.Exponent;
+            _n = rsaParameters.Modulus;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -331,8 +339,8 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
-            E = Base64Url.Decode(e);
-            N = Base64Url.Decode(n);
+            _e = Base64Url.Decode(e);
+            _n = Base64Url.Decode(n);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -349,8 +357,8 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
-            E = e;
-            N = n;
+            _e = e;
+            _n = n;
         }
 
         /// <inheritsdoc />
@@ -362,21 +370,16 @@ namespace JsonWebToken
         /// <returns></returns>
         public RSAParameters ExportParameters()
         {
-            if (N == null || E == null)
-            {
-                ThrowHelper.ThrowArgumentException_InvalidRsaKey(this);
-            }
-
             RSAParameters parameters = new RSAParameters
             {
-                D = D,
-                DP = DP,
-                DQ = DQ,
-                InverseQ = QI,
-                P = P,
-                Q = Q,
-                Exponent = E,
-                Modulus = N
+                D = _d,
+                DP = _dp,
+                DQ = _dq,
+                InverseQ = _qi,
+                P = _p,
+                Q = _q,
+                Exponent = _e,
+                Modulus = _n
             };
 
             return parameters;
@@ -419,45 +422,42 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override bool HasPrivateKey => D != null && DP != null && DQ != null && P != null && Q != null && QI != null;
-
-        /// <inheritsdoc />
-        public override int KeySizeInBits => N.Length != 0 ? N.Length << 3 : 0;
+        public override int KeySizeInBits => _n.Length << 3;
 
         /// <summary>
         /// Gets or sets the 'dp' (First Factor CRT Exponent).
         /// </summary>
-        public byte[]? DP { get; private set; }
+        public ReadOnlySpan<byte> DP => _dp;
 
         /// <summary>
         /// Gets or sets the 'dq' (Second Factor CRT Exponent).
         /// </summary>
-        public byte[]? DQ { get; private set; }
+        public ReadOnlySpan<byte> DQ => _dq;
 
         /// <summary>
         /// Gets or sets the 'e' ( Exponent).
         /// </summary>
-        public byte[] E { get; private set; }
+        public ReadOnlySpan<byte> E => _e;
 
         /// <summary>
         /// Gets or sets the 'n' (Modulus).
         /// </summary>
-        public byte[] N { get; private set; }
+        public ReadOnlySpan<byte> N => _n;
 
         /// <summary>
         /// Gets or sets the 'p' (First Prime Factor).
         /// </summary>
-        public byte[]? P { get; private set; }
+        public ReadOnlySpan<byte> P => _p;
 
         /// <summary>
         /// Gets or sets the 'q' (Second  Prime Factor).
         /// </summary>
-        public byte[]? Q { get; private set; }
+        public ReadOnlySpan<byte> Q => _q;
 
         /// <summary>
         /// Gets or sets the 'qi' (First CRT Coefficient).
         /// </summary>
-        public byte[]? QI { get; private set; }
+        public ReadOnlySpan<byte> QI => _qi;
 
         /// <summary>
         /// Generates a new random private <see cref="RsaJwk"/>.
@@ -623,7 +623,7 @@ namespace JsonWebToken
             writer.WriteStartObject();
 
             // the RSA exponent E is always smaller than the modulus N
-            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(N.Length);
+            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(_n.Length);
             byte[]? arrayToReturn = null;
             try
             {
@@ -688,35 +688,35 @@ namespace JsonWebToken
             string value = (string)property.Value!;
             if (name.SequenceEqual(JwkParameterNames.NUtf8))
             {
-                key.N = Base64Url.Decode(value);
+                key._n = Base64Url.Decode(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.EUtf8))
             {
-                key.E = Base64Url.Decode(value);
+                key._e = Base64Url.Decode(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.DUtf8))
             {
-                key.D = Base64Url.Decode(value);
+                key._d = Base64Url.Decode(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.DPUtf8))
             {
-                key.DP = Base64Url.Decode(value);
+                key._dp = Base64Url.Decode(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.DQUtf8))
             {
-                key.DQ = Base64Url.Decode(value);
+                key._dq = Base64Url.Decode(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.PUtf8))
             {
-                key.P = Base64Url.Decode(value);
+                key._p = Base64Url.Decode(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.QUtf8))
             {
-                key.Q = Base64Url.Decode(value);
+                key._q = Base64Url.Decode(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.QIUtf8))
             {
-                key.QI = Base64Url.Decode(value);
+                key._qi = Base64Url.Decode(value);
             }
             else
             {
@@ -782,17 +782,17 @@ namespace JsonWebToken
         private static void PopulateTwo(ref Utf8JsonReader reader, ref byte propertyNameRef, RsaJwk key)
         {
             var pKtyShort = IntegerMarshal.ReadUInt16(ref propertyNameRef);
-            if (pKtyShort == qi)
+            switch (pKtyShort)
             {
-                key.QI = Base64Url.Decode(reader.ValueSpan);
-            }
-            else if (pKtyShort == dp)
-            {
-                key.DP = Base64Url.Decode(reader.ValueSpan);
-            }
-            else if (pKtyShort == dq)
-            {
-                key.DQ = Base64Url.Decode(reader.ValueSpan);
+                case qi:
+                    key._qi = Base64Url.Decode(reader.ValueSpan);
+                    break;
+                case dp:
+                    key._dp = Base64Url.Decode(reader.ValueSpan);
+                    break;
+                case dq:
+                    key._dq = Base64Url.Decode(reader.ValueSpan);
+                    break;
             }
         }
 
@@ -802,19 +802,19 @@ namespace JsonWebToken
             switch (propertyNameRef)
             {
                 case (byte)'e':
-                    key.E = Base64Url.Decode(reader.ValueSpan);
+                    key._e = Base64Url.Decode(reader.ValueSpan);
                     break;
                 case (byte)'n':
-                    key.N = Base64Url.Decode(reader.ValueSpan);
+                    key._n = Base64Url.Decode(reader.ValueSpan);
                     break;
                 case (byte)'p':
-                    key.P = Base64Url.Decode(reader.ValueSpan);
+                    key._p = Base64Url.Decode(reader.ValueSpan);
                     break;
                 case (byte)'q':
-                    key.Q = Base64Url.Decode(reader.ValueSpan);
+                    key._q = Base64Url.Decode(reader.ValueSpan);
                     break;
                 case (byte)'d':
-                    key.D = Base64Url.Decode(reader.ValueSpan);
+                    key._d = Base64Url.Decode(reader.ValueSpan);
                     break;
             }
         }
@@ -825,7 +825,7 @@ namespace JsonWebToken
             base.WriteTo(writer);
 
             // the modulus N is always the biggest field
-            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(N.Length);
+            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(_n.Length);
             byte[]? arrayToReturn = null;
             try
             {
@@ -833,15 +833,15 @@ namespace JsonWebToken
                                     ? stackalloc byte[requiredBufferSize]
                                     : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
 
-                WriteBase64UrlProperty(writer, buffer, E, JwkParameterNames.EUtf8);
-                WriteBase64UrlProperty(writer, buffer, N, JwkParameterNames.NUtf8);
+                WriteBase64UrlProperty(writer, buffer, _e, JwkParameterNames.EUtf8);
+                WriteBase64UrlProperty(writer, buffer, _n, JwkParameterNames.NUtf8);
 
-                WriteOptionalBase64UrlProperty(writer, buffer, D, JwkParameterNames.DUtf8);
-                WriteOptionalBase64UrlProperty(writer, buffer, DP, JwkParameterNames.DPUtf8);
-                WriteOptionalBase64UrlProperty(writer, buffer, DQ, JwkParameterNames.DQUtf8);
-                WriteOptionalBase64UrlProperty(writer, buffer, P, JwkParameterNames.PUtf8);
-                WriteOptionalBase64UrlProperty(writer, buffer, Q, JwkParameterNames.QUtf8);
-                WriteOptionalBase64UrlProperty(writer, buffer, QI, JwkParameterNames.QIUtf8);
+                WriteOptionalBase64UrlProperty(writer, buffer, _d, JwkParameterNames.DUtf8);
+                WriteOptionalBase64UrlProperty(writer, buffer, _dp, JwkParameterNames.DPUtf8);
+                WriteOptionalBase64UrlProperty(writer, buffer, _dq, JwkParameterNames.DQUtf8);
+                WriteOptionalBase64UrlProperty(writer, buffer, _p, JwkParameterNames.PUtf8);
+                WriteOptionalBase64UrlProperty(writer, buffer, _q, JwkParameterNames.QUtf8);
+                WriteOptionalBase64UrlProperty(writer, buffer, _qi, JwkParameterNames.QIUtf8);
             }
             finally
             {
@@ -866,8 +866,8 @@ namespace JsonWebToken
             }
 
             return
-                E.AsSpan().SequenceEqual(key.E) &&
-                N.AsSpan().SequenceEqual(key.N);
+                E.SequenceEqual(key.E) &&
+                N.SequenceEqual(key.N);
         }
 
         /// <inheritsdoc />
@@ -879,7 +879,7 @@ namespace JsonWebToken
 
                 int hash = (int)2166136261;
 
-                var e = E;
+                var e = _e;
                 if (e.Length >= sizeof(int))
                 {
                     hash = (hash ^ Unsafe.ReadUnaligned<int>(ref e[0])) * p;
@@ -892,7 +892,7 @@ namespace JsonWebToken
                     }
                 }
 
-                var n = N;
+                var n = _n;
                 if (n.Length >= sizeof(int))
                 {
                     hash = (hash ^ Unsafe.ReadUnaligned<int>(ref n[0])) * p;
@@ -913,34 +913,29 @@ namespace JsonWebToken
         public override void Dispose()
         {
             base.Dispose();
-            if (DP != null)
+            if (_dp != null)
             {
-                CryptographicOperations.ZeroMemory(DP);
+                CryptographicOperations.ZeroMemory(_dp);
             }
 
-            if (DQ != null)
+            if (_dq != null)
             {
-                CryptographicOperations.ZeroMemory(DQ);
+                CryptographicOperations.ZeroMemory(_dq);
             }
 
-            if (QI != null)
+            if (_qi != null)
             {
-                CryptographicOperations.ZeroMemory(QI);
+                CryptographicOperations.ZeroMemory(_qi);
             }
 
-            if (P != null)
+            if (_p != null)
             {
-                CryptographicOperations.ZeroMemory(P);
+                CryptographicOperations.ZeroMemory(_p);
             }
 
-            if (Q != null)
+            if (_q != null)
             {
-                CryptographicOperations.ZeroMemory(Q);
-            }
-
-            if (D != null)
-            {
-                CryptographicOperations.ZeroMemory(D);
+                CryptographicOperations.ZeroMemory(_q);
             }
         }
     }

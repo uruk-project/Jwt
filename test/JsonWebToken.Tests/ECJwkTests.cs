@@ -41,11 +41,11 @@ namespace JsonWebToken.Tests
             var jwk = ECJwk.GenerateKey(EllipticalCurve.P256, true);
             var canonicalizedKey = (ECJwk)CanonicalizeKey(jwk);
 
-            Assert.Null(canonicalizedKey.D);
+            Assert.True(canonicalizedKey.D.IsEmpty);
 
             Assert.Equal(EllipticalCurve.P256.Id, canonicalizedKey.Crv.Id);
-            Assert.NotEmpty(canonicalizedKey.X);
-            Assert.NotEmpty(canonicalizedKey.Y);
+            Assert.False(canonicalizedKey.X.IsEmpty);
+            Assert.False(canonicalizedKey.Y.IsEmpty);
         }
 
         [Theory]
@@ -124,8 +124,8 @@ namespace JsonWebToken.Tests
             Assert.True(JwkUseNames.Enc.SequenceEqual(jwk.Use));
 
             Assert.Equal(Encoding.UTF8.GetBytes("P-256"), jwk.Crv.Name);
-            Assert.Equal(jwk.X, Base64Url.Decode("MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4"));
-            Assert.Equal(jwk.Y, Base64Url.Decode("4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM"));
+            Assert.Equal(jwk.X.ToArray(), Base64Url.Decode("MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4"));
+            Assert.Equal(jwk.Y.ToArray(), Base64Url.Decode("4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM"));
         }
 
         [Theory]

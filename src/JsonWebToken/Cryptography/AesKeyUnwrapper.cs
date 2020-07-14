@@ -95,7 +95,6 @@ namespace JsonWebToken.Internal
 
             ref byte input = ref MemoryMarshal.GetReference(key);
             ulong a = Unsafe.ReadUnaligned<ulong>(ref input);
-
             // The number of input blocks
             int n = key.Length - BlockSizeInBytes;
 
@@ -103,49 +102,7 @@ namespace JsonWebToken.Internal
             Span<byte> r = stackalloc byte[n];
             ref byte rRef = ref MemoryMarshal.GetReference(r);
             Unsafe.CopyBlockUnaligned(ref rRef, ref Unsafe.AddByteOffset(ref input, (IntPtr)8), (uint)n);
-            byte[] block = new byte[16];
-            ref byte blockRef = ref MemoryMarshal.GetReference((Span<byte>)block);
-            Span<byte> t = stackalloc byte[8];
-            ref byte tRef = ref MemoryMarshal.GetReference(t);
-            Unsafe.WriteUnaligned(ref tRef, 0);
-            int n3 = n >> 3;
-            ref byte blockEndRef = ref Unsafe.AddByteOffset(ref blockRef, (IntPtr)8);
-            ref byte tRef7 = ref Unsafe.AddByteOffset(ref tRef, (IntPtr)7);
-#if SUPPORT_SIMD
-            Span<byte> b = stackalloc byte[16];
-            ref byte bRef = ref MemoryMarshal.GetReference(b);
-#else
-            var decryptor = _decryptorPool.Get();
-            try
-            {
-#endif
-            for (var j = 5; j >= 0; j--)
-            {
-                for (var i = n3; i > 0; i--)
-                {
-                    Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i));
-
-                    a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
-                    Unsafe.WriteUnaligned(ref blockRef, a);
-                    ref byte rCurrent = ref Unsafe.AddByteOffset(ref rRef, (IntPtr)((i - 1) << 3));
-                    Unsafe.WriteUnaligned(ref blockEndRef, Unsafe.ReadUnaligned<ulong>(ref rCurrent));
-#if SUPPORT_SIMD
-                    _decryptor.DecryptBlock(ref blockRef, ref bRef);
-#else
-                        Span<byte> b = decryptor.TransformFinalBlock(block, 0, 16);
-                        ref byte bRef = ref MemoryMarshal.GetReference(b);
-#endif
-                    a = Unsafe.ReadUnaligned<ulong>(ref bRef);
-                    Unsafe.WriteUnaligned(ref rCurrent, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
-                }
-            }
-#if !SUPPORT_SIMD
-            }
-            finally
-            {
-                _decryptorPool.Return(decryptor);
-            }
-#endif
+            a = TryUnwrapKey(a, n, ref rRef);
             if (a == _defaultIV)
             {
                 if (destination.Length < n)
@@ -161,6 +118,76 @@ namespace JsonWebToken.Internal
 
             return ThrowHelper.TryWriteError(out bytesWritten);
         }
+
+#if SUPPORT_SIMD
+        private ulong TryUnwrapKey(ulong a, int n, ref byte rRef)
+        {
+            Span<byte> block = stackalloc byte[16];
+            ref byte blockRef = ref MemoryMarshal.GetReference(block);
+            Span<byte> t = stackalloc byte[8];
+            ref byte tRef = ref MemoryMarshal.GetReference(t);
+            Unsafe.WriteUnaligned(ref tRef, 0);
+            int n3 = n >> 3;
+            ref byte blockEndRef = ref Unsafe.AddByteOffset(ref blockRef, (IntPtr)8);
+            ref byte tRef7 = ref Unsafe.AddByteOffset(ref tRef, (IntPtr)7);
+            Span<byte> b = stackalloc byte[16];
+            ref byte bRef = ref MemoryMarshal.GetReference(b);
+            for (var j = 5; j >= 0; j--)
+            {
+                for (var i = n3; i > 0; i--)
+                {
+                    Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i));
+                    a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
+                    Unsafe.WriteUnaligned(ref blockRef, a);
+                    ref byte rCurrent = ref Unsafe.AddByteOffset(ref rRef, (IntPtr)((i - 1) << 3));
+                    Unsafe.WriteUnaligned(ref blockEndRef, Unsafe.ReadUnaligned<ulong>(ref rCurrent));
+                    _decryptor.DecryptBlock(ref blockRef, ref bRef);
+
+                    a = Unsafe.ReadUnaligned<ulong>(ref bRef);
+                    Unsafe.WriteUnaligned(ref rCurrent, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
+                }
+            }
+
+            return a;
+        }
+#else
+        private ulong TryUnwrapKey(ulong a, int n, ref byte rRef)
+        {
+            byte[] block = new byte[16];
+            ref byte blockRef = ref block[0];
+            Span<byte> t = stackalloc byte[8];
+            ref byte tRef = ref MemoryMarshal.GetReference(t);
+            Unsafe.WriteUnaligned(ref tRef, 0);
+            int n3 = n >> 3;
+            ref byte blockEndRef = ref Unsafe.AddByteOffset(ref blockRef, (IntPtr)8);
+            ref byte tRef7 = ref Unsafe.AddByteOffset(ref tRef, (IntPtr)7);
+            var decryptor = _decryptorPool.Get();
+            try
+            {
+                for (var j = 5; j >= 0; j--)
+                {
+                    for (var i = n3; i > 0; i--)
+                    {
+                        Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i));
+                        a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
+                        Unsafe.WriteUnaligned(ref blockRef, a);
+                        ref byte rCurrent = ref Unsafe.AddByteOffset(ref rRef, (IntPtr)((i - 1) << 3));
+                        Unsafe.WriteUnaligned(ref blockEndRef, Unsafe.ReadUnaligned<ulong>(ref rCurrent));
+                        Span<byte> b = decryptor.TransformFinalBlock(block, 0, 16);
+                        ref byte bRef = ref MemoryMarshal.GetReference(b);
+                        a = Unsafe.ReadUnaligned<ulong>(ref bRef);
+                        Unsafe.WriteUnaligned(ref rCurrent, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
+                    }
+                }
+            }
+            finally
+            {
+                _decryptorPool.Return(decryptor);
+            }
+
+            return a;
+        }
+#endif
 
         public override int GetKeyUnwrapSize(int wrappedKeySize)
             => GetKeyUnwrappedSize(wrappedKeySize);

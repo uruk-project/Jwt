@@ -1101,7 +1101,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void WriteOptionalBase64UrlProperty(Utf8JsonWriter writer, Span<byte> buffer, byte[]? value, ReadOnlySpan<byte> propertyName)
         {
-            if (value != null)
+            if (!(value is null))
             {
                 WriteBase64UrlProperty(writer, buffer, value, propertyName);
             }
