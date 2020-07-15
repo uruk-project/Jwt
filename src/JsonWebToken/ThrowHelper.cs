@@ -244,9 +244,9 @@ namespace JsonWebToken
 #endif
 
         [DoesNotReturn]
-        internal static void ThrowNotSupportedException_Curve(string curve) => throw CreateNotSupportedException_Curve(curve);
+        internal static void ThrowNotSupportedException_Curve(string? curve) => throw CreateNotSupportedException_Curve(curve);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateNotSupportedException_Curve(string curve) => new NotSupportedException($"Elliptical Curve not supported for curve: '{curve}'");
+        private static Exception CreateNotSupportedException_Curve(string? curve) => new NotSupportedException($"Elliptical Curve not supported for curve: '{curve}'");
 
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_Algorithm(string algorithm) => throw CreateNotSupportedException_Algorithm(algorithm);

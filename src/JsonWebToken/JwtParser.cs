@@ -48,7 +48,7 @@ namespace JsonWebToken
                         current.Add(name, ReadJsonArray(ref reader));
                         break;
                     case JsonTokenType.String:
-                        current.Add(name, reader.GetString());
+                        current.Add(name, reader.GetString()!);
                         break;
                     case JsonTokenType.True:
                         current.Add(name, true);
@@ -119,7 +119,7 @@ namespace JsonWebToken
 
                         break;
                     case JsonTokenType.String:
-                        string valueString = reader.GetString();
+                        string valueString = reader.GetString()!;
                         array.Add(valueString);
                         break;
                     case JsonTokenType.True:
@@ -149,7 +149,7 @@ namespace JsonWebToken
             var array = new List<string>(2);
             while (reader.Read() && reader.TokenType == JsonTokenType.String)
             {
-                array.Add(reader.GetString());
+                array.Add(reader.GetString()!);
             }
 
             if (reader.TokenType != JsonTokenType.EndArray)

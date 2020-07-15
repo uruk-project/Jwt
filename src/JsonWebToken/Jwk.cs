@@ -415,7 +415,7 @@ namespace JsonWebToken
             var array = new JwtArray(new List<JwtValue>(2));
             while (reader.Read() && reader.TokenType is JsonTokenType.String)
             {
-                var value = reader.GetString();
+                var value = reader.GetString()!;
                 array.Add(new JwtValue(Convert.FromBase64String(value)));
             }
 
@@ -1092,7 +1092,11 @@ namespace JsonWebToken
             return Utf8.GetString(input);
         }
 
-        protected static void FillThumbprint(Jwk key)
+        /// <summary>
+        /// Compute the thumbprint of the <see cref="Jwk"/>.
+        /// </summary>
+        /// <param name="key"></param>
+        protected static void ComputeThumbprint(Jwk key)
         {
             Span<byte> thumbprint = stackalloc byte[43];
             key.ComputeThumbprint(thumbprint);

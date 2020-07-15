@@ -67,7 +67,7 @@ namespace JsonWebToken
                                 }
                                 else
                                 {
-                                    payload.Aud = new[] { reader.GetString() };
+                                    payload.Aud = new[] { reader.GetString()! };
                                 }
                             }
                             else if (type == JsonTokenType.StartArray)
@@ -87,7 +87,7 @@ namespace JsonWebToken
                                             }
                                         }
 
-                                        audiences.Add(reader.GetString());
+                                        audiences.Add(reader.GetString()!);
                                         control &= unchecked((byte)~JwtPayload.MissingAudienceFlag);
                                     }
 
@@ -192,7 +192,7 @@ namespace JsonWebToken
                         payload.Inner.Add(name, JsonParser.ReadJsonArray(ref reader));
                         break;
                     case JsonTokenType.String:
-                        payload.Inner.Add(name, reader.GetString());
+                        payload.Inner.Add(name, reader.GetString()!);
                         break;
                     case JsonTokenType.True:
                         payload.Inner.Add(name, true);
