@@ -350,7 +350,7 @@ namespace JsonWebToken
                                     jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan .ToArray()*/)));
                                     continue;
                                 case kid:
-                                    jwk.Add(new JwtProperty(WellKnownProperty.Kid, reader.GetString()));
+                                    jwk.Add(new JwtProperty(WellKnownProperty.Kid, reader.GetString()!));
                                     continue;
                             }
                         }
@@ -945,7 +945,11 @@ namespace JsonWebToken
                 key._keyOps = new List<string>();
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                 {
-                    key._keyOps.Add(reader.GetString());
+                    var value = reader.GetString();
+                    if (value != null)
+                    {
+                        key._keyOps.Add(value);
+                    }
                 }
             }
             else
@@ -954,7 +958,11 @@ namespace JsonWebToken
                 key._x5c = new List<byte[]>();
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                 {
-                    key._x5c.Add(Convert.FromBase64String(reader.GetString()));
+                    var value = reader.GetString();
+                    if (value != null)
+                    {
+                        key._x5c.Add(Convert.FromBase64String(value));
+                    }
                 }
             }
             else

@@ -20,6 +20,7 @@ namespace JsonWebToken
     public sealed class ECJwk : AsymmetricJwk
     {
         private const uint crv = 7762531u;
+        private byte[] _x;
 
         private byte[] _x;
         private byte[] _y;
