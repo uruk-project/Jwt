@@ -21,8 +21,6 @@ namespace JsonWebToken
     {
         private const uint crv = 7762531u;
         private byte[] _x;
-
-        private byte[] _x;
         private byte[] _y;
 
         /// <summary>
@@ -445,7 +443,7 @@ namespace JsonWebToken
             var key = new ECJwk(parameters, algorithm);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeThumbprint(key);
             }
 
             return key;
@@ -465,7 +463,7 @@ namespace JsonWebToken
             var key = new ECJwk(parameters, algorithm);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeThumbprint(key);
             }
 
             return key;
@@ -485,7 +483,7 @@ namespace JsonWebToken
             var key = new ECJwk(parameters);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeThumbprint(key);
             }
 
             return key;
