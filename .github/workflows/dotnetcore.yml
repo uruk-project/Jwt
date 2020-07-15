@@ -52,7 +52,7 @@ jobs:
       - name: Setup dotnet '5.x'
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '5.x'
+          dotnet-version: '5.0.100-preview.6.20318.15'
       - name: DOTNET HACK
 #  https://github.com/actions/setup-dotnet/issues/25
         shell: pwsh
