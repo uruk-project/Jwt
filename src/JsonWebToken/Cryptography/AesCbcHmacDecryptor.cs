@@ -144,7 +144,7 @@ namespace JsonWebToken.Internal
                 ciphertext.CopyTo(bytes);
                 bytes = bytes.Slice(ciphertext.Length);
                 BinaryPrimitives.WriteInt64BigEndian(bytes, associatedData.Length << 3);
-                if (!_signer.Verify(macBytes, authenticationTag))
+                if (!_signer.VerifyHalf(macBytes, authenticationTag))
                 {
                     return false;
                 }

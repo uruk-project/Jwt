@@ -146,6 +146,11 @@ namespace JsonWebToken
             }
         }
 
+        public override bool VerifyHalf(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (!_disposed)

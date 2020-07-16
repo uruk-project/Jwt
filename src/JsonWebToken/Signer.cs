@@ -54,12 +54,20 @@ namespace JsonWebToken
         public abstract bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten);
 
         /// <summary>
-        /// This must be overridden to verify a signature created over the 'input'.
+        /// Verify a signature created over the 'input'.
         /// </summary>
         /// <param name="input">bytes to verify.</param>
         /// <param name="signature">signature to compare against.</param>
         /// <returns>true if the computed signature matches the signature parameter, false otherwise.</returns>
         public abstract bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature);
+     
+        /// <summary>
+        /// Verify the firs thalf signature created over the 'input'.
+        /// </summary>
+        /// <param name="input">bytes to verify.</param>
+        /// <param name="signature">signature to compare against.</param>
+        /// <returns>true if the computed signature matches the signature parameter, false otherwise.</returns>
+        public abstract bool VerifyHalf(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature);
 
         /// <summary>
         /// Calls <see cref="Dispose(bool)"/> and <see cref="GC.SuppressFinalize"/>
@@ -94,6 +102,11 @@ namespace JsonWebToken
             }
 
             public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
+            {
+                return true;
+            }
+
+            public override bool VerifyHalf(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
             {
                 return true;
             }

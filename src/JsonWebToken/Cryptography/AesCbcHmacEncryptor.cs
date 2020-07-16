@@ -112,13 +112,13 @@ namespace JsonWebToken.Internal
         /// <inheritdoc />
         public override int GetTagSize()
         {
-            return _signer.HashSizeInBytes;
+            return _signer.HashSizeInBytes / 2;
         }
 
         /// <inheritdoc />
         public override int GetBase64TagSize()
         {
-            return _signer.Base64HashSizeInBytes;
+            return Base64Url.GetArraySizeRequiredToEncode(_signer.HashSizeInBytes / 2);
         }
 
         /// <inheritdoc />
@@ -180,8 +180,10 @@ namespace JsonWebToken.Internal
                 bytes = bytes.Slice(ciphertext.Length);
                 BinaryPrimitives.WriteInt64BigEndian(bytes, associatedData.Length * 8);
 
-                _signer.TrySign(macBytes, authenticationTag, out int writtenBytes);
-                Debug.Assert(writtenBytes == authenticationTag.Length);
+                Span<byte> hash = stackalloc byte[authenticationTag.Length * 2];
+                _signer.TrySign(macBytes, hash, out int writtenBytes);
+                Debug.Assert(writtenBytes == authenticationTag.Length * 2);
+                hash.Slice(0, authenticationTag.Length).CopyTo(authenticationTag);
             }
             finally
             {
