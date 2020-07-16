@@ -132,5 +132,21 @@ namespace JsonWebToken.Tests
             Assert.Equal(e, ciphertext);
             Assert.Equal(t, authenticationTag);
         }
+
+        [Fact]
+        public void Rfc7516_Decrypt()
+        {
+            Jwk encryptionKey = SymmetricJwk.FromBase64Url("GawgguFyGrWKav7AX4VKUg");
+            string token = "eyJhbGciOiJBMTI4S1ciLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.6KB707dM9YTIgHtLvtgWQ8mKwboJW3of9locizkDTHzBC2IlrT1oOQ.AxY8DCtDaGlsbGljb3RoZQ.KDlTtXchhZTGufMYmOYGS4HffxPSUrfmqCHXaI9wOGY.U0m_YmjN04DJvceFICbCVQ";
+
+            JwtReader jwtReader = new JwtReader(encryptionKey);
+            var policy = new TokenValidationPolicyBuilder().AcceptUnsecureToken().Build();
+
+            var result = jwtReader.TryReadToken(token, policy);
+
+            Assert.True(result.Succedeed);
+            Assert.Equal("Live long and prosper.", result.Token.Plaintext);
+            // The token should be decrypted and equal "Live long and prosper." However it fails decryption
+        }
     }
 }
