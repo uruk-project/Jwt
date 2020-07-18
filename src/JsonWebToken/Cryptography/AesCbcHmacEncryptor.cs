@@ -112,7 +112,7 @@ namespace JsonWebToken.Internal
         /// <inheritdoc />
         public override int GetTagSize()
         {
-            return _signer.HashSizeInBytes / 2;
+            return _signer.HashSizeInBytes;
         }
 
         /// <inheritdoc />
@@ -126,8 +126,9 @@ namespace JsonWebToken.Internal
             ReadOnlySpan<byte> plaintext,
             ReadOnlySpan<byte> nonce,
             ReadOnlySpan<byte> associatedData,
-            Span<byte> ciphertext,
-            Span<byte> authenticationTag)
+            Span<byte> ciphertext, 
+            Span<byte> authenticationTag, 
+            out int authenticationTagBytesWritten)
         {
             if (associatedData.IsEmpty)
             {
@@ -142,7 +143,7 @@ namespace JsonWebToken.Internal
             try
             {
                 _encryptor.Encrypt(plaintext, nonce, ciphertext);
-                ComputeAuthenticationTag(nonce, associatedData, ciphertext, authenticationTag);
+                ComputeAuthenticationTag(nonce, associatedData, ciphertext, authenticationTag, out authenticationTagBytesWritten);
             }
             catch
             {
@@ -162,7 +163,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private void ComputeAuthenticationTag(ReadOnlySpan<byte> iv, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> ciphertext, Span<byte> authenticationTag)
+        private void ComputeAuthenticationTag(ReadOnlySpan<byte> iv, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> ciphertext, Span<byte> authenticationTag, out int authenticationTagBytesWritten)
         {
             byte[]? arrayToReturnToPool = null;
             try
@@ -180,10 +181,9 @@ namespace JsonWebToken.Internal
                 bytes = bytes.Slice(ciphertext.Length);
                 BinaryPrimitives.WriteInt64BigEndian(bytes, associatedData.Length * 8);
 
-                Span<byte> hash = stackalloc byte[authenticationTag.Length * 2];
-                _signer.TrySign(macBytes, hash, out int writtenBytes);
-                Debug.Assert(writtenBytes == authenticationTag.Length * 2);
-                hash.Slice(0, authenticationTag.Length).CopyTo(authenticationTag);
+                _signer.TrySign(macBytes, authenticationTag, out int writtenBytes);
+                Debug.Assert(writtenBytes == authenticationTag.Length);
+                authenticationTagBytesWritten = writtenBytes / 2;
             }
             finally
             {

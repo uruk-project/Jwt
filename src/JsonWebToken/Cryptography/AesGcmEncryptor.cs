@@ -42,7 +42,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritdoc />
-        public override void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag)
+        public override void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag, out int authenticationTagBytesWritten)
         {
             if (_disposed)
             {
@@ -56,6 +56,7 @@ namespace JsonWebToken.Internal
             }
 
             aes.Encrypt(nonce, plaintext, ciphertext, authenticationTag, associatedData);
+            authenticationTagBytesWritten = authenticationTag.Length;
         }
 
         /// <inheritdoc />

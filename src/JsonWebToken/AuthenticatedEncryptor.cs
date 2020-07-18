@@ -18,7 +18,8 @@ namespace JsonWebToken
         /// <param name="associatedData">The associated data.</param>
         /// <param name="ciphertext">The resulting ciphertext.</param>
         /// <param name="authenticationTag">The resulting authentication tag.</param>
-        public abstract void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag);
+        /// <param name="authenticationTagBytesWritten">The number of written bytes for the authentication tag.</param>
+        public abstract void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag, out int authenticationTagBytesWritten);
 
         /// <summary>
         /// Gets the size of the resulting ciphertext.

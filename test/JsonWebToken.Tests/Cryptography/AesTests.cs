@@ -47,7 +47,7 @@ namespace JsonWebToken.Tests.Cryptography
         protected void VerifyEmptySpan(ReadOnlySpan<byte> key, ReadOnlySpan<byte> iv)
         {
             var encryptor = CreateEncryptor(key);
-            ReadOnlySpan<byte> plaintext = new byte[0];// ReadOnlySpan<byte>.Empty;
+            ReadOnlySpan<byte> plaintext = ReadOnlySpan<byte>.Empty;
             Span<byte> ciphertext = new byte[(plaintext.Length + 16) & ~15];
             encryptor.Encrypt(plaintext, iv, ciphertext);
         }

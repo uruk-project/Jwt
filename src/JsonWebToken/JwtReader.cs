@@ -472,7 +472,7 @@ namespace JsonWebToken
             Span<byte> authenticationTag = buffer.Slice(ciphertextLength + headerLength + initializationVectorLength, authenticationTagLength);
             try
             {
-                Base64Url.Decode(rawCiphertext, ciphertext, out int ciphertextBytesConsumed, out int ciphertextBytesWritten);
+                Base64Url.Decode(rawCiphertext, ciphertext, out int _, out int ciphertextBytesWritten);
                 Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
 
                 char[]? headerArrayToReturn = null;
@@ -494,10 +494,10 @@ namespace JsonWebToken
                     }
                 }
 
-                Base64Url.Decode(rawInitializationVector, initializationVector, out int ivBytesConsumed, out int ivBytesWritten);
+                Base64Url.Decode(rawInitializationVector, initializationVector, out int _, out int ivBytesWritten);
                 Debug.Assert(initializationVector.Length == ivBytesWritten);
 
-                Base64Url.Decode(rawAuthenticationTag, authenticationTag, out int authenticationTagBytesConsumed, out int authenticationTagBytesWritten);
+                Base64Url.Decode(rawAuthenticationTag, authenticationTag, out int _, out int authenticationTagBytesWritten);
                 Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
 
                 bytesWritten = 0;
