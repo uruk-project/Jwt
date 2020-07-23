@@ -16,8 +16,8 @@ namespace JsonWebToken.Tests
             var plaintext = new Span<byte>(new byte[data.Length]);
             var key = SymmetricJwk.GenerateKey(256);
             var nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
-            var encryptor = new AesCbcHmacEncryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
-            encryptor.Encrypt(data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
+            var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256, new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256));
+            encryptor.Encrypt(key.AsSpan(), data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
             var decryptor = new AesCbcHmacDecryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
             bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
             Assert.True(decrypted);
@@ -34,8 +34,8 @@ namespace JsonWebToken.Tests
             var plaintext = new Span<byte>(new byte[data.Length]);
             var key = SymmetricJwk.GenerateKey(256);
             var nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
-            var encryptor = new AesCbcHmacEncryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
-            encryptor.Encrypt(data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
+            var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256, new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256));
+            encryptor.Encrypt(key.AsSpan(), data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
             var decryptor = new AesCbcHmacDecryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
             bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
             Assert.True(decrypted);
@@ -70,8 +70,8 @@ namespace JsonWebToken.Tests
             var plaintext = new Span<byte>(new byte[ciphertext.Length]);
             var key = new SymmetricJwk(Encoding.UTF8.GetBytes("ThisIsA128bitKey" + "ThisIsA128bitKey"));
             var nonce = Encoding.UTF8.GetBytes("ThisIsAnInitVect");
-            var encryptorNi = new AesCbcHmacEncryptor(key.K.Slice(0, 16), EncryptionAlgorithm.Aes128CbcHmacSha256, new Aes128NiCbcEncryptor(key.K.Slice(16)));
-            encryptorNi.Encrypt(data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
+            var encryptorNi = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256, new Aes128NiCbcEncryptor());
+            encryptorNi.Encrypt(key.K, data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
             var decryptor = new AesCbcHmacDecryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
             bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
             Assert.True(decrypted, "decrypted");
@@ -123,13 +123,11 @@ namespace JsonWebToken.Tests
 
             var t = new byte[] { 0x65, 0x2c, 0x3f, 0xa3, 0x6b, 0x0a, 0x7c, 0x5b, 0x32, 0x19, 0xfa, 0xb3, 0xa3, 0x0b, 0xc1, 0xc4 };
 
-            var key = SymmetricJwk.FromByteArray(k);
-
-            var encryptor = new AesCbcHmacEncryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
+            var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256, new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256));
 
             var ciphertext = new byte[encryptor.GetCiphertextSize(p.Length)];
             var authenticationTag = new byte[encryptor.GetTagSize()];
-            encryptor.Encrypt(p, iv, a, ciphertext, authenticationTag, out int tagSize);
+            encryptor.Encrypt(k, p, iv, a, ciphertext, authenticationTag, out int tagSize);
 
             Assert.Equal(e, ciphertext);
             Assert.Equal(t, authenticationTag.AsSpan(0, tagSize).ToArray());

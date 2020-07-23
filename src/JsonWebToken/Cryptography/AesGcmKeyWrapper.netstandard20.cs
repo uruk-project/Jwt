@@ -22,7 +22,7 @@ namespace JsonWebToken.Internal
             => throw new NotImplementedException();
 
         /// <inheritsdoc />
-        public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
             => throw new NotImplementedException();
 
         /// <inheritsdoc />

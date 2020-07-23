@@ -31,14 +31,14 @@ namespace JsonWebToken.Internal
             => encryptionAlgorithm.RequiredKeySizeInBytes;
 
         /// <inheritsdoc />
-        public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
         {
             if (_disposed)
             {
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            var cek = CreateSymmetricKey(EncryptionAlgorithm, staticKey);
+            var cek = CreateSymmetricKey(EncryptionAlgorithm, (SymmetricJwk?)staticKey);
             Span<byte> nonce = stackalloc byte[IVSize];
             Span<byte> tag = stackalloc byte[TagSize];
 

@@ -17,16 +17,17 @@ namespace JsonWebToken.Performance
 #endif
         private readonly static byte[] plaintext;
         private readonly static byte[] nonce;
+        private readonly static byte[] key;
 
         static AesDecryptorBenchmark()
         {
             plaintext = new byte[2048 * 16 + 16];
-            var key = SymmetricJwk.GenerateKey(128);
+            key = SymmetricJwk.GenerateKey(128).AsSpan().ToArray();
             nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
-            _encryptor = new AesCbcEncryptor(key.K, EncryptionAlgorithm.Aes128CbcHmacSha256);
-            _decryptor = new AesCbcDecryptor(key.K, EncryptionAlgorithm.Aes128CbcHmacSha256);
+            _encryptor = new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
+            _decryptor = new AesCbcDecryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
 #if NETCOREAPP3_0
-            _decryptorNi = new Aes128NiCbcDecryptor(key.K);
+            _decryptorNi = new Aes128NiCbcDecryptor(key);
 #endif
         }
 
@@ -56,7 +57,7 @@ namespace JsonWebToken.Performance
         {
             var ciphertext = (new byte[(plaintext.Length + 16) & ~15]);
 
-            _encryptor.Encrypt(plaintext, nonce, ciphertext);
+            _encryptor.Encrypt(key, plaintext, nonce, ciphertext);
             return ciphertext;
         }
 

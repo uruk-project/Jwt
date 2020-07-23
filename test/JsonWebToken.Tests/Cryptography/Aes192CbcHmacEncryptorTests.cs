@@ -16,8 +16,8 @@ namespace JsonWebToken.Tests
             var plaintext = new Span<byte>(new byte[data.Length]);
             var key = SymmetricJwk.GenerateKey(386);
             var nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
-            var encryptor = new AesCbcHmacEncryptor(key, EncryptionAlgorithm.Aes192CbcHmacSha384);
-            encryptor.Encrypt(data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
+            var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes192CbcHmacSha384);
+            encryptor.Encrypt(key.AsSpan(), data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
             var decryptor = new AesCbcHmacDecryptor(key, EncryptionAlgorithm.Aes192CbcHmacSha384);
             bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
             Assert.True(decrypted);
@@ -33,8 +33,8 @@ namespace JsonWebToken.Tests
             var plaintext = new Span<byte>(new byte[data.Length]);
             var key = SymmetricJwk.GenerateKey(386);
             var nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
-            var encryptor = new AesCbcHmacEncryptor(key, EncryptionAlgorithm.Aes192CbcHmacSha384);
-            encryptor.Encrypt(data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
+            var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes192CbcHmacSha384);
+            encryptor.Encrypt(key.AsSpan(), data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
             var decryptor = new AesCbcHmacDecryptor(key, EncryptionAlgorithm.Aes192CbcHmacSha384);
             bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
             Assert.True(decrypted);
@@ -69,8 +69,8 @@ namespace JsonWebToken.Tests
             var plaintext = new Span<byte>(new byte[ciphertext.Length]);
             var key = new SymmetricJwk(Encoding.UTF8.GetBytes("ThisIsA128bitKey" + "ThisIsA128bitKey" + "ThisIsA128bitKey"));
             var nonce = Encoding.UTF8.GetBytes("ThisIsAnInitVect");
-            var encryptorNi = new AesCbcHmacEncryptor(key.K.Slice(0, 24), EncryptionAlgorithm.Aes192CbcHmacSha384, new Aes192NiCbcEncryptor(key.K.Slice(24)));
-            encryptorNi.Encrypt(data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
+            var encryptorNi = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes192CbcHmacSha384, new Aes192NiCbcEncryptor());
+            encryptorNi.Encrypt(key.AsSpan(), data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
             var decryptor = new AesCbcHmacDecryptor(key.K.Slice(0, 24), EncryptionAlgorithm.Aes192CbcHmacSha384, new AesCbcDecryptor(key.K.Slice(24), EncryptionAlgorithm.Aes192CbcHmacSha384));
             bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
             Assert.True(decrypted);
@@ -125,13 +125,11 @@ namespace JsonWebToken.Tests
               0x84, 0x90, 0xac, 0x0e, 0x58, 0x94, 0x9b, 0xfe, 0x51, 0x87, 0x5d, 0x73, 0x3f, 0x93, 0xac, 0x20,
               0x75, 0x16, 0x80, 0x39, 0xcc, 0xc7, 0x33, 0xd7 };
 
-            var key = SymmetricJwk.FromByteArray(k);
-
-            var encryptor = new AesCbcHmacEncryptor(key, EncryptionAlgorithm.Aes192CbcHmacSha384);
+            var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes192CbcHmacSha384);
 
             var ciphertext = new byte[encryptor.GetCiphertextSize(p.Length)];
             var authenticationTag = new byte[encryptor.GetTagSize()];
-            encryptor.Encrypt(p, iv, a, ciphertext, authenticationTag, out int tagSize);
+            encryptor.Encrypt(k, p, iv, a, ciphertext, authenticationTag, out int tagSize);
 
             Assert.Equal(e, ciphertext); 
             Assert.Equal(t, authenticationTag.AsSpan(0, tagSize).ToArray());

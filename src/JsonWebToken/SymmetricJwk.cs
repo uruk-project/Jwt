@@ -19,6 +19,8 @@ namespace JsonWebToken
 #if !SUPPORT_SPAN_CRYPTO
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 #endif
+        internal static new readonly SymmetricJwk Empty = new SymmetricJwk(Array.Empty<byte>());
+
 
         private readonly byte[] _k;
 
@@ -403,43 +405,45 @@ namespace JsonWebToken
             return null;
         }
 
-        /// <inheritsdoc />
-        protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
-        {
-            if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
-            {
-#if SUPPORT_SIMD
-                if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
-                {
-                    if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
-                    {
-                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 16), encryptionAlgorithm, new Aes128NiCbcEncryptor(_k.AsSpan(16)));
-                    }
-                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
-                    {
-                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new Aes256NiCbcEncryptor(_k.AsSpan(32)));
-                    }
-                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
-                    {
-                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 24), encryptionAlgorithm, new Aes192NiCbcEncryptor(_k.AsSpan(24)));
-                    }
-                }
-                else
-                {
-                    return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
-                }
-#else
-                return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
-#endif
-            }
-            else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
-            {
-                return new AesGcmEncryptor(this, encryptionAlgorithm);
-            }
+//        /// <inheritsdoc />
+//        protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+//        {
+//            return AuthenticatedEncryptor.CreateAuthenticatedEncryptor(encryptionAlgorithm);
 
-            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-            return null;
-        }
+////            if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
+////            {
+////#if SUPPORT_SIMD
+////                if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
+////                {
+////                    if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
+////                    {
+////                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 16), encryptionAlgorithm, new Aes128NiCbcEncryptor(_k.AsSpan(16)));
+////                    }
+////                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
+////                    {
+////                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new Aes256NiCbcEncryptor(_k.AsSpan(32)));
+////                    }
+////                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
+////                    {
+////                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 24), encryptionAlgorithm, new Aes192NiCbcEncryptor(_k.AsSpan(24)));
+////                    }
+////                }
+////                else
+////                {
+////                    return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+////                }
+////#else
+////                return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+////#endif
+////            }
+////            else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
+////            {
+////                return new AesGcmEncryptor(this, encryptionAlgorithm);
+////            }
+
+////            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
+////            return null;
+//        }
 
         /// <inheritsdoc />
         protected override AuthenticatedDecryptor CreateAuthenticatedDecryptor(EncryptionAlgorithm encryptionAlgorithm)

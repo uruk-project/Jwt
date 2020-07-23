@@ -16,7 +16,7 @@ namespace JsonWebToken.Internal
         public override int GetKeyWrapSize()
             => throw new NotImplementedException();
 
-        public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
             => throw new NotImplementedException();
 
         protected override void Dispose(bool disposing)

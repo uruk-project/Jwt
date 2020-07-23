@@ -131,12 +131,12 @@ namespace JsonWebToken
         /// <return>true if it has a private key; otherwise, false.</return>
         public bool HasPrivateKey => !(_d is null);
 
-        /// <inheritsdoc />
-        protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
-        {
-            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-            return null;
-        }
+        ///// <inheritsdoc />
+        //protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+        //{
+        //    ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
+        //    return null;
+        //}
 
         /// <inheritsdoc />
         protected override AuthenticatedDecryptor CreateAuthenticatedDecryptor(EncryptionAlgorithm encryptionAlgorithm)

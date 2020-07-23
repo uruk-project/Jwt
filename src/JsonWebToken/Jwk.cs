@@ -658,22 +658,22 @@ namespace JsonWebToken
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key unwrapping.</param>
         protected abstract KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
 
-        /// <summary>
-        /// Creates a <see cref="AuthenticatedEncryptor"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
-        /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
-        /// <param name="encryptor">The provided <see cref="AuthenticatedEncryptor"/>. <c>null</c> if returns <c>false</c>.</param>
-        public bool TryGetAuthenticatedEncryptor(EncryptionAlgorithm? encryptionAlgorithm, [NotNullWhen(true)] out AuthenticatedEncryptor? encryptor)
-        {
-            if (!(encryptionAlgorithm is null) && SupportEncryption(encryptionAlgorithm))
-            {
-                encryptor = CreateAuthenticatedEncryptor(encryptionAlgorithm);
-                return true;
-            }
+        ///// <summary>
+        ///// Creates a <see cref="AuthenticatedEncryptor"/> with the current <see cref="Jwk"/> as key.
+        ///// </summary>
+        ///// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
+        ///// <param name="encryptor">The provided <see cref="AuthenticatedEncryptor"/>. <c>null</c> if returns <c>false</c>.</param>
+        //public bool TryGetAuthenticatedEncryptor(EncryptionAlgorithm? encryptionAlgorithm, [NotNullWhen(true)] out AuthenticatedEncryptor? encryptor)
+        //{
+        //    if (!(encryptionAlgorithm is null) && SupportEncryption(encryptionAlgorithm))
+        //    {
+        //        encryptor = CreateAuthenticatedEncryptor(encryptionAlgorithm);
+        //        return true;
+        //    }
 
-            encryptor = null;
-            return false;
-        }
+        //    encryptor = null;
+        //    return false;
+        //}
 
         /// <summary>
         /// Creates a <see cref="AuthenticatedDecryptor"/> with the current <see cref="Jwk"/> as key.
@@ -692,11 +692,11 @@ namespace JsonWebToken
             return false;
         }
 
-        /// <summary>
-        /// Creates a fresh new <see cref="AuthenticatedEncryptor"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
-        /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
-        protected abstract AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm);
+        ///// <summary>
+        ///// Creates a fresh new <see cref="AuthenticatedEncryptor"/> with the current <see cref="Jwk"/> as key.
+        ///// </summary>
+        ///// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for encryption.</param>
+        //protected abstract AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm);
 
         /// <summary>
         /// Creates a fresh new <see cref="AuthenticatedDecryptor"/> with the current <see cref="Jwk"/> as key.
@@ -1203,11 +1203,11 @@ namespace JsonWebToken
                 return null;
             }
 
-            protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
-            {
-                ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-                return null;
-            }
+            //protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+            //{
+            //    ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
+            //    return null;
+            //}
 
             protected override AuthenticatedDecryptor CreateAuthenticatedDecryptor(EncryptionAlgorithm encryptionAlgorithm)
             {

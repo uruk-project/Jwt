@@ -10,7 +10,7 @@ namespace JsonWebToken.Tests.Cryptography
           => new Aes192NiCbcDecryptor(key);
 
         protected override AesEncryptor CreateEncryptor(ReadOnlySpan<byte> key)
-            => new Aes192NiCbcEncryptor(key);
+            => new Aes192NiCbcEncryptor();
     }
 #endif
 }

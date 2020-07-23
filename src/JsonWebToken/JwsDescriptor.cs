@@ -604,7 +604,7 @@ namespace JsonWebToken
                     length += Base64Url.GetArraySizeRequiredToEncode(headerJson.Length);
                 }
 
-                var buffer = context.BufferWriter.GetSpan(length).Slice(0, length);
+                var buffer = context.BufferWriter.GetSpan(length);
                 int offset;
                 if (cachedHeader != null)
                 {

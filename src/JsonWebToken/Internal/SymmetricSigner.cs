@@ -129,32 +129,5 @@ namespace JsonWebToken.Internal
                 _disposed = true;
             }
         }
-
-        private sealed class NotSupportedHmacSha : HmacSha2
-        {
-            public NotSupportedHmacSha(SignatureAlgorithm algorithm)
-                : base(ShaNull.Shared, default)
-            {
-                ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm.Name);
-            }
-
-            private sealed class ShaNull : Sha2
-            {
-                public static readonly ShaNull Shared = new ShaNull();
-
-                public override int HashSize => 0;
-
-                public override int BlockSize => 0;
-
-                public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
-                {
-                }
-
-                public override int GetWorkingSetSize(int sourceLength)
-                {
-                    return 0;
-                }
-            }
-        }
     }
 }

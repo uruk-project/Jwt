@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -13,13 +14,14 @@ namespace JsonWebToken
         /// <summary>
         /// Encrypts the <paramref name="plaintext"/>.
         /// </summary>
+        /// <param name="key">The key used to encrypt to encrypt.</param>
         /// <param name="plaintext">The plaintext to encrypt.</param>
         /// <param name="nonce">An arbitrary value to be used only once.</param>
         /// <param name="associatedData">The associated data.</param>
         /// <param name="ciphertext">The resulting ciphertext.</param>
         /// <param name="authenticationTag">The resulting authentication tag.</param>
         /// <param name="authenticationTagBytesWritten">The number of written bytes for the authentication tag.</param>
-        public abstract void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag, out int authenticationTagBytesWritten);
+        public abstract void Encrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag, out int authenticationTagBytesWritten);
 
         /// <summary>
         /// Gets the size of the resulting ciphertext.
@@ -49,5 +51,15 @@ namespace JsonWebToken
 
         /// <inheritdoc />
         public abstract void Dispose();
+
+
+        /// <inheritsdoc />
+        public static AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+        {
+
+
+            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
+            return null;
+        }
     }
 }

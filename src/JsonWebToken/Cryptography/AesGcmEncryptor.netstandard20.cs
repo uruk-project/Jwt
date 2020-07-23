@@ -11,13 +11,13 @@ namespace JsonWebToken.Internal
     /// </summary>
     internal sealed class AesGcmEncryptor : AuthenticatedEncryptor
     {
-        public AesGcmEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
+        public AesGcmEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
             throw new NotSupportedException();
         }
 
         /// <inheritdoc />
-        public override void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag, out int authenticationTagBytesWritten)
+        public override void Encrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag, out int authenticationTagBytesWritten)
         {
             throw new NotSupportedException();
         }

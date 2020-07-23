@@ -15,11 +15,10 @@ namespace JsonWebToken.Tests.Cryptography
             var iv = ByteUtils.HexToByteArray("00000000000000000000000000000000");
             var encryptor = CreateEncryptor(key);
             Span<byte> ciphertext = new byte[(plaintext.Length + 16) & ~15];
-            encryptor.Encrypt(plaintext, iv, ciphertext);
+            encryptor.Encrypt(key, plaintext, iv, ciphertext);
 
             // The last 16 bytes are ignored as the test data sets are for ECB mode
             Assert.Equal(expectedCiphertext.ToArray(), ciphertext.Slice(0, ciphertext.Length - 16).ToArray());
-            encryptor.Dispose();
         }
 
         protected void VerifyKeySboxKat(ReadOnlySpan<byte> key, ReadOnlySpan<byte> expectedCiphertext)
@@ -28,7 +27,7 @@ namespace JsonWebToken.Tests.Cryptography
             var plaintext = ByteUtils.HexToByteArray("00000000000000000000000000000000");
             var encryptor = CreateEncryptor(key);
             Span<byte> ciphertext = new byte[(plaintext.Length + 16) & ~15];
-            encryptor.Encrypt(plaintext, iv, ciphertext);
+            encryptor.Encrypt(key, plaintext, iv, ciphertext);
 
             // The last 16 bytes are ignored as the test data sets are for ECB mode
             Assert.Equal(expectedCiphertext.ToArray(), ciphertext.Slice(0, ciphertext.Length - 16).ToArray());
@@ -38,7 +37,7 @@ namespace JsonWebToken.Tests.Cryptography
         {
             var encryptor = CreateEncryptor(key);
             Span<byte> ciphertext = new byte[(plaintext.Length + 16) & ~15];
-            encryptor.Encrypt(plaintext, iv, ciphertext);
+            encryptor.Encrypt(key, plaintext, iv, ciphertext);
 
             // The last 16 bytes are ignored as the test data sets are for ECB mode
             Assert.Equal(expectedCiphertext.ToArray(), ciphertext.Slice(0, ciphertext.Length - 16).ToArray());
@@ -49,7 +48,7 @@ namespace JsonWebToken.Tests.Cryptography
             var encryptor = CreateEncryptor(key);
             ReadOnlySpan<byte> plaintext = ReadOnlySpan<byte>.Empty;
             Span<byte> ciphertext = new byte[(plaintext.Length + 16) & ~15];
-            encryptor.Encrypt(plaintext, iv, ciphertext);
+            encryptor.Encrypt(key, plaintext, iv, ciphertext);
         }
     }
 }

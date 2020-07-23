@@ -89,7 +89,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
         {
             if (header is null)
             {
@@ -115,7 +115,7 @@ namespace JsonWebToken.Internal
             }
 
             SymmetricJwk? kek = null;
-            Jwk? contentEncryptionKey;
+            SymmetricJwk? contentEncryptionKey;
             try
             {
                 kek = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
@@ -128,7 +128,7 @@ namespace JsonWebToken.Internal
                     else
                     {
                         ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(Algorithm.WrappedAlgorithm);
-                        return Jwk.Empty;
+                        return SymmetricJwk.Empty;
                     }
                 }
                 else

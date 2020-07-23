@@ -190,6 +190,6 @@ namespace JsonWebToken.Tests.Cryptography
             => new AesCbcDecryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
 
         protected override AesEncryptor CreateEncryptor(ReadOnlySpan<byte> key)
-            => new AesCbcEncryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
+            => new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
     }
 }

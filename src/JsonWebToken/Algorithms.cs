@@ -144,5 +144,20 @@ namespace JsonWebToken
         /// 'ECDH-ES+A256KW'
         /// </summary>
         public const int EcdhEsAes256KW = -31;
+
+        /// <summary>
+        /// A128CBC-HS256
+        /// </summary>
+        public const sbyte AesCbc128HS256 = 14;
+
+        /// <summary>
+        /// A192CBC-HS384
+        /// </summary>
+        public const sbyte AesCbc192HS384 = 16;
+
+        /// <summary>
+        /// A256CBC-HS512
+        /// </summary>
+        public const sbyte AesCbc256HS512 = 15;
     }
 }
