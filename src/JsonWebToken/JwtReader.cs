@@ -295,20 +295,12 @@ namespace JsonWebToken
 
             try
             {
-                Jwk decryptionKey = Jwk.Empty;
-                bool decrypted = false;
-                for (int i = 0; i < keys.Count; i++)
+                Jwk? decryptionKey;
+                if (TryDecryptToken(keys, rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, enc, decryptedBytes, out decryptionKey, out int bytesWritten))
                 {
-                    decryptionKey = keys[i];
-                    if (TryDecryptToken(rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, enc, decryptionKey, decryptedBytes, out int bytesWritten))
-                    {
-                        decryptedBytes = decryptedBytes.Slice(0, bytesWritten);
-                        decrypted = true;
-                        break;
-                    }
+                    decryptedBytes = decryptedBytes.Slice(0, bytesWritten);
                 }
-
-                if (!decrypted)
+                else
                 {
                     return TokenValidationResult.DecryptionFailed();
                 }
@@ -437,19 +429,20 @@ namespace JsonWebToken
         }
 
         private static bool TryDecryptToken(
+            List<Jwk> keys,
             ReadOnlySpan<byte> rawHeader,
             ReadOnlySpan<byte> rawCiphertext,
             ReadOnlySpan<byte> rawInitializationVector,
             ReadOnlySpan<byte> rawAuthenticationTag,
             EncryptionAlgorithm encryptionAlgorithm,
-            Jwk key,
             Span<byte> decryptedBytes,
+            [NotNullWhen(true)] out Jwk? key,
             out int bytesWritten)
         {
             int ciphertextLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length);
-            int headerLength = rawHeader.Length;
             int initializationVectorLength = Base64Url.GetArraySizeRequiredToDecode(rawInitializationVector.Length);
             int authenticationTagLength = Base64Url.GetArraySizeRequiredToDecode(rawAuthenticationTag.Length);
+            int headerLength = rawHeader.Length;
             int bufferLength = ciphertextLength + headerLength + initializationVectorLength + authenticationTagLength;
             byte[]? arrayToReturn = null;
             Span<byte> buffer = bufferLength < Constants.MaxStackallocBytes
@@ -492,18 +485,24 @@ namespace JsonWebToken
 
                 bytesWritten = 0;
                 var decryptor = encryptionAlgorithm.Decryptor;
-                if (decryptor.TryDecrypt(
-                    key.AsSpan(),
-                    ciphertext,
-                    header,
-                    initializationVector,
-                    authenticationTag,
-                    decryptedBytes,
-                    out bytesWritten))
+
+                for (int i = 0; i < keys.Count; i++)
                 {
-                    return true;
+                    key = keys[i];
+                    if (decryptor.TryDecrypt(
+                        key.AsSpan(),
+                        ciphertext,
+                        header,
+                        initializationVector,
+                        authenticationTag,
+                        decryptedBytes,
+                        out bytesWritten))
+                    {
+                        return true;
+                    }
                 }
 
+                key = null;
                 return false;
             }
             finally
@@ -555,7 +554,7 @@ namespace JsonWebToken
                     Debug.Assert(operationResult == OperationStatus.Done);
                     encryptedKey = encryptedKey.Slice(0, bytesWritten);
 
-                    var keyUnwrappers = new List<Tuple<int, KeyUnwrapper>>(1);
+                    var keyUnwrappers = new List<(int, KeyUnwrapper)>(1);
                     int maxKeyUnwrapSize = 0;
                     for (int i = 0; i < _encryptionKeyProviders.Length; i++)
                     {
@@ -568,7 +567,7 @@ namespace JsonWebToken
                                 if (key.TryGetKeyUnwrapper(enc, alg, out var keyUnwrapper))
                                 {
                                     int keyUnwrapSize = keyUnwrapper.GetKeyUnwrapSize(encryptedKey.Length);
-                                    keyUnwrappers.Add(new Tuple<int, KeyUnwrapper>(keyUnwrapSize, keyUnwrapper));
+                                    keyUnwrappers.Add((keyUnwrapSize, keyUnwrapper));
                                     if (maxKeyUnwrapSize < keyUnwrapSize)
                                     {
                                         maxKeyUnwrapSize = keyUnwrapSize;
