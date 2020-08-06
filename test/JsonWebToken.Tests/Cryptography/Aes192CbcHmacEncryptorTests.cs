@@ -18,8 +18,8 @@ namespace JsonWebToken.Tests
             var nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
             var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes192CbcHmacSha384);
             encryptor.Encrypt(key.AsSpan(), data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
-            var decryptor = new AesCbcHmacDecryptor(key, EncryptionAlgorithm.Aes192CbcHmacSha384);
-            bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
+            var decryptor = new AesCbcHmacDecryptor(EncryptionAlgorithm.Aes192CbcHmacSha384);
+            bool decrypted = decryptor.TryDecrypt(key.K, ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
             Assert.True(decrypted);
             Assert.Equal(24, tagSize);
         }
@@ -35,8 +35,8 @@ namespace JsonWebToken.Tests
             var nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
             var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes192CbcHmacSha384);
             encryptor.Encrypt(key.AsSpan(), data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
-            var decryptor = new AesCbcHmacDecryptor(key, EncryptionAlgorithm.Aes192CbcHmacSha384);
-            bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
+            var decryptor = new AesCbcHmacDecryptor(EncryptionAlgorithm.Aes192CbcHmacSha384);
+            bool decrypted = decryptor.TryDecrypt(key.K, ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
             Assert.True(decrypted);
             Assert.Equal(24, tagSize);
         }
@@ -69,16 +69,16 @@ namespace JsonWebToken.Tests
             var plaintext = new Span<byte>(new byte[ciphertext.Length]);
             var key = new SymmetricJwk(Encoding.UTF8.GetBytes("ThisIsA128bitKey" + "ThisIsA128bitKey" + "ThisIsA128bitKey"));
             var nonce = Encoding.UTF8.GetBytes("ThisIsAnInitVect");
-            var encryptorNi = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes192CbcHmacSha384, new Aes192NiCbcEncryptor());
+            var encryptorNi = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes192CbcHmacSha384, new Aes192CbcEncryptor());
             encryptorNi.Encrypt(key.AsSpan(), data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
-            var decryptor = new AesCbcHmacDecryptor(key.K.Slice(0, 24), EncryptionAlgorithm.Aes192CbcHmacSha384, new AesCbcDecryptor(key.K.Slice(24), EncryptionAlgorithm.Aes192CbcHmacSha384));
-            bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
+            var decryptor = new AesCbcHmacDecryptor(EncryptionAlgorithm.Aes192CbcHmacSha384, new AesCbcDecryptor(EncryptionAlgorithm.Aes192CbcHmacSha384));
+            bool decrypted = decryptor.TryDecrypt(key.K, ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
             Assert.True(decrypted);
             Assert.Equal(data, plaintext.Slice(0, bytesWritten).ToArray());
 
-            var decryptorNi = new AesCbcHmacDecryptor(key.K.Slice(0, 24), EncryptionAlgorithm.Aes192CbcHmacSha384, new Aes192NiCbcDecryptor(key.K.Slice(24)));
+            var decryptorNi = new AesCbcHmacDecryptor(EncryptionAlgorithm.Aes192CbcHmacSha384, new Aes192CbcDecryptor());
             plaintext.Clear();
-            decrypted = decryptorNi.TryDecrypt(ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out bytesWritten);
+            decrypted = decryptorNi.TryDecrypt(key.K, ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out bytesWritten);
             Assert.True(decrypted);
             Assert.Equal(data, plaintext.Slice(0, bytesWritten).ToArray());
             Assert.Equal(24, tagSize);

@@ -188,10 +188,10 @@ namespace JsonWebToken.Tests.Cryptography
             VerifyEmptySpan("000000000000000000000000000000000000000000000000".HexToByteArray(), "00000000000000000000000000000000".HexToByteArray());
         }
 
-        protected override AesDecryptor CreateDecryptor(ReadOnlySpan<byte> key)
-            => new AesCbcDecryptor(key, EncryptionAlgorithm.Aes192CbcHmacSha384);
+        protected override AesDecryptor CreateDecryptor()
+            => new AesCbcDecryptor(EncryptionAlgorithm.Aes192CbcHmacSha384);
 
-        protected override AesEncryptor CreateEncryptor(ReadOnlySpan<byte> key)
+        protected override AesEncryptor CreateEncryptor()
             => new AesCbcEncryptor(EncryptionAlgorithm.Aes192CbcHmacSha384);
     }
 }

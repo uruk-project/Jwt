@@ -678,7 +678,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override ReadOnlySpan<byte> AsSpan()
         {
-            throw new NotImplementedException();
+            return default;
         }
 
         internal static RsaJwk Populate(JwtObject @object)

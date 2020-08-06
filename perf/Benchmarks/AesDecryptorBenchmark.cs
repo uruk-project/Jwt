@@ -13,7 +13,7 @@ namespace JsonWebToken.Performance
         private readonly static AesCbcEncryptor _encryptor;
         private readonly static AesCbcDecryptor _decryptor;
 #if NETCOREAPP3_0
-        private readonly static Aes128NiCbcDecryptor _decryptorNi;
+        private readonly static Aes128CbcDecryptor _decryptorNi;
 #endif
         private readonly static byte[] plaintext;
         private readonly static byte[] nonce;
@@ -25,9 +25,9 @@ namespace JsonWebToken.Performance
             key = SymmetricJwk.GenerateKey(128).AsSpan().ToArray();
             nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
             _encryptor = new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
-            _decryptor = new AesCbcDecryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
+            _decryptor = new AesCbcDecryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
 #if NETCOREAPP3_0
-            _decryptorNi = new Aes128NiCbcDecryptor(key);
+            _decryptorNi = new Aes128CbcDecryptor();
 #endif
         }
 
@@ -35,7 +35,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetData))]
         public bool Decrypt(Item data)
         {
-            return _decryptor.TryDecrypt(data.Ciphertext, nonce, plaintext, out int bytesWritten);
+            return _decryptor.TryDecrypt(key, data.Ciphertext, nonce, plaintext, out int bytesWritten);
         }
 
 #if NETCOREAPP3_0
@@ -43,7 +43,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetData))]
         public bool Decrypt_Simd(Item data)
         {
-            return _decryptorNi.TryDecrypt(data.Ciphertext, nonce, plaintext, out int bytesWritten);
+            return _decryptorNi.TryDecrypt(key, data.Ciphertext, nonce, plaintext, out int bytesWritten);
         }
 
         public static IEnumerable<Item> GetData()

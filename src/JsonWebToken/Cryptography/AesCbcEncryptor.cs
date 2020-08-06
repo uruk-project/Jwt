@@ -8,7 +8,6 @@ namespace JsonWebToken.Internal
 {
     internal sealed class AesCbcEncryptor : AesEncryptor
     {
-        private bool _disposed;
         private readonly EncryptionAlgorithm _encryptionAlgorithm;
 
         public AesCbcEncryptor(EncryptionAlgorithm encryptionAlgorithm)
@@ -33,11 +32,6 @@ namespace JsonWebToken.Internal
             ReadOnlySpan<byte> nonce,
             Span<byte> ciphertext)
         {
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
             int keyLength = _encryptionAlgorithm.RequiredKeySizeInBytes >> 1;
             if (key.Length < keyLength)
             {
@@ -46,7 +40,7 @@ namespace JsonWebToken.Internal
 
             var aesKey = key.ToArray();
 
-            Aes aes = CreateAes(aesKey);
+            using Aes aes = CreateAes(aesKey);
             try
             {
                 aes.IV = nonce.ToArray();

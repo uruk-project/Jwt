@@ -32,20 +32,20 @@ namespace JsonWebToken.Internal
 #if SUPPORT_SIMD
             if (algorithm == KeyManagementAlgorithm.Aes128KW)
             {
-                _encryptor = new Aes128NiBlockEncryptor(key.K);
+                _encryptor = new Aes128BlockEncryptor(key.K);
             }
             else if (algorithm == KeyManagementAlgorithm.Aes256KW)
             {
-                _encryptor = new Aes256NiBlockEncryptor(key.K);
+                _encryptor = new Aes256BlockEncryptor(key.K);
             }
             else if (algorithm == KeyManagementAlgorithm.Aes192KW)
             {
-                _encryptor = new Aes192NiBlockEncryptor(key.K);
+                _encryptor = new Aes192BlockEncryptor(key.K);
             }
             else
             {
                 ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-                _encryptor = new Aes128NiBlockEncryptor(default);
+                _encryptor = new Aes128BlockEncryptor(default);
             }
 #else
             if (algorithm.Category != AlgorithmCategory.Aes)

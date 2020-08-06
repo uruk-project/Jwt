@@ -18,8 +18,8 @@ namespace JsonWebToken.Tests
             var nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
             var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256, new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256));
             encryptor.Encrypt(key.AsSpan(), data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
-            var decryptor = new AesCbcHmacDecryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
-            bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
+            var decryptor = new AesCbcHmacDecryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
+            bool decrypted = decryptor.TryDecrypt(key.K, ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
             Assert.True(decrypted);
             Assert.Equal(16, tagSize);
         }
@@ -36,8 +36,8 @@ namespace JsonWebToken.Tests
             var nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
             var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256, new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256));
             encryptor.Encrypt(key.AsSpan(), data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
-            var decryptor = new AesCbcHmacDecryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
-            bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
+            var decryptor = new AesCbcHmacDecryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
+            bool decrypted = decryptor.TryDecrypt(key.K, ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
             Assert.True(decrypted);
             Assert.Equal(16, tagSize);
         }
@@ -70,16 +70,16 @@ namespace JsonWebToken.Tests
             var plaintext = new Span<byte>(new byte[ciphertext.Length]);
             var key = new SymmetricJwk(Encoding.UTF8.GetBytes("ThisIsA128bitKey" + "ThisIsA128bitKey"));
             var nonce = Encoding.UTF8.GetBytes("ThisIsAnInitVect");
-            var encryptorNi = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256, new Aes128NiCbcEncryptor());
+            var encryptorNi = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256, new Aes128CbcEncryptor());
             encryptorNi.Encrypt(key.K, data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
-            var decryptor = new AesCbcHmacDecryptor(key, EncryptionAlgorithm.Aes128CbcHmacSha256);
-            bool decrypted = decryptor.TryDecrypt(ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
+            var decryptor = new AesCbcHmacDecryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
+            bool decrypted = decryptor.TryDecrypt(key.K, ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
             Assert.True(decrypted, "decrypted");
             Assert.Equal(data, plaintext.Slice(0, bytesWritten).ToArray());
 
-            var decryptorNi = new AesCbcHmacDecryptor(key.K.Slice(0, 16), EncryptionAlgorithm.Aes128CbcHmacSha256, new Aes128NiCbcDecryptor(key.K.Slice(16)));
+            var decryptorNi = new AesCbcHmacDecryptor(EncryptionAlgorithm.Aes128CbcHmacSha256, new Aes128CbcDecryptor());
             plaintext.Clear();
-            decrypted = decryptorNi.TryDecrypt(ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out bytesWritten);
+            decrypted = decryptorNi.TryDecrypt(key.K, ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out bytesWritten);
             Assert.True(decrypted, "decrypted NI");
             Assert.Equal(data, plaintext.Slice(0, bytesWritten).ToArray());
             Assert.Equal(16, tagSize);

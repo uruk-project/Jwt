@@ -12,7 +12,7 @@ namespace JsonWebToken.Performance
     {
         private readonly static AesCbcEncryptor _encryptor;
 #if NETCOREAPP3_0
-        private readonly static Aes128NiCbcEncryptor _encryptorNi;
+        private readonly static Aes128CbcEncryptor _encryptorNi;
 #endif
         private readonly static byte[] ciphertext;
         private readonly static byte[] nonce;
@@ -25,7 +25,7 @@ namespace JsonWebToken.Performance
             nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
             _encryptor = new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
 #if NETCOREAPP3_0
-            _encryptorNi = new Aes128NiCbcEncryptor();
+            _encryptorNi = new Aes128CbcEncryptor();
 #endif  
         }
 

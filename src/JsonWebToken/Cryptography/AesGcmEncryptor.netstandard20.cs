@@ -13,7 +13,6 @@ namespace JsonWebToken.Internal
     {
         public AesGcmEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
-            throw new NotSupportedException();
         }
 
         /// <inheritdoc />
