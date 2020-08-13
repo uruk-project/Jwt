@@ -3,13 +3,11 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Computes a Hash-based Message Authentication Code (HMAC) using a SHA2 hash function.
-    /// </summary>
-    public abstract class HmacSha2 : IDisposable
+    internal readonly ref struct Hmac
     {
         /// <summary>
         /// The hash algorithm.
@@ -19,17 +17,7 @@ namespace JsonWebToken
         /// <summary>
         /// The inner &amp; outer pad keys.
         /// </summary>
-        protected readonly byte[] _keys;
-
-        /// <summary>
-        /// The inner pad key.
-        /// </summary>
-        protected ReadOnlyMemory<byte> _innerPadKey;
-
-        /// <summary>
-        /// The outer pad key.
-        /// </summary>
-        protected ReadOnlyMemory<byte> _outerPadKey;
+        private readonly Span<byte> _keys;
 
         /// <summary>
         /// The block size.
@@ -46,22 +34,18 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="sha2"></param>
         /// <param name="key"></param>
-        protected HmacSha2(Sha2 sha2, ReadOnlySpan<byte> key)
+        /// <param name="hmacKey"></param>
+        public Hmac(Sha2 sha2, ReadOnlySpan<byte> key, Span<byte> hmacKey)
         {
-            if (sha2 is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.sha);
-            }
+            Debug.Assert(sha2 != null);
+            Debug.Assert(hmacKey.Length == sha2!.BlockSize * 2);
 
             Sha2 = sha2;
+            _keys = hmacKey;
             int blockSize = sha2.BlockSize;
-            _keys = new byte[blockSize * 2];
-            _innerPadKey = new ReadOnlyMemory<byte>(_keys, 0, blockSize);
-            _outerPadKey = new ReadOnlyMemory<byte>(_keys, blockSize, blockSize);
             if (key.Length > blockSize)
             {
-                Span<byte> keyPrime = stackalloc byte[sha2.HashSize];
-                Sha2.ComputeHash(key, default, keyPrime, default);
+                Span<byte> keyPrime = stackalloc byte[blockSize];
                 HmacHelper.InitializeIOKeys(keyPrime, _keys, blockSize);
                 keyPrime.Clear();
             }
@@ -80,14 +64,15 @@ namespace JsonWebToken
         {
             // hash(o_key_pad ∥ hash(i_key_pad ∥ message));         
             int size = Sha2.GetWorkingSetSize(source.Length);
+            int blockSize = Sha2.BlockSize;
             byte[]? arrayToReturn = null;
             try
             {
                 Span<byte> W = size > Constants.MaxStackallocBytes
                     ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(size))
                     : stackalloc byte[size];
-                Sha2.ComputeHash(source, _innerPadKey.Span, destination, W);
-                Sha2.ComputeHash(destination, _outerPadKey.Span, destination, W);
+                Sha2.ComputeHash(source, _keys.Slice(0, blockSize), destination, W);
+                Sha2.ComputeHash(destination, _keys.Slice(blockSize, blockSize), destination, W);
             }
             finally
             {
@@ -96,22 +81,6 @@ namespace JsonWebToken
                     ArrayPool<byte>.Shared.Return(arrayToReturn);
                 }
             }
-        }
-
-        /// <summary>
-        /// Clears the keys.
-        /// </summary>
-        public void Clear()
-        {
-            _keys.AsSpan().Clear();
-        }
-
-        /// <summary>
-        /// Clears the non-managed resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Clear();
         }
     }
 }

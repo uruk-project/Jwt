@@ -166,6 +166,25 @@ namespace JsonWebToken
             }
 
             _k = k;
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="k">The binary key material.</param>
+        /// <param name="alg">The <see cref="SignatureAlgorithm"/>.</param>
+        public SymmetricJwk(ReadOnlySpan<byte> k, SignatureAlgorithm alg)
+            : base(alg)
+        {
+            _k = k.ToArray();
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -182,6 +201,10 @@ namespace JsonWebToken
             }
 
             _k = Base64Url.Decode(k);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -198,6 +221,10 @@ namespace JsonWebToken
             }
 
             _k = k;
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -209,6 +236,10 @@ namespace JsonWebToken
             : base(alg)
         {
             _k = k.ToArray();
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -225,6 +256,10 @@ namespace JsonWebToken
             }
 
             _k = Base64Url.Decode(k);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <inheritsdoc />

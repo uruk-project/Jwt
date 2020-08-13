@@ -2,14 +2,13 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
     /// <summary>
     /// Provides authenticated encryption and decryption.
     /// </summary>
-    public abstract class AuthenticatedEncryptor : IDisposable
+    public abstract class AuthenticatedEncryptor
     {
         /// <summary>
         /// Encrypts the <paramref name="plaintext"/>.
@@ -48,18 +47,5 @@ namespace JsonWebToken
         /// Gets the size of the base64-URL authentication tag.
         /// </summary>
         public abstract int GetBase64TagSize();
-
-        /// <inheritdoc />
-        public abstract void Dispose();
-
-
-        /// <inheritsdoc />
-        public static AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
-        {
-
-
-            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-            return null;
-        }
     }
 }

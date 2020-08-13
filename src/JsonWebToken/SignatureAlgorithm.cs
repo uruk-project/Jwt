@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -88,6 +89,7 @@ namespace JsonWebToken
         private readonly AlgorithmCategory _category;
         private readonly ushort _requiredKeySizeInBits;
         private readonly HashAlgorithmName _hashAlgorithm;
+        private readonly Sha2 _sha;
 
         private static readonly SignatureAlgorithm[] _algorithms = new[]
         {
@@ -138,6 +140,11 @@ namespace JsonWebToken
         public HashAlgorithmName HashAlgorithm => _hashAlgorithm;
 
         /// <summary>
+        /// Gets the <see cref="Sha2"/> algorithm. 
+        /// </summary>
+        public Sha2 Sha => _sha;
+
+        /// <summary>
         /// Initializes a new instance of <see cref="SignatureAlgorithm"/>. 
         /// </summary>
         /// <param name="id"></param>
@@ -152,6 +159,13 @@ namespace JsonWebToken
             _category = category;
             _requiredKeySizeInBits = requiredKeySizeInBits;
             _hashAlgorithm = hashAlgorithm;
+            _sha = hashAlgorithm.Name switch
+            {
+                "SHA256" => Sha256.Shared,
+                "SHA384" => Sha384.Shared,
+                "SHA512" => Sha512.Shared,
+                _ => ShaNull.Shared
+            };
         }
 
         /// <summary>
@@ -163,7 +177,6 @@ namespace JsonWebToken
         public override bool Equals(object? obj)
         {
             return Equals(obj as SignatureAlgorithm);
-
         }
 
         /// <summary>
@@ -388,20 +401,6 @@ namespace JsonWebToken
 
             return value._id;
         }
-
-        ///// <summary>
-        ///// Cast the <see cref="SignatureAlgorithm"/> into its <see cref="byte"/> array representation.
-        ///// </summary>
-        ///// <param name="value"></param>
-        //public static explicit operator byte[]?(SignatureAlgorithm? value)
-        //{
-        //    if (value is null)
-        //    {
-        //        return null;
-        //    }
-
-        //    return value.Utf8Name;
-        //}
 
         /// <inheritsddoc />
         public override string ToString()

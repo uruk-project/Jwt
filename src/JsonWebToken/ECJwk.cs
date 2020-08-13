@@ -76,6 +76,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(parameters);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -85,6 +89,10 @@ namespace JsonWebToken
             : base(d, alg)
         {
             Initialize(crv, x, y, alg);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -94,6 +102,10 @@ namespace JsonWebToken
             : base(d, alg)
         {
             Initialize(crv, x, y, alg);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -103,6 +115,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(crv, x, y, alg);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -112,6 +128,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(crv, x, y, alg);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -123,6 +143,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(parameters);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -132,6 +156,10 @@ namespace JsonWebToken
             : base(d, alg)
         {
             Initialize(crv, x, y);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -141,6 +169,10 @@ namespace JsonWebToken
             : base(d, alg)
         {
             Initialize(crv, x, y);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -150,6 +182,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(crv, x, y);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -159,6 +195,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(crv, x, y);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>

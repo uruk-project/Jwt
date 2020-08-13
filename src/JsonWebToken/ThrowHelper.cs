@@ -227,6 +227,17 @@ namespace JsonWebToken
         private static Exception CreateNotSupportedException_SignatureAlgorithm(SignatureAlgorithm algorithm, Jwk? key) => new NotSupportedException($"Signature failed. No support for: Algorithm: '{algorithm}', key: '{key?.Kid}'.");
 
         [DoesNotReturn]
+        internal static void ThrowNotSupportedException_Algorithm(SignatureAlgorithm algorithm) => throw CreateNotSupportedException_Algorithm(algorithm);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateNotSupportedException_Algorithm(SignatureAlgorithm algorithm) => new NotSupportedException($"The algorithm '{algorithm}' is not supported for this kind of JWK.");
+
+
+        [DoesNotReturn]
+        internal static void ThrowNotSupportedException_Algorithm(KeyManagementAlgorithm algorithm) => throw CreateNotSupportedException_Algorithm(algorithm);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateNotSupportedException_Algorithm(KeyManagementAlgorithm algorithm) => new NotSupportedException($"The algorithm '{algorithm}' is not supported for this kind of JWK.");
+
+        [DoesNotReturn]
         internal static void ThrowNotSupportedException_Jwk(ReadOnlySpan<byte> name) => throw CreateNotSupportedException_Jwk(name);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateNotSupportedException_Jwk(ReadOnlySpan<byte> name) => new NotSupportedException($"JWK type '{Utf8.GetString(name)}' is not supported.");

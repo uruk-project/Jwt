@@ -440,10 +440,6 @@ namespace JsonWebToken
 
         private sealed class NullAesEncryptor : AuthenticatedEncryptor
         {
-            public override void Dispose()
-            {
-            }
-
             public override void Encrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag, out int authenticationTagBytesWritten)
             {
                 authenticationTagBytesWritten = 0;

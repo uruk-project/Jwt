@@ -295,8 +295,7 @@ namespace JsonWebToken
 
             try
             {
-                Jwk? decryptionKey;
-                if (TryDecryptToken(keys, rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, enc, decryptedBytes, out decryptionKey, out int bytesWritten))
+                if (TryDecryptToken(keys, rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, enc, decryptedBytes, out Jwk? decryptionKey, out int bytesWritten))
                 {
                     decryptedBytes = decryptedBytes.Slice(0, bytesWritten);
                 }

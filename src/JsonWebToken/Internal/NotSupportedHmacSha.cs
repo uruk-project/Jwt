@@ -12,23 +12,24 @@ namespace JsonWebToken.Internal
         {
             ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm.Name);
         }
+    }
 
-        private sealed class ShaNull : Sha2
+
+    internal sealed class ShaNull : Sha2
+    {
+        public static readonly ShaNull Shared = new ShaNull();
+
+        public override int HashSize => 0;
+
+        public override int BlockSize => 0;
+
+        public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
         {
-            public static readonly ShaNull Shared = new ShaNull();
+        }
 
-            public override int HashSize => 0;
-
-            public override int BlockSize => 0;
-
-            public override void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> w)
-            {
-            }
-
-            public override int GetWorkingSetSize(int sourceLength)
-            {
-                return 0;
-            }
+        public override int GetWorkingSetSize(int sourceLength)
+        {
+            return 0;
         }
     }
 }

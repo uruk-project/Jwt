@@ -4,7 +4,7 @@
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Security.Cryptography;
+using System.Diagnostics;
 
 namespace JsonWebToken.Internal
 {
@@ -16,7 +16,6 @@ namespace JsonWebToken.Internal
         private readonly AesEncryptor _encryptor;
         private readonly EncryptionAlgorithm _encryptionAlgorithm;
         private readonly int _keyLength;
-        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AesCbcHmacEncryptor"/> class.
@@ -25,24 +24,14 @@ namespace JsonWebToken.Internal
         /// <param name="encryptor"></param>
         public AesCbcHmacEncryptor(EncryptionAlgorithm encryptionAlgorithm, AesEncryptor encryptor)
         {
-            if (encryptionAlgorithm is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
-            }
-
-            if (encryptionAlgorithm.Category != EncryptionType.AesHmac)
-            {
-                ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-            }
+            Debug.Assert(encryptionAlgorithm != null);
+            Debug.Assert(encryptionAlgorithm!.Category == EncryptionType.AesHmac);
+            Debug.Assert(encryptionAlgorithm!.SignatureAlgorithm != null);
+            Debug.Assert(encryptor != null);
 
             _encryptionAlgorithm = encryptionAlgorithm;
-
             _keyLength = encryptionAlgorithm.RequiredKeySizeInBytes >> 1;
-            _encryptor = encryptor;
-            if (encryptionAlgorithm.SignatureAlgorithm is null)
-            {
-                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(encryptionAlgorithm.SignatureAlgorithm);
-            }
+            _encryptor = encryptor!;
         }
 
         /// <summary>
@@ -100,35 +89,20 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(_encryptionAlgorithm, _encryptionAlgorithm.RequiredKeySizeInBits, key.Length << 3);
             }
 
-            var keyBytes = key;
             if (associatedData.IsEmpty)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.associatedData);
             }
 
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
             try
             {
-                _encryptor.Encrypt(keyBytes.Slice(_keyLength), plaintext, nonce, ciphertext);
+                _encryptor.Encrypt(key.Slice(_keyLength), plaintext, nonce, ciphertext);
                 ComputeAuthenticationTag(key.Slice(0, _keyLength), nonce, associatedData, ciphertext, authenticationTag, out authenticationTagBytesWritten);
             }
             catch
             {
                 CryptographicOperations.ZeroMemory(ciphertext);
                 throw;
-            }
-        }
-
-        /// <inheritdoc />
-        public override void Dispose()
-        {
-            if (!_disposed)
-            {
-                _disposed = true;
             }
         }
 
@@ -148,17 +122,13 @@ namespace JsonWebToken.Internal
                 bytes = bytes.Slice(iv.Length);
                 ciphertext.CopyTo(bytes);
                 bytes = bytes.Slice(ciphertext.Length);
-                BinaryPrimitives.WriteInt64BigEndian(bytes, associatedData.Length * 8);
+                BinaryPrimitives.WriteInt64BigEndian(bytes, associatedData.Length << 3);
 
-                HmacSha2 hashAlgorithm = _encryptionAlgorithm.SignatureAlgorithm!.Id switch
-                {
-                    Algorithms.HmacSha256 => new HmacSha256(key),
-                    Algorithms.HmacSha384 => new HmacSha384(key),
-                    Algorithms.HmacSha512 => new HmacSha512(key),
-                    _ => new NotSupportedHmacSha(_encryptionAlgorithm.SignatureAlgorithm!)
-                };
-                hashAlgorithm.ComputeHash(macBytes, authenticationTag);
-                authenticationTagBytesWritten = authenticationTag.Length / 2;
+                Sha2 hashAlgorithm = _encryptionAlgorithm.SignatureAlgorithm!.Sha;
+                Span<byte> hmacKey = stackalloc byte[hashAlgorithm.BlockSize * 2];
+                Hmac hmac = new Hmac(hashAlgorithm, key, hmacKey);
+                hmac.ComputeHash(macBytes, authenticationTag);
+                authenticationTagBytesWritten = authenticationTag.Length >> 1;
             }
             finally
             {
@@ -166,25 +136,6 @@ namespace JsonWebToken.Internal
                 {
                     ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
                 }
-            }
-        }
-
-        private sealed class AesPooledPolicy : PooledObjectFactory<Aes>
-        {
-            private readonly byte[] _key;
-
-            public AesPooledPolicy(byte[] key)
-            {
-                _key = key;
-            }
-
-            public override Aes Create()
-            {
-                var aes = Aes.Create();
-                aes.Key = _key;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-                return aes;
             }
         }
     }

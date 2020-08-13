@@ -14,7 +14,6 @@ namespace JsonWebToken.Internal
     internal sealed class AesGcmEncryptor : AuthenticatedEncryptor
     {
         private readonly EncryptionAlgorithm _encryptionAlgorithm;
-        private bool _disposed;
 
         public AesGcmEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
@@ -26,11 +25,6 @@ namespace JsonWebToken.Internal
         /// <inheritdoc />
         public override void Encrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag, out int authenticationTagBytesWritten)
         {
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
             if (key.Length < _encryptionAlgorithm.RequiredKeySizeInBytes)
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(_encryptionAlgorithm, _encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.Length << 8);
@@ -60,12 +54,6 @@ namespace JsonWebToken.Internal
 
         /// <inheritdoc />
         public override int GetBase64TagSize() => 22;
-
-        /// <inheritdoc />
-        public override void Dispose()
-        {
-            _disposed = true;
-        }
     }
 }
 #endif

@@ -50,11 +50,6 @@ namespace JsonWebToken.Internal
         {
             throw new NotSupportedException();
         }
-
-        /// <inheritdoc />
-        public override void Dispose()
-        {
-        }
     }
 }
 #endif
