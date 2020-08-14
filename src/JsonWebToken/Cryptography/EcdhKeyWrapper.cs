@@ -53,7 +53,9 @@ namespace JsonWebToken.Internal
                 size = wrappedAlgorithm.Category switch
                 {
                     AlgorithmCategory.Aes => AesKeyWrapper.GetKeyWrappedSize(EncryptionAlgorithm),
+#if SUPPORT_AES_GCM
                     AlgorithmCategory.AesGcm => AesGcmKeyWrapper.GetKeyWrapSize(EncryptionAlgorithm),
+#endif
                     _ => throw ThrowHelper.CreateNotSupportedException_EncryptionAlgorithm(EncryptionAlgorithm)
                 };
             }
