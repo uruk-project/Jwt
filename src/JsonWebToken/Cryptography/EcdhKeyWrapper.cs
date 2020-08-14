@@ -53,7 +53,6 @@ namespace JsonWebToken.Internal
 #if SUPPORT_AES_GCM
                     else if (wrappedAlgorithm.Category == AlgorithmCategory.AesGcm)
                     {
-                        //return AesGcmKeyWrapper.GetKeyWrapSize(Key);
                         return AesGcmKeyWrapper.GetKeyWrapSize(EncryptionAlgorithm);
                     }
 #endif

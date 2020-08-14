@@ -333,13 +333,21 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override bool SupportSignature(SignatureAlgorithm algorithm)
         {
+#if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
             return algorithm.Category == AlgorithmCategory.EllipticCurve && algorithm.RequiredKeySizeInBits == KeySizeInBits;
+#else
+            return false;
+#endif
         }
 
         /// <inheritdoc />
         public override bool SupportKeyManagement(KeyManagementAlgorithm algorithm)
         {
-            return algorithm.Category == AlgorithmCategory.EllipticCurve;
+#if SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
+            return (algorithm.Category & AlgorithmCategory.EllipticCurve) != 0;
+#else
+            return false;
+#endif
         }
 
         /// <inheritdoc />
@@ -351,19 +359,31 @@ namespace JsonWebToken
         /// <inheritdoc />
         protected override Signer CreateSigner(SignatureAlgorithm algorithm)
         {
+#if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
             return new EcdsaSigner(this, algorithm);
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         /// <inheritdoc />
         protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
+#if SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
             return new EcdhKeyWrapper(this, encryptionAlgorithm, algorithm);
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         /// <inheritdoc />
         protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
+#if SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
             return new EcdhKeyUnwrapper(this, encryptionAlgorithm, algorithm);
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         /// <summary>

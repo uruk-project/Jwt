@@ -47,7 +47,7 @@ namespace JsonWebToken
         /// <summary>
         /// 'dir'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, "dir", AlgorithmCategory.None, produceEncryptedKey: false);
+        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, "dir", AlgorithmCategory.Direct, produceEncryptedKey: false);
 
         /// <summary>
         /// 'A128KW'
@@ -107,7 +107,7 @@ namespace JsonWebToken
         /// <summary>
         /// 'ECDH-ES'
         /// </summary>
-        public static readonly KeyManagementAlgorithm EcdhEs = new KeyManagementAlgorithm(id: 41, "ECDH-ES", AlgorithmCategory.EllipticCurve, produceEncryptedKey: false);
+        public static readonly KeyManagementAlgorithm EcdhEs = new KeyManagementAlgorithm(id: 41, "ECDH-ES", AlgorithmCategory.EllipticCurve | AlgorithmCategory.Direct, produceEncryptedKey: false);
 
         /// <summary>
         /// 'ECDH-ES+A128KW'

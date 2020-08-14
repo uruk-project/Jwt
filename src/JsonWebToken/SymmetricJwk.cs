@@ -391,7 +391,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override bool SupportEncryption(EncryptionAlgorithm algorithm)
         {
-            return (algorithm.Category == EncryptionType.AesHmac || algorithm.Category == EncryptionType.AesGcm) && KeySizeInBits >= algorithm.RequiredKeySizeInBits;
+            return (algorithm.Category & EncryptionType.Aes) != 0 && KeySizeInBits >= algorithm.RequiredKeySizeInBits;
         }
 
         /// <inheritdoc />
@@ -403,41 +403,31 @@ namespace JsonWebToken
         /// <inheritsdoc />
         protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
-            if (algorithm.Category == AlgorithmCategory.Aes)
+            KeyWrapper value = algorithm.Category switch
             {
-                return new AesKeyWrapper(this, encryptionAlgorithm, algorithm);
-            }
-            else if (algorithm.Category == AlgorithmCategory.AesGcm)
-            {
-                return new AesGcmKeyWrapper(this, encryptionAlgorithm, algorithm);
-            }
-            else if (!algorithm.ProduceEncryptionKey)
-            {
-                return new DirectKeyWrapper(this, encryptionAlgorithm, algorithm);
-            }
-
-            ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-            return null;
+                AlgorithmCategory.Aes => new AesKeyWrapper(this, encryptionAlgorithm, algorithm),
+#if SUPPORT_AESGCM
+                AlgorithmCategory.AesGcm => new AesGcmKeyWrapper(this, encryptionAlgorithm, algorithm),
+#endif
+                AlgorithmCategory.Direct => new DirectKeyWrapper(this, encryptionAlgorithm, algorithm),
+                _ => throw ThrowHelper.CreateNotSupportedException_AlgorithmForKeyWrap(algorithm)
+            };
+            return value;
         }
 
         /// <inheritsdoc />
         protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
-            if (algorithm.Category == AlgorithmCategory.Aes)
+            KeyUnwrapper value = algorithm.Category switch
             {
-                return new AesKeyUnwrapper(this, encryptionAlgorithm, algorithm);
-            }
-            else if (algorithm.Category == AlgorithmCategory.AesGcm)
-            {
-                return new AesGcmKeyUnwrapper(this, encryptionAlgorithm, algorithm);
-            }
-            else if (!algorithm.ProduceEncryptionKey)
-            {
-                return new DirectKeyUnwrapper(this, encryptionAlgorithm, algorithm);
-            }
-
-            ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-            return null;
+                AlgorithmCategory.Aes => new AesKeyUnwrapper(this, encryptionAlgorithm, algorithm),
+#if SUPPORT_AESGCM
+                AlgorithmCategory.AesGcm => new AesGcmKeyUnwrapper(this, encryptionAlgorithm, algorithm),
+#endif
+                AlgorithmCategory.Direct => new DirectKeyUnwrapper(this, encryptionAlgorithm, algorithm),
+                _ => throw ThrowHelper.CreateNotSupportedException_AlgorithmForKeyWrap(algorithm)
+            };
+            return value;
         }
 
         /// <summary>

@@ -159,7 +159,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_AlgorithmForKeyWrap(KeyManagementAlgorithm? algorithm) => throw CreateNotSupportedException_AlgorithmForKeyWrap(algorithm);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateNotSupportedException_AlgorithmForKeyWrap(KeyManagementAlgorithm? algorithm) => new NotSupportedException($"Key wrap is not supported for algorithm: '{algorithm}'.");
+        internal static Exception CreateNotSupportedException_AlgorithmForKeyWrap(KeyManagementAlgorithm? algorithm) => new NotSupportedException($"Key wrap is not supported for algorithm: '{algorithm}'.");
 
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_CompressionAlgorithm(CompressionAlgorithm compressionAlgorithm) => throw CreateNotSupportedException_CompressionAlgorithm(compressionAlgorithm);
