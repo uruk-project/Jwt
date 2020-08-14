@@ -64,7 +64,6 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.authenticationTag);
             }
 
-
             int requiredKeyLength = _encryptionAlgorithm.RequiredKeySizeInBytes >> 1;
             if (key.Length >= requiredKeyLength)
             {
@@ -97,7 +96,7 @@ namespace JsonWebToken.Internal
                 bytes = bytes.Slice(ciphertext.Length);
                 BinaryPrimitives.WriteInt64BigEndian(bytes, associatedData.Length << 3);
                
-                Sha2 hashAlgorithm = _encryptionAlgorithm.SignatureAlgorithm!.Sha;
+                Sha2 hashAlgorithm = _encryptionAlgorithm.SignatureAlgorithm.Sha;
                 Span<byte> hmacKey = stackalloc byte[hashAlgorithm.BlockSize * 2];
                 Hmac hmac = new Hmac(hashAlgorithm, key, hmacKey);
                 Span<byte> hash = stackalloc byte[authenticationTag.Length * 2];

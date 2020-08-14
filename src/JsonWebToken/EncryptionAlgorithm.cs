@@ -42,17 +42,17 @@ namespace JsonWebToken
         /// <summary>
         /// 'A128GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 1, "A128GCM", requiredKeySizeInBytes: 16, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 24, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 1, "A128GCM", requiredKeySizeInBytes: 16, signatureAlgorithm: SignatureAlgorithm.None, requiredKeyWrappedSizeInBytes: 24, EncryptionType.AesGcm);
 
         /// <summary>
         /// 'A192GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 2, "A192GCM", requiredKeySizeInBytes: 24, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 32, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 2, "A192GCM", requiredKeySizeInBytes: 24, signatureAlgorithm: SignatureAlgorithm.None, requiredKeyWrappedSizeInBytes: 32, EncryptionType.AesGcm);
 
         /// <summary>
         /// 'A256GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 3, "A256GCM", requiredKeySizeInBytes: 32, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 3, "A256GCM", requiredKeySizeInBytes: 32, signatureAlgorithm: SignatureAlgorithm.None, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
 
         private static readonly EncryptionAlgorithm[] _algorithms = new[]
         {
@@ -68,7 +68,7 @@ namespace JsonWebToken
         private readonly EncryptionType _category;
         private readonly ushort _requiredKeySizeInBytes;
         private readonly ushort _keyWrappedSizeInBytes;
-        private readonly SignatureAlgorithm? _signatureAlgorithm;
+        private readonly SignatureAlgorithm _signatureAlgorithm;
         private readonly AuthenticatedEncryptor _encryptor;
         private readonly AuthenticatedDecryptor _decryptor;
         private readonly byte[] _utf8Name;
@@ -101,7 +101,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the <see cref="SignatureAlgorithm"/>.
         /// </summary>
-        public SignatureAlgorithm? SignatureAlgorithm => _signatureAlgorithm;
+        public SignatureAlgorithm SignatureAlgorithm => _signatureAlgorithm;
 
         /// <summary>
         /// Gets the name of the encryption algorithm.
@@ -129,15 +129,15 @@ namespace JsonWebToken
         /// <param name="id"></param>
         /// <param name="name"></param>
         /// <param name="requiredKeySizeInBytes"></param>
-        /// <param name="hashAlgorithm"></param>
+        /// <param name="signatureAlgorithm"></param>
         /// <param name="requiredKeyWrappedSizeInBytes"></param>
         /// <param name="category"></param>
-        public EncryptionAlgorithm(sbyte id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm? hashAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionType category)
+        public EncryptionAlgorithm(sbyte id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm signatureAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionType category)
         {
             _id = id;
             _utf8Name = Utf8.GetBytes(name);
             _requiredKeySizeInBytes = requiredKeySizeInBytes;
-            _signatureAlgorithm = hashAlgorithm;
+            _signatureAlgorithm = signatureAlgorithm;
             _keyWrappedSizeInBytes = requiredKeyWrappedSizeInBytes;
             _category = category;
             _encryptor = CreateAuthenticatedEncryptor(this);
@@ -361,11 +361,11 @@ namespace JsonWebToken
         /// <returns></returns>
         public int ComputeKey(KeyManagementAlgorithm algorithm)
         {
-            return (_id << 8) | (byte)algorithm.Id;
+            return (_id << 8) | algorithm.Id;
         }
 
         internal static EncryptionAlgorithm Create(string name)
-            => new EncryptionAlgorithm(127, name, 0, null, 0, EncryptionType.Undefined);
+            => new EncryptionAlgorithm(127, name, 0, SignatureAlgorithm.None, 0, EncryptionType.NotSupported);
 
         internal static AuthenticatedDecryptor CreateAuthenticatedDecryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
@@ -395,11 +395,12 @@ namespace JsonWebToken
                 return new AesCbcHmacDecryptor(encryptionAlgorithm);
 #endif
             }
+#if SUPPORT_AESGCM
             else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
             {
                 return new AesGcmDecryptor(encryptionAlgorithm);
             }
-
+#endif
             return new NullAesDecryptor();
 
         }
@@ -447,10 +448,6 @@ namespace JsonWebToken
 
             public override int GetBase64NonceSize()
                 => 0;
-
-            public override int GetBase64TagSize()
-                => 0;
-
 
             public override int GetCiphertextSize(int plaintextSize)
                 => 0;

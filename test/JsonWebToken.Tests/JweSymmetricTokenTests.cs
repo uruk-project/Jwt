@@ -25,7 +25,7 @@ namespace JsonWebToken.Tests
 
             var descriptor = new JweDescriptor
             {
-                EncryptionAlgorithm = new EncryptionAlgorithm(-99, "unsupported", 0, SignatureAlgorithm.None, 0, EncryptionType.Undefined),
+                EncryptionAlgorithm = new EncryptionAlgorithm(-99, "unsupported", 0, SignatureAlgorithm.None, 0, EncryptionType.NotSupported),
                 Algorithm = KeyManagementAlgorithm.Direct,
                 Payload = new JwsDescriptor
                 {

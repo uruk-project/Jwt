@@ -42,10 +42,5 @@ namespace JsonWebToken
         /// Gets the required size of the  base64-URL nonce.
         /// </summary>
         public abstract int GetBase64NonceSize();
-
-        /// <summary>
-        /// Gets the size of the base64-URL authentication tag.
-        /// </summary>
-        public abstract int GetBase64TagSize();
     }
 }

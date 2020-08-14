@@ -26,7 +26,7 @@ namespace JsonWebToken.Internal
         {
             Debug.Assert(encryptionAlgorithm != null);
             Debug.Assert(encryptionAlgorithm!.Category == EncryptionType.AesHmac);
-            Debug.Assert(encryptionAlgorithm!.SignatureAlgorithm != null);
+            Debug.Assert(encryptionAlgorithm.SignatureAlgorithm != null);
             Debug.Assert(encryptor != null);
 
             _encryptionAlgorithm = encryptionAlgorithm;
@@ -64,13 +64,7 @@ namespace JsonWebToken.Internal
         /// <inheritdoc />
         public override int GetTagSize()
         {
-            return _encryptionAlgorithm.SignatureAlgorithm!.RequiredKeySizeInBits >> 2;
-        }
-
-        /// <inheritdoc />
-        public override int GetBase64TagSize()
-        {
-            return Base64Url.GetArraySizeRequiredToEncode(_encryptionAlgorithm.SignatureAlgorithm!.RequiredKeySizeInBits / 2 * 8);
+            return _encryptionAlgorithm.SignatureAlgorithm.RequiredKeySizeInBits >> 2;
         }
 
         /// <inheritdoc />
@@ -124,7 +118,7 @@ namespace JsonWebToken.Internal
                 bytes = bytes.Slice(ciphertext.Length);
                 BinaryPrimitives.WriteInt64BigEndian(bytes, associatedData.Length << 3);
 
-                Sha2 hashAlgorithm = _encryptionAlgorithm.SignatureAlgorithm!.Sha;
+                Sha2 hashAlgorithm = _encryptionAlgorithm.SignatureAlgorithm.Sha;
                 Span<byte> hmacKey = stackalloc byte[hashAlgorithm.BlockSize * 2];
                 Hmac hmac = new Hmac(hashAlgorithm, key, hmacKey);
                 hmac.ComputeHash(macBytes, authenticationTag);
