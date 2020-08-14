@@ -178,13 +178,13 @@ namespace JsonWebToken
                 {
                     case A128CBC_ when IntegerMarshal.ReadUInt64(value, 5) == BC_HS256:
                         algorithm = Aes128CbcHmacSha256;
-                        return true;
+                        goto Found;
                     case A192CBC_ when IntegerMarshal.ReadUInt64(value, 5) == BC_HS384:
                         algorithm = Aes192CbcHmacSha384;
-                        return true;
+                        goto Found;
                     case A256CBC_ when IntegerMarshal.ReadUInt64(value, 5) == BC_HS512:
                         algorithm = Aes256CbcHmacSha512;
-                        return true;
+                        goto Found;
                 }
             }
             else if (value.Length == 7)
@@ -193,18 +193,20 @@ namespace JsonWebToken
                 {
                     case A128GCM:
                         algorithm = Aes128Gcm;
-                        return true;
+                        goto Found;
                     case A192GCM:
                         algorithm = Aes192Gcm;
-                        return true;
+                        goto Found;
                     case A256GCM:
                         algorithm = Aes256Gcm;
-                        return true;
+                        goto Found;
                 }
             }
 
             algorithm = null;
             return false;
+        Found:
+            return true;
         }
 
         /// <summary>

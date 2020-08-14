@@ -5,16 +5,6 @@ using System;
 
 namespace JsonWebToken.Internal
 {
-    internal sealed class NotSupportedHmacSha : HmacSha2
-    {
-        public NotSupportedHmacSha(SignatureAlgorithm algorithm)
-            : base(ShaNull.Shared, default)
-        {
-            ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm.Name);
-        }
-    }
-
-
     internal sealed class ShaNull : Sha2
     {
         public static readonly ShaNull Shared = new ShaNull();

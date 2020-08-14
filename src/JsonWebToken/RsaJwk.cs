@@ -618,7 +618,7 @@ namespace JsonWebToken
             var key = new RsaJwk(parameters, algorithm);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
@@ -635,7 +635,7 @@ namespace JsonWebToken
             var key = new RsaJwk(parameters, algorithm);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
@@ -651,7 +651,7 @@ namespace JsonWebToken
             var key = new RsaJwk(parameters);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;

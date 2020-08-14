@@ -216,24 +216,16 @@ namespace JsonWebToken
             _d = parameters.D;
             _x = parameters.Q.X;
             _y = parameters.Q.Y;
-            switch (parameters.Curve.Oid.FriendlyName)
+            Crv = parameters.Curve.Oid.FriendlyName switch
             {
-                case "nistP256":
-                case "ECDSA_P256":
-                    Crv = EllipticalCurve.P256;
-                    break;
-                case "nistP384":
-                case "ECDSA_P384":
-                    Crv = EllipticalCurve.P384;
-                    break;
-                case "nistP521":
-                case "ECDSA_P521":
-                    Crv = EllipticalCurve.P521;
-                    break;
-                default:
-                    ThrowHelper.ThrowNotSupportedException_Curve(parameters.Curve.Oid.FriendlyName);
-                    break;
-            }
+                "nistP256" => EllipticalCurve.P256,
+                "ECDSA_P256" => EllipticalCurve.P256,
+                "nistP384" => EllipticalCurve.P384,
+                "ECDSA_P384" => EllipticalCurve.P384,
+                "nistP521" => EllipticalCurve.P521,
+                "ECDSA_P521" => EllipticalCurve.P521,
+                _ => throw ThrowHelper.CreateNotSupportedException_Curve(parameters.Curve.Oid.FriendlyName)
+            };
         }
 
         private void Initialize(in EllipticalCurve crv, string x, string y, SignatureAlgorithm alg)
@@ -504,7 +496,7 @@ namespace JsonWebToken
             var key = new ECJwk(parameters, algorithm);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
@@ -524,7 +516,7 @@ namespace JsonWebToken
             var key = new ECJwk(parameters, algorithm);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
@@ -544,7 +536,7 @@ namespace JsonWebToken
             var key = new ECJwk(parameters);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;

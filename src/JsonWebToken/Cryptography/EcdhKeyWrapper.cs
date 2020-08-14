@@ -40,51 +40,42 @@ namespace JsonWebToken.Internal
         /// <inheritsdoc />
         public override int GetKeyWrapSize()
         {
+            int size;
             var alg = Algorithm;
             if (alg.ProduceEncryptionKey)
             {
                 var wrappedAlgorithm = alg.WrappedAlgorithm;
-                if (!(wrappedAlgorithm is null))
-                {
-                    if (wrappedAlgorithm.Category == AlgorithmCategory.Aes)
-                    {
-                        return AesKeyWrapper.GetKeyWrappedSize(EncryptionAlgorithm);
-                    }
-#if SUPPORT_AES_GCM
-                    else if (wrappedAlgorithm.Category == AlgorithmCategory.AesGcm)
-                    {
-                        return AesGcmKeyWrapper.GetKeyWrapSize(EncryptionAlgorithm);
-                    }
-#endif
-                    else
-                    {
-                        ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(EncryptionAlgorithm);
-                        return 0;
-                    }
-                }
-                else
+                if (wrappedAlgorithm is null)
                 {
                     ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(EncryptionAlgorithm);
-                    return 0;
                 }
+
+                size = wrappedAlgorithm.Category switch
+                {
+                    AlgorithmCategory.Aes => AesKeyWrapper.GetKeyWrappedSize(EncryptionAlgorithm),
+                    AlgorithmCategory.AesGcm => AesGcmKeyWrapper.GetKeyWrapSize(EncryptionAlgorithm),
+                    _ => throw ThrowHelper.CreateNotSupportedException_EncryptionAlgorithm(EncryptionAlgorithm)
+                };
             }
             else
             {
                 if (alg == KeyManagementAlgorithm.EcdhEs)
                 {
-                    return _keySizeInBytes;
+                    size = _keySizeInBytes;
                 }
                 else
                 {
 #if SUPPORT_AES_GCM
                     if (EncryptionAlgorithm.Category == EncryptionType.AesGcm)
                     {
-                        return _keySizeInBytes + 8;
+                        size = _keySizeInBytes + 8;
                     }
 #endif
-                    return EncryptionAlgorithm.KeyWrappedSizeInBytes;
+                    size = EncryptionAlgorithm.KeyWrappedSizeInBytes;
                 }
             }
+
+            return size;
         }
 
         /// <inheritsdoc />

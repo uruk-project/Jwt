@@ -139,6 +139,12 @@ namespace JsonWebToken
         public const int RsaOaep256 = -41;
 
         /// <summary>
+        /// 'RSA-OAEP-256'
+        /// https://tools.ietf.org/html/rfc8230#section-3
+        /// </summary>
+        public const int RsaOaep384 = -65535 + 40;
+
+        /// <summary>
         /// 'RSA-OAEP-512'
         /// https://tools.ietf.org/html/rfc8230#section-3
         /// </summary>
@@ -147,7 +153,7 @@ namespace JsonWebToken
         /// <summary>
         /// 'ECDH-ES'
         /// </summary>
-        public const int EcdhEs = -24; // Undefined in CWT
+        public const int EcdhEs = -65535 + 29; // Undefined in CWT
 
         /// <summary>
         /// 'ECDH-ES+A128KW'

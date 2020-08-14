@@ -1038,7 +1038,11 @@ namespace JsonWebToken
             return Utf8.GetString(input);
         }
 
-        protected static void FillThumbprint(Jwk key)
+        /// <summary>
+        /// Compute the 'kid' header parameter based on the JWK thumbprint.
+        /// </summary>
+        /// <param name="key"></param>
+        protected static void ComputeKid(Jwk key)
         {
             Span<byte> thumbprint = stackalloc byte[43];
             key.ComputeThumbprint(thumbprint);

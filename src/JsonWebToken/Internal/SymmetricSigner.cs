@@ -42,13 +42,7 @@ namespace JsonWebToken.Internal
 
             _hashSizeInBytes = Algorithm.RequiredKeySizeInBits >> 2;
             _base64HashSizeInBytes = Base64Url.GetArraySizeRequiredToEncode(_hashSizeInBytes);
-            _hashAlgorithm = Algorithm.Id switch
-            {
-                Algorithms.HmacSha256 => new HmacSha256(key),
-                Algorithms.HmacSha384 => new HmacSha384(key),
-                Algorithms.HmacSha512 => new HmacSha512(key),
-                _ => new NotSupportedHmacSha(algorithm)
-            };
+            _hashAlgorithm = new HmacSha2(algorithm.Sha, key);
         }
 
         /// <inheritsdoc />

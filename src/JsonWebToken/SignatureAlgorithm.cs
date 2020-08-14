@@ -326,50 +326,52 @@ namespace JsonWebToken
                 {
                     case S256 when first == (byte)'H':
                         algorithm = HmacSha256;
-                        return true;
+                        goto Found;
                     case S256 when first == (byte)'R':
                         algorithm = RsaSha256;
-                        return true;
+                        goto Found;
                     case S256 when first == (byte)'E':
                         algorithm = EcdsaSha256;
-                        return true;
+                        goto Found;
                     case S256 when first == (byte)'P':
                         algorithm = RsaSsaPssSha256;
-                        return true;
+                        goto Found;
                     case S384 when first == (byte)'H':
                         algorithm = HmacSha384;
-                        return true;
+                        goto Found;
                     case S384 when first == (byte)'R':
                         algorithm = RsaSha384;
-                        return true;
+                        goto Found;
                     case S384 when first == (byte)'E':
                         algorithm = EcdsaSha384;
-                        return true;
+                        goto Found;
                     case S384 when first == (byte)'P':
                         algorithm = RsaSsaPssSha384;
-                        return true;
+                        goto Found;
                     case S512 when first == (byte)'H':
                         algorithm = HmacSha512;
-                        return true;
+                        goto Found;
                     case S512 when first == (byte)'R':
                         algorithm = RsaSha512;
-                        return true;
+                        goto Found;
                     case S512 when first == (byte)'E':
                         algorithm = EcdsaSha512;
-                        return true;
+                        goto Found;
                     case S512 when first == (byte)'P':
                         algorithm = RsaSsaPssSha512;
-                        return true;
+                        goto Found;
                 }
             }
             else if (value.Length == 4 && IntegerMarshal.ReadUInt32(value) == none)
             {
                 algorithm = None;
-                return true;
+                goto Found;
             }
 
             algorithm = null;
             return false;
+        Found:
+            return true;
         }
 
         /// <summary>

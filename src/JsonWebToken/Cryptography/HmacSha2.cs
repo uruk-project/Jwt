@@ -9,7 +9,7 @@ namespace JsonWebToken
     /// <summary>
     /// Computes a Hash-based Message Authentication Code (HMAC) using a SHA2 hash function.
     /// </summary>
-    public abstract class HmacSha2 : IDisposable
+    internal sealed class HmacSha2 : IDisposable
     {
         /// <summary>
         /// The hash algorithm.
@@ -19,17 +19,17 @@ namespace JsonWebToken
         /// <summary>
         /// The inner &amp; outer pad keys.
         /// </summary>
-        protected readonly byte[] _keys;
+        private readonly byte[] _keys;
 
         /// <summary>
         /// The inner pad key.
         /// </summary>
-        protected ReadOnlyMemory<byte> _innerPadKey;
+        private readonly ReadOnlyMemory<byte> _innerPadKey;
 
         /// <summary>
         /// The outer pad key.
         /// </summary>
-        protected ReadOnlyMemory<byte> _outerPadKey;
+        private readonly ReadOnlyMemory<byte> _outerPadKey;
 
         /// <summary>
         /// The block size.
@@ -46,7 +46,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="sha2"></param>
         /// <param name="key"></param>
-        protected HmacSha2(Sha2 sha2, ReadOnlySpan<byte> key)
+        public HmacSha2(Sha2 sha2, ReadOnlySpan<byte> key)
         {
             if (sha2 is null)
             {

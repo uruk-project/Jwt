@@ -300,7 +300,7 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
@@ -322,7 +322,7 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes, algorithm);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
@@ -344,7 +344,7 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes, algorithm);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
