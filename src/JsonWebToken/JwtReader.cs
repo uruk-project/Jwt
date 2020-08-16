@@ -295,7 +295,7 @@ namespace JsonWebToken
 
             try
             {
-                if (TryDecryptToken(keys, rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, enc, decryptedBytes, out Jwk? decryptionKey, out int bytesWritten))
+                if (TryDecryptToken(keys, rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, enc, decryptedBytes, out SymmetricJwk? decryptionKey, out int bytesWritten))
                 {
                     decryptedBytes = decryptedBytes.Slice(0, bytesWritten);
                 }
@@ -428,14 +428,14 @@ namespace JsonWebToken
         }
 
         private static bool TryDecryptToken(
-            List<Jwk> keys,
+            List<SymmetricJwk> keys,
             ReadOnlySpan<byte> rawHeader,
             ReadOnlySpan<byte> rawCiphertext,
             ReadOnlySpan<byte> rawInitializationVector,
             ReadOnlySpan<byte> rawAuthenticationTag,
             EncryptionAlgorithm encryptionAlgorithm,
             Span<byte> decryptedBytes,
-            [NotNullWhen(true)] out Jwk? key,
+            [NotNullWhen(true)] out SymmetricJwk? key,
             out int bytesWritten)
         {
             int ciphertextLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length);
@@ -489,7 +489,7 @@ namespace JsonWebToken
                 {
                     key = keys[i];
                     if (decryptor.TryDecrypt(
-                        key.AsSpan(),
+                        key.K,
                         ciphertext,
                         header,
                         initializationVector,
@@ -513,7 +513,7 @@ namespace JsonWebToken
             }
         }
 
-        private bool TryGetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc, [NotNullWhen(true)] out List<Jwk>? keys)
+        private bool TryGetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc, [NotNullWhen(true)] out List<SymmetricJwk>? keys)
         {
             KeyManagementAlgorithm? alg = header.KeyManagementAlgorithm;
 
@@ -524,16 +524,16 @@ namespace JsonWebToken
             }
             else if (alg == KeyManagementAlgorithm.Direct)
             {
-                keys = new List<Jwk>(1);
+                keys = new List<SymmetricJwk>(1);
                 for (int i = 0; i < _encryptionKeyProviders.Length; i++)
                 {
                     var keySet = _encryptionKeyProviders[i].GetKeys(header);
                     for (int j = 0; j < keySet.Length; j++)
                     {
                         var key = keySet[j];
-                        if (key.CanUseForKeyWrapping(alg))
+                        if (key is SymmetricJwk symJwk && symJwk.CanUseForKeyWrapping(alg))
                         {
-                            keys.Add(key);
+                            keys.Add(symJwk);
                         }
                     }
                 }
@@ -576,7 +576,7 @@ namespace JsonWebToken
                         }
                     }
 
-                    keys = new List<Jwk>(1);
+                    keys = new List<SymmetricJwk>(1);
                     Span<byte> unwrappedKey = maxKeyUnwrapSize <= Constants.MaxStackallocBytes ?
                         stackalloc byte[maxKeyUnwrapSize] :
                         unwrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(maxKeyUnwrapSize);
@@ -586,7 +586,7 @@ namespace JsonWebToken
                         var temporaryUnwrappedKey = unwrappedKey.Length != kpv.Item1 ? unwrappedKey.Slice(0, kpv.Item1) : unwrappedKey;
                         if (kpv.Item2.TryUnwrapKey(encryptedKey, temporaryUnwrappedKey, header, out int keyUnwrappedBytesWritten))
                         {
-                            Jwk jwk = new SymmetricJwk(unwrappedKey.Slice(0, keyUnwrappedBytesWritten).ToArray());
+                            var jwk = new SymmetricJwk(unwrappedKey.Slice(0, keyUnwrappedBytesWritten).ToArray());
                             keys.Add(jwk);
                         }
                     }

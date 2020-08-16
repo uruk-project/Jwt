@@ -545,12 +545,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override ReadOnlySpan<byte> AsSpan()
         {
-#if !NETSTANDARD2_0
-            using var ecdh = ECDiffieHellman.Create(ExportParameters());
-            return ecdh.PublicKey.ToByteArray();
-#else
             throw new NotImplementedException();
-#endif
         }
 
         /// <summary>
