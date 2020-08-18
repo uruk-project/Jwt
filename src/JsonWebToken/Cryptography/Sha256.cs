@@ -248,9 +248,9 @@ namespace JsonWebToken
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<uint> Schedule(in Vector128<uint> w0, in Vector128<uint> w1, in Vector128<uint> w9, in Vector128<uint> w14, IntPtr i, ref Vector128<uint> schedule)
+        private static Vector128<uint> Schedule(in Vector128<uint> w0, in Vector128<uint> w1, in Vector128<uint> w9, in Vector128<uint> w14, in Vector128<uint> k, IntPtr i, ref Vector128<uint> schedule)
         {
-            Unsafe.AddByteOffset(ref schedule, i) = Sse2.Add(w0, K128(i));
+            Unsafe.AddByteOffset(ref schedule, i) = Sse2.Add(w0, k);
             return Sse2.Add(Sse2.Add(w0, w9), Sse2.Add(Sigma0(w1), Sigma1(w14)));
         }
 
@@ -275,89 +275,122 @@ namespace JsonWebToken
             W14 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)56)).AsByte(), littleEndianMask).AsUInt32();
             W15 = Ssse3.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)60)).AsByte(), littleEndianMask).AsUInt32();
             IntPtr i = (IntPtr)0;
+            ref uint k = ref _k[0];
             do
             {
-                W0 = Schedule(W0, W1, W9, W14, i, ref schedule);
+                W0 = Schedule(W0, W1, W9, W14, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
-                W1 = Schedule(W1, W2, W10, W15, i, ref schedule);
+                W1 = Schedule(W1, W2, W10, W15, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
-                W2 = Schedule(W2, W3, W11, W0, i, ref schedule);
+                W2 = Schedule(W2, W3, W11, W0, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
-                W3 = Schedule(W3, W4, W12, W1, i, ref schedule);
+                W3 = Schedule(W3, W4, W12, W1, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
-                W4 = Schedule(W4, W5, W13, W2, i, ref schedule);
+                W4 = Schedule(W4, W5, W13, W2, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
-                W5 = Schedule(W5, W6, W14, W3, i, ref schedule);
+                W5 = Schedule(W5, W6, W14, W3, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
-                W6 = Schedule(W6, W7, W15, W4, i, ref schedule);
+                W6 = Schedule(W6, W7, W15, W4, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
-                W7 = Schedule(W7, W8, W0, W5, i, ref schedule);
+                W7 = Schedule(W7, W8, W0, W5, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
-                W8 = Schedule(W8, W9, W1, W6, i, ref schedule);
+                W8 = Schedule(W8, W9, W1, W6, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
-                W9 = Schedule(W9, W10, W2, W7, i, ref schedule);
+                W9 = Schedule(W9, W10, W2, W7, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
-                W10 = Schedule(W10, W11, W3, W8, i, ref schedule);
+                W10 = Schedule(W10, W11, W3, W8, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
-                W11 = Schedule(W11, W12, W4, W9, i, ref schedule);
+                W11 = Schedule(W11, W12, W4, W9, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
-                W12 = Schedule(W12, W13, W5, W10, i, ref schedule);
+                W12 = Schedule(W12, W13, W5, W10, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
-                W13 = Schedule(W13, W14, W6, W11, i, ref schedule);
+                W13 = Schedule(W13, W14, W6, W11, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
-                W14 = Schedule(W14, W15, W7, W12, i, ref schedule);
+                W14 = Schedule(W14, W15, W7, W12, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
-                W15 = Schedule(W15, W0, W8, W13, i, ref schedule);
+                W15 = Schedule(W15, W0, W8, W13, Vector128.Create(k), i, ref schedule);
+                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
                 i += 16;
             } while ((byte*)i < (byte*)(32 * 16));
 
-            W0 = Schedule(W0, W1, W9, W14, i, ref schedule);
+            W0 = Schedule(W0, W1, W9, W14, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
             i += 16;
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(48 * 16)) = Sse2.Add(W0, K128((IntPtr)(48 * 16)));
-            W1 = Schedule(W1, W2, W10, W15, i, ref schedule);
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(48 * 16)) = Sse2.Add(W0, K128((IntPtr)(48 * 4)));
+            W1 = Schedule(W1, W2, W10, W15, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
             i += 16;
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(49 * 16)) = Sse2.Add(W1, K128((IntPtr)(49 * 16)));
-            W2 = Schedule(W2, W3, W11, W0, i, ref schedule);
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(49 * 16)) = Sse2.Add(W1, K128((IntPtr)(49 * 4)));
+            W2 = Schedule(W2, W3, W11, W0, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
             i += 16;
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(50 * 16)) = Sse2.Add(W2, K128((IntPtr)(50 * 16)));
-            W3 = Schedule(W3, W4, W12, W1, i, ref schedule);
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(50 * 16)) = Sse2.Add(W2, K128((IntPtr)(50 * 4)));
+            W3 = Schedule(W3, W4, W12, W1, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
             i += 16;
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(51 * 16)) = Sse2.Add(W3, K128((IntPtr)(51 * 16)));
-            W4 = Schedule(W4, W5, W13, W2, i, ref schedule);
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(51 * 16)) = Sse2.Add(W3, K128((IntPtr)(51 * 4)));
+            W4 = Schedule(W4, W5, W13, W2, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
             i += 16;
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(52 * 16)) = Sse2.Add(W4, K128((IntPtr)(52 * 16)));
-            W5 = Schedule(W5, W6, W14, W3, i, ref schedule);
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(52 * 16)) = Sse2.Add(W4, K128((IntPtr)(52 * 4)));
+            W5 = Schedule(W5, W6, W14, W3, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
             i += 16;
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(53 * 16)) = Sse2.Add(W5, K128((IntPtr)(53 * 16)));
-            W6 = Schedule(W6, W7, W15, W4, i, ref schedule);
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(53 * 16)) = Sse2.Add(W5, K128((IntPtr)(53 * 4)));
+            W6 = Schedule(W6, W7, W15, W4, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
             i += 16;
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(54 * 16)) = Sse2.Add(W6, K128((IntPtr)(54 * 16)));
-            W7 = Schedule(W7, W8, W0, W5, i, ref schedule);
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(54 * 16)) = Sse2.Add(W6, K128((IntPtr)(54 * 4)));
+            W7 = Schedule(W7, W8, W0, W5, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
             i += 16;
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(55 * 16)) = Sse2.Add(W7, K128((IntPtr)(55 * 16)));
-            W8 = Schedule(W8, W9, W1, W6, i, ref schedule);
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(55 * 16)) = Sse2.Add(W7, K128((IntPtr)(55 * 4)));
+            W8 = Schedule(W8, W9, W1, W6, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
             i += 16;
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(56 * 16)) = Sse2.Add(W8, K128((IntPtr)(56 * 16)));
-            W9 = Schedule(W9, W10, W2, W7, i, ref schedule);
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(56 * 16)) = Sse2.Add(W8, K128((IntPtr)(56 * 4)));
+            W9 = Schedule(W9, W10, W2, W7, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
             i += 16;
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(57 * 16)) = Sse2.Add(W9, K128((IntPtr)(57 * 16)));
-            W10 = Schedule(W10, W11, W3, W8, i, ref schedule);
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(57 * 16)) = Sse2.Add(W9, K128((IntPtr)(57 * 4)));
+            W10 = Schedule(W10, W11, W3, W8, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
             i += 16;
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(58 * 16)) = Sse2.Add(W10, K128((IntPtr)(58 * 16)));
-            W11 = Schedule(W11, W12, W4, W9, i, ref schedule);
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(58 * 16)) = Sse2.Add(W10, K128((IntPtr)(58 * 4)));
+            W11 = Schedule(W11, W12, W4, W9, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
             i += 16;
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(59 * 16)) = Sse2.Add(W11, K128((IntPtr)(59 * 16)));
-            W12 = Schedule(W12, W13, W5, W10, i, ref schedule);
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(59 * 16)) = Sse2.Add(W11, K128((IntPtr)(59 * 4)));
+            W12 = Schedule(W12, W13, W5, W10, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
             i += 16;
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(60 * 16)) = Sse2.Add(W12, K128((IntPtr)(60 * 16)));
-            W13 = Schedule(W13, W14, W6, W11, i, ref schedule);
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(60 * 16)) = Sse2.Add(W12, K128((IntPtr)(60 * 4)));
+            W13 = Schedule(W13, W14, W6, W11, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
             i += 16;
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(61 * 16)) = Sse2.Add(W13, K128((IntPtr)(61 * 16)));
-            W14 = Schedule(W14, W15, W7, W12, i, ref schedule);
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(61 * 16)) = Sse2.Add(W13, K128((IntPtr)(61 * 4)));
+            W14 = Schedule(W14, W15, W7, W12, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
             i += 16;
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(62 * 16)) = Sse2.Add(W14, K128((IntPtr)(62 * 16)));
-            W15 = Schedule(W15, W0, W8, W13, i, ref schedule);
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(63 * 16)) = Sse2.Add(W15, K128((IntPtr)(63 * 16)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(62 * 16)) = Sse2.Add(W14, K128((IntPtr)(62 * 4)));
+            W15 = Schedule(W15, W0, W8, W13, Vector128.Create(k), i, ref schedule);
+            k = ref Unsafe.AddByteOffset(ref k, (IntPtr)4);
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(63 * 16)) = Sse2.Add(W15, K128((IntPtr)(63 * 4)));
         }
 
         private static unsafe void Transform(ref uint state, ref byte currentBlock, ref Vector128<uint> w)
@@ -415,6 +448,10 @@ namespace JsonWebToken
             d += h;
             h += BigSigma0(a) + Maj(a, b, c);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Vector128<uint> K128(IntPtr i)
+            => Vector128.Create(Unsafe.AddByteOffset(ref _k[0], i));
 #endif
 
         private static void Transform(ref uint state, ref byte currentBlock, ref uint w)
@@ -466,7 +503,7 @@ namespace JsonWebToken
             uint g = Unsafe.AddByteOffset(ref state, (IntPtr)24);
             uint h = Unsafe.AddByteOffset(ref state, (IntPtr)28);
             w0 = ref w;
-            ref uint k0 = ref k[0];
+            ref uint k0 = ref _k[0];
             do
             {
                 Round(a, b, c, ref d, e, f, g, ref h, w0, k0);
@@ -555,8 +592,7 @@ namespace JsonWebToken
             164, 149, 153, 27, 120, 82, 184, 85
         };
 
-
-        private static readonly uint[] k = {
+        private static readonly uint[] _k = {
             0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
             0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
             0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
@@ -566,77 +602,5 @@ namespace JsonWebToken
             0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
             0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
         };
-
-#if SUPPORT_SIMD
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<uint> K128(IntPtr i) => Unsafe.AddByteOffset(ref _k128[0], i);
-
-        private static readonly Vector128<uint>[] _k128 = {
-            Vector128.Create(0x428a2f98u),
-            Vector128.Create(0x71374491u),
-            Vector128.Create(0xb5c0fbcfu),
-            Vector128.Create(0xe9b5dba5u),
-            Vector128.Create(0x3956c25bu),
-            Vector128.Create(0x59f111f1u),
-            Vector128.Create(0x923f82a4u),
-            Vector128.Create(0xab1c5ed5u),
-            Vector128.Create(0xd807aa98u),
-            Vector128.Create(0x12835b01u),
-            Vector128.Create(0x243185beu),
-            Vector128.Create(0x550c7dc3u),
-            Vector128.Create(0x72be5d74u),
-            Vector128.Create(0x80deb1feu),
-            Vector128.Create(0x9bdc06a7u),
-            Vector128.Create(0xc19bf174u),
-            Vector128.Create(0xe49b69c1u),
-            Vector128.Create(0xefbe4786u),
-            Vector128.Create(0x0fc19dc6u),
-            Vector128.Create(0x240ca1ccu),
-            Vector128.Create(0x2de92c6fu),
-            Vector128.Create(0x4a7484aau),
-            Vector128.Create(0x5cb0a9dcu),
-            Vector128.Create(0x76f988dau),
-            Vector128.Create(0x983e5152u),
-            Vector128.Create(0xa831c66du),
-            Vector128.Create(0xb00327c8u),
-            Vector128.Create(0xbf597fc7u),
-            Vector128.Create(0xc6e00bf3u),
-            Vector128.Create(0xd5a79147u),
-            Vector128.Create(0x06ca6351u),
-            Vector128.Create(0x14292967u),
-            Vector128.Create(0x27b70a85u),
-            Vector128.Create(0x2e1b2138u),
-            Vector128.Create(0x4d2c6dfcu),
-            Vector128.Create(0x53380d13u),
-            Vector128.Create(0x650a7354u),
-            Vector128.Create(0x766a0abbu),
-            Vector128.Create(0x81c2c92eu),
-            Vector128.Create(0x92722c85u),
-            Vector128.Create(0xa2bfe8a1u),
-            Vector128.Create(0xa81a664bu),
-            Vector128.Create(0xc24b8b70u),
-            Vector128.Create(0xc76c51a3u),
-            Vector128.Create(0xd192e819u),
-            Vector128.Create(0xd6990624u),
-            Vector128.Create(0xf40e3585u),
-            Vector128.Create(0x106aa070u),
-            Vector128.Create(0x19a4c116u),
-            Vector128.Create(0x1e376c08u),
-            Vector128.Create(0x2748774cu),
-            Vector128.Create(0x34b0bcb5u),
-            Vector128.Create(0x391c0cb3u),
-            Vector128.Create(0x4ed8aa4au),
-            Vector128.Create(0x5b9cca4fu),
-            Vector128.Create(0x682e6ff3u),
-            Vector128.Create(0x748f82eeu),
-            Vector128.Create(0x78a5636fu),
-            Vector128.Create(0x84c87814u),
-            Vector128.Create(0x8cc70208u),
-            Vector128.Create(0x90befffau),
-            Vector128.Create(0xa4506cebu),
-            Vector128.Create(0xbef9a3f7u),
-            Vector128.Create(0xc67178f2u)
-        };
-#endif
     }
 }
