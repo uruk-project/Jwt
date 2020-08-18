@@ -93,28 +93,6 @@ namespace JsonWebToken
             _keyManagementAlgorithm = alg;
         }
 
-        ///// <summary>
-        ///// Initializes a new instance of the <see cref="Jwk"/> class.
-        ///// </summary>
-        ///// <param name="alg"></param>
-        //protected Jwk(byte[] alg)
-        //{
-        //    if (SignatureAlgorithm.TryParse()
-        //    {
-
-        //    }
-        //    Alg = alg;
-        //}
-
-        ///// <summary>
-        ///// Initializes a new instance of the <see cref="Jwk"/> class.
-        ///// </summary>
-        ///// <param name="alg"></param>
-        //protected Jwk(string alg)
-        //{
-        //    Alg = Utf8.GetBytes(alg);
-        //}
-
         /// <summary>
         /// Gets or sets the 'alg' (KeyType).
         /// </summary>
@@ -431,18 +409,18 @@ namespace JsonWebToken
         {
             if (jwk.TryGetValue(JwkParameterNames.KtyUtf8, out var property) && !(property.Value is null))
             {
-                ReadOnlySpan<byte> kty = Utf8.GetBytes((string)property.Value);
-                if (kty.SequenceEqual(JwkTypeNames.Octet))
+                var kty = (string)property.Value;
+                if (string.Equals(kty, "oct", StringComparison.Ordinal))
                 {
                     return new SymmetricJwk(jwk);
                 }
 #if SUPPORT_ELLIPTIC_CURVE
-                else if (kty.SequenceEqual(JwkTypeNames.EllipticCurve))
+                else if (string.Equals(kty, "EC", StringComparison.Ordinal))
                 {
                     return ECJwk.Populate(jwk);
                 }
 #endif
-                else if (kty.SequenceEqual(JwkTypeNames.Rsa))
+                else if (string.Equals(kty, "RSA", StringComparison.Ordinal))
                 {
                     return RsaJwk.Populate(jwk);
                 }
@@ -525,7 +503,7 @@ namespace JsonWebToken
                 }
                 else if (signers.TryGetValue(algorithm.Id, out signer))
                 {
-                    return true;
+                    goto Found;
                 }
 
                 if (SupportSignature(algorithm))
@@ -533,13 +511,13 @@ namespace JsonWebToken
                     signer = CreateSigner(algorithm);
                     if (signers.TryAdd(algorithm.Id, signer))
                     {
-                        return true;
+                        goto Found;
                     }
 
                     signer.Dispose();
                     if (signers.TryGetValue(algorithm.Id, out signer))
                     {
-                        return true;
+                        goto Found;
                     }
 
                     ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
@@ -548,6 +526,9 @@ namespace JsonWebToken
 
             signer = null;
             return false;
+
+        Found:
+            return true;
         }
 
         /// <summary>
@@ -571,7 +552,7 @@ namespace JsonWebToken
                 {
                     if (keyWrappers.TryGetValue(algorithmKey, out keyWrapper))
                     {
-                        return true;
+                        goto Found;
                     }
                 }
 
@@ -580,13 +561,13 @@ namespace JsonWebToken
                     keyWrapper = CreateKeyWrapper(encryptionAlgorithm, algorithm);
                     if (keyWrappers.TryAdd(algorithmKey, keyWrapper))
                     {
-                        return true;
+                        goto Found;
                     }
 
                     keyWrapper?.Dispose();
                     if (keyWrappers.TryGetValue(algorithmKey, out keyWrapper))
                     {
-                        return true;
+                        goto Found;
                     }
 
                     ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
@@ -595,6 +576,9 @@ namespace JsonWebToken
 
             keyWrapper = null;
             return false;
+
+        Found:
+            return true;
         }
 
         /// <summary>
@@ -618,7 +602,7 @@ namespace JsonWebToken
                 {
                     if (keyUnwrappers.TryGetValue(algorithmKey, out keyUnwrapper))
                     {
-                        return true;
+                        goto Found;
                     }
                 }
 
@@ -627,13 +611,13 @@ namespace JsonWebToken
                     keyUnwrapper = CreateKeyUnwrapper(encryptionAlgorithm, algorithm);
                     if (keyUnwrappers.TryAdd(algorithmKey, keyUnwrapper))
                     {
-                        return true;
+                        goto Found;
                     }
 
                     keyUnwrapper?.Dispose();
                     if (keyUnwrappers.TryGetValue(algorithmKey, out keyUnwrapper))
                     {
-                        return true;
+                        goto Found;
                     }
 
                     ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
@@ -642,6 +626,9 @@ namespace JsonWebToken
 
             keyUnwrapper = null;
             return false;
+
+        Found:
+            return true;
         }
 
         /// <summary>
@@ -790,7 +777,7 @@ namespace JsonWebToken
                 }
 
                 ThrowHelper.ThrowArgumentException_MalformedKey();
-                return Jwk.Empty;
+                return Empty;
             }
             finally
             {

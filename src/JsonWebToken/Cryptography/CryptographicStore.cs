@@ -31,8 +31,7 @@ namespace JsonWebToken.Internal
         /// <returns></returns>
         public bool TryAdd(int key, TValue value)
         {
-            _map = _map.TryAdd(key, value, out bool success);
-            return success;
+            return _map.TryAdd(key, value, out _map);
         }
 
         /// <summary>
@@ -49,35 +48,35 @@ namespace JsonWebToken.Internal
             _map.Dispose();
         }
 
-        private abstract partial class Map<TMapValue> : IDisposable where TMapValue : class, IDisposable
+        private interface Map<TMapValue> : IDisposable where TMapValue : class, IDisposable
         {
             public static Map<TMapValue> Empty { get; } = new EmptyMap();
 
-            public abstract int Count { get; }
+            public int Count { get; }
 
-            public abstract Map<TMapValue> TryAdd(int key, TMapValue value, out bool success);
+            public bool TryAdd(int key, TMapValue value, out Map<TMapValue> map);
 
-            public abstract bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value);
-
-            public abstract void Dispose();
+            public bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value);
 
             // Instance without any key/value pairs. Used as a singleton.
             private sealed class EmptyMap : Map<TMapValue>
             {
-                public override int Count => 0;
+                public static readonly EmptyMap Empty = new EmptyMap();
 
-                public override void Dispose()
+                public int Count => 0;
+
+                public void Dispose()
                 {
                 }
 
-                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                public bool TryAdd(int key, TMapValue value, out Map<TMapValue> map)
                 {
                     // Create a new one-element map to store the key/value pair
-                    success = true;
-                    return new OneElementMap(key, value);
+                    map = new OneElementMap(key, value);
+                    return true;
                 }
 
-                public override bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
+                public bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
                 {
                     // Nothing here
                     value = null;
@@ -96,28 +95,28 @@ namespace JsonWebToken.Internal
                     _value1 = value;
                 }
 
-                public override int Count => 1;
+                public int Count => 1;
 
-                public override void Dispose()
+                public void Dispose()
                 {
                     _value1.Dispose();
                 }
 
-                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                public bool TryAdd(int key, TMapValue value, out Map<TMapValue> map)
                 {
                     if (key == _key1)
                     {
-                        success = false;
-                        return this;
+                        map = this;
+                        return false;
                     }
                     else
                     {
-                        success = true;
-                        return new TwoElementMap(_key1, _value1, key, value);
+                        map = new TwoElementMap(_key1, _value1, key, value);
+                        return true;
                     }
                 }
 
-                public override bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
+                public bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
                 {
                     if (key == _key1)
                     {
@@ -147,50 +146,48 @@ namespace JsonWebToken.Internal
                     _value2 = value2;
                 }
 
-                public override int Count => 2;
+                public int Count => 2;
 
-                public override void Dispose()
+                public void Dispose()
                 {
                     _value1.Dispose();
                     _value2.Dispose();
                 }
 
-                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                public bool TryAdd(int key, TMapValue value, out Map<TMapValue> map)
                 {
-                    if (key == _key1)
+                    if (key == _key1 || key == _key2)
                     {
-                        success = false;
-                        return this;
-                    }
-                    else if (key == _key2)
-                    {
-                        success = false;
-                        return this;
+                        map = this;
+                        return true;
                     }
                     else
                     {
-                        success = true;
-                        return new ThreeElementMap(_key1, _value1, _key2, _value2, key, value);
+                        map = new ThreeElementMap(_key1, _value1, _key2, _value2, key, value);
+                        return true;
                     }
                 }
 
-                public override bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
+                public bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
                 {
                     if (key == _key1)
                     {
                         value = _value1;
-                        return true;
+                        goto Found;
                     }
                     if (key == _key2)
                     {
                         value = _value2;
-                        return true;
+                        goto Found;
                     }
                     else
                     {
                         value = null;
                         return false;
                     }
+
+                Found:
+                    return true;
                 }
             }
 
@@ -213,66 +210,59 @@ namespace JsonWebToken.Internal
                     _value3 = value3;
                 }
 
-                public override int Count => 3;
+                public int Count => 3;
 
-                public override void Dispose()
+                public void Dispose()
                 {
                     _value1.Dispose();
                     _value2.Dispose();
                     _value3.Dispose();
                 }
 
-                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                public bool TryAdd(int key, TMapValue value, out Map<TMapValue> map)
                 {
-                    if (key == _key1)
+                    if (key == _key1 || key == _key2 || key == _key3)
                     {
-                        success = false;
-                        return this;
-                    }
-                    else if (key == _key2)
-                    {
-                        success = false;
-                        return this;
-                    }
-                    else if (key == _key3)
-                    {
-                        success = false;
-                        return this;
+                        map = this;
+                        return false;
                     }
                     else
                     {
-                        success = true;
                         var multi = new MultiElementMap(4);
                         multi.UnsafeStore(0, _key1, _value1);
                         multi.UnsafeStore(1, _key2, _value2);
                         multi.UnsafeStore(2, _key3, _value3);
                         multi.UnsafeStore(3, key, value);
-                        return multi;
+                        map = multi;
+                        return true;
                     }
                 }
 
-                public override bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
+                public bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
                 {
                     if (key == _key1)
                     {
                         value = _value1;
-                        return true;
+                        goto Found;
                     }
                     if (key == _key2)
                     {
                         value = _value2;
-                        return true;
+                        goto Found;
                     }
                     else if (key == _key3)
                     {
                         value = _value3;
-                        return true;
+                        goto Found;
                     }
                     else
                     {
                         value = null;
                         return false;
                     }
+
+                Found:
+                    return true;
                 }
             }
 
@@ -281,7 +271,7 @@ namespace JsonWebToken.Internal
                 private const int MaxMultiElements = 16;
                 private readonly KeyValuePair<int, TMapValue>[] _keyValues;
 
-                public override int Count => _keyValues.Length;
+                public int Count => _keyValues.Length;
 
                 public MultiElementMap(int count)
                 {
@@ -295,15 +285,15 @@ namespace JsonWebToken.Internal
                     _keyValues[index] = new KeyValuePair<int, TMapValue>(key, value);
                 }
 
-                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                public bool TryAdd(int key, TMapValue value, out Map<TMapValue> map)
                 {
                     for (int i = 0; i < _keyValues.Length; i++)
                     {
                         if (key == _keyValues[i].Key)
                         {
                             // The key is in the map. 
-                            success = false;
-                            return this;
+                            map = this;
+                            return false;
                         }
                     }
 
@@ -315,8 +305,8 @@ namespace JsonWebToken.Internal
                         var multi = new MultiElementMap(_keyValues.Length + 1);
                         Array.Copy(_keyValues, 0, multi._keyValues, 0, _keyValues.Length);
                         multi._keyValues[_keyValues.Length] = new KeyValuePair<int, TMapValue>(key, value);
-                        success = true;
-                        return multi;
+                        map = multi;
+                        return true;
                     }
 
                     // Otherwise, upgrade to a many map.
@@ -327,11 +317,11 @@ namespace JsonWebToken.Internal
                     }
 
                     many[key] = value;
-                    success = true;
-                    return many;
+                    map = many;
+                    return true;
                 }
 
-                public override bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
+                public bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
                 {
                     foreach (KeyValuePair<int, TMapValue> pair in _keyValues)
                     {
@@ -346,7 +336,7 @@ namespace JsonWebToken.Internal
                     return false;
                 }
 
-                public override void Dispose()
+                public void Dispose()
                 {
                     foreach (KeyValuePair<int, TMapValue> pair in _keyValues)
                     {
@@ -359,38 +349,37 @@ namespace JsonWebToken.Internal
             {
                 private readonly Dictionary<int, TMapValue> _dictionary;
 
-                public override int Count => _dictionary.Count;
+                public int Count => _dictionary.Count;
 
                 public ManyElementMap(int capacity)
                 {
                     _dictionary = new Dictionary<int, TMapValue>(capacity);
                 }
 
-                public override Map<TMapValue> TryAdd(int key, TMapValue value, out bool success)
+                public bool TryAdd(int key, TMapValue value, out Map<TMapValue> map)
                 {
+                    map = this;
 #if NETCOREAPP
-                    success = _dictionary.TryAdd(key, value);
+                    return _dictionary.TryAdd(key, value);
 #else
                     if (_dictionary.ContainsKey(key))
                     {
-                        success = false;
+                        return false;
                     }
                     else
                     {
                         _dictionary[key] = value;
-                        success = true;
+                        return true;
                     }
 #endif
-
-                    return this;
                 }
 
-                public override bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
+                public bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
                 {
                     return _dictionary.TryGetValue(key, out value);
                 }
 
-                public override void Dispose()
+                public void Dispose()
                 {
                     foreach (var value in _dictionary.Values)
                     {
