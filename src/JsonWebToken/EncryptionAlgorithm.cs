@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -24,39 +25,34 @@ namespace JsonWebToken
         private const ulong A256GCM = 21747546337915457u;
 
         /// <summary>
-        /// Empty
-        /// </summary>
-        internal static readonly EncryptionAlgorithm Empty = new EncryptionAlgorithm(id: 0, "Empty", requiredKeySizeInBytes: 0, SignatureAlgorithm.None, requiredKeyWrappedSizeInBytes: 0, EncryptionType.Undefined);
-
-        /// <summary>
         /// 'A128CBC-HS256'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: 14, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesHmac);
+        public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: Algorithms.AesCbc128HS256, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesHmac);
 
         /// <summary>
         /// 'A192CBC-HS384'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes192CbcHmacSha384 = new EncryptionAlgorithm(id: 16 /* Undefined in CWT */, "A192CBC-HS384", requiredKeySizeInBytes: 48, SignatureAlgorithm.HmacSha384, requiredKeyWrappedSizeInBytes: 56, EncryptionType.AesHmac);
+        public static readonly EncryptionAlgorithm Aes192CbcHmacSha384 = new EncryptionAlgorithm(id: Algorithms.AesCbc192HS384 /* Undefined in CWT */, "A192CBC-HS384", requiredKeySizeInBytes: 48, SignatureAlgorithm.HmacSha384, requiredKeyWrappedSizeInBytes: 56, EncryptionType.AesHmac);
 
         /// <summary>
         /// 'A256CBC-HS512'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(id: 15, "A256CBC-HS512", requiredKeySizeInBytes: 64, SignatureAlgorithm.HmacSha512, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesHmac);
+        public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(id: Algorithms.AesCbc256HS512, "A256CBC-HS512", requiredKeySizeInBytes: 64, SignatureAlgorithm.HmacSha512, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesHmac);
 
         /// <summary>
         /// 'A128GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 1, "A128GCM", requiredKeySizeInBytes: 16, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 24, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 1, "A128GCM", requiredKeySizeInBytes: 16, signatureAlgorithm: SignatureAlgorithm.None, requiredKeyWrappedSizeInBytes: 24, EncryptionType.AesGcm);
 
         /// <summary>
         /// 'A192GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 2, "A192GCM", requiredKeySizeInBytes: 24, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 32, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 2, "A192GCM", requiredKeySizeInBytes: 24, signatureAlgorithm: SignatureAlgorithm.None, requiredKeyWrappedSizeInBytes: 32, EncryptionType.AesGcm);
 
         /// <summary>
         /// 'A256GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 3, "A256GCM", requiredKeySizeInBytes: 32, hashAlgorithm: null, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 3, "A256GCM", requiredKeySizeInBytes: 32, signatureAlgorithm: SignatureAlgorithm.None, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
 
         private static readonly EncryptionAlgorithm[] _algorithms = new[]
         {
@@ -72,7 +68,9 @@ namespace JsonWebToken
         private readonly EncryptionType _category;
         private readonly ushort _requiredKeySizeInBytes;
         private readonly ushort _keyWrappedSizeInBytes;
-        private readonly SignatureAlgorithm? _signatureAlgorithm;
+        private readonly SignatureAlgorithm _signatureAlgorithm;
+        private readonly AuthenticatedEncryptor _encryptor;
+        private readonly AuthenticatedDecryptor _decryptor;
         private readonly byte[] _utf8Name;
 
         /// <summary>
@@ -103,7 +101,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the <see cref="SignatureAlgorithm"/>.
         /// </summary>
-        public SignatureAlgorithm? SignatureAlgorithm => _signatureAlgorithm;
+        public SignatureAlgorithm SignatureAlgorithm => _signatureAlgorithm;
 
         /// <summary>
         /// Gets the name of the encryption algorithm.
@@ -116,22 +114,34 @@ namespace JsonWebToken
         public ReadOnlySpan<byte> Utf8Name => _utf8Name;
 
         /// <summary>
+        /// Gets the <see cref="AuthenticatedEncryptor"/>.
+        /// </summary>
+        public AuthenticatedEncryptor Encryptor => _encryptor;
+
+        /// <summary>
+        /// Gets the <see cref="AuthenticatedDecryptor"/>.
+        /// </summary>
+        public AuthenticatedDecryptor Decryptor => _decryptor;
+
+        /// <summary>
         /// Initializes a new instance of <see cref="EncryptionAlgorithm"/>. 
         /// </summary>
         /// <param name="id"></param>
         /// <param name="name"></param>
         /// <param name="requiredKeySizeInBytes"></param>
-        /// <param name="hashAlgorithm"></param>
+        /// <param name="signatureAlgorithm"></param>
         /// <param name="requiredKeyWrappedSizeInBytes"></param>
         /// <param name="category"></param>
-        public EncryptionAlgorithm(sbyte id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm? hashAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionType category)
+        public EncryptionAlgorithm(sbyte id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm signatureAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionType category)
         {
             _id = id;
             _utf8Name = Utf8.GetBytes(name);
             _requiredKeySizeInBytes = requiredKeySizeInBytes;
-            _signatureAlgorithm = hashAlgorithm;
+            _signatureAlgorithm = signatureAlgorithm;
             _keyWrappedSizeInBytes = requiredKeyWrappedSizeInBytes;
             _category = category;
+            _encryptor = CreateAuthenticatedEncryptor(this);
+            _decryptor = CreateAuthenticatedDecryptor(this);
         }
 
         /// <summary>
@@ -168,13 +178,13 @@ namespace JsonWebToken
                 {
                     case A128CBC_ when IntegerMarshal.ReadUInt64(value, 5) == BC_HS256:
                         algorithm = Aes128CbcHmacSha256;
-                        return true;
+                        goto Found;
                     case A192CBC_ when IntegerMarshal.ReadUInt64(value, 5) == BC_HS384:
                         algorithm = Aes192CbcHmacSha384;
-                        return true;
+                        goto Found;
                     case A256CBC_ when IntegerMarshal.ReadUInt64(value, 5) == BC_HS512:
                         algorithm = Aes256CbcHmacSha512;
-                        return true;
+                        goto Found;
                 }
             }
             else if (value.Length == 7)
@@ -183,18 +193,20 @@ namespace JsonWebToken
                 {
                     case A128GCM:
                         algorithm = Aes128Gcm;
-                        return true;
+                        goto Found;
                     case A192GCM:
                         algorithm = Aes192Gcm;
-                        return true;
+                        goto Found;
                     case A256GCM:
                         algorithm = Aes256Gcm;
-                        return true;
+                        goto Found;
                 }
             }
 
             algorithm = null;
             return false;
+        Found:
+            return true;
         }
 
         /// <summary>
@@ -351,10 +363,111 @@ namespace JsonWebToken
         /// <returns></returns>
         public int ComputeKey(KeyManagementAlgorithm algorithm)
         {
-            return (_id << 8) | (byte)algorithm.Id;
+            return (_id << 8) | algorithm.Id;
         }
 
         internal static EncryptionAlgorithm Create(string name)
-            => new EncryptionAlgorithm(127, name, 0, null, 0, EncryptionType.Undefined);
+            => new EncryptionAlgorithm(127, name, 0, SignatureAlgorithm.None, 0, EncryptionType.NotSupported);
+
+        internal static AuthenticatedDecryptor CreateAuthenticatedDecryptor(EncryptionAlgorithm encryptionAlgorithm)
+        {
+            if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
+            {
+#if SUPPORT_SIMD
+                if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
+                {
+                    if (encryptionAlgorithm.Id == Algorithms.AesCbc128HS256)
+                    {
+                        return new AesCbcHmacDecryptor(encryptionAlgorithm, new Aes128CbcDecryptor());
+                    }
+                    else if (encryptionAlgorithm.Id == Algorithms.AesCbc256HS512)
+                    {
+                        return new AesCbcHmacDecryptor(encryptionAlgorithm, new Aes256CbcDecryptor());
+                    }
+                    else if (encryptionAlgorithm.Id == Algorithms.AesCbc192HS384)
+                    {
+                        return new AesCbcHmacDecryptor(encryptionAlgorithm, new Aes192CbcDecryptor());
+                    }
+                }
+                else
+                {
+                    return new AesCbcHmacDecryptor(encryptionAlgorithm);
+                }
+#else
+                return new AesCbcHmacDecryptor(encryptionAlgorithm);
+#endif
+            }
+#if SUPPORT_AESGCM
+            else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
+            {
+                return new AesGcmDecryptor(encryptionAlgorithm);
+            }
+#endif
+            return new NullAesDecryptor();
+
+        }
+        internal static AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
+        {
+            if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
+            {
+#if SUPPORT_SIMD
+                if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
+                {
+                    switch (encryptionAlgorithm.Id)
+                    {
+                        case Algorithms.AesCbc128HS256:
+                            return new AesCbcHmacEncryptor(encryptionAlgorithm, new Aes128CbcEncryptor());
+                        case Algorithms.AesCbc256HS512:
+                            return new AesCbcHmacEncryptor(encryptionAlgorithm, new Aes256CbcEncryptor());
+                        case Algorithms.AesCbc192HS384:
+                            return new AesCbcHmacEncryptor(encryptionAlgorithm, new Aes192CbcEncryptor());
+                    }
+                }
+                else
+                {
+                    return new AesCbcHmacEncryptor(encryptionAlgorithm, new AesCbcEncryptor(encryptionAlgorithm));
+                }
+#else
+                return new AesCbcHmacEncryptor(encryptionAlgorithm);
+#endif
+            }
+#if SUPPORT_AESGCM
+            else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
+            {
+                return new AesGcmEncryptor(encryptionAlgorithm);
+            }
+#endif
+
+            return new NullAesEncryptor();
+        }
+
+        private sealed class NullAesEncryptor : AuthenticatedEncryptor
+        {
+            public override void Encrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag, out int authenticationTagBytesWritten)
+            {
+                authenticationTagBytesWritten = 0;
+            }
+
+            public override int GetBase64NonceSize()
+                => 0;
+
+            public override int GetCiphertextSize(int plaintextSize)
+                => 0;
+
+            public override int GetNonceSize()
+                => 0;
+
+            public override int GetTagSize()
+                => 0;
+        }
+
+        private sealed class NullAesDecryptor : AuthenticatedDecryptor
+        {
+            public override bool TryDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
+            {
+                bytesWritten = 0;
+                return true;
+            }
+        }
     }
 }

@@ -47,84 +47,84 @@ namespace JsonWebToken
         /// <summary>
         /// 'dir'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: 1, "dir", AlgorithmCategory.None, produceEncryptedKey: false);
+        public static readonly KeyManagementAlgorithm Direct = new KeyManagementAlgorithm(id: Algorithms.Direct, "dir", AlgorithmCategory.Direct, produceEncryptedKey: false);
 
         /// <summary>
         /// 'A128KW'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Aes128KW = new KeyManagementAlgorithm(id: 11, "A128KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 128);
+        public static readonly KeyManagementAlgorithm Aes128KW = new KeyManagementAlgorithm(id: Algorithms.Aes128KW, "A128KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 128);
 
         /// <summary>
         /// 'A192KW'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Aes192KW = new KeyManagementAlgorithm(id: 12, "A192KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 192);
+        public static readonly KeyManagementAlgorithm Aes192KW = new KeyManagementAlgorithm(id: Algorithms.Aes192KW, "A192KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 192);
 
         /// <summary>
         /// 'A256KW'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Aes256KW = new KeyManagementAlgorithm(id: 13, "A256KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 256);
+        public static readonly KeyManagementAlgorithm Aes256KW = new KeyManagementAlgorithm(id: Algorithms.Aes256KW, "A256KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 256);
 
         /// <summary>
         /// 'A128GCMKW'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Aes128GcmKW = new KeyManagementAlgorithm(id: 21, "A128GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 128);
+        public static readonly KeyManagementAlgorithm Aes128GcmKW = new KeyManagementAlgorithm(id: Algorithms.Aes128GcmKW, "A128GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 128);
 
         /// <summary>
         /// 'A192GCMKW'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Aes192GcmKW = new KeyManagementAlgorithm(id: 22, "A192GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 192);
+        public static readonly KeyManagementAlgorithm Aes192GcmKW = new KeyManagementAlgorithm(id: Algorithms.Aes192GcmKW, "A192GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 192);
 
         /// <summary>
         /// 'A256GCMKW'
         /// </summary>
-        public static readonly KeyManagementAlgorithm Aes256GcmKW = new KeyManagementAlgorithm(id: 23, "A256GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 256);
+        public static readonly KeyManagementAlgorithm Aes256GcmKW = new KeyManagementAlgorithm(id: Algorithms.Aes256GcmKW, "A256GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 256);
 
         /// <summary>
         /// 'RSA1_5'
         /// </summary>
-        public static readonly KeyManagementAlgorithm RsaPkcs1 = new KeyManagementAlgorithm(id: 31, "RSA1_5", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
+        public static readonly KeyManagementAlgorithm RsaPkcs1 = new KeyManagementAlgorithm(id: Algorithms.RsaPkcs1, "RSA1_5", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
 
         /// <summary>
         /// 'RSA-OAEP'
         /// </summary>
-        public static readonly KeyManagementAlgorithm RsaOaep = new KeyManagementAlgorithm(id: 32, "RSA-OAEP", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
+        public static readonly KeyManagementAlgorithm RsaOaep = new KeyManagementAlgorithm(id: Algorithms.RsaOaep, "RSA-OAEP", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
 
         /// <summary>
         /// 'RSA-OAEP-128'
         /// </summary>
-        public static readonly KeyManagementAlgorithm RsaOaep256 = new KeyManagementAlgorithm(id: 33, "RSA-OAEP-256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
+        public static readonly KeyManagementAlgorithm RsaOaep256 = new KeyManagementAlgorithm(id: Algorithms.RsaOaep256, "RSA-OAEP-256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
 
         /// <summary>
         /// 'RSA-OAEP-192'
         /// </summary>
-        public static readonly KeyManagementAlgorithm RsaOaep384 = new KeyManagementAlgorithm(id: 34, "RSA-OAEP-384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
+        public static readonly KeyManagementAlgorithm RsaOaep384 = new KeyManagementAlgorithm(id: Algorithms.RsaOaep384, "RSA-OAEP-384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
 
         /// <summary>
         /// 'RSA-OAEP-256'
         /// </summary>
-        public static readonly KeyManagementAlgorithm RsaOaep512 = new KeyManagementAlgorithm(id: 35, "RSA-OAEP-512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
+        public static readonly KeyManagementAlgorithm RsaOaep512 = new KeyManagementAlgorithm(id: Algorithms.RsaOaep512, "RSA-OAEP-512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
 
         /// <summary>
         /// 'ECDH-ES'
         /// </summary>
-        public static readonly KeyManagementAlgorithm EcdhEs = new KeyManagementAlgorithm(id: 41, "ECDH-ES", AlgorithmCategory.EllipticCurve, produceEncryptedKey: false);
+        public static readonly KeyManagementAlgorithm EcdhEs = new KeyManagementAlgorithm(id: Algorithms.EcdhEs, "ECDH-ES", AlgorithmCategory.EllipticCurve | AlgorithmCategory.Direct, produceEncryptedKey: false);
 
         /// <summary>
         /// 'ECDH-ES+A128KW'
         /// </summary>
-        public static readonly KeyManagementAlgorithm EcdhEsAes128KW = new KeyManagementAlgorithm(id: 51, "ECDH-ES+A128KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes128KW);
+        public static readonly KeyManagementAlgorithm EcdhEsAes128KW = new KeyManagementAlgorithm(id: Algorithms.EcdhEsAes128KW, "ECDH-ES+A128KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes128KW);
 
         /// <summary>
         /// 'ECDH-ES+A192KW'
         /// </summary>
-        public static readonly KeyManagementAlgorithm EcdhEsAes192KW = new KeyManagementAlgorithm(id: 52, "ECDH-ES+A192KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes192KW);
+        public static readonly KeyManagementAlgorithm EcdhEsAes192KW = new KeyManagementAlgorithm(id: Algorithms.EcdhEsAes192KW, "ECDH-ES+A192KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes192KW);
 
         /// <summary>
         /// 'ECDH-ES+A256KW'
         /// </summary>
-        public static readonly KeyManagementAlgorithm EcdhEsAes256KW = new KeyManagementAlgorithm(id: 53, "ECDH-ES+A256KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes256KW);
+        public static readonly KeyManagementAlgorithm EcdhEsAes256KW = new KeyManagementAlgorithm(id: Algorithms.EcdhEsAes256KW, "ECDH-ES+A256KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes256KW);
 
-        private readonly byte _id;
+        private readonly int _id;
         private readonly ushort _requiredKeySizeInBits;
         private readonly AlgorithmCategory _category;
         private readonly KeyManagementAlgorithm? _wrappedAlgorithm;
@@ -134,7 +134,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the algorithm identifier. 
         /// </summary>
-        public byte Id => _id;
+        public int Id => _id;
 
         /// <summary>
         /// Gets the required key size, in bits.
@@ -192,7 +192,7 @@ namespace JsonWebToken
         /// <param name="id"></param>
         /// <param name="name"></param>
         /// <param name="keyType"></param>
-        public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType)
+        public KeyManagementAlgorithm(int id, string name, AlgorithmCategory keyType)
             : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm: null, produceEncryptedKey: true)
         {
         }
@@ -204,7 +204,7 @@ namespace JsonWebToken
         /// <param name="name"></param>
         /// <param name="keyType"></param>
         /// <param name="wrappedAlgorithm"></param>
-        public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType, KeyManagementAlgorithm? wrappedAlgorithm)
+        public KeyManagementAlgorithm(int id, string name, AlgorithmCategory keyType, KeyManagementAlgorithm? wrappedAlgorithm)
                 : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm, produceEncryptedKey: true)
         {
         }
@@ -216,7 +216,7 @@ namespace JsonWebToken
         /// <param name="name"></param>
         /// <param name="keyType"></param>
         /// <param name="requiredKeySizeInBits"></param>
-        public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits)
+        public KeyManagementAlgorithm(int id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits)
             : this(id, name, keyType, requiredKeySizeInBits, wrappedAlgorithm: null, produceEncryptedKey: true)
         {
         }
@@ -228,7 +228,7 @@ namespace JsonWebToken
         /// <param name="name"></param>
         /// <param name="keyType"></param>
         /// <param name="produceEncryptedKey"></param>
-        public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType, bool produceEncryptedKey)
+        public KeyManagementAlgorithm(int id, string name, AlgorithmCategory keyType, bool produceEncryptedKey)
             : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm: null, produceEncryptedKey)
         {
         }
@@ -242,7 +242,7 @@ namespace JsonWebToken
         /// <param name="requiredKeySizeInBits"></param>
         /// <param name="wrappedAlgorithm"></param>
         /// <param name="produceEncryptedKey"></param>
-        public KeyManagementAlgorithm(byte id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, KeyManagementAlgorithm? wrappedAlgorithm, bool produceEncryptedKey)
+        public KeyManagementAlgorithm(int id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, KeyManagementAlgorithm? wrappedAlgorithm, bool produceEncryptedKey)
         {
             _id = id;
             _utf8Name = Utf8.GetBytes(name);
@@ -429,42 +429,42 @@ namespace JsonWebToken
             {
                 case 3 when IntegerMarshal.ReadUInt24(value) == dir:
                     algorithm = Direct;
-                    return true;
+                    goto Found;
                 case 6 when IntegerMarshal.ReadUInt16(value, 4) == KW:
                     switch (IntegerMarshal.ReadUInt32(value))
                     {
                         case A128:
                             algorithm = Aes128KW;
-                            return true;
+                            goto Found;
                         case A192:
                             algorithm = Aes192KW;
-                            return true;
+                            goto Found;
                         case A256:
                             algorithm = Aes256KW;
-                            return true;
+                            goto Found;
                     }
                     break;
                 case 6 when IntegerMarshal.ReadUInt32(value) == RSA1 && IntegerMarshal.ReadUInt16(value, 4) == _5:
                     algorithm = RsaPkcs1;
-                    return true;
+                    goto Found;
                 case 7 when IntegerMarshal.ReadUInt56(value) == ECDH_ES:
                     algorithm = EcdhEs;
-                    return true;
+                    goto Found;
                 case 8 when IntegerMarshal.ReadUInt64(value) == RSA_OAEP:
                     algorithm = RsaOaep;
-                    return true;
+                    goto Found;
                 case 9 when IntegerMarshal.ReadUInt8(value) == (byte)'A':
                     switch (IntegerMarshal.ReadUInt64(value, 1))
                     {
                         case _128GCMKW:
                             algorithm = Aes128GcmKW;
-                            return true;
+                            goto Found;
                         case _192GCMKW:
                             algorithm = Aes192GcmKW;
-                            return true;
+                            goto Found;
                         case _256GCMKW:
                             algorithm = Aes256GcmKW;
-                            return true;
+                            goto Found;
                     }
                     break;
                 case 12 when IntegerMarshal.ReadUInt64(value) == RSA_OAEP:
@@ -472,13 +472,13 @@ namespace JsonWebToken
                     {
                         case _256:
                             algorithm = RsaOaep256;
-                            return true;
+                            goto Found;
                         case _384:
                             algorithm = RsaOaep384;
-                            return true;
+                            goto Found;
                         case _512:
                             algorithm = RsaOaep512;
-                            return true;
+                            goto Found;
                     }
                     break;
                 case 14 when IntegerMarshal.ReadUInt64(value) == ECDH_ES_:
@@ -486,13 +486,13 @@ namespace JsonWebToken
                     {
                         case S_A128KW:
                             algorithm = EcdhEsAes128KW;
-                            return true;
+                            goto Found;
                         case S_A192KW:
                             algorithm = EcdhEsAes192KW;
-                            return true;
+                            goto Found;
                         case S_A256KW:
                             algorithm = EcdhEsAes256KW;
-                            return true;
+                            goto Found;
                     }
                     break;
 
@@ -502,20 +502,21 @@ namespace JsonWebToken
                     {
                         case u002bA12 when IntegerMarshal.ReadUInt32(value, 15) == _28KW:
                             algorithm = EcdhEsAes128KW;
-                            return true;
+                            goto Found;
                         case u002bA19 when IntegerMarshal.ReadUInt32(value, 15) == _92KW:
                             algorithm = EcdhEsAes192KW;
-                            return true;
+                            goto Found;
                         case u002bA25 when IntegerMarshal.ReadUInt32(value, 15) == _56KW:
                             algorithm = EcdhEsAes256KW;
-                            return true;
+                            goto Found;
                     }
                     break;
-
             }
 
             algorithm = null;
             return false;
+        Found:
+            return true;
         }
 
         /// <summary>

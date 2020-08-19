@@ -40,56 +40,48 @@ namespace JsonWebToken.Internal
         /// <inheritsdoc />
         public override int GetKeyWrapSize()
         {
+            int size;
             var alg = Algorithm;
             if (alg.ProduceEncryptionKey)
             {
                 var wrappedAlgorithm = alg.WrappedAlgorithm;
-                if (!(wrappedAlgorithm is null))
-                {
-                    if (wrappedAlgorithm.Category == AlgorithmCategory.Aes)
-                    {
-                        return AesKeyWrapper.GetKeyWrappedSize(EncryptionAlgorithm);
-                    }
-#if SUPPORT_AES_GCM
-                    else if (wrappedAlgorithm.Category == AlgorithmCategory.AesGcm)
-                    {
-                        //return AesGcmKeyWrapper.GetKeyWrapSize(Key);
-                        return AesGcmKeyWrapper.GetKeyWrapSize(EncryptionAlgorithm);
-                    }
-#endif
-                    else
-                    {
-                        ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(EncryptionAlgorithm);
-                        return 0;
-                    }
-                }
-                else
+                if (wrappedAlgorithm is null)
                 {
                     ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(EncryptionAlgorithm);
-                    return 0;
                 }
+
+                size = wrappedAlgorithm.Category switch
+                {
+                    AlgorithmCategory.Aes => AesKeyWrapper.GetKeyWrappedSize(EncryptionAlgorithm),
+#if SUPPORT_AES_GCM
+                    AlgorithmCategory.AesGcm => AesGcmKeyWrapper.GetKeyWrapSize(EncryptionAlgorithm),
+#endif
+                    _ => throw ThrowHelper.CreateNotSupportedException_EncryptionAlgorithm(EncryptionAlgorithm)
+                };
             }
             else
             {
                 if (alg == KeyManagementAlgorithm.EcdhEs)
                 {
-                    return _keySizeInBytes;
+                    size = _keySizeInBytes;
                 }
                 else
                 {
 #if SUPPORT_AES_GCM
                     if (EncryptionAlgorithm.Category == EncryptionType.AesGcm)
                     {
-                        return _keySizeInBytes + 8;
+                        size = _keySizeInBytes + 8;
                     }
 #endif
-                    return EncryptionAlgorithm.KeyWrappedSizeInBytes;
+                    size = EncryptionAlgorithm.KeyWrappedSizeInBytes;
                 }
             }
+
+            return size;
         }
 
         /// <inheritsdoc />
-        public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
         {
             if (header is null)
             {
@@ -115,7 +107,7 @@ namespace JsonWebToken.Internal
             }
 
             SymmetricJwk? kek = null;
-            Jwk? contentEncryptionKey;
+            SymmetricJwk? contentEncryptionKey;
             try
             {
                 kek = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
@@ -128,7 +120,7 @@ namespace JsonWebToken.Internal
                     else
                     {
                         ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(Algorithm.WrappedAlgorithm);
-                        return Jwk.Empty;
+                        return SymmetricJwk.Empty;
                     }
                 }
                 else

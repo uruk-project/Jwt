@@ -12,19 +12,20 @@ namespace JsonWebToken.Performance
     {
         private readonly static AesCbcEncryptor _encryptor;
 #if NETCOREAPP3_0
-        private readonly static Aes128NiCbcEncryptor _encryptorNi;
+        private readonly static Aes128CbcEncryptor _encryptorNi;
 #endif
         private readonly static byte[] ciphertext;
         private readonly static byte[] nonce;
+        private readonly static byte[] key;
 
         static AesEncryptorBenchmark()
         {
             ciphertext = new byte[(2048 * 16 + 16) & ~15];
-            var key = SymmetricJwk.GenerateKey(128);
+            key = SymmetricJwk.GenerateKey(128).AsSpan().ToArray();
             nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
-            _encryptor = new AesCbcEncryptor(key.K, EncryptionAlgorithm.Aes128CbcHmacSha256);
+            _encryptor = new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
 #if NETCOREAPP3_0
-            _encryptorNi = new Aes128NiCbcEncryptor(key.K);
+            _encryptorNi = new Aes128CbcEncryptor();
 #endif  
         }
 
@@ -32,7 +33,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetData))]
         public void Encrypt(Item data)
         {
-            _encryptor.Encrypt(data.Plaintext, nonce, ciphertext);
+            _encryptor.Encrypt(key, data.Plaintext, nonce, ciphertext);
         }
 
 #if NETCOREAPP3_0
@@ -40,7 +41,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetData))]
         public void Encrypt_Simd(Item data)
         {
-            _encryptorNi.Encrypt(data.Plaintext, nonce, ciphertext);
+            _encryptorNi.Encrypt(key, data.Plaintext, nonce, ciphertext);
         }
 #endif
 

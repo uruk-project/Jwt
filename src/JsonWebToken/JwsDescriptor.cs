@@ -604,7 +604,7 @@ namespace JsonWebToken
                     length += Base64Url.GetArraySizeRequiredToEncode(headerJson.Length);
                 }
 
-                var buffer = context.BufferWriter.GetSpan(length).Slice(0, length);
+                var buffer = context.BufferWriter.GetSpan(length);
                 int offset;
                 if (cachedHeader != null)
                 {
@@ -621,11 +621,11 @@ namespace JsonWebToken
                 offset += Base64Url.Encode(bufferWriter.WrittenSpan.Slice(0, payloadLength), buffer.Slice(offset));
                 buffer[offset] = Constants.ByteDot;
                 Span<byte> signature = stackalloc byte[signer.HashSizeInBytes];
-                bool success = signer.TrySign(buffer.Slice(0, offset), signature, out int signatureBytesWritten);
+                bool success = signer.TrySign(buffer.Slice(0, offset++), signature, out int signatureBytesWritten);
                 Debug.Assert(success);
                 Debug.Assert(signature.Length == signatureBytesWritten);
 
-                int bytesWritten = Base64Url.Encode(signature, buffer.Slice(++offset));
+                int bytesWritten = Base64Url.Encode(signature, buffer.Slice(offset));
 
                 Debug.Assert(length == offset + bytesWritten);
                 context.BufferWriter.Advance(length);

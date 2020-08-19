@@ -80,7 +80,7 @@ namespace JsonWebToken
         /// <param name="staticKey">The key to be wrapped. If <c>null</c>, the key will be ephemeral and generated within this method.</param>
         /// <param name="header">The key-values representing the JWT header.</param>
         /// <param name="destination">The destination span.</param>
-        public abstract Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination);
+        public abstract SymmetricJwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination);
 
         /// <summary>
         /// Gets the size of the wrapped key.
@@ -94,7 +94,7 @@ namespace JsonWebToken
         /// <param name="staticKey"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Jwk CreateSymmetricKey(EncryptionAlgorithm encryptionAlgorithm, Jwk? staticKey)
+        public static SymmetricJwk CreateSymmetricKey(EncryptionAlgorithm encryptionAlgorithm, SymmetricJwk? staticKey)
         {
             return staticKey ?? SymmetricJwk.GenerateKey(encryptionAlgorithm.RequiredKeySizeInBits);
         }
