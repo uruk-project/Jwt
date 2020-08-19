@@ -260,9 +260,9 @@ namespace JsonWebToken
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector256<ulong> Schedule(Vector256<ulong> w0, Vector256<ulong> w1, Vector256<ulong> w9, Vector256<ulong> w14, Vector256<ulong> k, IntPtr i, ref Vector256<ulong> schedule)
+        private static Vector256<ulong> Schedule(Vector256<ulong> w0, Vector256<ulong> w1, Vector256<ulong> w9, Vector256<ulong> w14, IntPtr i, ref Vector256<ulong> schedule)
         {
-            Unsafe.AddByteOffset(ref schedule, i) = Avx2.Add(w0, k);
+            Unsafe.AddByteOffset(ref schedule, i) = Avx2.Add(w0, K256(i));
             return Avx2.Add(Avx2.Add(w0, w9), Avx2.Add(Sigma0(w1), Sigma1(w14)));
         }
 
@@ -287,76 +287,59 @@ namespace JsonWebToken
             W13 = Avx2.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)104)).AsByte(), littleEndianMask).AsUInt64();
             W14 = Avx2.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)112)).AsByte(), littleEndianMask).AsUInt64();
             W15 = Avx2.Shuffle(Gather(ref Unsafe.AddByteOffset(ref message, (IntPtr)120)).AsByte(), littleEndianMask).AsUInt64();
-            ref ulong k = ref _k[0];
             do
             {
-                W0 = Schedule(W0, W1, W9, W14, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W0 = Schedule(W0, W1, W9, W14, i, ref schedule);
                 i += 32;
-                W1 = Schedule(W1, W2, W10, W15, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W1 = Schedule(W1, W2, W10, W15, i, ref schedule);
                 i += 32;
-                W2 = Schedule(W2, W3, W11, W0, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W2 = Schedule(W2, W3, W11, W0, i, ref schedule);
                 i += 32;
-                W3 = Schedule(W3, W4, W12, W1, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W3 = Schedule(W3, W4, W12, W1, i, ref schedule);
                 i += 32;
-                W4 = Schedule(W4, W5, W13, W2, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W4 = Schedule(W4, W5, W13, W2, i, ref schedule);
                 i += 32;
-                W5 = Schedule(W5, W6, W14, W3, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W5 = Schedule(W5, W6, W14, W3, i, ref schedule);
                 i += 32;
-                W6 = Schedule(W6, W7, W15, W4, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W6 = Schedule(W6, W7, W15, W4, i, ref schedule);
                 i += 32;
-                W7 = Schedule(W7, W8, W0, W5, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W7 = Schedule(W7, W8, W0, W5, i, ref schedule);
                 i += 32;
-                W8 = Schedule(W8, W9, W1, W6, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W8 = Schedule(W8, W9, W1, W6, i, ref schedule);
                 i += 32;
-                W9 = Schedule(W9, W10, W2, W7, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W9 = Schedule(W9, W10, W2, W7, i, ref schedule);
                 i += 32;
-                W10 = Schedule(W10, W11, W3, W8, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W10 = Schedule(W10, W11, W3, W8, i, ref schedule);
                 i += 32;
-                W11 = Schedule(W11, W12, W4, W9, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W11 = Schedule(W11, W12, W4, W9, i, ref schedule);
                 i += 32;
-                W12 = Schedule(W12, W13, W5, W10, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W12 = Schedule(W12, W13, W5, W10, i, ref schedule);
                 i += 32;
-                W13 = Schedule(W13, W14, W6, W11, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W13 = Schedule(W13, W14, W6, W11, i, ref schedule);
                 i += 32;
-                W14 = Schedule(W14, W15, W7, W12, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W14 = Schedule(W14, W15, W7, W12, i, ref schedule);
                 i += 32;
-                W15 = Schedule(W15, W0, W8, W13, Vector256.Create(k), i, ref schedule);
-                k = ref Unsafe.AddByteOffset(ref k, (IntPtr)8);
+                W15 = Schedule(W15, W0, W8, W13, i, ref schedule);
                 i += 32;
             }
             while ((byte*)i < (byte*)(64 * 32));
 
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(64 * 32)) = Avx2.Add(W0, K256((IntPtr)(64 * 8)));
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(65 * 32)) = Avx2.Add(W1, K256((IntPtr)(65 * 8)));
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(66 * 32)) = Avx2.Add(W2, K256((IntPtr)(66 * 8)));
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(67 * 32)) = Avx2.Add(W3, K256((IntPtr)(67 * 8)));
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(68 * 32)) = Avx2.Add(W4, K256((IntPtr)(68 * 8)));
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(69 * 32)) = Avx2.Add(W5, K256((IntPtr)(69 * 8)));
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(70 * 32)) = Avx2.Add(W6, K256((IntPtr)(70 * 8)));
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(71 * 32)) = Avx2.Add(W7, K256((IntPtr)(71 * 8)));
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(72 * 32)) = Avx2.Add(W8, K256((IntPtr)(72 * 8)));
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(73 * 32)) = Avx2.Add(W9, K256((IntPtr)(73 * 8)));
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(74 * 32)) = Avx2.Add(W10, K256((IntPtr)(74 * 8)));
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(75 * 32)) = Avx2.Add(W11, K256((IntPtr)(75 * 8)));
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(76 * 32)) = Avx2.Add(W12, K256((IntPtr)(76 * 8)));
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(77 * 32)) = Avx2.Add(W13, K256((IntPtr)(77 * 8)));
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(78 * 32)) = Avx2.Add(W14, K256((IntPtr)(78 * 8)));
-            Unsafe.AddByteOffset(ref schedule, (IntPtr)(79 * 32)) = Avx2.Add(W15, K256((IntPtr)(79 * 8)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(64 * 32)) = Avx2.Add(W0, K256((IntPtr)(64 * 32)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(65 * 32)) = Avx2.Add(W1, K256((IntPtr)(65 * 32)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(66 * 32)) = Avx2.Add(W2, K256((IntPtr)(66 * 32)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(67 * 32)) = Avx2.Add(W3, K256((IntPtr)(67 * 32)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(68 * 32)) = Avx2.Add(W4, K256((IntPtr)(68 * 32)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(69 * 32)) = Avx2.Add(W5, K256((IntPtr)(69 * 32)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(70 * 32)) = Avx2.Add(W6, K256((IntPtr)(70 * 32)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(71 * 32)) = Avx2.Add(W7, K256((IntPtr)(71 * 32)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(72 * 32)) = Avx2.Add(W8, K256((IntPtr)(72 * 32)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(73 * 32)) = Avx2.Add(W9, K256((IntPtr)(73 * 32)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(74 * 32)) = Avx2.Add(W10, K256((IntPtr)(74 * 32)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(75 * 32)) = Avx2.Add(W11, K256((IntPtr)(75 * 32)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(76 * 32)) = Avx2.Add(W12, K256((IntPtr)(76 * 32)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(77 * 32)) = Avx2.Add(W13, K256((IntPtr)(77 * 32)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(78 * 32)) = Avx2.Add(W14, K256((IntPtr)(78 * 32)));
+            Unsafe.AddByteOffset(ref schedule, (IntPtr)(79 * 32)) = Avx2.Add(W15, K256((IntPtr)(79 * 32)));
         }
 
         internal unsafe static void Transform(ref ulong state, ref byte currentBlock, ref Vector256<ulong> w)
@@ -414,10 +397,6 @@ namespace JsonWebToken
             d += h;
             h += BigSigma0(a) + Maj(a, b, c);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector256<ulong> K256(IntPtr i)
-            => Vector256.Create(Unsafe.AddByteOffset(ref _k[0], i));
 #endif
 
         internal static void Transform(ref ulong state, ref byte currentBlock, ref ulong w)
@@ -589,5 +568,34 @@ namespace JsonWebToken
                 0x28db77f523047d84, 0x32caab7b40c72493, 0x3c9ebe0a15c9bebc, 0x431d67c49c100d4c,
                 0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817
             };
+
+#if SUPPORT_SIMD
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Vector256<ulong> K256(IntPtr i)
+            => Unsafe.AddByteOffset(ref _k256[0], i);
+
+        private static readonly Vector256<ulong>[] _k256 = {
+                Vector256.Create(0x428a2f98d728ae22ul), Vector256.Create(0x7137449123ef65cdul), Vector256.Create(0xb5c0fbcfec4d3b2ful), Vector256.Create(0xe9b5dba58189dbbcul),
+                Vector256.Create(0x3956c25bf348b538ul), Vector256.Create(0x59f111f1b605d019ul), Vector256.Create(0x923f82a4af194f9bul), Vector256.Create(0xab1c5ed5da6d8118ul),
+                Vector256.Create(0xd807aa98a3030242ul), Vector256.Create(0x12835b0145706fbeul), Vector256.Create(0x243185be4ee4b28cul), Vector256.Create(0x550c7dc3d5ffb4e2ul),
+                Vector256.Create(0x72be5d74f27b896ful), Vector256.Create(0x80deb1fe3b1696b1ul), Vector256.Create(0x9bdc06a725c71235ul), Vector256.Create(0xc19bf174cf692694ul),
+                Vector256.Create(0xe49b69c19ef14ad2ul), Vector256.Create(0xefbe4786384f25e3ul), Vector256.Create(0x0fc19dc68b8cd5b5ul), Vector256.Create(0x240ca1cc77ac9c65ul),
+                Vector256.Create(0x2de92c6f592b0275ul), Vector256.Create(0x4a7484aa6ea6e483ul), Vector256.Create(0x5cb0a9dcbd41fbd4ul), Vector256.Create(0x76f988da831153b5ul),
+                Vector256.Create(0x983e5152ee66dfabul), Vector256.Create(0xa831c66d2db43210ul), Vector256.Create(0xb00327c898fb213ful), Vector256.Create(0xbf597fc7beef0ee4ul),
+                Vector256.Create(0xc6e00bf33da88fc2ul), Vector256.Create(0xd5a79147930aa725ul), Vector256.Create(0x06ca6351e003826ful), Vector256.Create(0x142929670a0e6e70ul),
+                Vector256.Create(0x27b70a8546d22ffcul), Vector256.Create(0x2e1b21385c26c926ul), Vector256.Create(0x4d2c6dfc5ac42aedul), Vector256.Create(0x53380d139d95b3dful),
+                Vector256.Create(0x650a73548baf63deul), Vector256.Create(0x766a0abb3c77b2a8ul), Vector256.Create(0x81c2c92e47edaee6ul), Vector256.Create(0x92722c851482353bul),
+                Vector256.Create(0xa2bfe8a14cf10364ul), Vector256.Create(0xa81a664bbc423001ul), Vector256.Create(0xc24b8b70d0f89791ul), Vector256.Create(0xc76c51a30654be30ul),
+                Vector256.Create(0xd192e819d6ef5218ul), Vector256.Create(0xd69906245565a910ul), Vector256.Create(0xf40e35855771202aul), Vector256.Create(0x106aa07032bbd1b8ul),
+                Vector256.Create(0x19a4c116b8d2d0c8ul), Vector256.Create(0x1e376c085141ab53ul), Vector256.Create(0x2748774cdf8eeb99ul), Vector256.Create(0x34b0bcb5e19b48a8ul),
+                Vector256.Create(0x391c0cb3c5c95a63ul), Vector256.Create(0x4ed8aa4ae3418acbul), Vector256.Create(0x5b9cca4f7763e373ul), Vector256.Create(0x682e6ff3d6b2b8a3ul),
+                Vector256.Create(0x748f82ee5defb2fcul), Vector256.Create(0x78a5636f43172f60ul), Vector256.Create(0x84c87814a1f0ab72ul), Vector256.Create(0x8cc702081a6439ecul),
+                Vector256.Create(0x90befffa23631e28ul), Vector256.Create(0xa4506cebde82bde9ul), Vector256.Create(0xbef9a3f7b2c67915ul), Vector256.Create(0xc67178f2e372532bul),
+                Vector256.Create(0xca273eceea26619cul), Vector256.Create(0xd186b8c721c0c207ul), Vector256.Create(0xeada7dd6cde0eb1eul), Vector256.Create(0xf57d4f7fee6ed178ul),
+                Vector256.Create(0x06f067aa72176fbaul), Vector256.Create(0x0a637dc5a2c898a6ul), Vector256.Create(0x113f9804bef90daeul), Vector256.Create(0x1b710b35131c471bul),
+                Vector256.Create(0x28db77f523047d84ul), Vector256.Create(0x32caab7b40c72493ul), Vector256.Create(0x3c9ebe0a15c9bebcul), Vector256.Create(0x431d67c49c100d4cul),
+                Vector256.Create(0x4cc5d4becb3e42b6ul), Vector256.Create(0x597f299cfc657e2aul), Vector256.Create(0x5fcb6fab3ad6faecul), Vector256.Create(0x6c44198c4a475817ul)
+        };
+#endif
     }
 }

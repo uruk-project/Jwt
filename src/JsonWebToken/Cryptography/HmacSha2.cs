@@ -17,6 +17,10 @@ namespace JsonWebToken
     /// </summary>
     public abstract class HmacSha2
     {
+#if SUPPORT_SIMD
+        private static readonly Vector256<byte> _innerKeyInit = Vector256.Create((byte)0x36);
+        private static readonly Vector256<byte> _outerKeyInit = Vector256.Create((byte)0x5c);
+#endif  
         /// <summary>
         /// The hash algorithm.
         /// </summary>
@@ -81,8 +85,6 @@ namespace JsonWebToken
 #if SUPPORT_SIMD
             if (Avx2.IsSupported && key.Length != 0 && (key.Length & 31) == 0)
             {
-                Vector256<byte> innerKeyInit = Vector256.Create((byte)0x36);
-                Vector256<byte> outerKeyInit = Vector256.Create((byte)0x5c);
                 ref byte keyRef = ref MemoryMarshal.GetReference(key);
                 ref byte keyEndRef = ref Unsafe.Add(ref keyRef, key.Length);
                 ref byte innerKeyRef = ref Unsafe.AsRef(_keys[0]);
@@ -91,8 +93,8 @@ namespace JsonWebToken
                 do
                 {
                     var k1 = Unsafe.ReadUnaligned<Vector256<byte>>(ref keyRef);
-                    Unsafe.WriteUnaligned(ref innerKeyRef, Avx2.Xor(k1, innerKeyInit));
-                    Unsafe.WriteUnaligned(ref outerKeyRef, Avx2.Xor(k1, outerKeyInit));
+                    Unsafe.WriteUnaligned(ref innerKeyRef, Avx2.Xor(k1, _innerKeyInit));
+                    Unsafe.WriteUnaligned(ref outerKeyRef, Avx2.Xor(k1, _outerKeyInit));
 
                     // assume the IO keys are Modulo 32
                     keyRef = ref Unsafe.Add(ref keyRef, 32);
@@ -103,8 +105,8 @@ namespace JsonWebToken
                 // treat the remain
                 while (Unsafe.IsAddressLessThan(ref innerKeyRef, ref innerKeyEndRef))
                 {
-                    Unsafe.WriteUnaligned(ref innerKeyRef, innerKeyInit);
-                    Unsafe.WriteUnaligned(ref outerKeyRef, outerKeyInit);
+                    Unsafe.WriteUnaligned(ref innerKeyRef, _innerKeyInit);
+                    Unsafe.WriteUnaligned(ref outerKeyRef, _outerKeyInit);
                     innerKeyRef = ref Unsafe.Add(ref innerKeyRef, 32);
                     outerKeyRef = ref Unsafe.Add(ref outerKeyRef, 32);
                 }
