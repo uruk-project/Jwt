@@ -42,6 +42,7 @@ namespace JsonWebToken
 
         private Bucket? _head = null;
         private Bucket? _tail = null;
+        private WrappedHeader _firstHeader;
 
         /// <summary>
         ///  Try to get the header.
@@ -52,6 +53,14 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool TryGetHeader(JwtObject header, SignatureAlgorithm alg, [NotNullWhen(true)] out byte[]? base64UrlHeader)
         {
+            // fast-path: the header reference is already known. Do not care of the 'alg'
+            var last = _firstHeader;
+            if (ReferenceEquals(last.Header, header))
+            {
+                base64UrlHeader = last.BinaryHeader;
+                return true;
+            }
+
             if (header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty)
                 && kidProperty.Type == JwtTokenType.String
                 && !(kidProperty.Value is null)
@@ -96,71 +105,80 @@ namespace JsonWebToken
         /// <param name="base6UrlHeader"></param>
         public void AddHeader(JwtObject header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
         {
-            if (header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty)
-                && kidProperty.Type == JwtTokenType.String
-                && !(kidProperty.Value is null)
-                && !(alg is null)
-                && header.Count == 2)
+            if (_firstHeader.Header is null)
             {
-                var kid = (string)kidProperty.Value;
-                bool lockTaken = false;
-                try
+                // concurrency issue: the first cached header may not be the first, but it does not matter
+                _firstHeader = new WrappedHeader(header, base6UrlHeader.ToArray());
+                _count++;
+            }
+            else
+            {
+                if (header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty)
+                    && kidProperty.Type == JwtTokenType.String
+                    && !(kidProperty.Value is null)
+                    && !(alg is null)
+                    && header.Count == 2)
                 {
-                    _spinLock.Enter(ref lockTaken);
-
-                    var node = _head;
-                    while (node != null)
+                    var kid = (string)kidProperty.Value;
+                    bool lockTaken = false;
+                    try
                     {
-                        if (string.Equals(node.Kid, kid, StringComparison.Ordinal))
+                        _spinLock.Enter(ref lockTaken);
+
+                        var node = _head;
+                        while (node != null)
                         {
-                            break;
+                            if (string.Equals(node.Kid, kid, StringComparison.Ordinal))
+                            {
+                                break;
+                            }
+
+                            node = node.Next;
                         }
 
-                        node = node.Next;
-                    }
+                        var key = alg.Id;
 
-                    var key = alg.Id;
+                        if (node is null)
+                        {
+                            node = new Bucket(kid, new Dictionary<long, byte[]>(1) { { key, base6UrlHeader.ToArray() } })
+                            {
+                                Next = _head
+                            };
+                        }
+                        else
+                        {
+                            if (node.Entries.ContainsKey(key))
+                            {
+                                node.Entries[key] = base6UrlHeader.ToArray();
+                            }
+                        }
 
-                    if (node is null)
-                    {
-                        node = new Bucket(kid, new Dictionary<long, byte[]>(1) { { key, base6UrlHeader.ToArray() } })
+                        if (_count >= MaxSize)
                         {
-                            Next = _head
-                        };
-                    }
-                    else
-                    {
-                        if (node.Entries.ContainsKey(key))
+                            RemoveLeastRecentlyUsed();
+                        }
+                        else
                         {
-                            node.Entries[key] = base6UrlHeader.ToArray();
+                            _count++;
+                        }
+
+                        if (_head != null)
+                        {
+                            _head.Previous = node;
+                        }
+
+                        _head = node;
+                        if (_tail is null)
+                        {
+                            _tail = node;
                         }
                     }
-
-                    if (_count >= MaxSize)
+                    finally
                     {
-                        RemoveLeastRecentlyUsed();
-                    }
-                    else
-                    {
-                        _count++;
-                    }
-
-                    if (_head != null)
-                    {
-                        _head.Previous = node;
-                    }
-
-                    _head = node;
-                    if (_tail is null)
-                    {
-                        _tail = node;
-                    }
-                }
-                finally
-                {
-                    if (lockTaken)
-                    {
-                        _spinLock.Exit();
+                        if (lockTaken)
+                        {
+                            _spinLock.Exit();
+                        }
                     }
                 }
             }
@@ -226,6 +244,18 @@ namespace JsonWebToken
                 }
 
                 _tail = node.Previous;
+            }
+        }
+
+        private readonly struct WrappedHeader
+        {
+            public readonly JwtObject? Header;
+            public readonly byte[] BinaryHeader;
+
+            public WrappedHeader(JwtObject header, byte[] binaryHeader)
+            {
+                Header = header;
+                BinaryHeader = binaryHeader;
             }
         }
     }

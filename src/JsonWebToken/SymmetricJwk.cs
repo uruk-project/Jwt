@@ -19,6 +19,8 @@ namespace JsonWebToken
 #if !SUPPORT_SPAN_CRYPTO
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 #endif
+        internal static new readonly SymmetricJwk Empty = new SymmetricJwk(Array.Empty<byte>());
+
 
         private readonly byte[] _k;
 
@@ -164,6 +166,25 @@ namespace JsonWebToken
             }
 
             _k = k;
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="k">The binary key material.</param>
+        /// <param name="alg">The <see cref="SignatureAlgorithm"/>.</param>
+        public SymmetricJwk(ReadOnlySpan<byte> k, SignatureAlgorithm alg)
+            : base(alg)
+        {
+            _k = k.ToArray();
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -180,6 +201,10 @@ namespace JsonWebToken
             }
 
             _k = Base64Url.Decode(k);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -196,6 +221,10 @@ namespace JsonWebToken
             }
 
             _k = k;
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -207,6 +236,10 @@ namespace JsonWebToken
             : base(alg)
         {
             _k = k.ToArray();
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -223,6 +256,10 @@ namespace JsonWebToken
             }
 
             _k = Base64Url.Decode(k);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <inheritsdoc />
@@ -263,7 +300,7 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
@@ -285,7 +322,7 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes, algorithm);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
@@ -307,7 +344,7 @@ namespace JsonWebToken
             var key = new SymmetricJwk(bytes, algorithm);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
@@ -354,7 +391,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override bool SupportEncryption(EncryptionAlgorithm algorithm)
         {
-            return (algorithm.Category == EncryptionType.AesHmac || algorithm.Category == EncryptionType.AesGcm) && KeySizeInBits >= algorithm.RequiredKeySizeInBits;
+            return (algorithm.Category & EncryptionType.Aes) != 0 && KeySizeInBits >= algorithm.RequiredKeySizeInBits;
         }
 
         /// <inheritdoc />
@@ -366,117 +403,31 @@ namespace JsonWebToken
         /// <inheritsdoc />
         protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
-            if (algorithm.Category == AlgorithmCategory.Aes)
+            KeyWrapper value = algorithm.Category switch
             {
-                return new AesKeyWrapper(this, encryptionAlgorithm, algorithm);
-            }
-            else if (algorithm.Category == AlgorithmCategory.AesGcm)
-            {
-                return new AesGcmKeyWrapper(this, encryptionAlgorithm, algorithm);
-            }
-            else if (!algorithm.ProduceEncryptionKey)
-            {
-                return new DirectKeyWrapper(this, encryptionAlgorithm, algorithm);
-            }
-
-            ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-            return null;
+                AlgorithmCategory.Aes => new AesKeyWrapper(this, encryptionAlgorithm, algorithm),
+#if SUPPORT_AESGCM
+                AlgorithmCategory.AesGcm => new AesGcmKeyWrapper(this, encryptionAlgorithm, algorithm),
+#endif
+                AlgorithmCategory.Direct => new DirectKeyWrapper(this, encryptionAlgorithm, algorithm),
+                _ => throw ThrowHelper.CreateNotSupportedException_AlgorithmForKeyWrap(algorithm)
+            };
+            return value;
         }
 
         /// <inheritsdoc />
         protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
-            if (algorithm.Category == AlgorithmCategory.Aes)
+            KeyUnwrapper value = algorithm.Category switch
             {
-                return new AesKeyUnwrapper(this, encryptionAlgorithm, algorithm);
-            }
-            else if (algorithm.Category == AlgorithmCategory.AesGcm)
-            {
-                return new AesGcmKeyUnwrapper(this, encryptionAlgorithm, algorithm);
-            }
-            else if (!algorithm.ProduceEncryptionKey)
-            {
-                return new DirectKeyUnwrapper(this, encryptionAlgorithm, algorithm);
-            }
-
-            ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-            return null;
-        }
-
-        /// <inheritsdoc />
-        protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
-        {
-            if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
-            {
-#if SUPPORT_SIMD
-                if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
-                {
-                    if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
-                    {
-                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 16), encryptionAlgorithm, new Aes128NiCbcEncryptor(_k.AsSpan(16)));
-                    }
-                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
-                    {
-                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new Aes256NiCbcEncryptor(_k.AsSpan(32)));
-                    }
-                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
-                    {
-                        return new AesCbcHmacEncryptor(_k.AsSpan(0, 24), encryptionAlgorithm, new Aes192NiCbcEncryptor(_k.AsSpan(24)));
-                    }
-                }
-                else
-                {
-                    return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
-                }
-#else
-                return new AesCbcHmacEncryptor(this, encryptionAlgorithm);
+                AlgorithmCategory.Aes => new AesKeyUnwrapper(this, encryptionAlgorithm, algorithm),
+#if SUPPORT_AESGCM
+                AlgorithmCategory.AesGcm => new AesGcmKeyUnwrapper(this, encryptionAlgorithm, algorithm),
 #endif
-            }
-            else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
-            {
-                return new AesGcmEncryptor(this, encryptionAlgorithm);
-            }
-
-            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-            return null;
-        }
-
-        /// <inheritsdoc />
-        protected override AuthenticatedDecryptor CreateAuthenticatedDecryptor(EncryptionAlgorithm encryptionAlgorithm)
-        {
-            if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
-            {
-#if SUPPORT_SIMD
-                if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
-                {
-                    if (encryptionAlgorithm == EncryptionAlgorithm.Aes128CbcHmacSha256)
-                    {
-                        return new AesCbcHmacDecryptor(_k.AsSpan(0, 16), encryptionAlgorithm, new Aes128NiCbcDecryptor(_k.AsSpan(16)));
-                    }
-                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes256CbcHmacSha512)
-                    {
-                        return new AesCbcHmacDecryptor(_k.AsSpan(0, 32), encryptionAlgorithm, new Aes256NiCbcDecryptor(_k.AsSpan(32)));
-                    }
-                    else if (encryptionAlgorithm == EncryptionAlgorithm.Aes192CbcHmacSha384)
-                    {
-                        return new AesCbcHmacDecryptor(_k.AsSpan(0, 24), encryptionAlgorithm, new Aes192NiCbcDecryptor(_k.AsSpan(24)));
-                    }
-                }
-                else
-                {
-                    return new AesCbcHmacDecryptor(this, encryptionAlgorithm);
-                }
-#else
-                return new AesCbcHmacDecryptor(this, encryptionAlgorithm);
-#endif
-            }
-            else if (encryptionAlgorithm.Category == EncryptionType.AesGcm)
-            {
-                return new AesGcmDecryptor(this, encryptionAlgorithm);
-            }
-
-            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-            return null;
+                AlgorithmCategory.Direct => new DirectKeyUnwrapper(this, encryptionAlgorithm, algorithm),
+                _ => throw ThrowHelper.CreateNotSupportedException_AlgorithmForKeyWrap(algorithm)
+            };
+            return value;
         }
 
         /// <summary>

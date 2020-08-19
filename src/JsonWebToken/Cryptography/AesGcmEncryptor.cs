@@ -3,6 +3,7 @@
 
 #if SUPPORT_AESGCM
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
@@ -12,50 +13,31 @@ namespace JsonWebToken.Internal
     /// </summary>
     internal sealed class AesGcmEncryptor : AuthenticatedEncryptor
     {
-        private readonly SymmetricJwk _key;
+        private readonly EncryptionAlgorithm _encryptionAlgorithm;
 
-        private bool _disposed;
-
-        public AesGcmEncryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
+        public AesGcmEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (key is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
-            if (encryptionAlgorithm is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
-            }
-
-            if (encryptionAlgorithm.Category != EncryptionType.AesGcm)
-            {
-                ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-            }
-
-            if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBits)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
-            }
-
-            _key = key;
+            Debug.Assert(encryptionAlgorithm != null);
+            Debug.Assert(encryptionAlgorithm.Category == EncryptionType.AesGcm);
+            _encryptionAlgorithm = encryptionAlgorithm;
         }
 
         /// <inheritdoc />
-        public override void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag)
+        public override void Encrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag, out int authenticationTagBytesWritten)
         {
-            if (_disposed)
+            if (key.Length < _encryptionAlgorithm.RequiredKeySizeInBytes)
             {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
+                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(_encryptionAlgorithm, _encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.Length << 8);
             }
-
-            using var aes = new AesGcm(_key.K);
+      
+            using var aes = new AesGcm(key);
             if (ciphertext.Length > plaintext.Length)
             {
                 ciphertext = ciphertext.Slice(0, plaintext.Length);
             }
 
             aes.Encrypt(nonce, plaintext, ciphertext, authenticationTag, associatedData);
+            authenticationTagBytesWritten = authenticationTag.Length;
         }
 
         /// <inheritdoc />
@@ -69,15 +51,6 @@ namespace JsonWebToken.Internal
 
         /// <inheritdoc />
         public override int GetTagSize() => 16;
-
-        /// <inheritdoc />
-        public override int GetBase64TagSize() => 22;
-
-        /// <inheritdoc />
-        public override void Dispose()
-        {
-            _disposed = true;
-        }
     }
 }
 #endif

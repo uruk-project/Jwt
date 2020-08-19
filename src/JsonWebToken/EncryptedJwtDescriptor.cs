@@ -98,108 +98,105 @@ namespace JsonWebToken
                     stackalloc byte[keyWrapSize] :
                     new Span<byte>(wrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(keyWrapSize), 0, keyWrapSize);
                 var cek = keyWrapper.WrapKey(null, header, wrappedKey);
-                if (cek.TryGetAuthenticatedEncryptor(encryptionAlgorithm, out AuthenticatedEncryptor? encryptor))
+                if (header.ContainsKey(WellKnownProperty.Kid) && !(key.Kid is null))
                 {
-                    if (header.ContainsKey(WellKnownProperty.Kid) && !(key.Kid is null))
-                    {
-                        header.Replace(new JwtProperty(WellKnownProperty.Kid, key.Kid));
-                    }
+                    header.Replace(new JwtProperty(WellKnownProperty.Kid, key.Kid));
+                }
+
+                try
+                {
+                    using var bufferWriter = new PooledByteBufferWriter();
+                    header.Serialize(bufferWriter);
+                    var headerJson = bufferWriter.WrittenSpan;
+                    int headerJsonLength = headerJson.Length;
+                    int base64EncodedHeaderLength = Base64Url.GetArraySizeRequiredToEncode(headerJsonLength);
+
+                    Span<byte> base64EncodedHeader = base64EncodedHeaderLength > Constants.MaxStackallocBytes
+                           ? (buffer64HeaderToReturnToPool = ArrayPool<byte>.Shared.Rent(base64EncodedHeaderLength)).AsSpan(0, base64EncodedHeaderLength)
+                             : stackalloc byte[base64EncodedHeaderLength];
 
                     try
                     {
-                        using var bufferWriter = new PooledByteBufferWriter();
-                        header.Serialize(bufferWriter);
-                        var headerJson = bufferWriter.WrittenSpan;
-                        int headerJsonLength = headerJson.Length;
-                        int base64EncodedHeaderLength = Base64Url.GetArraySizeRequiredToEncode(headerJsonLength);
+                        TryEncodeUtf8ToBase64Url(headerJson, base64EncodedHeader, out int bytesWritten);
 
-
-                        Span<byte> base64EncodedHeader = base64EncodedHeaderLength > Constants.MaxStackallocBytes
-                               ? (buffer64HeaderToReturnToPool = ArrayPool<byte>.Shared.Rent(base64EncodedHeaderLength)).AsSpan(0, base64EncodedHeaderLength)
-                                 : stackalloc byte[base64EncodedHeaderLength];
-
-                        try
+                        Compressor? compressor = null;
+                        var compressionAlgorithm = CompressionAlgorithm;
+                        if (!(compressionAlgorithm is null))
                         {
-                            TryEncodeUtf8ToBase64Url(headerJson, base64EncodedHeader, out int bytesWritten);
-
-                            Compressor? compressor = null;
-                            var compressionAlgorithm = CompressionAlgorithm;
-                            if (!(compressionAlgorithm is null))
+                            compressor = compressionAlgorithm.Compressor;
+                            if (compressor == null)
                             {
-                                compressor = compressionAlgorithm.Compressor;
-                                if (compressor == null)
-                                {
-                                    ThrowHelper.ThrowNotSupportedException_CompressionAlgorithm(compressionAlgorithm);
-                                }
-                                else
-                                {
-                                    payload = compressor.Compress(payload);
-                                }
+                                ThrowHelper.ThrowNotSupportedException_CompressionAlgorithm(compressionAlgorithm);
                             }
+                            else
+                            {
+                                payload = compressor.Compress(payload);
+                            }
+                        }
 
-                            int ciphertextLength = encryptor.GetCiphertextSize(payload.Length);
-                            Span<byte> tag = stackalloc byte[encryptor.GetTagSize()];
-                            Span<byte> ciphertext = ciphertextLength > Constants.MaxStackallocBytes
-                                                        ? (arrayCiphertextToReturnToPool = ArrayPool<byte>.Shared.Rent(ciphertextLength)).AsSpan(0, ciphertextLength)
-                                                        : stackalloc byte[ciphertextLength];
+                        var encryptor = encryptionAlgorithm!.Encryptor;
+                        int ciphertextSize = encryptor.GetCiphertextSize(payload.Length);
+                        int tagSize = encryptor.GetTagSize();
+                        int bufferSize = ciphertextSize + tagSize;
+                        Span<byte> buffer = bufferSize > Constants.MaxStackallocBytes
+                                                    ? (arrayCiphertextToReturnToPool = ArrayPool<byte>.Shared.Rent(bufferSize))
+                                                    : stackalloc byte[bufferSize];
+                        Span<byte> tag = buffer.Slice(ciphertextSize, tagSize);
+                        Span<byte> ciphertext = buffer.Slice(0, ciphertextSize);
+
 #if NETSTANDARD2_0 || NET461 || NET47
-                            var nonce = new byte[encryptor.GetNonceSize()];
-                            _randomNumberGenerator.GetBytes(nonce);
+                        var nonce = new byte[encryptor.GetNonceSize()];
+                        _randomNumberGenerator.GetBytes(nonce);
 #else
-                            Span<byte> nonce = stackalloc byte[encryptor.GetNonceSize()];
-                            RandomNumberGenerator.Fill(nonce);
+                        Span<byte> nonce = stackalloc byte[encryptor.GetNonceSize()];
+                        RandomNumberGenerator.Fill(nonce);
 #endif
-                            encryptor.Encrypt(payload, nonce, base64EncodedHeader, ciphertext, tag);
+                        encryptor.Encrypt(cek.K, payload, nonce, base64EncodedHeader, ciphertext, tag, out int tagBytesWritten);
 
-                            int encryptionLength =
-                                base64EncodedHeader.Length
-                                + encryptor.GetBase64NonceSize()
-                                + Base64Url.GetArraySizeRequiredToEncode(ciphertext.Length)
-                                + encryptor.GetBase64TagSize()
-                                + (Constants.JweSegmentCount - 1);
-                            encryptionLength += Base64Url.GetArraySizeRequiredToEncode(wrappedKey.Length);
+                        int encryptionLength =
+                            base64EncodedHeaderLength
+                            + encryptor.GetBase64NonceSize()
+                            + Base64Url.GetArraySizeRequiredToEncode(ciphertextSize)
+                            + Base64Url.GetArraySizeRequiredToEncode(tagBytesWritten)
+                            + Base64Url.GetArraySizeRequiredToEncode(keyWrapSize)
+                            + (Constants.JweSegmentCount - 1);
 
-                            Span<byte> encryptedToken = output.GetSpan(encryptionLength);
+                        Span<byte> encryptedToken = output.GetSpan(encryptionLength);
 
-                            base64EncodedHeader.CopyTo(encryptedToken);
-                            encryptedToken[bytesWritten++] = Constants.ByteDot;
-                            bytesWritten += Base64Url.Encode(wrappedKey, encryptedToken.Slice(bytesWritten));
+                        base64EncodedHeader.CopyTo(encryptedToken);
+                        encryptedToken[bytesWritten++] = Constants.ByteDot;
+                        bytesWritten += Base64Url.Encode(wrappedKey, encryptedToken.Slice(bytesWritten));
 
-                            encryptedToken[bytesWritten++] = Constants.ByteDot;
-                            bytesWritten += Base64Url.Encode(nonce, encryptedToken.Slice(bytesWritten));
-                            encryptedToken[bytesWritten++] = Constants.ByteDot;
-                            bytesWritten += Base64Url.Encode(ciphertext, encryptedToken.Slice(bytesWritten));
-                            encryptedToken[bytesWritten++] = Constants.ByteDot;
-                            bytesWritten += Base64Url.Encode(tag, encryptedToken.Slice(bytesWritten));
-                            Debug.Assert(encryptionLength == bytesWritten);
-                            output.Advance(encryptionLength);
-                        }
-                        finally
-                        {
-                            if (wrappedKeyToReturnToPool != null)
-                            {
-                                ArrayPool<byte>.Shared.Return(wrappedKeyToReturnToPool);
-                            }
-
-                            if (buffer64HeaderToReturnToPool != null)
-                            {
-                                ArrayPool<byte>.Shared.Return(buffer64HeaderToReturnToPool);
-                            }
-
-                            if (arrayCiphertextToReturnToPool != null)
-                            {
-                                ArrayPool<byte>.Shared.Return(arrayCiphertextToReturnToPool);
-                            }
-                        }
+                        encryptedToken[bytesWritten++] = Constants.ByteDot;
+                        bytesWritten += Base64Url.Encode(nonce, encryptedToken.Slice(bytesWritten));
+                        encryptedToken[bytesWritten++] = Constants.ByteDot;
+                        bytesWritten += Base64Url.Encode(ciphertext, encryptedToken.Slice(bytesWritten));
+                        encryptedToken[bytesWritten++] = Constants.ByteDot;
+                        bytesWritten += Base64Url.Encode(tag.Slice(0, tagBytesWritten), encryptedToken.Slice(bytesWritten));
+                        Debug.Assert(encryptionLength == bytesWritten);
+                        output.Advance(encryptionLength);
                     }
-                    catch (Exception ex)
+                    finally
                     {
-                        ThrowHelper.ThrowCryptographicException_EncryptionFailed(encryptionAlgorithm, key, ex);
+                        if (wrappedKeyToReturnToPool != null)
+                        {
+                            ArrayPool<byte>.Shared.Return(wrappedKeyToReturnToPool);
+                        }
+
+                        if (buffer64HeaderToReturnToPool != null)
+                        {
+                            ArrayPool<byte>.Shared.Return(buffer64HeaderToReturnToPool);
+                        }
+
+                        if (arrayCiphertextToReturnToPool != null)
+                        {
+                            ArrayPool<byte>.Shared.Return(arrayCiphertextToReturnToPool);
+                        }
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
+                    ThrowHelper.ThrowCryptographicException_EncryptionFailed(encryptionAlgorithm, key, ex);
                 }
             }
             else
@@ -208,10 +205,10 @@ namespace JsonWebToken
             }
         }
 
-        private static bool TryEncodeUtf8ToBase64Url(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
+        private static void TryEncodeUtf8ToBase64Url(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {
             bytesWritten = Base64Url.Encode(input, destination);
-            return bytesWritten == destination.Length;
+            Debug.Assert(bytesWritten == destination.Length);
         }
 
         /// <inheritsdoc />

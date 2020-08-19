@@ -1,15 +1,9 @@
-﻿using System;
-using Xunit;
+﻿using Xunit;
 
 namespace JsonWebToken.Tests.Cryptography
 {
     public class HmacSha256Tests : HmacShaTests
     {
-        protected override HmacSha2 Create(ReadOnlySpan<byte> key)
-        {
-            return new HmacSha256(key);
-        }
-
         protected override Sha2 CreateShaAlgorithm()
         {
             return new Sha256();

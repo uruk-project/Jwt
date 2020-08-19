@@ -10,40 +10,9 @@ using System.Runtime.Intrinsics.X86;
 
 namespace JsonWebToken.Internal
 {
-    internal sealed class Aes128NiCbcDecryptor : AesDecryptor
+    internal sealed class Aes128CbcDecryptor : AesDecryptor
     {
-        private readonly Aes128DecryptionKeys _keys;
-
-        public Aes128NiCbcDecryptor(ReadOnlySpan<byte> key)
-        {
-            _keys = new Aes128DecryptionKeys(key);
-        }
-
-        public override void Dispose()
-        {
-            // Clear the keys
-            _keys.Clear();
-        }
-
-        public override void DecryptBlock(ref byte ciphertext, ref byte plaintext)
-        {
-            var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref ciphertext);
-
-            block = Sse2.Xor(block, _keys.Key0);
-            block = Aes.Decrypt(block, _keys.Key1);
-            block = Aes.Decrypt(block, _keys.Key2);
-            block = Aes.Decrypt(block, _keys.Key3);
-            block = Aes.Decrypt(block, _keys.Key4);
-            block = Aes.Decrypt(block, _keys.Key5);
-            block = Aes.Decrypt(block, _keys.Key6);
-            block = Aes.Decrypt(block, _keys.Key7);
-            block = Aes.Decrypt(block, _keys.Key8);
-            block = Aes.Decrypt(block, _keys.Key9);
-            block = Aes.DecryptLast(block, _keys.Key10);
-            Unsafe.WriteUnaligned(ref plaintext, block);
-        }
-
-        public override unsafe bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> nonce, Span<byte> plaintext, out int bytesWritten)
+        public override unsafe bool TryDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> nonce, Span<byte> plaintext, out int bytesWritten)
         {
             if (nonce.Length != 16)
             {
@@ -54,33 +23,41 @@ namespace JsonWebToken.Internal
             Vector128<byte> state = default;
             if (!ciphertext.IsEmpty)
             {
+                var keys = new Aes128DecryptionKeys(key);
                 ref byte input = ref MemoryMarshal.GetReference(ciphertext);
                 var feedback = nonce.AsVector128<byte>();
                 ref byte inputEnd = ref Unsafe.AddByteOffset(ref input, (IntPtr)ciphertext.Length - BlockSize + 1);
 
-                while (Unsafe.IsAddressLessThan(ref input, ref inputEnd))
+                try
                 {
-                    var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref input);
-                    var lastIn = block;
-                    state = Sse2.Xor(block, _keys.Key0);
+                    while (Unsafe.IsAddressLessThan(ref input, ref inputEnd))
+                    {
+                        var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref input);
+                        var lastIn = block;
+                        state = Sse2.Xor(block, keys.Key0);
 
-                    state = Aes.Decrypt(state, _keys.Key1);
-                    state = Aes.Decrypt(state, _keys.Key2);
-                    state = Aes.Decrypt(state, _keys.Key3);
-                    state = Aes.Decrypt(state, _keys.Key4);
-                    state = Aes.Decrypt(state, _keys.Key5);
-                    state = Aes.Decrypt(state, _keys.Key6);
-                    state = Aes.Decrypt(state, _keys.Key7);
-                    state = Aes.Decrypt(state, _keys.Key8);
-                    state = Aes.Decrypt(state, _keys.Key9);
-                    state = Aes.DecryptLast(state, Sse2.Xor(_keys.Key10, feedback));
+                        state = Aes.Decrypt(state, keys.Key1);
+                        state = Aes.Decrypt(state, keys.Key2);
+                        state = Aes.Decrypt(state, keys.Key3);
+                        state = Aes.Decrypt(state, keys.Key4);
+                        state = Aes.Decrypt(state, keys.Key5);
+                        state = Aes.Decrypt(state, keys.Key6);
+                        state = Aes.Decrypt(state, keys.Key7);
+                        state = Aes.Decrypt(state, keys.Key8);
+                        state = Aes.Decrypt(state, keys.Key9);
+                        state = Aes.DecryptLast(state, Sse2.Xor(keys.Key10, feedback));
 
-                    Unsafe.WriteUnaligned(ref output, state);
+                        Unsafe.WriteUnaligned(ref output, state);
 
-                    feedback = lastIn;
+                        feedback = lastIn;
 
-                    input = ref Unsafe.AddByteOffset(ref input, (IntPtr)BlockSize);
-                    output = ref Unsafe.AddByteOffset(ref output, (IntPtr)BlockSize);
+                        input = ref Unsafe.AddByteOffset(ref input, (IntPtr)BlockSize);
+                        output = ref Unsafe.AddByteOffset(ref output, (IntPtr)BlockSize);
+                    }
+                }
+                finally
+                {
+                    keys.Clear();
                 }
 
                 byte padding = Unsafe.SubtractByteOffset(ref output, (IntPtr)1);

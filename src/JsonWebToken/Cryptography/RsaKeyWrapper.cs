@@ -28,43 +28,26 @@ namespace JsonWebToken.Internal
 #endif
             _rsa.ImportParameters(key.ExportParameters());
 #endif
-
-            if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep)
+            _padding = contentEncryptionAlgorithm.Id switch
             {
-                _padding = RSAEncryptionPadding.OaepSHA1;
-            }
-            else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaPkcs1)
-            {
-                _padding = RSAEncryptionPadding.Pkcs1;
-            }
-            else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep256)
-            {
-                _padding = RSAEncryptionPadding.OaepSHA256;
-            }
-            else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep384)
-            {
-                _padding = RSAEncryptionPadding.OaepSHA384;
-            }
-            else if (contentEncryptionAlgorithm == KeyManagementAlgorithm.RsaOaep512)
-            {
-                _padding = RSAEncryptionPadding.OaepSHA512;
-            }
-            else
-            {
-                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(contentEncryptionAlgorithm);
-                _padding = RSAEncryptionPadding.CreateOaep(new HashAlgorithmName()); // will never occur
-            }
+                Algorithms.RsaOaep => RSAEncryptionPadding.OaepSHA1,
+                Algorithms.RsaPkcs1 => RSAEncryptionPadding.Pkcs1,
+                Algorithms.RsaOaep256 => RSAEncryptionPadding.OaepSHA256,
+                Algorithms.RsaOaep384 => RSAEncryptionPadding.OaepSHA384,
+                Algorithms.RsaOaep512 => RSAEncryptionPadding.OaepSHA512,
+                _ => throw ThrowHelper.CreateNotSupportedException_AlgorithmForKeyWrap(contentEncryptionAlgorithm)
+            };
         }
 
         /// <inheritsdoc />
-        public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
         {
             if (_disposed)
             {
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            var cek = CreateSymmetricKey(EncryptionAlgorithm, staticKey);
+            var cek = CreateSymmetricKey(EncryptionAlgorithm, (SymmetricJwk?)staticKey);
 #if SUPPORT_SPAN_CRYPTO
             if (!_rsa.TryEncrypt(cek.AsSpan(), destination, _padding, out int bytesWritten) || bytesWritten != destination.Length)
             {

@@ -18,12 +18,7 @@ namespace JsonWebToken.Internal
         // The default initialization vector from RFC3394
         private const ulong _defaultIV = 0XA6A6A6A6A6A6A6A6;
 
-#if SUPPORT_SIMD
-        private readonly AesDecryptor _decryptor;
-#else
-        private readonly Aes _aes;
-        private readonly ObjectPool<ICryptoTransform> _decryptorPool;
-#endif
+        private readonly AesBlockDecryptor _decryptor;
         private bool _disposed;
 
         public AesKeyUnwrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
@@ -35,26 +30,32 @@ namespace JsonWebToken.Internal
             }
 
 #if SUPPORT_SIMD
-            if (algorithm == KeyManagementAlgorithm.Aes128KW)
+            if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
             {
-                _decryptor = new Aes128NiCbcDecryptor(key.K);
-            }
-            else if (algorithm == KeyManagementAlgorithm.Aes256KW)
-            {
-                _decryptor = new Aes256NiCbcDecryptor(key.K);
-            }
-            else if (algorithm == KeyManagementAlgorithm.Aes192KW)
-            {
-                _decryptor = new Aes192NiCbcDecryptor(key.K);
+                if (algorithm == KeyManagementAlgorithm.Aes128KW)
+                {
+                    _decryptor = new Aes128BlockDecryptor(key.K);
+                }
+                else if (algorithm == KeyManagementAlgorithm.Aes256KW)
+                {
+                    _decryptor = new Aes256BlockDecryptor(key.K);
+                }
+                else if (algorithm == KeyManagementAlgorithm.Aes192KW)
+                {
+                    _decryptor = new Aes192BlockDecryptor(key.K);
+                }
+                else
+                {
+                    ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
+                    _decryptor = new Aes128BlockDecryptor(default);
+                }
             }
             else
             {
-                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-                _decryptor = new Aes128NiCbcDecryptor(default);
+                _decryptor = new DefaultAesBlockDecryptor(key.K);
             }
 #else
-            _aes = GetSymmetricAlgorithm(key, algorithm);
-            _decryptorPool = new ObjectPool<ICryptoTransform>(new PooledDecryptorPolicy(_aes));
+            _decryptor = new DefaultAesBlockDecryptor(key.K);
 #endif
         }
 
@@ -64,12 +65,7 @@ namespace JsonWebToken.Internal
             {
                 if (disposing)
                 {
-#if SUPPORT_SIMD
                     _decryptor.Dispose();
-#else
-                    _decryptorPool.Dispose();
-                    _aes.Dispose();
-#endif
                 }
 
                 _disposed = true;
@@ -119,7 +115,7 @@ namespace JsonWebToken.Internal
             return ThrowHelper.TryWriteError(out bytesWritten);
         }
 
-#if SUPPORT_SIMD
+//#if SUPPORT_SIMD
         private ulong TryUnwrapKey(ulong a, int n, ref byte rRef)
         {
             Span<byte> block = stackalloc byte[16];
@@ -132,6 +128,7 @@ namespace JsonWebToken.Internal
             ref byte tRef7 = ref Unsafe.AddByteOffset(ref tRef, (IntPtr)7);
             Span<byte> b = stackalloc byte[16];
             ref byte bRef = ref MemoryMarshal.GetReference(b);
+            ref byte b2Ref = ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8);
             for (var j = 5; j >= 0; j--)
             {
                 for (var i = n3; i > 0; i--)
@@ -141,53 +138,47 @@ namespace JsonWebToken.Internal
                     Unsafe.WriteUnaligned(ref blockRef, a);
                     ref byte rCurrent = ref Unsafe.AddByteOffset(ref rRef, (IntPtr)((i - 1) << 3));
                     Unsafe.WriteUnaligned(ref blockEndRef, Unsafe.ReadUnaligned<ulong>(ref rCurrent));
-                    _decryptor.DecryptBlock(ref blockRef, ref bRef);
+                    _decryptor.DecryptBlock(block, b);
 
                     a = Unsafe.ReadUnaligned<ulong>(ref bRef);
-                    Unsafe.WriteUnaligned(ref rCurrent, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
+                    Unsafe.WriteUnaligned(ref rCurrent, Unsafe.ReadUnaligned<ulong>(ref b2Ref));
                 }
             }
 
             return a;
         }
-#else
-        private ulong TryUnwrapKey(ulong a, int n, ref byte rRef)
-        {
-            byte[] block = new byte[16];
-            ref byte blockRef = ref block[0];
-            Span<byte> t = stackalloc byte[8];
-            ref byte tRef = ref MemoryMarshal.GetReference(t);
-            Unsafe.WriteUnaligned(ref tRef, 0);
-            int n3 = n >> 3;
-            ref byte blockEndRef = ref Unsafe.AddByteOffset(ref blockRef, (IntPtr)8);
-            ref byte tRef7 = ref Unsafe.AddByteOffset(ref tRef, (IntPtr)7);
-            var decryptor = _decryptorPool.Get();
-            try
-            {
-                for (var j = 5; j >= 0; j--)
-                {
-                    for (var i = n3; i > 0; i--)
-                    {
-                        Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i));
-                        a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
-                        Unsafe.WriteUnaligned(ref blockRef, a);
-                        ref byte rCurrent = ref Unsafe.AddByteOffset(ref rRef, (IntPtr)((i - 1) << 3));
-                        Unsafe.WriteUnaligned(ref blockEndRef, Unsafe.ReadUnaligned<ulong>(ref rCurrent));
-                        Span<byte> b = decryptor.TransformFinalBlock(block, 0, 16);
-                        ref byte bRef = ref MemoryMarshal.GetReference(b);
-                        a = Unsafe.ReadUnaligned<ulong>(ref bRef);
-                        Unsafe.WriteUnaligned(ref rCurrent, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
-                    }
-                }
-            }
-            finally
-            {
-                _decryptorPool.Return(decryptor);
-            }
+//#else
+//        private ulong TryUnwrapKey(ulong a, int n, ref byte rRef)
+//        {
+//            byte[] block = new byte[16];
+//            ref byte blockRef = ref block[0];
+//            Span<byte> t = stackalloc byte[8];
+//            ref byte tRef = ref MemoryMarshal.GetReference(t);
+//            Unsafe.WriteUnaligned(ref tRef, 0);
+//            int n3 = n >> 3;
+//            ref byte blockEndRef = ref Unsafe.AddByteOffset(ref blockRef, (IntPtr)8);
+//            ref byte tRef7 = ref Unsafe.AddByteOffset(ref tRef, (IntPtr)7);
+//            var decryptor = _decryptor;
 
-            return a;
-        }
-#endif
+//            for (var j = 5; j >= 0; j--)
+//            {
+//                for (var i = n3; i > 0; i--)
+//                {
+//                    Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i));
+//                    a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
+//                    Unsafe.WriteUnaligned(ref blockRef, a);
+//                    ref byte rCurrent = ref Unsafe.AddByteOffset(ref rRef, (IntPtr)((i - 1) << 3));
+//                    Unsafe.WriteUnaligned(ref blockEndRef, Unsafe.ReadUnaligned<ulong>(ref rCurrent));
+//                    Span<byte> b = decryptor.TransformFinalBlock(block, 0, 16);
+//                    ref byte bRef = ref MemoryMarshal.GetReference(b);
+//                    a = Unsafe.ReadUnaligned<ulong>(ref bRef);
+//                    Unsafe.WriteUnaligned(ref rCurrent, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
+//                }
+//            }
+
+//            return a;
+//        }
+//#endif
 
         public override int GetKeyUnwrapSize(int wrappedKeySize)
             => GetKeyUnwrappedSize(wrappedKeySize);
@@ -230,19 +221,6 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowCryptographicException_CreateSymmetricAlgorithmFailed(key, algorithm, ex);
                 throw;
             }
-        }
-
-        private sealed class PooledDecryptorPolicy : PooledObjectFactory<ICryptoTransform>
-        {
-            private readonly Aes _aes;
-
-            public PooledDecryptorPolicy(Aes aes)
-            {
-                _aes = aes;
-            }
-
-            public override ICryptoTransform Create()
-                => _aes.CreateDecryptor();
         }
 #endif
     }

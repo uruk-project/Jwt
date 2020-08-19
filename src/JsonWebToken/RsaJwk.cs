@@ -104,6 +104,10 @@ namespace JsonWebToken
             : base(d, alg)
         {
             Initialize(n, e, p, q, dp, dq, qi);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -122,6 +126,10 @@ namespace JsonWebToken
             : base(d, alg)
         {
             Initialize(p, q, dp, dq, qi, e, n);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -131,6 +139,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(rsaParameters);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -140,6 +152,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(e, n);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -149,6 +165,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(e, n);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -165,8 +185,12 @@ namespace JsonWebToken
             byte[] qi,
             KeyManagementAlgorithm alg)
             : base(d, alg)
-        {
+        {     
             Initialize(n, e, p, q, dp, dq, qi);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -185,6 +209,10 @@ namespace JsonWebToken
             : base(d, alg)
         {
             Initialize(p, q, dp, dq, qi, e, n);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -192,8 +220,12 @@ namespace JsonWebToken
         /// </summary>
         public RsaJwk(RSAParameters rsaParameters, KeyManagementAlgorithm alg)
             : base(alg)
-        {
+        {        
             Initialize(rsaParameters);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -203,6 +235,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(e, n);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -212,6 +248,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(e, n);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -578,7 +618,7 @@ namespace JsonWebToken
             var key = new RsaJwk(parameters, algorithm);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
@@ -595,7 +635,7 @@ namespace JsonWebToken
             var key = new RsaJwk(parameters, algorithm);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
@@ -611,7 +651,7 @@ namespace JsonWebToken
             var key = new RsaJwk(parameters);
             if (computeThumbprint)
             {
-                FillThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
