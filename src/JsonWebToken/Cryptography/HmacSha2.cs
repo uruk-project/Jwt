@@ -11,10 +11,6 @@ namespace JsonWebToken
     /// </summary>
     internal sealed class HmacSha2 : IDisposable
     {
-#if SUPPORT_SIMD
-        private static readonly Vector256<byte> _innerKeyInit = Vector256.Create((byte)0x36);
-        private static readonly Vector256<byte> _outerKeyInit = Vector256.Create((byte)0x5c);
-#endif  
         /// <summary>
         /// The hash algorithm.
         /// </summary>
