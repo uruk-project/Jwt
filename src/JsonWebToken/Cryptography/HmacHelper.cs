@@ -22,14 +22,14 @@ namespace JsonWebToken
         public static void InitializeIOKeys(ReadOnlySpan<byte> key, Span<byte> keys, int blockSize)
         {
 #if SUPPORT_SIMD
-            if (Avx2.IsSupported && key.Length != 0 && (key.Length & 31) == 0)
+            if (Avx2.IsSupported && (key.Length & 31) == 0)
             {
                 ref byte keyRef = ref MemoryMarshal.GetReference(key);
                 ref byte keyEndRef = ref Unsafe.Add(ref keyRef, key.Length);
                 ref byte innerKeyRef = ref Unsafe.AsRef(keys[0]);
                 ref byte outerKeyRef = ref Unsafe.Add(ref innerKeyRef, blockSize);
                 ref byte innerKeyEndRef = ref outerKeyRef;
-                do
+                while (Unsafe.IsAddressLessThan(ref keyRef, ref keyEndRef))
                 {
                     var k1 = Unsafe.ReadUnaligned<Vector256<byte>>(ref keyRef);
                     Unsafe.WriteUnaligned(ref innerKeyRef, Avx2.Xor(k1, _innerKeyInit256));
@@ -39,7 +39,7 @@ namespace JsonWebToken
                     keyRef = ref Unsafe.Add(ref keyRef, 32);
                     innerKeyRef = ref Unsafe.Add(ref innerKeyRef, 32);
                     outerKeyRef = ref Unsafe.Add(ref outerKeyRef, 32);
-                } while (Unsafe.IsAddressLessThan(ref keyRef, ref keyEndRef));
+                } 
 
                 // treat the remain
                 while (Unsafe.IsAddressLessThan(ref innerKeyRef, ref innerKeyEndRef))
@@ -50,14 +50,14 @@ namespace JsonWebToken
                     outerKeyRef = ref Unsafe.Add(ref outerKeyRef, 32);
                 }
             }
-            else if (Sse2.IsSupported && key.Length != 0 && (key.Length & 15) == 0)
+            else if (Sse2.IsSupported && (key.Length & 15) == 0)
             {
                 ref byte keyRef = ref MemoryMarshal.GetReference(key);
                 ref byte keyEndRef = ref Unsafe.Add(ref keyRef, key.Length);
                 ref byte innerKeyRef = ref Unsafe.AsRef(keys[0]);
                 ref byte outerKeyRef = ref Unsafe.Add(ref innerKeyRef, blockSize);
                 ref byte innerKeyEndRef = ref outerKeyRef;
-                do
+                while (Unsafe.IsAddressLessThan(ref keyRef, ref keyEndRef))
                 {
                     var k1 = Unsafe.ReadUnaligned<Vector128<byte>>(ref keyRef);
                     Unsafe.WriteUnaligned(ref innerKeyRef, Sse2.Xor(k1, _innerKeyInit128));
@@ -67,7 +67,7 @@ namespace JsonWebToken
                     keyRef = ref Unsafe.Add(ref keyRef, 16);
                     innerKeyRef = ref Unsafe.Add(ref innerKeyRef, 16);
                     outerKeyRef = ref Unsafe.Add(ref outerKeyRef, 16);
-                } while (Unsafe.IsAddressLessThan(ref keyRef, ref keyEndRef));
+                } 
 
                 // treat the remain
                 while (Unsafe.IsAddressLessThan(ref innerKeyRef, ref innerKeyEndRef))
