@@ -2,7 +2,7 @@
 
 namespace JsonWebToken.Tests.Cryptography
 {
-#if NETCOREAPP3_0
+#if SUPPORT_SIMD
     public class Aes192NiTests : Aes192Tests
     {
         protected override AesDecryptor CreateDecryptor()

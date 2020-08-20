@@ -356,14 +356,15 @@ namespace JsonWebToken
 
         private void Initialize(RSAParameters rsaParameters)
         {
+            _e = rsaParameters.Exponent ?? throw new ArgumentNullException(nameof(rsaParameters.Exponent));
+            _n = rsaParameters.Modulus ?? throw new ArgumentNullException(nameof(rsaParameters.Modulus));
+
             _d = rsaParameters.D;
             _dp = rsaParameters.DP;
             _dq = rsaParameters.DQ;
             _qi = rsaParameters.InverseQ;
             _p = rsaParameters.P;
             _q = rsaParameters.Q;
-            _e = rsaParameters.Exponent;
-            _n = rsaParameters.Modulus;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

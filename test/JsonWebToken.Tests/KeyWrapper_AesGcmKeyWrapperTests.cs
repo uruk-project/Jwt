@@ -1,4 +1,4 @@
-﻿#if NETCOREAPP3_0
+﻿#if SUPPORT_AESGCM
 using System;
 using System.Collections.Generic;
 using JsonWebToken.Internal;

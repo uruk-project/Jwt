@@ -51,7 +51,7 @@ namespace JsonWebToken.Tests
             yield return new object[] { (string)EncryptionAlgorithm.Aes128CbcHmacSha256, (byte[])KeyManagementAlgorithm.EcdhEs };
             yield return new object[] { (string)EncryptionAlgorithm.Aes192CbcHmacSha384, (byte[])KeyManagementAlgorithm.EcdhEs };
             yield return new object[] { (string)EncryptionAlgorithm.Aes256CbcHmacSha512, (byte[])KeyManagementAlgorithm.EcdhEs };
-#if NETCOREAPP3_0
+#if SUPPORT_ELLIPTIC_CURVE
             yield return new object[] { (string)EncryptionAlgorithm.Aes128CbcHmacSha256, (byte[])KeyManagementAlgorithm.EcdhEsAes128KW };
             yield return new object[] { (string)EncryptionAlgorithm.Aes128CbcHmacSha256, (byte[])KeyManagementAlgorithm.EcdhEsAes192KW };
             yield return new object[] { (string)EncryptionAlgorithm.Aes128CbcHmacSha256, (byte[])KeyManagementAlgorithm.EcdhEsAes256KW };

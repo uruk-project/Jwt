@@ -73,7 +73,7 @@ namespace JsonWebToken
                                 }
                                 else
                                 {
-                                    header.SignatureAlgorithm = SignatureAlgorithm.Create(reader.GetString());
+                                    header.SignatureAlgorithm = SignatureAlgorithm.Create(reader.GetString()!);
                                 }
 
                                 continue;
@@ -90,7 +90,7 @@ namespace JsonWebToken
                                 }
                                 else
                                 {
-                                    header.EncryptionAlgorithm = EncryptionAlgorithm.Create(reader.GetString());
+                                    header.EncryptionAlgorithm = EncryptionAlgorithm.Create(reader.GetString()!);
                                 }
 
                                 continue;
@@ -107,7 +107,7 @@ namespace JsonWebToken
                                 }
                                 else
                                 {
-                                    header.CompressionAlgorithm = CompressionAlgorithm.Create(reader.GetString());
+                                    header.CompressionAlgorithm = CompressionAlgorithm.Create(reader.GetString()!);
                                 }
 
                                 continue;
@@ -137,7 +137,7 @@ namespace JsonWebToken
                             var criticals = new List<JwtValue>();
                             while (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
-                                string criticalHeader = reader.GetString();
+                                string criticalHeader = reader.GetString()!;
                                 criticals.Add(new JwtValue(criticalHeader));
                                 if (handlers.TryGetValue(criticalHeader, out var handler))
                                 {
@@ -163,7 +163,7 @@ namespace JsonWebToken
                             var criticals = new List<JwtValue>();
                             while (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
-                                string criticalHeader = reader.GetString();
+                                string criticalHeader = reader.GetString()!;
                                 criticals.Add(new JwtValue(criticalHeader));
                             }
 
@@ -189,7 +189,7 @@ namespace JsonWebToken
                         header.Inner.Add(name, JsonParser.ReadJsonArray(ref reader));
                         break;
                     case JsonTokenType.String:
-                        header.Inner.Add(name, reader.GetString());
+                        header.Inner.Add(name, reader.GetString()!);
                         break;
                     case JsonTokenType.True:
                         header.Inner.Add(name, true);

@@ -59,12 +59,13 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
+#if SUPPORT_SPAN_CRYPTO
+#if !NETCOREAPP
+            return _rsa.TryDecrypt(key, destination, _padding, out bytesWritten);
+#else
+
             try
             {
-#if SUPPORT_SPAN_CRYPTO
-#if !NETCOREAPP2_1 && !NETCOREAPP3_0
-                ret = _rsa.TryDecrypt(key, destination, _padding, out bytesWritten);
-#else
                 // https://github.com/dotnet/corefx/pull/36601
                 bool decrypted;
                 if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -128,20 +129,28 @@ namespace JsonWebToken.Internal
                 }
 
                 return decrypted;
-#endif
-#else
-                var result = _rsa.Decrypt(key.ToArray(), _padding);
-                bytesWritten = result.Length;
-                result.CopyTo(destination);
-
-                return true;
-#endif
             }
             catch (CryptographicException)
             {
                 bytesWritten = 0;
                 return false;
             }
+#endif
+#else
+            try
+            {
+                var result = _rsa.Decrypt(key.ToArray(), _padding);
+                bytesWritten = result.Length;
+                result.CopyTo(destination);
+
+                return true;
+            }
+            catch (CryptographicException)
+            {
+                bytesWritten = 0;
+                return false;
+            }
+#endif
         }
 
         /// <inheritsdoc />

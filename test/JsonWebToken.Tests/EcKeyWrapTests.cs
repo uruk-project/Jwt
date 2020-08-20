@@ -1,4 +1,4 @@
-﻿#if NETCOREAPP3_0 || NET47
+﻿#if SUPPORT_ELLIPTIC_CURVE
 using System.Collections.Generic;
 using System.Text;
 using JsonWebToken.Internal;

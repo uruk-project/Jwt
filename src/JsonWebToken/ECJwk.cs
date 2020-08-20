@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
+// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 #if SUPPORT_ELLIPTIC_CURVE
@@ -20,7 +20,6 @@ namespace JsonWebToken
     public sealed class ECJwk : AsymmetricJwk
     {
         private const uint crv = 7762531u;
-
         private byte[] _x;
         private byte[] _y;
 

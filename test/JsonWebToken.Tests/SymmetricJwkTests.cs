@@ -64,7 +64,7 @@ namespace JsonWebToken.Tests
             yield return new object[] { _symmetric256Key, EncryptionAlgorithm.Aes128CbcHmacSha256 };
             yield return new object[] { _symmetric384Key, EncryptionAlgorithm.Aes192CbcHmacSha384 };
             yield return new object[] { _symmetric512Key, EncryptionAlgorithm.Aes256CbcHmacSha512 };
-#if NETCOREAPP3_0
+#if SUPPORT_AESGCM
             yield return new object[] { _symmetric256Key, EncryptionAlgorithm.Aes128Gcm };
             yield return new object[] { _symmetric384Key, EncryptionAlgorithm.Aes192Gcm };
             yield return new object[] { _symmetric512Key, EncryptionAlgorithm.Aes256Gcm };
@@ -76,7 +76,7 @@ namespace JsonWebToken.Tests
             yield return new object[] { _symmetric128Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes128KW };
             yield return new object[] { _symmetric192Key, EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes192KW };
             yield return new object[] { _symmetric256Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes256KW };
-#if NETCOREAPP3_0
+#if SUPPORT_AESGCM
             yield return new object[] { _symmetric128Key, EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.Aes128GcmKW };
             yield return new object[] { _symmetric192Key, EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.Aes192GcmKW };
             yield return new object[] { _symmetric256Key, EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Aes256GcmKW };

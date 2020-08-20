@@ -1,5 +1,4 @@
-﻿#if NETCOREAPP3_0
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -16,7 +15,7 @@ namespace JsonWebToken.Tests
             for (int i = 0; i < Count; i++)
             {
                 rawHeaders[i] = new byte[32];
-                RandomNumberGenerator.Fill(rawHeaders[i]);
+                FillRandom(rawHeaders[i]);
                 JwtHeader header = JwtHeader.FromJson($"{{\"kid\":\"{i}\"}}");
                 cache.AddHeader(rawHeaders[i], header);
             }
@@ -39,7 +38,7 @@ namespace JsonWebToken.Tests
             for (int i = 0; i < Count; i++)
             {
                 rawHeaders[i] = new byte[32];
-                RandomNumberGenerator.Fill(rawHeaders[i]);
+                FillRandom(rawHeaders[i]);
                 JwtHeader header = JwtHeader.FromJson($"{{\"kid\":\"{i}\"}}");
                 cache.AddHeader(rawHeaders[i], header);
                 Assert.Equal(header, cache.Head);
@@ -66,7 +65,7 @@ namespace JsonWebToken.Tests
             for (int i = 0; i < 10; i++)
             {
                 rawHeaders[i] = new byte[32];
-                RandomNumberGenerator.Fill(rawHeaders[i]);
+                FillRandom(rawHeaders[i]);
                 JwtHeader header = JwtHeader.FromJson($"{{\"kid\":\"{i}\"}}");
                 cache.AddHeader(rawHeaders[i], header);
             }
@@ -87,7 +86,7 @@ namespace JsonWebToken.Tests
             for (int i = 0; i < 1000; i++)
             {
                 rawHeaders[i] = new byte[32];
-                RandomNumberGenerator.Fill(rawHeaders[i]);
+                FillRandom(rawHeaders[i]);
             }
 
             var p = Parallel.For(0, 100, j =>
@@ -109,6 +108,15 @@ namespace JsonWebToken.Tests
 
             Assert.True(cache.Validate());
         }
+
+        private static void FillRandom(byte[] data)
+        {
+#if NETCOREAPP
+            RandomNumberGenerator.Fill(data);
+#else
+            using var rnd = RandomNumberGenerator.Create();
+            rnd.GetBytes(data);
+#endif
+        }
     }
 }
-#endif
