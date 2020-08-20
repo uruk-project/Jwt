@@ -3,8 +3,7 @@ using JsonWebToken.Internal;
 
 namespace JsonWebToken.Tests.Cryptography
 {
-#if NETCOREAPP3_0
-
+#if SUPPORT_SIMD
     public class Aes256NiTests : Aes256Tests
     {
         protected override AesDecryptor CreateDecryptor()

@@ -60,7 +60,7 @@ namespace JsonWebToken.Internal
             }
 
 #if SUPPORT_SPAN_CRYPTO
-#if !NETCOREAPP2_1 && !NETCOREAPP3_0
+#if !NETCOREAPP
             return _rsa.TryDecrypt(key, destination, _padding, out bytesWritten);
 #else
 

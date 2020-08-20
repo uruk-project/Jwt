@@ -5,9 +5,6 @@ using System.Runtime.CompilerServices;
 using Xunit;
 using Newtonsoft.Json;
 using JsonWebToken.Internal;
-#if NETCOREAPP3_0
-using System.Text.Json;
-#endif
 
 namespace JsonWebToken.Tests
 {

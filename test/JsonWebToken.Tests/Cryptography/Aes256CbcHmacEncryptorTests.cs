@@ -24,7 +24,6 @@ namespace JsonWebToken.Tests
             Assert.Equal(32, tagSize);
         }
 
-#if NETCOREAPP3_0
         [Fact]
         public void EncryptFast_Decrypt()
         {
@@ -42,6 +41,7 @@ namespace JsonWebToken.Tests
             Assert.Equal(32, tagSize);
         }
 
+#if SUPPORT_SIMD
         [Theory]
         [InlineData("")]
         [InlineData("1")]

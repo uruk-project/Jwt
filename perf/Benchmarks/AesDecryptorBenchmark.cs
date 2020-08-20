@@ -12,7 +12,7 @@ namespace JsonWebToken.Performance
     {
         private readonly static AesCbcEncryptor _encryptor;
         private readonly static AesCbcDecryptor _decryptor;
-#if NETCOREAPP3_0
+#if SUPPORT_SIMD
         private readonly static Aes128CbcDecryptor _decryptorNi;
 #endif
         private readonly static byte[] plaintext;
@@ -26,7 +26,7 @@ namespace JsonWebToken.Performance
             nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
             _encryptor = new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
             _decryptor = new AesCbcDecryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
-#if NETCOREAPP3_0
+#if SUPPORT_SIMD
             _decryptorNi = new Aes128CbcDecryptor();
 #endif
         }
@@ -38,27 +38,11 @@ namespace JsonWebToken.Performance
             return _decryptor.TryDecrypt(key, data.Ciphertext, nonce, plaintext, out int bytesWritten);
         }
 
-#if NETCOREAPP3_0
-        [Benchmark(Baseline = false)]
-        [ArgumentsSource(nameof(GetData))]
-        public bool Decrypt_Simd(Item data)
-        {
-            return _decryptorNi.TryDecrypt(key, data.Ciphertext, nonce, plaintext, out int bytesWritten);
-        }
-
         public static IEnumerable<Item> GetData()
         {
             yield return new Item(GetCiphertext(Encoding.UTF8.GetBytes(Enumerable.Repeat('a', 1).ToArray())));
             yield return new Item(GetCiphertext(Encoding.UTF8.GetBytes(Enumerable.Repeat('a', 2048).ToArray())));
             yield return new Item(GetCiphertext(Encoding.UTF8.GetBytes(Enumerable.Repeat('a', 2048 * 16).ToArray())));
-        }
-
-        private static byte[] GetCiphertext(byte[] plaintext)
-        {
-            var ciphertext = (new byte[(plaintext.Length + 16) & ~15]);
-
-            _encryptor.Encrypt(key, plaintext, nonce, ciphertext);
-            return ciphertext;
         }
 
         public class Item
@@ -74,6 +58,22 @@ namespace JsonWebToken.Performance
             {
                 return Ciphertext.Length.ToString();
             }
+        }
+
+        private static byte[] GetCiphertext(byte[] plaintext)
+        {
+            var ciphertext = (new byte[(plaintext.Length + 16) & ~15]);
+
+            _encryptor.Encrypt(key, plaintext, nonce, ciphertext);
+            return ciphertext;
+        }
+
+#if SUPPORT_SIMD
+        [Benchmark(Baseline = false)]
+        [ArgumentsSource(nameof(GetData))]
+        public bool Decrypt_Simd(Item data)
+        {
+            return _decryptorNi.TryDecrypt(key, data.Ciphertext, nonce, plaintext, out int bytesWritten);
         }
 #endif
     }

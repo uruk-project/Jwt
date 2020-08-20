@@ -4,7 +4,7 @@ using Xunit;
 
 namespace JsonWebToken.Tests.Cryptography
 {
-#if NETCOREAPP3_0
+#if SUPPORT_SIMD
     public class Aes128NiTests : Aes128Tests
     {
         protected override AesDecryptor CreateDecryptor()
