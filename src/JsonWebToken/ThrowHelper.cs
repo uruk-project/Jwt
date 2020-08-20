@@ -144,7 +144,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_EncryptionAlgorithm(EncryptionAlgorithm? algorithm) => throw CreateNotSupportedException_EncryptionAlgorithm(algorithm);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateNotSupportedException_EncryptionAlgorithm(EncryptionAlgorithm? algorithm) => new NotSupportedException($"Encryption failed. No support for: Algorithm: '{algorithm}'.");
+        internal static Exception CreateNotSupportedException_EncryptionAlgorithm(EncryptionAlgorithm? algorithm) => new NotSupportedException($"Encryption failed. No support for: Algorithm: '{algorithm}'.");
 
         [DoesNotReturn]
         internal static void ThrowCryptographicException_EncryptionFailed(EncryptionAlgorithm? algorithm, Jwk key, Exception innerException) => throw CreateCryptographicException_EncryptionFailed(algorithm, key, innerException);
@@ -159,7 +159,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_AlgorithmForKeyWrap(KeyManagementAlgorithm? algorithm) => throw CreateNotSupportedException_AlgorithmForKeyWrap(algorithm);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateNotSupportedException_AlgorithmForKeyWrap(KeyManagementAlgorithm? algorithm) => new NotSupportedException($"Key wrap is not supported for algorithm: '{algorithm}'.");
+        internal static Exception CreateNotSupportedException_AlgorithmForKeyWrap(KeyManagementAlgorithm? algorithm) => new NotSupportedException($"Key wrap is not supported for algorithm: '{algorithm}'.");
 
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_CompressionAlgorithm(CompressionAlgorithm compressionAlgorithm) => throw CreateNotSupportedException_CompressionAlgorithm(compressionAlgorithm);
@@ -227,6 +227,16 @@ namespace JsonWebToken
         private static Exception CreateNotSupportedException_SignatureAlgorithm(SignatureAlgorithm algorithm, Jwk? key) => new NotSupportedException($"Signature failed. No support for: Algorithm: '{algorithm}', key: '{key?.Kid}'.");
 
         [DoesNotReturn]
+        internal static void ThrowNotSupportedException_Algorithm(SignatureAlgorithm algorithm) => throw CreateNotSupportedException_Algorithm(algorithm);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static Exception CreateNotSupportedException_Algorithm(SignatureAlgorithm algorithm) => new NotSupportedException($"The algorithm '{algorithm}' is not supported for this kind of JWK.");
+
+        [DoesNotReturn]
+        internal static void ThrowNotSupportedException_Algorithm(KeyManagementAlgorithm algorithm) => throw CreateNotSupportedException_Algorithm(algorithm);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateNotSupportedException_Algorithm(KeyManagementAlgorithm algorithm) => new NotSupportedException($"The algorithm '{algorithm}' is not supported for this kind of JWK.");
+
+        [DoesNotReturn]
         internal static void ThrowNotSupportedException_Jwk(ReadOnlySpan<byte> name) => throw CreateNotSupportedException_Jwk(name);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateNotSupportedException_Jwk(ReadOnlySpan<byte> name) => new NotSupportedException($"JWK type '{Utf8.GetString(name)}' is not supported.");
@@ -246,7 +256,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_Curve(string? curve) => throw CreateNotSupportedException_Curve(curve);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateNotSupportedException_Curve(string? curve) => new NotSupportedException($"Elliptical Curve not supported for curve: '{curve}'");
+        internal static Exception CreateNotSupportedException_Curve(string curve) => new NotSupportedException($"Elliptical Curve not supported for curve: '{curve}'");
 
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_Algorithm(string algorithm) => throw CreateNotSupportedException_Algorithm(algorithm);

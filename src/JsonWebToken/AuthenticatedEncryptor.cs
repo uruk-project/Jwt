@@ -8,17 +8,19 @@ namespace JsonWebToken
     /// <summary>
     /// Provides authenticated encryption and decryption.
     /// </summary>
-    public abstract class AuthenticatedEncryptor : IDisposable
+    public abstract class AuthenticatedEncryptor
     {
         /// <summary>
         /// Encrypts the <paramref name="plaintext"/>.
         /// </summary>
+        /// <param name="key">The key used to encrypt to encrypt.</param>
         /// <param name="plaintext">The plaintext to encrypt.</param>
         /// <param name="nonce">An arbitrary value to be used only once.</param>
         /// <param name="associatedData">The associated data.</param>
         /// <param name="ciphertext">The resulting ciphertext.</param>
         /// <param name="authenticationTag">The resulting authentication tag.</param>
-        public abstract void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag);
+        /// <param name="authenticationTagBytesWritten">The number of written bytes for the authentication tag.</param>
+        public abstract void Encrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> associatedData, Span<byte> ciphertext, Span<byte> authenticationTag, out int authenticationTagBytesWritten);
 
         /// <summary>
         /// Gets the size of the resulting ciphertext.
@@ -40,13 +42,5 @@ namespace JsonWebToken
         /// Gets the required size of the  base64-URL nonce.
         /// </summary>
         public abstract int GetBase64NonceSize();
-
-        /// <summary>
-        /// Gets the size of the base64-URL authentication tag.
-        /// </summary>
-        public abstract int GetBase64TagSize();
-
-        /// <inheritdoc />
-        public abstract void Dispose();
     }
 }

@@ -12,17 +12,10 @@ namespace JsonWebToken.Internal
     /// </summary>
     internal sealed class AesGcmDecryptor : AuthenticatedDecryptor
     {
-        private readonly SymmetricJwk _key;
+        private readonly EncryptionAlgorithm _encryptionAlgorithm;
 
-        private bool _disposed;
-
-        public AesGcmDecryptor(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm)
+        public AesGcmDecryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (key is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
             if (encryptionAlgorithm is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
@@ -33,25 +26,20 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
             }
 
-            if (key.KeySizeInBits < encryptionAlgorithm.RequiredKeySizeInBits)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(key, encryptionAlgorithm, encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.KeySizeInBits);
-            }
-
-            _key = key;
+            _encryptionAlgorithm = encryptionAlgorithm;
         }
 
         /// <inheritdoc />
-        public override bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
+        public override bool TryDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
         {
-            if (_disposed)
+            if (key.Length < _encryptionAlgorithm.RequiredKeySizeInBytes)
             {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
+                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(_encryptionAlgorithm, _encryptionAlgorithm.RequiredKeySizeInBits, key.Length * 8);
             }
 
             try
             {
-                using var aes = new AesGcm(_key.K);
+                using var aes = new AesGcm(key);
                 if (plaintext.Length > ciphertext.Length)
                 {
                     plaintext = plaintext.Slice(0, ciphertext.Length);
@@ -66,12 +54,6 @@ namespace JsonWebToken.Internal
                 plaintext.Clear();
                 return ThrowHelper.TryWriteError(out bytesWritten);
             }
-        }
-
-        /// <inheritdoc />
-        public override void Dispose()
-        {
-            _disposed = true;
         }
     }
 }

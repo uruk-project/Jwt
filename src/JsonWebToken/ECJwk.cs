@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
+// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 #if SUPPORT_ELLIPTIC_CURVE
@@ -75,6 +75,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(parameters);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -84,6 +88,10 @@ namespace JsonWebToken
             : base(d, alg)
         {
             Initialize(crv, x, y, alg);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -93,6 +101,10 @@ namespace JsonWebToken
             : base(d, alg)
         {
             Initialize(crv, x, y, alg);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -102,6 +114,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(crv, x, y, alg);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -111,6 +127,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(crv, x, y, alg);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -122,6 +142,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(parameters);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -131,6 +155,10 @@ namespace JsonWebToken
             : base(d, alg)
         {
             Initialize(crv, x, y);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -140,6 +168,10 @@ namespace JsonWebToken
             : base(d, alg)
         {
             Initialize(crv, x, y);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -149,6 +181,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(crv, x, y);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -158,6 +194,10 @@ namespace JsonWebToken
             : base(alg)
         {
             Initialize(crv, x, y);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
         }
 
         /// <summary>
@@ -175,24 +215,16 @@ namespace JsonWebToken
             _d = parameters.D;
             _x = parameters.Q.X;
             _y = parameters.Q.Y;
-            switch (parameters.Curve.Oid.FriendlyName)
+            Crv = parameters.Curve.Oid.FriendlyName switch
             {
-                case "nistP256":
-                case "ECDSA_P256":
-                    Crv = EllipticalCurve.P256;
-                    break;
-                case "nistP384":
-                case "ECDSA_P384":
-                    Crv = EllipticalCurve.P384;
-                    break;
-                case "nistP521":
-                case "ECDSA_P521":
-                    Crv = EllipticalCurve.P521;
-                    break;
-                default:
-                    ThrowHelper.ThrowNotSupportedException_Curve(parameters.Curve.Oid.FriendlyName);
-                    break;
-            }
+                "nistP256" => EllipticalCurve.P256,
+                "ECDSA_P256" => EllipticalCurve.P256,
+                "nistP384" => EllipticalCurve.P384,
+                "ECDSA_P384" => EllipticalCurve.P384,
+                "nistP521" => EllipticalCurve.P521,
+                "ECDSA_P521" => EllipticalCurve.P521,
+                _ => throw ThrowHelper.CreateNotSupportedException_Curve(parameters.Curve.Oid.FriendlyName)
+            };
         }
 
         private void Initialize(in EllipticalCurve crv, string x, string y, SignatureAlgorithm alg)
@@ -292,13 +324,21 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override bool SupportSignature(SignatureAlgorithm algorithm)
         {
+#if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
             return algorithm.Category == AlgorithmCategory.EllipticCurve && algorithm.RequiredKeySizeInBits == KeySizeInBits;
+#else
+            return false;
+#endif
         }
 
         /// <inheritdoc />
         public override bool SupportKeyManagement(KeyManagementAlgorithm algorithm)
         {
-            return algorithm.Category == AlgorithmCategory.EllipticCurve;
+#if SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
+            return (algorithm.Category & AlgorithmCategory.EllipticCurve) != 0;
+#else
+            return false;
+#endif
         }
 
         /// <inheritdoc />
@@ -310,19 +350,31 @@ namespace JsonWebToken
         /// <inheritdoc />
         protected override Signer CreateSigner(SignatureAlgorithm algorithm)
         {
+#if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
             return new EcdsaSigner(this, algorithm);
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         /// <inheritdoc />
         protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
+#if SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
             return new EcdhKeyWrapper(this, encryptionAlgorithm, algorithm);
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         /// <inheritdoc />
         protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
+#if SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
             return new EcdhKeyUnwrapper(this, encryptionAlgorithm, algorithm);
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         /// <summary>
@@ -443,7 +495,7 @@ namespace JsonWebToken
             var key = new ECJwk(parameters, algorithm);
             if (computeThumbprint)
             {
-                ComputeThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
@@ -463,7 +515,7 @@ namespace JsonWebToken
             var key = new ECJwk(parameters, algorithm);
             if (computeThumbprint)
             {
-                ComputeThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
@@ -483,7 +535,7 @@ namespace JsonWebToken
             var key = new ECJwk(parameters);
             if (computeThumbprint)
             {
-                ComputeThumbprint(key);
+                ComputeKid(key);
             }
 
             return key;
@@ -492,12 +544,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override ReadOnlySpan<byte> AsSpan()
         {
-#if !NETSTANDARD2_0
-            using var ecdh = ECDiffieHellman.Create(ExportParameters());
-            return ecdh.PublicKey.ToByteArray();
-#else
             throw new NotImplementedException();
-#endif
         }
 
         /// <summary>

@@ -9,7 +9,7 @@ namespace JsonWebToken
     /// The categories of algorithm.
     /// </summary>
     [Flags]
-    public enum AlgorithmCategory : sbyte
+    public enum AlgorithmCategory : byte
     {
         /// <summary>
         /// No category.
@@ -29,16 +29,21 @@ namespace JsonWebToken
         /// <summary>
         /// AES algorithm
         /// </summary>
-        Aes = 0x3,
+        Aes = 0x4,
 
         /// <summary>
         /// AES-GCM algorithm
         /// </summary>
-        AesGcm = Aes | 0x10,
+        AesGcm = Aes | 0x80,
 
         /// <summary>
         /// HMAC algorithm
         /// </summary>
-        Hmac = 0x4
+        Hmac = 0x08,
+
+        /// <summary>
+        /// HMAC algorithm
+        /// </summary>
+        Direct = 0x10
     }
 }

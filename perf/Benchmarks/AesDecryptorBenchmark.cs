@@ -13,20 +13,21 @@ namespace JsonWebToken.Performance
         private readonly static AesCbcEncryptor _encryptor;
         private readonly static AesCbcDecryptor _decryptor;
 #if NETCOREAPP3_0
-        private readonly static Aes128NiCbcDecryptor _decryptorNi;
+        private readonly static Aes128CbcDecryptor _decryptorNi;
 #endif
         private readonly static byte[] plaintext;
         private readonly static byte[] nonce;
+        private readonly static byte[] key;
 
         static AesDecryptorBenchmark()
         {
             plaintext = new byte[2048 * 16 + 16];
-            var key = SymmetricJwk.GenerateKey(128);
+            key = SymmetricJwk.GenerateKey(128).AsSpan().ToArray();
             nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
-            _encryptor = new AesCbcEncryptor(key.K, EncryptionAlgorithm.Aes128CbcHmacSha256);
-            _decryptor = new AesCbcDecryptor(key.K, EncryptionAlgorithm.Aes128CbcHmacSha256);
+            _encryptor = new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
+            _decryptor = new AesCbcDecryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
 #if NETCOREAPP3_0
-            _decryptorNi = new Aes128NiCbcDecryptor(key.K);
+            _decryptorNi = new Aes128CbcDecryptor();
 #endif
         }
 
@@ -34,7 +35,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetData))]
         public bool Decrypt(Item data)
         {
-            return _decryptor.TryDecrypt(data.Ciphertext, nonce, plaintext, out int bytesWritten);
+            return _decryptor.TryDecrypt(key, data.Ciphertext, nonce, plaintext, out int bytesWritten);
         }
 
 #if NETCOREAPP3_0
@@ -42,7 +43,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetData))]
         public bool Decrypt_Simd(Item data)
         {
-            return _decryptorNi.TryDecrypt(data.Ciphertext, nonce, plaintext, out int bytesWritten);
+            return _decryptorNi.TryDecrypt(key, data.Ciphertext, nonce, plaintext, out int bytesWritten);
         }
 
         public static IEnumerable<Item> GetData()
@@ -56,7 +57,7 @@ namespace JsonWebToken.Performance
         {
             var ciphertext = (new byte[(plaintext.Length + 16) & ~15]);
 
-            _encryptor.Encrypt(plaintext, nonce, ciphertext);
+            _encryptor.Encrypt(key, plaintext, nonce, ciphertext);
             return ciphertext;
         }
 

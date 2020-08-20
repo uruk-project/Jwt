@@ -6,29 +6,28 @@ namespace JsonWebToken.Tests.Cryptography
     // Test data set from https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/aes/AESAVS.pdf
     public abstract class AesTests
     {
-        protected abstract AesEncryptor CreateEncryptor(ReadOnlySpan<byte> key);
+        protected abstract AesEncryptor CreateEncryptor();
 
-        protected abstract AesDecryptor CreateDecryptor(ReadOnlySpan<byte> key);
+        protected abstract AesDecryptor CreateDecryptor();
 
         protected void VerifyGfsBoxKat(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> expectedCiphertext, ReadOnlySpan<byte> key)
         {
             var iv = ByteUtils.HexToByteArray("00000000000000000000000000000000");
-            var encryptor = CreateEncryptor(key);
+            var encryptor = CreateEncryptor();
             Span<byte> ciphertext = new byte[(plaintext.Length + 16) & ~15];
-            encryptor.Encrypt(plaintext, iv, ciphertext);
+            encryptor.Encrypt(key, plaintext, iv, ciphertext);
 
             // The last 16 bytes are ignored as the test data sets are for ECB mode
             Assert.Equal(expectedCiphertext.ToArray(), ciphertext.Slice(0, ciphertext.Length - 16).ToArray());
-            encryptor.Dispose();
         }
 
         protected void VerifyKeySboxKat(ReadOnlySpan<byte> key, ReadOnlySpan<byte> expectedCiphertext)
         {
             var iv = ByteUtils.HexToByteArray("00000000000000000000000000000000");
             var plaintext = ByteUtils.HexToByteArray("00000000000000000000000000000000");
-            var encryptor = CreateEncryptor(key);
+            var encryptor = CreateEncryptor();
             Span<byte> ciphertext = new byte[(plaintext.Length + 16) & ~15];
-            encryptor.Encrypt(plaintext, iv, ciphertext);
+            encryptor.Encrypt(key, plaintext, iv, ciphertext);
 
             // The last 16 bytes are ignored as the test data sets are for ECB mode
             Assert.Equal(expectedCiphertext.ToArray(), ciphertext.Slice(0, ciphertext.Length - 16).ToArray());
@@ -36,9 +35,9 @@ namespace JsonWebToken.Tests.Cryptography
 
         protected void VerifyVarTxtKat(ReadOnlySpan<byte> key, ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> iv, ReadOnlySpan<byte> expectedCiphertext)
         {
-            var encryptor = CreateEncryptor(key);
+            var encryptor = CreateEncryptor();
             Span<byte> ciphertext = new byte[(plaintext.Length + 16) & ~15];
-            encryptor.Encrypt(plaintext, iv, ciphertext);
+            encryptor.Encrypt(key, plaintext, iv, ciphertext);
 
             // The last 16 bytes are ignored as the test data sets are for ECB mode
             Assert.Equal(expectedCiphertext.ToArray(), ciphertext.Slice(0, ciphertext.Length - 16).ToArray());
@@ -46,10 +45,10 @@ namespace JsonWebToken.Tests.Cryptography
 
         protected void VerifyEmptySpan(ReadOnlySpan<byte> key, ReadOnlySpan<byte> iv)
         {
-            var encryptor = CreateEncryptor(key);
-            ReadOnlySpan<byte> plaintext = new byte[0];// ReadOnlySpan<byte>.Empty;
+            var encryptor = CreateEncryptor();
+            ReadOnlySpan<byte> plaintext = ReadOnlySpan<byte>.Empty;
             Span<byte> ciphertext = new byte[(plaintext.Length + 16) & ~15];
-            encryptor.Encrypt(plaintext, iv, ciphertext);
+            encryptor.Encrypt(key, plaintext, iv, ciphertext);
         }
     }
 }

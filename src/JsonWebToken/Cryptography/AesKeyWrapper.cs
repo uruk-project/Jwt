@@ -19,7 +19,7 @@ namespace JsonWebToken.Internal
         private const ulong _defaultIV = 0XA6A6A6A6A6A6A6A6;
 
 #if SUPPORT_SIMD
-        private readonly AesEncryptor _encryptor;
+        private readonly AesBlockEncryptor _encryptor;
 #else
         private readonly Aes _aes;
         private readonly ObjectPool<ICryptoTransform> _encryptorPool;
@@ -32,20 +32,20 @@ namespace JsonWebToken.Internal
 #if SUPPORT_SIMD
             if (algorithm == KeyManagementAlgorithm.Aes128KW)
             {
-                _encryptor = new Aes128NiCbcEncryptor(key.K);
+                _encryptor = new Aes128BlockEncryptor(key.K);
             }
             else if (algorithm == KeyManagementAlgorithm.Aes256KW)
             {
-                _encryptor = new Aes256NiCbcEncryptor(key.K);
+                _encryptor = new Aes256BlockEncryptor(key.K);
             }
             else if (algorithm == KeyManagementAlgorithm.Aes192KW)
             {
-                _encryptor = new Aes192NiCbcEncryptor(key.K);
+                _encryptor = new Aes192BlockEncryptor(key.K);
             }
             else
             {
                 ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-                _encryptor = new Aes128NiCbcEncryptor(default);
+                _encryptor = new Aes128BlockEncryptor(default);
             }
 #else
             if (algorithm.Category != AlgorithmCategory.Aes)
@@ -82,7 +82,7 @@ namespace JsonWebToken.Internal
         /// <param name="staticKey">the key to be wrapped. If <c>null</c>, a new <see cref="SymmetricJwk"/> will be generated.</param>
         /// <param name="header"></param>
         /// <param name="destination"></param>
-        public override Jwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
         {
             if (_disposed)
             {
@@ -94,7 +94,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, GetKeyWrapSize());
             }
 
-            var contentEncryptionKey = CreateSymmetricKey(EncryptionAlgorithm, staticKey);
+            var contentEncryptionKey = CreateSymmetricKey(EncryptionAlgorithm, (SymmetricJwk?)staticKey);
             ReadOnlySpan<byte> inputBuffer = contentEncryptionKey.AsSpan();
             int n = inputBuffer.Length;
             if (destination.Length != (n + 8))

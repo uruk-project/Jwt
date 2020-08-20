@@ -70,17 +70,17 @@ namespace JsonWebToken.Tests
                         case "A128CBC-HS256":
                             yield return _keys.Symmetric256Key;
                             break;
-                        case "A128GCM":
-                            yield return _keys.Symmetric128Key;
-                            break;
                         case "A192CBC-HS384":
                             yield return _keys.Symmetric384Key;
                             break;
-                        case "A192GCM":
-                            yield return _keys.Symmetric192Key;
-                            break;
                         case "A256CBC-HS512":
                             yield return _keys.Symmetric512Key;
+                            break;
+                        case "A128GCM":
+                            yield return _keys.Symmetric128Key;
+                            break;
+                        case "A192GCM":
+                            yield return _keys.Symmetric192Key;
                             break;
                         case "A256GCM":
                             yield return _keys.Symmetric256Key;
@@ -130,27 +130,27 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<KeyManagementAlgorithm> GetKeyManagementAlgorithms()
         {
-            yield return KeyManagementAlgorithm.Aes128KW;
-            yield return KeyManagementAlgorithm.Aes192KW;
-            yield return KeyManagementAlgorithm.Aes256KW;
+            //            yield return KeyManagementAlgorithm.Aes128KW;
+            //            yield return KeyManagementAlgorithm.Aes192KW;
+            //            yield return KeyManagementAlgorithm.Aes256KW;
             yield return KeyManagementAlgorithm.Direct;
 
-#if NETCOREAPP3_0
-            yield return KeyManagementAlgorithm.Aes128GcmKW;
-            yield return KeyManagementAlgorithm.Aes192GcmKW;
-            yield return KeyManagementAlgorithm.Aes256GcmKW;
-#endif
-            yield return KeyManagementAlgorithm.RsaOaep;
-            yield return KeyManagementAlgorithm.RsaPkcs1;
-            yield return KeyManagementAlgorithm.RsaOaep256;
-            yield return KeyManagementAlgorithm.RsaOaep384;
-            yield return KeyManagementAlgorithm.RsaOaep512;
-#if NETCOREAPP
-            yield return KeyManagementAlgorithm.EcdhEs;
-            yield return KeyManagementAlgorithm.EcdhEsAes128KW;
-            yield return KeyManagementAlgorithm.EcdhEsAes192KW;
-            yield return KeyManagementAlgorithm.EcdhEsAes256KW;
-#endif
+            //#if NETCOREAPP3_0
+            //            yield return KeyManagementAlgorithm.Aes128GcmKW;
+            //            yield return KeyManagementAlgorithm.Aes192GcmKW;
+            //            yield return KeyManagementAlgorithm.Aes256GcmKW;
+            //#endif
+            //            yield return KeyManagementAlgorithm.RsaOaep;
+            //            yield return KeyManagementAlgorithm.RsaPkcs1;
+            //            yield return KeyManagementAlgorithm.RsaOaep256;
+            //            yield return KeyManagementAlgorithm.RsaOaep384;
+            //            yield return KeyManagementAlgorithm.RsaOaep512;
+            //#if NETCOREAPP
+            //            yield return KeyManagementAlgorithm.EcdhEs;
+            //            yield return KeyManagementAlgorithm.EcdhEsAes128KW;
+            //            yield return KeyManagementAlgorithm.EcdhEsAes192KW;
+            //            yield return KeyManagementAlgorithm.EcdhEsAes256KW;
+            //#endif
         }
 
         private static IEnumerable<EncryptionAlgorithm> GetEncryptionAlgorithms()

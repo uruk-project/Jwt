@@ -50,25 +50,16 @@ namespace JsonWebToken
             }
 
             _hashAlgorithm = algorithm.HashAlgorithm;
-            switch (algorithm.Id)
+            _signaturePadding = algorithm.Id switch
             {
-                case Algorithms.RsaSha256:
-                case Algorithms.RsaSha384:
-                case Algorithms.RsaSha512:
-                    _signaturePadding = RSASignaturePadding.Pkcs1;
-                    break;
-
-                case Algorithms.RsaSsaPssSha256:
-                case Algorithms.RsaSsaPssSha384:
-                case Algorithms.RsaSsaPssSha512:
-                    _signaturePadding = RSASignaturePadding.Pss;
-                    break;
-
-                default:
-                    ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm.Name);
-                    _signaturePadding = RSASignaturePadding.Pkcs1;
-                    break;
-            }
+                Algorithms.RsaSha256 => RSASignaturePadding.Pkcs1,
+                Algorithms.RsaSha384 => RSASignaturePadding.Pkcs1,
+                Algorithms.RsaSha512 => RSASignaturePadding.Pkcs1,
+                Algorithms.RsaSsaPssSha256 => RSASignaturePadding.Pss,
+                Algorithms.RsaSsaPssSha384 => RSASignaturePadding.Pss,
+                Algorithms.RsaSsaPssSha512 => RSASignaturePadding.Pss,
+                _ => throw ThrowHelper.CreateNotSupportedException_Algorithm(algorithm)
+            };
 
             _hashSizeInBytes = key.KeySizeInBits >> 3;
             _base64HashSizeInBytes = Base64Url.GetArraySizeRequiredToEncode(_hashSizeInBytes);
@@ -144,6 +135,11 @@ namespace JsonWebToken
             {
                 _rsaPool.Return(rsa);
             }
+        }
+
+        public override bool VerifyHalf(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
+        {
+            throw new NotImplementedException();
         }
 
         protected override void Dispose(bool disposing)

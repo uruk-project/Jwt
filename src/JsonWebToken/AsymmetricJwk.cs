@@ -132,20 +132,6 @@ namespace JsonWebToken
         public bool HasPrivateKey => !(_d is null);
 
         /// <inheritsdoc />
-        protected override AuthenticatedEncryptor CreateAuthenticatedEncryptor(EncryptionAlgorithm encryptionAlgorithm)
-        {
-            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-            return null;
-        }
-
-        /// <inheritsdoc />
-        protected override AuthenticatedDecryptor CreateAuthenticatedDecryptor(EncryptionAlgorithm encryptionAlgorithm)
-        {
-            ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-            return null;
-        }
-
-        /// <inheritsdoc />
         public override void Dispose()
         {
             base.Dispose();
