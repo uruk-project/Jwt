@@ -59,7 +59,7 @@ namespace JsonWebToken
                             return config;
 
                         case JsonTokenType.PropertyName:
-                            var propertyName = reader.GetString();
+                            var propertyName = reader.GetString()!;
 
                             reader.Read();
                             switch (reader.TokenType)
@@ -180,7 +180,7 @@ namespace JsonWebToken
             switch (propertyName)
             {
                 case OpenIdProviderMetadataNames.AuthorizationEndpoint:
-                    config.AuthorizationEndpoint = reader.GetString();
+                    config.AuthorizationEndpoint = reader.GetString()!;
                     break;
                 case OpenIdProviderMetadataNames.CheckSessionIframe:
                     config.CheckSessionIframe = reader.GetString();
@@ -189,10 +189,10 @@ namespace JsonWebToken
                     config.EndSessionEndpoint = reader.GetString();
                     break;
                 case OpenIdProviderMetadataNames.Issuer:
-                    config.Issuer = reader.GetString();
+                    config.Issuer = reader.GetString()!;
                     break;
                 case OpenIdProviderMetadataNames.JwksUri:
-                    config.JwksUri = reader.GetString();
+                    config.JwksUri = reader.GetString()!;
                     break;
                 case OpenIdProviderMetadataNames.OpPolicyUri:
                     config.OpPolicyUri = reader.GetString();
@@ -219,7 +219,7 @@ namespace JsonWebToken
                     config.IntrospectionEndpoint = reader.GetString();
                     break;
                 default:
-                    config.AdditionalData.Add(new JwtProperty(propertyName, reader.GetString()));
+                    config.AdditionalData.Add(new JwtProperty(propertyName, reader.GetString()!));
                     break;
             }
         }
@@ -321,7 +321,7 @@ namespace JsonWebToken
             var list = new List<string>();
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                list.Add(reader.GetString());
+                list.Add(reader.GetString()!);
             }
 
             return list;
