@@ -101,7 +101,7 @@ namespace JsonWebToken
 
             // init
             Span<ulong> state = stackalloc ulong[8];
-            Unsafe.CopyBlock(ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(state)), ref MemoryMarshal.GetReference(InitState), 64);
+            Unsafe.CopyBlock(ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(state)), ref MemoryMarshal.GetReference(InitState), Sha512HashSize);
 
             int dataLength = source.Length + prepend.Length;
             int remaining = dataLength & (Sha512BlockSize - 1);
@@ -535,7 +535,7 @@ namespace JsonWebToken
         // 0x9b05688c2b3e6c1ful,
         // 0x1f83d9abfb41bd6bul,
         // 0x5be0cd19137e2179ul
-        private static ReadOnlySpan<byte> InitState => new byte[64]
+        private static ReadOnlySpan<byte> InitState => new byte[Sha512HashSize]
         {
             8, 201, 188, 243, 103, 230, 9, 106,
             59, 167, 202, 132, 133, 174, 103, 187,
@@ -547,7 +547,7 @@ namespace JsonWebToken
             121, 33, 126, 19, 25, 205, 224, 91
         };
 
-        private static ReadOnlySpan<byte> EmptyHash => new byte[64]
+        private static ReadOnlySpan<byte> EmptyHash => new byte[Sha512HashSize]
         {
             207, 131, 225, 53, 126, 239, 184, 189,
             241, 84, 40, 80, 214, 109, 128, 7,

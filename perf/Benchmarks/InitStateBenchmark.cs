@@ -6,7 +6,6 @@ using BenchmarkDotNet.Diagnosers;
 
 namespace JsonWebToken.Performance
 {
-    [Config(typeof(SimdCoreConfig))]
     [MemoryDiagnoser]
     public class InitStateBenchmark
     {
@@ -26,10 +25,17 @@ namespace JsonWebToken.Performance
         }
 
         [Benchmark]
-        public void InitUint32_New()
+        public void InitUint32_UnsafeCopyBLock()
         {
             Span<uint> state = stackalloc uint[8];
             Unsafe.CopyBlock(ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(state)), ref MemoryMarshal.GetReference(InitState), 32);
+        }
+
+        [Benchmark]
+        public void InitUint32_SpanCopyTo()
+        {
+            Span<uint> state = stackalloc uint[8];
+            InitState.CopyTo(MemoryMarshal.AsBytes(state));
         }
 
         [Benchmark]
@@ -48,10 +54,17 @@ namespace JsonWebToken.Performance
         }
 
         [Benchmark]
-        public void InitUint64_New()
+        public void InitUint64_UnsafeCopyBLock()
         {
             Span<ulong> state = stackalloc ulong[8];
             Unsafe.CopyBlock(ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(state)), ref MemoryMarshal.GetReference(InitState2), 64);
+        }
+
+        [Benchmark]
+        public void InitUint64_SpanCopyTo()
+        {
+            Span<ulong> state = stackalloc ulong[8];
+            InitState.CopyTo(MemoryMarshal.AsBytes(state));
         }
 
         private static ReadOnlySpan<byte> InitState2 => new byte[64]
