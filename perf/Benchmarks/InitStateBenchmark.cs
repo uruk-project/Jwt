@@ -2,34 +2,11 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Columns;
-using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Environments;
-using BenchmarkDotNet.Exporters;
-using BenchmarkDotNet.Jobs;
-using BenchmarkDotNet.Loggers;
-using BenchmarkDotNet.Validators;
 
 namespace JsonWebToken.Performance
 {
-    internal class StateCoreConfig : ManualConfig
-    {
-        public StateCoreConfig()
-        {
-            AddJob(Job.Default.WithId("AVX2"));
-
-            AddJob(Job.Default
-                .WithEnvironmentVariable(new EnvironmentVariable("COMPlus_EnableAVX", "0"))
-                .WithId("SSSE3"));
-
-            AddJob(Job.Default
-                .WithEnvironmentVariable(new EnvironmentVariable("COMPlus_EnableSSE", "0"))
-                .WithId("Scalar"));
-        }
-    }
-
-    [Config(typeof(StateCoreConfig))]
+    [Config(typeof(SimdCoreConfig))]
     [MemoryDiagnoser]
     public class InitStateBenchmark
     {
