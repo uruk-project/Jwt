@@ -25,6 +25,9 @@ namespace JsonWebToken.Performance
 
             AddJob(Job.Default
                 .WithGcMode(new GcMode { Server = true })
+                .WithRuntime(CoreRuntime.Core50));
+            AddJob(Job.Default
+                .WithGcMode(new GcMode { Server = true })
                 .WithRuntime(CoreRuntime.Core31));
         }
     }

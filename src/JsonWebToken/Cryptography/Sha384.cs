@@ -98,16 +98,9 @@ namespace JsonWebToken
             }
 
             // init
-            Span<ulong> state = stackalloc ulong[] {
-                0xcbbb9d5dc1059ed8ul,
-                0x629a292a367cd507ul,
-                0x9159015a3070dd17ul,
-                0x152fecd8f70e5939ul,
-                0x67332667ffc00b31ul,
-                0x8eb44a8768581511ul,
-                0xdb0c2e0d64f98fa7ul,
-                0x47b5481dbefa4fa4ul
-            };
+            Span<ulong> state = stackalloc ulong[8];
+            Unsafe.CopyBlock(ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(state)), ref MemoryMarshal.GetReference(InitState), 64);
+
             int dataLength = source.Length + prepend.Length;
             int remaining = dataLength & (Sha384BlockSize - 1);
             Span<byte> lastBlock = stackalloc byte[Sha384BlockSize];
@@ -226,6 +219,26 @@ namespace JsonWebToken
                 Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref destinationRef, (IntPtr)40), BinaryPrimitives.ReverseEndianness(Unsafe.AddByteOffset(ref stateRef, (IntPtr)40)));
             }
         }
+
+        // 0xcbbb9d5dc1059ed8ul,
+        // 0x629a292a367cd507ul,
+        // 0x9159015a3070dd17ul,
+        // 0x152fecd8f70e5939ul,
+        // 0x67332667ffc00b31ul,
+        // 0x8eb44a8768581511ul,
+        // 0xdb0c2e0d64f98fa7ul,
+        // 0x47b5481dbefa4fa4ul
+        private static ReadOnlySpan<byte> InitState => new byte[64]
+        {
+            216, 158, 5, 193, 93, 157, 187, 203,
+            7, 213, 124, 54, 42, 41, 154, 98,
+            23, 221, 112, 48, 90, 1, 89, 145,
+            57, 89, 14, 247, 216, 236, 47, 21,
+            49, 11, 192, 255, 103, 38, 51, 103,
+            17, 21, 88, 104, 135, 74, 180, 142,
+            167, 143, 249, 100, 13, 46, 12, 219,
+            164, 79, 250, 190, 29, 72, 181, 71
+        };
 
         private static ReadOnlySpan<byte> EmptyHash => new byte[48]
         {
