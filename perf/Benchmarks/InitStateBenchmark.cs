@@ -25,10 +25,17 @@ namespace JsonWebToken.Performance
         }
 
         [Benchmark]
-        public void InitUint32_UnsafeCopyBLock()
+        public void InitUint32_UnsafeCopyBlock()
         {
             Span<uint> state = stackalloc uint[8];
             Unsafe.CopyBlock(ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(state)), ref MemoryMarshal.GetReference(InitState), 32);
+        }
+
+        [Benchmark]
+        public void InitUint32_UnsafeCopyBlockUnaligned()
+        {
+            Span<uint> state = stackalloc uint[8];
+            Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(state)), ref MemoryMarshal.GetReference(InitState), 32);
         }
 
         [Benchmark]
@@ -54,7 +61,14 @@ namespace JsonWebToken.Performance
         }
 
         [Benchmark]
-        public void InitUint64_UnsafeCopyBLock()
+        public void InitUint64_UnsafeCopyBlockUnaligned()
+        {
+            Span<ulong> state = stackalloc ulong[8];
+            Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(state)), ref MemoryMarshal.GetReference(InitState2), 64);
+        }
+
+        [Benchmark]
+        public void InitUint64_UnsafeCopyBlock()
         {
             Span<ulong> state = stackalloc ulong[8];
             Unsafe.CopyBlock(ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(state)), ref MemoryMarshal.GetReference(InitState2), 64);
