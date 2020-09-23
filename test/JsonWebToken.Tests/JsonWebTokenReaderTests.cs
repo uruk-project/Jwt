@@ -172,7 +172,6 @@ namespace JsonWebToken.Tests
             Assert.Equal(TokenValidationStatus.MalformedToken, result.Status);
         }
 
-
         [Theory]
         [InlineData("eyJhbGciOiAibm9uZSIsImNyaXQiOlsidW5kZWZpbmVkIl0sInVuZGVmaW5lZCI6IHRydWV9.RkFJTA.", TokenValidationStatus.CriticalHeaderUnsupported)]
         [InlineData("eyJhbGciOiAibm9uZSIsImNyaXQiOlsidW5kZWZpbmVkIl19.RkFJTA.", TokenValidationStatus.CriticalHeaderUnsupported)]
@@ -190,6 +189,56 @@ namespace JsonWebToken.Tests
 
             var result = reader.TryReadToken(jwt, policy);
             Assert.Equal(expected, result.Status);
+        }
+
+        [Theory]
+        [InlineData("eyJhbGciOiJub25lIn0.eyJleHAiOjk5MDAwMDAwMDAsIm5iZiI6MTUwMDAwMDAwMH0.")]
+        [InlineData("eyJhbGciOiJub25lIn0.eyJleHAiOjk5MDAwMDAwMDB9.")]
+        public void Issue489_Valid(string jwt)
+        {
+            var reader = new JwtReader();
+            var policy = new TokenValidationPolicyBuilder()
+                .AcceptUnsecureToken()
+                .EnableLifetimeValidation()
+                .Build();
+
+            var result = reader.TryReadToken(jwt, policy);
+            Assert.Equal(TokenValidationStatus.Success, result.Status);
+        }
+
+        [Theory]
+        [InlineData("eyJhbGciOiJub25lIn0.eyJleHAiOjE1MDAwMDAwMDAsIm5iZiI6MTUwMDAwMDAwMH0.", TokenValidationStatus.Expired)]
+        [InlineData("eyJhbGciOiJub25lIn0.eyJleHAiOjk5MDAwMDAwMDAsIm5iZiI6OTkwMDAwMDAwMH0.", TokenValidationStatus.NotYetValid)]
+        [InlineData("eyJhbGciOiJub25lIn0.eyJuYmYiOjk5MDAwMDAwMDB9.", TokenValidationStatus.MissingClaim)]
+        [InlineData("eyJhbGciOiJub25lIn0.e30.", TokenValidationStatus.MissingClaim)]
+        public void Issue489_Invalid(string jwt, TokenValidationStatus status)
+        {
+            var reader = new JwtReader();
+            var policy = new TokenValidationPolicyBuilder()
+                .AcceptUnsecureToken()
+                .EnableLifetimeValidation()
+                .Build();
+
+            var result = reader.TryReadToken(jwt, policy);
+            Assert.Equal(status, result.Status);
+        }
+
+        [Theory]
+        [InlineData("eyJhbGciOiJub25lIn0.eyJleHAiOjE1MDAwMDAwMDAsIm5iZiI6MTUwMDAwMDAwMH0.")]
+        [InlineData("eyJhbGciOiJub25lIn0.eyJleHAiOjk5MDAwMDAwMDAsIm5iZiI6OTkwMDAwMDAwMH0.")]
+        [InlineData("eyJhbGciOiJub25lIn0.eyJuYmYiOjk5MDAwMDAwMDB9.")]
+        [InlineData("eyJhbGciOiJub25lIn0.eyJleHAiOjk5MDAwMDAwMDB9.")]
+        [InlineData("eyJhbGciOiJub25lIn0.eyJleHAiOjk5MDAwMDAwMDAsIm5iZiI6MTUwMDAwMDAwMH0.")]
+        [InlineData("eyJhbGciOiJub25lIn0.e30.")]
+        public void Issue489_NoValidation_Valid(string jwt)
+        {
+            var reader = new JwtReader();
+            var policy = new TokenValidationPolicyBuilder()
+                .AcceptUnsecureToken()
+                .Build();
+
+            var result = reader.TryReadToken(jwt, policy);
+            Assert.Equal(TokenValidationStatus.Success , result.Status);
         }
 
         private HttpResponseMessage BackchannelRequestToken(HttpRequestMessage req)

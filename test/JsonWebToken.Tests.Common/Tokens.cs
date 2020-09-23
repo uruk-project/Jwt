@@ -79,6 +79,16 @@ namespace JsonWebToken.Tests
                     }
                 },
                 {
+                    "nd-nbf", new JObject
+                    {
+                        { "jti", "756E69717565206964656E746966696572"},
+                        { "iss", "https://idp.example.com/"},
+                        { "iat", 1508184845},
+                        { "aud", "636C69656E745F6964"},
+                        { "exp", 1628184845}
+                    }
+                },
+                {
                     "medium", new JObject
                     {
                         { "jti", "756E69717565206964656E746966696572"},

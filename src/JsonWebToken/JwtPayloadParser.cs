@@ -165,9 +165,9 @@ namespace JsonWebToken
                             }
 
                             // the 'nbf' claim is not common. The 2nd call to EpochTime.UtcNow should be rare.
-                            if (longValue <= EpochTime.UtcNow + policy.ClockSkew)
+                            if (longValue > EpochTime.UtcNow + policy.ClockSkew && (policy.ValidationControl & JwtPayload.ExpiredFlag) == JwtPayload.ExpiredFlag)
                             {
-                                control &= unchecked((byte)~JwtPayload.NotYetFlag);
+                                control |= JwtPayload.NotYetFlag;
                             }
 
                             payload.Nbf = longValue;

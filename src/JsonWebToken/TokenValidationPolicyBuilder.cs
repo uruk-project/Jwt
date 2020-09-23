@@ -269,7 +269,7 @@ namespace JsonWebToken
             }
 
             _clockSkew = clockSkew;
-            _control |= TokenValidationPolicy.ExpirationTimeFlag | TokenValidationPolicy.NotBeforeFlag;
+            _control |= TokenValidationPolicy.ExpirationTimeFlag;
             if (requireExpirationTime)
             {
                 _control |= TokenValidationPolicy.ExpirationTimeRequiredFlag;
