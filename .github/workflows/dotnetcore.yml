@@ -41,10 +41,10 @@ jobs:
 #        uses: actions/setup-dotnet@v1
 #        with:
 #          dotnet-version: '2.0.x'
-#      - name: setup dotnet '2.2.x'
-#        uses: actions/setup-dotnet@v1
-#        with:
-#          dotnet-version: '2.2.x'
+      - name: setup dotnet '2.2.x'
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '2.2.x'
       - name: Setup dotnet '3.1.x'
         uses: actions/setup-dotnet@v1
         with:
