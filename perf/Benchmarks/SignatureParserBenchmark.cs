@@ -42,7 +42,7 @@ namespace JsonWebToken.Performance
             var reader = new Utf8JsonReader(data);
             reader.Read();
             reader.Read();
-            var value = Encoding.UTF8.GetBytes(reader.GetString());
+            var value = Encoding.UTF8.GetBytes(reader.GetString()!);
             SignatureAlgorithm.TryParse(value, out var algorithm);
             SignatureAlgorithm.TryParse(value, out algorithm);
             SignatureAlgorithm.TryParse(value, out algorithm);
