@@ -11,7 +11,7 @@ namespace JsonWebToken.Internal
     {
         private readonly ObjectPool<ECDsa> _ecdsaPool;
         private readonly int _hashSize;
-        private readonly HashAlgorithmName _hashAlgorithm;
+        private readonly Sha2 _sha;
         private readonly int _base64HashSize;
         private readonly bool _canOnlyVerify;
         private bool _disposed;
@@ -30,7 +30,7 @@ namespace JsonWebToken.Internal
             }
 
             _canOnlyVerify = !key.HasPrivateKey;
-            _hashAlgorithm = algorithm.HashAlgorithm;
+            _sha = algorithm.Sha;
             _hashSize = key.Crv.HashSize;
             _base64HashSize = Base64Url.GetArraySizeRequiredToEncode(_hashSize);
 
@@ -62,9 +62,13 @@ namespace JsonWebToken.Internal
 
             var ecdsa = _ecdsaPool.Get();
 #if SUPPORT_SPAN_CRYPTO
-            return ecdsa.TrySignData(data, destination, _hashAlgorithm, out bytesWritten);
+            Span<byte> hash = stackalloc byte[_sha.HashSize];
+            _sha.ComputeHash(data, hash);
+            return ecdsa.TrySignHash(hash, destination, out bytesWritten);
 #else
-            var result = ecdsa.SignData(data.ToArray(), _hashAlgorithm);
+            byte[] hash = new byte[_sha.HashSize];
+            _sha.ComputeHash(data, hash);
+            var result = ecdsa.SignHash(hash);
             bytesWritten = result.Length;
             result.CopyTo(destination);
             return true;
@@ -91,9 +95,13 @@ namespace JsonWebToken.Internal
 
             var ecdsa = _ecdsaPool.Get();
 #if SUPPORT_SPAN_CRYPTO
-            return ecdsa.VerifyData(data, signature, _hashAlgorithm);
+            Span<byte> hash = stackalloc byte[_sha.HashSize];
+            _sha.ComputeHash(data, hash);
+            return ecdsa.VerifyHash(hash, signature);
 #else
-            return ecdsa.VerifyData(data.ToArray(), signature.ToArray(), _hashAlgorithm);
+            byte[] hash = new byte[_sha.HashSize];
+            _sha.ComputeHash(data, hash);
+            return ecdsa.VerifyHash(hash, signature.ToArray());
 #endif
         }
 

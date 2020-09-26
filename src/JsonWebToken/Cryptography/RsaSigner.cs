@@ -11,6 +11,7 @@ namespace JsonWebToken
     {
         private readonly ObjectPool<RSA> _rsaPool;
         private readonly HashAlgorithmName _hashAlgorithm;
+        private readonly Sha2 _sha;
         private readonly int _hashSizeInBytes;
         private readonly RSASignaturePadding _signaturePadding;
         private readonly int _base64HashSizeInBytes;
@@ -50,6 +51,7 @@ namespace JsonWebToken
             }
 
             _hashAlgorithm = algorithm.HashAlgorithm;
+            _sha = algorithm.Sha;
             _signaturePadding = algorithm.Id switch
             {
                 Algorithms.RsaSha256 => RSASignaturePadding.Pkcs1,
@@ -91,9 +93,13 @@ namespace JsonWebToken
             try
             {
 #if SUPPORT_SPAN_CRYPTO
-                return rsa.TrySignData(data, destination, _hashAlgorithm, _signaturePadding, out bytesWritten);
+                Span<byte> hash = stackalloc byte[_sha.HashSize];
+                _sha.ComputeHash(data, hash);
+                return rsa.TrySignHash(hash, destination, _hashAlgorithm, _signaturePadding, out bytesWritten);
 #else
-                var result = rsa.SignData(data.ToArray(), _hashAlgorithm, _signaturePadding);
+                byte[] hash = new byte[_sha.HashSize];
+                _sha.ComputeHash(data, hash);
+                var result = rsa.SignHash(hash, _hashAlgorithm, _signaturePadding);
                 bytesWritten = result.Length;
                 result.CopyTo(destination);
                 return true;
