@@ -88,32 +88,44 @@ namespace JsonWebToken.Tests
             yield return new object[] { PublicEcc384Key, SignatureAlgorithm.EcdsaSha384 };
 
             yield return new object[] { PublicEcc521Key, SignatureAlgorithm.EcdsaSha512 };
+            
+            yield return new object[] { PublicEcc256XKey, SignatureAlgorithm.EcdsaSha256X };
 
             yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha256 };
 
             yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha384 };
 
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha512 };
+            
+            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha256X };
         }
 
         public static IEnumerable<object[]> GetInvalidKeys()
         {
             yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha384 };
             yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha256X };
 
             yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha256 };
             yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha256X };
 
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha256 };
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha384 };
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha256X };
+
+            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha256 };
+            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha384 };
+            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha512 };
         }
 
         [Theory]
-        [InlineData("{\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4\",\"y\":\"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM\",\"use\":\"enc\",\"kid\":\"1\"}")]
-        [InlineData("{\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4\",\"y\":\"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM\",\"use\":\"enc\",\"kid\":\"1\"}")]
-        [InlineData("{\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4\",\"y\":\"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM\",\"use\":\"enc\",\"kid\":\"1\",\"object\":{\"property\":true},\"float\":123.456,\"integer\":1234,\"boolean\":true,\"string\":\"hello\",\"null\":null,\"array\":[\"string\", 1, true, false, null, {}, [0]]}")]
-        [InlineData("{\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4\",\"y\":\"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM\",\"use\":\"enc\",\"kid\":\"1\",\"object\":{\"property\":true},\"float\":123.456,\"integer\":1234,\"boolean\":true,\"string\":\"hello\",\"null\":null,\"array\":[\"string\", 1, true, false, null, {}, [0]]}")]
-        public override void FromJson(string json)
+        [InlineData("P-256", "{\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4\",\"y\":\"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM\",\"use\":\"enc\",\"kid\":\"1\"}")]
+        [InlineData("P-256", "{\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4\",\"y\":\"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM\",\"use\":\"enc\",\"kid\":\"1\"}")]
+        [InlineData("P-256", "{\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4\",\"y\":\"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM\",\"use\":\"enc\",\"kid\":\"1\",\"object\":{\"property\":true},\"float\":123.456,\"integer\":1234,\"boolean\":true,\"string\":\"hello\",\"null\":null,\"array\":[\"string\", 1, true, false, null, {}, [0]]}")]
+        [InlineData("P-256", "{\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4\",\"y\":\"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM\",\"use\":\"enc\",\"kid\":\"1\",\"object\":{\"property\":true},\"float\":123.456,\"integer\":1234,\"boolean\":true,\"string\":\"hello\",\"null\":null,\"array\":[\"string\", 1, true, false, null, {}, [0]]}")]
+        [InlineData("secp256k1", "{\"crv\":\"secp256k1\",\"kty\":\"EC\",\"x\":\"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4\",\"y\":\"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM\",\"use\":\"enc\",\"kid\":\"1\",\"object\":{\"property\":true},\"float\":123.456,\"integer\":1234,\"boolean\":true,\"string\":\"hello\",\"null\":null,\"array\":[\"string\", 1, true, false, null, {}, [0]]}")]
+        public void FromJson(string crvName, string json)
         {
             // https://tools.ietf.org/html/rfc7517#appendix-A.1
             var key = Jwk.FromJson(json);
@@ -123,7 +135,7 @@ namespace JsonWebToken.Tests
             Assert.Equal("1", jwk.Kid);
             Assert.True(JwkUseNames.Enc.SequenceEqual(jwk.Use));
 
-            Assert.Equal(Encoding.UTF8.GetBytes("P-256"), jwk.Crv.Name);
+            Assert.Equal(Encoding.UTF8.GetBytes(crvName), jwk.Crv.Name);
             Assert.Equal(jwk.X.ToArray(), Base64Url.Decode("MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4"));
             Assert.Equal(jwk.Y.ToArray(), Base64Url.Decode("4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM"));
         }
@@ -348,9 +360,25 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             d: "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
         );
 
+        private static ECJwk PrivateEcc256XKey => new ECJwk
+        (
+            crv: EllipticalCurve.Secp256k1,
+            x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
+            y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck",
+            d: "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
+        );
+
         private static ECJwk PublicEcc256Key => new ECJwk
         (
             crv: EllipticalCurve.P256,
+            x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
+            y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck"
+        );
+        
+
+        private static ECJwk PublicEcc256XKey => new ECJwk
+        (
+            crv: EllipticalCurve.Secp256k1,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
             y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck"
         );

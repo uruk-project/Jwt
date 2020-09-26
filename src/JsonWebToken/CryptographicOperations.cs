@@ -38,7 +38,6 @@ namespace JsonWebToken
                 int end = length - sizeof(Vector256<byte>);
                 while ((int)(byte*)offset < end)
                 {
-
                     accumulator &= Avx2.MoveMask(Avx2.CompareEqual(first.AsVector256<byte>(offset), second.AsVector256<byte>(offset)));
                     offset += sizeof(Vector256<byte>);
                 }

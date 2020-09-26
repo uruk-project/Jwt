@@ -325,7 +325,10 @@ namespace JsonWebToken
         public override bool SupportSignature(SignatureAlgorithm algorithm)
         {
 #if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
-            return algorithm.Category == AlgorithmCategory.EllipticCurve && algorithm.RequiredKeySizeInBits == KeySizeInBits;
+            return Crv.SupportedSignatureAlgorithm == algorithm;
+            //return algorithm.Category == AlgorithmCategory.EllipticCurve 
+            //    && algorithm.RequiredKeySizeInBits == KeySizeInBits
+            //    ;
 #else
             return false;
 #endif

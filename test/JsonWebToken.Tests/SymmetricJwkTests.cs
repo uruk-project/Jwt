@@ -112,7 +112,7 @@ namespace JsonWebToken.Tests
         [InlineData("{\"alg\":\"A128KW\",\"kty\":\"oct\",\"use\":\"sig\",\"k\":\"GawgguFyGrWKav7AX4VKUg\",\"kid\":\"kid1\"}")]
         [InlineData("{\"kty\":\"oct\",\"alg\":\"A128KW\",\"use\":\"sig\",\"k\":\"GawgguFyGrWKav7AX4VKUg\",\"kid\":\"kid1\"},\"object\":{\"property\":true},\"float\":123.456,\"integer\":1234,\"boolean\":true,\"string\":\"hello\",\"null\":null,\"array\":[\"string\", 1, true, false, null, {}, [0]]")]
         [InlineData("{\"alg\":\"A128KW\",\"kty\":\"oct\",\"use\":\"sig\",\"k\":\"GawgguFyGrWKav7AX4VKUg\",\"kid\":\"kid1\"},\"object\":{\"property\":true},\"float\":123.456,\"integer\":1234,\"boolean\":true,\"string\":\"hello\",\"null\":null,\"array\":[\"string\", 1, true, false, null, {}, [0]]")]
-        public override void FromJson(string json)
+        public void FromJson(string json)
         {
             var key = Jwk.FromJson(json);
             Assert.NotNull(key);

@@ -38,6 +38,18 @@ namespace JsonWebToken
             => Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref value, elementOffset)) & 0x00ffffffffffffff;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ulong ReadUInt48(ReadOnlySpan<byte> value)
+            => ReadUInt48(ref MemoryMarshal.GetReference(value));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ulong ReadUInt48(ref byte value)
+            => Unsafe.ReadUnaligned<ulong>(ref value) & 0x0000ffffffffffff;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ulong ReadUInt48(ref byte value, int elementOffset)
+            => Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref value, elementOffset)) & 0x0000ffffffffffff;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static uint ReadUInt32(ReadOnlySpan<byte> value)
             => ReadUInt32(ref MemoryMarshal.GetReference(value));
 
