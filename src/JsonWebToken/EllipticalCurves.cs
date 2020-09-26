@@ -17,9 +17,11 @@ namespace JsonWebToken
         private const uint _256 = 909455917u;
         private const uint _384 = 876098349u;
         private const uint _521 = 825373997u;
+        private const ulong ecp256k1 = 3560999532473901925ul;
         private static readonly byte[] P256Name = new byte[] { (byte)'P', (byte)'-', (byte)'2', (byte)'5', (byte)'6' };
         private static readonly byte[] P384Name = new byte[] { (byte)'P', (byte)'-', (byte)'3', (byte)'8', (byte)'4' };
         private static readonly byte[] P521Name = new byte[] { (byte)'P', (byte)'-', (byte)'5', (byte)'2', (byte)'1' };
+        private static readonly byte[] Secp256k1Name = new byte[] { (byte)'s', (byte)'e', (byte)'c', (byte)'p', (byte)'2', (byte)'5', (byte)'6', (byte)'k', (byte)'1' };
 
         /// <summary>
         /// 'P-256'.
@@ -35,6 +37,11 @@ namespace JsonWebToken
         /// 'P-521'.
         /// </summary>    
         public static readonly EllipticalCurve P521 = new EllipticalCurve(3, ECCurve.NamedCurves.nistP521, P521Name, 521, 132, SignatureAlgorithm.EcdsaSha512);
+
+        /// <summary>
+        /// 'secp256k1'.
+        /// </summary>    
+        public static readonly EllipticalCurve Secp256k1 = new EllipticalCurve(8, ECCurve.CreateFromValue("1.3.132.0.10"), Secp256k1Name, 256, 64, SignatureAlgorithm.EcdsaSha256X);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EllipticalCurve"/> struct.
@@ -100,6 +107,8 @@ namespace JsonWebToken
                     return P384;
                 case "P-521":
                     return P521;
+                case "secp256k1":
+                    return Secp256k1;
                 default:
                     ThrowHelper.ThrowNotSupportedException_Curve(crv);
                     return default;
@@ -129,6 +138,10 @@ namespace JsonWebToken
                 {
                     return P521;
                 }
+            }
+            else if (crv.Length == 9 && crvRef == (byte)'s' && IntegerMarshal.ReadUInt64(ref crvRef, 1) == ecp256k1)
+            {
+                return Secp256k1;
             }
 
             ThrowHelper.ThrowNotSupportedException_Curve(Utf8.GetString(crv));

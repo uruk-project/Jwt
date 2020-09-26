@@ -10,24 +10,6 @@ namespace JsonWebToken.Tests
     {
         private readonly List<IDisposable> _disposables = new List<IDisposable>();
 
-        //public virtual AuthenticatedEncryptor CreateAuthenticatedEncryptor_Succeed(Jwk key, EncryptionAlgorithm enc)
-        //{
-        //    var created = key.TryGetAuthenticatedEncryptor(enc, out var encryptor);
-        //    _disposables.Add(encryptor);
-        //    Assert.True(created);
-        //    Assert.NotNull(encryptor);
-        //    return encryptor;
-        //}
-
-        //public virtual AuthenticatedEncryptor CreateAuthenticatedEncryptor_Failed(Jwk key, EncryptionAlgorithm enc)
-        //{
-        //    var created = key.TryGetAuthenticatedEncryptor(enc, out var encryptor);
-        //    _disposables.Add(encryptor);
-        //    Assert.False(created);
-        //    Assert.Null(encryptor);
-        //    return encryptor;
-        //}
-
         public virtual KeyWrapper CreateKeyWrapper_Succeed(Jwk key, EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
             bool created = key.TryGetKeyWrapper(enc, alg, out var keyWrapper);
@@ -111,8 +93,6 @@ namespace JsonWebToken.Tests
                 item?.Dispose();
             }
         }
-
-        public abstract void FromJson(string json);
 
         public abstract void FromJson_WithProperties(string json);
 
