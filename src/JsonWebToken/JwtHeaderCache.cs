@@ -10,7 +10,7 @@ namespace JsonWebToken
     /// <summary>
     /// Represents a cache for <see cref="JwtHeader"/>.
     /// </summary>
-    public sealed class JwtHeaderCache
+    public sealed class JwtHeaderCache : IJwtHeaderCache
     {
         private sealed class Node
         {
@@ -41,6 +41,7 @@ namespace JsonWebToken
 
         private Node? _head = null;
         private Node? _tail = null;
+        private readonly bool _enabled;
 
         /// <summary>
         /// The heade of the cache.
@@ -51,6 +52,11 @@ namespace JsonWebToken
         /// The tail of the cache.
         /// </summary>
         public JwtHeader? Tail => _tail?.Header;
+
+        /// <summary>
+        /// Gets or sets whether the cache is enabled. <c>false</c> by default.
+        /// </summary>
+        public bool Enabled => _enabled;
 
         /// <summary>
         /// Try to get the <see cref="JwtHeader"/>.

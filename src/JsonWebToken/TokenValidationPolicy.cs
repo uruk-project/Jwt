@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using JsonWebToken.Internal;
@@ -24,6 +25,8 @@ namespace JsonWebToken
         internal const int ExpirationTimeRequiredFlag = 0x20;
         internal const int NotBeforeFlag = 0x40;
 
+        private static readonly IJwtHeaderCache _disabledJwtHeaderCache = new DisabledJwtHeaderCache();
+
         /// <summary>
         /// Represents an policy without any validation. Do not use it without consideration.
         /// </summary>
@@ -43,7 +46,9 @@ namespace JsonWebToken
             int maximumTokenSizeInBytes,
             bool ignoreCriticalHeader,
             bool ignoreNestedToken,
+            bool headerCacheDisabled,
             SignatureValidationPolicy? signatureValidation,
+            IKeyProvider[]? encryptionKeyProviders,
             byte[]? issuer,
             byte[][] audiences,
             int clockSkew,
@@ -52,6 +57,7 @@ namespace JsonWebToken
             _validators = validators ?? throw new ArgumentNullException(nameof(validators));
             _criticalHandlers = criticalHandlers ?? throw new ArgumentNullException(nameof(criticalHandlers));
             SignatureValidationPolicy = signatureValidation ?? throw new ArgumentNullException(nameof(signatureValidation));
+            DecryptionKeyProviders = encryptionKeyProviders ?? Array.Empty<IKeyProvider>();
             _ignoreCriticalHeader = ignoreCriticalHeader;
             IgnoreNestedToken = ignoreNestedToken;
             MaximumTokenSizeInBytes = maximumTokenSizeInBytes;
@@ -59,7 +65,7 @@ namespace JsonWebToken
             _control = control;
             RequiredAudiencesBinary = audiences;
             RequiredAudiences = audiences.Select(a => Encoding.UTF8.GetString(a)).ToArray();
-
+            HeaderCache = headerCacheDisabled ? _disabledJwtHeaderCache : new JwtHeaderCache();
             if (issuer != null)
             {
                 RequiredIssuerBinary = issuer;
@@ -138,6 +144,21 @@ namespace JsonWebToken
         public bool IgnoreNestedToken { get; }
 
         /// <summary>
+        /// Gets whether the critical headers should be ignored.
+        /// </summary>
+        public bool IgnoreCriticalHeader => _ignoreCriticalHeader;
+
+        /// <summary>
+        /// Gets the <see cref="IJwtHeaderCache"/>.
+        /// </summary>
+        public IJwtHeaderCache HeaderCache { get; }
+
+        /// <summary>
+        /// Gets the array of <see cref="IKeyProvider"/> used for decryption.
+        /// </summary>
+        public IKeyProvider[] DecryptionKeyProviders { get; }
+
+        /// <summary>
         /// Try to validate the token, according to the <paramref name="jwt"/>.
         /// </summary>
         /// <param name="jwt"></param>
@@ -197,13 +218,84 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Try to validate the token, according to the <paramref name="header"/> and the <paramref name="payload"/>.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="payload"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
+        public bool TryValidateJwt(JwtHeader header, JwtPayload payload, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            if (payload.ValidationControl != 0)
+            {
+                if (payload.MissingAudience)
+                {
+                    error = TokenValidationError.MissingClaim(Claims.AudUtf8);
+                    goto Error;
+                }
+
+                if (payload.InvalidAudience)
+                {
+                    error = TokenValidationError.InvalidClaim(Claims.AudUtf8);
+                    goto Error;
+                }
+
+                if (payload.MissingIssuer)
+                {
+                    error = TokenValidationError.MissingClaim(Claims.IssUtf8);
+                    goto Error;
+                }
+
+                if (payload.InvalidIssuer)
+                {
+                    error = TokenValidationError.InvalidClaim(Claims.IssUtf8);
+                    goto Error;
+                }
+
+                if (payload.MissingExpirationTime)
+                {
+                    error = TokenValidationError.MissingClaim(Claims.ExpUtf8);
+                    goto Error;
+                }
+
+                if (payload.Expired)
+                {
+                    error = TokenValidationError.Expired();
+                    goto Error;
+                }
+
+                if (payload.NotYetValid)
+                {
+                    error = TokenValidationError.NotYetValid();
+                    goto Error;
+                }
+            }
+
+            var validators = _validators;
+            for (int i = 0; i < validators.Length; i++)
+            {
+                var result = validators[i].TryValidate(header, payload, out error);
+                if (!result)
+                {
+                    goto Error;
+                }
+            }
+
+            error = null;
+            return true;
+
+        Error:
+            return false;
+        }
+
+        /// <summary>
         /// Try to validate the token header, according to the <paramref name="header"/>.
         /// </summary>
         /// <param name="header"></param>
         /// <returns></returns>
         public TokenValidationResult TryValidateHeader(JwtHeader header)
         {
-            if (!_ignoreCriticalHeader)
+            if (!IgnoreCriticalHeader)
             {
                 var handlers = header.CriticalHeaderHandlers;
                 if (handlers != null)
@@ -227,6 +319,42 @@ namespace JsonWebToken
             return TokenValidationResult.Success();
         }
 
+
+        /// <summary>
+        /// Try to validate the token header, according to the <paramref name="header"/>.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
+        public bool TryValidateHeader(JwtHeader header, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            if (!IgnoreCriticalHeader)
+            {
+                var handlers = header.CriticalHeaderHandlers;
+                if (handlers != null)
+                {
+                    for (int i = 0; i < handlers.Count; i++)
+                    {
+                        KeyValuePair<string, ICriticalHeaderHandler> handler = handlers[i];
+                        if (handler.Value is null)
+                        {
+                            error = TokenValidationError.CriticalHeaderUnsupported(handler.Key);
+                            return false;
+                        }
+
+                        if (!handler.Value.TryHandle(header, handler.Key))
+                        {
+                            error = TokenValidationError.InvalidHeader(handler.Key);
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            error = null;
+            return true;
+        }
+
         /// <summary>
         /// Try to validate the token signature.
         /// </summary>
@@ -237,6 +365,21 @@ namespace JsonWebToken
         public SignatureValidationResult TryValidateSignature(JwtHeader header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
         {
             return SignatureValidationPolicy.TryValidateSignature(header, contentBytes, signatureSegment);
+        }
+
+        private class DisabledJwtHeaderCache : IJwtHeaderCache
+        {
+            public bool Enabled => false;
+
+            public void AddHeader(ReadOnlySpan<byte> rawHeader, JwtHeader header)
+            {
+            }
+
+            public bool TryGetHeader(ReadOnlySpan<byte> buffer, [NotNullWhen(true)] out JwtHeader? header)
+            {
+                header = null;
+                return false;
+            }
         }
     }
 }

@@ -31,7 +31,7 @@ namespace JsonWebToken
         {
             if (encryptionKeyProviders is null)
             {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionKeyProviders);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.decryptionKeyProviders);
             }
 
             _encryptionKeyProviders = encryptionKeyProviders.Where(p => p != null).ToArray();
@@ -220,7 +220,7 @@ namespace JsonWebToken
                 }
                 else
                 {
-                    header = GetJsonHeader(rawHeader, jsonBuffer.Slice(0, rawHeader.Length), policy);
+                    header = GetJsonHeader(rawHeader, jsonBuffer.Slice(0, headerJsonDecodedLength), policy);
                 }
 
                 result = policy.TryValidateHeader(header);
@@ -278,7 +278,7 @@ namespace JsonWebToken
                 return TokenValidationResult.MissingEncryptionAlgorithm();
             }
 
-            if (!TryGetContentEncryptionKeys(header, utf8Buffer.Slice(encryptionKeySegment.Start, encryptionKeySegment.Length), enc, out var keys))
+            if (!JwtReaderHelper.TryGetContentEncryptionKeys(header, utf8Buffer.Slice(encryptionKeySegment.Start, encryptionKeySegment.Length), enc, _encryptionKeyProviders, out var keys))
             {
                 return TokenValidationResult.EncryptionKeyNotFound();
             }
@@ -295,7 +295,7 @@ namespace JsonWebToken
 
             try
             {
-                if (TryDecryptToken(keys, rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, enc, decryptedBytes, out SymmetricJwk? decryptionKey, out int bytesWritten))
+                if (JwtReaderHelper.TryDecryptToken(keys, rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, enc, decryptedBytes, out SymmetricJwk? decryptionKey, out int bytesWritten))
                 {
                     decryptedBytes = decryptedBytes.Slice(0, bytesWritten);
                 }
@@ -425,187 +425,6 @@ namespace JsonWebToken
         {
             Base64Url.Decode(data, buffer);
             return JwtHeaderParser.ParseHeader(buffer, policy);
-        }
-
-        private static bool TryDecryptToken(
-            List<SymmetricJwk> keys,
-            ReadOnlySpan<byte> rawHeader,
-            ReadOnlySpan<byte> rawCiphertext,
-            ReadOnlySpan<byte> rawInitializationVector,
-            ReadOnlySpan<byte> rawAuthenticationTag,
-            EncryptionAlgorithm encryptionAlgorithm,
-            Span<byte> decryptedBytes,
-            [NotNullWhen(true)] out SymmetricJwk? key,
-            out int bytesWritten)
-        {
-            int ciphertextLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length);
-            int initializationVectorLength = Base64Url.GetArraySizeRequiredToDecode(rawInitializationVector.Length);
-            int authenticationTagLength = Base64Url.GetArraySizeRequiredToDecode(rawAuthenticationTag.Length);
-            int headerLength = rawHeader.Length;
-            int bufferLength = ciphertextLength + headerLength + initializationVectorLength + authenticationTagLength;
-            byte[]? arrayToReturn = null;
-            Span<byte> buffer = bufferLength < Constants.MaxStackallocBytes
-                ? stackalloc byte[bufferLength]
-                : (arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength));
-
-            Span<byte> ciphertext = buffer.Slice(0, ciphertextLength);
-            Span<byte> header = buffer.Slice(ciphertextLength, headerLength);
-            Span<byte> initializationVector = buffer.Slice(ciphertextLength + headerLength, initializationVectorLength);
-            Span<byte> authenticationTag = buffer.Slice(ciphertextLength + headerLength + initializationVectorLength, authenticationTagLength);
-            try
-            {
-                Base64Url.Decode(rawCiphertext, ciphertext, out int _, out int ciphertextBytesWritten);
-                Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
-
-                char[]? headerArrayToReturn = null;
-                try
-                {
-                    int utf8HeaderLength = Utf8.GetMaxCharCount(header.Length);
-                    Span<char> utf8Header = utf8HeaderLength < Constants.MaxStackallocBytes
-                        ? stackalloc char[utf8HeaderLength]
-                        : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(utf8HeaderLength));
-
-                    utf8HeaderLength = Utf8.GetChars(rawHeader, utf8Header);
-                    Ascii.GetBytes(utf8Header.Slice(0, utf8HeaderLength), header);
-                }
-                finally
-                {
-                    if (headerArrayToReturn != null)
-                    {
-                        ArrayPool<char>.Shared.Return(headerArrayToReturn);
-                    }
-                }
-
-                Base64Url.Decode(rawInitializationVector, initializationVector, out int _, out int ivBytesWritten);
-                Debug.Assert(initializationVector.Length == ivBytesWritten);
-
-                Base64Url.Decode(rawAuthenticationTag, authenticationTag, out int _, out int authenticationTagBytesWritten);
-                Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
-
-                bytesWritten = 0;
-                var decryptor = encryptionAlgorithm.Decryptor;
-
-                for (int i = 0; i < keys.Count; i++)
-                {
-                    key = keys[i];
-                    if (decryptor.TryDecrypt(
-                        key.K,
-                        ciphertext,
-                        header,
-                        initializationVector,
-                        authenticationTag,
-                        decryptedBytes,
-                        out bytesWritten))
-                    {
-                        return true;
-                    }
-                }
-
-                key = null;
-                return false;
-            }
-            finally
-            {
-                if (arrayToReturn != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturn);
-                }
-            }
-        }
-
-        private bool TryGetContentEncryptionKeys(JwtHeader header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc, [NotNullWhen(true)] out List<SymmetricJwk>? keys)
-        {
-            KeyManagementAlgorithm? alg = header.KeyManagementAlgorithm;
-
-            if (alg is null)
-            {
-                keys = null;
-                return false;
-            }
-            else if (alg == KeyManagementAlgorithm.Direct)
-            {
-                keys = new List<SymmetricJwk>(1);
-                for (int i = 0; i < _encryptionKeyProviders.Length; i++)
-                {
-                    var keySet = _encryptionKeyProviders[i].GetKeys(header);
-                    for (int j = 0; j < keySet.Length; j++)
-                    {
-                        var key = keySet[j];
-                        if (key is SymmetricJwk symJwk && symJwk.CanUseForKeyWrapping(alg))
-                        {
-                            keys.Add(symJwk);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                int decodedSize = Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length);
-
-                byte[]? encryptedKeyToReturnToPool = null;
-                byte[]? unwrappedKeyToReturnToPool = null;
-                Span<byte> encryptedKey = decodedSize <= Constants.MaxStackallocBytes ?
-                    stackalloc byte[decodedSize] :
-                    encryptedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(decodedSize);
-                try
-                {
-                    var operationResult = Base64Url.Decode(rawEncryptedKey, encryptedKey, out _, out int bytesWritten);
-                    Debug.Assert(operationResult == OperationStatus.Done);
-                    encryptedKey = encryptedKey.Slice(0, bytesWritten);
-
-                    var keyUnwrappers = new List<(int, KeyUnwrapper)>(1);
-                    int maxKeyUnwrapSize = 0;
-                    for (int i = 0; i < _encryptionKeyProviders.Length; i++)
-                    {
-                        var keySet = _encryptionKeyProviders[i].GetKeys(header);
-                        for (int j = 0; j < keySet.Length; j++)
-                        {
-                            var key = keySet[j];
-                            if (key.CanUseForKeyWrapping(alg))
-                            {
-                                if (key.TryGetKeyUnwrapper(enc, alg, out var keyUnwrapper))
-                                {
-                                    int keyUnwrapSize = keyUnwrapper.GetKeyUnwrapSize(encryptedKey.Length);
-                                    keyUnwrappers.Add((keyUnwrapSize, keyUnwrapper));
-                                    if (maxKeyUnwrapSize < keyUnwrapSize)
-                                    {
-                                        maxKeyUnwrapSize = keyUnwrapSize;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    keys = new List<SymmetricJwk>(1);
-                    Span<byte> unwrappedKey = maxKeyUnwrapSize <= Constants.MaxStackallocBytes ?
-                        stackalloc byte[maxKeyUnwrapSize] :
-                        unwrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(maxKeyUnwrapSize);
-                    for (int i = 0; i < keyUnwrappers.Count; i++)
-                    {
-                        var kpv = keyUnwrappers[i];
-                        var temporaryUnwrappedKey = unwrappedKey.Length != kpv.Item1 ? unwrappedKey.Slice(0, kpv.Item1) : unwrappedKey;
-                        if (kpv.Item2.TryUnwrapKey(encryptedKey, temporaryUnwrappedKey, header, out int keyUnwrappedBytesWritten))
-                        {
-                            var jwk = new SymmetricJwk(unwrappedKey.Slice(0, keyUnwrappedBytesWritten).ToArray());
-                            keys.Add(jwk);
-                        }
-                    }
-                }
-                finally
-                {
-                    if (encryptedKeyToReturnToPool != null)
-                    {
-                        ArrayPool<byte>.Shared.Return(encryptedKeyToReturnToPool, true);
-                    }
-
-                    if (unwrappedKeyToReturnToPool != null)
-                    {
-                        ArrayPool<byte>.Shared.Return(unwrappedKeyToReturnToPool, true);
-                    }
-                }
-            }
-
-            return keys.Count != 0;
         }
     }
 }

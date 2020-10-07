@@ -417,7 +417,7 @@ namespace JsonWebToken
                 case ExceptionArgument.signingKey: return "signingKey";
                 case ExceptionArgument.encryptionKey: return "encryptionKey";
                 case ExceptionArgument.payload: return "payload";
-                case ExceptionArgument.encryptionKeyProviders: return "encryptionKeyProviders";
+                case ExceptionArgument.decryptionKeyProviders: return "decryptionKeyProviders";
                 case ExceptionArgument.signerFactory: return "signerFactory";
                 case ExceptionArgument.keyWrapperFactory: return "keyWrapperFactory";
                 case ExceptionArgument.authenticatedEncryptorFactory: return "authenticatedEncryptorFactory";
@@ -483,7 +483,7 @@ namespace JsonWebToken
         signingKey,
         encryptionKey,
         payload,
-        encryptionKeyProviders,
+        decryptionKeyProviders,
         signerFactory,
         keyWrapperFactory,
         authenticatedEncryptorFactory,

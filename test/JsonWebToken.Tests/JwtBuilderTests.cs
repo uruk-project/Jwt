@@ -189,7 +189,6 @@ namespace JsonWebToken.Tests
             Assert.Contains("The algorithm 'none' defined with a signing key.", exception.Message);
         }
 
-
         [Fact]
         public void Build_JweMissingKeyManagementAlgorithm()
         {

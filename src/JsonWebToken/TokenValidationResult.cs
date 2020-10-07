@@ -339,4 +339,299 @@ namespace JsonWebToken
             };
         }
     }
+
+    /// <summary>
+    /// Represents the error of a token validation.
+    /// </summary>
+    public sealed class TokenValidationError
+    {
+        private static readonly TokenValidationError _noError = new TokenValidationError
+        {
+            Status = TokenValidationStatus.Success
+        };      
+        private static readonly TokenValidationError _decryptionFailed = new TokenValidationError
+        {
+            Status = TokenValidationStatus.DecryptionFailed
+        };
+        private static readonly TokenValidationError _malformedToken = new TokenValidationError
+        {
+            Status = TokenValidationStatus.MalformedToken
+        };
+        private static readonly TokenValidationError _missingEncryptionAlgorithm = new TokenValidationError
+        {
+            Status = TokenValidationStatus.MissingEncryptionAlgorithm
+        };
+        private static readonly TokenValidationError _encryptionKeyNotFound = new TokenValidationError
+        {
+            Status = TokenValidationStatus.EncryptionKeyNotFound
+        };
+
+        /// <summary>
+        /// Gets the status of the validation.
+        /// </summary>
+        public TokenValidationStatus Status { get; private set; }
+
+        /// <summary>
+        /// Gets the claim that caused the error.
+        /// </summary>
+        public string? ErrorClaim { get; private set; }
+
+        /// <summary>
+        /// Gets the header parameter that cause the error.
+        /// </summary>
+        public string? ErrorHeader { get; private set; }
+
+        /// <summary>
+        /// Gets the <see cref="Exception"/> that caused the error.
+        /// </summary>
+        public Exception? Exception { get; private set; }
+
+        /// <summary>
+        /// The token has no error.
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError NoError()
+        {
+            return _noError;
+        }
+
+        /// <summary>
+        /// The token has expired, according to the 'nbf' claim.
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError Expired()
+        {
+            return new TokenValidationError
+            {
+                Status = TokenValidationStatus.Expired
+            };
+        }
+
+        /// <summary>
+        /// The token was already validated previously.
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError TokenReplayed()
+        {
+            return new TokenValidationError
+            {
+                Status = TokenValidationStatus.TokenReplayed
+            };
+        }
+
+        /// <summary>
+        /// The 'crit' header defines an unsupported header.
+        /// </summary>
+        /// <param name="criticalHeader"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError CriticalHeaderUnsupported(string criticalHeader)
+        {
+            return new TokenValidationError
+            {
+                Status = TokenValidationStatus.CriticalHeaderUnsupported,
+                ErrorHeader = criticalHeader
+            };
+        }
+
+        /// <summary>
+        /// The encryption key was not found.
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError EncryptionKeyNotFound()
+        {
+            return _encryptionKeyNotFound;
+        }
+
+        /// <summary>
+        /// The token is not a JWT in compact representation, is not base64url encoded, and is not a JSON UTF-8 encoded.
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError MalformedToken()
+        {
+            return _malformedToken;
+        }
+
+        /// <summary>
+        /// The token is not a JWT in compact representation, is not base64url encoded, and is not a JSON UTF-8 encoded.
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError MalformedToken(Exception exception)
+        {
+            return new TokenValidationError
+            {
+                Status = TokenValidationStatus.MalformedToken,
+                Exception = exception
+            };
+        }
+
+        /// <summary>
+        /// The 'enc' header parameter is missing.
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError MissingEncryptionAlgorithm()
+        {
+            return _missingEncryptionAlgorithm;
+        }
+
+        /// <summary>
+        /// The token is not yet valid, according to the 'nbf' claim.
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError NotYetValid()
+        {
+            return new TokenValidationError
+            {
+                Status = TokenValidationStatus.NotYetValid
+            };
+        }
+
+        /// <summary>
+        /// The token decryption has failed.
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError DecryptionFailed()
+        {
+            return _decryptionFailed;
+        }
+
+        /// <summary>
+        /// The token has an invalid claim.
+        /// </summary>
+        /// <param name="claim"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError InvalidClaim(ReadOnlySpan<byte> claim)
+        {
+            return new TokenValidationError
+            {
+                Status = TokenValidationStatus.InvalidClaim,
+                ErrorClaim = Utf8.GetString(claim)
+            };
+        }
+
+        /// <summary>
+        /// The token has an invalid claim.
+        /// </summary>
+        /// <param name="claim"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError InvalidClaim(string claim)
+        {
+            return new TokenValidationError
+            {
+                Status = TokenValidationStatus.InvalidClaim,
+                ErrorClaim = claim
+            };
+        }
+
+        /// <summary>
+        /// The token has a missing claim.
+        /// </summary>
+        /// <param name="claim"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError MissingClaim(ReadOnlySpan<byte> claim)
+        {
+            return new TokenValidationError
+            {
+                Status = TokenValidationStatus.MissingClaim,
+                ErrorClaim = Utf8.GetString(claim)
+            };
+        }
+
+        /// <summary>
+        /// The token has a missing claim.
+        /// </summary>
+        /// <param name="claim"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError MissingClaim(string claim)
+        {
+            return new TokenValidationError
+            {
+                Status = TokenValidationStatus.MissingClaim,
+                ErrorClaim = claim
+            };
+        }
+
+        /// <summary>
+        /// The token has an invalid header. 
+        /// </summary>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError InvalidHeader(ReadOnlySpan<byte> header)
+        {
+            return new TokenValidationError
+            {
+                Status = TokenValidationStatus.InvalidHeader,
+                ErrorHeader = Utf8.GetString(header)
+            };
+        }
+
+        /// <summary>
+        /// The token has an invalid header. 
+        /// </summary>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError InvalidHeader(string header)
+        {
+            return new TokenValidationError
+            {
+                Status = TokenValidationStatus.InvalidHeader,
+                ErrorHeader = header
+            };
+        }
+
+        /// <summary>
+        /// The token has a missing header.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError MissingHeader(ReadOnlySpan<byte> header)
+        {
+            return new TokenValidationError
+            {
+                Status = TokenValidationStatus.MissingHeader,
+                ErrorHeader = Utf8.GetString(header)
+            };
+        }
+
+        /// <summary>
+        /// The token decompression has failed.
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError DecompressionFailed(Exception exception)
+        {
+            return new TokenValidationError
+            {
+                Status = TokenValidationStatus.DecompressionFailed,
+                Exception = exception
+            };
+        }
+
+        internal static TokenValidationError SignatureValidationFailed(SignatureValidationResult result)
+        {
+            return new TokenValidationError
+            {
+                Status = result.Status,
+                Exception = result.Exception
+            };
+        }
+    }
 }

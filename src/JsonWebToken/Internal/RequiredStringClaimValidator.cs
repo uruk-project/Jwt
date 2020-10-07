@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace JsonWebToken.Internal
 {
@@ -59,6 +60,31 @@ namespace JsonWebToken.Internal
             }
 
             return TokenValidationResult.Success(jwt);
+        }
+
+        public bool TryValidate(JwtHeader header, JwtPayload payload, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            if (payload is null)
+            {
+                error = TokenValidationError.MalformedToken();
+                return false;
+            }
+
+            var claim = payload[_claim];
+            if (claim is null)
+            {
+                error = TokenValidationError.MissingClaim(_claim);
+                return false;
+            }
+
+            if (!string.Equals(_value, (string?)claim, StringComparison.Ordinal))
+            {
+                error = TokenValidationError.InvalidClaim(_claim);
+                return false;
+            }
+
+            error = null;
+            return true;
         }
     }
 }

@@ -9,7 +9,7 @@ using JsonWebToken.Internal;
 
 namespace JsonWebToken.Performance
 {
-#if NETCOREAPP3_0
+#if NETCOREAPP3_1 
     [MemoryDiagnoser]
     public class JsonHeaderParserBenchmark
     {

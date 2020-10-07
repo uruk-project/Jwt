@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using JsonWebToken.Internal;
 
@@ -26,6 +27,8 @@ namespace JsonWebToken
         private byte _control;
         private byte[]? _issuer;
         private int _clockSkew;
+        private IKeyProvider[] _decryptionKeysProviders;
+        private bool _headerCacheDisabled;
         private readonly List<byte[]> _audiences = new List<byte[]>();
 
         /// <summary>
@@ -400,6 +403,59 @@ namespace JsonWebToken
             return this;
         }
 
+        /// <summary>
+        /// Defines the keys providers used to decrypt the tokens.
+        /// </summary>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder WithDecryptionKeys(ICollection<IKeyProvider> decryptionKeyProviders)
+        {
+            if (decryptionKeyProviders is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.decryptionKeyProviders);
+            }
+
+            _decryptionKeysProviders = decryptionKeyProviders.Where(p => p != null).ToArray();
+            return this;
+        }
+
+        /// <summary>
+        /// Defines the keys used to decrypt the tokens.
+        /// </summary>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder WithDecryptionKeys(params Jwk[] decryptionKeys)
+            => WithDecryptionKeys(new Jwks(decryptionKeys));
+
+        /// <summary>
+        /// Defines the keys providers used to decrypt the tokens.
+        /// </summary>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder WithDecryptionKeys(IKeyProvider decryptionKeyProvider)
+            => WithDecryptionKeys(new[] { decryptionKeyProvider });
+
+        /// <summary>
+        /// Defines the keys used to decrypt the tokens.
+        /// </summary>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder WithDecryptionKeys(Jwks decryptionKeys)
+            => WithDecryptionKeys(new StaticKeyProvider(decryptionKeys));
+
+        /// <summary>
+        /// Defines the keys providers used to decrypt the tokens.
+        /// </summary>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder WithDecryptionKeys(Jwk encryptionKey)
+             => WithDecryptionKeys(new Jwks(encryptionKey));
+
+        /// <summary>
+        /// Defines the keys providers used to decrypt the tokens.
+        /// </summary>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder DisabledHeaderCache()
+        {
+            _headerCacheDisabled = true;
+            return this;
+        }
+
         private void Validate()
         {
             if (!_hasSignatureValidation)
@@ -422,7 +478,9 @@ namespace JsonWebToken
                 maximumTokenSizeInBytes: _maximumTokenSizeInBytes,
                 ignoreCriticalHeader: _ignoreCriticalHeader,
                 ignoreNestedToken: _ignoreNestedToken,
+                headerCacheDisabled: _headerCacheDisabled,
                 signatureValidation: _signatureValidation,
+                encryptionKeyProviders: _decryptionKeysProviders,
                 issuer: _issuer,
                 audiences: _audiences.ToArray(),
                 clockSkew: _clockSkew,

@@ -422,5 +422,7 @@ namespace JsonWebToken
 
         internal static SignatureAlgorithm Create(string name)
             => new SignatureAlgorithm(127, name, AlgorithmCategory.None, 0, new HashAlgorithmName());
+
+        internal bool IsUnknow => _id == 127;
     }
 }

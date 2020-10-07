@@ -7,6 +7,39 @@ using JsonWebToken.Internal;
 
 namespace JsonWebToken.Performance
 {
+
+    [MemoryDiagnoser]
+    public class JwtDocumentBenchmark
+    {
+        private static readonly TokenValidationPolicy _policy = new TokenValidationPolicyBuilder().WithDecryptionKeys(Tokens.EncryptionKey).RequireSignature(Tokens.SigningKey).Build();
+
+        [Benchmark(Baseline = false)]
+        [ArgumentsSource(nameof(GetData))]
+        public JwtDocument? TryParse(byte[] data)
+        {
+            JwtDocument.TryParse(data, _policy, out var document);
+            document.Dispose();
+            return document;
+        }
+
+        [Benchmark(Baseline = true)]
+        [ArgumentsSource(nameof(GetData))]
+        public Jwt? TryReadToken(byte[] data)
+        {
+            var reader = new JwtReader(Tokens.EncryptionKey);
+            var document = reader.TryReadToken(data, _policy);
+            return document.Token;
+        }
+
+        public static IEnumerable<byte[]> GetData()
+        {
+            yield return Encoding.UTF8.GetBytes(Tokens.ValidTokens["JWS 6 claims"]);
+            yield return Encoding.UTF8.GetBytes(Tokens.ValidTokens["JWS 36 claims"]);
+            yield return Encoding.UTF8.GetBytes(Tokens.ValidTokens["JWE 6 claims"]);
+            yield return Encoding.UTF8.GetBytes(Tokens.ValidTokens["JWE 36 claims"]);
+        }
+    }
+
     [MemoryDiagnoser]
     public class AesDecryptorBenchmark
     {

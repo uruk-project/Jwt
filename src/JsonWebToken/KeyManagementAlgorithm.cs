@@ -534,5 +534,8 @@ namespace JsonWebToken
 
             return TryParseSlow(ref reader, out algorithm);
         }
+
+        internal static KeyManagementAlgorithm Create(string name)
+            => new KeyManagementAlgorithm(127, name, AlgorithmCategory.None, 0, null, false);
     }
 }

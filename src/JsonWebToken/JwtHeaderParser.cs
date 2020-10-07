@@ -41,7 +41,7 @@ namespace JsonWebToken
                     break;
                 }
 
-                var name = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
+                var name = reader.ValueSpan;
                 reader.Read();
                 var type = reader.TokenType;
 
@@ -54,7 +54,7 @@ namespace JsonWebToken
                         switch (refName)
                         {
                             case Alg:
-                                var alg = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
+                                var alg = reader.ValueSpan;
                                 if (SignatureAlgorithm.TryParse(alg, out var signatureAlgorithm))
                                 {
                                     header.SignatureAlgorithm = signatureAlgorithm;
@@ -79,7 +79,7 @@ namespace JsonWebToken
                                 continue;
 
                             case Enc:
-                                var enc = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
+                                var enc = reader.ValueSpan;
                                 if (EncryptionAlgorithm.TryParse(enc, out var encryptionAlgorithm))
                                 {
                                     header.EncryptionAlgorithm = encryptionAlgorithm;

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace JsonWebToken
 {
@@ -37,6 +38,30 @@ namespace JsonWebToken
             }
 
             return TokenValidationResult.Success(jwt);
+        }
+
+        public bool TryValidate(JwtHeader header, JwtPayload payload, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            if (payload is null)
+            {
+                error = TokenValidationError.MalformedToken();
+                return false;
+            }
+
+            if (!payload.TryGetValue(OidcClaims.AcrUtf8, out var property))
+            {
+                error = TokenValidationError.MissingClaim(OidcClaims.AcrUtf8);
+                return false;
+            }
+
+            if (string.Equals(_requiredAcr, (string?)property.Value, StringComparison.Ordinal))
+            {
+                error = TokenValidationError.InvalidClaim(OidcClaims.AcrUtf8);
+                return false;
+            }
+
+            error = null;
+            return true;
         }
     }
 }

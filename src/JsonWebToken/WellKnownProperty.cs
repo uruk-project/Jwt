@@ -6,7 +6,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines the well known JWT properties.
     /// </summary>
-    public enum WellKnownProperty : byte
+    public enum WellKnownProperty : ulong
     {
         /// <summary>
         /// None.
@@ -46,32 +46,32 @@ namespace JsonWebToken
         /// <summary>
         /// kid
         /// </summary>
-        Kid,
+        Kid = JwtHeaderParameters.Kid,
 
         /// <summary>
         /// alg
         /// </summary>
-        Alg,
+        Alg = JwtHeaderParameters.Alg,
 
         /// <summary>
         /// enc
         /// </summary>
-        Enc,
+        Enc = JwtHeaderParameters.Enc,
 
         /// <summary>
         /// cty
         /// </summary>
-        Cty,
+        Cty = JwtHeaderParameters.Cty,
 
         /// <summary>
         /// typ
         /// </summary>
-        Typ,
+        Typ = JwtHeaderParameters.Typ,
 
         /// <summary>
         /// zip
         /// </summary>
-        Zip,
+        Zip = JwtHeaderParameters.Zip,
 
         /// <summary>
         /// sub
