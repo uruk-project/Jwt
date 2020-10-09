@@ -231,7 +231,7 @@ namespace JsonWebToken
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryGetValue(string key, out JwtProperty value) => TryGetValue(Utf8.GetBytes(key).AsSpan(), out value);
+        public bool TryGetValue(string key, out JwtProperty value) => TryGetProperty(Utf8.GetBytes(key).AsSpan(), out value);
 
         /// <summary>
         /// Gets the <see cref="JwtProperty"/> associated with the specified key.
@@ -239,7 +239,7 @@ namespace JsonWebToken
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryGetValue(byte[] key, out JwtProperty value) => TryGetValue(key.AsSpan(), out value);
+        public bool TryGetValue(byte[] key, out JwtProperty value) => TryGetProperty(key.AsSpan(), out value);
 
         /// <summary>
         /// Gets the <see cref="JwtProperty"/> associated with the specified key.
@@ -247,7 +247,7 @@ namespace JsonWebToken
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryGetValue(ReadOnlySpan<byte> key, out JwtProperty value)
+        public bool TryGetProperty(ReadOnlySpan<byte> key, out JwtProperty value)
         {
             var properties = _properties;
             int count = properties.Count;

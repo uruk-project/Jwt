@@ -57,5 +57,28 @@ namespace JsonWebToken.Internal
             error = null;
             return true;
         }
+
+        public bool TryValidate(JwtHeader header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            if (header is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
+            }
+
+            if (!header.TryGetValue(HeaderParameters.AlgUtf8, out var property))
+            {
+                error = TokenValidationError.MissingHeader(HeaderParameters.AlgUtf8);
+                return false;
+            }
+
+            if (!_algorithm.AsSpan().SequenceEqual(new ReadOnlySpan<byte>((byte[]?)property.Value)))
+            {
+                error = TokenValidationError.InvalidHeader(HeaderParameters.AlgUtf8);
+                return false;
+            }
+
+            error = null;
+            return true;
+        }
     }
 }

@@ -61,7 +61,7 @@ namespace JsonWebToken
                 return true;
             }
 
-            if (header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty)
+            if (header.TryGetProperty(HeaderParameters.KidUtf8, out var kidProperty)
                 && kidProperty.Type == JwtTokenType.String
                 && !(kidProperty.Value is null)
                 && !(alg is null)
@@ -113,7 +113,7 @@ namespace JsonWebToken
             }
             else
             {
-                if (header.TryGetValue(HeaderParameters.KidUtf8, out var kidProperty)
+                if (header.TryGetProperty(HeaderParameters.KidUtf8, out var kidProperty)
                     && kidProperty.Type == JwtTokenType.String
                     && !(kidProperty.Value is null)
                     && !(alg is null)

@@ -556,17 +556,17 @@ namespace JsonWebToken
         internal static ECJwk FromJwtObject(JwtObject jwtObject)
         {
             Debug.Assert(jwtObject.Count == 3);
-            if (!jwtObject.TryGetValue(JwkParameterNames.CrvUtf8, out var crv) || crv.Value is null)
+            if (!jwtObject.TryGetProperty(JwkParameterNames.CrvUtf8, out var crv) || crv.Value is null)
             {
                 ThrowHelper.ThrowArgumentException_MalformedKey();
             }
 
-            if (!jwtObject.TryGetValue(JwkParameterNames.XUtf8, out var x) || x.Value is null)
+            if (!jwtObject.TryGetProperty(JwkParameterNames.XUtf8, out var x) || x.Value is null)
             {
                 ThrowHelper.ThrowArgumentException_MalformedKey();
             }
 
-            if (!jwtObject.TryGetValue(JwkParameterNames.YUtf8, out var y) || y.Value is null)
+            if (!jwtObject.TryGetProperty(JwkParameterNames.YUtf8, out var y) || y.Value is null)
             {
                 ThrowHelper.ThrowArgumentException_MalformedKey();
             }

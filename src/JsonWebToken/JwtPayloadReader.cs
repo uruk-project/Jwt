@@ -170,7 +170,7 @@ namespace JsonWebToken
 
         public string[] GetArrayAudience()
         {
-            string[] aud = Array.Empty<string>();
+            string[] aud;
             if (_policy.RequireAudience)
             {
                 var audiences = new List<string>();

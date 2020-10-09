@@ -50,5 +50,24 @@ namespace JsonWebToken.Internal
             error = null;
             return true;
         }
+
+        public bool TryValidate(JwtHeader header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            var expires = payload.Exp;
+            if (!expires.HasValue)
+            {
+                error = TokenValidationError.MissingClaim(Claims.ExpUtf8);
+                return false;
+            }
+
+            if (!_tokenReplayCache.TryAdd(payload.Jti, expires.Value))
+            {
+                error = TokenValidationError.TokenReplayed();
+                return false;
+            }
+
+            error = null;
+            return true;
+        }
     }
 }

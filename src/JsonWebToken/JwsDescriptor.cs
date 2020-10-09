@@ -44,7 +44,7 @@ namespace JsonWebToken
             {
                 if (_alg.IsEmpty)
                 {
-                    Header.TryGetValue(HeaderParameters.AlgUtf8, out _alg);
+                    Header.TryGetProperty(HeaderParameters.AlgUtf8, out _alg);
                 }
 
                 if (_alg.Value is null)
@@ -336,7 +336,7 @@ namespace JsonWebToken
         public void AddClaim(ReadOnlySpan<byte> utf8Name, JwtProperty value)
         {
             JwtObject jwtObject;
-            if (Payload.TryGetValue(utf8Name, out JwtProperty property) && property.Type == JwtTokenType.Object && !(property.Value is null))
+            if (Payload.TryGetProperty(utf8Name, out JwtProperty property) && property.Type == JwtTokenType.Object && !(property.Value is null))
             {
                 jwtObject = (JwtObject)property.Value;
             }
@@ -426,7 +426,7 @@ namespace JsonWebToken
         /// <returns></returns>
         protected string? GetStringClaim(ReadOnlySpan<byte> utf8Name)
         {
-            if (Payload.TryGetValue(utf8Name, out JwtProperty value))
+            if (Payload.TryGetProperty(utf8Name, out JwtProperty value))
             {
                 return (string?)value.Value;
             }
@@ -451,7 +451,7 @@ namespace JsonWebToken
         /// <returns></returns>
         protected int? GetInt32Claim(ReadOnlySpan<byte> utf8Name)
         {
-            if (Payload.TryGetValue(utf8Name, out JwtProperty value))
+            if (Payload.TryGetProperty(utf8Name, out JwtProperty value))
             {
                 return (int?)value.Value;
             }
@@ -466,7 +466,7 @@ namespace JsonWebToken
         /// <returns></returns>
         protected TClaim? GetClaim<TClaim>(ReadOnlySpan<byte> claimType) where TClaim : struct
         {
-            if (Payload.TryGetValue(claimType, out JwtProperty value))
+            if (Payload.TryGetProperty(claimType, out JwtProperty value))
             {
                 return (TClaim?)value.Value;
             }
@@ -481,7 +481,7 @@ namespace JsonWebToken
         /// <returns></returns>
         protected bool? GetBoolClaim(ReadOnlySpan<byte> utf8Name)
         {
-            if (Payload.TryGetValue(utf8Name, out JwtProperty value))
+            if (Payload.TryGetProperty(utf8Name, out JwtProperty value))
             {
                 return (bool?)value.Value;
             }
@@ -496,7 +496,7 @@ namespace JsonWebToken
         /// <returns></returns>
         protected List<T>? GetListClaims<T>(ReadOnlySpan<byte> utf8Name)
         {
-            if (Payload.TryGetValue(utf8Name, out JwtProperty value) && !(value.Value is null))
+            if (Payload.TryGetProperty(utf8Name, out JwtProperty value) && !(value.Value is null))
             {
                 var list = new List<T>();
                 if (value.Type == JwtTokenType.Array)
@@ -538,7 +538,7 @@ namespace JsonWebToken
         /// <returns></returns>
         protected JwtObject? GetClaim(ReadOnlySpan<byte> claimType)
         {
-            if (Payload.TryGetValue(claimType, out JwtProperty value) && value.Type == JwtTokenType.Object && !(value.Value is null))
+            if (Payload.TryGetProperty(claimType, out JwtProperty value) && value.Type == JwtTokenType.Object && !(value.Value is null))
             {
                 return (JwtObject)value.Value;
             }
@@ -553,7 +553,7 @@ namespace JsonWebToken
         /// <returns></returns>
         protected DateTime? GetDateTime(ReadOnlySpan<byte> utf8Name)
         {
-            if (!Payload.TryGetValue(utf8Name, out JwtProperty dateValue) || dateValue.Type != JwtTokenType.Integer || dateValue.Value is null)
+            if (!Payload.TryGetProperty(utf8Name, out JwtProperty dateValue) || dateValue.Type != JwtTokenType.Integer || dateValue.Value is null)
             {
                 return null;
             }
@@ -651,7 +651,7 @@ namespace JsonWebToken
         /// <param name="type"></param>
         protected void RequireClaim(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
         {
-            if (!Payload.TryGetValue(utf8Name, out var claim) || claim.Type == JwtTokenType.Null)
+            if (!Payload.TryGetProperty(utf8Name, out var claim) || claim.Type == JwtTokenType.Null)
             {
                 ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
             }
@@ -669,7 +669,7 @@ namespace JsonWebToken
         /// <param name="types"></param>
         protected void ValidateClaim(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
         {
-            if (!Payload.TryGetValue(utf8Name, out var claim) || claim.Type == JwtTokenType.Null)
+            if (!Payload.TryGetProperty(utf8Name, out var claim) || claim.Type == JwtTokenType.Null)
             {
                 ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
             }

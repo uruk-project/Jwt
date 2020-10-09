@@ -63,5 +63,29 @@ namespace JsonWebToken
             error = null;
             return true;
         }
+
+        public bool TryValidate(JwtHeader header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            if (payload is null)
+            {
+                error = TokenValidationError.MalformedToken();
+                return false;
+            }
+
+            if (!payload.TryGetValue(OidcClaims.AcrUtf8, out var property))
+            {
+                error = TokenValidationError.MissingClaim(OidcClaims.AcrUtf8);
+                return false;
+            }
+
+            if (string.Equals(_requiredAcr, (string?)property.GetString(), StringComparison.Ordinal))
+            {
+                error = TokenValidationError.InvalidClaim(OidcClaims.AcrUtf8);
+                return false;
+            }
+
+            error = null;
+            return true;
+        }
     }
 }

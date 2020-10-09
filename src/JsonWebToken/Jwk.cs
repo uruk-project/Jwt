@@ -407,7 +407,7 @@ namespace JsonWebToken
 
         private static Jwk FromJwtObject(JwtObject jwk)
         {
-            if (jwk.TryGetValue(JwkParameterNames.KtyUtf8, out var property) && !(property.Value is null))
+            if (jwk.TryGetProperty(JwkParameterNames.KtyUtf8, out var property) && !(property.Value is null))
             {
                 var kty = (string)property.Value;
                 if (string.Equals(kty, "oct", StringComparison.Ordinal))

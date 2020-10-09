@@ -19,5 +19,10 @@ namespace JsonWebToken
         /// Tries to validate a token.
         /// </summary>
         bool TryValidate(JwtHeader header, JwtPayload payload, [NotNullWhen(false)] out TokenValidationError? error);
+
+        /// <summary>
+        /// Tries to validate a token.
+        /// </summary>
+        bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error);
     }
 }

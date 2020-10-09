@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text.Json;
 using JsonWebToken.Internal;
 
@@ -120,7 +122,7 @@ namespace JsonWebToken
                     return null;
                 }
 
-                return _inner.TryGetValue(key, out var value) ? value.Value : null;
+                return _inner.TryGetProperty(key, out var value) ? value.Value : null;
             }
         }
 
@@ -335,7 +337,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            return _inner.TryGetValue(key, out value);
+            return _inner.TryGetProperty(key, out value);
         }
 
         /// <summary>

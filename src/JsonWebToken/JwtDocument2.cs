@@ -19,32 +19,32 @@ namespace JsonWebToken
     ///   the memory not being returned to the pool, which will cause an increase in GC impact across
     ///   various parts of the framework.
     /// </remarks>
-    public sealed class JwtDocument : IDisposable
+    public sealed class JwtDocument2 : IDisposable
     {
         private ReadOnlyMemory<byte> _rawValue;
         private byte[]? _rented;
         private readonly JwtHeader _header;
-        private readonly JwtPayload? _payload;
+        private readonly JwtPayloadDocument? _payload;
 
-        private JwtDocument(JwtHeader header, ReadOnlyMemory<byte> rawValue, byte[] rented)
+        public JwtDocument2(JwtHeader header, ReadOnlyMemory<byte> rawValue, byte[] rented)
         {
             Header = header;
             _rawValue = rawValue;
             _rented = rented;
         }
 
-        private JwtDocument(TokenValidationError error)
+        public JwtDocument2(TokenValidationError error)
         {
             Error = error;
         }
 
-        private JwtDocument(JwtHeader header, JwtPayload payload)
+        public JwtDocument2(JwtHeader header, JwtPayloadDocument payload)
         {
             Header = header;
             _payload = payload;
         }
 
-        private JwtDocument(JwtHeader header, JwtPayload payload, TokenValidationError error)
+        public JwtDocument2(JwtHeader header, JwtPayloadDocument payload, TokenValidationError error)
         {
             Header = header;
             _payload = payload;
@@ -53,10 +53,10 @@ namespace JsonWebToken
 
         public TokenValidationError? Error { get; }
         public JwtHeader? Header { get; }
-        public JwtPayload? Payload => _payload;
+        public JwtPayloadDocument? Payload => _payload;
         public ReadOnlyMemory<byte> RawValue => _rawValue;
 
-        public static bool TryParse(ReadOnlySpan<byte> utf8Token, TokenValidationPolicy policy, out JwtDocument document)
+        public static bool TryParse(ReadOnlySpan<byte> utf8Token, TokenValidationPolicy policy, out JwtDocument2 document)
         {
             if (policy is null)
             {
@@ -109,9 +109,9 @@ namespace JsonWebToken
             }
 
             byte[]? jsonBufferToReturnToPool = null;
-            var jsonBuffer = jsonBufferLength <= Constants.MaxStackallocBytes
+            var jsonBuffer = /*jsonBufferLength <= Constants.MaxStackallocBytes
               ? stackalloc byte[jsonBufferLength]
-              : (jsonBufferToReturnToPool = ArrayPool<byte>.Shared.Rent(jsonBufferLength));
+              : */(jsonBufferToReturnToPool = ArrayPool<byte>.Shared.Rent(jsonBufferLength)).AsMemory();
             try
             {
                 bool validHeader;
@@ -120,8 +120,8 @@ namespace JsonWebToken
                     if (!policy.HeaderCache.TryGetHeader(rawHeader, out header))
                     {
                         var buffer = jsonBuffer.Slice(0, headerJsonDecodedLength);
-                        Base64Url.Decode(rawHeader, buffer);
-                        validHeader = TryReadHeader(buffer, policy, segmentCount, out header, out error);
+                        Base64Url.Decode(rawHeader, buffer.Span);
+                        validHeader = TryReadHeader(buffer.Span, policy, segmentCount, out header, out error);
                         policy.HeaderCache.AddHeader(rawHeader, header);
                     }
                     else
@@ -132,8 +132,8 @@ namespace JsonWebToken
                 else
                 {
                     var buffer = jsonBuffer.Slice(0, headerJsonDecodedLength);
-                    Base64Url.Decode(rawHeader, buffer);
-                    validHeader = TryReadHeader(buffer, policy, segmentCount, out header, out error);
+                    Base64Url.Decode(rawHeader, buffer.Span);
+                    validHeader = TryReadHeader(buffer.Span, policy, segmentCount, out header, out error);
                 }
 
                 if (validHeader)
@@ -141,7 +141,7 @@ namespace JsonWebToken
                     return segmentCount switch
                     {
                         Constants.JwsSegmentCount => TryReadJws(utf8Token, jsonBuffer.Slice(0, payloadjsonDecodedLength), policy, ref segmentsRef, header, out document),
-                        Constants.JweSegmentCount => TryReadJwe(utf8Token, jsonBuffer.Slice(0, payloadjsonDecodedLength), policy, rawHeader, ref segmentsRef, header, out document),
+                        Constants.JweSegmentCount => TryReadJwe(utf8Token, jsonBuffer.Slice(0, payloadjsonDecodedLength).Span, policy, rawHeader, ref segmentsRef, header, out document),
                         _ => InvalidDocument(TokenValidationError.MalformedToken(), out document),
                     };
                 }
@@ -172,9 +172,9 @@ namespace JsonWebToken
         TokenAnalyzed:
             return InvalidDocument(error, out document);
 
-            static bool InvalidDocument(TokenValidationError error, out JwtDocument document)
+            static bool InvalidDocument(TokenValidationError error, out JwtDocument2 document)
             {
-                document = new JwtDocument(error);
+                document = new JwtDocument2(error);
                 return false;
             }
         }
@@ -298,11 +298,11 @@ namespace JsonWebToken
 
         private static bool TryReadJws(
             ReadOnlySpan<byte> utf8Buffer,
-            Span<byte> jsonBuffer,
+            Memory<byte> jsonBuffer,
             TokenValidationPolicy policy,
             ref TokenSegment segments,
             JwtHeader header,
-            out JwtDocument? jwt)
+            out JwtDocument2? jwt)
         {
             TokenSegment headerSegment = segments;
             TokenSegment payloadSegment = Unsafe.Add(ref segments, 1);
@@ -311,30 +311,30 @@ namespace JsonWebToken
             var result = policy.TryValidateSignature(header, utf8Buffer.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1), utf8Buffer.Slice(signatureSegment.Start, signatureSegment.Length));
             if (!result.Succedeed)
             {
-                jwt = new JwtDocument(TokenValidationError.SignatureValidationFailed(result));
+                jwt = new JwtDocument2(TokenValidationError.SignatureValidationFailed(result));
                 return false;
             }
 
             Exception malformedException;
             try
             {
-                Base64Url.Decode(rawPayload, jsonBuffer);
-                if (TryReadPayload(jsonBuffer, policy, out JwtPayload? payload, out TokenValidationError? error))
+                Base64Url.Decode(rawPayload, jsonBuffer.Span);
+                if (TryReadPayload(jsonBuffer, policy, out JwtPayloadDocument? payload, out TokenValidationError? error))
                 {
                     if (policy.TryValidateJwt(header, payload, out error))
                     {
-                        jwt = new JwtDocument(header, payload);
+                        jwt = new JwtDocument2(header, payload);
                         return true;
                     }
                     else
                     {
-                        jwt = new JwtDocument(header, payload, error);
+                        jwt = new JwtDocument2(header, payload, error);
                         return false;
                     }
                 }
                 else
                 {
-                    jwt = new JwtDocument(error);
+                    jwt = new JwtDocument2(error);
                     return false;
                 }
             }
@@ -356,7 +356,7 @@ namespace JsonWebToken
 
 
         Malformed:
-            jwt = new JwtDocument(TokenValidationError.MalformedToken(exception: malformedException));
+            jwt = new JwtDocument2(TokenValidationError.MalformedToken(exception: malformedException));
             return false;
         }
 
@@ -367,7 +367,7 @@ namespace JsonWebToken
             ReadOnlySpan<byte> rawHeader,
             ref TokenSegment segments,
             JwtHeader header,
-            out JwtDocument document)
+            out JwtDocument2 document)
         {
             TokenValidationError error;
             TokenSegment encryptionKeySegment = Unsafe.Add(ref segments, 1);
@@ -437,7 +437,7 @@ namespace JsonWebToken
                     }
                 }
 
-                JwtDocument jwe;
+                JwtDocument2 jwe;
                 if (policy.IgnoreNestedToken)
                 {
                     var rawValue = compressed
@@ -445,7 +445,7 @@ namespace JsonWebToken
                             ? decompressedBytes.First
                             : decompressedBytes.ToArray()
                         : decryptedArrayToReturnToPool.AsMemory(0, decryptedBytes.Length);
-                    jwe = new JwtDocument(header, rawValue, decryptedArrayToReturnToPool);
+                    jwe = new JwtDocument2(header, rawValue, decryptedArrayToReturnToPool);
                     decryptedArrayToReturnToPool = null; // do not return to the pool
                 }
                 else
@@ -455,7 +455,7 @@ namespace JsonWebToken
                         : TryParse(decryptedBytes, policy, out nestedDocument);
                     if (decrypted)
                     {
-                        jwe = new JwtDocument(header, nestedDocument.Payload);
+                        jwe = new JwtDocument2(header, nestedDocument.Payload);
                     }
                     else
                     {
@@ -467,12 +467,12 @@ namespace JsonWebToken
                                    ? decompressedBytes.First
                                    : decompressedBytes.ToArray()
                                : decryptedArrayToReturnToPool.AsMemory(0, decryptedBytes.Length);
-                            jwe = new JwtDocument(header, rawValue, decryptedArrayToReturnToPool);
+                            jwe = new JwtDocument2(header, rawValue, decryptedArrayToReturnToPool);
                             decryptedArrayToReturnToPool = null; // do not return to the pool
                         }
                         else
                         {
-                            jwe = new JwtDocument(header, nestedDocument.Payload, nestedDocument.Error);
+                            jwe = new JwtDocument2(header, nestedDocument.Payload, nestedDocument.Error);
                         }
                     }
                 }
@@ -489,122 +489,27 @@ namespace JsonWebToken
             }
 
         Error:
-            document = new JwtDocument(error);
+            document = new JwtDocument2(error);
             return false;
         }
 
-        public static bool TryReadPayload(ReadOnlySpan<byte> utf8Payload, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtPayload? payload, [NotNullWhen(false)] out TokenValidationError? error)
+        public static bool TryReadPayload(ReadOnlyMemory<byte> utf8Payload, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtPayloadDocument? payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
-            var result = new JwtPayload();
-            JwtPayloadReader reader = new JwtPayloadReader(utf8Payload, policy);
-            if (reader.ReadFirstBytes())
+            try
             {
-                while (reader.Read())
-                {
-                    var name = reader.ClaimName;
-                    switch (reader.ClaimTokenType)
-                    {
-                        case JsonTokenType.StartObject:
-                            result.Inner.Add(name, reader.GetJwtObject());
-                            break;
-                        case JsonTokenType.StartArray:
-                            if (name.Length == 3 && (JwtClaims)IntegerMarshal.ReadUInt24(name) == JwtClaims.Aud)
-                            {
-                                result.Aud = reader.GetArrayAudience();
-                                continue;
-                            }
-
-                            result.Inner.Add(name, reader.GetJwtArray());
-                            break;
-                        case JsonTokenType.String:
-                            if (name.Length == 3)
-                            {
-                                switch ((JwtClaims)IntegerMarshal.ReadUInt24(name))
-                                {
-                                    case JwtClaims.Aud:
-                                        result.Aud = new[] { reader.GetStringAudience() };
-                                        continue;
-
-                                    case JwtClaims.Iss:
-                                        result.Iss = reader.GetIssuer();
-                                        continue;
-
-                                    case JwtClaims.Jti:
-                                        result.Jti = reader.GetString();
-                                        continue;
-
-                                    case JwtClaims.Sub:
-                                        result.Sub = reader.GetString();
-                                        continue;
-                                }
-                            }
-
-                            result.Inner.Add(name, reader.GetString()!);
-                            break;
-                        case JsonTokenType.True:
-                            result.Inner.Add(name, true);
-                            break;
-                        case JsonTokenType.False:
-                            result.Inner.Add(name, false);
-                            break;
-                        case JsonTokenType.Null:
-                            result.Inner.Add(name);
-                            break;
-                        case JsonTokenType.Number:
-
-                            if (name.Length == 3)
-                            {
-                                switch ((JwtClaims)IntegerMarshal.ReadUInt24(name))
-                                {
-                                    case JwtClaims.Exp:
-                                        result.Exp = reader.GetExpirationTime();
-                                        continue;
-
-                                    case JwtClaims.Iat:
-                                        result.Iat = reader.GetIssuedAt();
-                                        continue;
-
-                                    case JwtClaims.Nbf:
-                                        result.Nbf = reader.GetNotBefore();
-                                        continue;
-                                }
-                            }
-
-                            long longValue;
-                            if (reader.TryGetInt64(out longValue))
-                            {
-                                result.Inner.Add(name, longValue);
-                            }
-                            else
-                            {
-                                result.Inner.Add(name, reader.GetDouble());
-                            }
-                            break;
-                        default:
-                            error = TokenValidationError.MalformedToken();
-                            goto Error;
-                    }
-                }
+                payload = new JwtPayloadDocument(JsonDocument.Parse(utf8Payload));
+                error = null;
+                return true;
             }
-
-            if (!(reader.ClaimTokenType is JsonTokenType.EndObject))
+            catch (Exception e)
             {
-                error = TokenValidationError.MalformedToken();
-                goto Error;
+                error = TokenValidationError.MalformedToken(e);
+                payload = null;
+                return false;
             }
-
-            result.ValidationControl = reader.ValidationControl;
-            payload = result;
-            error = null;
-            return true;
-
-        Error:
-            result.ValidationControl = reader.ValidationControl;
-            payload = null;
-            return false;
         }
 
-        public static bool TryParse(ReadOnlySequence<byte> utf8Token, TokenValidationPolicy policy, out JwtDocument document)
+        public static bool TryParse(ReadOnlySequence<byte> utf8Token, TokenValidationPolicy policy, out JwtDocument2 document)
         {
             if (utf8Token.IsSingleSegment)
             {
@@ -619,7 +524,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="token">The JWT encoded as JWE or JWS</param>
         /// <param name="policy">The validation policy.</param>
-        public static bool TryParse(string token, TokenValidationPolicy policy, out JwtDocument document)
+        public static bool TryParse(string token, TokenValidationPolicy policy, out JwtDocument2 document)
         {
             if (token is null)
             {
@@ -633,14 +538,14 @@ namespace JsonWebToken
 
             if (token.Length == 0)
             {
-                document = new JwtDocument(TokenValidationError.MalformedToken());
+                document = new JwtDocument2(TokenValidationError.MalformedToken());
                 return false;
             }
 
             int length = Utf8.GetMaxByteCount(token.Length);
             if (length > policy.MaximumTokenSizeInBytes)
             {
-                document = new JwtDocument(TokenValidationError.MalformedToken());
+                document = new JwtDocument2(TokenValidationError.MalformedToken());
                 return false;
             }
 

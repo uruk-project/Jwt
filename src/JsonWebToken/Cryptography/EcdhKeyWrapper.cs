@@ -167,7 +167,7 @@ namespace JsonWebToken.Internal
 
         private static byte[]? GetPartyInfo(JwtObject header, ReadOnlySpan<byte> utf8Name)
         {
-            if (header.TryGetValue(utf8Name, out var token))
+            if (header.TryGetProperty(utf8Name, out var token))
             {
                 return (byte[]?)token.Value;
             }

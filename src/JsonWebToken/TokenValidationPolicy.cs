@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -265,6 +266,115 @@ namespace JsonWebToken
                 }
 
                 if (payload.NotYetValid)
+                {
+                    error = TokenValidationError.NotYetValid();
+                    goto Error;
+                }
+            }
+
+            var validators = _validators;
+            for (int i = 0; i < validators.Length; i++)
+            {
+                var result = validators[i].TryValidate(header, payload, out error);
+                if (!result)
+                {
+                    goto Error;
+                }
+            }
+
+            error = null;
+            return true;
+
+        Error:
+            return false;
+        }
+
+
+        /// <summary>
+        /// Try to validate the token, according to the <paramref name="header"/> and the <paramref name="payload"/>.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="payload"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
+        public bool TryValidateJwt(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            //if (payload.ValidationControl != 0)
+            {
+                if (RequireAudience)
+                {
+                    if (!payload.TryGetValue(Claims.AudUtf8, out var aud))
+                    {
+                        error = TokenValidationError.MissingClaim(Claims.AudUtf8);
+                        goto Error;
+                    }
+
+                    var requiredAudiences = RequiredAudiencesBinary;
+                    if (aud.ValueKind is JsonValueKind.String)
+                    {
+                        for (int i = 0; i < requiredAudiences.Length; i++)
+                        {
+                            if (aud.ValueEquals(requiredAudiences[i]))
+                            {
+                                goto ValidAud;
+                            }
+                        }
+                    }
+                    else if (aud.ValueKind is JsonValueKind.Array)
+                    {
+                        foreach (var item in aud.EnumerateArray())
+                        {
+                            for (int i = 0; i < requiredAudiences.Length; i++)
+                            {
+                                if (item.ValueEquals(requiredAudiences[i]))
+                                {
+                                    goto ValidAud;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        error = TokenValidationError.MalformedToken();
+                        goto Error;
+                    }
+
+                    error = TokenValidationError.InvalidClaim(Claims.AudUtf8);
+                    goto Error;
+                }
+
+            ValidAud:
+                if (RequireIssuer)
+                {
+                    if (!payload.TryGetValue(Claims.IssUtf8, out var iss))
+                    {
+                        error = TokenValidationError.MissingClaim(Claims.IssUtf8);
+                        goto Error;
+                    }
+
+                    if (!iss.ValueEquals(RequiredIssuerBinary))
+                    {
+                        error = TokenValidationError.InvalidClaim(Claims.IssUtf8);
+                        goto Error;
+                    }
+                }
+
+                if (RequireExpirationTime)
+                {
+                    if (!payload.TryGetValue(Claims.ExpUtf8, out var exp))
+                    {
+                        error = TokenValidationError.MissingClaim(Claims.ExpUtf8);
+                        goto Error;
+                    }
+
+                    if (exp.GetInt64() < EpochTime.UtcNow - ClockSkew)
+                    {
+                        error = TokenValidationError.Expired();
+                        goto Error;
+                    }
+                }
+
+                if (payload.TryGetValue(Claims.NbfUtf8, out var nbf) && (ValidationControl & JwtPayload.ExpiredFlag) == JwtPayload.ExpiredFlag && nbf.GetInt64() > EpochTime.UtcNow + ClockSkew)
                 {
                     error = TokenValidationError.NotYetValid();
                     goto Error;

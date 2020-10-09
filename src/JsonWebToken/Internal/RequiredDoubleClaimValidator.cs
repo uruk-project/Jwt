@@ -89,5 +89,29 @@ namespace JsonWebToken.Internal
             error = null;
             return true;
         }
+
+        public bool TryValidate(JwtHeader header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            if (payload is null)
+            {
+                error = TokenValidationError.MalformedToken();
+                return false;
+            }
+
+            if (!payload.TryGetValue(_claim, out var claim))
+            {
+                error = TokenValidationError.MissingClaim(_claim);
+                return false;
+            }
+
+            if (!claim.TryGetDouble(out var value) || _value != value)
+            {
+                error = TokenValidationError.InvalidClaim(_claim);
+                return false;
+            }
+
+            error = null;
+            return true;
+        }
     }
 }

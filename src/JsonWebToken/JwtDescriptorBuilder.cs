@@ -306,7 +306,7 @@ namespace JsonWebToken
                 _jsonPayload = new JwtObject();
             }
 
-            if (_jsonPayload.TryGetValue(utf8Name, out var property))
+            if (_jsonPayload.TryGetProperty(utf8Name, out var property))
             {
                 if (property.Type != JwtTokenType.Object)
                 {
@@ -340,7 +340,7 @@ namespace JsonWebToken
                 _jsonPayload = new JwtObject();
             }
 
-            if (_jsonPayload.TryGetValue(utf8Name, out var property))
+            if (_jsonPayload.TryGetProperty(utf8Name, out var property))
             {
                 if (property.Type != JwtTokenType.Array)
                 {
@@ -375,7 +375,7 @@ namespace JsonWebToken
             }
 
             JwtObject jwtObject;
-            if (_jsonPayload.TryGetValue(utf8Name, out JwtProperty property) && property.Type == JwtTokenType.Object && !(property.Value is null))
+            if (_jsonPayload.TryGetProperty(utf8Name, out JwtProperty property) && property.Type == JwtTokenType.Object && !(property.Value is null))
             {
                 jwtObject = (JwtObject)property.Value;
             }

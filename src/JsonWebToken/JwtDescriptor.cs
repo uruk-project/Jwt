@@ -152,7 +152,7 @@ namespace JsonWebToken
         /// <returns></returns>
         protected T? GetHeaderParameter<T>(ReadOnlySpan<byte> utf8Name) where T : class
         {
-            if (Header.TryGetValue(utf8Name, out var value))
+            if (Header.TryGetProperty(utf8Name, out var value))
             {
                 return (T?)value.Value;
             }
@@ -255,7 +255,7 @@ namespace JsonWebToken
         /// <returns></returns>
         protected List<string>? GetHeaderParameters(ReadOnlySpan<byte> utf8Name)
         {
-            if (Header.TryGetValue(utf8Name, out JwtProperty value))
+            if (Header.TryGetProperty(utf8Name, out JwtProperty value))
             {
                 if (value.Type == JwtTokenType.Array)
                 {
@@ -285,7 +285,7 @@ namespace JsonWebToken
         /// <param name="type"></param>
         protected void CheckRequiredHeader(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
         {
-            if (!Header.TryGetValue(utf8Name, out var token) || token.Type == JwtTokenType.Null)
+            if (!Header.TryGetProperty(utf8Name, out var token) || token.Type == JwtTokenType.Null)
             {
                 ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(utf8Name);
             }
@@ -321,7 +321,7 @@ namespace JsonWebToken
         /// <param name="types"></param>
         protected void CheckRequiredHeader(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
         {
-            if (!Header.TryGetValue(utf8Name, out var token) || token.Type == JwtTokenType.Null)
+            if (!Header.TryGetProperty(utf8Name, out var token) || token.Type == JwtTokenType.Null)
             {
                 ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(utf8Name);
             }
