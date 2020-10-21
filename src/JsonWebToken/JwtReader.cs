@@ -346,7 +346,7 @@ namespace JsonWebToken
                     }
                     else
                     {
-                        if (decryptionResult.Status == TokenValidationStatus.MalformedToken)
+                        if (decryptionResult.Status == TokenValidationStatus.MalformedToken && !policy.HasValidation)
                         {
                             // The decrypted payload is not a nested JWT
                             jwe = new Jwt(header, compressed ? decompressedBytes.ToArray() : decryptedBytes.ToArray(), decryptionKey);

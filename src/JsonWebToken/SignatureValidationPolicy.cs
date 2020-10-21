@@ -22,6 +22,11 @@ namespace JsonWebToken
         /// Allows to ignore the signature, whatever ther is an algorithm defined or not.
         /// </summary>
         public static readonly SignatureValidationPolicy IgnoreSignature = new IgnoreSignatureValidationContext();
+        
+        /// <summary>
+        /// Gets whether the signature validation is enabled.
+        /// </summary>
+        public abstract bool IsEnabled { get; }
 
         /// <summary>
         /// Try to validate the token signature.
@@ -57,6 +62,9 @@ namespace JsonWebToken
                 _keyProvider = keyProvider ?? throw new ArgumentNullException(nameof(keyProvider));
                 _algorithm = algorithm;
             }
+
+            /// <inheritdoc />
+            public override bool IsEnabled => true;
 
             public override SignatureValidationResult TryValidateSignature(JwtHeader header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
@@ -122,6 +130,9 @@ namespace JsonWebToken
 
         private sealed class NoSignatureValidationContext : SignatureValidationPolicy
         {
+            /// <inheritdoc />
+            public override bool IsEnabled => true;
+
             public override SignatureValidationResult TryValidateSignature(JwtHeader header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
                 return (contentBytes.Length == 0 && signatureSegment.Length == 0) || (signatureSegment.IsEmpty && header.SignatureAlgorithm == SignatureAlgorithm.None)
@@ -132,6 +143,9 @@ namespace JsonWebToken
 
         private sealed class IgnoreSignatureValidationContext : SignatureValidationPolicy
         {
+            /// <inheritdoc />
+            public override bool IsEnabled => false;
+
             public override SignatureValidationResult TryValidateSignature(JwtHeader header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
                 return SignatureValidationResult.Success();

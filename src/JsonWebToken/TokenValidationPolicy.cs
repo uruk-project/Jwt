@@ -80,7 +80,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets whether the <see cref="TokenValidationPolicy"/> has validation.
         /// </summary>
-        public bool HasValidation => _validators.Length != 0;
+        public bool HasValidation => _control != 0 || _validators.Length != 0 || SignatureValidationPolicy.IsEnabled;
 
         /// <summary>
         /// Gets whether the issuer 'iss' is required.
