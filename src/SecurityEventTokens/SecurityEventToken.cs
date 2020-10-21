@@ -6,11 +6,11 @@ using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
-    public sealed class SecurityEventToken : Jwt
+    public sealed class SecurityEventToken : JwtOld
     {
         private JwtObject? _events;
 
-        public SecurityEventToken(Jwt token)
+        public SecurityEventToken(JwtOld token)
             : base(token)
         {
         }

@@ -14,7 +14,7 @@ namespace JsonWebToken
     {
         private sealed class Node
         {
-            public JwtHeader Header;
+            public IJwtHeader Header;
 
             public Node? Next;
 
@@ -22,7 +22,7 @@ namespace JsonWebToken
 
             public byte[] Key;
 
-            public Node(byte[] key, JwtHeader header, Node? next)
+            public Node(byte[] key, IJwtHeader header, Node? next)
             {
                 Key = key;
                 Header = header;
@@ -46,12 +46,12 @@ namespace JsonWebToken
         /// <summary>
         /// The heade of the cache.
         /// </summary>
-        public JwtHeader? Head => _head?.Header;
+        public IJwtHeader? Head => _head?.Header;
 
         /// <summary>
         /// The tail of the cache.
         /// </summary>
-        public JwtHeader? Tail => _tail?.Header;
+        public IJwtHeader? Tail => _tail?.Header;
 
         /// <summary>
         /// Gets or sets whether the cache is enabled. <c>false</c> by default.
@@ -64,7 +64,7 @@ namespace JsonWebToken
         /// <param name="buffer"></param>
         /// <param name="header"></param>
         /// <returns></returns>
-        public bool TryGetHeader(ReadOnlySpan<byte> buffer, [NotNullWhen(true)] out JwtHeader? header)
+        public bool TryGetHeader(ReadOnlySpan<byte> buffer, [NotNullWhen(true)] out IJwtHeader? header)
         {
             var node = _head;
             while (node != null)
@@ -92,7 +92,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="rawHeader"></param>
         /// <param name="header"></param>
-        public void AddHeader(ReadOnlySpan<byte> rawHeader, JwtHeader header)
+        public void AddHeader(ReadOnlySpan<byte> rawHeader, IJwtHeader header)
         {
             bool lockTaken = false;
             try

@@ -50,6 +50,12 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
+        public override Jwk[] GetKeys(JwtHeaderDocument header)
+        {
+            return GetKeys(header, _jwksAddress);
+        }
+
+        /// <inheritsdoc />
         protected override Jwks DeserializeKeySet(string value)
         {
             return Jwks.FromJson(value);

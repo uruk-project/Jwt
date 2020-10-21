@@ -10,15 +10,15 @@ namespace JsonWebToken
     /// <summary>
     /// A JSON Web Token (JWT).
     /// </summary>
-    public class Jwt
+    public class JwtOld
     {
         private readonly JwtPayload? _payload;
-        private readonly Jwt? _nestedToken;
+        private readonly JwtOld? _nestedToken;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="Jwt"/>.
+        /// Initializes a new instance of <see cref="JwtOld"/>.
         /// </summary>
-        protected Jwt(Jwt token)
+        protected JwtOld(JwtOld token)
         {
             if (token is null)
             {
@@ -34,12 +34,12 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Creates a new instance of <see cref="Jwt"/>.
+        /// Creates a new instance of <see cref="JwtOld"/>.
         /// </summary>
         /// <param name="header"></param>
         /// <param name="nestedToken"></param>
         /// <param name="encryptionKey"></param>
-        public static Jwt Create(JwtHeader header, Jwt nestedToken, Jwk encryptionKey)
+        public static JwtOld Create(JwtHeader header, JwtOld nestedToken, Jwk encryptionKey)
         {
             if (header is null)
             {
@@ -56,10 +56,10 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionKey);
             }
 
-            return new Jwt(header, nestedToken, encryptionKey);
+            return new JwtOld(header, nestedToken, encryptionKey);
         }
 
-        internal Jwt(JwtHeader header, Jwt nestedToken, Jwk encryptionKey)
+        internal JwtOld(JwtHeader header, JwtOld nestedToken, Jwk encryptionKey)
         {
             Header = header;
             _nestedToken = nestedToken;
@@ -67,12 +67,12 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Creates a new instance of <see cref="Jwt"/>.
+        /// Creates a new instance of <see cref="JwtOld"/>.
         /// </summary>
         /// <param name="header"></param>
         /// <param name="data"></param>
         /// <param name="encryptionKey"></param>
-        public static Jwt Create(JwtHeader header, byte[] data, Jwk encryptionKey)
+        public static JwtOld Create(JwtHeader header, byte[] data, Jwk encryptionKey)
         {
             if (header is null)
             {
@@ -89,10 +89,10 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionKey);
             }
 
-            return new Jwt(header, data, encryptionKey);
+            return new JwtOld(header, data, encryptionKey);
         }
 
-        internal Jwt(JwtHeader header, byte[] data, Jwk encryptionKey)
+        internal JwtOld(JwtHeader header, byte[] data, Jwk encryptionKey)
         {
             Header = header;
             Binary = data;
@@ -100,12 +100,12 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Creates a new instance of <see cref="Jwt"/>.
+        /// Creates a new instance of <see cref="JwtOld"/>.
         /// </summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
         /// <param name="signingKey"></param>
-        public static Jwt Create(JwtHeader header, JwtPayload payload, Jwk? signingKey)
+        public static JwtOld Create(JwtHeader header, JwtPayload payload, Jwk? signingKey)
         {
             if (header is null)
             {
@@ -117,10 +117,10 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.payload);
             }
 
-            return new Jwt(header, payload, signingKey);
+            return new JwtOld(header, payload, signingKey);
         }
 
-        internal Jwt(JwtHeader header, JwtPayload payload, Jwk? signingKey)
+        internal JwtOld(JwtHeader header, JwtPayload payload, Jwk? signingKey)
         {
             Header = header;
             _payload = payload;
@@ -153,9 +153,9 @@ namespace JsonWebToken
         public JwtPayload? Payload => _nestedToken?.Payload ?? _payload;
 
         /// <summary>
-        /// Gets the nested <see cref="Jwt"/> associated with this instance.
+        /// Gets the nested <see cref="JwtOld"/> associated with this instance.
         /// </summary>
-        public Jwt? NestedToken => _nestedToken;
+        public JwtOld? NestedToken => _nestedToken;
 
         /// <summary>
         /// Gets the signature algorithm associated with this instance.

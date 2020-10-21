@@ -7,7 +7,7 @@ namespace JsonWebToken
 {
     public static class SetJsonWebTokenExtensions
     {
-        public static SecurityEventToken AsSecurityEventToken(this Jwt token)
+        public static SecurityEventToken AsSecurityEventToken(this JwtOld token)
         {
             if (token is null)
             {

@@ -16,7 +16,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritdoc />
-        public TokenValidationResult TryValidate(Jwt jwt)
+        public TokenValidationResult TryValidate(JwtOld jwt)
         {
             var expires = jwt.ExpirationTime;
             if (!expires.HasValue)
@@ -51,16 +51,45 @@ namespace JsonWebToken.Internal
             return true;
         }
 
-        public bool TryValidate(JwtHeader header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
+        public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocumentOld payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
-            var expires = payload.Exp;
-            if (!expires.HasValue)
+            if (!payload.TryGetProperty(Claims.ExpUtf8, out var expires))
             {
                 error = TokenValidationError.MissingClaim(Claims.ExpUtf8);
                 return false;
             }
 
-            if (!_tokenReplayCache.TryAdd(payload.Jti, expires.Value))
+            if (!payload.TryGetProperty(Claims.JtiUtf8, out var jti))
+            {
+                error = TokenValidationError.MissingClaim(Claims.JtiUtf8);
+                return false;
+            }
+
+            if (!_tokenReplayCache.TryAdd(jti.GetString(), expires.GetInt64()))
+            {
+                error = TokenValidationError.TokenReplayed();
+                return false;
+            }
+
+            error = null;
+            return true;
+        }
+
+        public bool TryValidate(JwtHeader header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            if (!payload.TryGetProperty(Claims.ExpUtf8, out var expires))
+            {
+                error = TokenValidationError.MissingClaim(Claims.ExpUtf8);
+                return false;
+            }
+
+            if (!payload.TryGetProperty(Claims.JtiUtf8, out var jti))
+            {
+                error = TokenValidationError.MissingClaim(Claims.JtiUtf8);
+                return false;
+            }
+
+            if (!_tokenReplayCache.TryAdd(jti.GetString(), expires.GetInt64()))
             {
                 error = TokenValidationError.TokenReplayed();
                 return false;

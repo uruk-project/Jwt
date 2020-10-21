@@ -574,6 +574,30 @@ namespace JsonWebToken
             return new ECJwk(EllipticalCurve.FromString((string)crv.Value), (string)x.Value, (string)y.Value);
         }
 
+        ///// <summary>
+        ///// Returns a new instance of <see cref="ECJwk"/>.
+        ///// </summary>
+        //internal static ECJwk FromJsonElement(JwtElement json)
+        //{
+        //    //Debug.Assert(json.Count == 3);
+        //    if (!json.TryGetProperty(JwkParameterNames.CrvUtf8, out var crv) || crv.ValueKind is JsonValueKind.Null)
+        //    {
+        //        ThrowHelper.ThrowArgumentException_MalformedKey();
+        //    }
+
+        //    if (!json.TryGetProperty(JwkParameterNames.XUtf8, out var x) || x.ValueKind is JsonValueKind.Null)
+        //    {
+        //        ThrowHelper.ThrowArgumentException_MalformedKey();
+        //    }
+
+        //    if (!json.TryGetProperty(JwkParameterNames.YUtf8, out var y) || y.ValueKind is JsonValueKind.Null)
+        //    {
+        //        ThrowHelper.ThrowArgumentException_MalformedKey();
+        //    }
+
+        //    return new ECJwk(EllipticalCurve.FromString(crv.GetString()!), x.GetString(), y.GetString());
+        //}
+
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>

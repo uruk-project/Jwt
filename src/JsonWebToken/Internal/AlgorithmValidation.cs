@@ -15,7 +15,7 @@ namespace JsonWebToken.Internal
             _algorithm = Utf8.GetBytes(algorithm ?? throw new ArgumentNullException(nameof(algorithm)));
         }
 
-        public TokenValidationResult TryValidate(Jwt jwt)
+        public TokenValidationResult TryValidate(JwtOld jwt)
         {
             if (jwt is null)
             {
@@ -49,6 +49,29 @@ namespace JsonWebToken.Internal
             }
 
             if (!_algorithm.AsSpan().SequenceEqual(new ReadOnlySpan<byte>((byte[]?)property.Value)))
+            {
+                error = TokenValidationError.InvalidHeader(HeaderParameters.AlgUtf8);
+                return false;
+            }
+
+            error = null;
+            return true;
+        }
+
+        public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocumentOld payload, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            if (header is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
+            }
+
+            if (!header.TryGetValue(HeaderParameters.AlgUtf8, out var property))
+            {
+                error = TokenValidationError.MissingHeader(HeaderParameters.AlgUtf8);
+                return false;
+            }
+
+            if (!_algorithm.AsSpan().SequenceEqual(new ReadOnlySpan<byte>(Utf8.GetBytes(property.GetString()))))
             {
                 error = TokenValidationError.InvalidHeader(HeaderParameters.AlgUtf8);
                 return false;

@@ -210,6 +210,89 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Cast the <see cref="string"/> into its <see cref="EncryptionAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="algorithm"></param>
+        public static bool TryParse(string? value, [NotNullWhen(true)] out EncryptionAlgorithm? algorithm)
+        {
+            switch (value)
+            {
+                case "A128CBC-HS256":
+                    algorithm = Aes128CbcHmacSha256;
+                    goto Found;
+                case "A192CBC-HS384":
+                    algorithm = Aes192CbcHmacSha384;
+                    goto Found;
+                case "A256CBC-HS512":
+                    algorithm = Aes256CbcHmacSha512;
+                    goto Found;
+
+                case "A128GCM":
+                    algorithm = Aes128Gcm;
+                    goto Found;
+                case "A192GCM":
+                    algorithm = Aes192Gcm;
+                    goto Found;
+                case "A256GCM":
+                    algorithm = Aes256Gcm;
+                    goto Found;
+            }
+
+            algorithm = null;
+            return false;
+        Found:
+            return true;
+        }
+
+        /// <summary>
+        /// Cast the <see cref="JsonElement"/> into its <see cref="EncryptionAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="algorithm"></param>
+        public static bool TryParse(JsonElement value, [NotNullWhen(true)] out EncryptionAlgorithm? algorithm)
+        {
+            bool found;
+            if (value.ValueEquals(Aes128CbcHmacSha256._utf8Name))
+            {
+                algorithm = Aes128CbcHmacSha256;
+                found = true;
+            }
+            else if (value.ValueEquals(Aes192CbcHmacSha384._utf8Name))
+            {
+                algorithm = Aes192CbcHmacSha384;
+                found = true;
+            }
+            else if (value.ValueEquals(Aes256CbcHmacSha512._utf8Name))
+            {
+                algorithm = Aes256CbcHmacSha512;
+                found = true;
+            }
+            else if (value.ValueEquals(Aes128Gcm._utf8Name))
+            {
+                algorithm = Aes128Gcm;
+                found = true;
+            }
+            else if (value.ValueEquals(Aes192Gcm._utf8Name))
+            {
+                algorithm = Aes192Gcm;
+                found = true;
+            }
+            else if (value.ValueEquals(Aes256Gcm._utf8Name))
+            {
+                algorithm = Aes256Gcm;
+                found = true;
+            }
+            else
+            {
+                algorithm = null;
+                found = false;
+            }
+
+            return found;
+        }
+
+        /// <summary>
         /// Determines whether this instance and a specified object, which must also be a
         /// <see cref="EncryptionAlgorithm"/> object, have the same value.
         /// </summary>

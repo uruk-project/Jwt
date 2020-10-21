@@ -65,7 +65,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Gets the <see cref="Jwt"/> used.
+        /// Gets the <see cref="JwtOld"/> used.
         /// </summary>
         public Jwk EncryptionKey
         {

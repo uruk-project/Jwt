@@ -17,7 +17,7 @@ namespace JsonWebToken.Internal
             return wrappedKeySize;
         }
 
-        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
+        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, IJwtHeader header, out int bytesWritten)
         {
             keyBytes.CopyTo(destination);
             bytesWritten = keyBytes.Length;

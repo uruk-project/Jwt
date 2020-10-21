@@ -37,6 +37,22 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
+        public override Jwk[] GetKeys(JwtHeaderDocument header)
+        {
+            if (header is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
+            }
+
+            if (header.X5u is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
+            }
+
+            return GetKeys(header, header.X5u);
+        }
+
+        /// <inheritsdoc />
         protected override Jwks DeserializeKeySet(string value)
         {
             using var certificate = new X509Certificate2(Convert.FromBase64String(value));

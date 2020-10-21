@@ -7,9 +7,9 @@ using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
-    public sealed class IdToken : Jwt
+    public sealed class IdToken : JwtOld
     {
-        public IdToken(Jwt token)
+        public IdToken(JwtOld token)
             : base(token)
         {
         }

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace JsonWebToken
 {
@@ -81,11 +82,23 @@ namespace JsonWebToken
         /// <param name="header"></param>
         /// <param name="bytesWritten"></param>
         /// <returns>Unwrapped key.</returns>
-        public abstract bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten);
+        public abstract bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, IJwtHeader header, out int bytesWritten);
 
         /// <summary>
         /// Gets the size of the unwrapped key.
         /// </summary>
         public abstract int GetKeyUnwrapSize(int wrappedKeySize);
+    }
+
+    public interface IJwtHeader
+    {
+#if SUPPORT_ELLIPTIC_CURVE
+        ECJwk? Epk { get; }
+        string? Apu { get; }
+        string? Apv { get; }
+#endif
+        string? IV { get; }
+        string? Tag { get; }
+        string? Kid { get; }
     }
 }

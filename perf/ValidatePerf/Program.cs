@@ -52,6 +52,12 @@ namespace ValidatePerf
             {
                 //sha.ComputeHash(src, dest);
                 _reader.TryReadToken(jwsToken, policy);
+                JwtDocument3.TryParse3(jwsToken, policy, out JwtDocument3 document3);
+                JwtDocument2.TryParse2(jwsToken, policy, out JwtDocument2 document2);
+                JwtDocument_Reference.TryParse(jwsToken, policy, out JwtDocument_Reference document);
+                document.Dispose();
+                document2.Dispose();
+                document3.Dispose();
             }
         }
     }

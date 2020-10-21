@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace JsonWebToken
@@ -38,9 +39,9 @@ namespace JsonWebToken
         public bool Succedeed => Status == TokenValidationStatus.Success;
 
         /// <summary>
-        /// Gets of set the <see cref="Jwt"/>.
+        /// Gets of set the <see cref="JwtOld"/>.
         /// </summary>
-        public Jwt? Token { get; private set; }
+        public JwtOld? Token { get; private set; }
 
         /// <summary>
         /// Gets the status of the validation.
@@ -68,7 +69,7 @@ namespace JsonWebToken
         /// <param name="token"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult Expired(Jwt token)
+        public static TokenValidationResult Expired(JwtOld token)
         {
             return new TokenValidationResult
             {
@@ -83,7 +84,7 @@ namespace JsonWebToken
         /// <param name="token"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult TokenReplayed(Jwt token)
+        public static TokenValidationResult TokenReplayed(JwtOld token)
         {
             return new TokenValidationResult
             {
@@ -158,7 +159,7 @@ namespace JsonWebToken
         /// <param name="jwtToken"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult NotYetValid(Jwt jwtToken)
+        public static TokenValidationResult NotYetValid(JwtOld jwtToken)
         {
             return new TokenValidationResult
             {
@@ -183,7 +184,7 @@ namespace JsonWebToken
         /// <param name="jwtToken"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult Success(Jwt jwtToken)
+        public static TokenValidationResult Success(JwtOld jwtToken)
         {
             return new TokenValidationResult
             {
@@ -209,7 +210,7 @@ namespace JsonWebToken
         /// <param name="claim"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult InvalidClaim(Jwt jwt, ReadOnlySpan<byte> claim)
+        public static TokenValidationResult InvalidClaim(JwtOld jwt, ReadOnlySpan<byte> claim)
         {
             return new TokenValidationResult
             {
@@ -226,7 +227,7 @@ namespace JsonWebToken
         /// <param name="claim"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult InvalidClaim(Jwt jwt, string claim)
+        public static TokenValidationResult InvalidClaim(JwtOld jwt, string claim)
         {
             return new TokenValidationResult
             {
@@ -243,7 +244,7 @@ namespace JsonWebToken
         /// <param name="claim"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult MissingClaim(Jwt jwt, ReadOnlySpan<byte> claim)
+        public static TokenValidationResult MissingClaim(JwtOld jwt, ReadOnlySpan<byte> claim)
         {
             return new TokenValidationResult
             {
@@ -260,7 +261,7 @@ namespace JsonWebToken
         /// <param name="claim"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult MissingClaim(Jwt jwt, string claim)
+        public static TokenValidationResult MissingClaim(JwtOld jwt, string claim)
         {
             return new TokenValidationResult
             {
@@ -345,31 +346,20 @@ namespace JsonWebToken
     /// </summary>
     public sealed class TokenValidationError
     {
-        private static readonly TokenValidationError _noError = new TokenValidationError
-        {
-            Status = TokenValidationStatus.Success
-        };      
-        private static readonly TokenValidationError _decryptionFailed = new TokenValidationError
-        {
-            Status = TokenValidationStatus.DecryptionFailed
-        };
-        private static readonly TokenValidationError _malformedToken = new TokenValidationError
-        {
-            Status = TokenValidationStatus.MalformedToken
-        };
-        private static readonly TokenValidationError _missingEncryptionAlgorithm = new TokenValidationError
-        {
-            Status = TokenValidationStatus.MissingEncryptionAlgorithm
-        };
-        private static readonly TokenValidationError _encryptionKeyNotFound = new TokenValidationError
-        {
-            Status = TokenValidationStatus.EncryptionKeyNotFound
-        };
+        private static readonly TokenValidationError _noError = new TokenValidationError(TokenValidationStatus.Success);
+        private static readonly TokenValidationError _decryptionFailed = new TokenValidationError(TokenValidationStatus.DecryptionFailed);
+        private static readonly TokenValidationError _malformedToken = new TokenValidationError(TokenValidationStatus.MalformedToken);
+        private static readonly TokenValidationError _missingEncryptionAlgorithm = new TokenValidationError(TokenValidationStatus.MissingEncryptionAlgorithm);
+        private static readonly TokenValidationError _encryptionKeyNotFound = new TokenValidationError(TokenValidationStatus.EncryptionKeyNotFound);
+        private static readonly TokenValidationError _expired = new TokenValidationError(TokenValidationStatus.Expired);
+        private static readonly TokenValidationError _notYetValid = new TokenValidationError(TokenValidationStatus.NotYetValid);
+        private static readonly TokenValidationError _tokenReplayed = new TokenValidationError(TokenValidationStatus.TokenReplayed);
 
+        private readonly string? _message;
         /// <summary>
         /// Gets the status of the validation.
         /// </summary>
-        public TokenValidationStatus Status { get; private set; }
+        public TokenValidationStatus Status { get; }
 
         /// <summary>
         /// Gets the claim that caused the error.
@@ -385,6 +375,29 @@ namespace JsonWebToken
         /// Gets the <see cref="Exception"/> that caused the error.
         /// </summary>
         public Exception? Exception { get; private set; }
+
+        /// <summary>
+        /// Gets the message that caused the error.
+        /// </summary>
+        public string? Message => _message;
+
+        private TokenValidationError(TokenValidationStatus status)
+        {
+            Status = status;
+        }
+
+        private TokenValidationError(TokenValidationStatus status, Exception? exception)
+        {
+            Status = status;
+            Exception = exception;
+            _message = exception?.Message;
+        }
+
+        private TokenValidationError(TokenValidationStatus status, string message)
+        {
+            Status = status;
+            _message = message;
+        }
 
         /// <summary>
         /// The token has no error.
@@ -403,10 +416,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationError Expired()
         {
-            return new TokenValidationError
-            {
-                Status = TokenValidationStatus.Expired
-            };
+            return _expired;
         }
 
         /// <summary>
@@ -416,10 +426,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationError TokenReplayed()
         {
-            return new TokenValidationError
-            {
-                Status = TokenValidationStatus.TokenReplayed
-            };
+            return _tokenReplayed;
         }
 
         /// <summary>
@@ -430,9 +437,8 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationError CriticalHeaderUnsupported(string criticalHeader)
         {
-            return new TokenValidationError
+            return new TokenValidationError(TokenValidationStatus.CriticalHeaderUnsupported)
             {
-                Status = TokenValidationStatus.CriticalHeaderUnsupported,
                 ErrorHeader = criticalHeader
             };
         }
@@ -465,11 +471,19 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationError MalformedToken(Exception exception)
         {
-            return new TokenValidationError
-            {
-                Status = TokenValidationStatus.MalformedToken,
-                Exception = exception
-            };
+            return new TokenValidationError(TokenValidationStatus.MalformedToken, exception);
+        }
+
+
+        /// <summary>
+        /// The token is not a JWT in compact representation, is not base64url encoded, and is not a JSON UTF-8 encoded.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TokenValidationError MalformedToken(string message)
+        {
+            return new TokenValidationError(TokenValidationStatus.MalformedToken, message);
         }
 
         /// <summary>
@@ -489,10 +503,7 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationError NotYetValid()
         {
-            return new TokenValidationError
-            {
-                Status = TokenValidationStatus.NotYetValid
-            };
+            return _notYetValid;
         }
 
         /// <summary>
@@ -513,9 +524,8 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationError InvalidClaim(ReadOnlySpan<byte> claim)
         {
-            return new TokenValidationError
+            return new TokenValidationError(TokenValidationStatus.InvalidClaim)
             {
-                Status = TokenValidationStatus.InvalidClaim,
                 ErrorClaim = Utf8.GetString(claim)
             };
         }
@@ -528,9 +538,8 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationError InvalidClaim(string claim)
         {
-            return new TokenValidationError
+            return new TokenValidationError(TokenValidationStatus.InvalidClaim)
             {
-                Status = TokenValidationStatus.InvalidClaim,
                 ErrorClaim = claim
             };
         }
@@ -543,9 +552,8 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationError MissingClaim(ReadOnlySpan<byte> claim)
         {
-            return new TokenValidationError
+            return new TokenValidationError(TokenValidationStatus.MissingClaim)
             {
-                Status = TokenValidationStatus.MissingClaim,
                 ErrorClaim = Utf8.GetString(claim)
             };
         }
@@ -558,9 +566,8 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationError MissingClaim(string claim)
         {
-            return new TokenValidationError
+            return new TokenValidationError(TokenValidationStatus.MissingClaim)
             {
-                Status = TokenValidationStatus.MissingClaim,
                 ErrorClaim = claim
             };
         }
@@ -573,9 +580,8 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationError InvalidHeader(ReadOnlySpan<byte> header)
         {
-            return new TokenValidationError
+            return new TokenValidationError(TokenValidationStatus.InvalidHeader)
             {
-                Status = TokenValidationStatus.InvalidHeader,
                 ErrorHeader = Utf8.GetString(header)
             };
         }
@@ -588,9 +594,8 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationError InvalidHeader(string header)
         {
-            return new TokenValidationError
+            return new TokenValidationError(TokenValidationStatus.InvalidHeader)
             {
-                Status = TokenValidationStatus.InvalidHeader,
                 ErrorHeader = header
             };
         }
@@ -603,9 +608,8 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationError MissingHeader(ReadOnlySpan<byte> header)
         {
-            return new TokenValidationError
+            return new TokenValidationError(TokenValidationStatus.MissingHeader)
             {
-                Status = TokenValidationStatus.MissingHeader,
                 ErrorHeader = Utf8.GetString(header)
             };
         }
@@ -618,20 +622,12 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationError DecompressionFailed(Exception exception)
         {
-            return new TokenValidationError
-            {
-                Status = TokenValidationStatus.DecompressionFailed,
-                Exception = exception
-            };
+            return new TokenValidationError(TokenValidationStatus.DecompressionFailed, exception);
         }
 
         internal static TokenValidationError SignatureValidationFailed(SignatureValidationResult result)
         {
-            return new TokenValidationError
-            {
-                Status = result.Status,
-                Exception = result.Exception
-            };
+            return new TokenValidationError(result.Status, result.Exception);
         }
     }
 }

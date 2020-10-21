@@ -505,6 +505,11 @@ namespace JsonWebToken
             {
                 return Empty;
             }
+
+            public Jwk[] GetKeys(JwtHeaderDocument header)
+            {
+                return Empty;
+            }
         }
     }
 }

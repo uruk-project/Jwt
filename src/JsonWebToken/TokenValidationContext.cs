@@ -12,7 +12,7 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="TokenValidationContext"/>.
         /// </summary>
         /// <param name="jwt"></param>
-        public TokenValidationContext(Jwt jwt)
+        public TokenValidationContext(JwtOld jwt)
         {
             Jwt = jwt;
         }
@@ -20,6 +20,6 @@ namespace JsonWebToken
         /// <summary>
         /// The decoded JWT.
         /// </summary>
-        public readonly Jwt Jwt;
+        public readonly JwtOld Jwt;
     }
 }

@@ -182,6 +182,23 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Cast the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="algorithm"></param>
+        public static bool TryParse(string? value, [NotNullWhen(true)] out CompressionAlgorithm? algorithm)
+        {
+            if (value == "DEF")
+            {
+                algorithm = Deflate;
+                return true;
+            }
+
+            algorithm = null;
+            return false;
+        }
+
+        /// <summary>
         /// Cast the array of <see cref="byte"/>s into its <see cref="CompressionAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>

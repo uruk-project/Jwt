@@ -10,7 +10,7 @@ namespace JsonWebToken
     {
         bool Enabled { get; }
 
-        void AddHeader(ReadOnlySpan<byte> rawHeader, JwtHeader header);
-        bool TryGetHeader(ReadOnlySpan<byte> buffer, [NotNullWhen(true)] out JwtHeader? header);
+        void AddHeader(ReadOnlySpan<byte> rawHeader, IJwtHeader header);
+        bool TryGetHeader(ReadOnlySpan<byte> buffer, [NotNullWhen(true)] out IJwtHeader? header);
     }
 }

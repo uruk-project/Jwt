@@ -387,6 +387,149 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Parses the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="algorithm"></param>
+        public static bool TryParse(string? value, [NotNullWhen(true)] out SignatureAlgorithm? algorithm)
+        {
+            switch (value)
+            {
+                case "HS256":
+                    algorithm = HmacSha256;
+                    goto Found;
+                case "RS256":
+                    algorithm = RsaSha256;
+                    goto Found;
+                case "ES256":
+                    algorithm = EcdsaSha256;
+                    goto Found;
+                case "PS256":
+                    algorithm = RsaSsaPssSha256;
+                    goto Found;
+                case "HS384":
+                    algorithm = HmacSha384;
+                    goto Found;
+                case "RS384":
+                    algorithm = RsaSha384;
+                    goto Found;
+                case "ES384":
+                    algorithm = EcdsaSha384;
+                    goto Found;
+                case "PS384":
+                    algorithm = RsaSsaPssSha384;
+                    goto Found;
+                case "HS512":
+                    algorithm = HmacSha512;
+                    goto Found;
+                case "RS512":
+                    algorithm = RsaSha512;
+                    goto Found;
+                case "ES512":
+                    algorithm = EcdsaSha512;
+                    goto Found;
+                case "PS512":
+                    algorithm = RsaSsaPssSha512;
+                    goto Found;
+                case "none":
+                    algorithm = None;
+                    goto Found;
+                case "ES256X":
+                    algorithm = EcdsaSha256X;
+                    goto Found;
+            }
+
+            algorithm = null;
+            return false;
+        Found:
+            return true;
+        }
+
+        /// <summary>
+        /// Parses the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="algorithm"></param>
+        public static bool TryParse(JsonElement value, [NotNullWhen(true)] out SignatureAlgorithm? algorithm)
+        {
+            if (value.ValueEquals(HmacSha256._utf8Name))
+            {
+                algorithm = HmacSha256;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaSha256._utf8Name))
+            {
+                algorithm = RsaSha256;
+                goto Found;
+            }
+            else if (value.ValueEquals(EcdsaSha256._utf8Name))
+            {
+                algorithm = EcdsaSha256;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaSsaPssSha256._utf8Name))
+            {
+                algorithm = RsaSsaPssSha256;
+                goto Found;
+            }
+            else if (value.ValueEquals(HmacSha512._utf8Name))
+            {
+                algorithm = HmacSha512;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaSha512._utf8Name))
+            {
+                algorithm = RsaSha512;
+                goto Found;
+            }
+            else if (value.ValueEquals(EcdsaSha512._utf8Name))
+            {
+                algorithm = EcdsaSha512;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaSsaPssSha512._utf8Name))
+            {
+                algorithm = RsaSsaPssSha512;
+                goto Found;
+            }
+            else if (value.ValueEquals(HmacSha384._utf8Name))
+            {
+                algorithm = HmacSha384;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaSha384._utf8Name))
+            {
+                algorithm = RsaSha384;
+                goto Found;
+            }
+            else if (value.ValueEquals(EcdsaSha384._utf8Name))
+            {
+                algorithm = EcdsaSha384;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaSsaPssSha384._utf8Name))
+            {
+                algorithm = RsaSsaPssSha384;
+                goto Found;
+            }
+            else if (value.ValueEquals(EcdsaSha256X._utf8Name))
+            {
+                algorithm = EcdsaSha256X;
+                goto Found;
+            }
+            else if (value.ValueEquals(None._utf8Name))
+            {
+                algorithm = None;
+                goto Found;
+            }
+
+            algorithm = null;
+            return false;
+        Found:
+            return true;
+        }
+
+        /// <summary>
         /// Parse the current value of the <see cref="Utf8JsonReader"/> into its <see cref="SignatureAlgorithm"/> representation.
         /// </summary>
         /// <param name="reader"></param>

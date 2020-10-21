@@ -61,6 +61,10 @@ namespace JsonWebToken
         public ReadOnlySpan<byte> ClaimName => _claimName;
         public ReadOnlySpan<byte> ClaimValue => _jsonReader.ValueSpan;
         public byte ValidationControl { get; private set; }
+        public ReadOnlySpan<byte> ValueSpan => _jsonReader.ValueSpan;
+        public int TokenStartIndex => (int)_jsonReader.TokenStartIndex;
+
+        public JsonTokenType TokenType => _jsonReader.TokenType;
 
         internal void EnsureJson()
         {
@@ -209,6 +213,9 @@ namespace JsonWebToken
         {
             return _jsonReader.Read() && _jsonReader.TokenType == JsonTokenType.StartObject;
         }
+
+        internal void Skip()
+            => _jsonReader.Skip();
     }
 
     //public class JwtReader2Tests

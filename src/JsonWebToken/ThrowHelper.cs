@@ -129,7 +129,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_NotSupportedJsonType(JwtTokenType type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateInvalidOperationException_NotSupportedJsonType(JwtTokenType type) => new InvalidOperationException($"The type {type} is not supported.");
+        internal static Exception CreateInvalidOperationException_NotSupportedJsonType(JwtTokenType type) => new InvalidOperationException($"The type {type} is not supported.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_MustBeGreaterThanZero(ExceptionArgument argument, int value) => throw CreateArgumentOutOfRangeException_MustBeGreaterThanZero(argument, value);
@@ -354,7 +354,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static string ThrowFormatException_MalformedJson() => throw CreateFormatException_MalformedJson();
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateFormatException_MalformedJson() => new FormatException("The JSON is malformed.");
+        internal static Exception CreateFormatException_MalformedJson() => new FormatException("The JSON is malformed.");
 
         [DoesNotReturn]
         internal static string ThrowFormatException_MalformedJson(string message) => throw CreateFormatException_MalformedJson(message);

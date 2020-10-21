@@ -36,6 +36,22 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
+        public override Jwk[] GetKeys(JwtHeaderDocument header)
+        {
+            if (header is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
+            }
+
+            if (header.Jku is null)
+            {
+                return Array.Empty<Jwk>();
+            }
+
+            return GetKeys(header, header.Jku);
+        }
+
+        /// <inheritsdoc />
         protected override Jwks DeserializeKeySet(string value)
         {
             return Jwks.FromJson(value);

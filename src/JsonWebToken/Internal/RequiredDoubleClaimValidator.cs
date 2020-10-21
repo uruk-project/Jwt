@@ -39,7 +39,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritdoc />
-        public TokenValidationResult TryValidate(Jwt jwt)
+        public TokenValidationResult TryValidate(JwtOld jwt)
         {
             if (jwt is null)
             {
@@ -90,6 +90,30 @@ namespace JsonWebToken.Internal
             return true;
         }
 
+        public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocumentOld payload, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            if (payload is null)
+            {
+                error = TokenValidationError.MalformedToken();
+                return false;
+            }
+
+            if (!payload.TryGetProperty(_claim, out var claim))
+            {
+                error = TokenValidationError.MissingClaim(_claim);
+                return false;
+            }
+
+            if (!claim.TryGetDouble(out var value) || _value != value)
+            {
+                error = TokenValidationError.InvalidClaim(_claim);
+                return false;
+            }
+
+            error = null;
+            return true;
+        }
+
         public bool TryValidate(JwtHeader header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
             if (payload is null)
@@ -98,7 +122,7 @@ namespace JsonWebToken.Internal
                 return false;
             }
 
-            if (!payload.TryGetValue(_claim, out var claim))
+            if (!payload.TryGetProperty(_claim, out var claim))
             {
                 error = TokenValidationError.MissingClaim(_claim);
                 return false;

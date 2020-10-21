@@ -212,10 +212,15 @@ namespace JsonWebToken
             {
                 if (EnableHeaderCaching)
                 {
-                    if (!_headerCache.TryGetHeader(rawHeader, out header))
+                    IJwtHeader h;
+                    if (!_headerCache.TryGetHeader(rawHeader, out h))
                     {
                         header = GetJsonHeader(rawHeader, jsonBuffer.Slice(0, headerJsonDecodedLength), policy);
                         _headerCache.AddHeader(rawHeader, header);
+                    }
+                    else
+                    {
+                        header = (JwtHeader)h;
                     }
                 }
                 else
@@ -330,10 +335,10 @@ namespace JsonWebToken
                     }
                 }
 
-                Jwt jwe;
+                JwtOld jwe;
                 if (policy.IgnoreNestedToken)
                 {
-                    jwe = new Jwt(header, compressed ? decompressedBytes.ToArray() : decryptedBytes.ToArray(), decryptionKey);
+                    jwe = new JwtOld(header, compressed ? decompressedBytes.ToArray() : decryptedBytes.ToArray(), decryptionKey);
                 }
                 else
                 {
@@ -342,14 +347,14 @@ namespace JsonWebToken
                         : TryReadToken(decryptedBytes, policy);
                     if (!(decryptionResult.Token is null) && decryptionResult.Succedeed)
                     {
-                        jwe = new Jwt(header, decryptionResult.Token, decryptionKey);
+                        jwe = new JwtOld(header, decryptionResult.Token, decryptionKey);
                     }
                     else
                     {
                         if (decryptionResult.Status == TokenValidationStatus.MalformedToken)
                         {
                             // The decrypted payload is not a nested JWT
-                            jwe = new Jwt(header, compressed ? decompressedBytes.ToArray() : decryptedBytes.ToArray(), decryptionKey);
+                            jwe = new JwtOld(header, compressed ? decompressedBytes.ToArray() : decryptedBytes.ToArray(), decryptionKey);
                         }
                         else
                         {
@@ -408,7 +413,7 @@ namespace JsonWebToken
                 goto Malformed;
             }
 
-            Jwt jws = new Jwt(header, payload, result.SigningKey);
+            JwtOld jws = new JwtOld(header, payload, result.SigningKey);
             return policy.TryValidateJwt(jws);
 
         Malformed:

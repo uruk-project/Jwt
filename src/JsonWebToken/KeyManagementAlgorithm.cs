@@ -417,7 +417,6 @@ namespace JsonWebToken
             return false;
         }
 
-
         /// <summary>
         /// Cast the <see cref="ReadOnlySpan{T}"/> into its <see cref="KeyManagementAlgorithm"/> representation.
         /// </summary>
@@ -511,6 +510,165 @@ namespace JsonWebToken
                             goto Found;
                     }
                     break;
+            }
+
+            algorithm = null;
+            return false;
+        Found:
+            return true;
+        }
+
+        /// <summary>
+        /// Cast the <see cref="string"/> into its <see cref="KeyManagementAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="algorithm"></param>
+        public static bool TryParse(string? value, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
+        {
+            switch (value)
+            {
+                case "dir":
+                    algorithm = Direct;
+                    goto Found;
+                case "A128KW":
+                    algorithm = Aes128KW;
+                    goto Found;
+                case "A192KW":
+                    algorithm = Aes192KW;
+                    goto Found;
+                case "A256KW":
+                    algorithm = Aes256KW;
+                    goto Found;
+                case "RSA1_5":
+                    algorithm = RsaPkcs1;
+                    goto Found;
+                case "ECDH-ES":
+                    algorithm = EcdhEs;
+                    goto Found;
+                case "RSA-OAEP":
+                    algorithm = RsaOaep;
+                    goto Found;
+                case "A128GCMKW":
+                    algorithm = Aes128GcmKW;
+                    goto Found;
+                case "A192GCMKW":
+                    algorithm = Aes192GcmKW;
+                    goto Found;
+                case "A256GCMKW":
+                    algorithm = Aes256GcmKW;
+                    goto Found;
+                case "RSA-OAEP-256":
+                    algorithm = RsaOaep256;
+                    goto Found;
+                case "RSA-OAEP-384":
+                    algorithm = RsaOaep384;
+                    goto Found;
+                case "RSA-OAEP-512":
+                    algorithm = RsaOaep512;
+                    goto Found;
+                case "ECDH-ES+A128KW":
+                    algorithm = EcdhEsAes128KW;
+                    goto Found;
+                case "ECDH-ES+A192KW":
+                    algorithm = EcdhEsAes192KW;
+                    goto Found;
+                case "ECDH-ES+A256KW":
+                    algorithm = EcdhEsAes256KW;
+                    goto Found;
+            }
+
+            algorithm = null;
+            return false;
+        Found:
+            return true;
+        }
+
+        /// <summary>
+        /// Cast the <see cref="string"/> into its <see cref="KeyManagementAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="algorithm"></param>
+        public static bool TryParse(JsonElement value, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
+        {
+            if (value.ValueEquals(Direct._utf8Name))
+            {
+                algorithm = Direct;
+                goto Found;
+            }
+            else if (value.ValueEquals(Aes128KW._utf8Name))
+            {
+                algorithm = Aes128KW;
+                goto Found;
+            }
+            else if (value.ValueEquals(Aes192KW._utf8Name))
+            {
+                algorithm = Aes192KW;
+                goto Found;
+            }
+            else if (value.ValueEquals(Aes256KW._utf8Name))
+            {
+                algorithm = Aes256KW;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaPkcs1._utf8Name))
+            {
+                algorithm = RsaPkcs1;
+                goto Found;
+            }
+            else if (value.ValueEquals(EcdhEs._utf8Name))
+            {
+                algorithm = EcdhEs;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaOaep._utf8Name))
+            {
+                algorithm = RsaOaep;
+                goto Found;
+            }
+            else if (value.ValueEquals(Aes128GcmKW._utf8Name))
+            {
+                algorithm = Aes128GcmKW;
+                goto Found;
+            }
+            else if (value.ValueEquals(Aes192GcmKW._utf8Name))
+            {
+                algorithm = Aes192GcmKW;
+                goto Found;
+            }
+            else if (value.ValueEquals(Aes256GcmKW._utf8Name))
+            {
+                algorithm = Aes256GcmKW;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaOaep256._utf8Name))
+            {
+                algorithm = RsaOaep256;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaOaep384._utf8Name))
+            {
+                algorithm = RsaOaep384;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaOaep512._utf8Name))
+            {
+                algorithm = RsaOaep512;
+                goto Found;
+            }
+            else if (value.ValueEquals(EcdhEsAes128KW._utf8Name))
+            {
+                algorithm = EcdhEsAes128KW;
+                goto Found;
+            }
+            else if (value.ValueEquals(EcdhEsAes192KW._utf8Name))
+            {
+                algorithm = EcdhEsAes192KW;
+                goto Found;
+            }
+            else if (value.ValueEquals(EcdhEsAes256KW._utf8Name))
+            {
+                algorithm = EcdhEsAes256KW;
+                goto Found;
             }
 
             algorithm = null;

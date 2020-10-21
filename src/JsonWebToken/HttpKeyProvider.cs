@@ -56,6 +56,8 @@ namespace JsonWebToken
 
         /// <inheritsdoc />
         public abstract Jwk[] GetKeys(JwtHeader header);
+        /// <inheritsdoc />
+        public abstract Jwk[] GetKeys(JwtHeaderDocument header);
 
         /// <summary>
         /// Deserializes a JSON string representing a JWKS.
@@ -66,6 +68,50 @@ namespace JsonWebToken
 
         /// <inheritsdoc />
         protected Jwk[] GetKeys(JwtHeader header, string metadataAddress)
+        {
+            if (_disposed)
+            {
+                ThrowHelper.ThrowObjectDisposedException(GetType());
+            }
+
+            var kid = header.Kid;
+            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            if (_currentKeys != null && _syncAfter > now)
+            {
+                return _currentKeys.GetKeys(kid);
+            }
+
+            if (_syncAfter <= now)
+            {
+                _refreshLock.Wait();
+                try
+                {
+                    var value = _documentRetriever.GetDocument(metadataAddress, CancellationToken.None);
+                    _currentKeys = Jwks.FromJson(value);
+                    _syncAfter = now + AutomaticRefreshInterval;
+                }
+                catch
+                {
+                    _syncAfter = now + (AutomaticRefreshInterval < RefreshInterval ? AutomaticRefreshInterval : RefreshInterval);
+                    throw;
+                }
+                finally
+                {
+                    _refreshLock.Release();
+                }
+            }
+
+            if (_currentKeys != null)
+            {
+                return _currentKeys.GetKeys(kid);
+            }
+
+            ThrowHelper.ThrowInvalidOperationException_UnableToObtainKeysException(metadataAddress);
+            return Array.Empty<Jwk>();
+        }
+        
+        /// <inheritsdoc />
+        protected Jwk[] GetKeys(JwtHeaderDocument header, string metadataAddress)
         {
             if (_disposed)
             {

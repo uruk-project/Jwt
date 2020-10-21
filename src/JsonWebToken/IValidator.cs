@@ -13,7 +13,7 @@ namespace JsonWebToken
         /// <summary>
         /// Tries to validate a token.
         /// </summary>
-        TokenValidationResult TryValidate(Jwt jwt);
+        TokenValidationResult TryValidate(JwtOld jwt);
 
         /// <summary>
         /// Tries to validate a token.
@@ -23,6 +23,11 @@ namespace JsonWebToken
         /// <summary>
         /// Tries to validate a token.
         /// </summary>
-        bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error);
+        bool TryValidate(JwtHeaderDocument header, JwtPayloadDocumentOld payload, [NotNullWhen(false)] out TokenValidationError? error);
+
+        /// <summary>
+        /// Tries to validate a token.
+        /// </summary>
+        bool TryValidate(JwtHeader header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error);
     }
 }
