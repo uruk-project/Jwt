@@ -246,6 +246,53 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Cast the <see cref="JwtElement"/> into its <see cref="EncryptionAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="algorithm"></param>
+        public static bool TryParse(JwtElement value, [NotNullWhen(true)] out EncryptionAlgorithm? algorithm)
+        {
+            bool found;
+            if (value.ValueEquals(Aes128CbcHmacSha256._utf8Name))
+            {
+                algorithm = Aes128CbcHmacSha256;
+                found = true;
+            }
+            else if (value.ValueEquals(Aes192CbcHmacSha384._utf8Name))
+            {
+                algorithm = Aes192CbcHmacSha384;
+                found = true;
+            }
+            else if (value.ValueEquals(Aes256CbcHmacSha512._utf8Name))
+            {
+                algorithm = Aes256CbcHmacSha512;
+                found = true;
+            }
+            else if (value.ValueEquals(Aes128Gcm._utf8Name))
+            {
+                algorithm = Aes128Gcm;
+                found = true;
+            }
+            else if (value.ValueEquals(Aes192Gcm._utf8Name))
+            {
+                algorithm = Aes192Gcm;
+                found = true;
+            }
+            else if (value.ValueEquals(Aes256Gcm._utf8Name))
+            {
+                algorithm = Aes256Gcm;
+                found = true;
+            }
+            else
+            {
+                algorithm = null;
+                found = false;
+            }
+
+            return found;
+        }
+        
+        /// <summary>
         /// Cast the <see cref="JsonElement"/> into its <see cref="EncryptionAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>

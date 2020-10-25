@@ -15,6 +15,7 @@ namespace JsonWebToken
         private static readonly SignatureValidationResult _missingSignature = new SignatureValidationResult(TokenValidationStatus.MissingSignature);
         private static readonly SignatureValidationResult _signatureKeyNotFound = new SignatureValidationResult(TokenValidationStatus.SignatureKeyNotFound);
         private static readonly SignatureValidationResult _signatureValidationResult = new SignatureValidationResult(TokenValidationStatus.MalformedSignature);
+        private static readonly SignatureValidationResult _missingAlgorithmResult = new SignatureValidationResult(TokenValidationStatus.MissingAlgorithm);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SignatureValidationResult"/> class.
@@ -103,5 +104,11 @@ namespace JsonWebToken
         /// </summary>
         public static SignatureValidationResult MalformedSignature()
             => _signatureValidationResult;
+
+        /// <summary>
+        /// The 'alg' header parameter is missing.
+        /// </summary>
+        public static SignatureValidationResult MissingAlgorithm()
+            => _missingAlgorithmResult;
     }
 }

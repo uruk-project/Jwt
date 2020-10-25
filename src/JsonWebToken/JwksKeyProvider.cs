@@ -50,6 +50,12 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
+        public override Jwk[] GetKeys(JwtHeaderDocument2 header)
+        {
+            return GetKeys(header, _jwksAddress);
+        }
+
+        /// <inheritsdoc />
         public override Jwk[] GetKeys(JwtHeaderDocument header)
         {
             return GetKeys(header, _jwksAddress);

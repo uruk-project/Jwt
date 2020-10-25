@@ -24,12 +24,12 @@ namespace JsonWebToken
     {
         private ReadOnlyMemory<byte> _rawValue;
         private byte[]? _rented;
-        private readonly JwtHeaderDocument _header;
+        private readonly JwtHeaderDocument2 _header;
         private readonly JwtPayloadDocumentOld? _payload;
         private readonly JwtDocument2? _nested;
         private readonly TokenValidationError? _error;
 
-        public JwtDocument2(JwtHeaderDocument header, ReadOnlyMemory<byte> rawValue, byte[] rented)
+        public JwtDocument2(JwtHeaderDocument2 header, ReadOnlyMemory<byte> rawValue, byte[] rented)
         {
             _header = header;
             _rawValue = rawValue;
@@ -47,7 +47,7 @@ namespace JsonWebToken
             _rented = rented;
         }
 
-        public JwtDocument2(JwtHeaderDocument header, JwtDocument2 nested, byte[] rented)
+        public JwtDocument2(JwtHeaderDocument2 header, JwtDocument2 nested, byte[] rented)
         {
             _header = header;
             _payload = nested.Payload;
@@ -55,20 +55,20 @@ namespace JsonWebToken
             _rented = rented;
         }
 
-        public JwtDocument2(JwtHeaderDocument header, JwtPayloadDocumentOld payload)
+        public JwtDocument2(JwtHeaderDocument2 header, JwtPayloadDocumentOld payload)
         {
             _header = header;
             _payload = payload;
         }
 
-        public JwtDocument2(JwtHeaderDocument header, JwtPayloadDocumentOld payload, TokenValidationError error)
+        public JwtDocument2(JwtHeaderDocument2 header, JwtPayloadDocumentOld payload, TokenValidationError error)
         {
             _header = header;
             _payload = payload;
             _error = error;
         }
 
-        public JwtDocument2(JwtHeaderDocument header, JwtDocument2 nested, TokenValidationError error, byte[] rented)
+        public JwtDocument2(JwtHeaderDocument2 header, JwtDocument2 nested, TokenValidationError error, byte[] rented)
         {
             _header = header;
             _payload = nested.Payload;
@@ -78,7 +78,7 @@ namespace JsonWebToken
         }
 
         public TokenValidationError? Error => _error;
-        public JwtHeaderDocument? Header => _header;
+        public JwtHeaderDocument2? Header => _header;
         public JwtPayloadDocumentOld? Payload => _payload;
         public JwtDocument2? Nested => _nested;
         public ReadOnlyMemory<byte> RawValue => _rawValue;
@@ -119,7 +119,7 @@ namespace JsonWebToken
                 goto TokenAnalyzed;
             }
 
-            JwtHeaderDocument? header;
+            JwtHeaderDocument2? header;
             var rawHeader = utf8Token.Slice(0, headerSegment.Length);
             int headerJsonDecodedLength = Base64Url.GetArraySizeRequiredToDecode(rawHeader.Length);
             int payloadjsonDecodedLength;
@@ -147,7 +147,7 @@ namespace JsonWebToken
                     }
                     else
                     {
-                        header = (JwtHeaderDocument)tmp;
+                        header = (JwtHeaderDocument2)tmp;
                         validHeader = policy.TryValidateHeader(header, out error);
                     }
                 }
@@ -193,7 +193,7 @@ namespace JsonWebToken
             }
         }
 
-        internal static bool TryReadBase64Header(ReadOnlySpan<byte> utf8Header, TokenValidationPolicy policy, int segmentCount, out JwtHeaderDocument header, out TokenValidationError? error)
+        internal static bool TryReadBase64Header(ReadOnlySpan<byte> utf8Header, TokenValidationPolicy policy, int segmentCount, out JwtHeaderDocument2 header, out TokenValidationError? error)
         {
             int headerJsonDecodedLength = Base64Url.GetArraySizeRequiredToDecode((int)utf8Header.Length);
             var headerBufferToReturnToPool = ArrayPool<byte>.Shared.Rent(headerJsonDecodedLength);
@@ -208,9 +208,9 @@ namespace JsonWebToken
             }
         }
 
-        internal static bool TryReadHeader(ReadOnlyMemory<byte> utf8Header, TokenValidationPolicy policy, int segmentCount, out JwtHeaderDocument header, [NotNullWhen(false)] out TokenValidationError? error)
+        internal static bool TryReadHeader(ReadOnlyMemory<byte> utf8Header, TokenValidationPolicy policy, int segmentCount, out JwtHeaderDocument2 header, [NotNullWhen(false)] out TokenValidationError? error)
         {
-            header = new JwtHeaderDocument(JsonDocument.Parse(utf8Header));
+            header = new JwtHeaderDocument2(JsonDocument.Parse(utf8Header));
             //header = new JwtHeader();
             //bool result;
             //var reader = new JwtHeaderReader(utf8Header, policy);
@@ -318,7 +318,7 @@ namespace JsonWebToken
             int jsonBufferLength,
             TokenValidationPolicy policy,
             ref TokenSegment segments,
-            JwtHeaderDocument header,
+            JwtHeaderDocument2 header,
             out JwtDocument2? jwt)
         {
             TokenSegment headerSegment = segments;
@@ -386,7 +386,7 @@ namespace JsonWebToken
             TokenValidationPolicy policy,
             ReadOnlySpan<byte> rawHeader,
             ref TokenSegment segments,
-            JwtHeaderDocument header,
+            JwtHeaderDocument2 header,
             out JwtDocument2 document)
         {
             TokenValidationError error;

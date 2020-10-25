@@ -182,6 +182,23 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Cast the <see cref="JwtElement"/> into its <see cref="SignatureAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="algorithm"></param>
+        public static bool TryParse(JwtElement value, [NotNullWhen(true)] out CompressionAlgorithm? algorithm)
+        {
+            if (value.ValueEquals(Deflate.Utf8Name))
+            {
+                algorithm = Deflate;
+                return true;
+            }
+
+            algorithm = null;
+            return false;
+        }
+
+        /// <summary>
         /// Cast the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>

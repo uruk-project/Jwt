@@ -584,7 +584,101 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Cast the <see cref="string"/> into its <see cref="KeyManagementAlgorithm"/> representation.
+        /// Cast the <see cref="JwtElement"/> into its <see cref="KeyManagementAlgorithm"/> representation.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="algorithm"></param>
+        public static bool TryParse(JwtElement value, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
+        {
+            if (value.ValueEquals(Direct._utf8Name))
+            {
+                algorithm = Direct;
+                goto Found;
+            }
+            else if (value.ValueEquals(Aes128KW._utf8Name))
+            {
+                algorithm = Aes128KW;
+                goto Found;
+            }
+            else if (value.ValueEquals(Aes192KW._utf8Name))
+            {
+                algorithm = Aes192KW;
+                goto Found;
+            }
+            else if (value.ValueEquals(Aes256KW._utf8Name))
+            {
+                algorithm = Aes256KW;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaPkcs1._utf8Name))
+            {
+                algorithm = RsaPkcs1;
+                goto Found;
+            }
+            else if (value.ValueEquals(EcdhEs._utf8Name))
+            {
+                algorithm = EcdhEs;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaOaep._utf8Name))
+            {
+                algorithm = RsaOaep;
+                goto Found;
+            }
+            else if (value.ValueEquals(Aes128GcmKW._utf8Name))
+            {
+                algorithm = Aes128GcmKW;
+                goto Found;
+            }
+            else if (value.ValueEquals(Aes192GcmKW._utf8Name))
+            {
+                algorithm = Aes192GcmKW;
+                goto Found;
+            }
+            else if (value.ValueEquals(Aes256GcmKW._utf8Name))
+            {
+                algorithm = Aes256GcmKW;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaOaep256._utf8Name))
+            {
+                algorithm = RsaOaep256;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaOaep384._utf8Name))
+            {
+                algorithm = RsaOaep384;
+                goto Found;
+            }
+            else if (value.ValueEquals(RsaOaep512._utf8Name))
+            {
+                algorithm = RsaOaep512;
+                goto Found;
+            }
+            else if (value.ValueEquals(EcdhEsAes128KW._utf8Name))
+            {
+                algorithm = EcdhEsAes128KW;
+                goto Found;
+            }
+            else if (value.ValueEquals(EcdhEsAes192KW._utf8Name))
+            {
+                algorithm = EcdhEsAes192KW;
+                goto Found;
+            }
+            else if (value.ValueEquals(EcdhEsAes256KW._utf8Name))
+            {
+                algorithm = EcdhEsAes256KW;
+                goto Found;
+            }
+
+            algorithm = null;
+            return false;
+        Found:
+            return true;
+        }
+
+        /// <summary>
+        /// Cast the <see cref="JsonElement"/> into its <see cref="KeyManagementAlgorithm"/> representation.
         /// </summary>
         /// <param name="value"></param>
         /// <param name="algorithm"></param>

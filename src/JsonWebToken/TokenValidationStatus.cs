@@ -84,6 +84,16 @@ namespace JsonWebToken
         MissingSignature = SignatureError | 0x00000008,
 
         /// <summary>
+        /// The 'alg' header parameter is missing.
+        /// </summary>
+        MissingAlgorithm = SignatureError | HeaderError | 0x00000001,
+
+        /// <summary>
+        /// The 'alg' header parameter is not supported.
+        /// </summary>
+        NotSupportedAlgorithm = SignatureError | HeaderError | 0x00000002,
+
+        /// <summary>
         /// The token was already validated previously.
         /// </summary>
         TokenReplayed = 0x00000001,

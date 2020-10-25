@@ -1,6 +1,8 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
+using JsonWebToken.Internal;
+
 namespace JsonWebToken
 {
     /// <summary>
@@ -40,10 +42,21 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <returns></returns>
-        public Jwk[] GetKeys(JwtHeaderDocument header)
+        public Jwk[] GetKeys(JwtHeaderDocument2 header)
         {
             var kid = header.Kid;
             return _jwks.GetKeys(kid);
+        }
+
+        /// <summary>
+        /// Gets the list of <see cref="Jwk"/>.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        public Jwk[] GetKeys(JwtHeaderDocument header)
+        {
+            var kidValue = header.Kid;//.TryGetHeaderParameter(HeaderParameters.KidUtf8, out var kid) ? kid.GetString() : null;
+            return _jwks.GetKeys(kidValue);
         }
 
         /// <summary>

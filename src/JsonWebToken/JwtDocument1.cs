@@ -50,7 +50,7 @@ namespace JsonWebToken
                 throw new KeyNotFoundException();
             }
         }
-        
+
         public JwtElement this[ReadOnlySpan<byte> propertyName]
         {
             get
@@ -64,24 +64,23 @@ namespace JsonWebToken
             }
         }
 
-        internal bool TryGetNamedPropertyValue(int index, ReadOnlySpan<char> propertyName, out JwtElement value)
+        internal bool TryGetNamedPropertyValue(ReadOnlySpan<char> propertyName, out JwtElement value)
         {
             CheckNotDisposed();
 
-            DbRow row = _parsedData.Get(index);
+            DbRow row;// = _parsedData.Get(0);
 
-            CheckExpectedType(JsonTokenType.StartObject, row.TokenType);
+            //            CheckExpectedType(JsonTokenType.StartObject, row.TokenType);
 
-            // Only one row means it was EndObject.
-            if (row.NumberOfRows == 1)
-            {
-                value = default;
-                return false;
-            }
+            //// Only one row means it was EndObject.
+            //if (row.NumberOfRows == 1)
+            //{
+            //    value = default;
+            //    return false;
+            //}
 
             int maxBytes = Utf8.GetMaxByteCount(propertyName.Length);
-            int startIndex = index + DbRow.Size;
-            int endIndex = checked(row.NumberOfRows * DbRow.Size + index);
+            int endIndex = _parsedData.Length; //checked(row.NumberOfRows * DbRow.Size + index);
 
             if (maxBytes < JsonConstants.StackallocThreshold)
             {
@@ -90,7 +89,6 @@ namespace JsonWebToken
                 utf8Name = utf8Name.Slice(0, len);
 
                 return TryGetNamedPropertyValue(
-                    startIndex,
                     endIndex,
                     utf8Name,
                     out value);
@@ -105,30 +103,30 @@ namespace JsonWebToken
 
             int minBytes = propertyName.Length;
             // Move to the row before the EndObject
-            int candidateIndex = endIndex - DbRow.Size;
+            int candidateIndex = 0;
 
-            while (candidateIndex > index)
+            while (candidateIndex <= endIndex)
             {
-                int passedIndex = candidateIndex;
+                //int passedIndex = candidateIndex;
 
-                row = _parsedData.Get(candidateIndex);
-                Debug.Assert(row.TokenType != JsonTokenType.PropertyName);
+                //row = _parsedData.Get(candidateIndex);
+                //Debug.Assert(row.TokenType != JsonTokenType.PropertyName);
 
-                // Move before the value
-                if (row.IsSimpleValue)
-                {
-                    candidateIndex -= DbRow.Size;
-                }
-                else
-                {
-                    Debug.Assert(row.NumberOfRows > 0);
-                    candidateIndex -= DbRow.Size * (row.NumberOfRows + 1);
-                }
+                //// Move before the value
+                //if (row.IsSimpleValue)
+                //{
+                //    candidateIndex -= DbRow.Size;
+                //}
+                //else
+                //{
+                //    Debug.Assert(row.NumberOfRows > 0);
+                //    candidateIndex -= DbRow.Size * (row.NumberOfRows + 1);
+                //}
 
                 row = _parsedData.Get(candidateIndex);
                 Debug.Assert(row.TokenType == JsonTokenType.PropertyName);
 
-                if (row.SizeOrLength >= minBytes)
+                if (row.Length >= minBytes)
                 {
                     byte[] tmpUtf8 = ArrayPool<byte>.Shared.Rent(maxBytes);
                     Span<byte> utf8Name = default;
@@ -139,8 +137,7 @@ namespace JsonWebToken
                         utf8Name = tmpUtf8.AsSpan(0, len);
 
                         return TryGetNamedPropertyValue(
-                            startIndex,
-                            passedIndex + DbRow.Size,
+                            candidateIndex,
                             utf8Name,
                             out value);
                     }
@@ -151,7 +148,7 @@ namespace JsonWebToken
                 }
 
                 // Move to the previous value
-                candidateIndex -= DbRow.Size;
+                candidateIndex += DbRow.Size * 2;
             }
 
             // None of the property names were within the range that the UTF-8 encoding would have been.
@@ -159,32 +156,30 @@ namespace JsonWebToken
             return false;
         }
 
-        internal bool TryGetNamedPropertyValue(int index, ReadOnlySpan<byte> propertyName, out JwtElement value)
+        internal bool TryGetNamedPropertyValue(ReadOnlySpan<byte> propertyName, out JwtElement value)
         {
             CheckNotDisposed();
 
-            DbRow row = _parsedData.Get(index);
+            //DbRow row = _parsedData.Get(0);
 
-            CheckExpectedType(JsonTokenType.StartObject, row.TokenType);
+            //CheckExpectedType(JsonTokenType.StartObject, row.TokenType);
 
-            // Only one row means it was EndObject.
-            if (row.NumberOfRows == 1)
-            {
-                value = default;
-                return false;
-            }
+            //// Only one row means it was EndObject.
+            //if (row.NumberOfRows == 1)
+            //{
+            //    value = default;
+            //    return false;
+            //}
 
-            int endIndex = checked(row.NumberOfRows * DbRow.Size + index);
+            int endIndex = _parsedData.Length;// checked(row.NumberOfRows * DbRow.Size + index);
 
             return TryGetNamedPropertyValue(
-                index + DbRow.Size,
                 endIndex,
                 propertyName,
                 out value);
         }
 
         private bool TryGetNamedPropertyValue(
-            int startIndex,
             int endIndex,
             ReadOnlySpan<byte> propertyName,
             out JwtElement value)
@@ -193,28 +188,28 @@ namespace JsonWebToken
             Span<byte> utf8UnescapedStack = stackalloc byte[JsonConstants.StackallocThreshold];
 
             // Move to the row before the EndObject
-            int index = endIndex - DbRow.Size;
+            int index = 0;
 
-            while (index > startIndex)
+            while (index < endIndex)
             {
-                DbRow row = _parsedData.Get(index);
-                Debug.Assert(row.TokenType != JsonTokenType.PropertyName);
+                //DbRow row = _parsedData.Get(index);
+                // Debug.Assert(row.TokenType != JsonTokenType.PropertyName);
 
                 // Move before the value
-                if (row.IsSimpleValue)
-                {
-                    index -= DbRow.Size;
-                }
-                else
-                {
-                    //       Debug.Assert(row.NumberOfRows > 0);
-                    index -= DbRow.Size * (row.NumberOfRows + 1);
-                }
+                //if (row.IsSimpleValue)
+                //{
+                //index -= DbRow.Size;
+                //}
+                //else
+                //{
+                //    //       Debug.Assert(row.NumberOfRows > 0);
+                //    index -= DbRow.Size * (row.NumberOfRows + 1);
+                //}
 
-                row = _parsedData.Get(index);
+                DbRow row = _parsedData.Get(index);
                 Debug.Assert(row.TokenType == JsonTokenType.PropertyName);
 
-                ReadOnlySpan<byte> currentPropertyName = documentSpan.Slice(row.Location, row.SizeOrLength);
+                ReadOnlySpan<byte> currentPropertyName = documentSpan.Slice(row.Location, row.Length);
 
                 if (row.HasComplexChildren)
                 {
@@ -269,7 +264,7 @@ namespace JsonWebToken
                 }
 
                 // Move to the previous value
-                index -= DbRow.Size;
+                index += DbRow.Size * 2;
             }
 
             value = default;
@@ -361,16 +356,17 @@ namespace JsonWebToken
                 {
                     // Start one character earlier than the value (the open quote)
                     // End one character after the value (the close quote)
-                    return _utf8Json.Slice(row.Location - 1, row.SizeOrLength + 2);
+                    return _utf8Json.Slice(row.Location - 1, row.Length + 2);
                 }
 
-                return _utf8Json.Slice(row.Location, row.SizeOrLength);
+                return _utf8Json.Slice(row.Location, row.Length);
             }
 
-            int endElementIdx = GetEndIndex(index, includeEndElement: false);
-            int start = row.Location;
-            row = _parsedData.Get(endElementIdx);
-            return _utf8Json.Slice(start, row.Location - start + row.SizeOrLength);
+            return _utf8Json.Slice(row.Location, row.Length);
+            //int endElementIdx = GetEndIndex(index, includeEndElement: false);
+            //int start = row.Location;
+            //row = _parsedData.Get(endElementIdx);
+            //return _utf8Json.Slice(start, row.Location - start + row.Length);
         }
 
         private ReadOnlyMemory<byte> GetPropertyRawValue(int valueIndex)
@@ -389,7 +385,7 @@ namespace JsonWebToken
 
             if (row.IsSimpleValue)
             {
-                end = row.Location + row.SizeOrLength;
+                end = row.Location + row.Length;
 
                 // If the value was a string, pick up the terminating quote.
                 if (row.TokenType == JsonTokenType.String)
@@ -402,7 +398,7 @@ namespace JsonWebToken
 
             int endElementIdx = GetEndIndex(valueIndex, includeEndElement: false);
             row = _parsedData.Get(endElementIdx);
-            end = row.Location + row.SizeOrLength;
+            end = row.Location + row.Length;
             return _utf8Json.Slice(start, end - start);
         }
 
@@ -430,7 +426,7 @@ namespace JsonWebToken
             CheckExpectedType(expectedType, tokenType);
 
             ReadOnlySpan<byte> data = _utf8Json.Span;
-            ReadOnlySpan<byte> segment = data.Slice(row.Location, row.SizeOrLength);
+            ReadOnlySpan<byte> segment = data.Slice(row.Location, row.Length);
 
             if (row.HasComplexChildren)
             {
@@ -505,7 +501,7 @@ namespace JsonWebToken
                 row.TokenType);
 
             ReadOnlySpan<byte> data = _utf8Json.Span;
-            ReadOnlySpan<byte> segment = data.Slice(row.Location, row.SizeOrLength);
+            ReadOnlySpan<byte> segment = data.Slice(row.Location, row.Length);
 
             if (otherUtf8Text.Length > segment.Length || (!shouldUnescape && otherUtf8Text.Length != segment.Length))
             {
@@ -548,7 +544,7 @@ namespace JsonWebToken
             CheckExpectedType(JsonTokenType.Number, row.TokenType);
 
             ReadOnlySpan<byte> data = _utf8Json.Span;
-            ReadOnlySpan<byte> segment = data.Slice(row.Location, row.SizeOrLength);
+            ReadOnlySpan<byte> segment = data.Slice(row.Location, row.Length);
 
             if (Utf8Parser.TryParse(segment, out long tmp, out int consumed) &&
                 consumed == segment.Length)
@@ -570,7 +566,7 @@ namespace JsonWebToken
             CheckExpectedType(JsonTokenType.Number, row.TokenType);
 
             ReadOnlySpan<byte> data = _utf8Json.Span;
-            ReadOnlySpan<byte> segment = data.Slice(row.Location, row.SizeOrLength);
+            ReadOnlySpan<byte> segment = data.Slice(row.Location, row.Length);
 
             if (Utf8Parser.TryParse(segment, out double tmp, out int bytesConsumed) &&
                 segment.Length == bytesConsumed)
@@ -588,10 +584,10 @@ namespace JsonWebToken
 
             DbRow row = _parsedData.Get(index);
 
-            CheckExpectedType(JsonTokenType.StartObject, row.TokenType);
+            //   CheckExpectedType(JsonTokenType.StartObject, row.TokenType);
 
             ReadOnlySpan<byte> data = _utf8Json.Span;
-            ReadOnlySpan<byte> segment = data.Slice(row.Location, row.SizeOrLength);
+            ReadOnlySpan<byte> segment = data.Slice(row.Location, row.Length);
             var reader = new Utf8JsonReader(segment);
 
             if (JsonDocument.TryParseValue(ref reader, out var tmp))
@@ -602,6 +598,11 @@ namespace JsonWebToken
 
             value = null;
             return false;
+        }
+
+        internal ReadOnlyMemory<byte> GetRawValue(int index)
+        {
+            return GetRawValue(index, includeQuotes: true);
         }
 
         internal string GetRawValueAsString(int index)
@@ -635,7 +636,7 @@ namespace JsonWebToken
 
             CheckExpectedType(JsonTokenType.StartArray, row.TokenType);
 
-            return row.SizeOrLength;
+            return row.Length;
         }
 
         internal JwtElement GetArrayIndexElement(int currentIndex, int arrayIndex)
@@ -646,7 +647,7 @@ namespace JsonWebToken
 
             CheckExpectedType(JsonTokenType.StartArray, row.TokenType);
 
-            int arrayLength = row.SizeOrLength;
+            int arrayLength = row.Length;
 
             if ((uint)arrayIndex >= (uint)arrayLength)
             {

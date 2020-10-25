@@ -58,7 +58,7 @@ namespace JsonWebToken.Internal
             return true;
         }
 
-        public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocumentOld payload, [NotNullWhen(false)] out TokenValidationError? error)
+        public bool TryValidate(JwtHeaderDocument2 header, JwtPayloadDocumentOld payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
             if (header is null)
             {
@@ -95,6 +95,29 @@ namespace JsonWebToken.Internal
             }
 
             if (!_algorithm.AsSpan().SequenceEqual(new ReadOnlySpan<byte>((byte[]?)property.Value)))
+            {
+                error = TokenValidationError.InvalidHeader(HeaderParameters.AlgUtf8);
+                return false;
+            }
+
+            error = null;
+            return true;
+        }
+
+        public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            if (header is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
+            }
+
+            if (!header.TryGetHeaderParameter(HeaderParameters.AlgUtf8, out var property))
+            {
+                error = TokenValidationError.MissingHeader(HeaderParameters.AlgUtf8);
+                return false;
+            }
+
+            if (!property.ValueEquals(_algorithm))
             {
                 error = TokenValidationError.InvalidHeader(HeaderParameters.AlgUtf8);
                 return false;

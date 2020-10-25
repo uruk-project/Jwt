@@ -555,12 +555,12 @@ namespace JsonWebToken.Tests
         }
     }
 
-    public class JwtDocument3Tests : IClassFixture<KeyFixture>, IClassFixture<TokenFixture>
+    public class JwtTests : IClassFixture<KeyFixture>, IClassFixture<TokenFixture>
     {
         private readonly KeyFixture _keys;
         private readonly TokenFixture _tokens;
 
-        public JwtDocument3Tests(KeyFixture keys, TokenFixture tokens)
+        public JwtTests(KeyFixture keys, TokenFixture tokens)
         {
             _keys = keys;
             _tokens = tokens;
@@ -607,7 +607,7 @@ namespace JsonWebToken.Tests
                 builder.AcceptUnsecureToken();
             }
 
-            var result = JwtDocument3.TryParse(sequence, builder, out var document);
+            var result = Jwt.TryParse(sequence, builder, out var document);
             Assert.True(result);
         }
 
@@ -634,7 +634,7 @@ namespace JsonWebToken.Tests
                 builder.AcceptUnsecureToken();
             }
 
-            var result = JwtDocument3.TryParse(sequence, builder, out var document);
+            var result = Jwt.TryParse(sequence, builder, out var document);
             Assert.True(result);
         }
 
@@ -657,7 +657,7 @@ namespace JsonWebToken.Tests
                 builder.AcceptUnsecureToken();
             }
 
-            var result = JwtDocument3.TryParse(jwt, builder, out var document);
+            var result = Jwt.TryParse(jwt, builder, out var document);
 
             document.Payload.TryGetProperty("aud", out var aud);
             Assert.True(result);
@@ -672,9 +672,9 @@ namespace JsonWebToken.Tests
                     .RequireAudience("636C69656E745F6964")
                     .RequireIssuer("https://idp.example.com/")
                     .WithDecryptionKeys(_keys.Jwks);
-                builder.AcceptUnsecureToken();
+            builder.AcceptUnsecureToken();
 
-            var result = JwtDocument3.TryParse(jwt, builder, out var document);
+            var result = Jwt.TryParse(jwt, builder, out var document);
 
             document.Payload.TryGetProperty("aud", out var aud);
             Assert.True(result);
@@ -685,14 +685,14 @@ namespace JsonWebToken.Tests
         public void ReadJwt_Invalid(string jwt, TokenValidationStatus expectedStatus)
         {
             var policy = new TokenValidationPolicyBuilder()
-                    .RequireSignature(_keys.SigningKey)
+                    .RequireSignature(_keys.SigningKey) 
                     .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
                     .RequireIssuer("https://idp.example.com/")
                     .WithDecryptionKeys(_keys.Jwks)
                     .Build();
 
-            var result = JwtDocument3.TryParse(jwt, policy, out var document);
+            var result = Jwt.TryParse(jwt, policy, out var document);
             Assert.False(result);
             Assert.Equal(expectedStatus, document.Error.Status);
         }
@@ -709,7 +709,7 @@ namespace JsonWebToken.Tests
                     .Build();
 
             var jwt = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjZiYmRjYTc4MGFmM2E2NzE2M2NhNzUzMTU0NWRhN2E5IiwidHlwIjoiSldUIn0.eyJuYmYiOjE1Mjc5NzMyNDIsImV4cCI6MTUyNzk3Njg0MiwiaXNzIjoiaHR0cHM6Ly9kZW1vLmlkZW50aXR5c2VydmVyLmlvIiwiYXVkIjpbImh0dHBzOi8vZGVtby5pZGVudGl0eXNlcnZlci5pby9yZXNvdXJjZXMiLCJhcGkiXSwiY2xpZW50X2lkIjoiY2xpZW50Iiwic2NvcGUiOlsiYXBpIl19.PFI6Fl8J6nlk3MyDwUemy6e4GjtyNoDabuQcUdOoQRGUjVAhv0UKqSOujg4Y_g23nPCGGMNOVNDiyK9StV4NdUrPemdShR6gykKd-FE1n7uHEwN6vsTDV_EeoF5ZdQsqEVo8zxfWoCIVP2Llj7TTwaoNpnhl9fkHvCc75XqYyF7SkiQAXGGGTExNh12kEI_Hb_rZvjJN2HCw1BsMx9-KFM69oFhT8ClAXeG3j3YsQ9ffjoZXV31S2Llzk-5Mf6BrR5CpCUHWWbfnEU21ko2NH7Y_aBJOwVAxyadj-89RR3-Ixpz3mUDxsZ4nmhLJDbrM9e1SRUq-oPmljIp53j-NXg";
-            var result = JwtDocument3.TryParse(jwt, policy, out var document);
+            var result = Jwt.TryParse(jwt, policy, out var document);
             Assert.True(result);
         }
 
@@ -728,7 +728,7 @@ namespace JsonWebToken.Tests
                     .AcceptUnsecureToken()
                     .Build();
 
-            var result = JwtDocument3.TryParse(jwt, policy, out var document);
+            var result = Jwt.TryParse(jwt, policy, out var document);
             Assert.False(result);
             Assert.Equal(TokenValidationStatus.MalformedToken, document.Error.Status);
         }
@@ -753,7 +753,7 @@ namespace JsonWebToken.Tests
                 policy.DisabledHeaderCache();
             }
 
-            var result = JwtDocument3.TryParse(jwt, policy.Build(), out var document);
+            var result = Jwt.TryParse(jwt, policy, out var document);
             Assert.False(result);
             Assert.Equal(expected, document.Error.Status);
         }
@@ -772,7 +772,7 @@ namespace JsonWebToken.Tests
                 policy.DisabledHeaderCache();
             }
 
-            var result = JwtDocument3.TryParse(jwt, policy.Build(), out var document);
+            var result = Jwt.TryParse(jwt, policy.Build(), out var document);
             Assert.True(result);
         }
 
@@ -786,7 +786,7 @@ namespace JsonWebToken.Tests
                 .EnableLifetimeValidation()
                 .Build();
 
-            var result = JwtDocument3.TryParse(jwt, policy, out var document);
+            var result = Jwt.TryParse(jwt, policy, out var document);
             Assert.True(result);
         }
 
@@ -802,7 +802,7 @@ namespace JsonWebToken.Tests
                 .EnableLifetimeValidation()
                 .Build();
 
-            var result = JwtDocument3.TryParse(jwt, policy, out var document);
+            var result = Jwt.TryParse(jwt, policy, out var document);
             Assert.False(result);
             Assert.Equal(status, document.Error.Status);
         }
@@ -820,24 +820,48 @@ namespace JsonWebToken.Tests
                 .AcceptUnsecureToken()
                 .Build();
 
-            var result = JwtDocument3.TryParse(jwt, policy, out var document);
+            var result = Jwt.TryParse(jwt, policy, out var document);
             Assert.True(result);
         }
 
-        //[Fact]
-        //public void Parse()
-        //{
-        //    //var json = Encoding.UTF8.GetBytes("{\"string\":\"hello\",\"number\":1234,\"boolean\":true,\"object\":{\"value\":1},\"array\":[1,2,3,4],\"null\":null}");
-        //    var json = Encoding.UTF8.GetBytes("{\"string\":\"hello\",\"number\":1234,\"boolean\":true,\"object\":{\"value\":1},\"null\":null}");
+        [Fact]
+        public void JwtHeaderDocument_TryParse()
+        {
+            //var json = Encoding.UTF8.GetBytes("{\"string\":\"hello\",\"number\":1234,\"boolean\":true,\"object\":{\"value\":1},\"array\":[1,2,3,4],\"null\":null}");
+            var json = Encoding.UTF8.GetBytes("{\"string\":\"hello\",\"number\":1234,\"boolean\":true,\"object\":{\"value\":1},\"null\":null,\"array\":[\"hello\",\"world\"]}");
 
-        //    var result = JwtPayloadDocument.Parse(json);
-        //    var elt = result.RootElement;
-        //    Assert.Equal("hello", elt.GetProperty("string").GetString());
-        //    Assert.Equal(1234, elt.GetProperty("number").GetInt64());
-        //    Assert.True(elt.GetProperty("boolean").GetBoolean());
-        //    Assert.Equal(1, elt.GetProperty("object").GetJsonDocument().RootElement.GetProperty("value").GetInt64());
-        //    //Assert.Null(elt.GetProperty("null")());
-        //}
+            var result = JwtHeaderDocument.TryParse(json, TokenValidationPolicy.NoValidation, out var header, out var error);
+            Assert.True(result);
+            Assert.Equal("hello", GetProperty(header, "string").GetString());
+            Assert.Equal(1234, GetProperty(header, "number").GetInt64());
+            Assert.True(GetProperty(header, "boolean").GetBoolean());
+            Assert.Equal(1, GetProperty(header, "object").GetJsonDocument().RootElement.GetProperty("value").GetInt64());
+            Assert.NotNull(GetProperty(header, "array").GetJsonDocument().RootElement.EnumerateArray().ToArray());
+            Assert.Equal(JsonValueKind.Null, GetProperty(header, "null").ValueKind);
+        }
+
+        [Fact]
+        public void JwtPayloadDocument_TryParse()
+        {
+            //var json = Encoding.UTF8.GetBytes("{\"string\":\"hello\",\"number\":1234,\"boolean\":true,\"object\":{\"value\":1},\"array\":[1,2,3,4],\"null\":null}");
+            var json = Encoding.UTF8.GetBytes("{\"string\":\"hello\",\"number\":1234,\"boolean\":true,\"object\":{\"value\":1},\"null\":null,\"array\":[\"hello\",\"world\"]}");
+
+            var result = JwtPayloadDocument.TryParse(json, TokenValidationPolicy.NoValidation, out var payload, out var error);
+            Assert.True(result);
+            Assert.Equal("hello", GetProperty(payload, "string").GetString());
+            Assert.Equal(1234, GetProperty(payload, "number").GetInt64());
+            Assert.True(GetProperty(payload, "boolean").GetBoolean());
+            Assert.Equal(1, GetProperty(payload, "object").GetJsonDocument().RootElement.GetProperty("value").GetInt64());
+            Assert.NotNull(GetProperty(payload, "array").GetJsonDocument().RootElement.EnumerateArray().ToArray());
+            Assert.Equal(JsonValueKind.Null, GetProperty(payload, "null").ValueKind);
+        }
+
+        private static JwtElement GetProperty(JwtHeaderDocument document, string name)
+            => document.TryGetHeaderParameter(name, out var value) ? value : default;
+        
+
+        private static JwtElement GetProperty(JwtPayloadDocument document, string name)
+            => document.TryGetProperty(name, out var value) ? value : default;
 
         private HttpResponseMessage BackchannelRequestToken(HttpRequestMessage req)
         {

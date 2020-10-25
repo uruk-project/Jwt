@@ -3,6 +3,8 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -37,7 +39,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override Jwk[] GetKeys(JwtHeaderDocument header)
+        public override Jwk[] GetKeys(JwtHeaderDocument2 header)
         {
             if (header is null)
             {
@@ -50,6 +52,28 @@ namespace JsonWebToken
             }
 
             return GetKeys(header, header.X5u);
+        }
+
+        /// <inheritsdoc />
+        public override Jwk[] GetKeys(JwtHeaderDocument header)
+        {
+            if (header is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
+            }
+
+            if (!header.TryGetHeaderParameter(HeaderParameters.X5cUtf8, out var x5u))
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
+            }
+
+            var x5uValue = x5u.GetString();
+            if (x5uValue is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
+            }
+
+            return GetKeys(header, x5uValue);
         }
 
         /// <inheritsdoc />

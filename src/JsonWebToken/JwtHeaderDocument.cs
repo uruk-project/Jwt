@@ -8,7 +8,8 @@ using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
-    public sealed class JwtHeaderDocument : IJwtHeader, IDisposable
+    public sealed class JwtHeaderDocument2
+        : IJwtHeader, IDisposable
     {
         private JsonDocument? _inner;
         private readonly JsonElement _rootElement;
@@ -17,16 +18,17 @@ namespace JsonWebToken
         /// Initializes a new instance of the <see cref="JwtHeader"/> class.
         /// </summary>
         /// <param name="inner"></param>
-        public JwtHeaderDocument(JsonDocument inner)
+        public JwtHeaderDocument2(JsonDocument inner)
         {
             _inner = inner;
             _rootElement = inner.RootElement;
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtHeader"/> class.
         /// </summary>
         /// <param name="root"></param>
-        public JwtHeaderDocument(JsonElement root)
+        public JwtHeaderDocument2(JsonElement root)
         {
             _rootElement = root;
         }
@@ -35,9 +37,9 @@ namespace JsonWebToken
         /// Initializes a new instance of the <see cref="JwtHeader"/> class.
         /// </summary>
         /// <param name="json"></param>   
-        public static JwtHeaderDocument FromJson(string json)
+        public static JwtHeaderDocument2 FromJson(string json)
         {
-            return new JwtHeaderDocument(JsonDocument.Parse(Utf8.GetBytes(json)));
+            return new JwtHeaderDocument2(JsonDocument.Parse(Utf8.GetBytes(json)));
         }
 
         /// <summary>

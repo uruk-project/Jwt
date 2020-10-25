@@ -366,7 +366,7 @@ namespace JsonWebToken
         /// <param name="payload"></param>
         /// <param name="error"></param>
         /// <returns></returns>
-        public bool TryValidateJwt(JwtHeaderDocument header, JwtPayloadDocumentOld payload, [NotNullWhen(false)] out TokenValidationError? error)
+        public bool TryValidateJwt(JwtHeaderDocument2 header, JwtPayloadDocumentOld payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
             //if (payload.ValidationControl != 0)
             {
@@ -444,8 +444,86 @@ namespace JsonWebToken
                 }
 
                 if (payload.TryGetProperty(Claims.NbfUtf8, out var nbf)
-                     && (ValidationControl & JwtPayload.ExpiredFlag) == JwtPayload.ExpiredFlag 
+                     && (ValidationControl & JwtPayload.ExpiredFlag) == JwtPayload.ExpiredFlag
                      && nbf.TryGetInt64(out long nbfValue) && nbfValue > EpochTime.UtcNow + ClockSkew)
+                {
+                    error = TokenValidationError.NotYetValid();
+                    goto Error;
+                }
+            }
+
+            var validators = _validators;
+            for (int i = 0; i < validators.Length; i++)
+            {
+                if (!validators[i].TryValidate(header, payload, out error))
+                {
+                    goto Error;
+                }
+            }
+
+            error = null;
+            return true;
+
+        Error:
+            return false;
+        }
+        /// <summary>
+        /// Try to validate the token, according to the <paramref name="header"/> and the <paramref name="payload"/>.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="payload"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
+        public bool TryValidateJwt(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            if (payload.ValidationControl != 0)
+            {
+                if (RequireAudience)
+                {
+                    if (payload.MissingAudience)
+                    {
+                        error = TokenValidationError.MissingClaim(Claims.AudUtf8);
+                        goto Error;
+                    }
+
+                    if (payload.InvalidAudience)
+                    {
+                        error = TokenValidationError.InvalidClaim(Claims.AudUtf8);
+                        goto Error;
+                    }
+                }
+
+                if (RequireIssuer)
+                {
+                    if (payload.MissingIssuer)
+                    {
+                        error = TokenValidationError.MissingClaim(Claims.IssUtf8);
+                        goto Error;
+                    }
+
+                    if (payload.InvalidIssuer)
+                    {
+                        error = TokenValidationError.InvalidClaim(Claims.IssUtf8);
+                        goto Error;
+                    }
+                }
+
+                if (RequireExpirationTime)
+                {
+                    if (payload.MissingExpirationTime)
+                    {
+                        error = TokenValidationError.MissingClaim(Claims.ExpUtf8);
+                        goto Error;
+                    }
+
+                    if (payload.Expired)
+                    {
+                        error = TokenValidationError.Expired();
+                        goto Error;
+                    }
+                }
+
+                if (payload.NotYetValid)
                 {
                     error = TokenValidationError.NotYetValid();
                     goto Error;
@@ -540,7 +618,7 @@ namespace JsonWebToken
         /// <param name="header"></param>
         /// <param name="error"></param>
         /// <returns></returns>
-        public bool TryValidateHeader(JwtHeaderDocument header, [NotNullWhen(false)] out TokenValidationError? error)
+        public bool TryValidateHeader(JwtHeaderDocument2 header, [NotNullWhen(false)] out TokenValidationError? error)
         {
             if (!IgnoreCriticalHeader)
             {
@@ -572,6 +650,42 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Try to validate the token header, according to the <paramref name="header"/>.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
+        public bool TryValidateHeader(JwtHeaderDocument header, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            if (!IgnoreCriticalHeader)
+            {
+                if (header.TryGetHeaderParameter(HeaderParameters.CritUtf8, out var crit))
+                {
+                    var handlers = CriticalHandlers;
+                    foreach (var critHeader in crit.EnumerateArray())
+                    {
+                        var critHeaderName = critHeader.GetString()!;
+                        if (!handlers.TryGetValue(critHeaderName, out var handler))
+                        {
+                            error = TokenValidationError.CriticalHeaderUnsupported(critHeaderName);
+                            return false;
+                        }
+
+
+                        if (!handler.TryHandle(header, critHeaderName))
+                        {
+                            error = TokenValidationError.InvalidHeader(critHeaderName);
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            error = null;
+            return true;
+        }
+
+        /// <summary>
         /// Try to validate the token signature.
         /// </summary>
         /// <param name="header"></param>
@@ -579,6 +693,17 @@ namespace JsonWebToken
         /// <param name="signatureSegment"></param>
         /// <returns></returns>
         public SignatureValidationResult TryValidateSignature(JwtHeader header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
+        {
+            return SignatureValidationPolicy.TryValidateSignature(header, contentBytes, signatureSegment);
+        }
+        /// <summary>
+        /// Try to validate the token signature.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="contentBytes"></param>
+        /// <param name="signatureSegment"></param>
+        /// <returns></returns>
+        public SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
         {
             return SignatureValidationPolicy.TryValidateSignature(header, contentBytes, signatureSegment);
         }
@@ -590,7 +715,7 @@ namespace JsonWebToken
         /// <param name="contentBytes"></param>
         /// <param name="signatureSegment"></param>
         /// <returns></returns>
-        public SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
+        public SignatureValidationResult TryValidateSignature(JwtHeaderDocument2 header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
         {
             return SignatureValidationPolicy.TryValidateSignature(header, contentBytes, signatureSegment);
         }

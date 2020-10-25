@@ -625,6 +625,30 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
+        internal static ECJwk FromJwtElement(JwtElement json)
+        {
+            //Debug.Assert(json.Count == 3);
+            if (!json.TryGetProperty(JwkParameterNames.CrvUtf8, out var crv) || crv.ValueKind is JsonValueKind.Null)
+            {
+                ThrowHelper.ThrowArgumentException_MalformedKey();
+            }
+
+            if (!json.TryGetProperty(JwkParameterNames.XUtf8, out var x) || x.ValueKind is JsonValueKind.Null)
+            {
+                ThrowHelper.ThrowArgumentException_MalformedKey();
+            }
+
+            if (!json.TryGetProperty(JwkParameterNames.YUtf8, out var y) || y.ValueKind is JsonValueKind.Null)
+            {
+                ThrowHelper.ThrowArgumentException_MalformedKey();
+            }
+
+            return new ECJwk(EllipticalCurve.FromString(crv.GetString()!), x.GetString(), y.GetString());
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="ECJwk"/>.
+        /// </summary>
         /// <param name="pem">A PEM-encoded key in PKCS1 (BEGIN EC PRIVATE KEY) or PKCS8 (BEGIN PUBLIC/PRIVATE KEY) format.</param>
         /// Support unencrypted PKCS#1 private EC key, unencrypted PKCS#8 public EC key and unencrypted PKCS#8 private EC key. 
         /// Unencrypted PKCS#1 public EC key is not supported.

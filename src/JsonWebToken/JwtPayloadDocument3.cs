@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -12,6 +13,7 @@ using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
+
     public sealed partial class JwtPayloadDocument
         : IDisposable
     {
@@ -47,37 +49,21 @@ namespace JsonWebToken
         {
             ReadOnlySpan<byte> utf8JsonSpan = utf8Payload.Span;
             var database = new MetadataDb(utf8Payload.Length);
-            int arrayItemsCount = 0;
-            int numberOfRowsForValues = 0;
             byte validationControl = policy.ValidationControl;
 
             var reader = new Utf8JsonReader(utf8JsonSpan);
-
             if (reader.Read())
             {
                 JsonTokenType tokenType = reader.TokenType;
                 if (tokenType == JsonTokenType.StartObject)
                 {
-                    numberOfRowsForValues++;
-                    int tokenStart = (int)reader.TokenStartIndex;
-                    database.Append(JsonTokenType.StartObject, tokenStart, DbRow.UnknownSize);
-                    int numberOfRowsForMembers = 0;
-
                     while (reader.Read())
                     {
                         tokenType = reader.TokenType;
+                        int tokenStart = (int)reader.TokenStartIndex;
 
                         if (tokenType == JsonTokenType.EndObject)
                         {
-                            int rowIndex = database.FindIndexOfFirstUnsetSizeOrLength(JsonTokenType.StartObject);
-
-                            numberOfRowsForMembers++;
-                            database.SetLength(rowIndex, numberOfRowsForMembers);
-
-                            int newRowIndex = database.Length;
-                            database.Append(JsonTokenType.EndObject, tokenStart, reader.ValueSpan.Length);
-                            database.SetNumberOfRows(rowIndex, numberOfRowsForMembers);
-                            database.SetNumberOfRows(newRowIndex, numberOfRowsForMembers);
                             break;
                         }
                         else if (tokenType != JsonTokenType.PropertyName)
@@ -85,9 +71,6 @@ namespace JsonWebToken
                             error = TokenValidationError.MalformedToken();
                             goto Error;
                         }
-
-                        numberOfRowsForValues++;
-                        numberOfRowsForMembers++;
 
                         // Adding 1 to skip the start quote will never overflow
                         Debug.Assert(tokenStart < int.MaxValue);
@@ -97,80 +80,12 @@ namespace JsonWebToken
 
                         reader.Read();
                         tokenType = reader.TokenType;
+                        tokenStart = (int)reader.TokenStartIndex;
 
                         // Since the input payload is contained within a Span,
                         // token start index can never be larger than int.MaxValue (i.e. utf8JsonSpan.Length).
                         Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
-
-                        if (tokenType == JsonTokenType.StartObject)
-                        {
-                            numberOfRowsForValues++;
-                            database.Append(JsonTokenType.StartObject, tokenStart, DbRow.UnknownSize);
-                            int lenght = numberOfRowsForMembers + 1;
-                            numberOfRowsForMembers = 0;
-
-                            reader.Skip();
-                            tokenStart = (int)reader.TokenStartIndex;
-                            int rowIndex = database.FindIndexOfFirstUnsetSizeOrLength(JsonTokenType.StartObject);
-
-                            numberOfRowsForValues++;
-                            numberOfRowsForMembers++;
-                            database.SetLength(rowIndex, numberOfRowsForMembers);
-
-                            int newRowIndex = database.Length;
-                            database.Append(JsonTokenType.StartObject, tokenStart, reader.ValueSpan.Length);
-                            database.SetNumberOfRows(rowIndex, numberOfRowsForMembers);
-                            database.SetNumberOfRows(newRowIndex, numberOfRowsForMembers);
-
-                            numberOfRowsForMembers += lenght;
-                        }
-                        else if (tokenType == JsonTokenType.StartArray)
-                        {
-                            numberOfRowsForMembers++;
-                            database.Append(JsonTokenType.StartArray, tokenStart, DbRow.UnknownSize);
-                            var row = new StackRow(arrayItemsCount, numberOfRowsForValues + 1);
-                            arrayItemsCount = 0;
-                            numberOfRowsForValues = 0;
-                            if (memberName.Length == 3 && (JwtClaims)IntegerMarshal.ReadUInt24(memberName) == JwtClaims.Aud)
-                            {
-                                CheckArrayAudience(ref reader, ref validationControl, policy);
-                            }
-                            else
-                            {
-                                reader.Skip();
-                            }
-
-                            int rowIndex = database.FindIndexOfFirstUnsetSizeOrLength(JsonTokenType.StartArray);
-
-                            numberOfRowsForValues++;
-                            numberOfRowsForMembers++;
-                            database.SetLength(rowIndex, arrayItemsCount);
-                            database.SetNumberOfRows(rowIndex, numberOfRowsForValues);
-
-                            // If the array item count is (e.g.) 12 and the number of rows is (e.g.) 13
-                            // then the extra row is just this EndArray item, so the array was made up
-                            // of simple values.
-                            //
-                            // If the off-by-one relationship does not hold, then one of the values was
-                            // more than one row, making it a complex object.
-                            //
-                            // This check is similar to tracking the start array and painting it when
-                            // StartObject or StartArray is encountered, but avoids the mixed state
-                            // where "UnknownSize" implies "has complex children".
-                            if (arrayItemsCount + 1 != numberOfRowsForValues)
-                            {
-                                database.SetHasComplexChildren(rowIndex);
-                            }
-
-                            int newRowIndex = database.Length;
-                            tokenStart = (int)reader.TokenStartIndex;
-                            database.Append(JsonTokenType.StartArray, tokenStart, reader.ValueSpan.Length);
-                            database.SetNumberOfRows(newRowIndex, numberOfRowsForValues);
-
-                            arrayItemsCount = row.SizeOrLength;
-                            numberOfRowsForValues += row.NumberOfRows;
-                        }
-                        else if (tokenType == JsonTokenType.String)
+                        if (tokenType == JsonTokenType.String)
                         {
                             if (memberName.Length == 3)
                             {
@@ -186,11 +101,8 @@ namespace JsonWebToken
                                 }
                             }
 
-                            numberOfRowsForValues++;
-                            numberOfRowsForMembers++;
                             // Adding 1 to skip the start quote will never overflow
                             Debug.Assert(tokenStart < int.MaxValue);
-
                             database.Append(JsonTokenType.String, tokenStart + 1, reader.ValueSpan.Length);
                         }
                         else if (tokenType == JsonTokenType.Number)
@@ -217,17 +129,36 @@ namespace JsonWebToken
                                 }
                             }
 
-                            numberOfRowsForValues++;
-                            numberOfRowsForMembers++;
-
                             database.Append(JsonTokenType.Number, tokenStart, reader.ValueSpan.Length);
+                        }
+                        else if (tokenType == JsonTokenType.StartObject)
+                        {
+                            int itemCount = SkipArrayOrObject(ref reader);
+                            int tokenEnd = (int)reader.TokenStartIndex;
+                            int index = database.Length;
+                            database.Append(JsonTokenType.StartObject, tokenStart, tokenEnd - tokenStart + 1);
+                            database.SetNumberOfRows(index, itemCount);
+                        }
+                        else if (tokenType == JsonTokenType.StartArray)
+                        {
+                            int itemCount;
+                            if (memberName.Length == 3 && (JwtClaims)IntegerMarshal.ReadUInt24(memberName) == JwtClaims.Aud)
+                            {
+                                itemCount = CheckArrayAudience(ref reader, ref validationControl, policy);
+                            }
+                            else
+                            {
+                                itemCount = SkipArrayOrObject(ref reader);
+                            }
+
+                            int index = database.Length;
+                            int tokenEnd = (int)reader.TokenStartIndex;
+                            database.Append(JsonTokenType.StartArray, tokenStart, tokenEnd - tokenStart + 1);
+                            database.SetNumberOfRows(index, itemCount);
                         }
                         else
                         {
                             Debug.Assert(tokenType >= JsonTokenType.True && tokenType <= JsonTokenType.Null);
-                            numberOfRowsForValues++;
-                            numberOfRowsForMembers++;
-
                             database.Append(tokenType, tokenStart, reader.ValueSpan.Length);
                         }
                     }
@@ -246,15 +177,204 @@ namespace JsonWebToken
             return false;
         }
 
-        private static void SkipArrayOrObject(ref Utf8JsonReader reader)
+        // internal static bool TryParse(ReadOnlyMemory<byte> utf8Payload, TokenValidationPolicy policy, out JwtPayloadDocument? payload, out TokenValidationError? error)
+        //{
+        //    ReadOnlySpan<byte> utf8JsonSpan = utf8Payload.Span;
+        //    var database = new MetadataDb(utf8Payload.Length);
+        //    byte validationControl = policy.ValidationControl;
+
+        //    var reader = new Utf8JsonReader(utf8JsonSpan);
+        //    if (reader.Read())
+        //    {
+        //        JsonTokenType tokenType = reader.TokenType;
+        //        if (tokenType == JsonTokenType.StartObject)
+        //        {
+        //            int tokenStart = (int)reader.TokenStartIndex;
+        //            database.Append(JsonTokenType.StartObject, tokenStart, DbRow.UnknownSize);
+        //            int numberOfRowsForMembers = 0;
+        //            int claimsCount = 0;
+
+        //            while (reader.Read())
+        //            {
+        //                tokenType = reader.TokenType;
+        //                tokenStart = (int)reader.TokenStartIndex;
+
+        //                if (tokenType == JsonTokenType.EndObject)
+        //                {
+        //                    numberOfRowsForMembers++;
+        //                    database.SetLength(0, numberOfRowsForMembers);
+        //                    //Debug.Assert(numberOfRowsForMembers == claimsCount);
+
+        //                    int newRowIndex = database.Length;
+        //                    database.Append(JsonTokenType.EndObject, tokenStart, reader.ValueSpan.Length);
+        //                    database.SetNumberOfRows(0, numberOfRowsForMembers);
+        //                    database.SetNumberOfRows(newRowIndex, numberOfRowsForMembers);
+        //                    break;
+        //                }
+        //                else if (tokenType != JsonTokenType.PropertyName)
+        //                {
+        //                    error = TokenValidationError.MalformedToken();
+        //                    goto Error;
+        //                }
+
+        //                claimsCount++;
+        //                numberOfRowsForMembers++;
+
+        //                // Adding 1 to skip the start quote will never overflow
+        //                Debug.Assert(tokenStart < int.MaxValue);
+
+        //                database.Append(JsonTokenType.PropertyName, tokenStart + 1, reader.ValueSpan.Length);
+        //                ReadOnlySpan<byte> memberName = reader.ValueSpan;
+
+        //                reader.Read();
+        //                tokenType = reader.TokenType;
+        //                tokenStart = (int)reader.TokenStartIndex;
+
+        //                // Since the input payload is contained within a Span,
+        //                // token start index can never be larger than int.MaxValue (i.e. utf8JsonSpan.Length).
+        //                Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
+
+        //                if (tokenType == JsonTokenType.String)
+        //                {
+        //                    if (memberName.Length == 3)
+        //                    {
+        //                        switch ((JwtClaims)IntegerMarshal.ReadUInt24(memberName))
+        //                        {
+        //                            case JwtClaims.Aud:
+        //                                CheckStringAudience(ref reader, ref validationControl, policy);
+        //                                break;
+
+        //                            case JwtClaims.Iss:
+        //                                CheckIssuer(ref reader, ref validationControl, policy);
+        //                                break;
+        //                        }
+        //                    }
+
+        //                    numberOfRowsForMembers++;
+        //                    // Adding 1 to skip the start quote will never overflow
+        //                    Debug.Assert(tokenStart < int.MaxValue);
+
+        //                    database.Append(JsonTokenType.String, tokenStart + 1, reader.ValueSpan.Length);
+        //                }
+        //                else if (tokenType == JsonTokenType.Number)
+        //                {
+        //                    if (memberName.Length == 3)
+        //                    {
+        //                        switch ((JwtClaims)IntegerMarshal.ReadUInt24(memberName))
+        //                        {
+        //                            case JwtClaims.Exp:
+        //                                if (!TryCheckExpirationTime(ref reader, ref validationControl, policy))
+        //                                {
+        //                                    error = TokenValidationError.MalformedToken("The claim 'exp' must be an integral number.");
+        //                                    goto Error;
+        //                                }
+        //                                break;
+
+        //                            case JwtClaims.Nbf:
+        //                                if (!TryCheckNotBefore(ref reader, ref validationControl, policy))
+        //                                {
+        //                                    error = TokenValidationError.MalformedToken("The claim 'nbf' must be an integral number.");
+        //                                    goto Error;
+        //                                }
+        //                                break;
+        //                        }
+        //                    }
+
+        //                    numberOfRowsForMembers++;
+
+        //                    database.Append(JsonTokenType.Number, tokenStart, reader.ValueSpan.Length);
+        //                }
+        //                else if (tokenType == JsonTokenType.StartObject)
+        //                {
+        //                    SkipArrayOrObject(ref reader);
+        //                    int tokenEnd = (int)reader.TokenStartIndex;
+        //                    int rowIndex = database.Length;
+        //                    database.Append(JsonTokenType.StartObject, tokenStart, tokenEnd - tokenStart + 1);
+
+        //                    numberOfRowsForMembers++;
+
+        //                    int newRowIndex = database.Length;
+        //                    database.Append(JsonTokenType.StartObject, tokenStart, reader.ValueSpan.Length);
+        //                    database.SetNumberOfRows(rowIndex, 1);// 1 should be replace by the count of member
+        //                    database.SetNumberOfRows(newRowIndex, 1); // 1 should be replace by the count of member
+        //                }
+        //                else if (tokenType == JsonTokenType.StartArray)
+        //                {
+        //                    if (memberName.Length == 3 && (JwtClaims)IntegerMarshal.ReadUInt24(memberName) == JwtClaims.Aud)
+        //                    {
+        //                        CheckArrayAudience(ref reader, ref validationControl, policy);
+        //                    }
+        //                    else
+        //                    {
+        //                        SkipArrayOrObject(ref reader);
+        //                    }
+
+        //                    numberOfRowsForMembers++;
+        //                    int rowIndex = database.Length;
+        //                    int tokenEnd = (int)reader.TokenStartIndex;
+        //                    database.Append(JsonTokenType.StartArray, tokenStart, tokenEnd - tokenStart + 1);
+        //                    int numberOfRowsForValues = 1;
+
+        //                    numberOfRowsForMembers++;
+        //                    database.SetNumberOfRows(rowIndex, numberOfRowsForValues);
+
+        //                    // If the array item count is (e.g.) 12 and the number of rows is (e.g.) 13
+        //                    // then the extra row is just this EndArray item, so the array was made up
+        //                    // of simple values.
+        //                    //
+        //                    // If the off-by-one relationship does not hold, then one of the values was
+        //                    // more than one row, making it a complex object.
+        //                    //
+        //                    // This check is similar to tracking the start array and painting it when
+        //                    // StartObject or StartArray is encountered, but avoids the mixed state
+        //                    // where "UnknownSize" implies "has complex children".
+        //                    //if (arrayItemsCount + 1 != numberOfRowsForValues)
+        //                    //{
+        //                    //    database.SetHasComplexChildren(rowIndex);
+        //                    //}
+
+        //                    int newRowIndex = database.Length;
+        //                    tokenStart = (int)reader.TokenStartIndex;
+        //                    database.Append(JsonTokenType.StartArray, tokenStart, reader.ValueSpan.Length);
+        //                    database.SetNumberOfRows(newRowIndex, numberOfRowsForValues);
+        //                }
+        //                else
+        //                {
+        //                    Debug.Assert(tokenType >= JsonTokenType.True && tokenType <= JsonTokenType.Null);
+        //                    numberOfRowsForMembers++;
+
+        //                    database.Append(tokenType, tokenStart, reader.ValueSpan.Length);
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
+        //    database.TrimExcess();
+
+        //    payload = new JwtPayloadDocument(new JwtDocument(utf8Payload, database, null), validationControl);
+        //    error = null;
+        //    return true;
+
+        //Error:
+        //    payload = null;
+        //    return false;
+        //}
+
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int SkipArrayOrObject(ref Utf8JsonReader reader)
         {
+            int count = 0;
             int depth = reader.CurrentDepth;
             do
             {
+                count++;
             }
             while (reader.Read() && depth < reader.CurrentDepth);
+            return count;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CheckIssuer(ref Utf8JsonReader reader, ref byte validationControl, TokenValidationPolicy policy)
         {
             if (policy.RequireIssuer)
@@ -270,21 +390,21 @@ namespace JsonWebToken
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool TryCheckExpirationTime(ref Utf8JsonReader reader, ref byte validationControl, TokenValidationPolicy policy)
         {
-            if (!reader.TryGetInt64(out long exp))
-            {
-                return false;
-            }
-
             if (policy.RequireExpirationTime)
             {
-                validationControl &= unchecked((byte)~JwtPayload.MissingExpirationFlag);
-            }
+                if (!reader.TryGetInt64(out long exp))
+                {
+                    return false;
+                }
 
-            if (exp + policy.ClockSkew >= EpochTime.UtcNow)
-            {
-                validationControl &= unchecked((byte)~JwtPayload.ExpiredFlag);
+                validationControl &= unchecked((byte)~JwtPayload.MissingExpirationFlag);
+                if (exp + policy.ClockSkew >= EpochTime.UtcNow)
+                {
+                    validationControl &= unchecked((byte)~JwtPayload.ExpiredFlag);
+                }
             }
 
             return true;
@@ -307,6 +427,7 @@ namespace JsonWebToken
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CheckStringAudience(ref Utf8JsonReader reader, ref byte validationControl, TokenValidationPolicy policy)
         {
             if (policy.RequireAudience)
@@ -324,13 +445,15 @@ namespace JsonWebToken
             }
         }
 
-        private static void CheckArrayAudience(ref Utf8JsonReader reader, ref byte validationControl, TokenValidationPolicy policy)
+        private static int CheckArrayAudience(ref Utf8JsonReader reader, ref byte validationControl, TokenValidationPolicy policy)
         {
+            int count = 0;
             if (policy.RequireAudience)
             {
                 validationControl &= unchecked((byte)~JwtPayload.MissingAudienceFlag);
                 while (reader.Read() && reader.TokenType == JsonTokenType.String)
                 {
+                    count++;
                     var requiredAudiences = policy.RequiredAudiencesBinary;
                     for (int i = 0; i < requiredAudiences.Length; i++)
                     {
@@ -340,6 +463,7 @@ namespace JsonWebToken
                             while (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
                                 // Just read...
+                                count++;
                             }
 
                             goto Found;
@@ -352,6 +476,7 @@ namespace JsonWebToken
                 while (reader.Read() && reader.TokenType == JsonTokenType.String)
                 {
                     // Just read...
+                    count++;
                 }
             }
 
@@ -360,6 +485,8 @@ namespace JsonWebToken
             {
                 ThrowHelper.ThrowFormatException_MalformedJson("The 'aud' claim must be an array of string or a string.");
             }
+
+            return count;
         }
 
         public void Dispose()
@@ -390,7 +517,7 @@ namespace JsonWebToken
         // SizeOrLength - offset - 0 - size - 4
         // NumberOfRows - offset - 4 - size - 4
         [StructLayout(LayoutKind.Sequential)]
-        private struct StackRow
+        internal struct StackRow
         {
             internal const int Size = 8;
 
@@ -1527,20 +1654,24 @@ namespace JsonWebToken
         ///   An enumerable and enumerator for the contents of a JSON array.
         /// </summary>
         [DebuggerDisplay("{Current,nq}")]
-        public struct ArrayEnumerator : IEnumerable<JwtElement>, IEnumerator<JwtElement>
+        public ref struct ArrayEnumerator
         {
-            private readonly JwtElement _target;
             private int _curIdx;
+            private JwtDocument _document;
             private readonly int _endIdxOrVersion;
 
             internal ArrayEnumerator(JwtElement target)
             {
-                _target = target;
                 _curIdx = -1;
 
-                Debug.Assert(target.TokenType == JsonTokenType.StartArray);
+                var value = target.GetRawValue();
+                if (!TryParse(value, target.GetArrayLength(), out _document!))
+                {
+                    ThrowHelper.ThrowFormatException_MalformedJson();
+                }
 
-                _endIdxOrVersion = target._parent.GetEndIndex(_target._idx, includeEndElement: false);
+                Debug.Assert(target.TokenType == JsonTokenType.StartArray);
+                _endIdxOrVersion = value.Length;
             }
 
             /// <inheritdoc />
@@ -1553,7 +1684,7 @@ namespace JsonWebToken
                         return default;
                     }
 
-                    return new JwtElement(_target._parent, _curIdx);
+                    return new JwtElement(_document, _curIdx);
                 }
             }
 
@@ -1572,15 +1703,10 @@ namespace JsonWebToken
             }
 
             /// <inheritdoc />
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-            /// <inheritdoc />
-            IEnumerator<JwtElement> IEnumerable<JwtElement>.GetEnumerator() => GetEnumerator();
-
-            /// <inheritdoc />
             public void Dispose()
             {
                 _curIdx = _endIdxOrVersion;
+                _document?.Dispose();
             }
 
             /// <inheritdoc />
@@ -1588,9 +1714,6 @@ namespace JsonWebToken
             {
                 _curIdx = -1;
             }
-
-            /// <inheritdoc />
-            object System.Collections.IEnumerator.Current => Current;
 
             /// <inheritdoc />
             public bool MoveNext()
@@ -1602,15 +1725,107 @@ namespace JsonWebToken
 
                 if (_curIdx < 0)
                 {
-                    _curIdx = _target._idx + DbRow.Size;
+                    _curIdx = 0;
                 }
                 else
                 {
-                    _curIdx = _target._parent.GetEndIndex(_curIdx, includeEndElement: true);
+                    _curIdx += DbRow.Size;//= _document.GetEndIndex(_curIdx, includeEndElement: true);
                 }
 
                 return _curIdx < _endIdxOrVersion;
             }
+
+            private static bool TryParse(ReadOnlyMemory<byte> utf8Array, int count, out JwtDocument? document)
+            {
+                ReadOnlySpan<byte> utf8JsonSpan = utf8Array.Span;
+                var database = new MetadataDb(count * DbRow.Size);
+
+                var reader = new Utf8JsonReader(utf8JsonSpan);
+                if (reader.Read())
+                {
+                    JsonTokenType tokenType = reader.TokenType;
+                    if (tokenType == JsonTokenType.StartArray)
+                    {
+                        while (reader.Read())
+                        {
+                            tokenType = reader.TokenType;
+                            int tokenStart = (int)reader.TokenStartIndex;
+
+                            if (tokenType == JsonTokenType.EndArray)
+                            {
+                                break;
+                            }
+                            else if (tokenType == JsonTokenType.PropertyName)
+                            {
+                                goto Error;
+                            }
+
+                            // Since the input payload is contained within a Span,
+                            // token start index can never be larger than int.MaxValue (i.e. utf8JsonSpan.Length).
+                            Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
+                            if (tokenType == JsonTokenType.String)
+                            {
+                                // Adding 1 to skip the start quote will never overflow
+                                Debug.Assert(tokenStart < int.MaxValue);
+                                database.Append(JsonTokenType.String, tokenStart + 1, reader.ValueSpan.Length);
+                            }
+                            else if (tokenType == JsonTokenType.Number)
+                            {
+                                database.Append(JsonTokenType.Number, tokenStart, reader.ValueSpan.Length);
+                            }
+                            else if (tokenType == JsonTokenType.StartObject)
+                            {
+                                int itemCount = SkipArrayOrObject(ref reader);
+                                int tokenEnd = (int)reader.TokenStartIndex;
+                                int index = database.Length;
+                                database.Append(JsonTokenType.StartObject, tokenStart, tokenEnd - tokenStart + 1);
+                                database.SetNumberOfRows(index, itemCount);
+                            }
+                            else if (tokenType == JsonTokenType.StartArray)
+                            {
+                                int itemCount = SkipArrayOrObject(ref reader);
+
+                                int index = database.Length;
+                                int tokenEnd = (int)reader.TokenStartIndex;
+                                database.Append(JsonTokenType.StartArray, tokenStart, tokenEnd - tokenStart + 1);
+                                database.SetNumberOfRows(index, itemCount);
+                            }
+                            else
+                            {
+                                Debug.Assert(tokenType >= JsonTokenType.True && tokenType <= JsonTokenType.Null);
+                                database.Append(tokenType, tokenStart, reader.ValueSpan.Length);
+                            }
+                        }
+                    }
+                }
+
+                Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
+                database.TrimExcess();
+
+                document = new JwtDocument(utf8Array, database, null);
+                return true;
+
+            Error:
+                document = null;
+                return false;
+            }
+
+            private static int SkipArrayOrObject(ref Utf8JsonReader reader)
+            {
+                int count = 0;
+                int depth = reader.CurrentDepth;
+                int depth1 = depth + 1;
+                do
+                {
+                    if (depth1 == reader.CurrentDepth)
+                    {
+                        count++;
+                    }
+                }
+                while (reader.Read() && depth < reader.CurrentDepth);
+                return count;
+            }
+
         }
     }
 

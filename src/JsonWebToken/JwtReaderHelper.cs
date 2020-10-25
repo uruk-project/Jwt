@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -191,7 +192,7 @@ namespace JsonWebToken
 
             return keys.Count != 0;
         }
-        public static bool TryGetContentEncryptionKeys(JwtHeaderDocument header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc, IKeyProvider[] encryptionKeyProviders, [NotNullWhen(true)] out List<SymmetricJwk>? keys)
+        public static bool TryGetContentEncryptionKeys(JwtHeaderDocument2 header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc, IKeyProvider[] encryptionKeyProviders, [NotNullWhen(true)] out List<SymmetricJwk>? keys)
         {
             KeyManagementAlgorithm? alg = header.KeyManagementAlgorithm;
 
@@ -242,6 +243,102 @@ namespace JsonWebToken
                             if (key.CanUseForKeyWrapping(alg))
                             {
                                 if (key.TryGetKeyUnwrapper(enc, alg, out var keyUnwrapper))
+                                {
+                                    int keyUnwrapSize = keyUnwrapper.GetKeyUnwrapSize(encryptedKey.Length);
+                                    keyUnwrappers.Add((keyUnwrapSize, keyUnwrapper));
+                                    if (maxKeyUnwrapSize < keyUnwrapSize)
+                                    {
+                                        maxKeyUnwrapSize = keyUnwrapSize;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    keys = new List<SymmetricJwk>(1);
+                    Span<byte> unwrappedKey = maxKeyUnwrapSize <= Constants.MaxStackallocBytes ?
+                        stackalloc byte[maxKeyUnwrapSize] :
+                        unwrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(maxKeyUnwrapSize);
+                    for (int i = 0; i < keyUnwrappers.Count; i++)
+                    {
+                        var kpv = keyUnwrappers[i];
+                        var temporaryUnwrappedKey = unwrappedKey.Length != kpv.Item1 ? unwrappedKey.Slice(0, kpv.Item1) : unwrappedKey;
+                        if (kpv.Item2.TryUnwrapKey(encryptedKey, temporaryUnwrappedKey, header, out int keyUnwrappedBytesWritten))
+                        {
+                            var jwk = new SymmetricJwk(unwrappedKey.Slice(0, keyUnwrappedBytesWritten).ToArray());
+                            keys.Add(jwk);
+                        }
+                    }
+                }
+                finally
+                {
+                    if (encryptedKeyToReturnToPool != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(encryptedKeyToReturnToPool, true);
+                    }
+
+                    if (unwrappedKeyToReturnToPool != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(unwrappedKeyToReturnToPool, true);
+                    }
+                }
+            }
+
+            return keys.Count != 0;
+        }
+
+        public static bool TryGetContentEncryptionKeys(JwtHeaderDocument header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc, IKeyProvider[] encryptionKeyProviders, [NotNullWhen(true)] out List<SymmetricJwk>? keys)
+        {
+            if (!header.TryGetHeaderParameter(HeaderParameters.AlgUtf8, out var alg))
+            {
+                keys = null;
+                return false;
+            }
+            else if (alg.ValueEquals(KeyManagementAlgorithm.Direct.Utf8Name))
+            {
+                keys = new List<SymmetricJwk>(1);
+                for (int i = 0; i < encryptionKeyProviders.Length; i++)
+                {
+                    var keySet = encryptionKeyProviders[i].GetKeys(header);
+                    for (int j = 0; j < keySet.Length; j++)
+                    {
+                        var key = keySet[j];
+                        if (key is SymmetricJwk symJwk && symJwk.CanUseForKeyWrapping(alg))
+                        {
+                            keys.Add(symJwk);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                int decodedSize = Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length);
+
+                byte[]? encryptedKeyToReturnToPool = null;
+                byte[]? unwrappedKeyToReturnToPool = null;
+                Span<byte> encryptedKey = decodedSize <= Constants.MaxStackallocBytes ?
+                    stackalloc byte[decodedSize] :
+                    encryptedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(decodedSize);
+                
+                try
+                {
+                    KeyManagementAlgorithm.TryParse(alg, out var algorithm);
+
+                    var operationResult = Base64Url.Decode(rawEncryptedKey, encryptedKey, out _, out int bytesWritten);
+                    Debug.Assert(operationResult == OperationStatus.Done);
+                    encryptedKey = encryptedKey.Slice(0, bytesWritten);
+
+                    var keyUnwrappers = new List<(int, KeyUnwrapper)>(1);
+                    int maxKeyUnwrapSize = 0;
+                    for (int i = 0; i < encryptionKeyProviders.Length; i++)
+                    {
+                        var keySet = encryptionKeyProviders[i].GetKeys(header);
+                        for (int j = 0; j < keySet.Length; j++)
+                        {
+                            var key = keySet[j];
+                            if (key.CanUseForKeyWrapping(alg))
+                            {
+                                if (key.TryGetKeyUnwrapper(enc, algorithm, out var keyUnwrapper))
                                 {
                                     int keyUnwrapSize = keyUnwrapper.GetKeyUnwrapSize(encryptedKey.Length);
                                     keyUnwrappers.Add((keyUnwrapSize, keyUnwrapper));

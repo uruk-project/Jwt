@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Text.Json;
+using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -36,7 +38,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override Jwk[] GetKeys(JwtHeaderDocument header)
+        public override Jwk[] GetKeys(JwtHeaderDocument2 header)
         {
             if (header is null)
             {
@@ -49,6 +51,28 @@ namespace JsonWebToken
             }
 
             return GetKeys(header, header.Jku);
+        }
+
+        /// <inheritsdoc />
+        public override Jwk[] GetKeys(JwtHeaderDocument header)
+        {
+            if (header is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
+            }
+
+            if (!header.TryGetHeaderParameter(HeaderParameters.JkuUtf8, out var jku))
+            {
+                return Array.Empty<Jwk>();
+            }
+
+            var jkuValue = jku.GetString();
+            if (jkuValue is null)
+            {
+                return Array.Empty<Jwk>();
+            }
+
+            return GetKeys(header, jkuValue);
         }
 
         /// <inheritsdoc />

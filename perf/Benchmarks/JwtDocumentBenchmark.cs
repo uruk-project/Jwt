@@ -16,7 +16,7 @@ namespace JsonWebToken.Performance
                                                 .RequireSignature(Tokens.SigningKey)
                                                 .Build();
 
-        [Benchmark(Baseline = false)]
+        [Benchmark(Baseline = true)]
         [BenchmarkCategory("JWT")]
         [ArgumentsSource(nameof(GetJwt))]
         public JwtDocument_Reference? TryParseJwt_Reference(byte[] data, TokenValidationPolicy policy)
@@ -24,7 +24,7 @@ namespace JsonWebToken.Performance
             return TryParse_Reference(data, policy);
         }
 
-        [Benchmark(Baseline = false)]
+        [Benchmark(Baseline = true)]
         [BenchmarkCategory("JWS")]
         [ArgumentsSource(nameof(GetJws))]
         public JwtDocument_Reference? TryParseJws_Reference(byte[] data, TokenValidationPolicy policy)
@@ -32,7 +32,7 @@ namespace JsonWebToken.Performance
             return TryParse_Reference(data, policy);
         }
 
-        [Benchmark(Baseline = false)]
+        [Benchmark(Baseline = true)]
         [BenchmarkCategory("JWE")]
         [ArgumentsSource(nameof(GetJwe))]
         public JwtDocument_Reference? TryParseJwe_Reference(byte[] data, TokenValidationPolicy policy)
@@ -51,33 +51,68 @@ namespace JsonWebToken.Performance
             return document;
         }
 
+        //[Benchmark(Baseline = false)]
+        //[BenchmarkCategory("JWT")]
+        //[ArgumentsSource(nameof(GetJwt))]
+        //public JwtDocument2? TryParseJwt2(byte[] data, TokenValidationPolicy policy)
+        //{
+        //    return TryParse2(data, policy);
+        //}
+
+        //[Benchmark(Baseline = false)]
+        //[BenchmarkCategory("JWS")]
+        //[ArgumentsSource(nameof(GetJws))]
+        //public JwtDocument2? TryParseJws2(byte[] data, TokenValidationPolicy policy)
+        //{
+        //    return TryParse2(data, policy);
+        //}
+
+        //[Benchmark(Baseline = false)]
+        //[BenchmarkCategory("JWE")]
+        //[ArgumentsSource(nameof(GetJwe))]
+        //public JwtDocument2? TryParseJwe2(byte[] data, TokenValidationPolicy policy)
+        //{
+        //    return TryParse2(data, policy);
+        //}
+
+        //public JwtDocument2? TryParse2(byte[] data, TokenValidationPolicy policy)
+        //{
+        //    if (!JwtDocument2.TryParse2(data, policy, out var document))
+        //    {
+        //        throw new System.Exception();
+        //    }
+
+        //    document.Dispose();
+        //    return document;
+        //}
+
         [Benchmark(Baseline = false)]
         [BenchmarkCategory("JWT")]
         [ArgumentsSource(nameof(GetJwt))]
-        public JwtDocument2? TryParseJwt2(byte[] data, TokenValidationPolicy policy)
+        public Jwt? TryParseJwt(byte[] data, TokenValidationPolicy policy)
         {
-            return TryParse2(data, policy);
+            return TryParse(data, policy);
         }
 
         [Benchmark(Baseline = false)]
         [BenchmarkCategory("JWS")]
         [ArgumentsSource(nameof(GetJws))]
-        public JwtDocument2? TryParseJws2(byte[] data, TokenValidationPolicy policy)
+        public Jwt? TryParseJws(byte[] data, TokenValidationPolicy policy)
         {
-            return TryParse2(data, policy);
+            return TryParse(data, policy);
         }
 
         [Benchmark(Baseline = false)]
         [BenchmarkCategory("JWE")]
         [ArgumentsSource(nameof(GetJwe))]
-        public JwtDocument2? TryParseJwe2(byte[] data, TokenValidationPolicy policy)
+        public Jwt? TryParseJwe(byte[] data, TokenValidationPolicy policy)
         {
-            return TryParse2(data, policy);
+            return TryParse(data, policy);
         }
 
-        public JwtDocument2? TryParse2(byte[] data, TokenValidationPolicy policy)
+        public Jwt? TryParse(byte[] data, TokenValidationPolicy policy)
         {
-            if (!JwtDocument2.TryParse2(data, policy, out var document))
+            if (!Jwt.TryParse(data, policy, out var document))
             {
                 throw new System.Exception();
             }
@@ -87,41 +122,6 @@ namespace JsonWebToken.Performance
         }
 
         [Benchmark(Baseline = false)]
-        [BenchmarkCategory("JWT")]
-        [ArgumentsSource(nameof(GetJwt))]
-        public JwtDocument3? TryParseJwt3(byte[] data, TokenValidationPolicy policy)
-        {
-            return TryParse3(data, policy);
-        }
-
-        [Benchmark(Baseline = false)]
-        [BenchmarkCategory("JWS")]
-        [ArgumentsSource(nameof(GetJws))]
-        public JwtDocument3? TryParseJws3(byte[] data, TokenValidationPolicy policy)
-        {
-            return TryParse3(data, policy);
-        }
-
-        [Benchmark(Baseline = false)]
-        [BenchmarkCategory("JWE")]
-        [ArgumentsSource(nameof(GetJwe))]
-        public JwtDocument3? TryParseJwe3(byte[] data, TokenValidationPolicy policy)
-        {
-            return TryParse3(data, policy);
-        }
-
-        public JwtDocument3? TryParse3(byte[] data, TokenValidationPolicy policy)
-        {
-            if (!JwtDocument3.TryParse3(data, policy, out var document))
-            {
-                throw new System.Exception();
-            }
-
-            document.Dispose();
-            return document;
-        }
-
-        [Benchmark(Baseline = true)]
         [BenchmarkCategory("JWT")]
         [ArgumentsSource(nameof(GetJwt))]
         public JwtOld? TryReadTokenJwt(byte[] data, TokenValidationPolicy policy)
@@ -129,7 +129,7 @@ namespace JsonWebToken.Performance
             return TryReadToken(data, policy);
         }
 
-        [Benchmark(Baseline = true)]
+        [Benchmark(Baseline = false)]
         [BenchmarkCategory("JWS")]
         [ArgumentsSource(nameof(GetJws))]
         public JwtOld? TryReadTokenJws(byte[] data, TokenValidationPolicy policy)
@@ -137,7 +137,7 @@ namespace JsonWebToken.Performance
             return TryReadToken(data, policy);
         }
 
-        [Benchmark(Baseline = true)]
+        [Benchmark(Baseline = false)]
         [BenchmarkCategory("JWE")]
         [ArgumentsSource(nameof(GetJwe))]
         public JwtOld? TryReadTokenJwe(byte[] data, TokenValidationPolicy policy)

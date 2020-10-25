@@ -1055,12 +1055,34 @@ namespace JsonWebToken
             return false;
         }
 
+        internal bool CanUseForSignature(JwtElement signatureAlgorithm)
+        {
+            if (IsSigningKey)
+            {
+                var algorithm = SignatureAlgorithm;
+                return algorithm is null || signatureAlgorithm.ValueEquals(algorithm.Utf8Name);
+            }
+
+            return false;
+        }
+
         internal bool CanUseForKeyWrapping(KeyManagementAlgorithm keyManagementAlgorithm)
         {
             if (IsEncryptionKey)
             {
                 var algorithm = KeyManagementAlgorithm;
                 return algorithm is null || keyManagementAlgorithm == algorithm;
+            }
+
+            return false;
+        }
+
+        internal bool CanUseForKeyWrapping(JwtElement keyManagementAlgorithm)
+        {
+            if (IsEncryptionKey)
+            {
+                var algorithm = KeyManagementAlgorithm;
+                return algorithm is null || keyManagementAlgorithm.ValueEquals(algorithm.Utf8Name);
             }
 
             return false;
