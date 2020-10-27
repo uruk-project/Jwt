@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace JsonWebToken
@@ -10,6 +9,7 @@ namespace JsonWebToken
     /// <summary>
     /// Represents the result of a token validation.
     /// </summary>
+    [Obsolete("This class is obsolte. Use the class TokenValidationError instead.")]
     public sealed class TokenValidationResult
     {
         private static readonly TokenValidationResult _success = new TokenValidationResult

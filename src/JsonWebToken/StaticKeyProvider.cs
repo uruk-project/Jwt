@@ -42,20 +42,9 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <returns></returns>
-        public Jwk[] GetKeys(JwtHeaderDocument2 header)
-        {
-            var kid = header.Kid;
-            return _jwks.GetKeys(kid);
-        }
-
-        /// <summary>
-        /// Gets the list of <see cref="Jwk"/>.
-        /// </summary>
-        /// <param name="header"></param>
-        /// <returns></returns>
         public Jwk[] GetKeys(JwtHeaderDocument header)
         {
-            var kidValue = header.Kid;//.TryGetHeaderParameter(HeaderParameters.KidUtf8, out var kid) ? kid.GetString() : null;
+            var kidValue = header.Kid;
             return _jwks.GetKeys(kidValue);
         }
 

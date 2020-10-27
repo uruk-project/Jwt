@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -440,7 +441,22 @@ namespace JsonWebToken
             return _parent.TryGetValue(_idx, out value);
         }
 
-        public bool TryGetJsonDocument(out JsonDocument? value)
+
+        /// <summary>
+        ///   Attempts to represent the current JSON object as a <see cref="JsonDocument"/>.
+        /// </summary>
+        /// <param name="value">Receives the value.</param>
+        /// <returns>
+        ///   <see langword="true"/> if the JSON object can be represented as a <see cref="JsonDocument"/>,
+        ///   <see langword="false"/> otherwise.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        /// </exception>
+        public bool TryGetJsonDocument([NotNullWhen(true)] out JsonDocument? value)
         {
             CheckValidInstance();
 
@@ -687,6 +703,33 @@ namespace JsonWebToken
             return new ArrayEnumerator(this);
         }
 
+        /// <summary>
+        ///   Get an enumerator to enumerate the values in the JSON array represented by this JsonElement.
+        /// </summary>
+        /// <returns>
+        ///   An enumerator to enumerate the values in the JSON array represented by this JsonElement.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Array"/>.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        /// </exception>
+        public ArrayEnumerator<T> EnumerateArray<T>()
+        {
+            CheckValidInstance();
+
+            JsonTokenType tokenType = TokenType;
+
+            if (tokenType != JsonTokenType.StartArray)
+            {
+                //throw ThrowHelper.GetJsonElementWrongTypeException(JsonTokenType.StartArray, tokenType);
+                throw new InvalidOperationException();
+            }
+
+            return new ArrayEnumerator<T>(this);
+        }
+
 
         /// <summary>
         ///   Get an enumerator to enumerate the properties in the JSON object represented by this JsonElement.
@@ -749,35 +792,35 @@ namespace JsonWebToken
         /// <exception cref="ObjectDisposedException">
         ///   The parent <see cref="JsonDocument"/> has been disposed.
         /// </exception>
-        //public override string? ToString()
-        //{
-        //    switch (TokenType)
-        //    {
-        //        case JsonTokenType.None:
-        //        case JsonTokenType.Null:
-        //            return string.Empty;
-        //        case JsonTokenType.True:
-        //            return bool.TrueString;
-        //        case JsonTokenType.False:
-        //            return bool.FalseString;
-        //        case JsonTokenType.Number:
-        //        case JsonTokenType.StartArray:
-        //        case JsonTokenType.StartObject:
-        //            {
-        //                // null parent should have hit the None case
-        //                Debug.Assert(_parent != null);
-        //                return ((JwtPayloadDocument)_parent).GetRawValueAsString(_idx);
-        //            }
-        //        case JsonTokenType.String:
-        //            return GetString();
-        //        case JsonTokenType.Comment:
-        //        case JsonTokenType.EndArray:
-        //        case JsonTokenType.EndObject:
-        //        default:
-        //            Debug.Fail($"No handler for {nameof(JsonTokenType)}.{TokenType}");
-        //            return string.Empty;
-        //    }
-        //}
+        public override string? ToString()
+        {
+            switch (TokenType)
+            {
+                case JsonTokenType.None:
+                case JsonTokenType.Null:
+                    return string.Empty;
+                case JsonTokenType.True:
+                    return bool.TrueString;
+                case JsonTokenType.False:
+                    return bool.FalseString;
+                case JsonTokenType.Number:
+                case JsonTokenType.StartArray:
+                case JsonTokenType.StartObject:
+                    {
+                        // null parent should have hit the None case
+                        Debug.Assert(_parent != null);
+                        return _parent.GetRawValueAsString(_idx);
+                    }
+                case JsonTokenType.String:
+                    return GetString();
+                case JsonTokenType.Comment:
+                case JsonTokenType.EndArray:
+                case JsonTokenType.EndObject:
+                default:
+                    Debug.Fail($"No handler for {nameof(JsonTokenType)}.{TokenType}");
+                    return string.Empty;
+            }
+        }
 
         /// <summary>
         ///   Get a JsonElement which can be safely stored beyond the lifetime of the
@@ -794,17 +837,17 @@ namespace JsonWebToken
         ///     call to Clone, this method results in no additional memory allocation.
         ///   </para>
         /// </remarks>
-        //public JwtElement Clone()
-        //{
-        //    CheckValidInstance();
+        public JwtElement Clone()
+        {
+            CheckValidInstance();
 
-        //    if (!_parent.IsDisposable)
-        //    {
-        //        return this;
-        //    }
+            if (!_parent.IsDisposable)
+            {
+                return this;
+            }
 
-        //    return _parent.CloneElement(_idx);
-        //}
+            return _parent.CloneElement(_idx);
+        }
 
         private void CheckValidInstance()
         {

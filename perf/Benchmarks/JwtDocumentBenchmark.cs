@@ -16,41 +16,6 @@ namespace JsonWebToken.Performance
                                                 .RequireSignature(Tokens.SigningKey)
                                                 .Build();
 
-        [Benchmark(Baseline = true)]
-        [BenchmarkCategory("JWT")]
-        [ArgumentsSource(nameof(GetJwt))]
-        public JwtDocument_Reference? TryParseJwt_Reference(byte[] data, TokenValidationPolicy policy)
-        {
-            return TryParse_Reference(data, policy);
-        }
-
-        [Benchmark(Baseline = true)]
-        [BenchmarkCategory("JWS")]
-        [ArgumentsSource(nameof(GetJws))]
-        public JwtDocument_Reference? TryParseJws_Reference(byte[] data, TokenValidationPolicy policy)
-        {
-            return TryParse_Reference(data, policy);
-        }
-
-        [Benchmark(Baseline = true)]
-        [BenchmarkCategory("JWE")]
-        [ArgumentsSource(nameof(GetJwe))]
-        public JwtDocument_Reference? TryParseJwe_Reference(byte[] data, TokenValidationPolicy policy)
-        {
-            return TryParse_Reference(data, policy);
-        }
-
-        public JwtDocument_Reference? TryParse_Reference(byte[] data, TokenValidationPolicy policy)
-        {
-            if (!JwtDocument_Reference.TryParse(data, policy, out var document))
-            {
-                throw new System.Exception();
-            }
-
-            document.Dispose();
-            return document;
-        }
-
         //[Benchmark(Baseline = false)]
         //[BenchmarkCategory("JWT")]
         //[ArgumentsSource(nameof(GetJwt))]

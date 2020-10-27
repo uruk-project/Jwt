@@ -16,7 +16,7 @@ namespace JsonWebToken
     /// <summary>
     /// Reads and validates a JWT.
     /// </summary>
-    public sealed partial class JwtReader
+    public sealed class JwtReader
     {
         private readonly IKeyProvider[] _encryptionKeyProviders;
         private readonly JwtHeaderCache _headerCache = new JwtHeaderCache();
@@ -89,6 +89,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="token">The JWT encoded as JWE or JWS</param>
         /// <param name="policy">The validation policy.</param>
+        [Obsolete("Use the method Jwt.TryParse() instead.")]
         public TokenValidationResult TryReadToken(string token, TokenValidationPolicy policy)
         {
             if (token is null)

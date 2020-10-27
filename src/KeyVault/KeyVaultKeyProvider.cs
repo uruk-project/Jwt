@@ -46,11 +46,6 @@ namespace JsonWebToken.KeyVault
             return GetKeysAsync().GetAwaiter().GetResult();
         }
 
-        public Jwk[] GetKeys(JwtHeaderDocument2 header)
-        {
-            return GetKeysAsync().GetAwaiter().GetResult();
-        }
-
         public Jwk[] GetKeys(JwtHeaderDocument header)
         {
             return GetKeysAsync().GetAwaiter().GetResult();

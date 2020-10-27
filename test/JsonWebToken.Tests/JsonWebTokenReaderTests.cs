@@ -325,11 +325,6 @@ namespace JsonWebToken.Tests
             return _value;
         }
 
-        public bool TryHandle(JwtHeaderDocument2 header, string headerName)
-        {
-            return _value;
-        }
-
         public bool TryHandle(JwtHeaderDocument header, string headerName)
         {
             return _value;

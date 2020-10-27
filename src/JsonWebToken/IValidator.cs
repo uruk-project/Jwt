@@ -23,16 +23,6 @@ namespace JsonWebToken
         /// <summary>
         /// Tries to validate a token.
         /// </summary>
-        bool TryValidate(JwtHeaderDocument2 header, JwtPayloadDocumentOld payload, [NotNullWhen(false)] out TokenValidationError? error);
-
-        /// <summary>
-        /// Tries to validate a token.
-        /// </summary>
-        bool TryValidate(JwtHeader header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error);
-
-        /// <summary>
-        /// Tries to validate a token.
-        /// </summary>
         bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error);
     }
 }

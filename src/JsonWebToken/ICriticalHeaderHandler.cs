@@ -15,7 +15,6 @@ namespace JsonWebToken
         /// <param name="headerName"></param>
         /// <returns></returns>
         bool TryHandle(JwtHeader header, string headerName);
-        bool TryHandle(JwtHeaderDocument2 header, string headerName);
         bool TryHandle(JwtHeaderDocument header, string headerName);
     }
 }

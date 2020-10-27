@@ -1,229 +1,381 @@
-﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
-// Licensed under the MIT license. See LICENSE in the project root for license information.
-
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
-    public sealed class JwtHeaderDocument2
-        : IJwtHeader, IDisposable
+    public sealed class JwtHeaderDocument : IJwtHeader, IDisposable
     {
-        private JsonDocument? _inner;
-        private readonly JsonElement _rootElement;
+        internal static readonly JwtHeaderDocument Empty = new JwtHeaderDocument(new JwtDocument(ReadOnlyMemory<byte>.Empty, new MetadataDb(0), null), 0, 0);
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JwtHeader"/> class.
-        /// </summary>
-        /// <param name="inner"></param>
-        public JwtHeaderDocument2(JsonDocument inner)
-        {
-            _inner = inner;
-            _rootElement = inner.RootElement;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JwtHeader"/> class.
-        /// </summary>
-        /// <param name="root"></param>
-        public JwtHeaderDocument2(JsonElement root)
-        {
-            _rootElement = root;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JwtHeader"/> class.
-        /// </summary>
-        /// <param name="json"></param>   
-        public static JwtHeaderDocument2 FromJson(string json)
-        {
-            return new JwtHeaderDocument2(JsonDocument.Parse(Utf8.GetBytes(json)));
-        }
-
-        /// <summary>
-        /// Gets the signature algorithm that was used to create the signature.
-        /// </summary>
-        public string? Alg
-            => _rootElement.TryGetProperty(HeaderParameters.AlgUtf8, out var property) ? property.GetString() : null;
-
-        /// <summary>
-        /// Gets the signature algorithm (alg) that was used to create the signature.
-        /// </summary>
-        public SignatureAlgorithm? SignatureAlgorithm
-            => _rootElement.TryGetProperty(HeaderParameters.AlgUtf8, out var property) ? SignatureAlgorithm.TryParse(property, out var alg) ? alg : null : null;
-
-        /// <summary>
-        /// Gets the key management algorithm (alg).
-        /// </summary>
-        public KeyManagementAlgorithm? KeyManagementAlgorithm
-            => _rootElement.TryGetProperty(HeaderParameters.AlgUtf8, out var property) ? KeyManagementAlgorithm.TryParse(property, out var alg) ? alg : null : null;
-
-        /// <summary>
-        /// Gets the content type (Cty) of the token.
-        /// </summary>
-        public string? Cty
-            => _rootElement.TryGetProperty(HeaderParameters.CtyUtf8, out var property) ? property.GetString()! : null;
-
-        /// <summary>
-        /// Gets the encryption algorithm (enc) of the token.
-        /// </summary>
-        public string? Enc
-            => _rootElement.TryGetProperty(HeaderParameters.EncUtf8, out var property) ? property.GetString() : null;
-
-        /// <summary>
-        /// Gets the encryption algorithm (enc) of the token.
-        /// </summary>
-        public EncryptionAlgorithm? EncryptionAlgorithm
-            => EncryptionAlgorithm.TryParse(Enc, out var alg) ? alg : null;
-
-        /// <summary>
-        /// Gets the key identifier for the key used to sign the token.
-        /// </summary>
-        public string? Kid
-            => _rootElement.TryGetProperty(HeaderParameters.KidUtf8, out var property) ? property.GetString() : null;
-
-        /// <summary>
-        /// Gets the mime type (Typ) of the token.
-        /// </summary>
-        public string? Typ
-            => _rootElement.TryGetProperty(HeaderParameters.TypUtf8, out var property) ? property.GetString() : null;
-
-        /// <summary>
-        /// Gets the thumbprint of the certificate used to sign the token.
-        /// </summary>
-        public string? X5t
-            => _rootElement.TryGetProperty(HeaderParameters.TagUtf8, out var property) ? (string?)property.GetString() : null;
-
-        /// <summary>
-        /// Gets the URL of the JWK used to sign the token.
-        /// </summary>
-        public string? Jku
-            => _rootElement.TryGetProperty(HeaderParameters.JkuUtf8, out var property) ? (string?)property.GetString() : null;
-
-        /// <summary>
-        /// Gets the URL of the certificate used to sign the token
-        /// </summary>
-        public string? X5u
-            => _rootElement.TryGetProperty(HeaderParameters.X5uUtf8, out var property) ? (string?)property.GetString() : null;
-
-        /// <summary>
-        /// Gets the algorithm used to compress the token.
-        /// </summary>
-        public string? Zip
-            => _rootElement.TryGetProperty(HeaderParameters.ZipUtf8, out var property) ? property.GetString() : null;
-
-        /// <summary>
-        /// Gets the compression algorithm (zip) of the token.
-        /// </summary>
-        public CompressionAlgorithm? CompressionAlgorithm
-            => CompressionAlgorithm.TryParse(Zip, out var alg) ? alg : null;
-
-        /// <summary>
-        /// Gets the Initialization Vector used for AES GCM encryption.
-        /// </summary>
-        public string? IV
-            => _rootElement.TryGetProperty(HeaderParameters.IVUtf8, out var property) ? (string?)property.GetString() : null;
-
-        /// <summary>
-        /// Gets the Authentication Tag used for AES GCM encryption.
-        /// </summary>
-        public string? Tag
-            => _rootElement.TryGetProperty(HeaderParameters.TagUtf8, out var property) ? (string?)property.GetString() : null;
-
-        /// <summary>
-        /// Gets the Crit header.
-        /// </summary>
-        public IList<string> Crit
-        {
-            get
-            {
-                if (_rootElement.TryGetProperty(HeaderParameters.CritUtf8, out var property))
-                {
-                    if (property.ValueKind is JsonValueKind.Array)
-                    {
-                        var list = new List<string>();
-                        foreach (var item in property.EnumerateArray())
-                        {
-                            if (item.ValueKind is JsonValueKind.String)
-                            {
-                                list.Add(item.GetString()!);
-                            }
-                        }
-
-                        return list;
-                    }
-                }
-
-                return Array.Empty<string>();
-            }
-        }
-
-        internal List<KeyValuePair<string, ICriticalHeaderHandler>>? CriticalHeaderHandlers { get; set; }
+        private readonly JwtDocument _document;
+        private readonly JwtElement _root;
+        private readonly JwtElement _alg;
+        private readonly JwtElement _kid;
 
 #if SUPPORT_ELLIPTIC_CURVE
-        /// <summary>
-        /// Gets the ephemeral key used for ECDH key agreement.
-        /// </summary>
-        public ECJwk? Epk
-            => _rootElement.TryGetProperty(HeaderParameters.EpkUtf8, out var property) && (property.ValueKind is JsonValueKind.Object) ? ECJwk.FromJsonElement(property) : null;
+        public ECJwk? Epk => _root.TryGetProperty(HeaderParameters.EpkUtf8, out var epk) ? ECJwk.FromJwtElement(epk) : null;
 
-        /// <summary>
-        /// Gets the Agreement PartyUInfo used for ECDH key agreement.
-        /// </summary>
-        public string? Apu => _rootElement.TryGetProperty(HeaderParameters.ApuUtf8, out var property) ? (string?)property.GetString() : null;
+        public string? Apu => _root.TryGetProperty(HeaderParameters.ApuUtf8, out var apu) ? apu.GetString() : null;
 
-        /// <summary>
-        /// Gets the Agreement PartyVInfo used for ECDH key agreement.
-        /// </summary>
-        public string? Apv => _rootElement.TryGetProperty(HeaderParameters.ApvUtf8, out var property) ? (string?)property.GetString() : null;
+        public string? Apv => _root.TryGetProperty(HeaderParameters.ApvUtf8, out var apv) ? apv.GetString() : null;
 #endif
+        public string? IV => _root.TryGetProperty(HeaderParameters.IVUtf8, out var iv) ? iv.GetString() : null;
 
-        /// <summary>
-        /// Gets the <see cref="JwtProperty"/> associated with the specified key.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public bool TryGetValue(ReadOnlySpan<byte> key, out System.Text.Json.JsonElement value)
-            => _rootElement.TryGetProperty(key, out value);
+        public string? Tag => _root.TryGetProperty(HeaderParameters.TagUtf8, out var tag) ? tag.GetString() : null;
 
-        /// <summary>
-        ///  Gets the claim for a specified key in the current <see cref="JwtPayload"/>.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public object? this[string key]
-            => _rootElement.GetProperty(key);
+        public string? Kid => _kid.GetString();//_root.TryGetProperty(HeaderParameters.KidUtf8, out var kid) ? kid.GetString() : null;
 
-        /// <summary>
-        /// Determines whether the <see cref="JwtHeader"/> contains the specified key.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public bool ContainsKey(string key)
-            => _rootElement.TryGetProperty(key, out var _);
-
-        /// <inheritsdoc />
-        public override string ToString()
+        private JwtHeaderDocument(JwtDocument document, int algPosition, int kidPosition)
         {
-            using var bufferWriter = new PooledByteBufferWriter();
-            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
-            {
-                //writer.WriteStartObject();
-                _rootElement.WriteTo(writer);
-                //writer.WriteEndObject();
-            }
-
-            var input = bufferWriter.WrittenSpan;
-            return Utf8.GetString(input);
+            _document = document;
+            _root = document.RootElement;
+            _alg = algPosition < 0 ? default : new JwtElement(_document, algPosition);
+            _kid = kidPosition < 0 ? default : new JwtElement(_document, kidPosition);
         }
 
-        /// <inheritsdoc />
+        public JwtElement Alg => _alg;
+
+        internal static bool TryParse(ReadOnlyMemory<byte> utf8Payload, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtHeaderDocument? header, [NotNullWhen(false)] out TokenValidationError? error)
+        {
+            ReadOnlySpan<byte> utf8JsonSpan = utf8Payload.Span;
+            var database = new MetadataDb(utf8Payload.Length);
+            int algPosition = -1;
+            int kidPosition = -1;
+
+            var reader = new Utf8JsonReader(utf8JsonSpan);
+
+            if (reader.Read())
+            {
+                JsonTokenType tokenType = reader.TokenType;
+                if (tokenType == JsonTokenType.StartObject)
+                {
+                    while (reader.Read())
+                    {
+                        tokenType = reader.TokenType;
+                        int tokenStart = (int)reader.TokenStartIndex;
+
+                        if (tokenType == JsonTokenType.EndObject)
+                        {
+                            break;
+                        }
+                        else if (tokenType != JsonTokenType.PropertyName)
+                        {
+                            error = TokenValidationError.MalformedToken();
+                            goto Error;
+                        }
+
+                        // Adding 1 to skip the start quote will never overflow
+                        Debug.Assert(tokenStart < int.MaxValue);
+
+                        database.Append(JsonTokenType.PropertyName, tokenStart + 1, reader.ValueSpan.Length);
+                        ReadOnlySpan<byte> memberName = reader.ValueSpan;
+
+                        reader.Read();
+                        tokenType = reader.TokenType;
+                        tokenStart = (int)reader.TokenStartIndex;
+
+                        // Since the input payload is contained within a Span,
+                        // token start index can never be larger than int.MaxValue (i.e. utf8JsonSpan.Length).
+                        Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
+                        if (tokenType == JsonTokenType.String)
+                        {
+                            if (memberName.Length == 3)
+                            {
+                                switch ((JwtHeaderParameters)IntegerMarshal.ReadUInt24(memberName))
+                                {
+                                    case JwtHeaderParameters.Alg:
+                                        algPosition = database.Length;
+                                        break;
+                                    case JwtHeaderParameters.Kid:
+                                        kidPosition = database.Length;
+                                        break;
+                                }
+                            }
+
+                            // Adding 1 to skip the start quote will never overflow
+                            Debug.Assert(tokenStart < int.MaxValue);
+                            database.Append(JsonTokenType.String, tokenStart + 1, reader.ValueSpan.Length);
+                        }
+                        else if (tokenType == JsonTokenType.StartObject)
+                        {
+                            int count = SkipArrayOrObject(ref reader);
+                            int index = database.Length;
+                            int tokenEnd = (int)reader.TokenStartIndex;
+                            database.Append(JsonTokenType.StartObject, tokenStart, tokenEnd - tokenStart + 1);
+                            database.SetNumberOfRows(index, count);
+                        }
+                        else if (tokenType == JsonTokenType.StartArray)
+                        {
+                            int count;
+                            if (memberName.Length == 4
+                                && (JwtHeaderParameters)IntegerMarshal.ReadUInt32(memberName) == JwtHeaderParameters.Crit
+                                && !policy.IgnoreCriticalHeader)
+                            {
+                                if (!TryCheckCrit(ref reader, out count))
+                                {
+                                    error = TokenValidationError.MalformedToken("The 'crit' header parameter must be an array of string.");
+                                    goto Error;
+                                }
+                            }
+                            else
+                            {
+                                count = SkipArrayOrObject(ref reader);
+                            }
+
+                            int index = database.Length;
+                            int tokenEnd = (int)reader.TokenStartIndex;
+                            database.Append(JsonTokenType.StartArray, tokenStart, tokenEnd - tokenStart + 1);
+                            database.SetNumberOfRows(index, count);
+                        }
+                        else // if (tokenType == JsonTokenType.Number)
+                        {
+                            Debug.Assert(tokenType >= JsonTokenType.Number && tokenType <= JsonTokenType.Null);
+                            database.Append(tokenType, tokenStart, reader.ValueSpan.Length);
+                        }
+                    }
+                }
+            }
+
+            Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
+            database.TrimExcess();
+
+            header = new JwtHeaderDocument(new JwtDocument(utf8Payload, database, null), algPosition, kidPosition);
+            error = null;
+            return true;
+
+        Error:
+            header = null;
+            return false;
+        }
+
+        private static int SkipArrayOrObject(ref Utf8JsonReader reader)
+        {
+            int count = 0;
+            int depth = reader.CurrentDepth;
+            int depth1 = depth + 1;
+            do
+            {
+                if (depth1 == reader.CurrentDepth)
+                {
+                    count++;
+                }
+            }
+            while (reader.Read() && depth < reader.CurrentDepth);
+            return count;
+        }
+
+        //internal static bool TryParse(ReadOnlyMemory<byte> utf8Payload, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtHeaderDocument? header, [NotNullWhen(false)] out TokenValidationError? error)
+        //{
+        //    ReadOnlySpan<byte> utf8JsonSpan = utf8Payload.Span;
+        //    var database = new MetadataDb(utf8Payload.Length);
+        //    int arrayItemsCount = 0;
+        //    int numberOfRowsForValues = 0;
+        //    int algPosition = -1;
+        //    int kidPosition = -1;
+
+        //    var reader = new Utf8JsonReader(utf8JsonSpan);
+
+        //    if (reader.Read())
+        //    {
+        //        JsonTokenType tokenType = reader.TokenType;
+        //        if (tokenType == JsonTokenType.StartObject)
+        //        {
+        //            numberOfRowsForValues++;
+        //            int tokenStart = (int)reader.TokenStartIndex;
+        //            database.Append(JsonTokenType.StartObject, tokenStart, DbRow.UnknownSize);
+        //            int numberOfRowsForMembers = 0;
+
+        //            while (reader.Read())
+        //            {
+        //                tokenType = reader.TokenType;
+        //                tokenStart = (int)reader.TokenStartIndex;
+
+        //                if (tokenType == JsonTokenType.EndObject)
+        //                {
+        //                    numberOfRowsForMembers++;
+        //                    database.SetLength(0, numberOfRowsForMembers);
+
+        //                    int newRowIndex = database.Length;
+        //                    database.Append(JsonTokenType.EndObject, tokenStart, reader.ValueSpan.Length);
+        //                    database.SetNumberOfRows(0, numberOfRowsForMembers);
+        //                    database.SetNumberOfRows(newRowIndex, numberOfRowsForMembers);
+        //                    break;
+        //                }
+        //                else if (tokenType != JsonTokenType.PropertyName)
+        //                {
+        //                    error = TokenValidationError.MalformedToken();
+        //                    goto Error;
+        //                }
+
+        //                numberOfRowsForValues++;
+        //                numberOfRowsForMembers++;
+
+        //                // Adding 1 to skip the start quote will never overflow
+        //                Debug.Assert(tokenStart < int.MaxValue);
+
+        //                database.Append(JsonTokenType.PropertyName, tokenStart + 1, reader.ValueSpan.Length);
+        //                ReadOnlySpan<byte> memberName = reader.ValueSpan;
+
+        //                reader.Read();
+        //                tokenType = reader.TokenType;
+        //                tokenStart = (int)reader.TokenStartIndex;
+
+        //                // Since the input payload is contained within a Span,
+        //                // token start index can never be larger than int.MaxValue (i.e. utf8JsonSpan.Length).
+        //                Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
+
+        //                if (tokenType == JsonTokenType.String)
+        //                {
+        //                    if (memberName.Length == 3)
+        //                    {
+        //                        switch ((JwtHeaderParameters)IntegerMarshal.ReadUInt24(memberName))
+        //                        {
+        //                            case JwtHeaderParameters.Alg:
+        //                                algPosition = database.Length;
+        //                                break;
+        //                            case JwtHeaderParameters.Kid:
+        //                                kidPosition = database.Length;
+        //                                break;
+        //                        }
+        //                    }
+
+        //                    numberOfRowsForValues++;
+        //                    numberOfRowsForMembers++;
+        //                    // Adding 1 to skip the start quote will never overflow
+        //                    Debug.Assert(tokenStart < int.MaxValue);
+
+        //                    database.Append(JsonTokenType.String, tokenStart + 1, reader.ValueSpan.Length);
+        //                }
+        //                else if (tokenType == JsonTokenType.StartObject)
+        //                {
+        //                    reader.Skip();
+        //                    int tokenEnd = (int)reader.TokenStartIndex;
+        //                    numberOfRowsForValues++;
+        //                    int rowIndex = database.Length;
+        //                    database.Append(JsonTokenType.StartObject, tokenStart, tokenEnd - tokenStart + 1);
+        //                    int lenght = numberOfRowsForMembers + 1;
+        //                    numberOfRowsForMembers = 0;
+
+        //                    numberOfRowsForValues++;
+        //                    numberOfRowsForMembers++;
+
+        //                    int newRowIndex = database.Length;
+        //                    database.Append(JsonTokenType.StartObject, tokenStart, reader.ValueSpan.Length);
+        //                    database.SetNumberOfRows(rowIndex, numberOfRowsForMembers);
+        //                    database.SetNumberOfRows(newRowIndex, numberOfRowsForMembers);
+
+        //                    numberOfRowsForMembers += lenght;
+        //                }
+        //                else if (tokenType == JsonTokenType.StartArray)
+        //                {
+        //                    if (memberName.Length == 4
+        //                        && (JwtHeaderParameters)IntegerMarshal.ReadUInt32(memberName) == JwtHeaderParameters.Crit
+        //                        && !policy.IgnoreCriticalHeader)
+        //                    {
+        //                        if (!TryCheckCrit(ref reader))
+        //                        {
+        //                            error = TokenValidationError.MalformedToken("The 'crit' header parameter must be an array of string.");
+        //                            goto Error;
+        //                        }
+        //                    }
+        //                    else
+        //                    {
+        //                        reader.Skip();
+        //                    }
+
+        //                    numberOfRowsForMembers++;
+        //                    int rowIndex = database.Length;
+        //                    int tokenEnd = (int)reader.TokenStartIndex;
+        //                    database.Append(JsonTokenType.StartArray, tokenStart, tokenEnd - tokenStart + 1);
+        //                    var row = new JwtPayloadDocument.StackRow(arrayItemsCount, numberOfRowsForValues + 1);
+        //                    arrayItemsCount = 0;
+        //                    numberOfRowsForValues = 0;
+
+        //                    numberOfRowsForValues++;
+        //                    numberOfRowsForMembers++;
+        //                    database.SetNumberOfRows(rowIndex, numberOfRowsForValues);
+
+        //                    // If the array item count is (e.g.) 12 and the number of rows is (e.g.) 13
+        //                    // then the extra row is just this EndArray item, so the array was made up
+        //                    // of simple values.
+        //                    //
+        //                    // If the off-by-one relationship does not hold, then one of the values was
+        //                    // more than one row, making it a complex object.
+        //                    //
+        //                    // This check is similar to tracking the start array and painting it when
+        //                    // StartObject or StartArray is encountered, but avoids the mixed state
+        //                    // where "UnknownSize" implies "has complex children".
+        //                    if (arrayItemsCount + 1 != numberOfRowsForValues)
+        //                    {
+        //                        database.SetHasComplexChildren(rowIndex);
+        //                    }
+
+        //                    int newRowIndex = database.Length;
+        //                    tokenStart = (int)reader.TokenStartIndex;
+        //                    database.Append(JsonTokenType.StartArray, tokenStart, reader.ValueSpan.Length);
+        //                    database.SetNumberOfRows(newRowIndex, numberOfRowsForValues);
+
+        //                    arrayItemsCount = row.SizeOrLength;
+        //                    numberOfRowsForValues += row.NumberOfRows;
+        //                }
+        //                else // if (tokenType == JsonTokenType.Number)
+        //                {
+        //                    Debug.Assert(tokenType >= JsonTokenType.Number && tokenType <= JsonTokenType.Null);
+        //                    numberOfRowsForValues++;
+        //                    numberOfRowsForMembers++;
+
+        //                    database.Append(tokenType, tokenStart, reader.ValueSpan.Length);
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
+        //    database.TrimExcess();
+
+        //    header = new JwtHeaderDocument(new JwtDocument(utf8Payload, database, null), algPosition, kidPosition);
+        //    error = null;
+        //    return true;
+
+        //Error:
+        //    header = null;
+        //    return false;
+        //}
+
+        public bool TryGetHeaderParameter(string headerParameterName, out JwtElement value)
+        {
+            return _document.TryGetProperty(headerParameterName, out value);
+        }
+
+        public bool TryGetHeaderParameter(ReadOnlySpan<byte> headerParameterName, out JwtElement value)
+        {
+            return _document.TryGetProperty(headerParameterName, out value);
+        }
+
+        private static bool TryCheckCrit(ref Utf8JsonReader reader, out int count)
+        {
+            count = 0;
+            bool result = true;
+            while (reader.Read() && reader.TokenType == JsonTokenType.String)
+            {
+                // just read...
+                count++;
+            }
+
+            if (reader.TokenType != JsonTokenType.EndArray)
+            {
+                result = false;
+            }
+
+            return result;
+        }
+
         public void Dispose()
         {
-            _inner?.Dispose();
+            _document.Dispose();
         }
     }
 }

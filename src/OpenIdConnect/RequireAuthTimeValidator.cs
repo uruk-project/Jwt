@@ -50,42 +50,6 @@ namespace JsonWebToken
             return false;
         }
 
-        public bool TryValidate(JwtHeader header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
-        {
-            if (payload is null)
-            {
-                error = TokenValidationError.MalformedToken();
-                return false;
-            }
-
-            if (payload.TryGetProperty(OidcClaims.AuthTimeUtf8, out var _))
-            {
-                error = null;
-                return true;
-            }
-
-            error = TokenValidationError.MissingClaim(OidcClaims.AuthTimeUtf8);
-            return false;
-        }
-
-        public bool TryValidate(JwtHeaderDocument2 header, JwtPayloadDocumentOld payload, [NotNullWhen(false)] out TokenValidationError? error)
-        {
-            if (payload is null)
-            {
-                error = TokenValidationError.MalformedToken();
-                return false;
-            }
-
-            if (payload.TryGetProperty(OidcClaims.AuthTimeUtf8, out var _))
-            {
-                error = null;
-                return true;
-            }
-
-            error = TokenValidationError.MissingClaim(OidcClaims.AuthTimeUtf8);
-            return false;
-        }
-
         public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
             if (payload is null)
@@ -94,7 +58,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            if (payload.ContainsKey(OidcClaims.AuthTimeUtf8))
+            if (payload.ContainsClaim(OidcClaims.AuthTimeUtf8))
             {
                 error = null;
                 return true;

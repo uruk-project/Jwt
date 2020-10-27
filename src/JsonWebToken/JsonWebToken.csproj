@@ -77,6 +77,10 @@
     <PackageReference Include="gfoidl.Base64" Version="1.1.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="old\" />
+  </ItemGroup>
+
   <!--
   SUPPORT_ELLIPTIC_CURVE
   SUPPORT_ELLIPTIC_CURVE_SIGNATURE

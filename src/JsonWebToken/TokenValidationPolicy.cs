@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -87,12 +86,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets whether the <see cref="TokenValidationPolicy"/> has validation.
         /// </summary>
-        public bool HasValidation => _validators.Length != 0;
+        public bool HasValidation => _control != 0 || _validators.Length != 0 || SignatureValidationPolicy.IsEnabled;
 
         /// <summary>
         /// Gets whether the issuer 'iss' is required.
         /// </summary>
-        public bool RequireIssuer => (ValidationControl & IssuerFlag) == IssuerFlag;
+        public bool RequireIssuer => (Control & IssuerFlag) == IssuerFlag;
 
         /// <summary>
         /// Gets the required issuer, in UTF8 binary format.
@@ -107,7 +106,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets whether the audience 'aud' is required.
         /// </summary>
-        public bool RequireAudience => (ValidationControl & AudienceFlag) == AudienceFlag;
+        public bool RequireAudience => (Control & AudienceFlag) == AudienceFlag;
 
         /// <summary>
         /// Gets the required audience array, in UTF8 binary format. At least one audience of this list is required.
@@ -122,12 +121,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the validation control bits.
         /// </summary>
-        public byte ValidationControl => _control;
+        public byte Control => _control;
 
         /// <summary>
         /// Gets whether the expiration time 'exp' is required.
         /// </summary>
-        public bool RequireExpirationTime => (ValidationControl & ExpirationTimeRequiredFlag) == ExpirationTimeRequiredFlag;
+        public bool RequireExpirationTime => (Control & ExpirationTimeRequiredFlag) == ExpirationTimeRequiredFlag;
 
         /// <summary>
         /// Defines the clock skrew used for the token lifetime validation.
@@ -295,188 +294,9 @@ namespace JsonWebToken
         /// <param name="payload"></param>
         /// <param name="error"></param>
         /// <returns></returns>
-        public bool TryValidateJwt(JwtHeader header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
-        {
-            if (payload.ValidationControl != 0)
-            {
-                if (payload.MissingAudience)
-                {
-                    error = TokenValidationError.MissingClaim(Claims.AudUtf8);
-                    goto Error;
-                }
-
-                if (payload.InvalidAudience)
-                {
-                    error = TokenValidationError.InvalidClaim(Claims.AudUtf8);
-                    goto Error;
-                }
-
-                if (payload.MissingIssuer)
-                {
-                    error = TokenValidationError.MissingClaim(Claims.IssUtf8);
-                    goto Error;
-                }
-
-                if (payload.InvalidIssuer)
-                {
-                    error = TokenValidationError.InvalidClaim(Claims.IssUtf8);
-                    goto Error;
-                }
-
-                if (payload.MissingExpirationTime)
-                {
-                    error = TokenValidationError.MissingClaim(Claims.ExpUtf8);
-                    goto Error;
-                }
-
-                if (payload.Expired)
-                {
-                    error = TokenValidationError.Expired();
-                    goto Error;
-                }
-
-                if (payload.NotYetValid)
-                {
-                    error = TokenValidationError.NotYetValid();
-                    goto Error;
-                }
-            }
-
-            var validators = _validators;
-            for (int i = 0; i < validators.Length; i++)
-            {
-                if (!validators[i].TryValidate(header, payload, out error))
-                {
-                    goto Error;
-                }
-            }
-
-            error = null;
-            return true;
-
-        Error:
-            return false;
-        }
-
-
-        /// <summary>
-        /// Try to validate the token, according to the <paramref name="header"/> and the <paramref name="payload"/>.
-        /// </summary>
-        /// <param name="header"></param>
-        /// <param name="payload"></param>
-        /// <param name="error"></param>
-        /// <returns></returns>
-        public bool TryValidateJwt(JwtHeaderDocument2 header, JwtPayloadDocumentOld payload, [NotNullWhen(false)] out TokenValidationError? error)
-        {
-            //if (payload.ValidationControl != 0)
-            {
-                if (RequireAudience)
-                {
-                    if (!payload.TryGetProperty(Claims.AudUtf8, out var aud))
-                    {
-                        error = TokenValidationError.MissingClaim(Claims.AudUtf8);
-                        goto Error;
-                    }
-
-                    var requiredAudiences = RequiredAudiencesBinary;
-                    if (aud.ValueKind is JsonValueKind.String)
-                    {
-                        for (int i = 0; i < requiredAudiences.Length; i++)
-                        {
-                            if (aud.ValueEquals(requiredAudiences[i]))
-                            {
-                                goto ValidAud;
-                            }
-                        }
-                    }
-                    else if (aud.ValueKind is JsonValueKind.Array)
-                    {
-                        foreach (var item in aud.EnumerateArray())
-                        {
-                            for (int i = 0; i < requiredAudiences.Length; i++)
-                            {
-                                if (item.ValueEquals(requiredAudiences[i]))
-                                {
-                                    goto ValidAud;
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        error = TokenValidationError.MalformedToken();
-                        goto Error;
-                    }
-
-                    error = TokenValidationError.InvalidClaim(Claims.AudUtf8);
-                    goto Error;
-                }
-
-            ValidAud:
-                if (RequireIssuer)
-                {
-                    if (!payload.TryGetProperty(Claims.IssUtf8, out var iss))
-                    {
-                        error = TokenValidationError.MissingClaim(Claims.IssUtf8);
-                        goto Error;
-                    }
-
-                    if (!iss.ValueEquals(RequiredIssuerBinary))
-                    {
-                        error = TokenValidationError.InvalidClaim(Claims.IssUtf8);
-                        goto Error;
-                    }
-                }
-
-                if (RequireExpirationTime)
-                {
-                    if (!payload.TryGetProperty(Claims.ExpUtf8, out var exp))
-                    {
-                        error = TokenValidationError.MissingClaim(Claims.ExpUtf8);
-                        goto Error;
-                    }
-
-                    if (exp.TryGetInt64(out long expValue) && expValue + ClockSkew < EpochTime.UtcNow)
-                    {
-                        error = TokenValidationError.Expired();
-                        goto Error;
-                    }
-                }
-
-                if (payload.TryGetProperty(Claims.NbfUtf8, out var nbf)
-                     && (ValidationControl & JwtPayload.ExpiredFlag) == JwtPayload.ExpiredFlag
-                     && nbf.TryGetInt64(out long nbfValue) && nbfValue > EpochTime.UtcNow + ClockSkew)
-                {
-                    error = TokenValidationError.NotYetValid();
-                    goto Error;
-                }
-            }
-
-            var validators = _validators;
-            for (int i = 0; i < validators.Length; i++)
-            {
-                if (!validators[i].TryValidate(header, payload, out error))
-                {
-                    goto Error;
-                }
-            }
-
-            error = null;
-            return true;
-
-        Error:
-            return false;
-        }
-        /// <summary>
-        /// Try to validate the token, according to the <paramref name="header"/> and the <paramref name="payload"/>.
-        /// </summary>
-        /// <param name="header"></param>
-        /// <param name="payload"></param>
-        /// <param name="error"></param>
-        /// <returns></returns>
         public bool TryValidateJwt(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
-            if (payload.ValidationControl != 0)
+            if (payload.Control != 0)
             {
                 if (RequireAudience)
                 {
@@ -618,43 +438,6 @@ namespace JsonWebToken
         /// <param name="header"></param>
         /// <param name="error"></param>
         /// <returns></returns>
-        public bool TryValidateHeader(JwtHeaderDocument2 header, [NotNullWhen(false)] out TokenValidationError? error)
-        {
-            if (!IgnoreCriticalHeader)
-            {
-                var crit = header.Crit;
-                if (crit.Count != 0)
-                {
-                    var handlers = CriticalHandlers;
-                    for (int i = 0; i < crit.Count; i++)
-                    {
-                        var critHeaderName = crit[i];
-                        if (!handlers.TryGetValue(critHeaderName, out var handler))
-                        {
-                            error = TokenValidationError.CriticalHeaderUnsupported(critHeaderName);
-                            return false;
-                        }
-
-
-                        if (!handler.TryHandle(header, critHeaderName))
-                        {
-                            error = TokenValidationError.InvalidHeader(critHeaderName);
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            error = null;
-            return true;
-        }
-
-        /// <summary>
-        /// Try to validate the token header, according to the <paramref name="header"/>.
-        /// </summary>
-        /// <param name="header"></param>
-        /// <param name="error"></param>
-        /// <returns></returns>
         public bool TryValidateHeader(JwtHeaderDocument header, [NotNullWhen(false)] out TokenValidationError? error)
         {
             if (!IgnoreCriticalHeader)
@@ -662,7 +445,7 @@ namespace JsonWebToken
                 if (header.TryGetHeaderParameter(HeaderParameters.CritUtf8, out var crit))
                 {
                     var handlers = CriticalHandlers;
-                    foreach (var critHeader in crit.EnumerateArray())
+                    foreach (var critHeader in crit.EnumerateArray<string>())
                     {
                         var critHeaderName = critHeader.GetString()!;
                         if (!handlers.TryGetValue(critHeaderName, out var handler))
@@ -704,18 +487,6 @@ namespace JsonWebToken
         /// <param name="signatureSegment"></param>
         /// <returns></returns>
         public SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
-        {
-            return SignatureValidationPolicy.TryValidateSignature(header, contentBytes, signatureSegment);
-        }
-
-        /// <summary>
-        /// Try to validate the token signature.
-        /// </summary>
-        /// <param name="header"></param>
-        /// <param name="contentBytes"></param>
-        /// <param name="signatureSegment"></param>
-        /// <returns></returns>
-        public SignatureValidationResult TryValidateSignature(JwtHeaderDocument2 header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
         {
             return SignatureValidationPolicy.TryValidateSignature(header, contentBytes, signatureSegment);
         }

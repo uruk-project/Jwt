@@ -35,7 +35,7 @@ namespace JsonWebToken
             }
 
             var payload = new JwtPayload();
-            byte control = policy.ValidationControl;
+            byte control = policy.Control;
             while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
                 var name = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
@@ -165,7 +165,7 @@ namespace JsonWebToken
                             }
 
                             // the 'nbf' claim is not common. The 2nd call to EpochTime.UtcNow should be rare.
-                            if (longValue > EpochTime.UtcNow + policy.ClockSkew && (policy.ValidationControl & JwtPayload.ExpiredFlag) == JwtPayload.ExpiredFlag)
+                            if (longValue > EpochTime.UtcNow + policy.ClockSkew && (policy.Control & JwtPayload.ExpiredFlag) == JwtPayload.ExpiredFlag)
                             {
                                 control |= JwtPayload.NotYetFlag;
                             }

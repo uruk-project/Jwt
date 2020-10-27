@@ -18,7 +18,7 @@ namespace JsonWebToken
             _policy = policy;
             _jsonReader = new Utf8JsonReader(payloadData, isFinalBlock: true, state: default);
             _claimName = default;
-            ValidationControl = policy.ValidationControl;
+            ValidationControl = policy.Control;
         }
 
         public string? GetString()
@@ -138,7 +138,7 @@ namespace JsonWebToken
             }
 
             // the 'nbf' claim is not common. A 2nd call to EpochTime.UtcNow should be rare.
-            if (longValue > EpochTime.UtcNow + _policy.ClockSkew && (_policy.ValidationControl & JwtPayload.ExpiredFlag) == JwtPayload.ExpiredFlag)
+            if (longValue > EpochTime.UtcNow + _policy.ClockSkew && (_policy.Control & JwtPayload.ExpiredFlag) == JwtPayload.ExpiredFlag)
             {
                 ValidationControl |= JwtPayload.NotYetFlag;
             }

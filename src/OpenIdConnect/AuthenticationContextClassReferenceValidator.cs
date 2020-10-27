@@ -64,54 +64,6 @@ namespace JsonWebToken
             return true;
         }
 
-        public bool TryValidate(JwtHeaderDocument2 header, JwtPayloadDocumentOld payload, [NotNullWhen(false)] out TokenValidationError? error)
-        {
-            if (payload is null)
-            {
-                error = TokenValidationError.MalformedToken();
-                return false;
-            }
-
-            if (!payload.TryGetProperty(OidcClaims.AcrUtf8, out var property))
-            {
-                error = TokenValidationError.MissingClaim(OidcClaims.AcrUtf8);
-                return false;
-            }
-
-            if (!property.ValueEquals(_requiredAcr))
-            {
-                error = TokenValidationError.InvalidClaim(OidcClaims.AcrUtf8);
-                return false;
-            }
-
-            error = null;
-            return true;
-        }
-
-        public bool TryValidate(JwtHeader header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
-        {
-            if (payload is null)
-            {
-                error = TokenValidationError.MalformedToken();
-                return false;
-            }
-
-            if (!payload.TryGetProperty(OidcClaims.AcrUtf8, out var property))
-            {
-                error = TokenValidationError.MissingClaim(OidcClaims.AcrUtf8);
-                return false;
-            }
-
-            if (!property.ValueEquals(_requiredAcr))
-            {
-                error = TokenValidationError.InvalidClaim(OidcClaims.AcrUtf8);
-                return false;
-            }
-
-            error = null;
-            return true;
-        }
-
         public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
             if (payload is null)
@@ -120,7 +72,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            if (!payload.TryGetProperty(OidcClaims.AcrUtf8, out var property))
+            if (!payload.TryGetClaim(OidcClaims.AcrUtf8, out var property))
             {
                 error = TokenValidationError.MissingClaim(OidcClaims.AcrUtf8);
                 return false;

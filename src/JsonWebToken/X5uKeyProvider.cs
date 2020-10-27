@@ -39,22 +39,6 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override Jwk[] GetKeys(JwtHeaderDocument2 header)
-        {
-            if (header is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
-            }
-
-            if (header.X5u is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
-            }
-
-            return GetKeys(header, header.X5u);
-        }
-
-        /// <inheritsdoc />
         public override Jwk[] GetKeys(JwtHeaderDocument header)
         {
             if (header is null)

@@ -41,23 +41,16 @@ namespace ValidatePerf
                 .RequireAudience("636C69656E745F6964")
                 .RequireIssuer("https://idp.example.com/")
                 .EnableLifetimeValidation()
+                .DisabledHeaderCache()
                 .Build();
 
             Console.WriteLine("Starting...");
             _reader.EnableHeaderCaching = false;
-            //var sha = new Sha512();
-            //Span<byte> dest = new byte[64];
-            //var src = new byte[4096];
             while (true)
             {
-                //sha.ComputeHash(src, dest);
                 _reader.TryReadToken(jwsToken, policy);
-                Jwt.TryParse(jwsToken, policy, out Jwt document3);
-                JwtDocument2.TryParse2(jwsToken, policy, out JwtDocument2 document2);
-                JwtDocument_Reference.TryParse(jwsToken, policy, out JwtDocument_Reference document);
+                Jwt.TryParse(jwsToken, policy, out Jwt document);
                 document.Dispose();
-                document2.Dispose();
-                document3.Dispose();
             }
         }
     }
