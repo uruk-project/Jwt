@@ -10,6 +10,7 @@ namespace JsonWebToken
     /// <summary>
     /// Provides methods for converting JWT header JSON data into a <see cref="JwtHeader"/>
     /// </summary>
+    [Obsolete]
     public static class JwtHeaderParser
     {
         internal const uint Alg = 6777953u;

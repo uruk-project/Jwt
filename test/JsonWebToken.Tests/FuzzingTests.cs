@@ -5,7 +5,6 @@ namespace JsonWebToken.Tests
     public class FuzzingTests
     {
         static Jwk key = SymmetricJwk.GenerateKey(256);
-        static JwtReader reader = new JwtReader();
 
         [Theory]
         [InlineData("åyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwIiwibmFtZSI6IkplIiwiaWF0IjoyfQ.")]
@@ -17,9 +16,10 @@ namespace JsonWebToken.Tests
                             .IgnoreSignature()
                             .WithDecryptionKey(key)
                             .Build();
-            var result = reader.TryReadToken(value, policy);
+            var parsed = Jwt.TryParse(value, policy, out var jwt);
 
-            Assert.NotNull(result);
+            Assert.False(parsed);
+            Assert.NotNull(jwt);
         }
     }
 }

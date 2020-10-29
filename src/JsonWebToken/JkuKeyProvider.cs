@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-using System.Text.Json;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -19,22 +18,6 @@ namespace JsonWebToken
         public JkuKeyProvider(HttpDocumentRetriever documentRetriever)
             : base(documentRetriever)
         {
-        }
-
-        /// <inheritsdoc />
-        public override Jwk[] GetKeys(JwtHeader header)
-        {
-            if (header is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
-            }
-
-            if (header.Jku is null)
-            {
-                return Array.Empty<Jwk>();
-            }
-
-            return GetKeys(header, header.Jku);
         }
 
         /// <inheritsdoc />

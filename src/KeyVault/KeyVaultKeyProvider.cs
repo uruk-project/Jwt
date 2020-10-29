@@ -41,11 +41,6 @@ namespace JsonWebToken.KeyVault
             _client = new KeyVaultClient((authority, resource, scope) => GetTokenFromClientSecret(authority, resource, clientId, clientSecret));
         }
 
-        public Jwk[] GetKeys(JwtHeader header)
-        {
-            return GetKeysAsync().GetAwaiter().GetResult();
-        }
-
         public Jwk[] GetKeys(JwtHeaderDocument header)
         {
             return GetKeysAsync().GetAwaiter().GetResult();

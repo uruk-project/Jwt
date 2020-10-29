@@ -63,15 +63,15 @@ namespace JsonWebToken.Tests
 
             var token = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
                 .RequireSignature(_signingKey)
                 .WithDecryptionKey(encryptionKey)
                 .Build();
 
-            var result = reader.TryReadToken(token, policy);
-            Assert.Equal(TokenValidationStatus.Success, result.Status);
-            Assert.True(result.Token.Payload.TryGetClaim("sub", out var sub));
+            var result = Jwt.TryParse(token, policy, out var jwt);
+            Assert.True(result);
+
+            Assert.True(jwt.Payload.TryGetClaim("sub", out var sub));
             Assert.Equal("Alice", sub.GetString());
         }
 

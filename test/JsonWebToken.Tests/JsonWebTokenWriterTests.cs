@@ -42,16 +42,13 @@ namespace JsonWebToken.Tests
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
                 .WithDecryptionKeys(_keys.Jwks)
                 .IgnoreSignature()
                 .Build();
 
-            var result = reader.TryReadToken(value, policy);
-            Assert.Equal(TokenValidationStatus.Success, result.Status);
-
-            var jwt = result.Token;
+            var result = Jwt.TryParse(value, policy, out var jwt);
+            Assert.True(result);
 
             if (!(descriptor is JwsDescriptor jwsPayload))
             {
@@ -98,10 +95,9 @@ namespace JsonWebToken.Tests
                 .WithDecryptionKey(RsaKey)
                 .IgnoreSignature()
                 .Build();
-            var result = reader.TryReadToken(value, policy);
-            Assert.Equal(TokenValidationStatus.Success, result.Status);
 
-            var jwt = result.Token;
+            var result = Jwt.TryParse(value, policy, out var jwt);
+            Assert.True(result);
 
             Assert.Equal(plaintext, jwt.Plaintext);
         }
@@ -124,10 +120,9 @@ namespace JsonWebToken.Tests
                 .WithDecryptionKey(RsaKey)
                 .IgnoreSignature()
                 .Build();
-            var result = reader.TryReadToken(value, policy);
-            Assert.Equal(TokenValidationStatus.Success, result.Status);
 
-            var jwt = result.Token;
+            var result = Jwt.TryParse(value, policy, out var jwt);
+            Assert.True(result);
 
             Assert.Equal(plaintext, jwt.Plaintext);
         }
@@ -164,10 +159,10 @@ namespace JsonWebToken.Tests
                 .WithDecryptionKey(key)
                 .IgnoreSignature()
                 .Build();
-            var result = reader.TryReadToken(value, policy);
-            Assert.Equal(TokenValidationStatus.Success, result.Status);
 
-            var jwt = result.Token;
+            var result = Jwt.TryParse(value, policy, out var jwt);
+            Assert.True(result);
+
             Assert.True(jwt.RawValue.Span.SequenceEqual(data));
         }
 
@@ -202,10 +197,9 @@ namespace JsonWebToken.Tests
                .WithDecryptionKey(RsaKey)
                 .IgnoreSignature()
                .Build();
-            var result = reader.TryReadToken(value, policy);
-            Assert.Equal(TokenValidationStatus.Success, result.Status);
 
-            var jwt = result.Token;
+            var result = Jwt.TryParse(value, policy, out var jwt);
+            Assert.True(result);
 
             Assert.Equal(plaintext, jwt.Plaintext);
         }

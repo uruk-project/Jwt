@@ -57,7 +57,8 @@ namespace JsonWebToken.Tests
             var apu = Encoding.UTF8.GetString(Base64Url.Encode("Alice")); ;
             var apv = Encoding.UTF8.GetString(Base64Url.Encode("Bob"));
             var epk = ((JwtObject)header[HeaderParameters.EpkUtf8].Value).ToString();
-            var jwtHeader = JwtHeader.FromJson($"{{\"apu\":\"{apu}\",\"apv\":\"{apv}\",\"epk\":{epk}}}");
+            var parsed = JwtHeaderDocument.TryParse(Encoding.UTF8.GetBytes($"{{\"apu\":\"{apu}\",\"apv\":\"{apv}\",\"epk\":{epk}}}"), TokenValidationPolicy.NoValidation, out var jwtHeader, out var error);
+            Assert.True(parsed);
 
             byte[] unwrappedKey = new byte[kuwp.GetKeyUnwrapSize(wrappedKey.Length)];
             var unwrapped = kuwp.TryUnwrapKey(wrappedKey, unwrappedKey, jwtHeader, out _);
@@ -82,7 +83,8 @@ namespace JsonWebToken.Tests
             var apu = Encoding.UTF8.GetString(Base64Url.Encode("Alice")); ;
             var apv = Encoding.UTF8.GetString(Base64Url.Encode("Bob"));
             var epk = ((JwtObject)header[HeaderParameters.EpkUtf8].Value).ToString();
-            var jwtHeader = JwtHeader.FromJson($"{{\"apu\":\"{apu}\",\"apv\":\"{apv}\",\"epk\":{epk}}}");
+            var parsed = JwtHeaderDocument.TryParse(Encoding.UTF8.GetBytes($"{{\"apu\":\"{apu}\",\"apv\":\"{apv}\",\"epk\":{epk}}}"), TokenValidationPolicy.NoValidation, out var jwtHeader, out var error);
+            Assert.True(parsed);
 
             byte[] unwrappedKey = new byte[kuwp.GetKeyUnwrapSize(wrappedKey.Length)];
             var unwrapped = kuwp.TryUnwrapKey(wrappedKey, unwrappedKey, jwtHeader, out int bytesWritten);

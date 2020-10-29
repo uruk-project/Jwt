@@ -139,16 +139,15 @@ namespace JsonWebToken.Tests
             Jwk encryptionKey = SymmetricJwk.FromBase64Url("GawgguFyGrWKav7AX4VKUg");
             string token = "eyJhbGciOiJBMTI4S1ciLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.6KB707dM9YTIgHtLvtgWQ8mKwboJW3of9locizkDTHzBC2IlrT1oOQ.AxY8DCtDaGlsbGljb3RoZQ.KDlTtXchhZTGufMYmOYGS4HffxPSUrfmqCHXaI9wOGY.U0m_YmjN04DJvceFICbCVQ";
 
-            JwtReader jwtReader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
                 .WithDecryptionKey(encryptionKey)
                 .IgnoreSignature()
                 .Build();
 
-            var result = jwtReader.TryReadToken(token, policy);
+            var result = Jwt.TryParse(token, policy, out var jwt);
 
-            Assert.True(result.Succedeed);
-            Assert.Equal("Live long and prosper.", result.Token.Plaintext);
+            Assert.True(result);
+            Assert.Equal("Live long and prosper.", jwt.Plaintext);
         }
     }
 }

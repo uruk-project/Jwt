@@ -13,12 +13,11 @@ namespace JsonWebToken.Tests
                 var context = new EncodingContext(bufferWriter, new JsonHeaderCache(), 60, true);
                 descriptor.Encode(context);
 
-                var reader = new JwtReader();
-                var result = reader.TryReadToken(bufferWriter.WrittenSpan, TokenValidationPolicy.NoValidation);
-                Assert.True(result.Succedeed);
-                Assert.NotNull(result.Token);
-                Assert.True(result.Token.Payload.ContainsClaim("exp"));
-                Assert.True(result.Token.Payload.ContainsClaim("iat"));
+                var result = Jwt.TryParse(bufferWriter.WrittenSpan, TokenValidationPolicy.NoValidation, out var jwt);
+                Assert.True(result);
+                Assert.NotNull(jwt);
+                Assert.True(jwt.Payload.ContainsClaim("exp"));
+                Assert.True(jwt.Payload.ContainsClaim("iat"));
             }
         }
     }

@@ -17,16 +17,6 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="header"></param>
         /// <returns></returns>
-        public Jwk[] GetKeys(JwtHeader header)
-        {
-            return _empty;
-        }
-
-        /// <summary>
-        /// Gets the list of <see cref="Jwk"/>.
-        /// </summary>
-        /// <param name="header"></param>
-        /// <returns></returns>
         public Jwk[] GetKeys(JwtHeaderDocument header)
         {
             return _empty;
