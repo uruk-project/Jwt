@@ -7,8 +7,11 @@ namespace FuzzTest
     {
         private static readonly Jwk SigningKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
         private static readonly Jwk EncryptionKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4T");
-        private static readonly JwtReader reader = new JwtReader(EncryptionKey);
-        private static readonly TokenValidationPolicy Policy = new TokenValidationPolicyBuilder().RequireSignature(SigningKey, SignatureAlgorithm.HmacSha256).Build();
+        private static readonly JwtReader reader = new JwtReader();
+        private static readonly TokenValidationPolicy Policy = new TokenValidationPolicyBuilder()
+                                                                    .RequireSignature(SigningKey, SignatureAlgorithm.HmacSha256)
+                                                                    .WithDecryptionKey(EncryptionKey)
+                                                                    .Build();
 
         static void Main()
         {

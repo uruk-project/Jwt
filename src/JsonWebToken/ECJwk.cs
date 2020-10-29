@@ -627,23 +627,9 @@ namespace JsonWebToken
         /// </summary>
         internal static ECJwk FromJwtElement(JwtElement json)
         {
-            //Debug.Assert(json.Count == 3);
-            if (!json.TryGetProperty(JwkParameterNames.CrvUtf8, out var crv) || crv.ValueKind is JsonValueKind.Null)
-            {
-                ThrowHelper.ThrowArgumentException_MalformedKey();
-            }
-
-            if (!json.TryGetProperty(JwkParameterNames.XUtf8, out var x) || x.ValueKind is JsonValueKind.Null)
-            {
-                ThrowHelper.ThrowArgumentException_MalformedKey();
-            }
-
-            if (!json.TryGetProperty(JwkParameterNames.YUtf8, out var y) || y.ValueKind is JsonValueKind.Null)
-            {
-                ThrowHelper.ThrowArgumentException_MalformedKey();
-            }
-
-            return new ECJwk(EllipticalCurve.FromString(crv.GetString()!), x.GetString(), y.GetString());
+            var reader = new Utf8JsonReader(json.GetRawValue().Span);
+            reader.Read();
+            return FromJsonReaderFast(ref reader);
         }
 
         /// <summary>
@@ -678,7 +664,7 @@ namespace JsonWebToken
             return jwtObject;
         }
 
-        internal static Jwk FromJsonReaderFast(ref Utf8JsonReader reader)
+        internal static ECJwk FromJsonReaderFast(ref Utf8JsonReader reader)
         {
             var key = new ECJwk();
             while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)

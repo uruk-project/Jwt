@@ -15,7 +15,8 @@ namespace JsonWebToken
             _requiredAcr = requiredAcr;
         }
 
-        public TokenValidationResult TryValidate(JwtOld jwt)
+        [Obsolete("This method is obsolete. Use TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, out TokenValidationError? error) instead.")]
+        public TokenValidationResult TryValidate(Jwt jwt)
         {
             if (jwt is null)
             {
@@ -27,41 +28,17 @@ namespace JsonWebToken
                 return TokenValidationResult.MalformedToken();
             }
 
-            if (!jwt.Payload.TryGetValue(OidcClaims.AcrUtf8, out var property))
+            if (!jwt.Payload.TryGetClaim(OidcClaims.AcrUtf8, out var property))
             {
                 return TokenValidationResult.MissingClaim(jwt, OidcClaims.AcrUtf8);
             }
 
-            if (string.Equals(_requiredAcr, (string?)property.Value, StringComparison.Ordinal))
+            if (string.Equals(_requiredAcr, property.GetString(), StringComparison.Ordinal))
             {
                 return TokenValidationResult.InvalidClaim(jwt, OidcClaims.AcrUtf8);
             }
 
             return TokenValidationResult.Success(jwt);
-        }
-
-        public bool TryValidate(JwtHeader header, JwtPayload payload, [NotNullWhen(false)] out TokenValidationError? error)
-        {
-            if (payload is null)
-            {
-                error = TokenValidationError.MalformedToken();
-                return false;
-            }
-
-            if (!payload.TryGetValue(OidcClaims.AcrUtf8, out var property))
-            {
-                error = TokenValidationError.MissingClaim(OidcClaims.AcrUtf8);
-                return false;
-            }
-
-            if (string.Equals(_requiredAcr, (string?)property.Value, StringComparison.Ordinal))
-            {
-                error = TokenValidationError.InvalidClaim(OidcClaims.AcrUtf8);
-                return false;
-            }
-
-            error = null;
-            return true;
         }
 
         public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)

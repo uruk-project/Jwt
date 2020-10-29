@@ -50,11 +50,12 @@ namespace JsonWebToken.Tests
             var thirdSegment = secondSegment.Add(utf8Jwt.AsMemory(20));
             ReadOnlySequence<byte> sequence = new ReadOnlySequence<byte>(firstSegment, 0, thirdSegment, thirdSegment.Memory.Length);
 
-            var reader = new JwtReader(_keys.Jwks);
+            var reader = new JwtReader();
             var builder = new TokenValidationPolicyBuilder()
                     .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
-                    .RequireIssuer("https://idp.example.com/");
+                    .RequireIssuer("https://idp.example.com/")
+                    .WithDecryptionKeys(_keys.Jwks);
             if (signed)
             {
                 builder.RequireSignature(_keys.Jwks);
@@ -77,11 +78,12 @@ namespace JsonWebToken.Tests
 
             ReadOnlySequence<byte> sequence = new ReadOnlySequence<byte>(utf8Jwt);
 
-            var reader = new JwtReader(_keys.Jwks);
+            var reader = new JwtReader();
             var builder = new TokenValidationPolicyBuilder()
                     .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
-                    .RequireIssuer("https://idp.example.com/");
+                    .RequireIssuer("https://idp.example.com/")
+                    .WithDecryptionKeys(_keys.Jwks);
             if (signed)
             {
                 builder.RequireSignature(_keys.Jwks);
@@ -100,11 +102,12 @@ namespace JsonWebToken.Tests
         public void ReadJwt_Valid(string token, bool signed)
         {
             var jwt = _tokens.ValidTokens[token];
-            var reader = new JwtReader(_keys.Jwks);
+            var reader = new JwtReader();
             var builder = new TokenValidationPolicyBuilder()
                     .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
-                    .RequireIssuer("https://idp.example.com/");
+                    .RequireIssuer("https://idp.example.com/")
+                    .WithDecryptionKeys(_keys.Jwks);
             if (signed)
             {
                 builder.RequireSignature(_keys.Jwks);
@@ -122,7 +125,7 @@ namespace JsonWebToken.Tests
         [ClassData(typeof(InvalidTokenTestData))]
         public void ReadJwt_Invalid(string jwt, TokenValidationStatus expectedStatus)
         {
-            var reader = new JwtReader(_keys.Jwks);
+            var reader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
                     .RequireSignature(_keys.SigningKey)
                     .EnableLifetimeValidation()
@@ -142,7 +145,7 @@ namespace JsonWebToken.Tests
             {
                 Sender = BackchannelRequestToken
             };
-            var reader = new JwtReader(_keys.Jwks);
+            var reader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
                     .RequireSignature("https://demo.identityserver.io/.well-known/openid-configuration/jwks", handler: httpHandler)
                     .Build();
@@ -163,7 +166,7 @@ namespace JsonWebToken.Tests
         [InlineData("")]
         public void ReadJwt_Malformed(string jwt)
         {
-            var reader = new JwtReader(_keys.Jwks);
+            var reader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
                     .AcceptUnsecureToken()
                     .Build();
@@ -238,7 +241,7 @@ namespace JsonWebToken.Tests
                 .Build();
 
             var result = reader.TryReadToken(jwt, policy);
-            Assert.Equal(TokenValidationStatus.Success , result.Status);
+            Assert.Equal(TokenValidationStatus.Success, result.Status);
         }
 
         private HttpResponseMessage BackchannelRequestToken(HttpRequestMessage req)

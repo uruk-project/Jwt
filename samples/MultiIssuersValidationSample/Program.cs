@@ -23,7 +23,7 @@ namespace MultiIssuersValidationSample
                            .RequireIssuer("https://idp2.example.com/")
                            .Build();
 
-            var keyIssuer3 = new SymmetricJwk("lh2TJcMdPyNLhfNp0nYLAFM_R0UEXVoZ9N7ife4ZT-A");
+            var keyIssuer3 = SymmetricJwk.FromBase64Url("lh2TJcMdPyNLhfNp0nYLAFM_R0UEXVoZ9N7ife4ZT-A");
             var policyIssuer3 = new TokenValidationPolicyBuilder()
                            .RequireSignature(keyIssuer3, SignatureAlgorithm.HmacSha256)
                            .RequireAudience("F6964636C69656E745")
@@ -41,7 +41,7 @@ namespace MultiIssuersValidationSample
                 var result = reader.TryReadToken(token, policies[i]);
                 if (result.Succedeed)
                 {
-                    Console.WriteLine($"The token is issued by '{result.Token.Issuer}':");
+                    Console.WriteLine($"The token is issued by '{result.Token.Payload["iss"].GetString()}':");
                     Console.WriteLine(result.Token);
                     break;
                 }

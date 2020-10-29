@@ -36,15 +36,6 @@ namespace JsonWebToken
         /// <param name="contentBytes"></param>
         /// <param name="signatureSegment"></param>
         /// <returns></returns>
-        public abstract SignatureValidationResult TryValidateSignature(JwtHeader header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment);
-
-        /// <summary>
-        /// Try to validate the token signature.
-        /// </summary>
-        /// <param name="header"></param>
-        /// <param name="contentBytes"></param>
-        /// <param name="signatureSegment"></param>
-        /// <returns></returns>
         public abstract SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment);
 
         /// <summary>
@@ -76,67 +67,7 @@ namespace JsonWebToken
             /// <inheritdoc />
             public override bool IsEnabled => true;
 
-            public override SignatureValidationResult TryValidateSignature(JwtHeader header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
-            {
-                if (contentBytes.IsEmpty && signatureSegment.IsEmpty)
-                {
-                    // This is not a JWS
-                    return SignatureValidationResult.Success();
-                }
-
-                if (signatureSegment.IsEmpty)
-                {
-                    return SignatureValidationResult.MissingSignature();
-                }
-
-                try
-                {
-                    int signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(signatureSegment.Length);
-                    Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
-                    if (Base64Url.Decode(signatureSegment, signatureBytes, out int byteConsumed, out int bytesWritten) != OperationStatus.Done)
-                    {
-                        return SignatureValidationResult.MalformedSignature();
-                    }
-
-                    Debug.Assert(bytesWritten == signatureBytes.Length);
-                    bool keysTried = false;
-
-                    var keySet = _keyProvider.GetKeys(header);
-                    if (keySet != null)
-                    {
-                        var algorithm = _algorithm;
-                        for (int i = 0; i < keySet.Length; i++)
-                        {
-                            var key = keySet[i];
-                            if (key.CanUseForSignature(header.SignatureAlgorithm))
-                            {
-                                var alg = algorithm ?? key.SignatureAlgorithm;
-                                if (!(alg is null))
-                                {
-                                    if (key.TryGetSigner(alg, out var signer))
-                                    {
-                                        if (signer.Verify(contentBytes, signatureBytes))
-                                        {
-                                            return SignatureValidationResult.Success(key);
-                                        }
-                                    }
-                                }
-
-                                keysTried = true;
-                            }
-                        }
-                    }
-
-                    return keysTried
-                        ? SignatureValidationResult.InvalidSignature()
-                        : SignatureValidationResult.SignatureKeyNotFound();
-                }
-                catch (FormatException e)
-                {
-                    return SignatureValidationResult.MalformedSignature(e);
-                }
-            }
-
+            /// <inheritdoc />
             public override SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
                 if (signatureSegment.IsEmpty)
@@ -159,7 +90,7 @@ namespace JsonWebToken
                     bool keysTried = false;
 
                     var keySet = _keyProvider.GetKeys(header);
-                    var algElement = header.Alg;
+                    var algElement = header.Algorithm;
                     if (keySet != null)
                     {
                         var algorithm = _algorithm;
@@ -198,16 +129,10 @@ namespace JsonWebToken
 
         private sealed class NoSignatureValidationContext : SignatureValidationPolicy
         {
-            public override SignatureValidationResult TryValidateSignature(JwtHeader header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
-            {
-                return (contentBytes.Length == 0 && signatureSegment.Length == 0) || (signatureSegment.IsEmpty && header.SignatureAlgorithm == SignatureAlgorithm.None)
-                    ? SignatureValidationResult.Success()
-                    : SignatureValidationResult.InvalidSignature();
-            }
-
             /// <inheritdoc />
             public override bool IsEnabled => true;
 
+            /// <inheritdoc />
             public override SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
                 return (contentBytes.Length == 0 && signatureSegment.Length == 0)
@@ -221,14 +146,9 @@ namespace JsonWebToken
         private sealed class IgnoreSignatureValidationContext : SignatureValidationPolicy
         {
             /// <inheritdoc />
-            public override bool IsEnabled => true;
+            public override bool IsEnabled => false;
 
-            public override SignatureValidationResult TryValidateSignature(JwtHeader header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
-
-            {
-                return SignatureValidationResult.Success();
-            }
-
+            /// <inheritdoc />
             public override SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
                 return SignatureValidationResult.Success();

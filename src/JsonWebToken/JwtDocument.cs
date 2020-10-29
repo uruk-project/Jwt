@@ -11,6 +11,14 @@ using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    ///   Represents the structure of a JWT value in a lightweight, read-only form.
+    /// </summary>
+    /// <remarks>
+    ///   This class utilizes resources from pooled memory to minimize the garbage collector (GC)
+    ///   impact in high-usage scenarios. Failure to properly Dispose this object will result in
+    ///   the memory not being returned to the pool.
+    /// </remarks>
     public sealed class JwtDocument : IDisposable
     {
         private ReadOnlyMemory<byte> _utf8Json;
@@ -18,11 +26,19 @@ namespace JsonWebToken
         private byte[]? _extraRentedBytes;
         private readonly JwtElement _root;
         private readonly bool _isDisposable;
+        private readonly List<IDisposable> _disposableRegistry;
 
+        /// <summary>
+        /// The <see cref="JwtElement"/> representing the value of the document.
+        /// </summary>
         public JwtElement RootElement => _root;
+
+        /// <summary>
+        /// Gets the raw binary value of the <see cref="JwtDocument"/>.
+        /// </summary>
         public ReadOnlyMemory<byte> RawValue => _utf8Json;
 
-        public bool IsDisposable => _isDisposable;
+        internal bool IsDisposable => _isDisposable;
 
         internal JwtDocument(ReadOnlyMemory<byte> utf8Json, MetadataDb parsedData, byte[]? extraRentedBytes, bool isDisposable = true)
         {
@@ -33,54 +49,57 @@ namespace JsonWebToken
             _extraRentedBytes = extraRentedBytes;
             _root = new JwtElement(this, 0);
             _isDisposable = isDisposable;
+            _disposableRegistry = new List<IDisposable>();
 
             // extraRentedBytes better be null if we're not disposable.
             Debug.Assert(isDisposable || extraRentedBytes == null);
         }
 
-        public JwtElement this[string propertyName]
+        internal JwtDocument()
         {
-            get
-            {
-                if (TryGetProperty(propertyName, out var value))
-                {
-                    return value;
-                }
-
-                throw new KeyNotFoundException();
-            }
+            _isDisposable = false;
+            _disposableRegistry = new List<IDisposable>(0);
         }
 
-        public JwtElement this[ReadOnlySpan<byte> propertyName]
-        {
-            get
-            {
-                if (TryGetProperty(propertyName, out var value))
-                {
-                    return value;
-                }
+        ///// <summary>
+        ///// Gets 
+        ///// </summary>
+        ///// <param name="propertyName"></param>
+        ///// <returns></returns>
+        //public JwtElement this[string propertyName]
+        //{
+        //    get
+        //    {
+        //        if (TryGetProperty(propertyName, out var value))
+        //        {
+        //            return value;
+        //        }
 
-                throw new KeyNotFoundException();
-            }
-        }
+        //        throw new KeyNotFoundException();
+        //    }
+        //}
+
+        //public JwtElement this[ReadOnlySpan<byte> propertyName]
+        //{
+        //    get
+        //    {
+        //        if (TryGetProperty(propertyName, out var value))
+        //        {
+        //            return value;
+        //        }
+
+        //        throw new KeyNotFoundException();
+        //    }
+        //}
 
         internal bool TryGetNamedPropertyValue(ReadOnlySpan<char> propertyName, out JwtElement value)
         {
             CheckNotDisposed();
 
-            DbRow row;// = _parsedData.Get(0);
-
-            //            CheckExpectedType(JsonTokenType.StartObject, row.TokenType);
-
-            //// Only one row means it was EndObject.
-            //if (row.NumberOfRows == 1)
-            //{
-            //    value = default;
-            //    return false;
-            //}
+            DbRow row;
 
             int maxBytes = Utf8.GetMaxByteCount(propertyName.Length);
-            int endIndex = _parsedData.Length; //checked(row.NumberOfRows * DbRow.Size + index);
+            int endIndex = _parsedData.Length;
 
             if (maxBytes < JsonConstants.StackallocThreshold)
             {
@@ -100,29 +119,9 @@ namespace JsonWebToken
             //
             // The maximal escaping seems to be 6 -> 1 ("\u0030" => "0"), but just transcode
             // and switch once one viable long property is found.
-
             int minBytes = propertyName.Length;
-            // Move to the row before the EndObject
-            int candidateIndex = 0;
-
-            while (candidateIndex <= endIndex)
+            for (int candidateIndex = 0; candidateIndex <= endIndex; candidateIndex += DbRow.Size * 2)
             {
-                //int passedIndex = candidateIndex;
-
-                //row = _parsedData.Get(candidateIndex);
-                //Debug.Assert(row.TokenType != JsonTokenType.PropertyName);
-
-                //// Move before the value
-                //if (row.IsSimpleValue)
-                //{
-                //    candidateIndex -= DbRow.Size;
-                //}
-                //else
-                //{
-                //    Debug.Assert(row.NumberOfRows > 0);
-                //    candidateIndex -= DbRow.Size * (row.NumberOfRows + 1);
-                //}
-
                 row = _parsedData.Get(candidateIndex);
                 Debug.Assert(row.TokenType == JsonTokenType.PropertyName);
 
@@ -146,9 +145,6 @@ namespace JsonWebToken
                         ArrayPool<byte>.Shared.Return(tmpUtf8);
                     }
                 }
-
-                // Move to the previous value
-                candidateIndex += DbRow.Size * 2;
             }
 
             // None of the property names were within the range that the UTF-8 encoding would have been.
@@ -159,17 +155,6 @@ namespace JsonWebToken
         internal bool TryGetNamedPropertyValue(ReadOnlySpan<byte> propertyName, out JwtElement value)
         {
             CheckNotDisposed();
-
-            //DbRow row = _parsedData.Get(0);
-
-            //CheckExpectedType(JsonTokenType.StartObject, row.TokenType);
-
-            //// Only one row means it was EndObject.
-            //if (row.NumberOfRows == 1)
-            //{
-            //    value = default;
-            //    return false;
-            //}
 
             int endIndex = _parsedData.Length;// checked(row.NumberOfRows * DbRow.Size + index);
 
@@ -192,20 +177,6 @@ namespace JsonWebToken
 
             while (index < endIndex)
             {
-                //DbRow row = _parsedData.Get(index);
-                // Debug.Assert(row.TokenType != JsonTokenType.PropertyName);
-
-                // Move before the value
-                //if (row.IsSimpleValue)
-                //{
-                //index -= DbRow.Size;
-                //}
-                //else
-                //{
-                //    //       Debug.Assert(row.NumberOfRows > 0);
-                //    index -= DbRow.Size * (row.NumberOfRows + 1);
-                //}
-
                 DbRow row = _parsedData.Get(index);
                 Debug.Assert(row.TokenType == JsonTokenType.PropertyName);
 
@@ -358,10 +329,6 @@ namespace JsonWebToken
             }
 
             return _utf8Json.Slice(row.Location, row.Length);
-            //int endElementIdx = GetEndIndex(index, includeEndElement: false);
-            //int start = row.Location;
-            //row = _parsedData.Get(endElementIdx);
-            //return _utf8Json.Slice(start, row.Location - start + row.Length);
         }
 
         private ReadOnlyMemory<byte> GetPropertyRawValue(int valueIndex)
@@ -415,18 +382,60 @@ namespace JsonWebToken
             ReadOnlySpan<byte> data = _utf8Json.Span;
             ReadOnlySpan<byte> segment = data.Slice(row.Location, row.Length);
             string value;
-            if (row.HasComplexChildren)
+            int backslash = segment.IndexOf(JsonConstants.BackSlash);
+            if (backslash < 0)
             {
-                int backslash = segment.IndexOf(JsonConstants.BackSlash);
-                value = JsonReaderHelper.GetUnescapedString(segment, backslash);
+                value = JsonReaderHelper.TranscodeHelper(segment);
             }
             else
             {
-                value = JsonReaderHelper.TranscodeHelper(segment);
+                value = JsonReaderHelper.GetUnescapedString(segment, backslash);
             }
 
             Debug.Assert(value != null);
             return value;
+        }
+
+        internal TValue? Deserialize<TValue>(int index, JsonSerializerOptions? options = null)
+        {
+            CheckNotDisposed();
+            DbRow row = _parsedData.Get(index);
+
+            ReadOnlySpan<byte> data = _utf8Json.Span;
+            ReadOnlySpan<byte> segment = data.Slice(row.Location, row.Length);
+            return JsonSerializer.Deserialize<TValue>(segment, options);
+        }
+
+        internal string?[]? GetStringArray(int index)
+        {
+            CheckNotDisposed();
+
+            DbRow row = _parsedData.Get(index);
+
+            JsonTokenType tokenType = row.TokenType;
+
+            if (tokenType == JsonTokenType.Null)
+            {
+                return null;
+            }
+
+            CheckExpectedType(JsonTokenType.StartArray, tokenType);
+
+            ReadOnlySpan<byte> data = _utf8Json.Span;
+            ReadOnlySpan<byte> segment = data.Slice(row.Location, row.Length);
+            string?[] array = new string[row.NumberOfRows];
+            var reader = new Utf8JsonReader(segment);
+            reader.Read();
+            for (int i = 0; i < row.NumberOfRows; i++)
+            {
+                if (reader.Read())
+                {
+                    CheckExpectedType(JsonTokenType.String, reader.TokenType);
+                    array[i] = reader.GetString();
+                }
+            }
+
+            return array;
         }
 
         internal bool TextEquals(int index, ReadOnlySpan<char> otherText, bool isPropertyName)
@@ -557,6 +566,7 @@ namespace JsonWebToken
             value = 0;
             return false;
         }
+
         internal bool TryGetValue(int index, [NotNullWhen(true)] out JsonDocument? value)
         {
             CheckNotDisposed();
@@ -569,9 +579,10 @@ namespace JsonWebToken
             ReadOnlySpan<byte> segment = data.Slice(row.Location, row.Length);
             var reader = new Utf8JsonReader(segment);
 
-            if (JsonDocument.TryParseValue(ref reader, out var tmp))
+            if (JsonDocument.TryParseValue(ref reader, out var doc))
             {
-                value = tmp;
+                _disposableRegistry.Add(doc);
+                value = doc;
                 return true;
             }
 
@@ -607,6 +618,15 @@ namespace JsonWebToken
             return newDocument._root;
         }
 
+        internal JwtDocument Clone()
+        {
+            MetadataDb newDb = _parsedData.Clone();
+            ReadOnlyMemory<byte> segmentCopy = _utf8Json.ToArray();
+            JwtDocument newDocument = new JwtDocument(segmentCopy, newDb, extraRentedBytes: null, isDisposable: false);
+
+            return newDocument;
+        }
+
         internal int GetArrayLength(int index)
         {
             CheckNotDisposed();
@@ -616,6 +636,18 @@ namespace JsonWebToken
             CheckExpectedType(JsonTokenType.StartArray, row.TokenType);
 
             return row.Length;
+        }
+        
+
+        internal int GetMemberCount(int index)
+        {
+            CheckNotDisposed();
+
+            DbRow row = _parsedData.Get(index);
+
+            CheckExpectedType(JsonTokenType.StartObject, row.TokenType);
+
+            return row.NumberOfRows;
         }
 
         internal JwtElement GetArrayIndexElement(int currentIndex, int arrayIndex)

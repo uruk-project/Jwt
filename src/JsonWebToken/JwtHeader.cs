@@ -12,6 +12,7 @@ namespace JsonWebToken
     /// Represents the cryptographic operations applied to the JWT and optionally 
     /// any additional properties of the JWT. 
     /// </summary>
+    [Obsolete]
     public sealed class JwtHeader : IJwtHeader
     {
         private JwtObject? _inner;
@@ -143,6 +144,7 @@ namespace JsonWebToken
             get => _compressionAlgorithm;
             set => _compressionAlgorithm = value;
         }
+
         /// <summary>
         /// Gets the Initialization Vector used for AES GCM encryption.
         /// </summary>

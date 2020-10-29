@@ -27,7 +27,7 @@ namespace JsonWebToken
         private byte _control;
         private byte[]? _issuer;
         private int _clockSkew;
-        private IKeyProvider[] _decryptionKeysProviders;
+        private IKeyProvider[]? _decryptionKeysProviders;
         private bool _headerCacheDisabled;
         private readonly List<byte[]> _audiences = new List<byte[]>();
 
@@ -433,21 +433,21 @@ namespace JsonWebToken
             => WithDecryptionKeys(new[] { decryptionKeyProvider });
 
         /// <summary>
-        /// Defines the keys used to decrypt the tokens.
+        /// Defines the <see cref="Jwks"/> used to decrypt the tokens.
         /// </summary>
         /// <returns></returns>
         public TokenValidationPolicyBuilder WithDecryptionKeys(Jwks decryptionKeys)
             => WithDecryptionKeys(new StaticKeyProvider(decryptionKeys));
 
         /// <summary>
-        /// Defines the keys providers used to decrypt the tokens.
+        /// Defines the <see cref="Jwk"/> used to decrypt the tokens.
         /// </summary>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder WithDecryptionKeys(Jwk encryptionKey)
+        public TokenValidationPolicyBuilder WithDecryptionKey(Jwk encryptionKey)
              => WithDecryptionKeys(new Jwks(encryptionKey));
 
         /// <summary>
-        /// Defines the keys providers used to decrypt the tokens.
+        /// Disabled the header cache. This may be useful if the headers are complex or  
         /// </summary>
         /// <returns></returns>
         public TokenValidationPolicyBuilder DisabledHeaderCache()
@@ -500,11 +500,6 @@ namespace JsonWebToken
         private sealed class EmptyKeyProvider : IKeyProvider
         {
             private static readonly Jwk[] Empty = Array.Empty<Jwk>();
-
-            public Jwk[] GetKeys(JwtHeader header)
-            {
-                return Empty;
-            }
 
             public Jwk[] GetKeys(JwtHeaderDocument header)
             {

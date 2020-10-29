@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -16,7 +17,7 @@ namespace JsonWebToken.Tests
             {
                 rawHeaders[i] = new byte[32];
                 FillRandom(rawHeaders[i]);
-                JwtHeader header = JwtHeader.FromJson($"{{\"kid\":\"{i}\"}}");
+                JwtHeaderDocument.TryParse(Encoding.UTF8.GetBytes($"{{\"kid\":\"{i}\"}}"), TokenValidationPolicy.NoValidation, out JwtHeaderDocument header, out var error);
                 cache.AddHeader(rawHeaders[i], header);
             }
 
@@ -39,9 +40,11 @@ namespace JsonWebToken.Tests
             {
                 rawHeaders[i] = new byte[32];
                 FillRandom(rawHeaders[i]);
-                JwtHeader header = JwtHeader.FromJson($"{{\"kid\":\"{i}\"}}");
+                JwtHeaderDocument.TryParse(Encoding.UTF8.GetBytes($"{{\"kid\":\"{i}\"}}"), TokenValidationPolicy.NoValidation, out JwtHeaderDocument header, out var error);
                 cache.AddHeader(rawHeaders[i], header);
-                Assert.Equal(header, cache.Head);
+                Assert.NotNull(cache.Head);
+                Assert.Equal(header.Algorithm, cache.Head.Algorithm);
+                Assert.Equal(header.Kid, cache.Head.Kid);
             }
 
             Assert.Equal("19", cache.Head.Kid);
@@ -66,7 +69,7 @@ namespace JsonWebToken.Tests
             {
                 rawHeaders[i] = new byte[32];
                 FillRandom(rawHeaders[i]);
-                JwtHeader header = JwtHeader.FromJson($"{{\"kid\":\"{i}\"}}");
+                JwtHeaderDocument.TryParse(Encoding.UTF8.GetBytes($"{{\"kid\":\"{i}\"}}"), TokenValidationPolicy.NoValidation, out JwtHeaderDocument header, out var error);
                 cache.AddHeader(rawHeaders[i], header);
             }
 
@@ -89,11 +92,12 @@ namespace JsonWebToken.Tests
                 FillRandom(rawHeaders[i]);
             }
 
+            JwtHeaderDocument.TryParse(Encoding.UTF8.GetBytes($"{{\"kid\":\"{0}\"}}"), TokenValidationPolicy.NoValidation, out JwtHeaderDocument header, out var error);
             var p = Parallel.For(0, 100, j =>
             {
                 for (int i = 0; i < 1000; i++)
                 {
-                    cache.AddHeader(rawHeaders[i], new JwtHeader());
+                    cache.AddHeader(rawHeaders[i], header.Clone());
                 }
             });
 

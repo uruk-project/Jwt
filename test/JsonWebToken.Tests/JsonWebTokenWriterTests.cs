@@ -1,7 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text.Json;
+using JsonWebToken.Internal;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -38,8 +42,13 @@ namespace JsonWebToken.Tests
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader(_keys.Jwks);
-            var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
+            var reader = new JwtReader();
+            var policy = new TokenValidationPolicyBuilder()
+                .WithDecryptionKeys(_keys.Jwks)
+                .IgnoreSignature()
+                .Build();
+
+            var result = reader.TryReadToken(value, policy);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
 
             var jwt = result.Token;
@@ -55,12 +64,20 @@ namespace JsonWebToken.Tests
             }
 
             Assert.NotNull(jwsPayload);
-
-            Assert.Equal(jwsPayload.IssuedAt, jwt.IssuedAt);
-            Assert.Equal(jwsPayload.ExpirationTime, jwt.ExpirationTime);
-            Assert.Equal(jwsPayload.Issuer, jwt.Issuer);
-            Assert.Equal(jwsPayload.Audiences?.FirstOrDefault(), jwt.Audiences?.FirstOrDefault());
-            Assert.Equal(jwsPayload.JwtId, jwt.Id);
+            if (jwsPayload.Count() > 0)
+            {
+                Assert.True(jwt.Payload.TryGetClaim("iat", out var iat));
+                Assert.Equal(jwsPayload.IssuedAt, EpochTime.ToDateTime(iat.GetInt64()));
+                Assert.True(jwt.Payload.TryGetClaim("exp", out var exp));
+                Assert.Equal(jwsPayload.ExpirationTime, EpochTime.ToDateTime(exp.GetInt64()));
+                Assert.True(jwt.Payload.TryGetClaim("iss", out var iss));
+                Assert.Equal(jwsPayload.Issuer, iss.GetString());
+                Assert.True(jwt.Payload.TryGetClaim("aud", out var aud));
+                var firstAud = aud.ValueKind == JsonValueKind.String ? aud.GetString() : aud.GetStringArray().FirstOrDefault();
+                Assert.Equal(jwsPayload.Audiences?.FirstOrDefault(), firstAud);
+                Assert.True(jwt.Payload.TryGetClaim("jti", out var jti));
+                Assert.Equal(jwsPayload.JwtId, jti.GetString());
+            }
         }
 
         [Fact]
@@ -76,8 +93,12 @@ namespace JsonWebToken.Tests
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader(RsaKey);
-            var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
+            var reader = new JwtReader();
+            var policy = new TokenValidationPolicyBuilder()
+                .WithDecryptionKey(RsaKey)
+                .IgnoreSignature()
+                .Build();
+            var result = reader.TryReadToken(value, policy);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
 
             var jwt = result.Token;
@@ -98,8 +119,12 @@ namespace JsonWebToken.Tests
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader(RsaKey);
-            var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
+            var reader = new JwtReader();
+            var policy = new TokenValidationPolicyBuilder()
+                .WithDecryptionKey(RsaKey)
+                .IgnoreSignature()
+                .Build();
+            var result = reader.TryReadToken(value, policy);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
 
             var jwt = result.Token;
@@ -134,12 +159,16 @@ namespace JsonWebToken.Tests
             var value = writer.WriteToken(descriptor);
             Assert.NotNull(value);
 
-            var reader = new JwtReader(key);
-            var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
+            var reader = new JwtReader();
+            var policy = new TokenValidationPolicyBuilder()
+                .WithDecryptionKey(key)
+                .IgnoreSignature()
+                .Build();
+            var result = reader.TryReadToken(value, policy);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
 
             var jwt = result.Token;
-            Assert.Equal(data, jwt.Binary);
+            Assert.True(jwt.RawValue.Span.SequenceEqual(data));
         }
 
         private static void FillData(byte[] data)
@@ -168,8 +197,12 @@ namespace JsonWebToken.Tests
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader(RsaKey);
-            var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
+            var reader = new JwtReader();
+            var policy = new TokenValidationPolicyBuilder()
+               .WithDecryptionKey(RsaKey)
+                .IgnoreSignature()
+               .Build();
+            var result = reader.TryReadToken(value, policy);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
 
             var jwt = result.Token;

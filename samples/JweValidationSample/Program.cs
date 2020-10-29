@@ -11,7 +11,7 @@ namespace JweValidationSample
             var signatureKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
 
             // Creates a symmetric key for encryption
-            var encryptionKey = new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4T");
+            var encryptionKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4T");
 
             var policy = new TokenValidationPolicyBuilder()
                            .RequireSignature(signatureKey, SignatureAlgorithm.HmacSha256)

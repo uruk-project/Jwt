@@ -67,7 +67,7 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
         /// </summary>
-        public RsaJwk(RSAParameters rsaParameters)
+        internal RsaJwk(RSAParameters rsaParameters)
         {
             Initialize(rsaParameters);
         }
@@ -75,7 +75,7 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
         /// </summary>
-        public RsaJwk(byte[] e, byte[] n)
+        internal RsaJwk(byte[] e, byte[] n)
         {
             Initialize(e, n);
         }

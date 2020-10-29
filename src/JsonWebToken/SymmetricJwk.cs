@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -21,14 +22,13 @@ namespace JsonWebToken
 #endif
         internal static new readonly SymmetricJwk Empty = new SymmetricJwk(Array.Empty<byte>());
 
-
         private readonly byte[] _k;
 
         /// <summary>
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         /// <param name="k">The binary key material.</param>
-        public SymmetricJwk(ReadOnlySpan<byte> k)
+        internal SymmetricJwk(ReadOnlySpan<byte> k)
         {
             _k = k.ToArray();
         }
@@ -37,7 +37,7 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         /// <param name="k">The binary key material.</param>
-        public SymmetricJwk(byte[] k)
+        internal SymmetricJwk(byte[] k)
         {
             if (k is null)
             {
@@ -51,7 +51,7 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         /// <param name="k">The key material encoded in Base64-URL.</param>
-        public SymmetricJwk(string k)
+        internal SymmetricJwk(string k)
         {
             if (k is null)
             {

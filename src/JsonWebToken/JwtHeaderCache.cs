@@ -8,13 +8,13 @@ using System.Threading;
 namespace JsonWebToken
 {
     /// <summary>
-    /// Represents a cache for <see cref="JwtHeader"/>.
+    /// Represents a cache for <see cref="JwtHeaderDocument"/>.
     /// </summary>
     public sealed class JwtHeaderCache : IJwtHeaderCache
     {
         private sealed class Node
         {
-            public IJwtHeader Header;
+            public JwtHeaderDocument Header;
 
             public Node? Next;
 
@@ -22,7 +22,7 @@ namespace JsonWebToken
 
             public byte[] Key;
 
-            public Node(byte[] key, IJwtHeader header, Node? next)
+            public Node(byte[] key, JwtHeaderDocument header, Node? next)
             {
                 Key = key;
                 Header = header;
@@ -41,30 +41,22 @@ namespace JsonWebToken
 
         private Node? _head = null;
         private Node? _tail = null;
-        private readonly bool _enabled;
 
         /// <summary>
         /// The heade of the cache.
         /// </summary>
-        public IJwtHeader? Head => _head?.Header;
+        public JwtHeaderDocument? Head => _head?.Header;
 
         /// <summary>
         /// The tail of the cache.
         /// </summary>
-        public IJwtHeader? Tail => _tail?.Header;
+        public JwtHeaderDocument? Tail => _tail?.Header;
 
-        /// <summary>
-        /// Gets or sets whether the cache is enabled. <c>false</c> by default.
-        /// </summary>
-        public bool Enabled => _enabled;
+        /// <inheritdoc/>
+        public bool Enabled => true;
 
-        /// <summary>
-        /// Try to get the <see cref="JwtHeader"/>.
-        /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="header"></param>
-        /// <returns></returns>
-        public bool TryGetHeader(ReadOnlySpan<byte> buffer, [NotNullWhen(true)] out IJwtHeader? header)
+        /// <inheritdoc/>
+        public bool TryGetHeader(ReadOnlySpan<byte> buffer, [NotNullWhen(true)] out JwtHeaderDocument? header)
         {
             var node = _head;
             while (node != null)
@@ -87,18 +79,14 @@ namespace JsonWebToken
             return false;
         }
 
-        /// <summary>
-        /// Adds the <see cref="JwtHeader"/> to the cache.
-        /// </summary>
-        /// <param name="rawHeader"></param>
-        /// <param name="header"></param>
-        public void AddHeader(ReadOnlySpan<byte> rawHeader, IJwtHeader header)
+        /// <inheritdoc/>
+        public void AddHeader(ReadOnlySpan<byte> rawHeader, JwtHeaderDocument header)
         {
             bool lockTaken = false;
             try
             {
                 _spinLock.Enter(ref lockTaken);
-                var node = new Node(rawHeader.ToArray(), header, _head);
+                var node = new Node(rawHeader.ToArray(), header.Clone(), _head);
                 if (_count >= MaxSize)
                 {
                     RemoveLeastRecentlyUsed();

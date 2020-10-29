@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
@@ -40,7 +41,7 @@ namespace JsonWebToken.Performance
         //    return TryParse2(data, policy);
         //}
 
-        //public JwtDocument2? TryParse2(byte[] data, TokenValidationPolicy policy)
+        //private JwtDocument2? TryParse2(byte[] data, TokenValidationPolicy policy)
         //{
         //    if (!JwtDocument2.TryParse2(data, policy, out var document))
         //    {
@@ -75,7 +76,7 @@ namespace JsonWebToken.Performance
             return TryParse(data, policy);
         }
 
-        public Jwt? TryParse(byte[] data, TokenValidationPolicy policy)
+        private Jwt? TryParse(byte[] data, TokenValidationPolicy policy)
         {
             if (!Jwt.TryParse(data, policy, out var document))
             {
@@ -89,7 +90,8 @@ namespace JsonWebToken.Performance
         [Benchmark(Baseline = false)]
         [BenchmarkCategory("JWT")]
         [ArgumentsSource(nameof(GetJwt))]
-        public JwtOld? TryReadTokenJwt(byte[] data, TokenValidationPolicy policy)
+        [Obsolete]
+        public Jwt? TryReadTokenJwt(byte[] data, TokenValidationPolicy policy)
         {
             return TryReadToken(data, policy);
         }
@@ -97,7 +99,8 @@ namespace JsonWebToken.Performance
         [Benchmark(Baseline = false)]
         [BenchmarkCategory("JWS")]
         [ArgumentsSource(nameof(GetJws))]
-        public JwtOld? TryReadTokenJws(byte[] data, TokenValidationPolicy policy)
+        [Obsolete]
+        public Jwt? TryReadTokenJws(byte[] data, TokenValidationPolicy policy)
         {
             return TryReadToken(data, policy);
         }
@@ -105,12 +108,14 @@ namespace JsonWebToken.Performance
         [Benchmark(Baseline = false)]
         [BenchmarkCategory("JWE")]
         [ArgumentsSource(nameof(GetJwe))]
-        public JwtOld? TryReadTokenJwe(byte[] data, TokenValidationPolicy policy)
+        [Obsolete]
+        public Jwt? TryReadTokenJwe(byte[] data, TokenValidationPolicy policy)
         {
             return TryReadToken(data, policy);
         }
 
-        public JwtOld? TryReadToken(byte[] data, TokenValidationPolicy policy)
+        [Obsolete]
+        private Jwt? TryReadToken(byte[] data, TokenValidationPolicy policy)
         {
             var reader = new JwtReader(Tokens.EncryptionKey);
             var document = reader.TryReadToken(data, policy);

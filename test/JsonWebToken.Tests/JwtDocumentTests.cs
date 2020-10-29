@@ -114,9 +114,9 @@ namespace JsonWebToken.Tests
             var result = Jwt.TryParse(jwt, builder, out var document);
 
             Assert.True(result);
-            document.Payload.TryGetClaim("aud", out var aud);
-            Assert.Equal("636C69656E745F6964", aud.GetString());
-            document.Payload.TryGetClaim("iss", out var iss);
+            Assert.True(document.Payload.TryGetClaim("aud", out var aud));
+            Assert.Equal("636C69656E745F6964", aud.ValueKind == JsonValueKind.String ? aud.GetString() : aud.GetStringArray().First());
+            Assert.True(document.Payload.TryGetClaim("iss", out var iss));
             Assert.Equal("https://idp.example.com/", iss.GetString());
         }
 
@@ -145,7 +145,7 @@ namespace JsonWebToken.Tests
         public void ReadJwt_Invalid(string jwt, TokenValidationStatus expectedStatus)
         {
             var policy = new TokenValidationPolicyBuilder()
-                    .RequireSignature(_keys.SigningKey) 
+                    .RequireSignature(_keys.SigningKey)
                     .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
                     .RequireIssuer("https://idp.example.com/")

@@ -7,7 +7,7 @@ namespace JsonWebToken
 {
     public static class SetJsonWebTokenExtensions
     {
-        public static SecurityEventToken AsSecurityEventToken(this JwtOld token)
+        public static SecurityEventToken AsSecurityEventToken(this Jwt token)
         {
             if (token is null)
             {
@@ -19,7 +19,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.payload);
             }
 
-            if (!token.Payload.ContainsKey(SetClaims.EventsUtf8))
+            if (!token.Payload.ContainsClaim(SetClaims.EventsUtf8))
             {
                 throw new InvalidOperationException();
             }

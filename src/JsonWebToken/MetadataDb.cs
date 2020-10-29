@@ -261,6 +261,13 @@ namespace JsonWebToken
             return (JsonTokenType)(union >> 28);
         }
 
+        internal MetadataDb Clone()
+        {
+            byte[] newDatabase = new byte[Length];
+            _data.AsSpan(0, Length).CopyTo(newDatabase);
+            return new MetadataDb(newDatabase);
+        }
+
         internal MetadataDb CopySegment(int startIndex, int endIndex)
         {
             Debug.Assert(

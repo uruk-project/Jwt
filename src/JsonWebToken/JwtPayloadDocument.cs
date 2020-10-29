@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,6 +14,14 @@ using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Represents the payload of a JWT, in a lightweight, read-only form. 
+    /// </summary>
+    /// <remarks>
+    /// This class utilizes resources from pooled memory to minimize the garbage collector (GC)
+    /// impact in high-usage scenarios. Failure to properly Dispose this object will result in
+    /// the memory not being returned to the pool.
+    /// </remarks>
     public sealed class JwtPayloadDocument : IDisposable
     {
         internal const byte InvalidAudienceFlag = 0x01;
@@ -25,7 +34,6 @@ namespace JsonWebToken
 
         private readonly JwtDocument _document;
         private readonly byte _control;
-        private readonly JwtElement _root;
 
         /// <summary>
         /// Gets the validation control bits.
@@ -48,7 +56,6 @@ namespace JsonWebToken
         {
             _document = document;
             _control = control;
-            _root = document.RootElement;
         }
 
         internal static bool TryParse(ReadOnlyMemory<byte> utf8Payload, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtPayloadDocument? payload, [NotNullWhen(false)] out TokenValidationError? error)
@@ -139,7 +146,7 @@ namespace JsonWebToken
                         }
                         else if (tokenType == JsonTokenType.StartObject)
                         {
-                            int itemCount = SkipArrayOrObject(ref reader);
+                            int itemCount = Utf8JsonReaderHelper.SkipObject(ref reader);
                             int tokenEnd = (int)reader.TokenStartIndex;
                             int index = database.Length;
                             database.Append(JsonTokenType.StartObject, tokenStart, tokenEnd - tokenStart + 1);
@@ -154,7 +161,7 @@ namespace JsonWebToken
                             }
                             else
                             {
-                                itemCount = SkipArrayOrObject(ref reader);
+                                itemCount = Utf8JsonReaderHelper.SkipArray(ref reader);
                             }
 
                             int index = database.Length;
@@ -181,18 +188,6 @@ namespace JsonWebToken
         Error:
             payload = null;
             return false;
-        }
-
-        private static int SkipArrayOrObject(ref Utf8JsonReader reader)
-        {
-            int count = 0;
-            int depth = reader.CurrentDepth;
-            do
-            {
-                count++;
-            }
-            while (reader.Read() && depth < reader.CurrentDepth);
-            return count;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -319,91 +314,127 @@ namespace JsonWebToken
         /// <summary>
         /// Determines whether the <see cref="JwtPayloadDocument"/> contains the specified claim.
         /// </summary>
-        /// <param name="claim"></param>
+        /// <param name="claimName"></param>
         /// <returns></returns>
-        public bool ContainsClaim(string claim)
+        public bool ContainsClaim(string claimName)
         {
-            return _document.ContainsKey(claim);
+            return _document.ContainsKey(claimName);
         }
 
         /// <summary>
         /// Determines whether the <see cref="JwtPayloadDocument"/> contains the specified claim.
         /// </summary>
-        /// <param name="claim"></param>
+        /// <param name="claimName"></param>
         /// <returns></returns>
-        public bool ContainsClaim(ReadOnlySpan<byte> claim)
+        public bool ContainsClaim(ReadOnlySpan<byte> claimName)
         {
-            return _document.ContainsKey(claim);
+            return _document.ContainsKey(claimName);
         }
 
-        public bool TryGetClaim(string claim, out JwtElement value)
+        /// <summary>
+        ///   Looks for a claim named <paramref name="claimName"/> in the current JWT, returning
+        ///   whether or not such a claim existed. When the claim exists <paramref name="value"/>
+        ///   is assigned to the value of that claim.
+        /// </summary>
+        /// <param name="claimName">Name of the claim to find.</param>
+        /// <param name="value">Receives the value of the located claim.</param>
+        /// <returns>
+        ///   <see langword="true"/> if the claim was found, <see langword="false"/> otherwise.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        ///   This value is not <see cref="JsonValueKind.Object"/>.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
+        /// </exception>
+        public bool TryGetClaim(string claimName, out JwtElement value)
         {
-            return _document.TryGetProperty(claim, out value);
+            return _document.TryGetProperty(claimName, out value);
         }
 
-        public bool TryGetClaim(ReadOnlySpan<byte> claim, out JwtElement value)
+        /// <summary>
+        ///   Looks for a claim named <paramref name="claimName"/> in the current JWT, returning
+        ///   whether or not such a claim existed. When the claim exists <paramref name="value"/>
+        ///   is assigned to the value of that claim.
+        /// </summary>
+        /// <param name="claimName">Name of the claim to find.</param>
+        /// <param name="value">Receives the value of the located claim.</param>
+        /// <returns>
+        ///   <see langword="true"/> if the claim was found, <see langword="false"/> otherwise.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        ///   This value is not <see cref="JsonValueKind.Object"/>.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
+        /// </exception>
+        public bool TryGetClaim(ReadOnlySpan<byte> claimName, out JwtElement value)
         {
-            return _document.TryGetProperty(claim, out value);
+            return _document.TryGetProperty(claimName, out value);
+        }
+
+        /// <summary>
+        ///   Looks for a claim named <paramref name="claimName"/> in the current JWT, returning
+        ///   the value of that claim.
+        /// </summary>
+        /// <param name="claimName">Name of the claim to find.</param>
+        /// <returns>
+        ///  The value of the located claim.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        ///   This value is not <see cref="JsonValueKind.Object"/>.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
+        /// </exception>
+        /// <exception cref="KeyNotFoundException">
+        ///   The <paramref name="claimName"/> is not found.
+        /// </exception>
+        public JwtElement this[string claimName]
+        {
+            get
+            {
+                if (_document.TryGetProperty(claimName, out var value))
+                {
+                    return value;
+                }
+
+                throw new KeyNotFoundException();
+            }
+        }
+
+        /// <summary>
+        ///   Looks for a claim named <paramref name="claimName"/> in the current JWT, returning
+        ///   the value of that claim.
+        /// </summary>
+        /// <param name="claimName">Name of the claim to find.</param>
+        /// <returns>
+        ///  The value of the located claim.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        ///   This value is not <see cref="JsonValueKind.Object"/>.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
+        /// </exception>
+        /// <exception cref="KeyNotFoundException">
+        ///   The <paramref name="claimName"/> is not found.
+        /// </exception>
+        public JwtElement this[ReadOnlySpan<byte> claimName]
+        {
+            get
+            {
+                if (_document.TryGetProperty(claimName, out var value))
+                {
+                    return value;
+                }
+
+                throw new KeyNotFoundException();
+            }
         }
     }
 
-    internal static class JsonConstants
-    {
-        public const byte OpenBrace = (byte)'{';
-        public const byte CloseBrace = (byte)'}';
-        public const byte OpenBracket = (byte)'[';
-        public const byte CloseBracket = (byte)']';
-        public const byte Space = (byte)' ';
-        public const byte CarriageReturn = (byte)'\r';
-        public const byte LineFeed = (byte)'\n';
-        public const byte Tab = (byte)'\t';
-        public const byte ListSeparator = (byte)',';
-        public const byte KeyValueSeperator = (byte)':';
-        public const byte Quote = (byte)'"';
-        public const byte BackSlash = (byte)'\\';
-        public const byte Slash = (byte)'/';
-        public const byte BackSpace = (byte)'\b';
-        public const byte FormFeed = (byte)'\f';
-        public const byte Asterisk = (byte)'*';
-        public const byte Colon = (byte)':';
-        public const byte Period = (byte)'.';
-        public const byte Plus = (byte)'+';
-        public const byte Hyphen = (byte)'-';
-        public const byte UtcOffsetToken = (byte)'Z';
-        public const byte TimePrefix = (byte)'T';
-
-        public const int StackallocThreshold = 256;
-
-        // In the worst case, an ASCII character represented as a single utf-8 byte could expand 6x when escaped.
-        // For example: '+' becomes '\u0043'
-        // Escaping surrogate pairs (represented by 3 or 4 utf-8 bytes) would expand to 12 bytes (which is still <= 6x).
-        // The same factor applies to utf-16 characters.
-        public const int MaxExpansionFactorWhileEscaping = 6;
-
-        // In the worst case, a single UTF-16 character could be expanded to 3 UTF-8 bytes.
-        // Only surrogate pairs expand to 4 UTF-8 bytes but that is a transformation of 2 UTF-16 characters goign to 4 UTF-8 bytes (factor of 2).
-        // All other UTF-16 characters can be represented by either 1 or 2 UTF-8 bytes.
-        public const int MaxExpansionFactorWhileTranscoding = 3;
-
-        public static ReadOnlySpan<byte> NaNValue => new byte[] { (byte)'N', (byte)'a', (byte)'N' };
-        public static ReadOnlySpan<byte> PositiveInfinityValue => new byte[] { (byte)'I', (byte)'n', (byte)'f', (byte)'i', (byte)'n', (byte)'i', (byte)'t', (byte)'y' };
-        public static ReadOnlySpan<byte> NegativeInfinityValue => new byte[] { (byte)'-', (byte)'I', (byte)'n', (byte)'f', (byte)'i', (byte)'n', (byte)'i', (byte)'t', (byte)'y' };
-
-        // Encoding Helpers
-        public const char HighSurrogateStart = '\ud800';
-        public const char HighSurrogateEnd = '\udbff';
-        public const char LowSurrogateStart = '\udc00';
-        public const char LowSurrogateEnd = '\udfff';
-
-        public const int UnicodePlane01StartValue = 0x10000;
-        public const int HighSurrogateStartValue = 0xD800;
-        public const int HighSurrogateEndValue = 0xDBFF;
-        public const int LowSurrogateStartValue = 0xDC00;
-        public const int LowSurrogateEndValue = 0xDFFF;
-        public const int BitShiftBy10 = 0x400;
-    }
-
-
+    // based on https://github.com/dotnet/runtime/blob/master/src/libraries/System.Text.Json/src/System/Text/Json/Reader/JsonReaderHelper.Unescaping.cs
     internal static partial class JsonReaderHelper
     {
         public static string TranscodeHelper(ReadOnlySpan<byte> utf8Unescaped)
@@ -424,273 +455,6 @@ namespace JsonWebToken
             }
         }
 
-
-        public static (int, int) CountNewLines(ReadOnlySpan<byte> data)
-        {
-            int lastLineFeedIndex = -1;
-            int newLines = 0;
-            for (int i = 0; i < data.Length; i++)
-            {
-                if (data[i] == JsonConstants.LineFeed)
-                {
-                    lastLineFeedIndex = i;
-                    newLines++;
-                }
-            }
-            return (newLines, lastLineFeedIndex);
-        }
-
-        internal static JsonValueKind ToValueKind(this JsonTokenType tokenType)
-        {
-            switch (tokenType)
-            {
-                case JsonTokenType.None:
-                    return JsonValueKind.Undefined;
-                case JsonTokenType.StartArray:
-                    return JsonValueKind.Array;
-                case JsonTokenType.StartObject:
-                    return JsonValueKind.Object;
-                case JsonTokenType.String:
-                case JsonTokenType.Number:
-                case JsonTokenType.True:
-                case JsonTokenType.False:
-                case JsonTokenType.Null:
-                    // This is the offset between the set of literals within JsonValueType and JsonTokenType
-                    // Essentially: JsonTokenType.Null - JsonValueType.Null
-                    return (JsonValueKind)((byte)tokenType - 4);
-                default:
-                    Debug.Fail($"No mapping for token type {tokenType}");
-                    return JsonValueKind.Undefined;
-            }
-        }
-
-        // Returns true if the TokenType is a primitive "value", i.e. String, Number, True, False, and Null
-        // Otherwise, return false.
-        public static bool IsTokenTypePrimitive(JsonTokenType tokenType) =>
-            (tokenType - JsonTokenType.String) <= (JsonTokenType.Null - JsonTokenType.String);
-
-        //// A hex digit is valid if it is in the range: [0..9] | [A..F] | [a..f]
-        //// Otherwise, return false.
-        //public static bool IsHexDigit(byte nextByte) => HexConverter.IsHexChar(nextByte);
-
-        // https://tools.ietf.org/html/rfc8259
-        // Does the span contain '"', '\',  or any control characters (i.e. 0 to 31)
-        // IndexOfAny(34, 92, < 32)
-        // Borrowed and modified from SpanHelpers.Byte:
-        // https://github.com/dotnet/corefx/blob/fc169cddedb6820aaabbdb8b7bece2a3df0fd1a5/src/Common/src/CoreLib/System/SpanHelpers.Byte.cs#L473-L604
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfQuoteOrAnyControlOrBackSlash(this ReadOnlySpan<byte> span)
-        {
-            return IndexOfOrLessThan(
-                    ref MemoryMarshal.GetReference(span),
-                    JsonConstants.Quote,
-                    JsonConstants.BackSlash,
-                    lessThan: 32,   // Space ' '
-                    span.Length);
-        }
-
-        private static unsafe int IndexOfOrLessThan(ref byte searchSpace, byte value0, byte value1, byte lessThan, int length)
-        {
-            Debug.Assert(length >= 0);
-
-            uint uValue0 = value0; // Use uint for comparisons to avoid unnecessary 8->32 extensions
-            uint uValue1 = value1; // Use uint for comparisons to avoid unnecessary 8->32 extensions
-            uint uLessThan = lessThan; // Use uint for comparisons to avoid unnecessary 8->32 extensions
-            IntPtr index = (IntPtr)0; // Use IntPtr for arithmetic to avoid unnecessary 64->32->64 truncations
-            IntPtr nLength = (IntPtr)length;
-
-            if (Vector.IsHardwareAccelerated && length >= Vector<byte>.Count * 2)
-            {
-                int unaligned = (int)Unsafe.AsPointer(ref searchSpace) & (Vector<byte>.Count - 1);
-                nLength = (IntPtr)((Vector<byte>.Count - unaligned) & (Vector<byte>.Count - 1));
-            }
-        SequentialScan:
-            uint lookUp;
-            while ((byte*)nLength >= (byte*)8)
-            {
-                nLength -= 8;
-
-                lookUp = Unsafe.AddByteOffset(ref searchSpace, index);
-                if (uValue0 == lookUp || uValue1 == lookUp || uLessThan > lookUp)
-                    goto Found;
-                lookUp = Unsafe.AddByteOffset(ref searchSpace, index + 1);
-                if (uValue0 == lookUp || uValue1 == lookUp || uLessThan > lookUp)
-                    goto Found1;
-                lookUp = Unsafe.AddByteOffset(ref searchSpace, index + 2);
-                if (uValue0 == lookUp || uValue1 == lookUp || uLessThan > lookUp)
-                    goto Found2;
-                lookUp = Unsafe.AddByteOffset(ref searchSpace, index + 3);
-                if (uValue0 == lookUp || uValue1 == lookUp || uLessThan > lookUp)
-                    goto Found3;
-                lookUp = Unsafe.AddByteOffset(ref searchSpace, index + 4);
-                if (uValue0 == lookUp || uValue1 == lookUp || uLessThan > lookUp)
-                    goto Found4;
-                lookUp = Unsafe.AddByteOffset(ref searchSpace, index + 5);
-                if (uValue0 == lookUp || uValue1 == lookUp || uLessThan > lookUp)
-                    goto Found5;
-                lookUp = Unsafe.AddByteOffset(ref searchSpace, index + 6);
-                if (uValue0 == lookUp || uValue1 == lookUp || uLessThan > lookUp)
-                    goto Found6;
-                lookUp = Unsafe.AddByteOffset(ref searchSpace, index + 7);
-                if (uValue0 == lookUp || uValue1 == lookUp || uLessThan > lookUp)
-                    goto Found7;
-
-                index += 8;
-            }
-
-            if ((byte*)nLength >= (byte*)4)
-            {
-                nLength -= 4;
-
-                lookUp = Unsafe.AddByteOffset(ref searchSpace, index);
-                if (uValue0 == lookUp || uValue1 == lookUp || uLessThan > lookUp)
-                    goto Found;
-                lookUp = Unsafe.AddByteOffset(ref searchSpace, index + 1);
-                if (uValue0 == lookUp || uValue1 == lookUp || uLessThan > lookUp)
-                    goto Found1;
-                lookUp = Unsafe.AddByteOffset(ref searchSpace, index + 2);
-                if (uValue0 == lookUp || uValue1 == lookUp || uLessThan > lookUp)
-                    goto Found2;
-                lookUp = Unsafe.AddByteOffset(ref searchSpace, index + 3);
-                if (uValue0 == lookUp || uValue1 == lookUp || uLessThan > lookUp)
-                    goto Found3;
-
-                index += 4;
-            }
-
-            while ((byte*)nLength > (byte*)0)
-            {
-                nLength -= 1;
-
-                lookUp = Unsafe.AddByteOffset(ref searchSpace, index);
-                if (uValue0 == lookUp || uValue1 == lookUp || uLessThan > lookUp)
-                    goto Found;
-
-                index += 1;
-            }
-
-            if (Vector.IsHardwareAccelerated && ((int)(byte*)index < length))
-            {
-                nLength = (IntPtr)((length - (int)(byte*)index) & ~(Vector<byte>.Count - 1));
-
-                // Get comparison Vector
-                Vector<byte> values0 = new Vector<byte>(value0);
-                Vector<byte> values1 = new Vector<byte>(value1);
-                Vector<byte> valuesLessThan = new Vector<byte>(lessThan);
-
-                while ((byte*)nLength > (byte*)index)
-                {
-                    Vector<byte> vData = Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.AddByteOffset(ref searchSpace, index));
-
-                    var vMatches = Vector.BitwiseOr(
-                                    Vector.BitwiseOr(
-                                        Vector.Equals(vData, values0),
-                                        Vector.Equals(vData, values1)),
-                                    Vector.LessThan(vData, valuesLessThan));
-
-                    if (Vector<byte>.Zero.Equals(vMatches))
-                    {
-                        index += Vector<byte>.Count;
-                        continue;
-                    }
-                    // Find offset of first match
-                    return (int)(byte*)index + LocateFirstFoundByte(vMatches);
-                }
-
-                if ((int)(byte*)index < length)
-                {
-                    nLength = (IntPtr)(length - (int)(byte*)index);
-                    goto SequentialScan;
-                }
-            }
-            return -1;
-        Found: // Workaround for https://github.com/dotnet/runtime/issues/8795
-            return (int)(byte*)index;
-        Found1:
-            return (int)(byte*)(index + 1);
-        Found2:
-            return (int)(byte*)(index + 2);
-        Found3:
-            return (int)(byte*)(index + 3);
-        Found4:
-            return (int)(byte*)(index + 4);
-        Found5:
-            return (int)(byte*)(index + 5);
-        Found6:
-            return (int)(byte*)(index + 6);
-        Found7:
-            return (int)(byte*)(index + 7);
-        }
-
-        // Vector sub-search adapted from https://github.com/aspnet/KestrelHttpServer/pull/1138
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int LocateFirstFoundByte(Vector<byte> match)
-        {
-            var vector64 = Vector.AsVectorUInt64(match);
-            ulong candidate = 0;
-            int i = 0;
-            // Pattern unrolled by jit https://github.com/dotnet/coreclr/pull/8001
-            for (; i < Vector<ulong>.Count; i++)
-            {
-                candidate = vector64[i];
-                if (candidate != 0)
-                {
-                    break;
-                }
-            }
-
-            // Single LEA instruction with jitted const (using function result)
-            return i * 8 + LocateFirstFoundByte(candidate);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int LocateFirstFoundByte(ulong match)
-        {
-            // Flag least significant power of two bit
-            var powerOfTwoFlag = match ^ (match - 1);
-            // Shift all powers of two into the high byte and extract
-            return (int)((powerOfTwoFlag * XorPowerOfTwoToHighByte) >> 57);
-        }
-
-        private const ulong XorPowerOfTwoToHighByte = (0x07ul |
-                                               0x06ul << 8 |
-                                               0x05ul << 16 |
-                                               0x04ul << 24 |
-                                               0x03ul << 32 |
-                                               0x02ul << 40 |
-                                               0x01ul << 48) + 1;
-
-        public static bool TryGetFloatingPointConstant(ReadOnlySpan<byte> span, out double value)
-        {
-            if (span.Length == 3)
-            {
-                if (span.SequenceEqual(JsonConstants.NaNValue))
-                {
-                    value = double.NaN;
-                    return true;
-                }
-            }
-            else if (span.Length == 8)
-            {
-                if (span.SequenceEqual(JsonConstants.PositiveInfinityValue))
-                {
-                    value = double.PositiveInfinity;
-                    return true;
-                }
-            }
-            else if (span.Length == 9)
-            {
-                if (span.SequenceEqual(JsonConstants.NegativeInfinityValue))
-                {
-                    value = double.NegativeInfinity;
-                    return true;
-                }
-            }
-
-            value = 0;
-            return false;
-        }
-
         internal static int GetUtf8FromText(ReadOnlySpan<char> text, Span<byte> dest)
         {
             try
@@ -708,6 +472,7 @@ namespace JsonWebToken
                 throw new InvalidOperationException("Invalid UTF16", ex);
             }
         }
+
         internal static void Unescape(ReadOnlySpan<byte> source, Span<byte> destination, int idx, out int written)
         {
             Debug.Assert(idx >= 0 && idx < source.Length);
@@ -775,7 +540,6 @@ namespace JsonWebToken
                             {
                                 //ThrowHelper.ThrowInvalidOperationException_ReadInvalidUTF16(scalar);
                                 throw new InvalidOperationException("Invalid UTF16");
-
                             }
 
                             Debug.Assert(IsInRangeInclusive((uint)scalar, JsonConstants.HighSurrogateStartValue, JsonConstants.HighSurrogateEndValue));
@@ -844,21 +608,21 @@ namespace JsonWebToken
         public static bool IsInRangeInclusive(int value, int lowerBound, int upperBound)
             => (uint)(value - lowerBound) <= (uint)(upperBound - lowerBound);
 
-        /// <summary>
-        /// Returns <see langword="true"/> if <paramref name="value"/> is between
-        /// <paramref name="lowerBound"/> and <paramref name="upperBound"/>, inclusive.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsInRangeInclusive(long value, long lowerBound, long upperBound)
-            => (ulong)(value - lowerBound) <= (ulong)(upperBound - lowerBound);
+        ///// <summary>
+        ///// Returns <see langword="true"/> if <paramref name="value"/> is between
+        ///// <paramref name="lowerBound"/> and <paramref name="upperBound"/>, inclusive.
+        ///// </summary>
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static bool IsInRangeInclusive(long value, long lowerBound, long upperBound)
+        //    => (ulong)(value - lowerBound) <= (ulong)(upperBound - lowerBound);
 
-        /// <summary>
-        /// Returns <see langword="true"/> if <paramref name="value"/> is between
-        /// <paramref name="lowerBound"/> and <paramref name="upperBound"/>, inclusive.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsInRangeInclusive(JsonTokenType value, JsonTokenType lowerBound, JsonTokenType upperBound)
-            => (value - lowerBound) <= (upperBound - lowerBound);
+        ///// <summary>
+        ///// Returns <see langword="true"/> if <paramref name="value"/> is between
+        ///// <paramref name="lowerBound"/> and <paramref name="upperBound"/>, inclusive.
+        ///// </summary>
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static bool IsInRangeInclusive(JsonTokenType value, JsonTokenType lowerBound, JsonTokenType upperBound)
+        //    => (value - lowerBound) <= (upperBound - lowerBound);
 
         public static bool UnescapeAndCompare(ReadOnlySpan<byte> utf8Source, ReadOnlySpan<byte> other)
         {
@@ -924,7 +688,7 @@ namespace JsonWebToken
         {
             Debug.Assert(IsValidUnicodeScalar(scalar));
             Debug.Assert(utf8Destination.Length >= 4);
-
+            
             if (scalar < 0x80U)
             {
                 // Single UTF-8 code unit
@@ -1066,31 +830,37 @@ namespace JsonWebToken
                             }
 
                             // Unfortunately, this is endianess sensitive
-#if BIGENDIAN
+                            if (!BitConverter.IsLittleEndian)
+                            {
                                 *pTarget = (byte)(ch >> 16);
                                 *(pTarget + 1) = (byte)ch;
                                 pSrc += 4;
                                 *(pTarget + 2) = (byte)(chc >> 16);
                                 *(pTarget + 3) = (byte)chc;
                                 pTarget += 4;
-#else // BIGENDIAN
-                            *pTarget = (byte)ch;
-                            *(pTarget + 1) = (byte)(ch >> 16);
-                            pSrc += 4;
-                            *(pTarget + 2) = (byte)chc;
-                            *(pTarget + 3) = (byte)(chc >> 16);
-                            pTarget += 4;
-#endif // BIGENDIAN
+                            }
+                            else
+                            {
+                                *pTarget = (byte)ch;
+                                *(pTarget + 1) = (byte)(ch >> 16);
+                                pSrc += 4;
+                                *(pTarget + 2) = (byte)chc;
+                                *(pTarget + 3) = (byte)(chc >> 16);
+                                pTarget += 4;
+                            }
                         }
                         continue;
 
                     LongCodeWithMask:
-#if BIGENDIAN
-                            // be careful about the sign extension
+                        if (BitConverter.IsLittleEndian)
+                        {
+                            ch = (char)ch;
+                        }
+                        else
+                        {
                             ch = (int)(((uint)ch) >> 16);
-#else // BIGENDIAN
-                        ch = (char)ch;
-#endif // BIGENDIAN
+                        }
+
                         pSrc++;
 
                         if (ch > 0x7F)
@@ -1294,458 +1064,6 @@ namespace JsonWebToken
         }
     }
 
-    public partial struct JwtElement
-    {
-        /// <summary>
-        ///   An enumerable and enumerator for the properties of a JSON object.
-        /// </summary>
-        [DebuggerDisplay("{Current,nq}")]
-        public struct ObjectEnumerator : IEnumerable<JwtMember>, IEnumerator<JwtMember>
-        {
-            private readonly JwtElement _target;
-            private int _curIdx;
-            private readonly int _endIdxOrVersion;
-
-            internal ObjectEnumerator(JwtElement target)
-            {
-                _target = target;
-                _curIdx = -1;
-
-                Debug.Assert(target.TokenType == JsonTokenType.StartObject);
-                _endIdxOrVersion = target._parent.GetEndIndex(_target._idx, includeEndElement: false);
-            }
-
-            /// <inheritdoc />
-            public JwtMember Current
-            {
-                get
-                {
-                    if (_curIdx < 0)
-                    {
-                        return default;
-                    }
-
-                    return new JwtMember(new JwtElement(_target._parent, _curIdx));
-                }
-            }
-
-            /// <summary>
-            ///   Returns an enumerator that iterates the properties of an object.
-            /// </summary>
-            /// <returns>
-            ///   An <see cref="ObjectEnumerator"/> value that can be used to iterate
-            ///   through the object.
-            /// </returns>
-            /// <remarks>
-            ///   The enumerator will enumerate the properties in the order they are
-            ///   declared, and when an object has multiple definitions of a single
-            ///   property they will all individually be returned (each in the order
-            ///   they appear in the content).
-            /// </remarks>
-            public ObjectEnumerator GetEnumerator()
-            {
-                ObjectEnumerator ator = this;
-                ator._curIdx = -1;
-                return ator;
-            }
-
-            /// <inheritdoc />
-            IEnumerator<JwtMember> IEnumerable<JwtMember>.GetEnumerator() => GetEnumerator();
-
-            /// <inheritdoc />
-            public void Dispose()
-            {
-                _curIdx = _endIdxOrVersion;
-            }
-
-            /// <inheritdoc />
-            public void Reset()
-            {
-                _curIdx = -1;
-            }
-
-            /// <inheritdoc />
-            object System.Collections.IEnumerator.Current => Current;
-
-            /// <inheritdoc />
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-            /// <inheritdoc />
-            public bool MoveNext()
-            {
-                if (_curIdx >= _endIdxOrVersion)
-                {
-                    return false;
-                }
-
-                if (_curIdx < 0)
-                {
-                    _curIdx = _target._idx + DbRow.Size;
-                }
-                else
-                {
-                    _curIdx = _target._parent.GetEndIndex(_curIdx, includeEndElement: true);
-                }
-
-                // _curIdx is now pointing at a property name, move one more to get the value
-                _curIdx += DbRow.Size;
-
-                return _curIdx < _endIdxOrVersion;
-            }
-        }
-
-        /// <summary>
-        ///   An enumerable and enumerator for the contents of a JSON array.
-        /// </summary>
-        [DebuggerDisplay("{Current,nq}")]
-        public ref struct ArrayEnumerator
-        {
-            private int _curIdx;
-            private JwtDocument _document;
-            private readonly int _endIdxOrVersion;
-
-            internal ArrayEnumerator(JwtElement target)
-            {
-                _curIdx = -1;
-
-                var value = target.GetRawValue();
-                if (!TryParse(value, target.GetArrayLength(), out _document!))
-                {
-                    ThrowHelper.ThrowFormatException_MalformedJson();
-                }
-
-                Debug.Assert(target.TokenType == JsonTokenType.StartArray);
-                _endIdxOrVersion = value.Length;
-            }
-
-            /// <inheritdoc />
-            public JwtElement Current
-            {
-                get
-                {
-                    if (_curIdx < 0)
-                    {
-                        return default;
-                    }
-
-                    return new JwtElement(_document, _curIdx);
-                }
-            }
-
-            /// <summary>
-            ///   Returns an enumerator that iterates through a collection.
-            /// </summary>
-            /// <returns>
-            ///   An <see cref="ArrayEnumerator"/> value that can be used to iterate
-            ///   through the array.
-            /// </returns>
-            public ArrayEnumerator GetEnumerator()
-            {
-                ArrayEnumerator ator = this;
-                ator._curIdx = -1;
-                return ator;
-            }
-
-            /// <inheritdoc />
-            public void Dispose()
-            {
-                _curIdx = _endIdxOrVersion;
-                _document?.Dispose();
-            }
-
-            /// <inheritdoc />
-            public void Reset()
-            {
-                _curIdx = -1;
-            }
-
-            /// <inheritdoc />
-            public bool MoveNext()
-            {
-                if (_curIdx >= _endIdxOrVersion)
-                {
-                    return false;
-                }
-
-                if (_curIdx < 0)
-                {
-                    _curIdx = 0;
-                }
-                else
-                {
-                    _curIdx += DbRow.Size;//= _document.GetEndIndex(_curIdx, includeEndElement: true);
-                }
-
-                return _curIdx < _endIdxOrVersion;
-            }
-
-            private static bool TryParse(ReadOnlyMemory<byte> utf8Array, int count, out JwtDocument? document)
-            {
-                ReadOnlySpan<byte> utf8JsonSpan = utf8Array.Span;
-                var database = new MetadataDb(count * DbRow.Size);
-
-                var reader = new Utf8JsonReader(utf8JsonSpan);
-                if (reader.Read())
-                {
-                    JsonTokenType tokenType = reader.TokenType;
-                    if (tokenType == JsonTokenType.StartArray)
-                    {
-                        while (reader.Read())
-                        {
-                            tokenType = reader.TokenType;
-                            int tokenStart = (int)reader.TokenStartIndex;
-
-                            if (tokenType == JsonTokenType.EndArray)
-                            {
-                                break;
-                            }
-                            else if (tokenType == JsonTokenType.PropertyName)
-                            {
-                                goto Error;
-                            }
-
-                            // Since the input payload is contained within a Span,
-                            // token start index can never be larger than int.MaxValue (i.e. utf8JsonSpan.Length).
-                            Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
-                            if (tokenType == JsonTokenType.String)
-                            {
-                                // Adding 1 to skip the start quote will never overflow
-                                Debug.Assert(tokenStart < int.MaxValue);
-                                database.Append(JsonTokenType.String, tokenStart + 1, reader.ValueSpan.Length);
-                            }
-                            else if (tokenType == JsonTokenType.Number)
-                            {
-                                database.Append(JsonTokenType.Number, tokenStart, reader.ValueSpan.Length);
-                            }
-                            else if (tokenType == JsonTokenType.StartObject)
-                            {
-                                int itemCount = SkipArrayOrObject(ref reader);
-                                int tokenEnd = (int)reader.TokenStartIndex;
-                                int index = database.Length;
-                                database.Append(JsonTokenType.StartObject, tokenStart, tokenEnd - tokenStart + 1);
-                                database.SetNumberOfRows(index, itemCount);
-                            }
-                            else if (tokenType == JsonTokenType.StartArray)
-                            {
-                                int itemCount = SkipArrayOrObject(ref reader);
-
-                                int index = database.Length;
-                                int tokenEnd = (int)reader.TokenStartIndex;
-                                database.Append(JsonTokenType.StartArray, tokenStart, tokenEnd - tokenStart + 1);
-                                database.SetNumberOfRows(index, itemCount);
-                            }
-                            else
-                            {
-                                Debug.Assert(tokenType >= JsonTokenType.True && tokenType <= JsonTokenType.Null);
-                                database.Append(tokenType, tokenStart, reader.ValueSpan.Length);
-                            }
-                        }
-                    }
-                }
-
-                Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
-                database.TrimExcess();
-
-                document = new JwtDocument(utf8Array, database, null);
-                return true;
-
-            Error:
-                document = null;
-                return false;
-            }
-
-            private static int SkipArrayOrObject(ref Utf8JsonReader reader)
-            {
-                int count = 0;
-                int depth = reader.CurrentDepth;
-                int depth1 = depth + 1;
-                do
-                {
-                    if (depth1 == reader.CurrentDepth)
-                    {
-                        count++;
-                    }
-                }
-                while (reader.Read() && depth < reader.CurrentDepth);
-                return count;
-            }
-
-        }
-
-        /// <summary>
-        ///   An enumerable and enumerator for the contents of a JSON array.
-        /// </summary>
-        [DebuggerDisplay("{Current,nq}")]
-        public struct ArrayEnumerator<T>
-        {
-            private int _curIdx;
-            private JwtDocument _document;
-            private readonly int _endIdxOrVersion;
-
-            internal ArrayEnumerator(JwtElement target)
-            {
-                if (typeof(T) != typeof(string) && typeof(T) != typeof(long) && typeof(T) != typeof(double))
-                {
-                    throw new NotSupportedException();
-                }
-
-                _curIdx = -1;
-
-                var value = target.GetRawValue();
-                if (!TryParse(value, target.GetArrayLength(), out _document!))
-                {
-                    ThrowHelper.ThrowFormatException_MalformedJson();
-                }
-
-                Debug.Assert(target.TokenType == JsonTokenType.StartArray);
-                _endIdxOrVersion = value.Length;
-            }
-
-            /// <inheritdoc />
-            public JwtElement Current
-            {
-                get
-                {
-                    if (_curIdx < 0)
-                    {
-                        return default;
-                    }
-
-                    return new JwtElement(_document, _curIdx);
-                }
-            }
-
-            /// <summary>
-            ///   Returns an enumerator that iterates through a collection.
-            /// </summary>
-            /// <returns>
-            ///   An <see cref="ArrayEnumerator"/> value that can be used to iterate
-            ///   through the array.
-            /// </returns>
-            public ArrayEnumerator<T> GetEnumerator()
-            {
-                ArrayEnumerator<T> ator = this;
-                ator._curIdx = -1;
-                return ator;
-            }
-
-            /// <inheritdoc />
-            public void Dispose()
-            {
-                _curIdx = _endIdxOrVersion;
-                _document?.Dispose();
-            }
-
-            /// <inheritdoc />
-            public void Reset()
-            {
-                _curIdx = -1;
-            }
-
-            /// <inheritdoc />
-            public bool MoveNext()
-            {
-                if (_curIdx >= _endIdxOrVersion)
-                {
-                    return false;
-                }
-
-                if (_curIdx < 0)
-                {
-                    _curIdx = 0;
-                }
-                else
-                {
-                    _curIdx += DbRow.Size;
-                }
-
-                return _curIdx < _endIdxOrVersion;
-            }
-
-            private static bool TryParse(ReadOnlyMemory<byte> utf8Array, int count, out JwtDocument? document)
-            {
-                ReadOnlySpan<byte> utf8JsonSpan = utf8Array.Span;
-                var database = new MetadataDb(count * DbRow.Size);
-
-                var reader = new Utf8JsonReader(utf8JsonSpan);
-                if (reader.Read())
-                {
-                    JsonTokenType tokenType = reader.TokenType;
-                    if (tokenType == JsonTokenType.StartArray)
-                    {
-                        while (reader.Read())
-                        {
-                            tokenType = reader.TokenType;
-                            int tokenStart = (int)reader.TokenStartIndex;
-
-                            if (tokenType == JsonTokenType.EndArray)
-                            {
-                                break;
-                            }
-
-                            Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
-                            if (typeof(T) == typeof(string))
-                            {
-                                if (tokenType == JsonTokenType.String)
-                                {
-                                    Debug.Assert(tokenStart < int.MaxValue);
-                                    database.Append(JsonTokenType.String, tokenStart + 1, reader.ValueSpan.Length);
-                                }
-                                else
-                                {
-                                    goto Error;
-                                }
-                            }
-                            else if (typeof(T) == typeof(long) || typeof(T) == typeof(double))
-                            {
-                                if (tokenType == JsonTokenType.Number)
-                                {
-                                    Debug.Assert(tokenStart < int.MaxValue);
-                                    database.Append(JsonTokenType.Number, tokenStart + 1, reader.ValueSpan.Length);
-                                }
-                                else
-                                {
-                                    goto Error;
-                                }
-                            }
-                            else
-                            {
-                                goto Error;
-                            }
-                        }
-                    }
-                }
-
-                Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
-                database.TrimExcess();
-
-                document = new JwtDocument(utf8Array, database, null);
-                return true;
-
-            Error:
-                document = null;
-                return false;
-            }
-
-            private static int SkipArrayOrObject(ref Utf8JsonReader reader)
-            {
-                int count = 0;
-                int depth = reader.CurrentDepth;
-                int depth1 = depth + 1;
-                do
-                {
-                    if (depth1 == reader.CurrentDepth)
-                    {
-                        count++;
-                    }
-                }
-                while (reader.Read() && depth < reader.CurrentDepth);
-                return count;
-            }
-
-        }
-    }
-
     /// <summary>
     ///   Represents a single member for a JSON object.
     /// </summary>
@@ -1829,10 +1147,10 @@ namespace JsonWebToken
             return Value.TextEqualsHelper(text, isPropertyName: true);
         }
 
-        internal bool EscapedNameEquals(ReadOnlySpan<byte> utf8Text)
-        {
-            return Value.TextEqualsHelper(utf8Text, isPropertyName: true, shouldUnescape: false);
-        }
+        //internal bool EscapedNameEquals(ReadOnlySpan<byte> utf8Text)
+        //{
+        //    return Value.TextEqualsHelper(utf8Text, isPropertyName: true, shouldUnescape: false);
+        //}
 
         ///// <summary>
         /////   Write the property into the provided writer as a named JSON object property.

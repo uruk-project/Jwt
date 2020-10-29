@@ -39,7 +39,7 @@ namespace JsonWebToken
         public JwtObject Header { get; }
 
         /// <summary>
-        /// Gets the <see cref="JwtOld"/> used.
+        /// Gets the <see cref="Jwk"/> used.
         /// </summary>
         protected Jwk Key
         {

@@ -9,7 +9,7 @@ namespace JsonWebToken
     /// <summary>
     /// Represents the result of a token validation.
     /// </summary>
-    [Obsolete("This class is obsolte. Use the class TokenValidationError instead.")]
+    [Obsolete("This class is obsolete. Use the class TokenValidationError instead.")]
     public sealed class TokenValidationResult
     {
         private static readonly TokenValidationResult _success = new TokenValidationResult
@@ -33,15 +33,32 @@ namespace JsonWebToken
             Status = TokenValidationStatus.EncryptionKeyNotFound
         };
 
+        private TokenValidationResult()
+        {
+        }
+
+        internal TokenValidationResult(Jwt jwt)
+        {
+            Token = jwt;
+            var error = jwt.Error;
+            if (error != null)
+            {
+                Status = error.Status;
+                ErrorClaim = error.ErrorClaim;
+                ErrorHeader = error.ErrorHeader;
+                Exception = error.Exception;
+            }
+        }
+
         /// <summary>
         /// Gets whether the token validation is successful.
         /// </summary>
         public bool Succedeed => Status == TokenValidationStatus.Success;
 
         /// <summary>
-        /// Gets of set the <see cref="JwtOld"/>.
+        /// Gets of set the <see cref="Jwt"/>.
         /// </summary>
-        public JwtOld? Token { get; private set; }
+        public Jwt? Token { get; private set; }
 
         /// <summary>
         /// Gets the status of the validation.
@@ -69,7 +86,7 @@ namespace JsonWebToken
         /// <param name="token"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult Expired(JwtOld token)
+        public static TokenValidationResult Expired(Jwt token)
         {
             return new TokenValidationResult
             {
@@ -84,7 +101,7 @@ namespace JsonWebToken
         /// <param name="token"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult TokenReplayed(JwtOld token)
+        public static TokenValidationResult TokenReplayed(Jwt token)
         {
             return new TokenValidationResult
             {
@@ -159,7 +176,7 @@ namespace JsonWebToken
         /// <param name="jwtToken"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult NotYetValid(JwtOld jwtToken)
+        public static TokenValidationResult NotYetValid(Jwt jwtToken)
         {
             return new TokenValidationResult
             {
@@ -184,7 +201,7 @@ namespace JsonWebToken
         /// <param name="jwtToken"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult Success(JwtOld jwtToken)
+        public static TokenValidationResult Success(Jwt jwtToken)
         {
             return new TokenValidationResult
             {
@@ -210,7 +227,7 @@ namespace JsonWebToken
         /// <param name="claim"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult InvalidClaim(JwtOld jwt, ReadOnlySpan<byte> claim)
+        public static TokenValidationResult InvalidClaim(Jwt jwt, ReadOnlySpan<byte> claim)
         {
             return new TokenValidationResult
             {
@@ -227,7 +244,7 @@ namespace JsonWebToken
         /// <param name="claim"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult InvalidClaim(JwtOld jwt, string claim)
+        public static TokenValidationResult InvalidClaim(Jwt jwt, string claim)
         {
             return new TokenValidationResult
             {
@@ -244,7 +261,7 @@ namespace JsonWebToken
         /// <param name="claim"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult MissingClaim(JwtOld jwt, ReadOnlySpan<byte> claim)
+        public static TokenValidationResult MissingClaim(Jwt jwt, ReadOnlySpan<byte> claim)
         {
             return new TokenValidationResult
             {
@@ -261,7 +278,7 @@ namespace JsonWebToken
         /// <param name="claim"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationResult MissingClaim(JwtOld jwt, string claim)
+        public static TokenValidationResult MissingClaim(Jwt jwt, string claim)
         {
             return new TokenValidationResult
             {

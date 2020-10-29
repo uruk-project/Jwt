@@ -8,14 +8,12 @@ namespace JsonWebToken
     /// </summary>
     public static class KeyProviderExtensions
     {
-        private static readonly JwtHeader emptyHeader = new JwtHeader();
-
         /// <summary>
         /// Gets a list of <see cref="Jwk"/>.
         /// </summary>
         public static Jwk[] GetKeys(this IKeyProvider provider)
         {
-            return provider.GetKeys(emptyHeader);
+            return provider.GetKeys(JwtHeaderDocument.Empty);
         }
     }
 }

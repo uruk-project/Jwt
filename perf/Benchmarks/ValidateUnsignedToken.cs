@@ -23,9 +23,11 @@ namespace JsonWebToken.Performance
 
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetTokenValues))]
-        public override TokenValidationResult JsonWebToken(BenchmarkToken token)
+        public override Jwt JsonWebToken(BenchmarkToken token)
         {
-            return JwtCore(token.TokenBinary, tokenValidationPolicyWithoutSignature);
+            JwtCore(token.TokenBinary, tokenValidationPolicyWithoutSignature, out var jwt);
+            jwt.Dispose();
+            return jwt;
         }
 
         [Benchmark]
@@ -46,7 +48,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokenValues))]
         public override Dictionary<string, object> jose_jwt(BenchmarkToken token)
         {
-            return JoseDotNetCore(token.TokenString, Jose.JwsAlgorithm.none, signingKey);
+            return JoseDotNetCore(token.TokenString, Jose.JwsAlgorithm.none, null);
         }
 
         public override IDictionary<string, object> Jwt_Net(BenchmarkToken token)

@@ -1,6 +1,6 @@
 ﻿namespace JsonWebToken
 {
-    public enum JwtHeaderParameters : uint
+    internal enum JwtHeaderParameters : uint
     {
         Unknow = 0,
         Alg = 6777953u,

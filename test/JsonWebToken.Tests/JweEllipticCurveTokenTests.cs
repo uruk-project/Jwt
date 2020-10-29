@@ -36,14 +36,16 @@ namespace JsonWebToken.Tests
 
             var token = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader(_bobKey);
+            var reader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
                 .RequireSignature(_signingKey)
-                    .Build();
+                .WithDecryptionKey(_bobKey)
+                .Build();
 
             var result = reader.TryReadToken(token, policy);
             Assert.Equal(TokenValidationStatus.Success, result.Status);
-            Assert.Equal("Alice", result.Token.Subject);
+            Assert.True(result.Token.Payload.TryGetClaim("sub", out var sub));
+            Assert.Equal("Alice", sub.GetString());
         }
 
         public static IEnumerable<object[]> GetSupportedAlgorithm()

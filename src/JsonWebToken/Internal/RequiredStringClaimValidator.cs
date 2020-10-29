@@ -36,7 +36,8 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritdoc />
-        public TokenValidationResult TryValidate(JwtOld jwt)
+        [Obsolete("This method is obsolete. Use TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, out TokenValidationError? error) instead.")]
+        public TokenValidationResult TryValidate(Jwt jwt)
         {
             if (jwt is null)
             {
@@ -48,43 +49,17 @@ namespace JsonWebToken.Internal
                 return TokenValidationResult.MalformedToken();
             }
 
-            var claim = jwt.Payload[_claim];
-            if (claim is null)
+            if (jwt.Payload.TryGetClaim(_claim, out var claim))
             {
                 return TokenValidationResult.MissingClaim(jwt, _claim);
             }
 
-            if (!string.Equals(_value, (string?)claim, StringComparison.Ordinal))
+            if (!claim.ValueEquals(_value))
             {
                 return TokenValidationResult.InvalidClaim(jwt, _claim);
             }
 
             return TokenValidationResult.Success(jwt);
-        }
-
-        public bool TryValidate(JwtHeader header, JwtPayload payload, [NotNullWhen(false)] out TokenValidationError? error)
-        {
-            if (payload is null)
-            {
-                error = TokenValidationError.MalformedToken();
-                return false;
-            }
-
-            var claim = payload[_claim];
-            if (claim is null)
-            {
-                error = TokenValidationError.MissingClaim(_claim);
-                return false;
-            }
-
-            if (!string.Equals(_value, (string?)claim, StringComparison.Ordinal))
-            {
-                error = TokenValidationError.InvalidClaim(_claim);
-                return false;
-            }
-
-            error = null;
-            return true;
         }
 
         public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)

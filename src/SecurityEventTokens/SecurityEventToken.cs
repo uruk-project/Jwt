@@ -2,70 +2,54 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Text.Json;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
-    public sealed class SecurityEventToken : JwtOld
+    public sealed class SecurityEventToken : Jwt
     {
-        private JwtObject? _events;
-
-        public SecurityEventToken(JwtOld token)
+        public SecurityEventToken(Jwt token)
             : base(token)
         {
         }
 
-        public JwtObject Events
+        public JwtElement Events
         {
             get
             {
-                if (_events is null)
+                if (!(Payload is null) && Payload.TryGetClaim(SetClaims.EventsUtf8, out var events))
                 {
-                    if (Payload is null)
-                    {
-                        return new JwtObject();
-                    }
-
-                    if (!Payload.TryGetValue(SetClaims.EventsUtf8, out var events))
-                    {
-                        return new JwtObject();
-                    }
-
-                    _events = (JwtObject?)events.Value;
-
-                    if (_events is null)
-                    {
-                        return new JwtObject();
-                    }
+                    return events;
                 }
 
-                return _events;
+                return default;
             }
         }
 
-        public DateTime? TimeOfEvent
+        public long? Toe
         {
             get
             {
-                if (Payload is null)
+                if (!(Payload is null) && Payload.TryGetClaim(SetClaims.ToeUtf8, out var value))
                 {
-                    return null;
+                    return value.GetInt64();
                 }
 
-                return Payload.TryGetValue(SetClaims.ToeUtf8, out var property) ? EpochTime.ToDateTime((long?)property.Value) : null;
+                return default;
             }
         }
 
-        public string? TransactionNumber
+        public string? Txn
         {
             get
             {
-                if (Payload is null)
+                if (!(Payload is null) && Payload.TryGetClaim(SetClaims.TxnUtf8, out var value))
                 {
-                    return null;
+                    return value.GetString();
                 }
 
-                return Payload.TryGetValue(SetClaims.TxnUtf8, out var property) ? (string?)property.Value : null;
+                return default;
             }
         }
     }

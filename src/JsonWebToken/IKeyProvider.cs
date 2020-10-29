@@ -11,7 +11,6 @@ namespace JsonWebToken
         /// <summary>
         /// Gets a list of <see cref="Jwk"/>.
         /// </summary>
-        Jwk[] GetKeys(JwtHeader header);
         Jwk[] GetKeys(JwtHeaderDocument header);
     }
 }

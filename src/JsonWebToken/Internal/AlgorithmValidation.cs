@@ -15,47 +15,25 @@ namespace JsonWebToken.Internal
             _algorithm = Utf8.GetBytes(algorithm ?? throw new ArgumentNullException(nameof(algorithm)));
         }
 
-        public TokenValidationResult TryValidate(JwtOld jwt)
+        [Obsolete("This method is obsolete. Use TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, out TokenValidationError? error) instead.")]
+        public TokenValidationResult TryValidate(Jwt jwt)
         {
             if (jwt is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
             }
 
-            if (!jwt.Header.TryGetValue(HeaderParameters.AlgUtf8, out var property))
+            if (!jwt.Header.TryGetHeaderParameter(HeaderParameters.AlgUtf8, out var property))
             {
                 return TokenValidationResult.MissingHeader(HeaderParameters.AlgUtf8);
             }
 
-            if (!_algorithm.AsSpan().SequenceEqual(new ReadOnlySpan<byte>((byte[]?)property.Value)))
+            if (!new ReadOnlyMemory<byte>(_algorithm).Equals(property.GetRawValue()))
             {
                 return TokenValidationResult.InvalidHeader(HeaderParameters.AlgUtf8);
             }
 
             return TokenValidationResult.Success(jwt);
-        }
-
-        public bool TryValidate(JwtHeader header, JwtPayload payload, [NotNullWhen(false)] out TokenValidationError? error)
-        {
-            if (header is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
-            }
-
-            if (!header.TryGetValue(HeaderParameters.AlgUtf8, out var property))
-            {
-                error = TokenValidationError.MissingHeader(HeaderParameters.AlgUtf8);
-                return false;
-            }
-
-            if (!_algorithm.AsSpan().SequenceEqual(new ReadOnlySpan<byte>((byte[]?)property.Value)))
-            {
-                error = TokenValidationError.InvalidHeader(HeaderParameters.AlgUtf8);
-                return false;
-            }
-
-            error = null;
-            return true;
         }
 
         public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)

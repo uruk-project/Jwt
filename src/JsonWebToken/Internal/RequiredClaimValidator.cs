@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace JsonWebToken.Internal
@@ -22,7 +23,8 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritdoc />
-        public TokenValidationResult TryValidate(JwtOld jwt)
+        [Obsolete("This method is obsolete. Use TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, out TokenValidationError? error) instead.")]
+        public TokenValidationResult TryValidate(Jwt jwt)
         {
             if (jwt is null)
             {
@@ -34,30 +36,12 @@ namespace JsonWebToken.Internal
                 return TokenValidationResult.MalformedToken();
             }
 
-            if (jwt.Payload.ContainsKey(_claim))
+            if (jwt.Payload.ContainsClaim(_claim))
             {
                 return TokenValidationResult.Success(jwt);
             }
 
             return TokenValidationResult.MissingClaim(jwt, _claim);
-        }
-
-        public bool TryValidate(JwtHeader header, JwtPayload payload, [NotNullWhen(false)] out TokenValidationError? error)
-        {
-            if (payload is null)
-            {
-                error = TokenValidationError.MalformedToken();
-                return false;
-            }
-
-            if (payload.ContainsKey(_claim))
-            {
-                error = null;
-                return true;
-            }
-
-            error = TokenValidationError.MissingClaim(_claim);
-            return false;
         }
 
         public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)

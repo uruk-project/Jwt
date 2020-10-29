@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
+using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
@@ -13,7 +14,8 @@ namespace JsonWebToken
     public sealed class RequireAuthTimeValidator : IValidator
     {
         /// <inheritdoc />
-        public TokenValidationResult TryValidate(JwtOld jwt)
+        [Obsolete("This method is obsolete. Use TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, out TokenValidationError? error) instead.")]
+        public TokenValidationResult TryValidate(Jwt jwt)
         {
             if (jwt is null)
             {
@@ -25,29 +27,12 @@ namespace JsonWebToken
                 return TokenValidationResult.MalformedToken();
             }
 
-            if (jwt.Payload.TryGetValue(OidcClaims.AuthTimeUtf8, out var _))
+            if (jwt.Payload.ContainsClaim(OidcClaims.AuthTimeUtf8))
             {
                 return TokenValidationResult.Success(jwt);
             }
 
             return TokenValidationResult.MissingClaim(jwt, OidcClaims.AuthTimeUtf8);
-        }
-        public bool TryValidate(JwtHeader header, JwtPayload payload, [NotNullWhen(false)] out TokenValidationError? error)
-        {
-            if (payload is null)
-            {
-                error = TokenValidationError.MalformedToken();
-                return false;
-            }
-
-            if (payload.TryGetValue(OidcClaims.AuthTimeUtf8, out var _))
-            {
-                error = null;
-                return true;
-            }
-
-            error = TokenValidationError.MissingClaim(OidcClaims.AuthTimeUtf8);
-            return false;
         }
 
         public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)

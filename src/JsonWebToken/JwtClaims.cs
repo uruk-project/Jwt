@@ -1,6 +1,6 @@
 ﻿namespace JsonWebToken
 {
-    public enum JwtClaims : uint
+    internal enum JwtClaims : uint
     {
         Unknow = 0,
         Aud = 6583649u,

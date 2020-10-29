@@ -89,16 +89,4 @@ namespace JsonWebToken
         /// </summary>
         public abstract int GetKeyUnwrapSize(int wrappedKeySize);
     }
-
-    public interface IJwtHeader
-    {
-#if SUPPORT_ELLIPTIC_CURVE
-        ECJwk? Epk { get; }
-        string? Apu { get; }
-        string? Apv { get; }
-#endif
-        string? IV { get; }
-        string? Tag { get; }
-        string? Kid { get; }
-    }
 }

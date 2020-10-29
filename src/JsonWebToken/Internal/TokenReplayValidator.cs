@@ -16,39 +16,30 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritdoc />
-        public TokenValidationResult TryValidate(JwtOld jwt)
+        [Obsolete("This method is obsolete. Use TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, out TokenValidationError? error) instead.")]
+        public TokenValidationResult TryValidate(Jwt jwt)
         {
-            var expires = jwt.ExpirationTime;
-            if (!expires.HasValue)
+            if (jwt is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
+            }
+
+            if (jwt.Payload is null)
+            {
+                return TokenValidationResult.MalformedToken();
+            }
+
+            if (!jwt.Payload.TryGetClaim(Claims.ExpUtf8, out var exp) && exp.ValueKind != System.Text.Json.JsonValueKind.Number)
             {
                 return TokenValidationResult.MissingClaim(jwt, Claims.ExpUtf8);
             }
 
-            if (!_tokenReplayCache.TryAdd(jwt, expires.Value))
+            if (!_tokenReplayCache.TryAdd(jwt, EpochTime.ToDateTime(exp.GetInt64())))
             {
                 return TokenValidationResult.TokenReplayed(jwt);
             }
 
             return TokenValidationResult.Success(jwt);
-        }
-
-        public bool TryValidate(JwtHeader header, JwtPayload payload, [NotNullWhen(false)] out TokenValidationError? error)
-        {
-            var expires = payload.Exp;
-            if (!expires.HasValue)
-            {
-                error = TokenValidationError.MissingClaim(Claims.ExpUtf8);
-                return false;
-            }
-
-            if (!_tokenReplayCache.TryAdd(payload.Jti, expires.Value))
-            {
-                error = TokenValidationError.TokenReplayed();
-                return false;
-            }
-
-            error = null;
-            return true;
         }
 
         public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)

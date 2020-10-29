@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
+using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
@@ -13,7 +14,8 @@ namespace JsonWebToken
     public sealed class RequireNonceValidator : IValidator
     {
         /// <inheritdoc />
-        public TokenValidationResult TryValidate(JwtOld jwt)
+        [Obsolete("This method is obsolete. Use TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, out TokenValidationError? error) instead.")]
+        public TokenValidationResult TryValidate(Jwt jwt)
         {
             if (jwt is null)
             {
@@ -25,7 +27,7 @@ namespace JsonWebToken
                 return TokenValidationResult.MalformedToken();
             }
 
-            if (jwt.Payload.TryGetValue(OidcClaims.NonceUtf8, out var _))
+            if (jwt.Payload.ContainsClaim(OidcClaims.NonceUtf8))
             {
                 return TokenValidationResult.Success(jwt);
             }
@@ -41,7 +43,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            if (payload.TryGetValue(OidcClaims.NonceUtf8, out var _))
+            if (payload.ContainsKey(OidcClaims.NonceUtf8))
             {
                 error = null;
                 return true;

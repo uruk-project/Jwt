@@ -17,8 +17,8 @@ namespace JsonWebToken.Tests
                 var result = reader.TryReadToken(bufferWriter.WrittenSpan, TokenValidationPolicy.NoValidation);
                 Assert.True(result.Succedeed);
                 Assert.NotNull(result.Token);
-                Assert.True(result.Token.ExpirationTime.HasValue);
-                Assert.True(result.Token.IssuedAt.HasValue);
+                Assert.True(result.Token.Payload.ContainsClaim("exp"));
+                Assert.True(result.Token.Payload.ContainsClaim("iat"));
             }
         }
     }

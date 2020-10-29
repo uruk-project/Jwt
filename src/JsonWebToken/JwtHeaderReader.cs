@@ -4,202 +4,168 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
-    internal ref struct JwtHeaderReader
-    {
-        private readonly TokenValidationPolicy _policy;
-        private Utf8JsonReader _reader;
-        private ReadOnlySpan<byte> _headerParameterName;
-        private List<KeyValuePair<string, ICriticalHeaderHandler>>? _criticalHeaderHandlers;
+    //internal ref struct JwtHeaderReader
+    //{
+    //    private readonly TokenValidationPolicy _policy;
+    //    private Utf8JsonReader _reader;
+    //    private ReadOnlySpan<byte> _headerParameterName;
+    //    private List<KeyValuePair<string, ICriticalHeaderHandler>>? _criticalHeaderHandlers;
 
-        public JwtHeaderReader(ReadOnlySpan<byte> headerData, TokenValidationPolicy policy)
-        {
-            _policy = policy;
-            _reader = new Utf8JsonReader(headerData, isFinalBlock: true, state: default);
-            _headerParameterName = default;
-            _criticalHeaderHandlers = null;
-        }
+    //    public JwtHeaderReader(ReadOnlySpan<byte> headerData, TokenValidationPolicy policy)
+    //    {
+    //        _policy = policy;
+    //        _reader = new Utf8JsonReader(headerData, isFinalBlock: true, state: default);
+    //        _headerParameterName = default;
+    //        _criticalHeaderHandlers = null;
+    //    }
 
-        public string? GetString()
-            => _reader.GetString();
-        public bool GetBoolean()
-            => _reader.GetBoolean();
-        public bool TryGetDouble(out double value)
-            => _reader.TryGetDouble(out value);
-        public double GetDouble()
-            => _reader.GetDouble();
-        public bool TryGetInt64(out long value)
-            => _reader.TryGetInt64(out value);
-        public JsonDocument GetObject()
-            => JsonDocument.ParseValue(ref _reader);
-        public JwtObject GetJwtObject()
-            => JsonParser.ReadJsonObject(ref _reader);
-        public T GetObject<T>()
-            => JsonSerializer.Deserialize<T>(ref _reader);
-        public JsonDocument GetArray()
-            => JsonDocument.ParseValue(ref _reader);
-        public T[] GetArray<T>()
-            => JsonSerializer.Deserialize<T[]>(ref _reader);
-        public JwtArray GetJwtArray()
-            => JsonParser.ReadJsonArray(ref _reader);
-        public string[] GetStringArray()
-            => JsonParser.ReadStringArray(ref _reader);
+    //    public string? GetString()
+    //        => _reader.GetString();
+    //    public bool GetBoolean()
+    //        => _reader.GetBoolean();
+    //    public bool TryGetDouble(out double value)
+    //        => _reader.TryGetDouble(out value);
+    //    public double GetDouble()
+    //        => _reader.GetDouble();
+    //    public bool TryGetInt64(out long value)
+    //        => _reader.TryGetInt64(out value);
+    //    public JsonDocument GetObject()
+    //        => JsonDocument.ParseValue(ref _reader);
+    //    public JwtObject GetJwtObject()
+    //        => JsonParser.ReadJsonObject(ref _reader);
+    //    public T GetObject<T>()
+    //        => JsonSerializer.Deserialize<T>(ref _reader);
+    //    public JsonDocument GetArray()
+    //        => JsonDocument.ParseValue(ref _reader);
+    //    public T[] GetArray<T>()
+    //        => JsonSerializer.Deserialize<T[]>(ref _reader);
+    //    public JwtArray GetJwtArray()
+    //        => JsonParser.ReadJsonArray(ref _reader);
+    //    public string[] GetStringArray()
+    //        => JsonParser.ReadStringArray(ref _reader);
 
-        public bool Read()
-        {
-            if (_reader.Read() && _reader.TokenType is JsonTokenType.PropertyName)
-            {
-                _headerParameterName = _reader.ValueSpan;
-                return _reader.Read();
-            }
+    //    public bool Read()
+    //    {
+    //        if (_reader.Read() && _reader.TokenType is JsonTokenType.PropertyName)
+    //        {
+    //            _headerParameterName = _reader.ValueSpan;
+    //            return _reader.Read();
+    //        }
 
-            return false;
-        }
+    //        return false;
+    //    }
 
-        public JsonTokenType TokenType => _reader.TokenType;
-        public ReadOnlySpan<byte> TokenName => _headerParameterName;
-        public ReadOnlySpan<byte> ValueSpan => _reader.ValueSpan;
+    //    public JsonTokenType TokenType => _reader.TokenType;
+    //    public ReadOnlySpan<byte> TokenName => _headerParameterName;
+    //    public ReadOnlySpan<byte> ValueSpan => _reader.ValueSpan;
 
-        internal SignatureAlgorithm GetSignatureAlgorithm()
-        {
-            var alg = _reader.ValueSpan;
-            SignatureAlgorithm? signatureAlgorithm;
-            if (!SignatureAlgorithm.TryParse(alg, out signatureAlgorithm))
-            {
-                if (!SignatureAlgorithm.TryParseSlow(ref _reader, out signatureAlgorithm))
-                {
-                    signatureAlgorithm = SignatureAlgorithm.Create(_reader.GetString()!);
-                }
-            }
+    //    internal SignatureAlgorithm GetSignatureAlgorithm()
+    //    {
+    //        var alg = _reader.ValueSpan;
+    //        SignatureAlgorithm? signatureAlgorithm;
+    //        if (!SignatureAlgorithm.TryParse(alg, out signatureAlgorithm))
+    //        {
+    //            if (!SignatureAlgorithm.TryParseSlow(ref _reader, out signatureAlgorithm))
+    //            {
+    //                signatureAlgorithm = SignatureAlgorithm.Create(_reader.GetString()!);
+    //            }
+    //        }
 
-            return signatureAlgorithm;
-        }
+    //        return signatureAlgorithm;
+    //    }
 
-        internal KeyManagementAlgorithm GetKeyManagementAlgorithm()
-        {
-            var alg = _reader.ValueSpan;
-            KeyManagementAlgorithm? keyManagementAlgorithm;
-            if (!KeyManagementAlgorithm.TryParse(alg, out keyManagementAlgorithm))
-            {
-                if (!KeyManagementAlgorithm.TryParseSlow(ref _reader, out keyManagementAlgorithm))
-                {
-                    keyManagementAlgorithm = KeyManagementAlgorithm.Create(_reader.GetString()!);
-                }
-            }
+    //    internal KeyManagementAlgorithm GetKeyManagementAlgorithm()
+    //    {
+    //        var alg = _reader.ValueSpan;
+    //        KeyManagementAlgorithm? keyManagementAlgorithm;
+    //        if (!KeyManagementAlgorithm.TryParse(alg, out keyManagementAlgorithm))
+    //        {
+    //            if (!KeyManagementAlgorithm.TryParseSlow(ref _reader, out keyManagementAlgorithm))
+    //            {
+    //                keyManagementAlgorithm = KeyManagementAlgorithm.Create(_reader.GetString()!);
+    //            }
+    //        }
 
-            return keyManagementAlgorithm;
-        }
+    //        return keyManagementAlgorithm;
+    //    }
 
-        internal EncryptionAlgorithm GetEncryptionAlgorithm()
-        {
-            var alg = _reader.ValueSpan;
-            EncryptionAlgorithm? encryptionAlgorithm;
-            if (!EncryptionAlgorithm.TryParse(alg, out encryptionAlgorithm))
-            {
-                if (!EncryptionAlgorithm.TryParseSlow(ref _reader, out encryptionAlgorithm))
-                {
-                    encryptionAlgorithm = EncryptionAlgorithm.Create(_reader.GetString()!);
-                }
-            }
+    //    internal EncryptionAlgorithm GetEncryptionAlgorithm()
+    //    {
+    //        var alg = _reader.ValueSpan;
+    //        EncryptionAlgorithm? encryptionAlgorithm;
+    //        if (!EncryptionAlgorithm.TryParse(alg, out encryptionAlgorithm))
+    //        {
+    //            if (!EncryptionAlgorithm.TryParseSlow(ref _reader, out encryptionAlgorithm))
+    //            {
+    //                encryptionAlgorithm = EncryptionAlgorithm.Create(_reader.GetString()!);
+    //            }
+    //        }
 
-            return encryptionAlgorithm;
-        }
+    //        return encryptionAlgorithm;
+    //    }
 
-        internal CompressionAlgorithm GetCompressionAlgorithm()
-        {
-            ref Utf8JsonReader reader = ref _reader;
-            var zip = _reader.ValueSpan;
-            CompressionAlgorithm? compressionAlgorithm;
-            if (!CompressionAlgorithm.TryParse(zip, out compressionAlgorithm))
-            {
-                if (!CompressionAlgorithm.TryParseSlow(ref _reader, out compressionAlgorithm))
-                {
-                    compressionAlgorithm = CompressionAlgorithm.Create(_reader.GetString()!);
-                }
-            }
+    //    internal CompressionAlgorithm GetCompressionAlgorithm()
+    //    {
+    //        ref Utf8JsonReader reader = ref _reader;
+    //        var zip = _reader.ValueSpan;
+    //        CompressionAlgorithm? compressionAlgorithm;
+    //        if (!CompressionAlgorithm.TryParse(zip, out compressionAlgorithm))
+    //        {
+    //            if (!CompressionAlgorithm.TryParseSlow(ref _reader, out compressionAlgorithm))
+    //            {
+    //                compressionAlgorithm = CompressionAlgorithm.Create(_reader.GetString()!);
+    //            }
+    //        }
 
-            return compressionAlgorithm;
-        }
+    //        return compressionAlgorithm;
+    //    }
 
-        internal (List<string>, List<KeyValuePair<string, ICriticalHeaderHandler>>?) GetCriticalHeaders()
-        {
-            var handlers = _policy.CriticalHandlers;
-            var criticals = new List<string>();
-            List<KeyValuePair<string, ICriticalHeaderHandler>>? criticalHeaderHandlers = null;
-            if (handlers.Count != 0)
-            {
-                criticalHeaderHandlers = new List<KeyValuePair<string, ICriticalHeaderHandler>>(handlers.Count);
-                while (_reader.Read() && _reader.TokenType == JsonTokenType.String)
-                {
-                    string criticalHeader = _reader.GetString()!;
-                    criticals.Add(criticalHeader);
-                    if (handlers.TryGetValue(criticalHeader, out var handler))
-                    {
-                        criticalHeaderHandlers.Add(new KeyValuePair<string, ICriticalHeaderHandler>(criticalHeader, handler));
-                    }
-                    else
-                    {
-                        criticalHeaderHandlers.Add(new KeyValuePair<string, ICriticalHeaderHandler>(criticalHeader, null!));
-                    }
-                }
+    //    internal (List<string>, List<KeyValuePair<string, ICriticalHeaderHandler>>?) GetCriticalHeaders()
+    //    {
+    //        var handlers = _policy.CriticalHandlers;
+    //        var criticals = new List<string>();
+    //        List<KeyValuePair<string, ICriticalHeaderHandler>>? criticalHeaderHandlers = null;
+    //        if (handlers.Count != 0)
+    //        {
+    //            criticalHeaderHandlers = new List<KeyValuePair<string, ICriticalHeaderHandler>>(handlers.Count);
+    //            while (_reader.Read() && _reader.TokenType == JsonTokenType.String)
+    //            {
+    //                string criticalHeader = _reader.GetString()!;
+    //                criticals.Add(criticalHeader);
+    //                if (handlers.TryGetValue(criticalHeader, out var handler))
+    //                {
+    //                    criticalHeaderHandlers.Add(new KeyValuePair<string, ICriticalHeaderHandler>(criticalHeader, handler));
+    //                }
+    //                else
+    //                {
+    //                    criticalHeaderHandlers.Add(new KeyValuePair<string, ICriticalHeaderHandler>(criticalHeader, null!));
+    //                }
+    //            }
 
-                _criticalHeaderHandlers = criticalHeaderHandlers;
+    //            _criticalHeaderHandlers = criticalHeaderHandlers;
 
-                if (_reader.TokenType != JsonTokenType.EndArray)
-                {
-                    ThrowHelper.ThrowFormatException_MalformedJson("The 'crit' header parameter must be an array of string.");
-                }
-            }
-            else
-            {
-                while (_reader.Read() && _reader.TokenType == JsonTokenType.String)
-                {
-                    string criticalHeader = _reader.GetString()!;
-                    criticals.Add(criticalHeader);
-                }
+    //            if (_reader.TokenType != JsonTokenType.EndArray)
+    //            {
+    //                ThrowHelper.ThrowFormatException_MalformedJson("The 'crit' header parameter must be an array of string.");
+    //            }
+    //        }
+    //        else
+    //        {
+    //            while (_reader.Read() && _reader.TokenType == JsonTokenType.String)
+    //            {
+    //                string criticalHeader = _reader.GetString()!;
+    //                criticals.Add(criticalHeader);
+    //            }
 
-                if (_reader.TokenType != JsonTokenType.EndArray)
-                {
-                    ThrowHelper.ThrowFormatException_MalformedJson("The 'crit' header parameter must be an array of string.");
-                }
-            }
+    //            if (_reader.TokenType != JsonTokenType.EndArray)
+    //            {
+    //                ThrowHelper.ThrowFormatException_MalformedJson("The 'crit' header parameter must be an array of string.");
+    //            }
+    //        }
 
-            return (criticals, criticalHeaderHandlers);
-        }
-
-        public bool TryValidateHeader(JwtHeader header, out TokenValidationError error)
-        {
-            if (!_policy.IgnoreCriticalHeader)
-            {
-                var handlers = _criticalHeaderHandlers;
-                if (handlers != null)
-                {
-                    for (int i = 0; i < handlers.Count; i++)
-                    {
-                        KeyValuePair<string, ICriticalHeaderHandler> handler = handlers[i];
-                        if (handler.Value is null)
-                        {
-                            error = TokenValidationError.CriticalHeaderUnsupported(handler.Key);
-                            return false;
-                        }
-
-                        if (!handler.Value.TryHandle(header, handler.Key))
-                        {
-                            error = TokenValidationError.InvalidHeader(handler.Key);
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            error = null;
-            return true;
-        }
-
-        internal bool ReadFirstBytes()
-        {
-            return _reader.Read() && _reader.TokenType == JsonTokenType.StartObject;
-        }
-    }
+    //        return (criticals, criticalHeaderHandlers);
+    //    }
+    //}
 
     //public class JwtReader2Tests
     //{

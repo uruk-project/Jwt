@@ -10,7 +10,7 @@ namespace JsonWebToken
     ///   Represents a specific JWT value within a <see cref="JwtDocument"/>.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    public readonly partial struct JwtElement
+    public readonly struct JwtElement
     {
         private readonly JwtDocument _parent;
         private readonly int _idx;
@@ -34,11 +34,12 @@ namespace JsonWebToken
                 return _parent?.GetJsonTokenType(_idx) ?? JsonTokenType.None;
             }
         }
+
         /// <summary>
         ///   The <see cref="JsonValueKind"/> that the value is.
         /// </summary>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         public JsonValueKind ValueKind => ToValueKind(TokenType);
 
@@ -53,7 +54,7 @@ namespace JsonWebToken
         ///   <paramref name="index"/> is not in the range [0, <see cref="GetArrayLength"/>()).
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         public JwtElement this[int index]
         {
@@ -66,6 +67,66 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        ///   Get the value for a specified key when the current value is a
+        ///   <see cref="JsonValueKind.Object"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
+        /// </exception>
+        /// <exception cref="IndexOutOfRangeException">
+        ///   <paramref name="key"/> is not a valid property name.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
+        /// </exception>
+        public JwtElement this[string key]
+        {
+            get
+            {
+                CheckValidInstance();
+                foreach (var item in EnumerateObject())
+                {
+                    if (item.NameEquals(key))
+                    {
+                        return item.Value;
+                    }
+                }
+
+                throw new KeyNotFoundException();
+            }
+        }
+
+        /// <summary>
+        ///   Get the value for a specified key when the current value is a
+        ///   <see cref="JsonValueKind.Object"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
+        /// </exception>
+        /// <exception cref="IndexOutOfRangeException">
+        ///   <paramref name="key"/> is not a valid property name.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
+        /// </exception>
+        public JwtElement this[ReadOnlySpan<byte> key]
+        {
+            get
+            {
+                CheckValidInstance();
+                foreach (var item in EnumerateObject())
+                {
+                    if (item.NameEquals(key))
+                    {
+                        return item.Value;
+                    }
+                }
+
+                throw new KeyNotFoundException();
+            }
+        }
+
+        /// <summary>
         ///   Get the number of values contained within the current array value.
         /// </summary>
         /// <returns>The number of values contained within the current array value.</returns>
@@ -73,13 +134,30 @@ namespace JsonWebToken
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Array"/>.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         public int GetArrayLength()
         {
             CheckValidInstance();
 
             return _parent.GetArrayLength(_idx);
+        }
+
+        /// <summary>
+        ///   Get the number of members contained within the current object value.
+        /// </summary>
+        /// <returns>The number of members contained within the current object value.</returns>
+        /// <exception cref="InvalidOperationException">
+        ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
+        /// </exception>
+        public int GetMemberCount()
+        {
+            CheckValidInstance();
+
+            return _parent.GetMemberCount(_idx);
         }
 
         /// <summary>
@@ -107,9 +185,9 @@ namespace JsonWebToken
         ///   <paramref name="propertyName"/> is <see langword="null"/>.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
-        public JwtElement GetProperty(string propertyName)
+        internal JwtElement GetProperty(string propertyName)
         {
             if (propertyName == null)
                 throw new ArgumentNullException(nameof(propertyName));
@@ -148,9 +226,9 @@ namespace JsonWebToken
         ///   No property was found with the requested name.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
-        public JwtElement GetProperty(ReadOnlySpan<char> propertyName)
+        internal JwtElement GetProperty(ReadOnlySpan<char> propertyName)
         {
             if (TryGetProperty(propertyName, out JwtElement property))
             {
@@ -187,10 +265,10 @@ namespace JsonWebToken
         ///   No property was found with the requested name.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         /// <seealso cref="EnumerateObject"/>
-        public JwtElement GetProperty(ReadOnlySpan<byte> utf8PropertyName)
+        internal JwtElement GetProperty(ReadOnlySpan<byte> utf8PropertyName)
         {
             if (TryGetProperty(utf8PropertyName, out JwtElement property))
             {
@@ -227,10 +305,10 @@ namespace JsonWebToken
         ///   <paramref name="propertyName"/> is <see langword="null"/>.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         /// <seealso cref="EnumerateObject"/>
-        public bool TryGetProperty(string propertyName, out JwtElement value)
+        internal bool TryGetProperty(string propertyName, out JwtElement value)
         {
             if (propertyName == null)
                 throw new ArgumentNullException(nameof(propertyName));
@@ -263,9 +341,9 @@ namespace JsonWebToken
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
-        public bool TryGetProperty(ReadOnlySpan<char> propertyName, out JwtElement value)
+        internal bool TryGetProperty(ReadOnlySpan<char> propertyName, out JwtElement value)
         {
             CheckValidInstance();
 
@@ -299,9 +377,9 @@ namespace JsonWebToken
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
-        public bool TryGetProperty(ReadOnlySpan<byte> utf8PropertyName, out JwtElement value)
+        internal bool TryGetProperty(ReadOnlySpan<byte> utf8PropertyName, out JwtElement value)
         {
             CheckValidInstance();
 
@@ -320,7 +398,7 @@ namespace JsonWebToken
         ///   <see cref="JsonValueKind.False"/>.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         public bool GetBoolean()
         {
@@ -346,7 +424,7 @@ namespace JsonWebToken
         ///   This value's <see cref="ValueKind"/> is neither <see cref="JsonValueKind.String"/> nor <see cref="JsonValueKind.Null"/>.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         /// <seealso cref="ToString"/>
         public string? GetString()
@@ -356,6 +434,39 @@ namespace JsonWebToken
                 return null;
 
             return _parent.GetString(_idx, JsonTokenType.String);
+        }
+
+        /// <summary>
+        ///   Gets the original input data backing this value, returning it as an array of <see cref="string"/>.
+        /// </summary>
+        /// <returns>
+        ///   The original input data backing this value, returning it as an array of <see cref="string"/>.
+        /// </returns>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="Jwt"/> has been disposed.
+        /// </exception>
+        public string?[]? GetStringArray()
+        {
+            CheckValidInstance();
+
+            return _parent.GetStringArray(_idx);
+        }
+
+        /// <summary>
+        ///   Parses the UTF-8 encoded text representing a single JSON value into an instance
+        ///     of the type specified by a generic type parameter.
+        /// </summary>
+        /// <returns>
+        ///   The original input data backing this value, returning it as a <see cref="string"/>.
+        /// </returns>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="Jwt"/> has been disposed.
+        /// </exception>
+        public TValue? Deserialize<TValue>(JsonSerializerOptions? options = null)
+        {
+            CheckValidInstance();
+
+            return _parent.Deserialize<TValue>(_idx);
         }
 
         /// <summary>
@@ -373,7 +484,7 @@ namespace JsonWebToken
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Number"/>.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         public bool TryGetInt64(out long value)
         {
@@ -396,7 +507,7 @@ namespace JsonWebToken
         ///   The value cannot be represented as a <see cref="long"/>.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         public long GetInt64()
         {
@@ -432,7 +543,7 @@ namespace JsonWebToken
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Number"/>.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         public bool TryGetDouble(out double value)
         {
@@ -443,18 +554,18 @@ namespace JsonWebToken
 
 
         /// <summary>
-        ///   Attempts to represent the current JSON object as a <see cref="JsonDocument"/>.
+        ///   Attempts to represent the current JSON object as a <see cref="JwtDocument"/>.
         /// </summary>
         /// <param name="value">Receives the value.</param>
         /// <returns>
-        ///   <see langword="true"/> if the JSON object can be represented as a <see cref="JsonDocument"/>,
+        ///   <see langword="true"/> if the JSON object can be represented as a <see cref="JwtDocument"/>,
         ///   <see langword="false"/> otherwise.
         /// </returns>
         /// <exception cref="InvalidOperationException">
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         public bool TryGetJsonDocument([NotNullWhen(true)] out JsonDocument? value)
         {
@@ -485,7 +596,7 @@ namespace JsonWebToken
         ///   The value cannot be represented as a <see cref="double"/>.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         public double GetDouble()
         {
@@ -497,9 +608,27 @@ namespace JsonWebToken
             throw ThrowHelper.CreateFormatException_MalformedJson();
         }
 
+        /// <summary>
+        ///   Gets the current JSON object as a <see cref="JwtDocument"/>.
+        /// </summary>
+        /// <returns>The current JSON object as a <see cref="JwtDocument"/>.</returns>
+        /// <remarks>
+        ///   <para>
+        ///     This method does not parse the contents of a JSON string value.
+        ///   </para>
+        /// </remarks>
+        /// <exception cref="InvalidOperationException">
+        ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
+        /// </exception>
+        /// <exception cref="FormatException">
+        ///   The value cannot be represented as a <see cref="double"/>.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
+        /// </exception>
         public JsonDocument GetJsonDocument()
         {
-            if (TryGetJsonDocument(out JsonDocument value))
+            if (TryGetJsonDocument(out JsonDocument? value))
             {
                 return value;
             }
@@ -662,7 +791,7 @@ namespace JsonWebToken
         /////   This value's <see cref="ValueKind"/> is <see cref="JsonValueKind.Undefined"/>.
         ///// </exception>
         ///// <exception cref="ObjectDisposedException">
-        /////   The parent <see cref="JsonDocument"/> has been disposed.
+        /////   The parent <see cref="JwtDocument"/> has been disposed.
         ///// </exception>
         //public void WriteTo(Utf8JsonWriter writer)
         //{
@@ -686,7 +815,7 @@ namespace JsonWebToken
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Array"/>.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         public ArrayEnumerator EnumerateArray()
         {
@@ -713,7 +842,7 @@ namespace JsonWebToken
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Array"/>.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         public ArrayEnumerator<T> EnumerateArray<T>()
         {
@@ -741,7 +870,7 @@ namespace JsonWebToken
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
         /// </exception>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         public ObjectEnumerator EnumerateObject()
         {
@@ -759,11 +888,103 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Determines whether the <see cref="JwtElement"/> contains the specified property.
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public bool ContainsKey(string propertyName)
+        {
+            var value = GetRawValue();
+            int count = GetMemberCount();
+
+            var reader = new Utf8JsonReader(value.Span);
+            if (reader.Read())
+            {
+                JsonTokenType tokenType = reader.TokenType;
+                if (tokenType == JsonTokenType.StartObject)
+                {
+                    while (reader.Read())
+                    {
+                        tokenType = reader.TokenType;
+                        if (tokenType == JsonTokenType.EndObject)
+                        {
+                            break;
+                        }
+                        else if (tokenType != JsonTokenType.PropertyName)
+                        {
+                            break;
+                        }
+
+                        if (reader.ValueTextEquals(propertyName))
+                        {
+                            return true;
+                        }
+
+                        if (count-- == 0)
+                        {
+                            break;
+                        }
+
+                        reader.Read();
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the <see cref="JwtElement"/> contains the specified property.
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public bool ContainsKey(ReadOnlySpan<byte> propertyName)
+        {
+            var value = GetRawValue();
+            int count = GetMemberCount();
+
+            var reader = new Utf8JsonReader(value.Span);
+            if (reader.Read())
+            {
+                JsonTokenType tokenType = reader.TokenType;
+                if (tokenType == JsonTokenType.StartObject)
+                {
+                    while (reader.Read())
+                    {
+                        tokenType = reader.TokenType;
+                        if (tokenType == JsonTokenType.EndObject)
+                        {
+                            break;
+                        }
+                        else if (tokenType != JsonTokenType.PropertyName)
+                        {
+                            break;
+                        }
+
+                        if (reader.ValueTextEquals(propertyName))
+                        {
+                            return true;
+                        }
+
+                        if (count-- == 0)
+                        {
+                            break;
+                        }
+
+                        reader.Read();
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         ///   Gets a string representation for the current value appropriate to the value type.
         /// </summary>
         /// <remarks>
         ///   <para>
-        ///     For JsonElement built from <see cref="JsonDocument"/>:
+        ///     For JsonElement built from <see cref="JwtDocument"/>:
         ///   </para>
         ///
         ///   <para>
@@ -790,7 +1011,7 @@ namespace JsonWebToken
         ///   A string representation for the current value appropriate to the value type.
         /// </returns>
         /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JsonDocument"/> has been disposed.
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         public override string? ToString()
         {
@@ -806,11 +1027,7 @@ namespace JsonWebToken
                 case JsonTokenType.Number:
                 case JsonTokenType.StartArray:
                 case JsonTokenType.StartObject:
-                    {
-                        // null parent should have hit the None case
-                        Debug.Assert(_parent != null);
-                        return _parent.GetRawValueAsString(_idx);
-                    }
+                    return _parent.GetRawValueAsString(_idx);
                 case JsonTokenType.String:
                     return GetString();
                 case JsonTokenType.Comment:
@@ -823,17 +1040,17 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        ///   Get a JsonElement which can be safely stored beyond the lifetime of the
-        ///   original <see cref="JsonDocument"/>.
+        ///   Get a JwtElement which can be safely stored beyond the lifetime of the
+        ///   original <see cref="JwtDocument"/>.
         /// </summary>
         /// <returns>
-        ///   A JsonElement which can be safely stored beyond the lifetime of the
-        ///   original <see cref="JsonDocument"/>.
+        ///   A JwtElement which can be safely stored beyond the lifetime of the
+        ///   original <see cref="JwtDocument"/>.
         /// </returns>
         /// <remarks>
         ///   <para>
-        ///     If this JsonElement is itself the output of a previous call to Clone, or
-        ///     a value contained within another JsonElement which was the output of a previous
+        ///     If this JwtElement is itself the output of a previous call to Clone, or
+        ///     a value contained within another JwtElement which was the output of a previous
         ///     call to Clone, this method results in no additional memory allocation.
         ///   </para>
         /// </remarks>
@@ -860,6 +1077,8 @@ namespace JsonWebToken
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private string DebuggerDisplay => $"ValueKind = {ValueKind} : \"{ToString()}\"";
 
+        internal int Idx => _idx;
+
         internal static JsonValueKind ToValueKind(JsonTokenType tokenType)
         {
             switch (tokenType)
@@ -881,6 +1100,527 @@ namespace JsonWebToken
                 default:
                     Debug.Fail($"No mapping for token type {tokenType}");
                     return JsonValueKind.Undefined;
+            }
+        }
+
+        /// <summary>
+        ///   An enumerable and enumerator for the properties of a JSON object.
+        /// </summary>
+        [DebuggerDisplay("{Current,nq}")]
+        public struct ObjectEnumerator : IEnumerable<JwtMember>, IEnumerator<JwtMember>
+        {
+            private int _curIdx;
+            private JwtDocument _document;
+            private readonly int _endIdxOrVersion;
+
+            internal ObjectEnumerator(JwtElement target)
+            {
+                _curIdx = -1;
+
+                var value = target.GetRawValue();
+                int count = target.GetMemberCount();
+                if (!TryParse(value, target.GetMemberCount(), out _document!))
+                {
+                    ThrowHelper.ThrowFormatException_MalformedJson();
+                }
+
+                Debug.Assert(target.TokenType == JsonTokenType.StartObject);
+                _endIdxOrVersion = count * DbRow.Size * 2;
+            }
+
+            /// <inheritdoc />
+            public JwtMember Current
+            {
+                get
+                {
+                    if (_curIdx < 0)
+                    {
+                        return default;
+                    }
+
+                    return new JwtMember(new JwtElement(_document, _curIdx));
+                }
+            }
+
+            /// <summary>
+            ///   Returns an enumerator that iterates the properties of an object.
+            /// </summary>
+            /// <returns>
+            ///   An <see cref="ObjectEnumerator"/> value that can be used to iterate
+            ///   through the object.
+            /// </returns>
+            /// <remarks>
+            ///   The enumerator will enumerate the properties in the order they are
+            ///   declared, and when an object has multiple definitions of a single
+            ///   property they will all individually be returned (each in the order
+            ///   they appear in the content).
+            /// </remarks>
+            public ObjectEnumerator GetEnumerator()
+            {
+                ObjectEnumerator ator = this;
+                ator._curIdx = -1;
+                return ator;
+            }
+
+            /// <inheritdoc />
+            IEnumerator<JwtMember> IEnumerable<JwtMember>.GetEnumerator() => GetEnumerator();
+
+            /// <inheritdoc />
+            public void Dispose()
+            {
+                _curIdx = _endIdxOrVersion;
+            }
+
+            /// <inheritdoc />
+            public void Reset()
+            {
+                _curIdx = -1;
+            }
+
+            /// <inheritdoc />
+            object System.Collections.IEnumerator.Current => Current;
+
+            /// <inheritdoc />
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+            /// <inheritdoc />
+            public bool MoveNext()
+            {
+                if (_curIdx >= _endIdxOrVersion)
+                {
+                    return false;
+                }
+
+                if (_curIdx < 0)
+                {
+                    _curIdx = 0;
+                }
+                else
+                {
+                    _curIdx += DbRow.Size;
+                }
+
+                // _curIdx is now pointing at a property name, move one more to get the value
+                _curIdx += DbRow.Size;
+
+                return _curIdx < _endIdxOrVersion;
+            }
+
+            private static bool TryParse(ReadOnlyMemory<byte> utf8Array, int count, out JwtDocument? document)
+            {
+                ReadOnlySpan<byte> utf8JsonSpan = utf8Array.Span;
+                var database = new MetadataDb(count * DbRow.Size);
+
+                var reader = new Utf8JsonReader(utf8JsonSpan);
+                if (reader.Read())
+                {
+                    JsonTokenType tokenType = reader.TokenType;
+                    if (tokenType == JsonTokenType.StartObject)
+                    {
+                        while (reader.Read())
+                        {
+                            tokenType = reader.TokenType;
+                            int tokenStart = (int)reader.TokenStartIndex;
+
+                            if (tokenType == JsonTokenType.EndObject)
+                            {
+                                break;
+                            }
+                            else if (tokenType != JsonTokenType.PropertyName)
+                            {
+                                goto Error;
+                            }
+
+                            // Adding 1 to skip the start quote will never overflow
+                            Debug.Assert(tokenStart < int.MaxValue);
+
+                            database.Append(JsonTokenType.PropertyName, tokenStart + 1, reader.ValueSpan.Length);
+
+                            reader.Read();
+                            tokenType = reader.TokenType;
+                            tokenStart = (int)reader.TokenStartIndex;
+
+                            // Since the input payload is contained within a Span,
+                            // token start index can never be larger than int.MaxValue (i.e. utf8JsonSpan.Length).
+                            Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
+                            if (tokenType == JsonTokenType.String)
+                            {
+                                // Adding 1 to skip the start quote will never overflow
+                                Debug.Assert(tokenStart < int.MaxValue);
+                                database.Append(JsonTokenType.String, tokenStart + 1, reader.ValueSpan.Length);
+                            }
+                            else if (tokenType == JsonTokenType.Number)
+                            {
+                                database.Append(JsonTokenType.Number, tokenStart, reader.ValueSpan.Length);
+                            }
+                            else if (tokenType == JsonTokenType.StartObject)
+                            {
+                                int itemCount = Utf8JsonReaderHelper.SkipObject(ref reader);
+                                int tokenEnd = (int)reader.TokenStartIndex;
+                                int index = database.Length;
+                                database.Append(JsonTokenType.StartObject, tokenStart, tokenEnd - tokenStart + 1);
+                                database.SetNumberOfRows(index, itemCount);
+                            }
+                            else if (tokenType == JsonTokenType.StartArray)
+                            {
+                                int itemCount = Utf8JsonReaderHelper.SkipArray(ref reader);
+
+                                int index = database.Length;
+                                int tokenEnd = (int)reader.TokenStartIndex;
+                                database.Append(JsonTokenType.StartArray, tokenStart, tokenEnd - tokenStart + 1);
+                                database.SetNumberOfRows(index, itemCount);
+                            }
+                            else
+                            {
+                                Debug.Assert(tokenType >= JsonTokenType.True && tokenType <= JsonTokenType.Null);
+                                database.Append(tokenType, tokenStart, reader.ValueSpan.Length);
+                            }
+                        }
+                    }
+                }
+
+                Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
+                database.TrimExcess();
+
+                document = new JwtDocument(utf8Array, database, null);
+                return true;
+
+            Error:
+                document = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        ///   An enumerable and enumerator for the contents of a JSON array.
+        /// </summary>
+        [DebuggerDisplay("{Current,nq}")]
+        public ref struct ArrayEnumerator
+        {
+            private int _curIdx;
+            private JwtDocument _document;
+            private readonly int _endIdxOrVersion;
+
+            internal ArrayEnumerator(JwtElement target)
+            {
+                _curIdx = -1;
+
+                var value = target.GetRawValue();
+                if (!TryParse(value, target.GetArrayLength(), out _document!))
+                {
+                    ThrowHelper.ThrowFormatException_MalformedJson();
+                }
+
+                Debug.Assert(target.TokenType == JsonTokenType.StartArray);
+                _endIdxOrVersion = value.Length;
+            }
+
+            /// <inheritdoc />
+            public JwtElement Current
+            {
+                get
+                {
+                    if (_curIdx < 0)
+                    {
+                        return default;
+                    }
+
+                    return new JwtElement(_document, _curIdx);
+                }
+            }
+
+            /// <summary>
+            ///   Returns an enumerator that iterates through a collection.
+            /// </summary>
+            /// <returns>
+            ///   An <see cref="ArrayEnumerator"/> value that can be used to iterate
+            ///   through the array.
+            /// </returns>
+            public ArrayEnumerator GetEnumerator()
+            {
+                ArrayEnumerator ator = this;
+                ator._curIdx = -1;
+                return ator;
+            }
+
+            /// <inheritdoc />
+            public void Dispose()
+            {
+                _curIdx = _endIdxOrVersion;
+                _document?.Dispose();
+            }
+
+            /// <inheritdoc />
+            public void Reset()
+            {
+                _curIdx = -1;
+            }
+
+            /// <inheritdoc />
+            public bool MoveNext()
+            {
+                if (_curIdx >= _endIdxOrVersion)
+                {
+                    return false;
+                }
+
+                if (_curIdx < 0)
+                {
+                    _curIdx = 0;
+                }
+                else
+                {
+                    _curIdx += DbRow.Size;
+                }
+
+                return _curIdx < _endIdxOrVersion;
+            }
+
+            private static bool TryParse(ReadOnlyMemory<byte> utf8Array, int count, out JwtDocument? document)
+            {
+                ReadOnlySpan<byte> utf8JsonSpan = utf8Array.Span;
+                var database = new MetadataDb(count * DbRow.Size);
+
+                var reader = new Utf8JsonReader(utf8JsonSpan);
+                if (reader.Read())
+                {
+                    JsonTokenType tokenType = reader.TokenType;
+                    if (tokenType == JsonTokenType.StartArray)
+                    {
+                        while (reader.Read())
+                        {
+                            tokenType = reader.TokenType;
+                            int tokenStart = (int)reader.TokenStartIndex;
+
+                            if (tokenType == JsonTokenType.EndArray)
+                            {
+                                break;
+                            }
+                            else if (tokenType == JsonTokenType.PropertyName)
+                            {
+                                goto Error;
+                            }
+
+                            // Since the input payload is contained within a Span,
+                            // token start index can never be larger than int.MaxValue (i.e. utf8JsonSpan.Length).
+                            Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
+                            if (tokenType == JsonTokenType.String)
+                            {
+                                // Adding 1 to skip the start quote will never overflow
+                                Debug.Assert(tokenStart < int.MaxValue);
+                                database.Append(JsonTokenType.String, tokenStart + 1, reader.ValueSpan.Length);
+                            }
+                            else if (tokenType == JsonTokenType.Number)
+                            {
+                                database.Append(JsonTokenType.Number, tokenStart, reader.ValueSpan.Length);
+                            }
+                            else if (tokenType == JsonTokenType.StartObject)
+                            {
+                                int itemCount = Utf8JsonReaderHelper.SkipObject(ref reader);
+                                int tokenEnd = (int)reader.TokenStartIndex;
+                                int index = database.Length;
+                                database.Append(JsonTokenType.StartObject, tokenStart, tokenEnd - tokenStart + 1);
+                                database.SetNumberOfRows(index, itemCount);
+                            }
+                            else if (tokenType == JsonTokenType.StartArray)
+                            {
+                                int itemCount = Utf8JsonReaderHelper.SkipArray(ref reader);
+
+                                int index = database.Length;
+                                int tokenEnd = (int)reader.TokenStartIndex;
+                                database.Append(JsonTokenType.StartArray, tokenStart, tokenEnd - tokenStart + 1);
+                                database.SetNumberOfRows(index, itemCount);
+                            }
+                            else
+                            {
+                                Debug.Assert(tokenType >= JsonTokenType.True && tokenType <= JsonTokenType.Null);
+                                database.Append(tokenType, tokenStart, reader.ValueSpan.Length);
+                            }
+                        }
+                    }
+                }
+
+                Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
+                database.TrimExcess();
+
+                document = new JwtDocument(utf8Array, database, null);
+                return true;
+
+            Error:
+                document = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        ///   An enumerable and enumerator for the contents of a JSON array.
+        /// </summary>
+        [DebuggerDisplay("{Current,nq}")]
+        public struct ArrayEnumerator<T>
+        {
+            private int _curIdx;
+            private JwtDocument _document;
+            private readonly int _endIdxOrVersion;
+
+            internal ArrayEnumerator(JwtElement target)
+            {
+                if (typeof(T) != typeof(string) && typeof(T) != typeof(long) && typeof(T) != typeof(double))
+                {
+                    throw new NotSupportedException();
+                }
+
+                _curIdx = -1;
+
+                var value = target.GetRawValue();
+                if (!TryParse(value, target.GetArrayLength(), out _document!))
+                {
+                    ThrowHelper.ThrowFormatException_MalformedJson();
+                }
+
+                Debug.Assert(target.TokenType == JsonTokenType.StartArray);
+                _endIdxOrVersion = value.Length;
+            }
+
+            /// <inheritdoc />
+            public JwtElement Current
+            {
+                get
+                {
+                    if (_curIdx < 0)
+                    {
+                        return default;
+                    }
+
+                    return new JwtElement(_document, _curIdx);
+                }
+            }
+
+            /// <summary>
+            ///   Returns an enumerator that iterates through a collection.
+            /// </summary>
+            /// <returns>
+            ///   An <see cref="ArrayEnumerator"/> value that can be used to iterate
+            ///   through the array.
+            /// </returns>
+            public ArrayEnumerator<T> GetEnumerator()
+            {
+                ArrayEnumerator<T> ator = this;
+                ator._curIdx = -1;
+                return ator;
+            }
+
+            /// <inheritdoc />
+            public void Dispose()
+            {
+                _curIdx = _endIdxOrVersion;
+                _document?.Dispose();
+            }
+
+            /// <inheritdoc />
+            public void Reset()
+            {
+                _curIdx = -1;
+            }
+
+            /// <inheritdoc />
+            public bool MoveNext()
+            {
+                if (_curIdx >= _endIdxOrVersion)
+                {
+                    return false;
+                }
+
+                if (_curIdx < 0)
+                {
+                    _curIdx = 0;
+                }
+                else
+                {
+                    _curIdx += DbRow.Size;
+                }
+
+                return _curIdx < _endIdxOrVersion;
+            }
+
+            private static bool TryParse(ReadOnlyMemory<byte> utf8Array, int count, out JwtDocument? document)
+            {
+                ReadOnlySpan<byte> utf8JsonSpan = utf8Array.Span;
+                var database = new MetadataDb(count * DbRow.Size);
+
+                var reader = new Utf8JsonReader(utf8JsonSpan);
+                if (reader.Read())
+                {
+                    JsonTokenType tokenType = reader.TokenType;
+                    if (tokenType == JsonTokenType.StartArray)
+                    {
+                        while (reader.Read())
+                        {
+                            tokenType = reader.TokenType;
+                            int tokenStart = (int)reader.TokenStartIndex;
+
+                            if (tokenType == JsonTokenType.EndArray)
+                            {
+                                break;
+                            }
+
+                            Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
+                            if (typeof(T) == typeof(string))
+                            {
+                                if (tokenType == JsonTokenType.String)
+                                {
+                                    Debug.Assert(tokenStart < int.MaxValue);
+                                    database.Append(JsonTokenType.String, tokenStart + 1, reader.ValueSpan.Length);
+                                }
+                                else
+                                {
+                                    goto Error;
+                                }
+                            }
+                            else if (typeof(T) == typeof(long) || typeof(T) == typeof(double))
+                            {
+                                if (tokenType == JsonTokenType.Number)
+                                {
+                                    Debug.Assert(tokenStart < int.MaxValue);
+                                    database.Append(JsonTokenType.Number, tokenStart + 1, reader.ValueSpan.Length);
+                                }
+                                else
+                                {
+                                    goto Error;
+                                }
+                            }
+                            else
+                            {
+                                goto Error;
+                            }
+                        }
+                    }
+                }
+
+                Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
+                database.TrimExcess();
+
+                document = new JwtDocument(utf8Array, database, null);
+                return true;
+
+            Error:
+                document = null;
+                return false;
+            }
+
+            private static int SkipArray(ref Utf8JsonReader reader)
+            {
+                int count = 0;
+                int depth = reader.CurrentDepth;
+                int depth1 = depth + 1;
+                do
+                {
+                    if (depth1 == reader.CurrentDepth)
+                    {
+                        count++;
+                    }
+                }
+                while (reader.Read() && depth < reader.CurrentDepth);
+                return count;
             }
         }
     }
