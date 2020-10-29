@@ -18,6 +18,7 @@ namespace JsonWebToken.Tests
                 Assert.NotNull(jwt);
                 Assert.True(jwt.Payload.ContainsClaim("exp"));
                 Assert.True(jwt.Payload.ContainsClaim("iat"));
+                jwt.Dispose();
             }
         }
     }

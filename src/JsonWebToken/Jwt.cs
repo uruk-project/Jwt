@@ -527,5 +527,22 @@ namespace JsonWebToken
                 ArrayPool<byte>.Shared.Return(rented);
             }
         }
+
+        /// <inheritsdoc />
+        public override string ToString()
+        {
+            if (_payload == null)
+            {
+                return _header.ToString() + ".";
+            }
+            else if (_nested == null)
+            {
+                return _header.ToString() + "." + _payload.ToString();
+            }
+            else
+            {
+                return _header.ToString() + "." + _nested._header.ToString() + "." + _nested._payload;
+            }
+        }
     }
 }

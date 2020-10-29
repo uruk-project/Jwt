@@ -41,11 +41,16 @@ namespace MultiIssuersValidationSample
                 {
                     Console.WriteLine($"The token is issued by '{jwt.Payload["iss"].GetString()}':");
                     Console.WriteLine(jwt);
+
+                    jwt.Dispose();
                     break;
                 }
-
-                Console.WriteLine($"Failed to read the token for the issuer '{policies[i].RequiredIssuer}'.");
-                Console.WriteLine("  Reason: " + jwt.Error.Status);
+                else
+                {
+                    Console.WriteLine($"Failed to read the token for the issuer '{policies[i].RequiredIssuer}'.");
+                    Console.WriteLine("  Reason: " + jwt.Error.Status);
+                    jwt.Dispose();
+                }
             }
         }
     }

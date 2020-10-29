@@ -148,6 +148,7 @@ namespace JsonWebToken.Tests
 
             Assert.True(result);
             Assert.Equal("Live long and prosper.", jwt.Plaintext);
+            jwt.Dispose();
         }
     }
 }

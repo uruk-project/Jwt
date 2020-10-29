@@ -32,7 +32,6 @@ namespace ValidatePerf
             EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256
         };
         private static readonly byte[] jweToken = _writer.WriteToken(jweDescriptor);
-        private static readonly JwtReader _reader = new JwtReader(encryptionKey);
 
         private static void Main()
         {
@@ -45,10 +44,8 @@ namespace ValidatePerf
                 .Build();
 
             Console.WriteLine("Starting...");
-            _reader.EnableHeaderCaching = false;
             while (true)
             {
-                _reader.TryReadToken(jwsToken, policy);
                 Jwt.TryParse(jwsToken, policy, out Jwt document);
                 document.Dispose();
             }

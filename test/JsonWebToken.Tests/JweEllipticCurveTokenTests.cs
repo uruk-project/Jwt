@@ -36,7 +36,6 @@ namespace JsonWebToken.Tests
 
             var token = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
                 .RequireSignature(_signingKey)
                 .WithDecryptionKey(_bobKey)
@@ -46,6 +45,7 @@ namespace JsonWebToken.Tests
             Assert.True(result);
             Assert.True(jwt.Payload.TryGetClaim("sub", out var sub));
             Assert.Equal("Alice", sub.GetString());
+            jwt.Dispose();
         }
 
         public static IEnumerable<object[]> GetSupportedAlgorithm()

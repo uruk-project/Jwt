@@ -14,16 +14,17 @@ namespace JwsValidationSample
                            .RequireIssuer("https://idp.example.com/")
                            .Build();
 
-            var reader = new JwtReader();
-            var result = reader.TryReadToken("eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MDAwMDcyMDAsImlhdCI6MjAwMDAwNzIwMCwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiYXVkIjoiNjM2QzY5NjU2RTc0NUY2OTY0In0.YrrT1Ddp1ampsDd2GwYZoTz_bUnLt_h--f16wsWBedk", policy);
-            if (result.Succedeed)
+            var result = Jwt.TryParse("eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MDAwMDcyMDAsImlhdCI6MjAwMDAwNzIwMCwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiYXVkIjoiNjM2QzY5NjU2RTc0NUY2OTY0In0.YrrT1Ddp1ampsDd2GwYZoTz_bUnLt_h--f16wsWBedk", policy, out var jwt);
+            if (result)
             {
-                Console.WriteLine("The token is " + result.Token);
+                Console.WriteLine("The token is " + jwt);
             }
             else
             {
-                Console.WriteLine("Failed to read the token. Reason: " + Environment.NewLine + result.Status);
+                Console.WriteLine("Failed to read the token. Reason: " + Environment.NewLine + jwt.Error.Status);
             }
+
+            jwt.Dispose();
         }
     }
 }

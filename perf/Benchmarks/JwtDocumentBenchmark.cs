@@ -87,46 +87,6 @@ namespace JsonWebToken.Performance
             return document;
         }
 
-        [Benchmark(Baseline = false)]
-        [BenchmarkCategory("JWT")]
-        [ArgumentsSource(nameof(GetJwt))]
-        [Obsolete]
-        public Jwt? TryReadTokenJwt(byte[] data, TokenValidationPolicy policy)
-        {
-            return TryReadToken(data, policy);
-        }
-
-        [Benchmark(Baseline = false)]
-        [BenchmarkCategory("JWS")]
-        [ArgumentsSource(nameof(GetJws))]
-        [Obsolete]
-        public Jwt? TryReadTokenJws(byte[] data, TokenValidationPolicy policy)
-        {
-            return TryReadToken(data, policy);
-        }
-
-        [Benchmark(Baseline = false)]
-        [BenchmarkCategory("JWE")]
-        [ArgumentsSource(nameof(GetJwe))]
-        [Obsolete]
-        public Jwt? TryReadTokenJwe(byte[] data, TokenValidationPolicy policy)
-        {
-            return TryReadToken(data, policy);
-        }
-
-        [Obsolete]
-        private Jwt? TryReadToken(byte[] data, TokenValidationPolicy policy)
-        {
-            var reader = new JwtReader(Tokens.EncryptionKey);
-            var document = reader.TryReadToken(data, policy);
-            if (!document.Succedeed)
-            {
-                throw new System.Exception();
-            }
-
-            return document.Token;
-        }
-
         public static IEnumerable<object[]> GetJwe()
         {
             yield return new object[] { Encoding.UTF8.GetBytes(Tokens.ValidTokens["JWE 6 claims"]), _policy };

@@ -90,7 +90,6 @@ namespace JsonWebToken.Tests
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
                 .WithDecryptionKey(RsaKey)
                 .IgnoreSignature()
@@ -115,7 +114,6 @@ namespace JsonWebToken.Tests
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
                 .WithDecryptionKey(RsaKey)
                 .IgnoreSignature()
@@ -154,7 +152,6 @@ namespace JsonWebToken.Tests
             var value = writer.WriteToken(descriptor);
             Assert.NotNull(value);
 
-            var reader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
                 .WithDecryptionKey(key)
                 .IgnoreSignature()
@@ -192,7 +189,6 @@ namespace JsonWebToken.Tests
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
                .WithDecryptionKey(RsaKey)
                 .IgnoreSignature()

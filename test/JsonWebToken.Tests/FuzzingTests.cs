@@ -18,8 +18,8 @@ namespace JsonWebToken.Tests
                             .Build();
             var parsed = Jwt.TryParse(value, policy, out var jwt);
 
-            Assert.False(parsed);
             Assert.NotNull(jwt);
+            jwt.Dispose();
         }
     }
 }

@@ -27,7 +27,6 @@ namespace JsonWebToken.Performance
 
         private static readonly SymmetricJwk SymmetricKey = Tokens.SigningKey;
 
-        public static readonly JwtReader Reader = new JwtReader();
         protected static readonly TokenValidationPolicy tokenValidationPolicy
             = new TokenValidationPolicyBuilder()
                 .RequireSignature(SymmetricKey)
