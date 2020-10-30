@@ -65,7 +65,7 @@ namespace JsonWebToken
             _control = control;
             RequiredAudiencesBinary = audiences;
             RequiredAudiences = audiences.Select(a => Encoding.UTF8.GetString(a)).ToArray();
-            HeaderCache = headerCacheDisabled ? _disabledJwtHeaderCache : new JwtHeaderCache();
+            HeaderCache = headerCacheDisabled ? _disabledJwtHeaderCache : new LruJwtHeaderCache();
             if (issuer != null)
             {
                 RequiredIssuerBinary = issuer;

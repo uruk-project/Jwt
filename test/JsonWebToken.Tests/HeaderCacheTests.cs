@@ -11,7 +11,7 @@ namespace JsonWebToken.Tests
         public void AddHeader()
         {
             const int Count = 10;
-            var cache = new JwtHeaderCache();
+            var cache = new LruJwtHeaderCache();
             var rawHeaders = new byte[10][];
             for (int i = 0; i < Count; i++)
             {
@@ -34,7 +34,7 @@ namespace JsonWebToken.Tests
         public void AddHeader_BeyondCapacity()
         {
             const int Count = 20;
-            var cache = new JwtHeaderCache();
+            var cache = new LruJwtHeaderCache();
             var rawHeaders = new byte[Count][];
             for (int i = 0; i < Count; i++)
             {
@@ -63,7 +63,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void AddHeader_Lru()
         {
-            var cache = new JwtHeaderCache();
+            var cache = new LruJwtHeaderCache();
             var rawHeaders = new byte[10][];
             for (int i = 0; i < 10; i++)
             {
@@ -84,7 +84,123 @@ namespace JsonWebToken.Tests
         [Fact]
         public void AddHeader_Parallel()
         {
-            var cache = new JwtHeaderCache();
+            var cache = new LruJwtHeaderCache();
+            var rawHeaders = new byte[1000][];
+            for (int i = 0; i < 1000; i++)
+            {
+                rawHeaders[i] = new byte[32];
+                FillRandom(rawHeaders[i]);
+            }
+
+            JwtHeaderDocument.TryParse(Encoding.UTF8.GetBytes($"{{\"kid\":\"{0}\"}}"), TokenValidationPolicy.NoValidation, out JwtHeaderDocument header, out var error);
+            var p = Parallel.For(0, 100, j =>
+            {
+                for (int i = 0; i < 1000; i++)
+                {
+                    cache.AddHeader(rawHeaders[i], header.Clone());
+                }
+            });
+
+            Assert.True(cache.Validate());
+            var p2 = Parallel.For(0, 100, j =>
+            {
+                for (int i = 0; i < 1000; i++)
+                {
+                    cache.TryGetHeader(rawHeaders[i], out var header);
+                }
+            });
+
+            Assert.True(cache.Validate());
+        }
+
+        private static void FillRandom(byte[] data)
+        {
+#if NETCOREAPP
+            RandomNumberGenerator.Fill(data);
+#else
+            using var rnd = RandomNumberGenerator.Create();
+            rnd.GetBytes(data);
+#endif
+        }
+    }
+    
+    public class CircularHeaderCacheTests
+    {
+        [Fact]
+        public void AddHeader()
+        {
+            const int Count = 10;
+            var cache = new CircularJwtHeaderCache();
+            var rawHeaders = new byte[10][];
+            for (int i = 0; i < Count; i++)
+            {
+                rawHeaders[i] = new byte[32];
+                FillRandom(rawHeaders[i]);
+                JwtHeaderDocument.TryParse(Encoding.UTF8.GetBytes($"{{\"kid\":\"{i}\"}}"), TokenValidationPolicy.NoValidation, out JwtHeaderDocument header, out var error);
+                cache.AddHeader(rawHeaders[i], header);
+            }
+
+//Assert.Equal("9", cache.Head.Kid);
+
+            for (int i = 0; i < Count; i++)
+            {
+                Assert.True(cache.TryGetHeader(rawHeaders[i], out var header));
+            }
+        }
+
+        [Fact]
+        public void AddHeader_BeyondCapacity()
+        {
+            const int Count = 20;
+            var cache = new CircularJwtHeaderCache();
+            var rawHeaders = new byte[Count][];
+            for (int i = 0; i < Count; i++)
+            {
+                rawHeaders[i] = new byte[32];
+                FillRandom(rawHeaders[i]);
+                JwtHeaderDocument.TryParse(Encoding.UTF8.GetBytes($"{{\"kid\":\"{i}\"}}"), TokenValidationPolicy.NoValidation, out JwtHeaderDocument header, out var error);
+                cache.AddHeader(rawHeaders[i], header);
+                //Assert.NotNull(cache.Head);
+                //Assert.Equal(header.Algorithm, cache.Head.Algorithm);
+                //Assert.Equal(header.Kid, cache.Head.Kid);
+            }
+
+            Assert.Equal("19", cache.Head?.Kid);
+            for (int i = 0; i < Count - 16; i++)
+            {
+                Assert.False(cache.TryGetHeader(rawHeaders[i], out var header));
+            }
+
+            for (int i = Count - 16; i < Count; i++)
+            {
+                Assert.True(cache.TryGetHeader(rawHeaders[i], out var header));
+            }
+        }
+
+        //[Fact]
+        //public void AddHeader_Lru()
+        //{
+        //    var cache = new CircularJwtHeaderCache();
+        //    var rawHeaders = new byte[10][];
+        //    for (int i = 0; i < 10; i++)
+        //    {
+        //        rawHeaders[i] = new byte[32];
+        //        FillRandom(rawHeaders[i]);
+        //        JwtHeaderDocument.TryParse(Encoding.UTF8.GetBytes($"{{\"kid\":\"{i}\"}}"), TokenValidationPolicy.NoValidation, out JwtHeaderDocument header, out var error);
+        //        cache.AddHeader(rawHeaders[i], header);
+        //    }
+
+        //    for (int i = 0; i < 10; i++)
+        //    {
+        //        Assert.True(cache.TryGetHeader(rawHeaders[i], out var header));
+        //        Assert.Equal(header, cache.Head);
+        //    }
+        //}
+
+        [Fact]
+        public void AddHeader_Parallel()
+        {
+            var cache = new CircularJwtHeaderCache();
             var rawHeaders = new byte[1000][];
             for (int i = 0; i < 1000; i++)
             {

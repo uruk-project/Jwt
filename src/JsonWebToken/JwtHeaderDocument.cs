@@ -16,7 +16,7 @@ namespace JsonWebToken
     /// </remarks>
     public sealed class JwtHeaderDocument : IJwtHeader, IDisposable
     {
-        internal static readonly JwtHeaderDocument Empty = new JwtHeaderDocument(new JwtDocument(), 0, 0);
+        internal static readonly JwtHeaderDocument Empty = new JwtHeaderDocument(new JwtDocument(), -1, -1);
 
         private readonly JwtDocument _document;
         private readonly JwtElement _alg;

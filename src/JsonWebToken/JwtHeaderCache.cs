@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
@@ -10,8 +11,10 @@ namespace JsonWebToken
     /// <summary>
     /// Represents a cache for <see cref="JwtHeaderDocument"/>.
     /// </summary>
-    public sealed class JwtHeaderCache : IJwtHeaderCache
+    public sealed class LruJwtHeaderCache : IJwtHeaderCache
     {
+        private const int MaxSize = 16;
+
         private sealed class Node
         {
             public JwtHeaderDocument Header;
@@ -33,11 +36,6 @@ namespace JsonWebToken
         private SpinLock _spinLock = new SpinLock();
 
         private int _count = 0;
-
-        /// <summary>
-        /// The maximum size of the cache. 
-        /// </summary>
-        public int MaxSize { get; set; } = 10;
 
         private Node? _head = null;
         private Node? _tail = null;
@@ -208,6 +206,13 @@ namespace JsonWebToken
 
         Invalid:
             return false;
+        }
+
+        public void Clear()
+        {
+            _head = null;
+            _tail = null;
+            _count = 0;
         }
     }
 }
