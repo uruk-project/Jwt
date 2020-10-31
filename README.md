@@ -11,7 +11,7 @@ Install the [JsonWebToken NuGet Package](https://www.nuget.org/packages/JsonWebT
 
 ### Package Manager Console
 ```
-Install-Package JsonWebToken -Version 1.8
+Install-Package JsonWebToken -Version 1.9
 ```
 ### .NET CLI
 ```
@@ -106,9 +106,10 @@ The main reason of the efficiency of this library is the usage of the new API pr
 | RS256        | RSASSA-PKCS1-v1_5 using SHA-256                | netstandard2.0
 | RS384        | RSASSA-PKCS1-v1_5 using SHA-384                | netstandard2.0
 | RS512        | RSASSA-PKCS1-v1_5 using SHA-512                | netstandard2.0
-| ES256        | ECDSA using P-256 and SHA-256                  | netcoreapp2.1
-| ES384        | ECDSA using P-384 and SHA-384                  | netcoreapp2.1
-| ES512        | ECDSA using P-521 and SHA-512                  | netcoreapp2.1
+| ES256        | ECDSA using curve P-256 and SHA-256                  | netcoreapp2.1
+| ES384        | ECDSA using curve P-384 and SHA-384                  | netcoreapp2.1
+| ES512        | ECDSA using curve P-521 and SHA-512                  | netcoreapp2.1
+| ES256X       | ECDSA using curve secp256k1  and SHA-256             | netcoreapp2.1
 | PS256        | RSASSA-PSS using SHA-256 and MGF1 with SHA-256 | netstandard2.0
 | PS384        | RSASSA-PSS using SHA-384 and MGF1 with SHA-384 | netstandard2.0
 | PS512        | RSASSA-PSS using SHA-512 and MGF1 with SHA-512 | netstandard2.0

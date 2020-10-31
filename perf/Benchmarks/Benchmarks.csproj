@@ -34,10 +34,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
-    <PackageReference Include="jose-jwt" Version="2.5.0" />
+    <PackageReference Include="jose-jwt" Version="2.6.0" />
     <PackageReference Include="JWT" Version="7.2.2" />
-    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.7.1" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.7.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.8.0" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.8.0" />
     <PackageReference Include="gfoidl.Base64" Version="1.1.1" />
   </ItemGroup>
   <ItemGroup>

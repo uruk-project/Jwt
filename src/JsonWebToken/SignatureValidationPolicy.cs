@@ -23,6 +23,11 @@ namespace JsonWebToken
         /// Allows to ignore the signature, whatever ther is an algorithm defined or not.
         /// </summary>
         public static readonly SignatureValidationPolicy IgnoreSignature = new IgnoreSignatureValidationContext();
+        
+        /// <summary>
+        /// Gets whether the signature validation is enabled.
+        /// </summary>
+        public abstract bool IsEnabled { get; }
 
         /// <summary>
         /// Gets whether the signature validation is enabled.

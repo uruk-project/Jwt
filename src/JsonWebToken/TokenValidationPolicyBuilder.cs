@@ -174,7 +174,7 @@ namespace JsonWebToken
                 throw new InvalidOperationException($"The key does not define an 'alg' parameter. Use the method {nameof(RequireSignature)} with a {nameof(Jwk)} and a {nameof(SignatureAlgorithm)}.");
             }
 
-            return RequireSignature(key, null);
+            return RequireSignature(key, (SignatureAlgorithm?)null);
         }
 
         /// <summary>
@@ -183,7 +183,29 @@ namespace JsonWebToken
         /// <param name="key"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(Jwk key, SignatureAlgorithm? algorithm) => RequireSignature(new Jwks(key), algorithm);
+        public TokenValidationPolicyBuilder RequireSignature(Jwk key, SignatureAlgorithm? algorithm) 
+            => RequireSignature(new Jwks(key), algorithm);
+
+        /// <summary>
+        /// Requires a valid signature.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="algorithm"></param>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder RequireSignature(Jwk key, string? algorithm)
+        {
+            if (algorithm is null)
+            {
+                throw new ArgumentNullException(nameof(algorithm));
+            }
+
+            if (!SignatureAlgorithm.TryParse(Utf8.GetBytes(algorithm), out var alg))
+            {
+                throw new NotSupportedException($"The algorithm '{alg}' is not supported.");
+            }
+
+            return RequireSignature(new Jwks(key), alg);
+        }
 
         /// <summary>
         /// Requires a valid signature.
@@ -213,7 +235,8 @@ namespace JsonWebToken
         /// <param name="keySet"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(Jwks keySet, SignatureAlgorithm? algorithm) => RequireSignature(new StaticKeyProvider(keySet), algorithm);
+        public TokenValidationPolicyBuilder RequireSignature(Jwks keySet, SignatureAlgorithm? algorithm)
+            => RequireSignature(new StaticKeyProvider(keySet), algorithm);
 
         /// <summary>
         /// Requires a valid signature.
