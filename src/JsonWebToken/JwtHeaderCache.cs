@@ -208,6 +208,9 @@ namespace JsonWebToken
             return false;
         }
 
+        /// <summary>
+        /// Clear the cache.
+        /// </summary>
         public void Clear()
         {
             _head = null;

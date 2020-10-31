@@ -301,7 +301,7 @@ namespace JsonWebToken.Tests
         {
             var json = Encoding.UTF8.GetBytes("{\"string\":\"hello\",\"number\":1234,\"boolean\":true,\"object\":{\"value\":1},\"null\":null,\"array\":[\"hello\",\"world\"]}");
 
-            var result = JwtHeaderDocument.TryParse(json, TokenValidationPolicy.NoValidation, out var header, out var error);
+            var result = JwtHeaderDocument.TryParseHeader(json, null, TokenValidationPolicy.NoValidation, out var header, out var error);
             Assert.True(result);
             Assert.Equal("hello", GetProperty(header, "string").GetString());
             Assert.Equal(1234, GetProperty(header, "number").GetInt64());
@@ -317,7 +317,7 @@ namespace JsonWebToken.Tests
         {
             var json = Encoding.UTF8.GetBytes("{\"string\":\"hello\",\"number\":1234,\"boolean\":true,\"object\":{\"value\":1},\"null\":null,\"array\":[\"hello\",\"world\"]}");
 
-            var result = JwtPayloadDocument.TryParse(json, TokenValidationPolicy.NoValidation, out var payload, out var error);
+            var result = JwtPayloadDocument.TryParsePayload(json, null, TokenValidationPolicy.NoValidation, out var payload, out var error);
             Assert.True(result);
             Assert.Equal("hello", GetProperty(payload, "string").GetString());
             Assert.Equal(1234, GetProperty(payload, "number").GetInt64());

@@ -24,9 +24,10 @@ namespace JsonWebToken
         /// Decompresses the compressed data.
         /// </summary>
         /// <param name="compressedData">The compressed data.</param>
+        /// <param name="bufferWritter">The destination <see cref="IBufferWriter{T}"/>.</param>
         /// <returns></returns>
-        public abstract ReadOnlySequence<byte> Decompress(ReadOnlySpan<byte> compressedData);
-
+        public abstract void Decompress(ReadOnlySpan<byte> compressedData, IBufferWriter<byte> bufferWritter);
+     
         private sealed class NullCompressor : Compressor
         {
             public override Span<byte> Compress(ReadOnlySpan<byte> data)
@@ -34,9 +35,8 @@ namespace JsonWebToken
                 throw new NotImplementedException();
             }
 
-            public override ReadOnlySequence<byte> Decompress(ReadOnlySpan<byte> compressedData)
+            public override void Decompress(ReadOnlySpan<byte> compressedData, IBufferWriter<byte> bufferWritter)
             {
-                throw new NotImplementedException();
             }
         }
     }

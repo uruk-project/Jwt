@@ -62,11 +62,10 @@ namespace JsonWebToken
             _rented = rented;
         }
 
-        internal Jwt(JwtHeaderDocument header, JwtPayloadDocument payload, byte[] rented)
+        internal Jwt(JwtHeaderDocument header, JwtPayloadDocument payload)
         {
             _header = header;
             _payload = payload;
-            _rented = rented;
         }
 
         private Jwt(JwtHeaderDocument header, JwtPayloadDocument payload, TokenValidationError error)
@@ -197,13 +196,13 @@ namespace JsonWebToken
             if (utf8Token.IsEmpty)
             {
                 error = TokenValidationError.MalformedToken();
-                goto TokenAnalyzed;
+                goto TokenError;
             }
 
             if (utf8Token.Length > policy.MaximumTokenSizeInBytes)
             {
                 error = TokenValidationError.MalformedToken();
-                goto TokenAnalyzed;
+                goto TokenError;
             }
 
             Span<TokenSegment> segments = stackalloc TokenSegment[Constants.JweSegmentCount];
@@ -212,66 +211,71 @@ namespace JsonWebToken
             if (segmentCount < Constants.JwsSegmentCount)
             {
                 error = TokenValidationError.MalformedToken();
-                goto TokenAnalyzed;
+                goto TokenError;
             }
 
             var headerSegment = segmentsRef;
             if (headerSegment.IsEmpty)
             {
                 error = TokenValidationError.MalformedToken();
-                goto TokenAnalyzed;
+                goto TokenError;
             }
 
             var rawHeader = utf8Token.Slice(0, headerSegment.Length);
             int headerJsonDecodedLength = Base64Url.GetArraySizeRequiredToDecode(rawHeader.Length);
-            int payloadjsonDecodedLength;
-            int jsonBufferLength;
 
-            // For JWS, the payload is in position '1' (= 3 - 2)
-            // For JWE, the payload is in position '3' (= 5 - 2)
-            int segmentPayloadOffset = segmentCount - 2;
-            payloadjsonDecodedLength = Base64Url.GetArraySizeRequiredToDecode(Unsafe.Add(ref segmentsRef, segmentPayloadOffset).Length);
-            jsonBufferLength = headerJsonDecodedLength + payloadjsonDecodedLength;
-
-            byte[] jsonBuffer = ArrayPool<byte>.Shared.Rent(jsonBufferLength);
+            byte[] jsonHeaderBuffer = ArrayPool<byte>.Shared.Rent(headerJsonDecodedLength);
             bool wellFormedJwt = false;
             try
             {
                 JwtHeaderDocument? header;
-                bool validHeader;
                 if (policy.HeaderCache.Enabled)
                 {
                     if (!policy.HeaderCache.TryGetHeader(rawHeader, out header))
                     {
-                        int decodedHeaderLength = Base64Url.Decode(rawHeader, new Span<byte>(jsonBuffer, 0, jsonBuffer.Length));
+                        int decodedHeaderLength = Base64Url.Decode(rawHeader, new Span<byte>(jsonHeaderBuffer, 0, jsonHeaderBuffer.Length));
                         Debug.Assert(headerJsonDecodedLength == decodedHeaderLength);
-                        if (validHeader = TryReadHeader(new ReadOnlyMemory<byte>(jsonBuffer, 0, decodedHeaderLength), policy, out header, out error))
+                        if (!JwtHeaderDocument.TryParseHeader(new ReadOnlyMemory<byte>(jsonHeaderBuffer, 0, headerJsonDecodedLength), jsonHeaderBuffer, policy, out header, out error))
                         {
-                            policy.HeaderCache.AddHeader(rawHeader, header!);
+                            goto TokenError;
+                        }
+
+                        if (!policy.TryValidateHeader(header, out error))
+                        {
+                            goto TokenError;
                         }
                     }
                     else
                     {
-                        validHeader = policy.TryValidateHeader(header, out error);
+                        if (!policy.TryValidateHeader(header, out error))
+                        {
+                            goto TokenError;
+                        }
                     }
                 }
                 else
                 {
-                    int decodedHeaderLength = Base64Url.Decode(rawHeader, jsonBuffer);
-                    validHeader = TryReadHeader(new ReadOnlyMemory<byte>(jsonBuffer, 0, decodedHeaderLength), policy, out header, out error);
+                    int decodedHeaderLength = Base64Url.Decode(rawHeader, new Span<byte>(jsonHeaderBuffer, 0, jsonHeaderBuffer.Length));
+                    Debug.Assert(headerJsonDecodedLength == decodedHeaderLength);
+                    if (!JwtHeaderDocument.TryParseHeader(new ReadOnlyMemory<byte>(jsonHeaderBuffer, 0, headerJsonDecodedLength), jsonHeaderBuffer, policy, out header, out error))
+                    {
+                        goto TokenError;
+                    }
+
+                    if (!policy.TryValidateHeader(header, out error))
+                    {
+                        goto TokenError;
+                    }
                 }
 
-                if (validHeader)
+                Debug.Assert(header != null);
+                wellFormedJwt = segmentCount switch
                 {
-                    Debug.Assert(header != null);
-                    wellFormedJwt = segmentCount switch
-                    {
-                        Constants.JwsSegmentCount => TryReadJws(utf8Token, jsonBuffer, headerJsonDecodedLength, payloadjsonDecodedLength, policy, ref segmentsRef, header!, out jwt),
-                        Constants.JweSegmentCount => TryReadJwe(utf8Token, jsonBuffer, headerJsonDecodedLength, payloadjsonDecodedLength, policy, rawHeader, ref segmentsRef, header!, out jwt),
-                        _ => InvalidDocument(TokenValidationError.MalformedToken($"JWT must have 3 or 5 segments. The current token has {segmentCount} segments."), out jwt),
-                    };
-                    return wellFormedJwt;
-                }
+                    Constants.JwsSegmentCount => TryParseJws(utf8Token, policy, ref segmentsRef, header!, out jwt),
+                    Constants.JweSegmentCount => TryParseJwe(utf8Token, policy, rawHeader, ref segmentsRef, header!, out jwt),
+                    _ => InvalidDocument(TokenValidationError.MalformedToken($"JWT must have 3 or 5 segments. The current token has {segmentCount} segments."), out jwt),
+                };
+                return wellFormedJwt;
             }
             catch (FormatException formatException)
             {
@@ -285,15 +289,15 @@ namespace JsonWebToken
             {
                 error = TokenValidationError.MalformedToken(invalidOperationException);
             }
-            finally
+            catch
             {
-                if (!wellFormedJwt)
-                {
-                    ArrayPool<byte>.Shared.Return(jsonBuffer);
-                }
+                ArrayPool<byte>.Shared.Return(jsonHeaderBuffer);
+                throw;
             }
 
-        TokenAnalyzed:
+            ArrayPool<byte>.Shared.Return(jsonHeaderBuffer);
+
+        TokenError:
             Debug.Assert(error != null);
             return InvalidDocument(error!, out jwt);
 
@@ -304,22 +308,8 @@ namespace JsonWebToken
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool TryReadHeader(ReadOnlyMemory<byte> utf8Header, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtHeaderDocument? header, [NotNullWhen(false)] out TokenValidationError? error)
-        {
-            if (JwtHeaderDocument.TryParse(utf8Header, policy, out header, out error))
-            {
-                return policy.TryValidateHeader(header, out error);
-            }
-
-            return false;
-        }
-
-        private static bool TryReadJws(
-            ReadOnlySpan<byte> utf8Buffer,
-            byte[] jsonBuffer,
-            int jsonBufferOffset,
-            int jsonBufferLength,
+        private static bool TryParseJws(
+            ReadOnlySpan<byte> utf8Token,
             TokenValidationPolicy policy,
             ref TokenSegment segments,
             JwtHeaderDocument header,
@@ -328,69 +318,73 @@ namespace JsonWebToken
             TokenSegment headerSegment = segments;
             TokenSegment payloadSegment = Unsafe.Add(ref segments, 1);
             TokenSegment signatureSegment = Unsafe.Add(ref segments, 2);
-            var rawPayload = utf8Buffer.Slice(payloadSegment.Start, payloadSegment.Length);
+            var rawPayload = utf8Token.Slice(payloadSegment.Start, payloadSegment.Length);
             var result = policy.TryValidateSignature(
                 header,
-                utf8Buffer.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1),
-                utf8Buffer.Slice(signatureSegment.Start, signatureSegment.Length));
+                utf8Token.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1),
+                utf8Token.Slice(signatureSegment.Start, signatureSegment.Length));
+
             if (!result.Succedeed)
             {
                 jwt = new Jwt(TokenValidationError.SignatureValidationFailed(result));
-                goto Error;
+                goto ExitFalse;
             }
+
+            int jsonBufferLength = Base64Url.GetArraySizeRequiredToDecode(payloadSegment.Length);
+            byte[] jsonBuffer = ArrayPool<byte>.Shared.Rent(jsonBufferLength);
 
             try
             {
-                int bytesWritten = Base64Url.Decode(rawPayload, new Span<byte>(jsonBuffer, jsonBufferOffset, jsonBufferLength));
-                Debug.Assert(bytesWritten == jsonBufferLength);
-                if (JwtPayloadDocument.TryParse(
-                    new ReadOnlyMemory<byte>(jsonBuffer, jsonBufferOffset, jsonBufferLength),
+                int bytesWritten = Base64Url.Decode(rawPayload, jsonBuffer);
+                if (!JwtPayloadDocument.TryParsePayload(
+                    new ReadOnlyMemory<byte>(jsonBuffer, 0, jsonBufferLength),
+                    jsonBuffer,
                     policy,
                     out JwtPayloadDocument? payload,
                     out TokenValidationError? error))
                 {
-                    if (policy.TryValidateJwt(header, payload, out error))
-                    {
-                        jwt = new Jwt(header, payload, jsonBuffer);
-                        return true;
-                    }
-                    else
-                    {
-                        jwt = new Jwt(header, payload, error);
-                        goto Error;
-                    }
-                }
-                else
-                {
                     jwt = new Jwt(error);
-                    goto Error;
+                    goto ExitFalseClearBuffer;
                 }
+
+                if (!policy.TryValidateJwt(header, payload, out error))
+                {
+                    jwt = new Jwt(header, payload, error);
+                    goto ExitFalse;
+                }
+
+                jwt = new Jwt(header, payload);
+                return true;
             }
             catch (FormatException formatException)
             {
                 jwt = new Jwt(TokenValidationError.MalformedToken(formatException));
-                goto Error;
+                goto ExitFalseClearBuffer;
             }
             catch (JsonException readerException)
             {
                 jwt = new Jwt(TokenValidationError.MalformedToken(readerException));
-                goto Error;
+                goto ExitFalseClearBuffer;
             }
             catch (InvalidOperationException invalidOperationException) when (invalidOperationException.InnerException is DecoderFallbackException)
             {
                 jwt = new Jwt(TokenValidationError.MalformedToken(invalidOperationException));
-                goto Error;
+                goto ExitFalseClearBuffer;
+            }
+            catch
+            {
+                ArrayPool<byte>.Shared.Return(jsonBuffer);
+                throw;
             }
 
-        Error:
+        ExitFalseClearBuffer:
+            ArrayPool<byte>.Shared.Return(jsonBuffer);
+        ExitFalse:
             return false;
         }
 
-        private static bool TryReadJwe(
-            ReadOnlySpan<byte> utf8Buffer,
-            byte[] jsonBuffer,
-            int jsonBufferOffset,
-            int jsonBufferLength,
+        private static bool TryParseJwe(
+            ReadOnlySpan<byte> utf8Token,
             TokenValidationPolicy policy,
             ReadOnlySpan<byte> rawHeader,
             ref TokenSegment segments,
@@ -415,17 +409,19 @@ namespace JsonWebToken
                 goto Error;
             }
 
-            if (!JwtReaderHelper.TryGetContentEncryptionKeys(header, utf8Buffer.Slice(encryptionKeySegment.Start, encryptionKeySegment.Length), encryptionAlgorithm, policy.DecryptionKeyProviders, out var keys))
+            if (!JwtReaderHelper.TryGetContentEncryptionKeys(header, utf8Token.Slice(encryptionKeySegment.Start, encryptionKeySegment.Length), encryptionAlgorithm, policy.DecryptionKeyProviders, out var keys))
             {
                 error = TokenValidationError.EncryptionKeyNotFound();
                 goto Error;
             }
 
-            var rawInitializationVector = utf8Buffer.Slice(ivSegment.Start, ivSegment.Length);
-            var rawCiphertext = utf8Buffer.Slice(ciphertextSegment.Start, ciphertextSegment.Length);
-            var rawAuthenticationTag = utf8Buffer.Slice(authenticationTagSegment.Start, authenticationTagSegment.Length);
+            var rawInitializationVector = utf8Token.Slice(ivSegment.Start, ivSegment.Length);
+            var rawCiphertext = utf8Token.Slice(ciphertextSegment.Start, ciphertextSegment.Length);
+            var rawAuthenticationTag = utf8Token.Slice(authenticationTagSegment.Start, authenticationTagSegment.Length);
 
-            Span<byte> decryptedBytes = new Span<byte>(jsonBuffer, jsonBufferOffset, jsonBufferLength);
+            int ciphertextBufferLength = Base64Url.GetArraySizeRequiredToDecode(ciphertextSegment.Length);
+            byte[] ciphertextBuffer = ArrayPool<byte>.Shared.Rent(ciphertextBufferLength);
+            Span<byte> decryptedBytes = new Span<byte>(ciphertextBuffer, 0, ciphertextBufferLength);
             if (JwtReaderHelper.TryDecryptToken(keys, rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, encryptionAlgorithm, decryptedBytes, out int bytesWritten))
             {
                 decryptedBytes = decryptedBytes.Slice(0, bytesWritten);
@@ -436,13 +432,8 @@ namespace JsonWebToken
                 goto Error;
             }
 
-            bool compressed;
-            ReadOnlySequence<byte> decompressedBytes = default;
-            if (!header.TryGetHeaderParameter(HeaderParameters.ZipUtf8, out var zip))
-            {
-                compressed = false;
-            }
-            else
+            PooledByteBufferWriter? decompressionsBufferWriter = null;
+            if (header.TryGetHeaderParameter(HeaderParameters.ZipUtf8, out var zip))
             {
                 if (!CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm))
                 {
@@ -451,56 +442,59 @@ namespace JsonWebToken
                 }
 
                 var compressor = compressionAlgorithm.Compressor;
-
-                //using (var bufferWriter = new PooledByteBufferWriter(decryptedBytes.Length * 3))
+                decompressionsBufferWriter = new PooledByteBufferWriter(decryptedBytes.Length * 4);
+                try
                 {
-                    try
-                    {
-                        compressed = true;
-                        decompressedBytes = compressor.Decompress(decryptedBytes);
-                    }
-                    catch (Exception e)
-                    {
-                        error = TokenValidationError.DecompressionFailed(e);
-                        goto Error;
-                    }
+                    compressor.Decompress(decryptedBytes, decompressionsBufferWriter);
+
+                    // There is no need to keep this buffer anymore
+                    ArrayPool<byte>.Shared.Return(ciphertextBuffer, clearArray: true);
+                }
+                catch (Exception e)
+                {
+                    error = TokenValidationError.DecompressionFailed(e);
+                    decompressionsBufferWriter.Dispose();
+                    goto Error;
                 }
             }
 
             Jwt jwe;
-            if (policy.IgnoreNestedToken)
+            ReadOnlyMemory<byte> rawValue;
+            ReadOnlySpan<byte> rawSpan;
+            byte[] rentedBuffer;
+            if (decompressionsBufferWriter is null)
             {
-                ReadOnlyMemory<byte> rawValue = compressed
-                    ? decompressedBytes.IsSingleSegment
-                        ? decompressedBytes.First
-                        : decompressedBytes.ToArray()
-                    : new ReadOnlyMemory<byte>(jsonBuffer, jsonBufferOffset, bytesWritten);
-                jwe = new Jwt(header, rawValue, jsonBuffer);
+                rawValue = new ReadOnlyMemory<byte>(ciphertextBuffer, 0, bytesWritten);
+                rawSpan = decryptedBytes;
+                rentedBuffer = ciphertextBuffer;
             }
             else
             {
-                bool decrypted = compressed
-                    ? TryParse(decompressedBytes, policy, out var nestedDocument)
-                    : TryParse(decryptedBytes, policy, out nestedDocument);
-                if (decrypted)
+                rawValue = decompressionsBufferWriter.WrittenMemory;
+                rawSpan = decompressionsBufferWriter.WrittenSpan;
+                rentedBuffer = decompressionsBufferWriter.Buffer;
+            }
+
+            if (policy.IgnoreNestedToken)
+            {
+                jwe = new Jwt(header, rawValue, rentedBuffer);
+            }
+            else
+            {
+                if (TryParse(rawSpan, policy, out Jwt nestedDocument))
                 {
-                    jwe = new Jwt(header, nestedDocument, jsonBuffer);
+                    jwe = new Jwt(header, nestedDocument, rentedBuffer);
                 }
                 else
                 {
                     if (nestedDocument.Error!.Status == TokenValidationStatus.MalformedToken && !policy.HasValidation)
                     {
                         // The decrypted payload is not a nested JWT
-                        var rawValue = compressed
-                           ? decompressedBytes.IsSingleSegment
-                               ? decompressedBytes.First
-                               : decompressedBytes.ToArray()
-                           : new ReadOnlyMemory<byte>(jsonBuffer, jsonBufferOffset, bytesWritten);
-                        jwe = new Jwt(header, rawValue, jsonBuffer);
+                        jwe = new Jwt(header, rawValue, rentedBuffer);
                     }
                     else
                     {
-                        document = new Jwt(header, nestedDocument, nestedDocument.Error, jsonBuffer);
+                        document = new Jwt(header, nestedDocument, nestedDocument.Error, rentedBuffer);
                         goto CompleteError;
                     }
                 }
@@ -512,7 +506,6 @@ namespace JsonWebToken
         Error:
             document = new Jwt(error);
         CompleteError:
-            ArrayPool<byte>.Shared.Return(jsonBuffer);
             return false;
         }
 

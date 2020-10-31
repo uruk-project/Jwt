@@ -18,7 +18,7 @@ namespace JsonWebToken.Performance
             JsonWebToken(token);
             Wilson(token);
             WilsonJwt(token);
-            jose_jwt(token);
+            //jose_jwt(token); // jose_jwt seems to not works 
         }
 
         [Benchmark(Baseline = true)]

@@ -58,7 +58,7 @@ namespace JsonWebToken
             _control = control;
         }
 
-        internal static bool TryParse(ReadOnlyMemory<byte> utf8Payload, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtPayloadDocument? payload, [NotNullWhen(false)] out TokenValidationError? error)
+        internal static bool TryParsePayload(ReadOnlyMemory<byte> utf8Payload, byte[]? buffer, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtPayloadDocument? payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
             ReadOnlySpan<byte> utf8JsonSpan = utf8Payload.Span;
             var database = new MetadataDb(utf8Payload.Length);
@@ -181,7 +181,7 @@ namespace JsonWebToken
             Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
             database.TrimExcess();
 
-            payload = new JwtPayloadDocument(new JwtDocument(utf8Payload, database, null), control);
+            payload = new JwtPayloadDocument(new JwtDocument(utf8Payload, database, buffer), control);
             error = null;
             return true;
 

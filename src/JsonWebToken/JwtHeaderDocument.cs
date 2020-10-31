@@ -52,7 +52,7 @@ namespace JsonWebToken
 
         internal JwtElement Algorithm => _alg;
 
-        internal static bool TryParse(ReadOnlyMemory<byte> utf8Payload, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtHeaderDocument? header, [NotNullWhen(false)] out TokenValidationError? error)
+        internal static bool TryParseHeader(ReadOnlyMemory<byte> utf8Payload, byte[]? buffer, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtHeaderDocument? header, [NotNullWhen(false)] out TokenValidationError? error)
         {
             ReadOnlySpan<byte> utf8JsonSpan = utf8Payload.Span;
             var database = new MetadataDb(utf8Payload.Length);
@@ -144,7 +144,7 @@ namespace JsonWebToken
                             database.Append(JsonTokenType.StartArray, tokenStart, tokenEnd - tokenStart + 1);
                             database.SetNumberOfRows(index, count);
                         }
-                        else // if (tokenType == JsonTokenType.Number)
+                        else
                         {
                             Debug.Assert(tokenType >= JsonTokenType.Number && tokenType <= JsonTokenType.Null);
                             database.Append(tokenType, tokenStart, reader.ValueSpan.Length);
@@ -156,7 +156,7 @@ namespace JsonWebToken
             Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
             database.TrimExcess();
 
-            header = new JwtHeaderDocument(new JwtDocument(utf8Payload, database, null), algPosition, kidPosition);
+            header = new JwtHeaderDocument(new JwtDocument(utf8Payload, database, buffer), algPosition, kidPosition);
             error = null;
             return true;
 
@@ -238,8 +238,8 @@ namespace JsonWebToken
         public JwtHeaderDocument Clone()
         {
             return new JwtHeaderDocument(
-                _document.Clone(), 
-                _alg.ValueKind == JsonValueKind.Undefined ? -1 : _alg.Idx, 
+                _document.Clone(),
+                _alg.ValueKind == JsonValueKind.Undefined ? -1 : _alg.Idx,
                 _kid.ValueKind == JsonValueKind.Undefined ? -1 : _kid.Idx);
         }
 
