@@ -157,7 +157,6 @@ namespace JsonWebToken.Performance
             }
 
             private int _index = 0;
-            private int _lastRead = 0;
             private readonly Node[] _nodes = new Node[MaxItems];
 
             /// <summary>

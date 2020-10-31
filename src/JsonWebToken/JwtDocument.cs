@@ -397,6 +397,7 @@ namespace JsonWebToken
         }
 
         internal TValue? Deserialize<TValue>(int index, JsonSerializerOptions? options = null)
+            where TValue : class
         {
             CheckNotDisposed();
             DbRow row = _parsedData.Get(index);

@@ -463,6 +463,7 @@ namespace JsonWebToken
         ///   The parent <see cref="Jwt"/> has been disposed.
         /// </exception>
         public TValue? Deserialize<TValue>(JsonSerializerOptions? options = null)
+            where TValue : class
         {
             CheckValidInstance();
 
