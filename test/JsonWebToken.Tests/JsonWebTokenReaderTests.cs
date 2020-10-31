@@ -2,6 +2,7 @@ using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -212,25 +213,25 @@ namespace JsonWebToken.Tests
 
         [Theory]
         [InlineData("eyJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwiYWxnIjoiQTEyOEtXIn0.4VETXwjtEQIHzctz2FTAef8iHvk8ShfMJrRvDNVISdUh9Zju4tl75w.o0IVPs65CR8B0b6fxH3mow.p8DIesdqyemto-EKiHSA19jiobfS6sR4kfe4PGEyruI.VtIn9WFytiZNjP7wXBeNNg")]
-        public void Issue504_Valid(string jwt)
+        public void Issue504_Valid(string token)
         {
-            var reader = new JwtReader(new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4T"));
             var policy = new TokenValidationPolicyBuilder()
                 .IgnoreSignature()
+                .WithDecryptionKeys(new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4T"))
                 .Build();
 
-            var result = reader.TryReadToken(jwt, policy);
-            Assert.Equal(TokenValidationStatus.Success, result.Status);
+            var result = Jwt.TryParse(token, policy, out var jwt);
+            Assert.True(result);
         }
 
         [Theory]
         [InlineData("eyJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwiYWxnIjoiQTEyOEtXIn0.4VETXwjtEQIHzctz2FTAef8iHvk8ShfMJrRvDNVISdUh9Zju4tl75w.o0IVPs65CR8B0b6fxH3mow.p8DIesdqyemto-EKiHSA19jiobfS6sR4kfe4PGEyruI.VtIn9WFytiZNjP7wXBeNNg", true, false, false)]
         [InlineData("eyJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwiYWxnIjoiQTEyOEtXIn0.4VETXwjtEQIHzctz2FTAef8iHvk8ShfMJrRvDNVISdUh9Zju4tl75w.o0IVPs65CR8B0b6fxH3mow.p8DIesdqyemto-EKiHSA19jiobfS6sR4kfe4PGEyruI.VtIn9WFytiZNjP7wXBeNNg", false, true, false)]
         [InlineData("eyJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwiYWxnIjoiQTEyOEtXIn0.4VETXwjtEQIHzctz2FTAef8iHvk8ShfMJrRvDNVISdUh9Zju4tl75w.o0IVPs65CR8B0b6fxH3mow.p8DIesdqyemto-EKiHSA19jiobfS6sR4kfe4PGEyruI.VtIn9WFytiZNjP7wXBeNNg", false, false, true)]
-        public void Issue504_Invalid(string jwt, bool requireAudience, bool requireSignature, bool requireOther)
+        public void Issue504_Invalid(string token, bool requireAudience, bool requireSignature, bool requireOther)
         {
-            var reader = new JwtReader(new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4T"));
-            var builder = new TokenValidationPolicyBuilder();
+            var builder = new TokenValidationPolicyBuilder()
+                .WithDecryptionKeys(new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4T"));
             if (requireAudience)
             {
                 builder.RequireAudience("test");
@@ -243,14 +244,16 @@ namespace JsonWebToken.Tests
             {
                 builder.IgnoreSignature();
             }
+
             if (requireOther)
             {
                 builder.AddValidator(new FakeValidator());
             }
-            
+
             var policy = builder.Build();
-            var result = reader.TryReadToken(jwt, policy);
-            Assert.Equal(TokenValidationStatus.MalformedToken, result.Status);
+            var result = Jwt.TryParse(token, policy, out var jwt);
+            Assert.False(result);
+            Assert.Equal(TokenValidationStatus.MalformedToken, jwt.Error.Status);
         }
 
         [Theory]
@@ -392,9 +395,10 @@ namespace JsonWebToken.Tests
 
     internal class FakeValidator : IValidator
     {
-        public TokenValidationResult TryValidate(Jwt jwt)
+        public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError error)
         {
-            return TokenValidationResult.MalformedToken();
+            error = TokenValidationError.MalformedToken();
+            return false;
         }
     }
 }

@@ -30,11 +30,6 @@ namespace JsonWebToken
         public abstract bool IsEnabled { get; }
 
         /// <summary>
-        /// Gets whether the signature validation is enabled.
-        /// </summary>
-        public abstract bool IsEnabled { get; }
-
-        /// <summary>
         /// Try to validate the token signature.
         /// </summary>
         /// <param name="header"></param>
