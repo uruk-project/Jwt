@@ -136,34 +136,31 @@ namespace JsonWebToken.Internal
 
         private byte[] BuildSecretAppend(string? apuS, string? apvS)
         {
-            // TODO : 1 buffer for APU & APV
-            byte[]? apuToReturn = null;
-            byte[]? apvToReturn = null;
+            byte[]? arrayToReturn = null;
             byte[] secretAppend;
             try
             {
                 int apuLength = apuS == null ? 0 : Utf8.GetMaxByteCount(apuS.Length);
-                Span<byte> apu = apuLength <= Constants.MaxStackallocBytes
-                                        ? stackalloc byte[apuLength]
-                                        : (apuToReturn = ArrayPool<byte>.Shared.Rent(apuLength));
+                int apvLength = apvS == null ? 0 : Utf8.GetMaxByteCount(apvS.Length);
+                int length = apuLength + apvLength;
+                Span<byte> buffer = length <= Constants.MaxStackallocBytes
+                                        ? stackalloc byte[length]
+                                        : (arrayToReturn = ArrayPool<byte>.Shared.Rent(length));
+                Span<byte> apu = buffer.Slice(0, apuLength);
+                Span<byte> apv = buffer.Slice(apuLength, apvLength);
                 if (apuS != null)
                 {
                     apuLength = Utf8.GetBytes(apuS, apu);
                     apu = apu.Slice(0, apuLength);
+                    apuLength = Base64Url.GetArraySizeRequiredToDecode(apuLength);
                 }
 
-                int apvLength = apvS == null ? 0 : Utf8.GetMaxByteCount(apvS.Length);
-                Span<byte> apv = apvLength <= Constants.MaxStackallocBytes
-                                        ? stackalloc byte[apvLength]
-                                        : (apvToReturn = ArrayPool<byte>.Shared.Rent(apvLength));
                 if (apvS != null)
                 {
                     apvLength = Utf8.GetBytes(apvS, apv);
                     apv = apv.Slice(0, apvLength);
+                    apvLength = Base64Url.GetArraySizeRequiredToDecode(apvLength);
                 }
-
-                apuLength = Base64Url.GetArraySizeRequiredToDecode(apuLength);
-                apvLength = Base64Url.GetArraySizeRequiredToDecode(apvLength);
 
                 int algorithmLength = sizeof(int) + _algorithmNameLength;
                 int partyUInfoLength = sizeof(int) + apuLength;
@@ -183,14 +180,9 @@ namespace JsonWebToken.Internal
             }
             finally
             {
-                if (apuToReturn != null)
+                if (arrayToReturn != null)
                 {
-                    ArrayPool<byte>.Shared.Return(apuToReturn);
-                }
-
-                if (apvToReturn != null)
-                {
-                    ArrayPool<byte>.Shared.Return(apvToReturn);
+                    ArrayPool<byte>.Shared.Return(arrayToReturn);
                 }
             }
 
