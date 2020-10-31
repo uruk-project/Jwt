@@ -514,6 +514,7 @@ namespace JsonWebToken
         {
             _rawValue = ReadOnlyMemory<byte>.Empty;
             _payload?.Dispose();
+            _header.Dispose();
             byte[]? rented = Interlocked.Exchange(ref _rented, null);
             if (rented != null)
             {

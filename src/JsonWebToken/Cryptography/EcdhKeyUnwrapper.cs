@@ -136,6 +136,7 @@ namespace JsonWebToken.Internal
 
         private byte[] BuildSecretAppend(string? apuS, string? apvS)
         {
+            // TODO : 1 buffer for APU & APV
             byte[]? apuToReturn = null;
             byte[]? apvToReturn = null;
             byte[] secretAppend;

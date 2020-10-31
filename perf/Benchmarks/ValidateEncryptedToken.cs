@@ -44,12 +44,12 @@ namespace JsonWebToken.Performance
             return WilsonJwtCore(token.TokenString, wilsonParameters);
         }
 
-        [Benchmark]
-        [ArgumentsSource(nameof(GetTokenValues))]
-        public override Dictionary<string, object> jose_jwt(BenchmarkToken token)
-        {
-            return JoseDotNetCore(token.TokenString, Jose.JweEncryption.A128CBC_HS256, Jose.JweAlgorithm.A128KW, encryptionKey);
-        }
+        //[Benchmark]
+        //[ArgumentsSource(nameof(GetTokenValues))]
+        //public override Dictionary<string, object> jose_jwt(BenchmarkToken token)
+        //{
+        //    return JoseDotNetCore(token.TokenString, Jose.JweEncryption.A128CBC_HS256, Jose.JweAlgorithm.A128KW, encryptionKey);
+        //}
 
         public override IDictionary<string, object> Jwt_Net(BenchmarkToken token)
         {

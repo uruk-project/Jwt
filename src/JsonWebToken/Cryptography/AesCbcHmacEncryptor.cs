@@ -39,7 +39,7 @@ namespace JsonWebToken.Internal
         /// </summary>
         /// <param name="encryptionAlgorithm"></param>
         public AesCbcHmacEncryptor(EncryptionAlgorithm encryptionAlgorithm)
-            :this(encryptionAlgorithm, new AesCbcEncryptor(encryptionAlgorithm))
+            : this(encryptionAlgorithm, new AesCbcEncryptor(encryptionAlgorithm))
         {
         }
 
