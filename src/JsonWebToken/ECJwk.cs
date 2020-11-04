@@ -17,7 +17,7 @@ namespace JsonWebToken
     /// <summary>
     /// Represents an Elliptic Curve JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
     /// </summary>
-    public sealed class ECJwk : AsymmetricJwk
+    public sealed class ECJwk : AsymmetricJwk, IJwtSerializable
     {
         private const uint crv = 7762531u;
         private byte[] _x;
@@ -768,6 +768,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override void WriteTo(Utf8JsonWriter writer)
         {
+            writer.WriteStartObject();
             base.WriteTo(writer);
             writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
 
@@ -778,6 +779,7 @@ namespace JsonWebToken
             WriteBase64UrlProperty(writer, buffer, _y, JwkParameterNames.YUtf8);
 
             WriteOptionalBase64UrlProperty(writer, buffer, _d, JwkParameterNames.DUtf8);
+            writer.WriteEndObject();
         }
 
         /// <inheritsdoc />

@@ -24,6 +24,12 @@ namespace JsonWebToken.Performance
         {
             return JwtCore(payload.JwtDescriptor);
         }
+        [Benchmark(Baseline = false)]
+        [ArgumentsSource(nameof(GetPayloadValues))]
+        public override byte[] JsonWebTokenX(BenchmarkPayload payload)
+        {
+            return JwtCoreX(payload.JwtDescriptorX);
+        }
 
         [Benchmark]
         [ArgumentsSource(nameof(GetPayloadValues))]

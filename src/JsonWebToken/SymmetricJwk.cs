@@ -535,6 +535,7 @@ namespace JsonWebToken
         /// <inheritdoc />      
         public override void WriteTo(Utf8JsonWriter writer)
         {
+            writer.WriteStartObject();
             base.WriteTo(writer);
             int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(_k.Length);
             byte[]? arrayToReturn = null;
@@ -552,6 +553,8 @@ namespace JsonWebToken
                     ArrayPool<byte>.Shared.Return(arrayToReturn);
                 }
             }
+
+            writer.WriteEndObject();
         }
 
         /// <inheritsdoc />

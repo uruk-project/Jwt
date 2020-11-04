@@ -59,4 +59,42 @@ namespace JsonWebToken
             return Header?.ToString() + Environment.NewLine + "." + Environment.NewLine + Payload?.ToString();
         }
     }
+
+    /// <summary>
+    /// Defines an JWT with a <typeparamref name="TPayload"/> payload.
+    /// </summary>
+    [DebuggerDisplay("{DebuggerDisplay(),nq}")]
+    public abstract class JwtDescriptorX<TPayload> : JwtDescriptorX
+    {
+        ///// <summary>
+        ///// Initializes a new instance of <see cref="JwtDescriptor{TPayload}"/>.
+        ///// </summary>
+        ///// <param name="payload"></param>
+        //protected JwtDescriptorX(TPayload payload)
+        //    : base()
+        //{
+        //    if (payload is null)
+        //    {
+        //        ThrowHelper.ThrowArgumentNullException(ExceptionArgument.payload);
+        //    }
+
+        //    Payload = payload;
+        //}
+
+        /// <summary>
+        /// Gets or sets the payload.
+        /// </summary>
+        public abstract TPayload Payload { get; set; }
+
+        private string DebuggerDisplay()
+        {
+            return ToString();
+        }
+
+        /// <inheritsdoc />
+        public override string ToString()
+        {
+            return Header?.ToString() + Environment.NewLine + "." + Environment.NewLine + Payload?.ToString();
+        }
+    }
 }

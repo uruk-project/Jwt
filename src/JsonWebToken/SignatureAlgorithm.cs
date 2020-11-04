@@ -92,6 +92,7 @@ namespace JsonWebToken
 
         private readonly int _id;
         private readonly byte[] _utf8Name;
+        private readonly string _name;
         private readonly AlgorithmCategory _category;
         private readonly ushort _requiredKeySizeInBits;
         private readonly HashAlgorithmName _hashAlgorithm;
@@ -124,7 +125,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the signature algorithm.
         /// </summary>
-        public string Name => Utf8.GetString(_utf8Name);
+        public string Name => _name;
 
         /// <summary>
         /// Gets the name of the signature algorithm.
@@ -163,6 +164,7 @@ namespace JsonWebToken
         {
             _id = id;
             _utf8Name = Utf8.GetBytes(name);
+            _name = name;
             _category = category;
             _requiredKeySizeInBits = requiredKeySizeInBits;
             _hashAlgorithm = hashAlgorithm;

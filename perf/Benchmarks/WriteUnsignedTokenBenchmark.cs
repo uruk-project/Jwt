@@ -10,6 +10,7 @@ namespace JsonWebToken.Performance
         public override IEnumerable<string> GetPayloads()
         {
             yield return "JWT 6 claims";
+            yield return "JWT 16 claims";
         }
     }
 }

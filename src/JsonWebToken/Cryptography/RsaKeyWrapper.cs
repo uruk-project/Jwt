@@ -64,6 +64,31 @@ namespace JsonWebToken.Internal
 #endif
 
             return cek;
+        }      
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeaderX header, Span<byte> destination)
+        {
+            if (_disposed)
+            {
+                ThrowHelper.ThrowObjectDisposedException(GetType());
+            }
+
+            var cek = CreateSymmetricKey(EncryptionAlgorithm, (SymmetricJwk?)staticKey);
+#if SUPPORT_SPAN_CRYPTO
+            if (!_rsa.TryEncrypt(cek.AsSpan(), destination, _padding, out int bytesWritten) || bytesWritten != destination.Length)
+            {
+                ThrowHelper.ThrowCryptographicException_KeyWrapFailed();
+            }
+#else
+            var result = _rsa.Encrypt(cek.AsSpan().ToArray(), _padding);
+            if (destination.Length < result.Length)
+            {
+                ThrowHelper.ThrowCryptographicException_KeyWrapFailed();
+            }
+
+            result.CopyTo(destination);
+#endif
+
+            return cek;
         }
 
         /// <inheritsdoc />

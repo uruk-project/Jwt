@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Buffers.Text;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -12,6 +13,787 @@ using JsonWebToken.Internal;
 namespace JsonWebToken
 {
     /// <summary>
+    /// Defines an abstract class for representing a JWT.
+    /// </summary>
+    [DebuggerDisplay("{DebuggerDisplay(),nq}")]
+    public abstract class JwtDescriptorX
+    {
+        private Jwk? _key;
+        private JwtHeaderX _header;
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtDescriptor"/>.
+        /// </summary>
+        protected JwtDescriptorX()
+        {
+            _header = new JwtHeaderX();
+        }
+
+        /// <summary>
+        /// Gets the parameters header.
+        /// </summary>
+        public JwtHeaderX Header
+        {
+            get => _header;
+            set
+            {
+                if (value is null)
+                {
+                    ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
+                }
+
+                _header.CopyTo(value);
+                _header = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="Jwk"/> used.
+        /// </summary>
+        protected Jwk Key
+        {
+            get => _key ?? Jwk.Empty;
+            set
+            {
+                if (value is null)
+                {
+                    ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
+                }
+
+                _key = value;
+                if (value.Kid != null)
+                {
+                    Header.Add(HeaderParameters.Kid, value.Kid);
+                }
+
+                OnKeyChanged(value);
+            }
+        }
+
+        /// <summary>
+        /// Called when the key is set.
+        /// </summary>
+        /// <param name="key"></param>
+        protected abstract void OnKeyChanged(Jwk? key);
+
+        ///// <summary>
+        ///// Sets the key identifier header parameter.
+        ///// </summary>
+        //public void AddKid(string? value)
+        //    => Header.Add(HeaderParameters.KidUtf8, value);
+
+        ///// <summary>
+        ///// Gets or sets the JWKS URL header parameter.
+        ///// </summary>
+        //public void AddJku(string? value)
+        //    => Header.Add(HeaderParameters.JkuUtf8, value);
+
+        ///// <summary>
+        ///// Gets or sets the X509 URL header parameter.
+        ///// </summary>
+        //public void AddX5u(string? value)
+        //    => Header.Add(HeaderParameters.X5uUtf8, value);
+
+        ///// <summary>
+        ///// Gets or sets the X509 certification chain header.
+        ///// </summary>
+        //public void AddX5c(string?[] value)
+        //    => Header.Add(HeaderParameters.X5cUtf8, value);
+
+        ///// <summary>
+        ///// Gets or sets the X509 certificate SHA-1 thumbprint header parameter.
+        ///// </summary>
+        //public void AddX5t(string? value)
+        //    => Header.Add(HeaderParameters.X5tUtf8, value);
+
+        ///// <summary>
+        ///// Gets or sets the JWT type 'typ' header parameter.
+        ///// </summary>
+        //public void AddTyp(string? value)
+        //    => Header.Add(HeaderParameters.TypUtf8, value);
+
+        ///// <summary>
+        ///// Gets or sets the JWT type 'typ' header parameter.
+        ///// </summary>
+        //public void AddTyp(ReadOnlySpan<byte> value)
+        //    => Header.Add(HeaderParameters.TypUtf8, value);
+
+        ///// <summary>
+        ///// Gets or sets the content type header parameter.
+        ///// </summary>
+        //public void AddCty(string? value)
+        //    => Header.Add(HeaderParameters.CtyUtf8, value);
+
+        ///// <summary>
+        ///// Gets or sets the critical header parameter.
+        ///// </summary>
+        //public void AddCrit(string[] values)
+        //    => Header.Add(HeaderParameters.CritUtf8, values);
+
+        /// <summary>
+        /// Encodes the current <see cref="JwtDescriptor"/> into it <see cref="string"/> representation.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public abstract void Encode(EncodingContext context);
+
+        /// <summary>
+        /// Validates the current <see cref="JwtDescriptor"/>.
+        /// </summary>
+        public virtual void Validate()
+        {
+        }
+
+        ///// <summary>
+        ///// Validates the presence and the type of a required header.
+        ///// </summary>
+        ///// <param name="utf8Name"></param>
+        ///// <param name="type"></param>
+        //protected void CheckRequiredHeader(ReadOnlySpan<byte> utf8Name, JsonTokenType type)
+        //{
+        //    if (!Header.TryGetValue(utf8Name, out var tokenType))
+        //    {
+        //        ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(utf8Name);
+        //    }
+
+        //    if (tokenType.Value.Type != type)
+        //    {
+        //        ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(utf8Name, type);
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Validates the presence and the type of a required header.
+        ///// </summary>
+        ///// <param name="utf8Name"></param>
+        ///// <param name="types"></param>
+        //protected void CheckRequiredHeader(ReadOnlySpan<byte> utf8Name, JsonTokenType[] types)
+        //{
+        //    if (!Header.TryGetTokenType(utf8Name, out var tokenType))
+        //    {
+        //        ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(utf8Name);
+        //    }
+
+        //    for (int i = 0; i < types.Length; i++)
+        //    {
+        //        if (tokenType == types[i])
+        //        {
+        //            return;
+        //        }
+        //    }
+
+        //    ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(utf8Name, types);
+        //}
+    }
+
+    public sealed class JwtHeaderX : IEnumerable
+    {
+        private readonly MemberStore _header = new MemberStore();
+
+        internal void CopyTo(JwtHeaderX destination)
+        {
+            _header.CopyTo(destination._header);
+        }
+
+        public void Add(string propertyName, string value)
+        {
+            _header.TryAdd(new JwtMemberX(propertyName, value));
+        }
+
+        //public void Add(ReadOnlySpan<byte> propertyName, string? value)
+        //{
+        //    _header.Add(propertyName, value);
+        //}
+
+        //public void Add(string propertyName, ReadOnlySpan<byte> value)
+        //{
+        //    _header.TryAdd(propertyName, new JwtValueX(value));
+        //}
+
+        //public void Add(ReadOnlySpan<byte> propertyName, ReadOnlySpan<byte> value)
+        //{
+        //    _header.Add(propertyName, value);
+        //}
+
+        public void Add(string propertyName, long value)
+        {
+            _header.TryAdd(new JwtMemberX(propertyName, value));
+        }
+
+        //public void Add(ReadOnlySpan<byte> propertyName, long value)
+        //{
+        //    _header.Add(propertyName, value);
+        //}
+
+        public void Add(string propertyName, object[] value)
+        {
+            _header.TryAdd(new JwtMemberX(propertyName, value));
+        }
+
+        //public void Add<T>(ReadOnlySpan<byte> propertyName, T[] value, JsonSerializerOptions? options = default)
+        //{
+        //    _header.Add(propertyName, value, options);
+        //}
+
+        public void Add(string propertyName, string?[] values)
+        {
+            _header.TryAdd(new JwtMemberX(propertyName, values));
+        }
+
+        //public void Add(ReadOnlySpan<byte> propertyName, string?[] values)
+        //{
+        //    _header.Add(propertyName, values);
+        //}
+
+        //public void Add<T>(string propertyName, T value)
+        //    where T : class
+        //{
+        //    _header.TryAdd(propertyName, new JwtValueX(value));
+        //}
+        public void Add(string propertyName, object value)
+        {
+            _header.TryAdd(new JwtMemberX(propertyName, value));
+        }
+        internal void Add(JwtMemberX value)
+        {
+            _header.TryAdd(value);
+        }
+
+        //public void Add<T>(ReadOnlySpan<byte> propertyName, T value, JsonSerializerOptions? options = default)
+        //    where T : class
+        //{
+        //    _header.Add(propertyName, value, options);
+        //}
+
+        public IEnumerator GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        //internal void Flush()
+        //{
+        //    _header.Flush();
+        ////}
+
+        //internal bool TryGetTokenType(ReadOnlySpan<byte> utf8Name, out JsonTokenType tokenType)
+        //    => _header.TryGetTokenType(utf8Name, out tokenType);
+
+        //internal bool TryGetTokenType(ReadOnlySpan<char> utf8Name, out JsonTokenType tokenType)
+        //    => _header.TryGetTokenType(utf8Name, out tokenType);
+        //internal bool TryGetTokenType(string name, out JsonTokenType tokenType)
+        //    => _header.TryGetTokenType(name, out tokenType);
+
+        internal bool TryGetValue(string utf8Name, out JwtMemberX value)
+        {
+            return _header.TryGetValue(utf8Name, out value);
+        }
+
+        internal void WriteObjectTo(Utf8JsonWriter writer)
+        {
+            _header.WriteTo(writer);
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal readonly struct JwtObjectRow
+    {
+        internal const int Size = 12;
+        private readonly int _location;
+        private readonly int _propertyLength;
+        private readonly int _endPosition;
+
+        /// <summary>
+        /// Index into the payload
+        /// </summary>
+        internal int StartPosition => _location & 0x0FFFFFFF;
+
+        internal JsonTokenType TokenType => (JsonTokenType)(unchecked((uint)_location) >> 28);
+
+        public int Length => _propertyLength;
+        public int EndPosition => _endPosition;
+
+        internal JwtObjectRow(JsonTokenType jsonTokenType, int location, int propertyLength, int endPosition)
+        {
+            Debug.Assert(location >= 0);
+            Debug.Assert(location < 1 << 28);
+
+            _location = location | ((int)jsonTokenType << 28);
+            _propertyLength = propertyLength;
+            _endPosition = endPosition;
+        }
+    }
+
+    internal struct JwtObjectMetadataDb : IDisposable
+    {
+        internal int Length { get; private set; }
+        public int Count { get; private set; }
+
+        private byte[] _data;
+
+        internal JwtObjectMetadataDb(byte[] completeDb)
+        {
+            _data = completeDb;
+            Length = completeDb.Length;
+            Count = completeDb.Length / JwtObjectRow.Size;
+        }
+
+        internal JwtObjectMetadataDb(int initialSize)
+        {
+            _data = ArrayPool<byte>.Shared.Rent(initialSize);
+            Length = 0;
+            Count = 0;
+        }
+
+        internal JwtObjectMetadataDb(JwtObjectMetadataDb source, bool useArrayPools)
+        {
+            Length = source.Length;
+            Count = source.Count;
+
+            if (useArrayPools)
+            {
+                _data = ArrayPool<byte>.Shared.Rent(Length);
+                source._data.AsSpan(0, Length).CopyTo(_data);
+            }
+            else
+            {
+                _data = source._data.AsSpan(0, Length).ToArray();
+            }
+        }
+
+        public void Dispose()
+        {
+            byte[]? data = Interlocked.Exchange(ref _data, null!);
+            if (data == null)
+            {
+                return;
+            }
+
+            // The data in this rented buffer only conveys the positions and
+            // lengths of tokens in a document, but no content; so it does not
+            // need to be cleared.
+            ArrayPool<byte>.Shared.Return(data);
+            Length = 0;
+        }
+
+        internal void TrimExcess()
+        {
+            // There's a chance that the size we have is the size we'd get for this
+            // amount of usage (particularly if Enlarge ever got called); and there's
+            // the small copy-cost associated with trimming anyways. "Is half-empty" is
+            // just a rough metric for "is trimming worth it?".
+            if (Length <= _data.Length / 2)
+            {
+                byte[] newRent = ArrayPool<byte>.Shared.Rent(Length);
+                byte[] returnBuf = newRent;
+
+                if (newRent.Length < _data.Length)
+                {
+                    Buffer.BlockCopy(_data, 0, newRent, 0, Length);
+                    returnBuf = _data;
+                    _data = newRent;
+                }
+
+                // The data in this rented buffer only conveys the positions and
+                // lengths of tokens in a document, but no content; so it does not
+                // need to be cleared.
+                ArrayPool<byte>.Shared.Return(returnBuf);
+            }
+
+            Count = Length / JwtObjectRow.Size;
+        }
+
+        internal void Append(JsonTokenType tokenType, int startLocation, int propertyLength, int valueLength)
+        {
+            if (Length >= _data.Length - JwtObjectRow.Size)
+            {
+                Enlarge();
+            }
+
+            JwtObjectRow row = new JwtObjectRow(tokenType, startLocation, propertyLength, valueLength);
+            MemoryMarshal.Write(_data.AsSpan(Length), ref row);
+            Length += JwtObjectRow.Size;
+        }
+
+        private void Enlarge()
+        {
+            byte[] toReturn = _data;
+            _data = ArrayPool<byte>.Shared.Rent(toReturn.Length * 2);
+            Buffer.BlockCopy(toReturn, 0, _data, 0, toReturn.Length);
+
+            // The data in this rented buffer only conveys the positions and
+            // lengths of tokens in a document, but no content; so it does not
+            // need to be cleared.
+            ArrayPool<byte>.Shared.Return(toReturn);
+        }
+
+        [Conditional("DEBUG")]
+        private void AssertValidIndex(int index)
+        {
+            Debug.Assert(index >= 0);
+            Debug.Assert(index <= Length - JwtObjectRow.Size, $"index {index} is out of bounds");
+            Debug.Assert(index % JwtObjectRow.Size == 0, $"index {index} is not at a record start position");
+        }
+
+        internal JwtObjectRow Get(int index)
+        {
+            AssertValidIndex(index);
+            return MemoryMarshal.Read<JwtObjectRow>(_data.AsSpan(index));
+        }
+
+        internal JwtTokenType GetJwtTokenType(int index)
+        {
+            AssertValidIndex(index);
+            uint union = MemoryMarshal.Read<uint>(_data.AsSpan(index));
+
+            return (JwtTokenType)(union >> 28);
+        }
+
+        internal JwtObjectMetadataDb Clone()
+        {
+            byte[] newDatabase = new byte[Length];
+            _data.AsSpan(0, Length).CopyTo(newDatabase);
+            return new JwtObjectMetadataDb(newDatabase);
+        }
+
+        internal JwtObjectMetadataDb CopySegment(int startIndex, int endIndex)
+        {
+            Debug.Assert(
+                endIndex > startIndex,
+                $"endIndex={endIndex} was at or before startIndex={startIndex}");
+
+            AssertValidIndex(startIndex);
+            Debug.Assert(endIndex <= Length);
+
+            JwtObjectRow start = Get(startIndex);
+            int length = endIndex - startIndex;
+
+            byte[] newDatabase = new byte[length];
+            _data.AsSpan(startIndex, length).CopyTo(newDatabase);
+
+            Span<int> newDbInts = MemoryMarshal.Cast<byte, int>(newDatabase);
+            int locationOffset = newDbInts[0];
+
+            // Need to nudge one forward to account for the hidden quote on the string.
+            if (start.TokenType == JsonTokenType.String)
+            {
+                locationOffset--;
+            }
+
+            for (int i = (length - JwtObjectRow.Size) / sizeof(int); i >= 0; i -= JwtObjectRow.Size / sizeof(int))
+            {
+                Debug.Assert(newDbInts[i] >= locationOffset);
+                newDbInts[i] -= locationOffset;
+            }
+
+            return new JwtObjectMetadataDb(newDatabase);
+        }
+    }
+
+    [DebuggerDisplay("{DebuggerDisplay(),nq}")]
+    public sealed class JwtObjectX : IEnumerable, IDisposable
+    {
+        private readonly PooledByteBufferWriter _bufferWriter;
+        private readonly Utf8JsonWriter _writer;
+        private readonly bool _disposable;
+        private JwtObjectMetadataDb _database;
+        private int _lastPosition;
+
+        public JwtObjectX(bool disposable = true)
+        {
+            _bufferWriter = new PooledByteBufferWriter();
+            _writer = new Utf8JsonWriter(_bufferWriter, Constants.NoJsonValidation);
+            _database = new JwtObjectMetadataDb(64);
+            _disposable = disposable;
+            _writer.WriteStartObject();
+        }
+
+        internal int Length => _bufferWriter.WrittenCount;
+        internal ReadOnlySpan<byte> Span => _bufferWriter.WrittenSpan;
+
+        private int GetCurrentPosition()
+            => _writer.BytesPending + (int)_writer.BytesCommitted;
+
+        public void Flush()
+        {
+            if (_writer.BytesPending != 0)
+            {
+                _writer.WriteEndObject();
+                _writer.Flush();
+            }
+        }
+
+        public void Add(string propertyName, string? value)
+        {
+            int position = _lastPosition + 2;
+            _writer.WriteString(propertyName, value);
+            int length = _bufferWriter.Buffer.AsSpan(position).IndexOf(JsonConstants.Quote);
+            Debug.Assert(length > 0);
+            _lastPosition = GetCurrentPosition();
+            _database.Append(JsonTokenType.String, position, length, _lastPosition);
+        }
+
+        public void Add(ReadOnlySpan<byte> propertyName, string? value)
+        {
+            int position = _lastPosition + 2;
+            _writer.WriteString(propertyName, value);
+            int propertyLength = _bufferWriter.Buffer.AsSpan(position).IndexOf(JsonConstants.Quote);
+            Debug.Assert(propertyLength > 0);
+            _lastPosition = GetCurrentPosition();
+            _database.Append(JsonTokenType.String, position, propertyLength, _lastPosition);
+        }
+
+        public void Add(string propertyName, ReadOnlySpan<byte> value)
+        {
+            int position = _lastPosition + 2;
+            _writer.WriteString(propertyName, value);
+            int length = _bufferWriter.Buffer.AsSpan(position).IndexOf(JsonConstants.Quote);
+            Debug.Assert(length > 0);
+            _lastPosition = GetCurrentPosition();
+            _database.Append(JsonTokenType.String, position, length, _lastPosition);
+        }
+
+        public void Add(ReadOnlySpan<byte> propertyName, ReadOnlySpan<byte> value)
+        {
+            int position = _lastPosition + 2;
+            _writer.WriteString(propertyName, value);
+            int length = _bufferWriter.Buffer.AsSpan(position).IndexOf(JsonConstants.Quote);
+            Debug.Assert(length > 0);
+            _lastPosition = GetCurrentPosition();
+            _database.Append(JsonTokenType.String, position, length, _lastPosition);
+        }
+
+        public void Add(string propertyName, long value)
+        {
+            int position = _lastPosition + 2;
+            _writer.WriteNumber(propertyName, value);
+            int length = _bufferWriter.Buffer.AsSpan(position).IndexOf(JsonConstants.Quote);
+            Debug.Assert(length > 0);
+            _lastPosition = GetCurrentPosition();
+            _database.Append(JsonTokenType.Number, position, length, _lastPosition);
+        }
+
+        public void Add(ReadOnlySpan<byte> propertyName, long value)
+        {
+            int position = _lastPosition + 2;
+            _writer.WriteNumber(propertyName, value);
+            int length = _bufferWriter.Buffer.AsSpan(position).IndexOf(JsonConstants.Quote);
+            Debug.Assert(length > 0);
+            _lastPosition = GetCurrentPosition();
+            _database.Append(JsonTokenType.Number, position, length, _lastPosition);
+        }
+
+        public void Add<T>(string propertyName, T[] values, JsonSerializerOptions? options = default)
+        {
+            int position = _lastPosition + 2;
+            _writer.WriteStartArray(propertyName);
+            int length = _bufferWriter.Buffer.AsSpan(position).IndexOf(JsonConstants.Quote);
+            Debug.Assert(length > 0);
+            for (int i = 0; i < values.Length; i++)
+            {
+                JsonSerializer.Serialize(_writer, values[i], options);
+            }
+
+            _writer.WriteEndArray();
+            _lastPosition = GetCurrentPosition();
+            _database.Append(JsonTokenType.StartArray, position, length, _lastPosition);
+        }
+
+        public void Add<T>(ReadOnlySpan<byte> propertyName, T[] values, JsonSerializerOptions? options = default)
+        {
+            int position = _lastPosition + 2;
+            _writer.WriteStartArray(propertyName);
+            int length = _bufferWriter.Buffer.AsSpan(position).IndexOf(JsonConstants.Quote);
+            Debug.Assert(length > 0);
+            for (int i = 0; i < values.Length; i++)
+            {
+                JsonSerializer.Serialize(_writer, values[i], options);
+            }
+
+            _writer.WriteEndArray();
+            _lastPosition = GetCurrentPosition();
+            _database.Append(JsonTokenType.StartArray, position, length, _lastPosition);
+        }
+
+        public void Add(string propertyName, string?[] values)
+        {
+            int position = _lastPosition + 2;
+            _writer.WriteStartArray(propertyName);
+            int length = _bufferWriter.Buffer.AsSpan(position).IndexOf(JsonConstants.Quote);
+            Debug.Assert(length > 0);
+            for (int i = 0; i < values.Length; i++)
+            {
+                _writer.WriteStringValue(values[i]);
+            }
+
+            _writer.WriteEndArray();
+            _lastPosition = GetCurrentPosition();
+            _database.Append(JsonTokenType.StartArray, position, length, _lastPosition);
+        }
+
+        public void Add(ReadOnlySpan<byte> propertyName, string?[] values)
+        {
+            int position = _lastPosition + 2;
+            _writer.WriteStartArray(propertyName);
+            int length = _bufferWriter.Buffer.AsSpan(position).IndexOf(JsonConstants.Quote);
+            Debug.Assert(length > 0);
+            for (int i = 0; i < values.Length; i++)
+            {
+                _writer.WriteStringValue(values[i]);
+            }
+
+            _writer.WriteEndArray();
+            _lastPosition = GetCurrentPosition();
+            _database.Append(JsonTokenType.StartArray, position, length, _lastPosition);
+        }
+
+        public void Add<T>(string propertyName, T value, JsonSerializerOptions? options = default)
+            where T : class
+        {
+            int position = _lastPosition + 2;
+            _writer.WritePropertyName(propertyName);
+            int length = _bufferWriter.Buffer.AsSpan(position).IndexOf(JsonConstants.Quote);
+            Debug.Assert(length > 0);
+            JsonSerializer.Serialize(_writer, value, options);
+            _lastPosition = GetCurrentPosition();
+            _database.Append(JsonTokenType.StartObject, position, length, _lastPosition);
+        }
+
+        public void Add<T>(ReadOnlySpan<byte> propertyName, T value, JsonSerializerOptions? options = default)
+            where T : class
+        {
+            int position = _lastPosition + 2;
+            _writer.WritePropertyName(propertyName);
+            int length = _bufferWriter.Buffer.AsSpan(position).IndexOf(JsonConstants.Quote);
+            Debug.Assert(length > 0);
+            JsonSerializer.Serialize(_writer, value, options);
+            _lastPosition = GetCurrentPosition();
+            _database.Append(JsonTokenType.StartObject, position, length, _lastPosition);
+        }
+
+        public void Dispose()
+        {
+            if (_disposable)
+            {
+                _database.Dispose();
+                _writer.Dispose();
+                _bufferWriter.Dispose();
+            }
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string DebuggerDisplay()
+        {
+            return Utf8.GetString(_bufferWriter.WrittenSpan);
+        }
+
+        internal bool TryGetTokenType(ReadOnlySpan<byte> propertyName, out JsonTokenType value)
+        {
+            ReadOnlySpan<byte> documentSpan = _bufferWriter.WrittenSpan;
+            Span<byte> utf8UnescapedStack = stackalloc byte[JsonConstants.StackallocThreshold];
+
+            // Move to the row before the EndObject
+            int index = 0;
+            int endIndex = _database.Length;
+
+            while (index < endIndex)
+            {
+                JwtObjectRow row = _database.Get(index);
+                ReadOnlySpan<byte> currentPropertyName = documentSpan.Slice(row.StartPosition, row.Length);
+
+                if (currentPropertyName.SequenceEqual(propertyName))
+                {
+                    // If the property name is a match, the answer is the next element.
+                    value = row.TokenType;
+                    return true;
+                }
+
+                // Move to the previous value
+                index += JwtObjectRow.Size;
+            }
+
+            value = default;
+            return false;
+        }
+
+        internal bool TryGetTokenType(string propertyName, out JsonTokenType value)
+            => TryGetTokenType(propertyName.AsSpan(), out value);
+
+        internal bool TryGetTokenType(ReadOnlySpan<char> propertyName, out JsonTokenType value)
+        {
+            int maxBytes = Utf8.GetMaxByteCount(propertyName.Length);
+            int endIndex = _database.Length;
+
+            if (maxBytes < JsonConstants.StackallocThreshold)
+            {
+                Span<byte> utf8Name = stackalloc byte[JsonConstants.StackallocThreshold];
+                int len = JsonReaderHelper.GetUtf8FromText(propertyName, utf8Name);
+                utf8Name = utf8Name.Slice(0, len);
+
+                return TryGetTokenType(utf8Name, out value);
+            }
+
+            JwtObjectRow row;
+            int minBytes = propertyName.Length;
+            for (int candidateIndex = 0; candidateIndex <= endIndex; candidateIndex += JwtObjectRow.Size)
+            {
+                row = _database.Get(candidateIndex);
+                if (row.Length >= minBytes)
+                {
+                    byte[] tmpUtf8 = ArrayPool<byte>.Shared.Rent(maxBytes);
+                    Span<byte> utf8Name = default;
+
+                    try
+                    {
+                        int len = JsonReaderHelper.GetUtf8FromText(propertyName, tmpUtf8);
+                        utf8Name = tmpUtf8.AsSpan(0, len);
+
+                        return TryGetTokenType(utf8Name, out value);
+                    }
+                    finally
+                    {
+                        ArrayPool<byte>.Shared.Return(tmpUtf8);
+                    }
+                }
+            }
+
+            value = default;
+            return false;
+        }
+        public bool TryGetValue(ReadOnlySpan<byte> propertyName, out ReadOnlySpan<byte> value)
+        {
+            ReadOnlySpan<byte> documentSpan = _bufferWriter.WrittenSpan;
+            Span<byte> utf8UnescapedStack = stackalloc byte[JsonConstants.StackallocThreshold];
+
+            // Move to the row before the EndObject
+            int index = 0;
+            int endIndex = _database.Length;
+
+            while (index < endIndex)
+            {
+                JwtObjectRow row = _database.Get(index);
+                ReadOnlySpan<byte> currentPropertyName = documentSpan.Slice(row.StartPosition, row.Length);
+
+                if (currentPropertyName.SequenceEqual(propertyName))
+                {
+                    // If the property name is a match, the answer is the next element.
+                    value = documentSpan.Slice(row.StartPosition + row.Length + 3, row.EndPosition - (row.StartPosition + row.Length + 4));
+                    return true;
+                }
+
+                // Move to the previous value
+                index += JwtObjectRow.Size;
+            }
+
+            value = default;
+            return false;
+        }
+    }
+
+    /// <summary>
     ///   Represents the structure of a JWT value in a lightweight, read-only form.
     /// </summary>
     /// <remarks>
@@ -19,7 +801,7 @@ namespace JsonWebToken
     ///   impact in high-usage scenarios. Failure to properly Dispose this object will result in
     ///   the memory not being returned to the pool.
     /// </remarks>
-    public sealed class JwtDocument : IDisposable
+    internal sealed class JwtDocument : IDisposable
     {
         private ReadOnlyMemory<byte> _utf8Json;
         private MetadataDb _parsedData;
@@ -638,7 +1420,7 @@ namespace JsonWebToken
 
             return row.Length;
         }
-        
+
 
         internal int GetMemberCount(int index)
         {

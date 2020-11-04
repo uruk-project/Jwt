@@ -140,6 +140,65 @@ namespace JsonWebToken.Internal
 
             return contentEncryptionKey;
         }
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeaderX header, Span<byte> destination)
+        {
+            if (header is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
+            }
+
+            if (_disposed)
+            {
+                ThrowHelper.ThrowObjectDisposedException(GetType());
+            }
+
+            var partyUInfo = GetPartyInfo(header, HeaderParameters.Apu);
+            var partyVInfo = GetPartyInfo(header, HeaderParameters.Apv);
+            var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
+            byte[] exchangeHash;
+            var keyParameters = ((ECJwk)Key).ExportParameters();
+            using (var otherPartyKey = ECDiffieHellman.Create(keyParameters))
+            using (var ephemeralKey = (staticKey is null) ? ECDiffieHellman.Create(keyParameters.Curve) : ECDiffieHellman.Create(((ECJwk)staticKey).ExportParameters(true)))
+            {
+                exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
+                using var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
+                header.Add(HeaderParameters.Epk, epk);
+            }
+
+            SymmetricJwk? kek = null;
+            SymmetricJwk? contentEncryptionKey;
+            try
+            {
+                kek = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
+                if (Algorithm.ProduceEncryptionKey)
+                {
+                    if (kek.TryGetKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm, out var keyWrapper))
+                    {
+                        contentEncryptionKey = keyWrapper.WrapKey(null, header, destination);
+                    }
+                    else
+                    {
+                        ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(Algorithm.WrappedAlgorithm);
+                        return SymmetricJwk.Empty;
+                    }
+                }
+                else
+                {
+                    contentEncryptionKey = kek;
+                }
+
+                kek = null;
+            }
+            finally
+            {
+                if (kek != null)
+                {
+                    kek.Dispose();
+                }
+            }
+
+            return contentEncryptionKey;
+        }
 
         protected override void Dispose(bool disposing)
         {
@@ -175,6 +234,16 @@ namespace JsonWebToken.Internal
             return null;
         }
 
+        private static string? GetPartyInfo(JwtHeaderX header, string name)
+        {
+            if (header.TryGetValue(name, out var token))
+            {
+                return (string?)token.Value;
+            }
+
+            return null;
+        }
+
         private static void WritePartyInfo(byte[]? partyInfo, int partyInfoLength, Span<byte> destination)
         {
             if (partyInfoLength == 0)
@@ -192,6 +261,33 @@ namespace JsonWebToken.Internal
         {
             BinaryPrimitives.WriteInt32BigEndian(destination, _algorithmNameLength);
             _algorithm.Utf8Name.CopyTo(destination.Slice(sizeof(int)));
+        }
+
+        private byte[] BuildSecretAppend(string? apu, string? apv)
+        {
+            byte[]? apuB;
+            byte[]? apvB;
+            if (apu != null)
+            {
+                apuB = new byte[Utf8.GetMaxByteCount(apu.Length)];
+                Utf8.GetBytes(apu, apuB);
+            }
+            else
+            {
+                apuB = Array.Empty<byte>();
+            }
+
+            if (apv != null)
+            {
+                apvB = new byte[Utf8.GetMaxByteCount(apv.Length)];
+                Utf8.GetBytes(apv, apvB);
+            }
+            else
+            {
+                apvB = Array.Empty<byte>();
+            }
+
+            return BuildSecretAppend(apuB, apvB);
         }
 
         private byte[] BuildSecretAppend(byte[]? apu, byte[]? apv)

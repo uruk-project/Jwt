@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -63,11 +64,39 @@ namespace JsonWebToken
             var value = Utf8.GetString(claim);
             return new JwtDescriptorException($"The claim '{value}' is required.");
         }
+        
+        [DoesNotReturn]
+        internal static void ThrowJwtDescriptorException_ClaimIsRequired(string claim) => throw CreateJwtDescriptorException_ClaimIsRequired(claim);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateJwtDescriptorException_ClaimIsRequired(string claim)
+        {
+            var value = claim;
+            return new JwtDescriptorException($"The claim '{value}' is required.");
+        }
 
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, types);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
+        {
+            var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
+            var value = Utf8.GetString(utf8Name);
+            return new JwtDescriptorException($"The claim '{value}' must be of type [{claimTypes}].");
+        }
+        [DoesNotReturn]
+        internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonTokenType[] types) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, types);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonTokenType[] types)
+        {
+            var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
+            var value = utf8Name;
+            return new JwtDescriptorException($"The claim '{value}' must be of type [{claimTypes}].");
+        }
+
+        [DoesNotReturn]
+        internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType[] types) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, types);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType[] types)
         {
             var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
             var value = Utf8.GetString(utf8Name);
@@ -82,6 +111,23 @@ namespace JsonWebToken
             var value = Utf8.GetString(utf8Name);
             return new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
         }
+        [DoesNotReturn]
+        internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonTokenType type) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, type);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonTokenType type)
+        {
+            var value = (utf8Name);
+            return new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
+        }
+        
+        [DoesNotReturn]
+        internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType type) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, type);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType type)
+        {
+            var value = Utf8.GetString(utf8Name);
+            return new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
+        }
 
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, types);
@@ -91,6 +137,25 @@ namespace JsonWebToken
             var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
             var value = Utf8.GetString(utf8Name);
             return new JwtDescriptorException($"The header parameter '{value}' must be of type [{claimTypes}].");
+        }
+
+        [DoesNotReturn]
+        internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType[] types) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, types);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType[] types)
+        {
+            var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
+            var value = Utf8.GetString(utf8Name);
+            return new JwtDescriptorException($"The header parameter '{value}' must be of type [{claimTypes}].");
+        }
+
+        [DoesNotReturn]
+        internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType type) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, type);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType type)
+        {
+            var value = Utf8.GetString(utf8Name);
+            return new JwtDescriptorException($"The header parameter '{value}' must be of type {type}.");
         }
 
         [DoesNotReturn]
@@ -130,6 +195,11 @@ namespace JsonWebToken
         internal static void ThrowInvalidOperationException_NotSupportedJsonType(JwtTokenType type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Exception CreateInvalidOperationException_NotSupportedJsonType(JwtTokenType type) => new InvalidOperationException($"The type {type} is not supported.");
+        
+        [DoesNotReturn]
+        internal static void ThrowInvalidOperationException_NotSupportedJsonType(JsonValueKind type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static Exception CreateInvalidOperationException_NotSupportedJsonType(JsonValueKind type) => new InvalidOperationException($"The type {type} is not supported.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_MustBeGreaterThanZero(ExceptionArgument argument, int value) => throw CreateArgumentOutOfRangeException_MustBeGreaterThanZero(argument, value);

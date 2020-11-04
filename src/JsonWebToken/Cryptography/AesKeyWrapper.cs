@@ -114,6 +114,44 @@ namespace JsonWebToken.Internal
 
             return contentEncryptionKey;
         }
+        /// <summary>
+        /// Wrap a key using AES encryption.
+        /// </summary>
+        /// <param name="staticKey">the key to be wrapped. If <c>null</c>, a new <see cref="SymmetricJwk"/> will be generated.</param>
+        /// <param name="header"></param>
+        /// <param name="destination"></param>
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeaderX header, Span<byte> destination)
+        {
+            if (_disposed)
+            {
+                ThrowHelper.ThrowObjectDisposedException(GetType());
+            }
+
+            if (destination.Length < GetKeyWrapSize())
+            {
+                ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, GetKeyWrapSize());
+            }
+
+            var contentEncryptionKey = CreateSymmetricKey(EncryptionAlgorithm, (SymmetricJwk?)staticKey);
+            ReadOnlySpan<byte> inputBuffer = contentEncryptionKey.AsSpan();
+            int n = inputBuffer.Length;
+            if (destination.Length != (n + 8))
+            {
+                ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, n + 8);
+            }
+
+            ulong a = _defaultIV;
+            ref byte input = ref MemoryMarshal.GetReference(inputBuffer);
+            Span<byte> r = stackalloc byte[n];
+            ref byte rRef = ref MemoryMarshal.GetReference(r);
+            Unsafe.CopyBlockUnaligned(ref rRef, ref input, (uint)n);
+            TryWrapKey(ref a, n, ref rRef);
+            ref byte keyBytes = ref MemoryMarshal.GetReference(destination);
+            Unsafe.WriteUnaligned(ref keyBytes, a);
+            Unsafe.CopyBlockUnaligned(ref Unsafe.AddByteOffset(ref keyBytes, (IntPtr)8), ref rRef, (uint)n);
+
+            return contentEncryptionKey;
+        }
 
 #if SUPPORT_SIMD
         private ulong TryWrapKey(ref ulong a, int n, ref byte rRef)

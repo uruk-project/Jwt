@@ -46,4 +46,19 @@ namespace JsonWebToken
             CheckRequiredHeader(HeaderParameters.EncUtf8, JwtTokenType.Utf8String);
         }
     }
+
+    /// <summary>
+    /// Defines an encrypted JWT with a <see cref="JwsDescriptor"/> payload.
+    /// </summary>
+    public sealed class JweDescriptorX : JweDescriptorX<JwsDescriptorX>
+    {
+        /// <inheritsdoc />
+        public override void Validate()
+        {
+            base.Validate();
+
+            //CheckRequiredHeader(HeaderParameters.Alg, JwtTokenType.Utf8String);
+            //CheckRequiredHeader(HeaderParameters.Enc, JwtTokenType.Utf8String);
+        }
+    }
 }

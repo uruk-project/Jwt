@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using BenchmarkDotNet.Attributes;
@@ -7,6 +8,99 @@ using JsonWebToken.Internal;
 
 namespace JsonWebToken.Performance
 {
+    [MemoryDiagnoser]
+    public class JwtWriterBenchmark
+    {
+        private static readonly SymmetricJwk _key = SymmetricJwk.GenerateKey(256);
+
+        [Benchmark(Baseline = true)]
+        public void Old_Encode()
+        {
+            var descriptor = new JwsDescriptor
+            {
+                SigningKey = _key,
+                Algorithm = SignatureAlgorithm.HmacSha256,
+                IssuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc),
+                ExpirationTime = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc),
+                Issuer = "https://idp.example.com/",
+                Audience = "636C69656E745F6964"                
+            };
+
+            var bufferWriter = new PooledByteBufferWriter();
+            var context = new EncodingContext(bufferWriter, null, 0, false);
+            descriptor.Encode(context);
+            bufferWriter.Dispose();
+        }
+
+        [Benchmark(Baseline = false)]
+        public void New_Encode()
+        {
+            var descriptor = new JwsDescriptorX
+            {
+                SigningKey = _key,
+                Alg = SignatureAlgorithm.HmacSha256,
+                Payload = new JwtPayloadX 
+                {
+                    { "iat", 1500000000L },
+                    { "exp", 2000000000L },
+                    { "iss", "https://idp.example.com/" },
+                    { "aud", "636C69656E745F6964" }
+                }
+            };
+
+            var bufferWriter = new PooledByteBufferWriter();
+            var context = new EncodingContext(bufferWriter, null, 0, false);
+            descriptor.Encode(context);
+            bufferWriter.Dispose();
+        }
+    }
+
+    [MemoryDiagnoser]
+    public class JwtWriterBenchmark2
+    {
+        private static readonly SymmetricJwk _key = SymmetricJwk.GenerateKey(256);
+        private static readonly JwsDescriptor _d1 = new JwsDescriptor
+            {
+                SigningKey = _key,
+                Algorithm = SignatureAlgorithm.HmacSha256,
+                IssuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc),
+                ExpirationTime = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc),
+                Issuer = "https://idp.example.com/",
+                Audience = "636C69656E745F6964"
+            };
+        private static readonly JwsDescriptorX _d2 = new JwsDescriptorX
+            {
+                SigningKey = _key,
+                Alg = SignatureAlgorithm.HmacSha256,
+                Payload = new JwtPayloadX
+                {
+                    { "iat", 1500000000L },
+                    { "exp", 2000000000L },
+                    { "iss", "https://idp.example.com/" },
+                    { "aud", "636C69656E745F6964" }
+                }
+            };
+
+
+[Benchmark(Baseline = true)]
+        public void Old_Encode()
+        {
+            var bufferWriter = new PooledByteBufferWriter();
+            var context = new EncodingContext(bufferWriter, null, 0, false);
+            _d1.Encode(context);
+            bufferWriter.Dispose();
+        }
+
+        [Benchmark(Baseline = false)]
+        public void New_Encode()
+        {
+            var bufferWriter = new PooledByteBufferWriter();
+            var context = new EncodingContext(bufferWriter, null, 0, false);
+            _d2.Encode(context);
+            bufferWriter.Dispose();
+        }
+    }
+
     [MemoryDiagnoser]
     public class AesDecryptorBenchmark
     {
@@ -31,12 +125,7 @@ namespace JsonWebToken.Performance
 #endif
         }
 
-        [Benchmark(Baseline = true)]
-        [ArgumentsSource(nameof(GetData))]
-        public bool Decrypt(Item data)
-        {
-            return _decryptor.TryDecrypt(key, data.Ciphertext, nonce, plaintext, out int bytesWritten);
-        }
+
 
         public static IEnumerable<Item> GetData()
         {

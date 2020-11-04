@@ -195,5 +195,10 @@ namespace JsonWebToken
         {
             return Base64.Url.GetEncodedLength(count);
         }
+
+        internal static int GetArraySizeRequiredToEncode(object length)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -2,11 +2,13 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -465,6 +467,295 @@ namespace JsonWebToken
 
             var input = bufferWriter.WrittenSpan;
             return Utf8.GetString(input);
+        }
+    }
+
+    /// <summary>
+    /// Represents the claims contained in the JWT.
+    /// </summary>
+    public sealed class JwtPayloadX : IEnumerable
+    {
+        private readonly MemberStore _payload;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtPayload"/> class.
+        /// </summary>
+        public JwtPayloadX()
+        {
+            _payload = new MemberStore();
+        }
+
+        internal MemberStore Inner => _payload;
+
+        internal void CopyTo(JwtPayloadX destination)
+        {
+            _payload.CopyTo(destination._payload);
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the 'sub' claim.
+        /// </summary>
+        public void AddSub(string value)
+            => _payload.TryAdd(new JwtMemberX(Claims.Sub, value));
+
+        /// <summary>
+        /// Gets or sets the value of the 'jti' claim.
+        /// </summary>
+        public void AddJti(string value)
+            => _payload.TryAdd(new JwtMemberX(Claims.Jti, value));
+
+        /// <summary>
+        /// Gets or sets the value of the 'aud' claim.
+        /// </summary>
+        public void AddAud(string value)
+            => _payload.TryAdd(new JwtMemberX(Claims.Aud, value));
+
+        /// <summary>
+        /// Gets or sets the value of the 'aud' claim.
+        /// </summary>
+        public void AddAud(string[] value)
+            => _payload.TryAdd(new JwtMemberX(Claims.Aud, value));
+
+        /// <summary>
+        /// Gets or sets the value of the 'exp' claim.
+        /// </summary>
+        public void AddExp(long value)
+            => _payload.TryAdd(new JwtMemberX(Claims.Exp, value));
+
+        /// <summary>
+        /// Gets or sets the value of the 'iss' claim.
+        /// </summary>
+        public void AddIss(string value)
+            => _payload.TryAdd(new JwtMemberX(Claims.Iss, value));
+
+        /// <summary>
+        /// Gets or sets the value of the 'iat' claim.
+        /// </summary>
+        public void AddIat(string value)
+            => _payload.TryAdd(new JwtMemberX(Claims.Iat, value));
+
+        /// <summary>
+        ///Gets or sets the value of the 'nbf' claim.
+        /// </summary>
+        public void AddNbf(long value)
+            => _payload.TryAdd(new JwtMemberX(Claims.Nbf, value));
+
+        /// <summary>
+        /// Determines whether the <see cref="JwtPayload"/> contains the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool ContainsKey(string key)
+        {
+            return ContainsKey(key);
+        }
+
+        /// <summary>
+        /// Determines whether the <see cref="JwtPayload"/> contains the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        //public bool ContainsKey(ReadOnlySpan<byte> key)
+        //{
+        //    return _payload.ContainsKey(key);
+        //}
+
+        ///// <summary>
+        ///// Gets the value associated with the specified key.
+        ///// </summary>
+        //public bool TryGetValue(ReadOnlySpan<byte> key, [NotNullWhen(true)] out JwtProperty value)
+        //{
+        //    return _payload.TryGetValue()
+        //    if (key.Length == 3)
+        //    {
+        //        switch (IntegerMarshal.ReadUInt24(key))
+        //        {
+        //            case JwtPayloadParser.Aud:
+        //                if (!(_aud is null))
+        //                {
+        //                    value = new JwtProperty(WellKnownProperty.Aud, new JwtArray(new List<string>(_aud)));
+        //                    return true;
+        //                }
+        //                break;
+        //            case JwtPayloadParser.Iss:
+        //                if (!(_iss is null))
+        //                {
+        //                    value = new JwtProperty(WellKnownProperty.Iss, _iss);
+        //                    return true;
+        //                }
+        //                break;
+        //            case JwtPayloadParser.Jti:
+        //                if (!(_jti is null))
+        //                {
+        //                    value = new JwtProperty(WellKnownProperty.Jti, _jti);
+        //                    return true;
+        //                }
+        //                break;
+        //            case JwtPayloadParser.Exp:
+        //                if (_exp.HasValue)
+        //                {
+        //                    value = new JwtProperty(WellKnownProperty.Exp, _exp.Value);
+        //                    return true;
+        //                }
+        //                break;
+        //            case JwtPayloadParser.Iat:
+        //                if (_iat.HasValue)
+        //                {
+        //                    value = new JwtProperty(WellKnownProperty.Iat, _iat.Value);
+        //                    return true;
+        //                }
+        //                break;
+        //            case JwtPayloadParser.Nbf:
+        //                if (_nbf.HasValue)
+        //                {
+        //                    value = new JwtProperty(WellKnownProperty.Nbf, _nbf.Value);
+        //                    return true;
+        //                }
+        //                break;
+        //            case JwtPayloadParser.Sub:
+        //                if (!(_sub is null))
+        //                {
+        //                    value = new JwtProperty(WellKnownProperty.Sub, _sub);
+        //                    return true;
+        //                }
+        //                break;
+        //        }
+        //    }
+
+        //    if (_payload is null)
+        //    {
+        //        value = default;
+        //        return false;
+        //    }
+
+        //    return _payload.TryGetProperty(key, out value);
+        //}
+
+        /// <summary>
+        /// Gets the value associated with the specified key.
+        /// </summary>
+        public bool TryGetValue(string key, out JwtMemberX value)
+        {
+            return _payload.TryGetValue(key, out value);
+        }
+
+        ///// <inheritsdoc />
+        //public override string ToString()
+        //{
+        //    using var bufferWriter = new PooledByteBufferWriter();
+        //    using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
+        //    {
+        //        writer.WriteStartObject();
+        //        if (!(_aud is null))
+        //        {
+        //            if (_aud.Length == 1)
+        //            {
+        //                writer.WriteString(Claims.AudUtf8, _aud[0]);
+        //            }
+        //            else
+        //            {
+        //                writer.WriteStartArray(Claims.AudUtf8);
+        //                for (int i = 0; i < _aud.Length; i++)
+        //                {
+        //                    writer.WriteStringValue(_aud[i]);
+        //                }
+
+        //                writer.WriteEndArray();
+        //            }
+        //        }
+        //        if (!(_iss is null))
+        //        {
+        //            writer.WriteString(Claims.IssUtf8, _iss);
+        //        }
+        //        if (!(_jti is null))
+        //        {
+        //            writer.WriteString(Claims.JtiUtf8, _jti);
+        //        }
+        //        if (_exp.HasValue)
+        //        {
+        //            writer.WriteNumber(Claims.ExpUtf8, _exp.Value);
+        //        }
+        //        if (_iat.HasValue)
+        //        {
+        //            writer.WriteNumber(Claims.IatUtf8, _iat.Value);
+        //        }
+        //        if (_nbf.HasValue)
+        //        {
+        //            writer.WriteNumber(Claims.NbfUtf8, _nbf.Value);
+        //        }
+        //        if (!(_sub is null))
+        //        {
+        //            writer.WriteString(Claims.SubUtf8, _sub);
+        //        }
+        //        if (!(_payload is null))
+        //        {
+        //            _payload.WriteTo(writer);
+        //        }
+
+        //        writer.WriteEndObject();
+        //    }
+
+        //    var input = bufferWriter.WrittenSpan;
+        //    return Utf8.GetString(input);
+        //}
+
+        //public int Length => _payload.Length;
+
+        internal void Add(JwtMemberX value)
+        {
+            _payload.TryAdd(value);
+        }
+
+        public void Add(string propertyName, string value)
+        {
+            _payload.TryAdd(new JwtMemberX(propertyName, value));
+        }
+
+        //public void Add(string propertyName, ReadOnlySpan<byte> value)
+        //{
+        //    _payload.TryAdd(propertyName, new JwtValueX(value));
+        //}
+
+        public void Add(string propertyName, long value)
+        {
+            _payload.TryAdd(new JwtMemberX(propertyName, value));
+        }
+
+        public void Add<T>(string propertyName, T[] value)
+        {
+            _payload.TryAdd(new JwtMemberX(propertyName, value));
+        }
+
+        public void Add(string propertyName, string?[] values)
+        {
+            _payload.TryAdd(new JwtMemberX(propertyName, values));
+        }
+
+        public void Add<T>(string propertyName, T value)
+            where T : class
+        {
+            _payload.TryAdd(new JwtMemberX(propertyName, value));
+        }
+
+        //internal bool TryGetTokenType(ReadOnlySpan<byte> utf8Name, out JsonTokenType tokenType)
+        //    => _payload.Try(utf8Name, out tokenType);
+
+        //internal bool TryGetTokenType(ReadOnlySpan<char> utf8Name, out JsonTokenType tokenType)
+        //    => _payload.TryGetTokenType(utf8Name, out tokenType);
+        //internal bool TryGetTokenType(string name, out JsonTokenType tokenType)
+        //    => _payload.TryGetTokenType(name, out tokenType);
+
+        //internal bool TryGetValue(ReadOnlySpan<byte> utf8Name, out ReadOnlySpan<byte> value)
+        //    => _payload.TryGetValue(utf8Name, out value);
+
+        public IEnumerator GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void WriteObjectTo(Utf8JsonWriter writer)
+        {
+            _payload.WriteTo(writer);
         }
     }
 }

@@ -32,6 +32,7 @@ namespace JsonWebToken.Performance
         public static readonly EncryptingCredentials encryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(Tokens.EncryptionKey.ToArray()), "A128KW", "A128CBC-HS256");
 
         public static readonly JwtWriter Writer = new JwtWriter() { EnableHeaderCaching = true };
+        public static readonly JwtWriterX WriterX = new JwtWriterX() { EnableHeaderCaching = true };
 
 
         private static readonly FixedSizedBufferWriter _output = new FixedSizedBufferWriter(8192);
@@ -46,6 +47,15 @@ namespace JsonWebToken.Performance
         protected byte[] JwtCore(JwtDescriptor payload)
         {
             Writer.WriteToken(payload, _output);
+            _output.Clear();
+            return _output.Buffer;
+        }
+        
+        public abstract byte[] JsonWebTokenX(BenchmarkPayload payload);
+
+        protected byte[] JwtCoreX(JwtDescriptorX payload)
+        {
+            WriterX.WriteToken(payload, _output);
             _output.Clear();
             return _output.Buffer;
         }
@@ -154,6 +164,7 @@ namespace JsonWebToken.Performance
         private static readonly JsonWebKey WilsonSharedKey = JsonWebKey.Create(SigningKey.ToString());
 
         private static readonly Dictionary<string, JwtDescriptor> JwtPayloads = CreateJwtDescriptors();
+        private static readonly Dictionary<string, JwtDescriptorX> JwtPayloadsX = CreateJwtDescriptorsX();
         private static readonly Dictionary<string, Dictionary<string, object>> DictionaryPayloads = CreateDictionaryDescriptors();
         private static readonly Dictionary<string, SecurityTokenDescriptor> WilsonPayloads = CreateWilsonDescriptors();
 
@@ -161,6 +172,7 @@ namespace JsonWebToken.Performance
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             JwtDescriptor = JwtPayloads[name];
+            JwtDescriptorX = JwtPayloadsX[name];
             JoseDescriptor = DictionaryPayloads[name];
             WilsonDescriptor = WilsonPayloads[name];
             WilsonJwtDescriptor = Tokens.Payloads[name.Substring(name.LastIndexOf('6') - 1).Trim().Substring(0, 1)].ToString();
@@ -169,6 +181,7 @@ namespace JsonWebToken.Performance
         public string Name { get; }
 
         public JwtDescriptor JwtDescriptor { get; }
+        public JwtDescriptorX JwtDescriptorX { get; }
 
         public Dictionary<string, object> JoseDescriptor { get; }
 
@@ -271,6 +284,102 @@ namespace JsonWebToken.Performance
                     EncryptionKey = EncryptionKey,
                     EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
                     CompressionAlgorithm = CompressionAlgorithm.Deflate
+                };
+                descriptors.Add("JWE DEF " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwc);
+            }
+
+            return descriptors;
+        }
+        private static Dictionary<string, JwtDescriptorX> CreateJwtDescriptorsX()
+        {
+            var descriptors = new Dictionary<string, JwtDescriptorX>();
+            foreach (var payload in Tokens.Payloads)
+            {
+                var descriptor = new JwsDescriptorX()
+                {
+                    Alg = SignatureAlgorithm.None
+                };
+
+                foreach (var property in payload.Value.Properties())
+                {
+                    switch (property.Name)
+                    {
+                        case "iat":
+                        case "nbf":
+                        case "exp":
+                            descriptor.Payload.Add(property.Name, (long)property.Value);
+                            break;
+                        default:
+                            descriptor.Payload.Add(property.Name, (string)property.Value);
+                            break;
+                    }
+                }
+
+                descriptors.Add("JWT " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+            }
+
+            foreach (var payload in Tokens.Payloads)
+            {
+                var descriptor = new JwsDescriptorX()
+                {
+                    SigningKey = SigningKey
+                };
+
+                foreach (var property in payload.Value.Properties())
+                {
+                    switch (property.Name)
+                    {
+                        case "iat":
+                        case "nbf":
+                        case "exp":
+                            descriptor.Payload.Add(property.Name, (long)property.Value);
+                            break;
+                        default:
+                            descriptor.Payload.Add(property.Name, (string)property.Value);
+                            break;
+                    }
+                }
+
+                descriptors.Add("JWS " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+            }
+
+            foreach (var payload in Tokens.Payloads)
+            {
+                var descriptor = new JwsDescriptorX()
+                {
+                    SigningKey = SigningKey
+                };
+
+                foreach (var property in payload.Value.Properties())
+                {
+                    switch (property.Name)
+                    {
+                        case "iat":
+                        case "nbf":
+                        case "exp":
+                            descriptor.Payload.Add(property.Name, (long)property.Value);
+                            break;
+                        default:
+                            descriptor.Payload.Add(property.Name, (string)property.Value);
+                            break;
+                    }
+                }
+
+                var jwe = new JweDescriptorX
+                {
+                    Payload = descriptor,
+                    EncryptionKey = EncryptionKey,
+                    Enc = EncryptionAlgorithm.Aes128CbcHmacSha256
+                };
+
+                descriptors.Add("JWE " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwe);
+
+                var jwc = new JweDescriptorX
+                {
+                    Payload = descriptor,
+                    EncryptionKey = EncryptionKey,
+                    Enc = EncryptionAlgorithm.Aes128CbcHmacSha256,
+                    Zip = CompressionAlgorithm.Deflate
                 };
                 descriptors.Add("JWE DEF " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwc);
             }

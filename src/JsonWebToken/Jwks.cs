@@ -137,13 +137,14 @@ namespace JsonWebToken
         internal void WriteTo(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
-            writer.WriteStartObject(JwksParameterNames.KeysUtf8);
+            writer.WriteStartArray(JwksParameterNames.KeysUtf8);
             var keys = _keys;
             for (int i = 0; i < keys.Count; i++)
             {
                 keys[i].WriteTo(writer);
             }
 
+            writer.WriteEndArray();
             writer.WriteEndObject();
         }
 

@@ -65,7 +65,7 @@ namespace JsonWebToken.Tests
             var destination = new byte[0];
             var header = new JwtObject();
             Jwk cek = null;
-            Assert.Throws<ArgumentNullException>(() => wrapper.WrapKey(null, null, destination));
+            Assert.Throws<ArgumentNullException>(() => wrapper.WrapKey(null, (JwtObject)null, destination));
             wrapper.Dispose();
             Assert.Throws<ObjectDisposedException>(() => wrapper.WrapKey(null, header, destination));
 

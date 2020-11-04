@@ -860,7 +860,6 @@ namespace JsonWebToken
             return new ArrayEnumerator<T>(this);
         }
 
-
         /// <summary>
         ///   Get an enumerator to enumerate the properties in the JSON object represented by this JsonElement.
         /// </summary>

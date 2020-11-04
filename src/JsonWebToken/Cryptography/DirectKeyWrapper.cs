@@ -26,6 +26,17 @@ namespace JsonWebToken.Internal
             return SymmetricJwk.FromSpan(bytes, false);
         }
 
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeaderX header, Span<byte> destination)
+        {
+            if (staticKey != null)
+            {
+                ThrowHelper.ThrowArgumentException_StaticKeyNotSupported();
+            }
+
+            ReadOnlySpan<byte> bytes = Key.AsSpan();
+            return SymmetricJwk.FromSpan(bytes, false);
+        }
+
         protected override void Dispose(bool disposing)
         {
         }
