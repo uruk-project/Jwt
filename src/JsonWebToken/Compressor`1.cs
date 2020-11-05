@@ -33,6 +33,36 @@ namespace JsonWebToken
             return outputStream.ToArray();
         }
 
+        /// <inheritdoc />
+        public override unsafe int Compress(ReadOnlySpan<byte> ciphertext, Span<byte> destination)
+        {
+            int result;
+            //try
+            //{
+                fixed (byte* pinnedCiphertext = destination)
+                {
+                    using var outputStream = new UnmanagedMemoryStream(pinnedCiphertext, destination.Length, destination.Length, FileAccess.Write);
+                    using var compressionStream = CreateCompressionStream(outputStream);
+                    compressionStream.Write(ciphertext);
+                    compressionStream.Flush();
+                    result = (int)outputStream.Length;
+                    compressionStream.Close();
+                }
+            //}
+            //catch (NotSupportedException) 
+            //{
+            //    using var outputStream = new MemoryStream();
+            //    using var compressionStream = CreateCompressionStream(outputStream);
+            //    compressionStream.Write(ciphertext);
+            //    compressionStream.Flush();
+            //    result = (int)outputStream.Length;
+            //    compressionStream.Close();
+            //    outputStream.ToArray().CopyTo(destination);
+            //}
+
+            return result;
+        }
+
         private sealed class DecompressionSegment : ReadOnlySequenceSegment<byte>
         {
             public DecompressionSegment(ReadOnlyMemory<byte> memory)

@@ -162,27 +162,35 @@ namespace JsonWebToken
                            ? (buffer64HeaderToReturnToPool = ArrayPool<byte>.Shared.Rent(base64EncodedHeaderLength)).AsSpan(0, base64EncodedHeaderLength)
                              : stackalloc byte[base64EncodedHeaderLength];
 
+                    byte[]? compressedBuffer = null;
                     try
                     {
-                        TryEncodeUtf8ToBase64Url(headerJson, base64EncodedHeader, out int bytesWritten);
-
+                        int bytesWritten = Base64Url.Encode(headerJson, base64EncodedHeader);
                         Compressor? compressor = null;
                         var compressionAlgorithm = Zip;
+                        int payloadLength;
                         if (!(compressionAlgorithm is null))
                         {
                             compressor = compressionAlgorithm.Compressor;
-                            if (compressor == null)
+                            if (compressor is null)
                             {
                                 ThrowHelper.ThrowNotSupportedException_CompressionAlgorithm(compressionAlgorithm);
                             }
-                            else
-                            {
-                                payload = compressor.Compress(payload);
-                            }
+
+                            // Get a buffer a bit bigger in case of data that can't be compress 
+                            // and the resulting would be slighlty bigger
+                            const int overheadLeeway = 32;
+                            compressedBuffer = ArrayPool<byte>.Shared.Rent(payload.Length + overheadLeeway);
+                            payloadLength = compressor.Compress(payload, compressedBuffer);
+                            payload = new ReadOnlySpan<byte>(compressedBuffer, 0, payloadLength);
+                        }
+                        else
+                        {
+                            payloadLength = payload.Length;
                         }
 
                         var encryptor = encryptionAlgorithm!.Encryptor;
-                        int ciphertextSize = encryptor.GetCiphertextSize(payload.Length);
+                        int ciphertextSize = encryptor.GetCiphertextSize(payloadLength);
                         int tagSize = encryptor.GetTagSize();
                         int bufferSize = ciphertextSize + tagSize;
                         Span<byte> buffer = bufferSize > Constants.MaxStackallocBytes
@@ -207,7 +215,6 @@ namespace JsonWebToken
                             + Base64Url.GetArraySizeRequiredToEncode(tagBytesWritten)
                             + Base64Url.GetArraySizeRequiredToEncode(keyWrapSize)
                             + (Constants.JweSegmentCount - 1);
-
                         Span<byte> encryptedToken = output.GetSpan(encryptionLength);
 
                         base64EncodedHeader.CopyTo(encryptedToken);
@@ -216,10 +223,13 @@ namespace JsonWebToken
 
                         encryptedToken[bytesWritten++] = Constants.ByteDot;
                         bytesWritten += Base64Url.Encode(nonce, encryptedToken.Slice(bytesWritten));
+
                         encryptedToken[bytesWritten++] = Constants.ByteDot;
                         bytesWritten += Base64Url.Encode(ciphertext, encryptedToken.Slice(bytesWritten));
+
                         encryptedToken[bytesWritten++] = Constants.ByteDot;
                         bytesWritten += Base64Url.Encode(tag.Slice(0, tagBytesWritten), encryptedToken.Slice(bytesWritten));
+
                         Debug.Assert(encryptionLength == bytesWritten);
                         output.Advance(encryptionLength);
                     }
@@ -239,6 +249,11 @@ namespace JsonWebToken
                         {
                             ArrayPool<byte>.Shared.Return(arrayCiphertextToReturnToPool);
                         }
+
+                        if (compressedBuffer != null)
+                        {
+                            ArrayPool<byte>.Shared.Return(compressedBuffer);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -250,12 +265,6 @@ namespace JsonWebToken
             {
                 ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(encryptionAlgorithm);
             }
-        }
-
-        private static void TryEncodeUtf8ToBase64Url(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
-        {
-            bytesWritten = Base64Url.Encode(input, destination);
-            Debug.Assert(bytesWritten == destination.Length);
         }
 
         /// <inheritsdoc />

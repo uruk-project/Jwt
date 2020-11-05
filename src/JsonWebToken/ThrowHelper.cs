@@ -140,6 +140,16 @@ namespace JsonWebToken
         }
 
         [DoesNotReturn]
+        internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(string utf8Name, JsonValueKind[] types) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, types);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(string utf8Name, JsonValueKind[] types)
+        {
+            var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
+            var value = (utf8Name);
+            return new JwtDescriptorException($"The header parameter '{value}' must be of type [{claimTypes}].");
+        }
+
+        [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType[] types) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, types);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType[] types)
@@ -155,6 +165,14 @@ namespace JsonWebToken
         private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType type)
         {
             var value = Utf8.GetString(utf8Name);
+            return new JwtDescriptorException($"The header parameter '{value}' must be of type {type}.");
+        }
+        [DoesNotReturn]
+        internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(string utf8Name, JsonValueKind type) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, type);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(string utf8Name, JsonValueKind type)
+        {
+            var value = (utf8Name);
             return new JwtDescriptorException($"The header parameter '{value}' must be of type {type}.");
         }
 
@@ -173,6 +191,15 @@ namespace JsonWebToken
         private static Exception CreateJwtDescriptorException_HeaderIsRequired(ReadOnlySpan<byte> header)
         {
             var value = Utf8.GetString(header);
+            return new JwtDescriptorException($"The header parameter '{value}' is required.");
+        }
+
+        [DoesNotReturn]
+        internal static void ThrowJwtDescriptorException_HeaderIsRequired(string header) => throw CreateJwtDescriptorException_HeaderIsRequired(header);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateJwtDescriptorException_HeaderIsRequired(string header)
+        {
+            var value = (header);
             return new JwtDescriptorException($"The header parameter '{value}' is required.");
         }
 

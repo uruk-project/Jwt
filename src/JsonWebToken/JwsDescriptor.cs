@@ -914,7 +914,9 @@ namespace JsonWebToken
         public override void Validate()
         {
             base.Validate();
-            //CheckRequiredHeader(HeaderParameters.AlgUtf8, JsonTokenType.String);
+
+            // It will be validated afterward
+            //CheckRequiredHeader(HeaderParameters.Alg, JsonValueKind.String);
         }
 
         ///// <summary>

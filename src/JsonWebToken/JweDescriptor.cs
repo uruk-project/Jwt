@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
+using System.Text.Json;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -57,8 +58,9 @@ namespace JsonWebToken
         {
             base.Validate();
 
-            //CheckRequiredHeader(HeaderParameters.Alg, JwtTokenType.Utf8String);
-            //CheckRequiredHeader(HeaderParameters.Enc, JwtTokenType.Utf8String);
+            // It will be verified afterward
+            //CheckRequiredHeader(HeaderParameters.Alg, JsonValueKind.String);
+            //CheckRequiredHeader(HeaderParameters.Enc, JsonValueKind.String);
         }
     }
 }

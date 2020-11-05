@@ -50,28 +50,34 @@ namespace JsonWebToken
             Payload?.Validate();
             base.Validate();
         }
-    }  
-    
+    }
+
     /// <summary>
     /// Defines an encrypted JWT with a <typeparamref name="TDescriptor"/> as payload.
     /// </summary>
-    public class JweDescriptorX<TDescriptor> : EncryptedJwtDescriptorX<TDescriptor> where TDescriptor : JwsDescriptorX
+    public class JweDescriptorX<TDescriptor> : EncryptedJwtDescriptorX<TDescriptor> where TDescriptor : JwsDescriptorX, new()
     {
-        public override TDescriptor Payload { get; set; }
+        private TDescriptor? _payload;
+
+        public override TDescriptor Payload
+        {
+            get => _payload ??= new TDescriptor();
+            set => _payload = value;
+        }
 
         /// <inheritsdoc />
         public override void Encode(EncodingContext context)
         {
             using var bufferWriter = new PooledByteBufferWriter();
             var ctx = new EncodingContext(bufferWriter, context.HeaderCache, context.TokenLifetimeInSeconds, context.GenerateIssuedTime);
-            Payload?.Encode(ctx);
+            Payload.Encode(ctx);
             EncryptToken(bufferWriter.WrittenSpan, context.BufferWriter);
         }
 
         /// <inheritsdoc />
         public override void Validate()
         {
-            Payload?.Validate();
+            Payload.Validate();
             base.Validate();
         }
     }

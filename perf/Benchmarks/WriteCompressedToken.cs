@@ -36,6 +36,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetPayloadValues))]
         public override string Wilson(BenchmarkPayload payload)
         {
+            return "";
             return WilsonCore(payload.WilsonDescriptor);
         }
 
@@ -43,6 +44,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetPayloadValues))]
         public override string WilsonJwt(BenchmarkPayload payload)
         {
+            return "";
             return WilsonJweCompressedCore(payload.WilsonJwtDescriptor);
         }
 
@@ -50,6 +52,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetPayloadValues))]
         public override string jose_jwt(BenchmarkPayload payload)
         {
+            return "";
             return JoseDotNetJweCompressedCore(payload.JoseDescriptor);
         }
 
