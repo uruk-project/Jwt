@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
+using gfoidl.Base64;
 using JsonWebToken.Cryptography;
 using JsonWebToken.Internal;
 
@@ -1008,7 +1009,7 @@ namespace JsonWebToken
                 writer.WriteStartArray(JwkParameterNames.X5cUtf8);
                 for (int i = 0; i < _x5c.Count; i++)
                 {
-                    writer.WriteStringValue(Convert.ToBase64String(_x5c[i]));
+                    writer.WriteStringValue(Base64.Default.Encode(_x5c[i]));
                 }
 
                 writer.WriteEndArray();

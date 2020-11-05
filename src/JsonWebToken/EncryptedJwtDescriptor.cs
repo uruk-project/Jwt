@@ -168,7 +168,6 @@ namespace JsonWebToken
                         int bytesWritten = Base64Url.Encode(headerJson, base64EncodedHeader);
                         Compressor? compressor = null;
                         var compressionAlgorithm = Zip;
-                        int payloadLength;
                         if (!(compressionAlgorithm is null))
                         {
                             compressor = compressionAlgorithm.Compressor;
@@ -181,16 +180,12 @@ namespace JsonWebToken
                             // and the resulting would be slighlty bigger
                             const int overheadLeeway = 32;
                             compressedBuffer = ArrayPool<byte>.Shared.Rent(payload.Length + overheadLeeway);
-                            payloadLength = compressor.Compress(payload, compressedBuffer);
+                            int payloadLength = compressor.Compress(payload, compressedBuffer);
                             payload = new ReadOnlySpan<byte>(compressedBuffer, 0, payloadLength);
-                        }
-                        else
-                        {
-                            payloadLength = payload.Length;
                         }
 
                         var encryptor = encryptionAlgorithm!.Encryptor;
-                        int ciphertextSize = encryptor.GetCiphertextSize(payloadLength);
+                        int ciphertextSize = encryptor.GetCiphertextSize(payload.Length);
                         int tagSize = encryptor.GetTagSize();
                         int bufferSize = ciphertextSize + tagSize;
                         Span<byte> buffer = bufferSize > Constants.MaxStackallocBytes
