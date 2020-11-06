@@ -20,42 +20,70 @@ namespace JsonWebToken.Internal
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary> 
         public static ReadOnlySpan<byte> AudUtf8 => new byte[] { (byte)'a', (byte)'u', (byte)'d' };
+
+        /// <summary>
+        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// </summary> 
         public static readonly string Aud = "aud";
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public static ReadOnlySpan<byte> ExpUtf8 => new byte[] { (byte)'e', (byte)'x', (byte)'p' };
+
+        /// <summary>
+        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// </summary>
         public static readonly string Exp = "exp";
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public static ReadOnlySpan<byte> IatUtf8 => new byte[] { (byte)'i', (byte)'a', (byte)'t' };
+
+        /// <summary>
+        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// </summary>
         public static readonly string Iat = "iat";
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public static ReadOnlySpan<byte> IssUtf8 => new byte[] { (byte)'i', (byte)'s', (byte)'s' };
+
+        /// <summary>
+        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// </summary>
         public static readonly string Iss = "iss";
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public static ReadOnlySpan<byte> JtiUtf8 => new byte[] { (byte)'j', (byte)'t', (byte)'i' };
+
+        /// <summary>
+        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// </summary>
         public static readonly string Jti = "jti";
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public static ReadOnlySpan<byte> NbfUtf8 => new byte[] { (byte)'n', (byte)'b', (byte)'f' };
+
+        /// <summary>
+        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// </summary>
         public static readonly string Nbf = "nbf";
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public static ReadOnlySpan<byte> SubUtf8 => new byte[] { (byte)'s', (byte)'u', (byte)'b' };
+
+        /// <summary>
+        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// </summary>
         public static readonly string Sub = "sub";
     }
 }

@@ -81,6 +81,13 @@ namespace JsonWebToken
         /// <param name="header">The key-values representing the JWT header.</param>
         /// <param name="destination">The destination span.</param>
         public abstract SymmetricJwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination);
+
+        /// <summary>
+        /// Wrap a key.
+        /// </summary>
+        /// <param name="staticKey">The key to be wrapped. If <c>null</c>, the key will be ephemeral and generated within this method.</param>
+        /// <param name="header">The key-values representing the JWT header.</param>
+        /// <param name="destination">The destination span.</param>
         public abstract SymmetricJwk WrapKey(Jwk? staticKey, JwtHeaderX header, Span<byte> destination);
 
         /// <summary>

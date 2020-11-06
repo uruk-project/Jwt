@@ -59,6 +59,7 @@ namespace JsonWebToken
     {
         private TDescriptor? _payload;
 
+        /// <inheritdoc/>
         public override TDescriptor Payload
         {
             get => _payload ??= new TDescriptor();

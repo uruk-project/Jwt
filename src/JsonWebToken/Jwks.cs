@@ -332,11 +332,13 @@ namespace JsonWebToken
             }
         }
 
+        /// <inheritdoc/>
         public IEnumerator<Jwk> GetEnumerator()
         {
             return ((IEnumerable<Jwk>)_keys).GetEnumerator();
         }
 
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IEnumerable)_keys).GetEnumerator();

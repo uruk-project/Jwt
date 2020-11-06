@@ -13,7 +13,7 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwksKeyProvider : HttpKeyProvider
     {
-        private readonly string _metadataAddress;
+        private readonly string? _metadataAddress;
         private readonly string _jwksAddress;
         private readonly MetadataRetrievalBehavior _behavior;
 
@@ -87,6 +87,11 @@ namespace JsonWebToken
             if (jwksUri is null)
             {
                 throw new InvalidOperationException($"Invalid JSON document at '{metadataAddress}'. No 'jwks_uri' claim found.");
+            }
+            
+            if (issuer is null)
+            {
+                throw new InvalidOperationException($"Invalid JSON document at '{metadataAddress}'. No 'issuer' claim found.");
             }
 
             // Not perfect as test, but we do not have the issuer here for the moment.

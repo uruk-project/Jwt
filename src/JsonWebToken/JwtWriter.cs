@@ -110,7 +110,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the token lifetime in seconds.
         /// </summary>
-        /// <remarks>Used by <see cref="WriteToken(JwtDescriptor)"/> to set the default expiration ('exp').</remarks>
+        /// <remarks>Used by <see cref="WriteToken(JwtDescriptorX)"/> to set the default expiration ('exp').</remarks>
         /// <exception cref="ArgumentOutOfRangeException">'value' less than 0.</exception>
         public int TokenLifetimeInSeconds
         {

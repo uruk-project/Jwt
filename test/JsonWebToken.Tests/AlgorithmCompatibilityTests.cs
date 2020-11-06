@@ -9,22 +9,6 @@ namespace JsonWebToken.Tests
     public class JwtXTests
     {
         [Fact]
-        public void Create()
-        {
-            var jwt = new JwtObjectX
-            {
-                { "prop1", "value1" },
-                { "prop2",  new Dictionary<string, object> { { "prop1", "value2" } } },
-                { "prop3", 123L },
-                { "prop4", new Fake { Inner = new Fake { Value = "Inner1", Inner = new Fake { Value = "Inner2" } }, Value = "Inner0" } },
-                { "prop5", new [] { "a", "b", "c"} },
-                { "prop6", new [] { new object(), new object(), "abc", 123 } }
-            };
-
-            jwt.Flush();
-        }
-
-        [Fact]
         public void Descriptor()
         {
             var descriptor = new JweDescriptorX

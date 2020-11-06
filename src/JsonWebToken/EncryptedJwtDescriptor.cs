@@ -152,7 +152,7 @@ namespace JsonWebToken
                 {
                     using var bufferWriter = new PooledByteBufferWriter();
                     var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
-                    header.WriteObjectTo(writer);
+                    header.WriteTo(writer);
                     writer.Flush();
                     var headerJson = bufferWriter.WrittenSpan;
                     int headerJsonLength = headerJson.Length;
