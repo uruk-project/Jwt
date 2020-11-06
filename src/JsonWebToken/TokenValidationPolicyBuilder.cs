@@ -40,7 +40,7 @@ namespace JsonWebToken
         {
             _validators.Clear();
             _criticalHeaderHandlers.Clear();
-            _defaultSignaturePolicy = SignatureValidationPolicy.IgnoreSignature;
+            _defaultSignaturePolicy = SignatureValidationPolicy.InvalidSignature;
             _signaturePolicies.Clear();
             _maximumTokenSizeInBytes = DefaultMaximumTokenSizeInBytes;
             _hasSignatureValidation = false;
@@ -640,6 +640,11 @@ namespace JsonWebToken
             if (_signaturePolicies.Count == 0)
             {
                 signaturePolicy = _defaultSignaturePolicy;
+            }
+            else if(_signaturePolicies.Count == 1)
+            {
+                var first = _signaturePolicies.First();
+                signaturePolicy = SignatureValidationPolicy.Create(first.Key, first.Value);
             }
             else
             {

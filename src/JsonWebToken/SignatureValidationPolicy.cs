@@ -22,7 +22,9 @@ namespace JsonWebToken
         /// <summary>
         /// Allows to ignore the signature, whatever ther is an algorithm defined or not.
         /// </summary>
-        public static readonly SignatureValidationPolicy IgnoreSignature = new IgnoreSignatureValidationContext();
+        public static readonly SignatureValidationPolicy IgnoreSignature = new IgnoreSignatureValidationPolicy();
+
+        internal static readonly SignatureValidationPolicy InvalidSignature = new InvalidSignatureValidationPolicy();
 
         /// <summary>
         /// Gets whether the signature validation is enabled.
@@ -53,7 +55,19 @@ namespace JsonWebToken
         /// <summary>
         /// Creates a new <see cref="SignatureValidationPolicy"/> instance.
         /// </summary>
+        /// <param name="issuer"></param>
+        /// <param name="policy"></param>
+        /// <returns></returns>
+        public static SignatureValidationPolicy Create(string issuer, SignatureValidationPolicy policy)
+        {
+            return new SingleIssuerSignatureValidationPolicy(issuer, policy);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="SignatureValidationPolicy"/> instance.
+        /// </summary>
         /// <param name="policies"></param>
+        /// <param name="defaultPolicy"></param>
         /// <returns></returns>
         public static SignatureValidationPolicy Create(Dictionary<string, SignatureValidationPolicy> policies, SignatureValidationPolicy defaultPolicy)
         {
@@ -85,6 +99,33 @@ namespace JsonWebToken
                 }
 
                 return _defaultPolicy.TryValidateSignature(header, payload, contentBytes, signatureSegment);
+            }
+        }
+
+        private sealed class SingleIssuerSignatureValidationPolicy : SignatureValidationPolicy
+        {
+            private readonly string _issuer;
+            private readonly SignatureValidationPolicy _policy;
+
+            public SingleIssuerSignatureValidationPolicy(string issuer, SignatureValidationPolicy policy)
+            {
+                _issuer = issuer;
+                _policy = policy;
+            }
+
+            public override bool IsEnabled => true;
+
+            public override SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
+            {
+                if (payload.TryGetClaim(Claims.Iss, out var aud))
+                {
+                    if (aud.ValueEquals(_issuer))
+                    {
+                        return _policy.TryValidateSignature(header, payload, contentBytes, signatureSegment);
+                    }
+                }
+
+                return SignatureValidationResult.InvalidSignature();
             }
         }
 
@@ -183,7 +224,7 @@ namespace JsonWebToken
             }
         }
 
-        private sealed class IgnoreSignatureValidationContext : SignatureValidationPolicy
+        private sealed class IgnoreSignatureValidationPolicy : SignatureValidationPolicy
         {
             /// <inheritdoc />
             public override bool IsEnabled => false;
@@ -192,6 +233,18 @@ namespace JsonWebToken
             public override SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
                 return SignatureValidationResult.Success();
+            }
+        }
+
+        private sealed class InvalidSignatureValidationPolicy : SignatureValidationPolicy
+        {
+            /// <inheritdoc />
+            public override bool IsEnabled => false;
+
+            /// <inheritdoc />
+            public override SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
+            {
+                return SignatureValidationResult.InvalidSignature();
             }
         }
     }
