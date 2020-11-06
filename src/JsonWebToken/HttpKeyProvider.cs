@@ -39,6 +39,11 @@ namespace JsonWebToken
         public long AutomaticRefreshInterval { get; set; } = DefaultAutomaticRefreshInterval;
 
         /// <summary>
+        /// Gets the http document retriever.
+        /// </summary>
+        protected HttpDocumentRetriever DocumentRetriever => _documentRetriever;
+
+        /// <summary>
         /// Initializes a new instance of <see cref="HttpKeyProvider"/>.
         /// </summary>
         /// <param name="documentRetriever"></param>

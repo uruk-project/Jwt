@@ -319,19 +319,19 @@ namespace JsonWebToken.Performance
             token = CreateInvalidToken(key, TokenValidationStatus.NotYetValid, payload);
             jwts.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.Success);
+            payload = CreateJws(json, TokenValidationStatus.NoError);
             token = CreateInvalidToken(key, TokenValidationStatus.InvalidSignature, payload);
             jwts.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.Success);
+            payload = CreateJws(json, TokenValidationStatus.NoError);
             token = CreateInvalidToken(key, TokenValidationStatus.MalformedSignature, payload);
             jwts.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.Success);
+            payload = CreateJws(json, TokenValidationStatus.NoError);
             token = CreateInvalidToken(key, TokenValidationStatus.MalformedToken, payload);
             jwts.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.Success);
+            payload = CreateJws(json, TokenValidationStatus.NoError);
             token = CreateInvalidToken(key, TokenValidationStatus.MissingSignature, payload);
             jwts.Add(token);
 

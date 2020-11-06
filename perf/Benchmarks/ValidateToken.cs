@@ -29,19 +29,19 @@ namespace JsonWebToken.Performance
 
         protected static readonly TokenValidationPolicy tokenValidationPolicy
             = new TokenValidationPolicyBuilder()
-                .RequireSignature(SymmetricKey)
+                .DefaultSignature(SymmetricKey)
                 .RequireAudience("636C69656E745F6964")
-                .RequireIssuer("https://idp.example.com/")
+                .DefaultIssuer("https://idp.example.com/")
                 .EnableLifetimeValidation()
                 .WithDecryptionKey(Tokens.EncryptionKey)
                 .Build();
 
         protected static readonly TokenValidationPolicy tokenValidationPolicyWithoutSignature
             = new TokenValidationPolicyBuilder()
-                .IgnoreSignature()
-                .AcceptUnsecureToken()
+                .IgnoreSignatureByDefault()
+                .AcceptUnsecureTokenByDefault()
                 .RequireAudience("636C69656E745F6964")
-                .RequireIssuer("https://idp.example.com/")
+                .DefaultIssuer("https://idp.example.com/")
                 .EnableLifetimeValidation()
                 .WithDecryptionKey(Tokens.EncryptionKey)
                 .Build();

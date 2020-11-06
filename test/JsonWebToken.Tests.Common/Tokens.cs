@@ -276,19 +276,19 @@ namespace JsonWebToken.Tests
             token = CreateInvalidToken(key, TokenValidationStatus.NotYetValid, payload);
             invalidTokens.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.Success);
+            payload = CreateJws(json, TokenValidationStatus.NoError);
             token = CreateInvalidToken(key, TokenValidationStatus.InvalidSignature, payload);
             invalidTokens.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.Success);
+            payload = CreateJws(json, TokenValidationStatus.NoError);
             token = CreateInvalidToken(key, TokenValidationStatus.MalformedSignature, payload);
             invalidTokens.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.Success);
+            payload = CreateJws(json, TokenValidationStatus.NoError);
             token = CreateInvalidToken(key, TokenValidationStatus.MalformedToken, payload);
             invalidTokens.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.Success);
+            payload = CreateJws(json, TokenValidationStatus.NoError);
             token = CreateInvalidToken(key, TokenValidationStatus.MissingSignature, payload);
             invalidTokens.Add(token);
 

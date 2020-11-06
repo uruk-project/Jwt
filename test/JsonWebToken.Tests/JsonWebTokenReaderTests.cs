@@ -54,15 +54,15 @@ namespace JsonWebToken.Tests
             var builder = new TokenValidationPolicyBuilder()
                     .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
-                    .RequireIssuer("https://idp.example.com/")
+                    .DefaultIssuer("https://idp.example.com/")
                     .WithDecryptionKeys(_keys.Jwks);
             if (signed)
             {
-                builder.RequireSignature(_keys.Jwks);
+                builder.DefaultSignature(_keys.Jwks);
             }
             else
             {
-                builder.AcceptUnsecureToken();
+                builder.AcceptUnsecureTokenByDefault();
             }
 
             var result = Jwt.TryParse(sequence, builder, out var jwt);
@@ -82,15 +82,15 @@ namespace JsonWebToken.Tests
             var builder = new TokenValidationPolicyBuilder()
                     .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
-                    .RequireIssuer("https://idp.example.com/")
+                    .DefaultIssuer("https://idp.example.com/")
                     .WithDecryptionKeys(_keys.Jwks);
             if (signed)
             {
-                builder.RequireSignature(_keys.Jwks);
+                builder.DefaultSignature(_keys.Jwks);
             }
             else
             {
-                builder.AcceptUnsecureToken();
+                builder.AcceptUnsecureTokenByDefault();
             }
 
             var result = Jwt.TryParse(sequence, builder, out var jwt);
@@ -106,15 +106,15 @@ namespace JsonWebToken.Tests
             var builder = new TokenValidationPolicyBuilder()
                     .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
-                    .RequireIssuer("https://idp.example.com/")
+                    .DefaultIssuer("https://idp.example.com/")
                     .WithDecryptionKeys(_keys.Jwks);
             if (signed)
             {
-                builder.RequireSignature(_keys.Jwks);
+                builder.DefaultSignature(_keys.Jwks);
             }
             else
             {
-                builder.AcceptUnsecureToken();
+                builder.AcceptUnsecureTokenByDefault();
             }
 
             var result = Jwt.TryParse(value, builder, out var jwt);
@@ -127,10 +127,10 @@ namespace JsonWebToken.Tests
         public void ReadJwt_Invalid(string token, TokenValidationStatus expectedStatus)
         {
             var policy = new TokenValidationPolicyBuilder()
-                    .RequireSignature(_keys.SigningKey)
+                    .DefaultSignature(_keys.SigningKey)
                     .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
-                    .RequireIssuer("https://idp.example.com/")
+                    .DefaultIssuer("https://idp.example.com/")
                     .Build();
 
             var result = Jwt.TryParse(token, policy, out var jwt);
@@ -147,7 +147,24 @@ namespace JsonWebToken.Tests
                 Sender = BackchannelRequestToken
             };
             var policy = new TokenValidationPolicyBuilder()
-                    .RequireSignature("https://demo.identityserver.io/.well-known/openid-configuration/jwks", handler: httpHandler)
+                    .DefaultSignature("https://demo.identityserver.io/.well-known/openid-configuration/jwks", handler: httpHandler)
+                    .Build();
+
+            var token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjZiYmRjYTc4MGFmM2E2NzE2M2NhNzUzMTU0NWRhN2E5IiwidHlwIjoiSldUIn0.eyJuYmYiOjE1Mjc5NzMyNDIsImV4cCI6MTUyNzk3Njg0MiwiaXNzIjoiaHR0cHM6Ly9kZW1vLmlkZW50aXR5c2VydmVyLmlvIiwiYXVkIjpbImh0dHBzOi8vZGVtby5pZGVudGl0eXNlcnZlci5pby9yZXNvdXJjZXMiLCJhcGkiXSwiY2xpZW50X2lkIjoiY2xpZW50Iiwic2NvcGUiOlsiYXBpIl19.PFI6Fl8J6nlk3MyDwUemy6e4GjtyNoDabuQcUdOoQRGUjVAhv0UKqSOujg4Y_g23nPCGGMNOVNDiyK9StV4NdUrPemdShR6gykKd-FE1n7uHEwN6vsTDV_EeoF5ZdQsqEVo8zxfWoCIVP2Llj7TTwaoNpnhl9fkHvCc75XqYyF7SkiQAXGGGTExNh12kEI_Hb_rZvjJN2HCw1BsMx9-KFM69oFhT8ClAXeG3j3YsQ9ffjoZXV31S2Llzk-5Mf6BrR5CpCUHWWbfnEU21ko2NH7Y_aBJOwVAxyadj-89RR3-Ixpz3mUDxsZ4nmhLJDbrM9e1SRUq-oPmljIp53j-NXg";
+            var result = Jwt.TryParse(token, policy, out var jwt);
+            Assert.True(result);
+            jwt.Dispose();
+        }
+
+        [Fact]
+        public void ReadJwt_MetadaConfiguration_Valid()
+        {
+            var httpHandler = new TestHttpMessageHandler
+            {
+                Sender = BackchannelRequestToken
+            };
+            var policy = new TokenValidationPolicyBuilder()
+                    .RequireMetadataConfiguration("https://demo.identityserver.io", SignatureAlgorithm.RsaSha256, "/.well-known/openid-configuration", handler: httpHandler)
                     .Build();
 
             var token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjZiYmRjYTc4MGFmM2E2NzE2M2NhNzUzMTU0NWRhN2E5IiwidHlwIjoiSldUIn0.eyJuYmYiOjE1Mjc5NzMyNDIsImV4cCI6MTUyNzk3Njg0MiwiaXNzIjoiaHR0cHM6Ly9kZW1vLmlkZW50aXR5c2VydmVyLmlvIiwiYXVkIjpbImh0dHBzOi8vZGVtby5pZGVudGl0eXNlcnZlci5pby9yZXNvdXJjZXMiLCJhcGkiXSwiY2xpZW50X2lkIjoiY2xpZW50Iiwic2NvcGUiOlsiYXBpIl19.PFI6Fl8J6nlk3MyDwUemy6e4GjtyNoDabuQcUdOoQRGUjVAhv0UKqSOujg4Y_g23nPCGGMNOVNDiyK9StV4NdUrPemdShR6gykKd-FE1n7uHEwN6vsTDV_EeoF5ZdQsqEVo8zxfWoCIVP2Llj7TTwaoNpnhl9fkHvCc75XqYyF7SkiQAXGGGTExNh12kEI_Hb_rZvjJN2HCw1BsMx9-KFM69oFhT8ClAXeG3j3YsQ9ffjoZXV31S2Llzk-5Mf6BrR5CpCUHWWbfnEU21ko2NH7Y_aBJOwVAxyadj-89RR3-Ixpz3mUDxsZ4nmhLJDbrM9e1SRUq-oPmljIp53j-NXg";
@@ -168,7 +185,7 @@ namespace JsonWebToken.Tests
         public void ReadJwt_Malformed(string token)
         {
             var policy = new TokenValidationPolicyBuilder()
-                    .AcceptUnsecureToken()
+                    .AcceptUnsecureTokenByDefault()
                     .Build();
 
             var result = Jwt.TryParse(token, policy, out var jwt);
@@ -185,7 +202,7 @@ namespace JsonWebToken.Tests
         public void ReadJwt_CriticalHeader_Invalid(string token, TokenValidationStatus expected)
         {
             var policy = new TokenValidationPolicyBuilder()
-                    .AcceptUnsecureToken()
+                    .AcceptUnsecureTokenByDefault()
                     .AddCriticalHeaderHandler("exp", new TestCriticalHeaderHandler(true))
                     .AddCriticalHeaderHandler("invalid", new TestCriticalHeaderHandler(false))
                     .Build();
@@ -201,7 +218,7 @@ namespace JsonWebToken.Tests
         public void ReadJwt_CriticalHeader(string token)
         {
             var policy = new TokenValidationPolicyBuilder()
-                    .AcceptUnsecureToken()
+                    .AcceptUnsecureTokenByDefault()
                     .AddCriticalHeaderHandler("exp", new TestCriticalHeaderHandler(true))
                     .AddCriticalHeaderHandler("invalid", new TestCriticalHeaderHandler(false))
                     .Build();
@@ -216,7 +233,7 @@ namespace JsonWebToken.Tests
         public void Issue504_Valid(string token)
         {
             var policy = new TokenValidationPolicyBuilder()
-                .IgnoreSignature()
+                .IgnoreSignatureByDefault()
                 .WithDecryptionKeys(new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4T"))
                 .Build();
 
@@ -238,11 +255,11 @@ namespace JsonWebToken.Tests
             }
             if (requireSignature)
             {
-                builder.RequireSignature(SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU"), "HS256");
+                builder.DefaultSignature(SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU"), "HS256");
             }
             else
             {
-                builder.IgnoreSignature();
+                builder.IgnoreSignatureByDefault();
             }
 
             if (requireOther)
@@ -262,7 +279,7 @@ namespace JsonWebToken.Tests
         public void Issue489_Valid(string token)
         {
             var policy = new TokenValidationPolicyBuilder()
-                .AcceptUnsecureToken()
+                .AcceptUnsecureTokenByDefault()
                 .EnableLifetimeValidation()
                 .Build();
 
@@ -279,7 +296,7 @@ namespace JsonWebToken.Tests
         public void Issue489_Invalid(string token, TokenValidationStatus status)
         {
             var policy = new TokenValidationPolicyBuilder()
-                .AcceptUnsecureToken()
+                .AcceptUnsecureTokenByDefault()
                 .EnableLifetimeValidation()
                 .Build();
 
@@ -299,7 +316,7 @@ namespace JsonWebToken.Tests
         public void Issue489_NoValidation_Valid(string token)
         {
             var policy = new TokenValidationPolicyBuilder()
-                .AcceptUnsecureToken()
+                .AcceptUnsecureTokenByDefault()
                 .Build();
 
             var result = Jwt.TryParse(token, policy, out var jwt);
@@ -314,6 +331,16 @@ namespace JsonWebToken.Tests
                 return new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new StringContent("{\"keys\":[{\"kty\":\"RSA\",\"use\":\"sig\",\"kid\":\"6bbdca780af3a67163ca7531545da7a9\",\"e\":\"AQAB\",\"n\":\"n6fNIStd3luK2mvco0ZnkDGE4JxB2FLmYtVJNyTmMfOj7CR5oM7vHSuOQYe17c8CUXBSCed5i6CmUyI59Vj4D2D2zdzqMiIyA5Y0djw5Js04QSvbXZId25YgMoHU0dichI1MmUYMPk5iQ_SwmSXsJKxwk1ytd1DciMxpCWkkAwJCAMoYR0_wcrtLX0M3i1sJthpCKle0-bj5YnhVE85vGeVrkvs9b8CKUCwqGruNptHtebpMKR1rBx1QXBTHHhXJjk5XQLu_S9_URuD0M6j__liGcjYzFEiz6b9NAjHHrraPfDfuKIgnHwpLFA-J8zjZeoXBstr9Mut_Gsgqmxg_cQ\",\"alg\":\"RS256\"}]}",
+                            Encoding.UTF8,
+                            "application/json")
+                };
+            }
+
+            if (req.RequestUri.AbsoluteUri == "https://demo.identityserver.io/.well-known/openid-configuration")
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("{\"issuer\":\"https://demo.identityserver.io\",\"jwks_uri\":\"https://demo.identityserver.io/.well-known/openid-configuration/jwks\",\"authorization_endpoint\":\"https://demo.identityserver.io/connect/authorize\",\"token_endpoint\":\"https://demo.identityserver.io/connect/token\",\"userinfo_endpoint\":\"https://demo.identityserver.io/connect/userinfo\",\"end_session_endpoint\":\"https://demo.identityserver.io/connect/endsession\",\"check_session_iframe\":\"https://demo.identityserver.io/connect/checksession\",\"revocation_endpoint\":\"https://demo.identityserver.io/connect/revocation\",\"introspection_endpoint\":\"https://demo.identityserver.io/connect/introspect\",\"device_authorization_endpoint\":\"https://demo.identityserver.io/connect/deviceauthorization\",\"frontchannel_logout_supported\":true,\"frontchannel_logout_session_supported\":true,\"backchannel_logout_supported\":true,\"backchannel_logout_session_supported\":true,\"scopes_supported\":[\"openid\",\"profile\",\"email\",\"api\",\"api.scope1\",\"api.scope2\",\"scope2\",\"policyserver.runtime\",\"policyserver.management\",\"offline_access\"],\"claims_supported\":[\"sub\",\"name\",\"family_name\",\"given_name\",\"middle_name\",\"nickname\",\"preferred_username\",\"profile\",\"picture\",\"website\",\"gender\",\"birthdate\",\"zoneinfo\",\"locale\",\"updated_at\",\"email\",\"email_verified\"],\"grant_types_supported\":[\"authorization_code\",\"client_credentials\",\"refresh_token\",\"implicit\",\"password\",\"urn:ietf:params:oauth:grant-type:device_code\"],\"response_types_supported\":[\"code\",\"token\",\"id_token\",\"id_token token\",\"code id_token\",\"code token\",\"code id_token token\"],\"response_modes_supported\":[\"form_post\",\"query\",\"fragment\"],\"token_endpoint_auth_methods_supported\":[\"client_secret_basic\",\"client_secret_post\"],\"id_token_signing_alg_values_supported\":[\"RS256\"],\"subject_types_supported\":[\"public\"],\"code_challenge_methods_supported\":[\"plain\",\"S256\"],\"request_parameter_supported\":true}",
                             Encoding.UTF8,
                             "application/json")
                 };

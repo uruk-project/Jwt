@@ -53,9 +53,9 @@ namespace ValidatePerf
         private static void Main()
         {
             var policy = new TokenValidationPolicyBuilder()
-                .RequireSignature(signingKey)
+                .DefaultSignature(signingKey)
                 .RequireAudience("636C69656E745F6964")
-                .RequireIssuer("https://idp.example.com/")
+                .DefaultIssuer("https://idp.example.com/")
                 .EnableLifetimeValidation()
                 .DisabledHeaderCache()
                 .Build();

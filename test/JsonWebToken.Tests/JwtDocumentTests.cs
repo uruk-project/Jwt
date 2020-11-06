@@ -50,15 +50,15 @@ namespace JsonWebToken.Tests
             var builder = new TokenValidationPolicyBuilder()
                     .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
-                    .RequireIssuer("https://idp.example.com/")
+                    .DefaultIssuer("https://idp.example.com/")
                     .WithDecryptionKeys(_keys.Jwks);
             if (signed)
             {
-                builder.RequireSignature(_keys.Jwks);
+                builder.DefaultSignature(_keys.Jwks);
             }
             else
             {
-                builder.AcceptUnsecureToken();
+                builder.AcceptUnsecureTokenByDefault();
             }
 
             var result = Jwt.TryParse(sequence, builder, out var jwt);
@@ -78,15 +78,15 @@ namespace JsonWebToken.Tests
             var builder = new TokenValidationPolicyBuilder()
                     .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
-                    .RequireIssuer("https://idp.example.com/")
+                    .DefaultIssuer("https://idp.example.com/")
                     .WithDecryptionKeys(_keys.Jwks);
             if (signed)
             {
-                builder.RequireSignature(_keys.Jwks);
+                builder.DefaultSignature(_keys.Jwks);
             }
             else
             {
-                builder.AcceptUnsecureToken();
+                builder.AcceptUnsecureTokenByDefault();
             }
 
             var result = Jwt.TryParse(sequence, builder, out var jwt);
@@ -102,15 +102,15 @@ namespace JsonWebToken.Tests
             var builder = new TokenValidationPolicyBuilder()
                     .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
-                    .RequireIssuer("https://idp.example.com/")
+                    .DefaultIssuer("https://idp.example.com/")
                     .WithDecryptionKeys(_keys.Jwks);
             if (signed)
             {
-                builder.RequireSignature(_keys.Jwks);
+                builder.DefaultSignature(_keys.Jwks);
             }
             else
             {
-                builder.AcceptUnsecureToken();
+                builder.AcceptUnsecureTokenByDefault();
             }
 
             var result = Jwt.TryParse(value, builder, out var jwt);
@@ -130,9 +130,9 @@ namespace JsonWebToken.Tests
             var builder = new TokenValidationPolicyBuilder()
                     .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
-                    .RequireIssuer("https://idp.example.com/")
+                    .DefaultIssuer("https://idp.example.com/")
                     .WithDecryptionKeys(_keys.Jwks);
-            builder.AcceptUnsecureToken();
+            builder.AcceptUnsecureTokenByDefault();
 
             var result = Jwt.TryParse(token, builder, out var jwt);
 
@@ -149,10 +149,10 @@ namespace JsonWebToken.Tests
         public void ReadJwt_Invalid(string token, TokenValidationStatus expectedStatus)
         {
             var policy = new TokenValidationPolicyBuilder()
-                    .RequireSignature(_keys.SigningKey)
+                    .DefaultSignature(_keys.SigningKey)
                     .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
-                    .RequireIssuer("https://idp.example.com/")
+                    .DefaultIssuer("https://idp.example.com/")
                     .WithDecryptionKeys(_keys.Jwks)
                     .Build();
 
@@ -170,7 +170,7 @@ namespace JsonWebToken.Tests
                 Sender = BackchannelRequestToken
             };
             var policy = new TokenValidationPolicyBuilder()
-                    .RequireSignature("https://demo.identityserver.io/.well-known/openid-configuration/jwks", handler: httpHandler)
+                    .DefaultSignature("https://demo.identityserver.io/.well-known/openid-configuration/jwks", handler: httpHandler)
                     .Build();
 
             var token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjZiYmRjYTc4MGFmM2E2NzE2M2NhNzUzMTU0NWRhN2E5IiwidHlwIjoiSldUIn0.eyJuYmYiOjE1Mjc5NzMyNDIsImV4cCI6MTUyNzk3Njg0MiwiaXNzIjoiaHR0cHM6Ly9kZW1vLmlkZW50aXR5c2VydmVyLmlvIiwiYXVkIjpbImh0dHBzOi8vZGVtby5pZGVudGl0eXNlcnZlci5pby9yZXNvdXJjZXMiLCJhcGkiXSwiY2xpZW50X2lkIjoiY2xpZW50Iiwic2NvcGUiOlsiYXBpIl19.PFI6Fl8J6nlk3MyDwUemy6e4GjtyNoDabuQcUdOoQRGUjVAhv0UKqSOujg4Y_g23nPCGGMNOVNDiyK9StV4NdUrPemdShR6gykKd-FE1n7uHEwN6vsTDV_EeoF5ZdQsqEVo8zxfWoCIVP2Llj7TTwaoNpnhl9fkHvCc75XqYyF7SkiQAXGGGTExNh12kEI_Hb_rZvjJN2HCw1BsMx9-KFM69oFhT8ClAXeG3j3YsQ9ffjoZXV31S2Llzk-5Mf6BrR5CpCUHWWbfnEU21ko2NH7Y_aBJOwVAxyadj-89RR3-Ixpz3mUDxsZ4nmhLJDbrM9e1SRUq-oPmljIp53j-NXg";
@@ -191,7 +191,7 @@ namespace JsonWebToken.Tests
         public void ReadJwt_Malformed(string token)
         {
             var policy = new TokenValidationPolicyBuilder()
-                    .AcceptUnsecureToken()
+                    .AcceptUnsecureTokenByDefault()
                     .Build();
 
             var result = Jwt.TryParse(token, policy, out var jwt);
@@ -212,7 +212,7 @@ namespace JsonWebToken.Tests
         public void ReadJwt_CriticalHeader_Invalid(string token, TokenValidationStatus expected, bool headerCacheEnabled)
         {
             var policy = new TokenValidationPolicyBuilder()
-                    .AcceptUnsecureToken()
+                    .AcceptUnsecureTokenByDefault()
                     .AddCriticalHeaderHandler("exp", new TestCriticalHeaderHandler(true))
                     .AddCriticalHeaderHandler("invalid", new TestCriticalHeaderHandler(false));
             if (!headerCacheEnabled)
@@ -232,7 +232,7 @@ namespace JsonWebToken.Tests
         public void ReadJwt_CriticalHeader_Valid(string token, bool headerCacheEnabled)
         {
             var policy = new TokenValidationPolicyBuilder()
-                    .AcceptUnsecureToken()
+                    .AcceptUnsecureTokenByDefault()
                     .AddCriticalHeaderHandler("exp", new TestCriticalHeaderHandler(true))
                     .AddCriticalHeaderHandler("invalid", new TestCriticalHeaderHandler(false));
             if (!headerCacheEnabled)
@@ -251,7 +251,7 @@ namespace JsonWebToken.Tests
         public void Issue489_Valid(string token)
         {
             var policy = new TokenValidationPolicyBuilder()
-                .AcceptUnsecureToken()
+                .AcceptUnsecureTokenByDefault()
                 .EnableLifetimeValidation()
                 .Build();
 
@@ -268,7 +268,7 @@ namespace JsonWebToken.Tests
         public void Issue489_Invalid(string token, TokenValidationStatus status)
         {
             var policy = new TokenValidationPolicyBuilder()
-                .AcceptUnsecureToken()
+                .AcceptUnsecureTokenByDefault()
                 .EnableLifetimeValidation()
                 .Build();
 
@@ -288,7 +288,7 @@ namespace JsonWebToken.Tests
         public void Issue489_NoValidation_Valid(string token)
         {
             var policy = new TokenValidationPolicyBuilder()
-                .AcceptUnsecureToken()
+                .AcceptUnsecureTokenByDefault()
                 .Build();
 
             var result = Jwt.TryParse(token, policy, out var jwt);

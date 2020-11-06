@@ -41,12 +41,14 @@ namespace JsonWebToken
         /// Converts a <see cref="Jwks"/> to <see cref="StaticKeyProvider"/>.
         /// </summary>
         /// <param name="keys"></param>
-        public static implicit operator StaticKeyProvider(Jwks keys) => new StaticKeyProvider(keys);
+        public static implicit operator StaticKeyProvider(Jwks keys)
+            => new StaticKeyProvider(keys);
 
         /// <summary>
         /// Converts a <see cref="Jwk"/> to <see cref="StaticKeyProvider"/>.
         /// </summary>
         /// <param name="key"></param>
-        public static implicit operator StaticKeyProvider(Jwk key) => new StaticKeyProvider(new Jwks(key));
+        public static implicit operator StaticKeyProvider(Jwk key)
+            => new StaticKeyProvider(new Jwks(key));
     }
 }

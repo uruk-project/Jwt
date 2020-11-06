@@ -18,8 +18,8 @@ namespace JsonWebToken
             var retriever = new OpenIdConnectConfigurationRetriever();
             var config = retriever.GetConfiguration(metadataAddress, new HttpDocumentRetriever(), CancellationToken.None);
 
-            builder.RequireIssuer(config.Issuer);
-            return builder.RequireSignature(config.JwksUri);
+            builder.DefaultIssuer(config.Issuer);
+            return builder.DefaultSignature(config.JwksUri);
         }
     }
 }

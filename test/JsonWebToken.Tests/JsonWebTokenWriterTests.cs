@@ -44,7 +44,7 @@ namespace JsonWebToken.Tests
 
             var policy = new TokenValidationPolicyBuilder()
                 .WithDecryptionKeys(_keys.Jwks)
-                .IgnoreSignature()
+                .IgnoreSignatureByDefault()
                 .Build();
 
             var result = Jwt.TryParse(value, policy, out var jwt);
@@ -92,7 +92,7 @@ namespace JsonWebToken.Tests
 
             var policy = new TokenValidationPolicyBuilder()
                 .WithDecryptionKey(RsaKey)
-                .IgnoreSignature()
+                .IgnoreSignatureByDefault()
                 .Build();
 
             var result = Jwt.TryParse(value, policy, out var jwt);
@@ -116,7 +116,7 @@ namespace JsonWebToken.Tests
 
             var policy = new TokenValidationPolicyBuilder()
                 .WithDecryptionKey(RsaKey)
-                .IgnoreSignature()
+                .IgnoreSignatureByDefault()
                 .Build();
 
             var result = Jwt.TryParse(value, policy, out var jwt);
@@ -154,7 +154,7 @@ namespace JsonWebToken.Tests
 
             var policy = new TokenValidationPolicyBuilder()
                 .WithDecryptionKey(key)
-                .IgnoreSignature()
+                .IgnoreSignatureByDefault()
                 .Build();
 
             var result = Jwt.TryParse(value, policy, out var jwt);
@@ -191,7 +191,7 @@ namespace JsonWebToken.Tests
 
             var policy = new TokenValidationPolicyBuilder()
                .WithDecryptionKey(RsaKey)
-                .IgnoreSignature()
+                .IgnoreSignatureByDefault()
                .Build();
 
             var result = Jwt.TryParse(value, policy, out var jwt);

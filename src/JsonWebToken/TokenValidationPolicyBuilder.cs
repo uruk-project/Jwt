@@ -17,19 +17,20 @@ namespace JsonWebToken
         private const int DefaultMaximumTokenSizeInBytes = 1024 * 1024 * 2;
 
         private readonly Dictionary<string, ICriticalHeaderHandler> _criticalHeaderHandlers = new Dictionary<string, ICriticalHeaderHandler>();
+        private readonly Dictionary<string, SignatureValidationPolicy> _signaturePolicies = new Dictionary<string, SignatureValidationPolicy>();
         private readonly List<IValidator> _validators = new List<IValidator>();
+        private readonly List<byte[]> _audiences = new List<byte[]>();
+        private readonly List<byte[]> _issuers = new List<byte[]>();
         private int _maximumTokenSizeInBytes = DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
-        private SignatureValidationPolicy? _signatureValidation = SignatureValidationPolicy.IgnoreSignature;
+        private SignatureValidationPolicy _defaultSignaturePolicy = SignatureValidationPolicy.IgnoreSignature;
         private bool _ignoreCriticalHeader = false;
         private bool _ignoreNestedToken;
 
         private byte _control;
-        private byte[]? _issuer;
         private int _clockSkew;
         private IKeyProvider[]? _decryptionKeysProviders;
         private bool _headerCacheDisabled;
-        private readonly List<byte[]> _audiences = new List<byte[]>();
 
         /// <summary>
         /// Clear the defined policies.
@@ -39,7 +40,8 @@ namespace JsonWebToken
         {
             _validators.Clear();
             _criticalHeaderHandlers.Clear();
-            _signatureValidation = SignatureValidationPolicy.IgnoreSignature;
+            _defaultSignaturePolicy = SignatureValidationPolicy.IgnoreSignature;
+            _signaturePolicies.Clear();
             _maximumTokenSizeInBytes = DefaultMaximumTokenSizeInBytes;
             _hasSignatureValidation = false;
             _ignoreNestedToken = false;
@@ -85,114 +87,273 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Ignores the signature validation.
+        /// Configure the <see cref="TokenValidationPolicy"/> based on the <paramref name="metadataUrl"/> as defined by https://tools.ietf.org/html/rfc8414 and https://openid.net/specs/openid-connect-discovery-1_0.html.
+        /// The <paramref name="issuer"/> must be a valid URL.
         /// </summary>
+        /// <param name="issuer"></param>
+        /// <param name="metadataUrl"></param>
+        /// <param name="defaultAlgorithm"></param>
+        /// <param name="handler"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder IgnoreSignature()
+        public TokenValidationPolicyBuilder RequireMetadataConfiguration(string issuer, SignatureAlgorithm defaultAlgorithm, string metadataUrl = "/.well-known/oauth-authorization-server",  HttpMessageHandler? handler = null)
         {
+            metadataUrl = issuer + metadataUrl;
+            if (!Uri.IsWellFormedUriString(metadataUrl, UriKind.Absolute))
+            {
+                throw new InvalidOperationException($"'{metadataUrl}' is not a valid URL.");
+            }
+
+            return RequireIssuer(issuer, new JwksKeyProvider(metadataUrl, handler, MetadataRetrievalBehavior.FromMetadataUrl), defaultAlgorithm);
+        }
+
+        /// <summary>
+        /// Configure the signature behavior for a specific <paramref name="issuer"/>.
+        /// </summary>
+        /// <param name="issuer"></param>
+        /// <param name="jwksUrl"></param>
+        /// <param name="defaultAlgorithm"></param>
+        /// <param name="handler"></param>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder RequireIssuer(string issuer, string jwksUrl, SignatureAlgorithm defaultAlgorithm, HttpMessageHandler? handler = null)
+            => RequireIssuer(issuer, new JwksKeyProvider(jwksUrl, handler, MetadataRetrievalBehavior.FromJwksUrl), defaultAlgorithm);
+
+        /// <summary>
+        /// Configure the signature behavior for a specific <paramref name="issuer"/>.
+        /// </summary>
+        /// <param name="issuer"></param>
+        /// <param name="key"></param>
+        /// <param name="defaultAlgorithm"></param>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder RequireIssuer(string issuer, Jwk key, SignatureAlgorithm defaultAlgorithm)
+        {
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (key.SignatureAlgorithm is null && defaultAlgorithm is null)
+            {
+                throw new InvalidOperationException($"The key does not define an 'alg' parameter, and the parameter {nameof(defaultAlgorithm)} is undefined. At least one algorithm must be defined.");
+            }
+
+            return RequireIssuer(issuer, new Jwks(key), defaultAlgorithm);
+        }
+
+        /// <summary>
+        /// Configure the signature behavior for a specific <paramref name="issuer"/>.
+        /// </summary>
+        /// <param name="issuer"></param>
+        /// <param name="keys"></param>
+        /// <param name="defaultAlgorithm"></param>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder RequireIssuer(string issuer, Jwks keys, SignatureAlgorithm defaultAlgorithm)
+        {
+            if (keys is null)
+            {
+                throw new ArgumentNullException(nameof(keys));
+            }
+
+            return RequireIssuer(issuer, new StaticKeyProvider(keys), defaultAlgorithm);
+        }
+
+        /// <summary>
+        /// Configure the signature behavior for a specific <paramref name="issuer"/>.
+        /// </summary>
+        /// <param name="issuer"></param>
+        /// <param name="keys"></param>
+        /// <param name="defaultAlgorithm"></param>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder RequireIssuer(string issuer, IList<Jwk> keys, SignatureAlgorithm defaultAlgorithm)
+            => RequireIssuer(issuer, new Jwks(keys), defaultAlgorithm);
+
+        /// <summary>
+        /// Configure the signature behavior for a specific <paramref name="issuer"/>.
+        /// </summary>
+        /// <param name="issuer"></param>
+        /// <param name="keyProvider"></param>
+        /// <param name="defaultAlgorithm"></param>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder RequireIssuer(string issuer, IKeyProvider keyProvider, SignatureAlgorithm defaultAlgorithm)
+        {
+            if (issuer is null)
+            {
+                throw new ArgumentNullException(nameof(issuer));
+            }
+
+            if (keyProvider is null)
+            {
+                throw new ArgumentNullException(nameof(keyProvider));
+            }
+
+            if (defaultAlgorithm is null)
+            {
+                throw new ArgumentNullException(nameof(defaultAlgorithm));
+            }
+
+            if (defaultAlgorithm == SignatureAlgorithm.None)
+            {
+                throw new ArgumentException($"The algorithm 'none' is not valid with the method {nameof(RequireIssuer)}. Use the method {nameof(AcceptUnsecureToken)} instead.", nameof(defaultAlgorithm));
+            }
+
             _hasSignatureValidation = true;
-            _signatureValidation = SignatureValidationPolicy.IgnoreSignature;
+            var policy = SignatureValidationPolicy.Create(keyProvider, defaultAlgorithm);
+            _signaturePolicies.Add(issuer, policy);
             return this;
         }
 
         /// <summary>
-        /// Accepts secure token with the 'none' algorithm.
+        /// Ignores the signature validation. You should use this very carefully.
         /// </summary>
+        /// <param name="issuer"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder AcceptUnsecureToken()
+        public TokenValidationPolicyBuilder IgnoreSignature(string issuer)
         {
+            if (issuer is null)
+            {
+                throw new ArgumentNullException(nameof(issuer));
+            }
+
             _hasSignatureValidation = true;
-            _signatureValidation = SignatureValidationPolicy.NoSignature;
+            _signaturePolicies.Add(issuer, SignatureValidationPolicy.IgnoreSignature);
             return this;
         }
 
         /// <summary>
-        /// Requires a valid signature.
+        /// Ignores the signature validation if no configuration is found for a specific issuer. You should use this very carefully.
+        /// </summary>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder IgnoreSignatureByDefault()
+        {
+            _hasSignatureValidation = true;
+            _defaultSignaturePolicy = SignatureValidationPolicy.IgnoreSignature;
+            return this;
+        }
+
+        /// <summary>
+        /// Accepts secure token with the 'none' algorithm. You should use this very carefully.
+        /// </summary>
+        /// <param name="issuer"></param>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder AcceptUnsecureToken(string issuer)
+        {
+            if (issuer is null)
+            {
+                throw new ArgumentNullException(nameof(issuer));
+            }
+
+            _hasSignatureValidation = true;
+            _signaturePolicies.Add(issuer, SignatureValidationPolicy.NoSignature);
+            return this;
+        }
+
+        /// <summary>
+        /// Accepts secure token with the 'none' algorithm. You should use this very carefully.
+        /// </summary>
+        /// <returns></returns>
+        public TokenValidationPolicyBuilder AcceptUnsecureTokenByDefault()
+        {
+            _hasSignatureValidation = true;
+            _defaultSignaturePolicy = SignatureValidationPolicy.NoSignature;
+            return this;
+        }
+
+        /// <summary>
+        /// Defines the default signature validation when there is no issuer configuration.
+        /// Use the method <see cref="RequireIssuer(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
         /// </summary>
         /// <param name="keyProvider"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider, SignatureAlgorithm? algorithm)
+        public TokenValidationPolicyBuilder DefaultSignature(IKeyProvider keyProvider, SignatureAlgorithm? algorithm)
         {
             _hasSignatureValidation = true;
-            _signatureValidation = SignatureValidationPolicy.Create(keyProvider, algorithm);
+            _defaultSignaturePolicy = SignatureValidationPolicy.Create(keyProvider, algorithm);
             return this;
         }
 
         /// <summary>
-        /// Requires a valid signature.
+        /// Defines the default signature validation when there is no issuer configuration.
+        /// Use the method <see cref="RequireIssuer(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
         /// </summary>
         /// <param name="keyProvider"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(IKeyProvider keyProvider)
-            => RequireSignature(keyProvider, null);
+        public TokenValidationPolicyBuilder DefaultSignature(IKeyProvider keyProvider)
+            => DefaultSignature(keyProvider, null);
 
         /// <summary>
-        /// Requires a valid signature.
+        /// Defines the default signature validation when there is no issuer configuration.
+        /// Use the method <see cref="RequireIssuer(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
         /// </summary>
         /// <param name="jwksUrl"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl) => RequireSignature(jwksUrl, null, null);
+        public TokenValidationPolicyBuilder DefaultSignature(string jwksUrl)
+            => DefaultSignature(jwksUrl, null, null);
 
         /// <summary>
-        /// Requires a valid signature.
+        /// Defines the default signature validation when there is no issuer configuration.
+        /// Use the method <see cref="RequireIssuer(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
         /// </summary>
         /// <param name="jwksUrl"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl, SignatureAlgorithm algorithm)
-            => RequireSignature(jwksUrl, algorithm, null);
+        public TokenValidationPolicyBuilder DefaultSignature(string jwksUrl, SignatureAlgorithm algorithm)
+            => DefaultSignature(jwksUrl, algorithm, null);
 
         /// <summary>
-        /// Requires a valid signature.
+        /// Defines the default signature validation when there is no issuer configuration.
+        /// Use the method <see cref="RequireIssuer(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
         /// </summary>
         /// <param name="jwksUrl"></param>
         /// <param name="handler"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl, HttpMessageHandler handler)
-            => RequireSignature(jwksUrl, null, handler);
+        public TokenValidationPolicyBuilder DefaultSignature(string jwksUrl, HttpMessageHandler handler)
+            => DefaultSignature(jwksUrl, null, handler);
 
         /// <summary>
-        /// Requires a valid signature.
+        /// Defines the default signature validation when there is no issuer configuration.
+        /// Use the method <see cref="RequireIssuer(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
         /// </summary>
         /// <param name="jwksUrl"></param>
         /// <param name="algorithm"></param>
         /// <param name="handler"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(string jwksUrl, SignatureAlgorithm? algorithm, HttpMessageHandler? handler)
-            => RequireSignature(new JwksKeyProvider(jwksUrl, handler), algorithm);
+        public TokenValidationPolicyBuilder DefaultSignature(string jwksUrl, SignatureAlgorithm? algorithm, HttpMessageHandler? handler)
+            => DefaultSignature(new JwksKeyProvider(jwksUrl, handler), algorithm);
 
         /// <summary>
-        /// Requires a valid signature.
+        /// Defines the default signature validation when there is no issuer configuration.
+        /// Use the method <see cref="RequireIssuer(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(Jwk key)
+        public TokenValidationPolicyBuilder DefaultSignature(Jwk key)
         {
             if (key.SignatureAlgorithm == null)
             {
                 throw new InvalidOperationException($"The key does not define an 'alg' parameter. Use the method {nameof(RequireSignature)} with a {nameof(Jwk)} and a {nameof(SignatureAlgorithm)}.");
             }
 
-            return RequireSignature(key, (SignatureAlgorithm?)null);
+            return DefaultSignature(key, (SignatureAlgorithm?)null);
         }
 
         /// <summary>
-        /// Requires a valid signature.
+        /// Defines the default signature validation when there is no issuer configuration.
+        /// Use the method <see cref="RequireIssuer(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
         /// </summary>
         /// <param name="key"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(Jwk key, SignatureAlgorithm? algorithm) 
-            => RequireSignature(new Jwks(key), algorithm);
+        public TokenValidationPolicyBuilder DefaultSignature(Jwk key, SignatureAlgorithm? algorithm)
+            => DefaultSignature(new Jwks(key), algorithm);
 
         /// <summary>
-        /// Requires a valid signature.
+        /// Defines the default signature validation when there is no issuer configuration.
+        /// Use the method <see cref="RequireIssuer(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
         /// </summary>
         /// <param name="key"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(Jwk key, string? algorithm)
+        public TokenValidationPolicyBuilder DefaultSignature(Jwk key, string? algorithm)
         {
             if (algorithm is null)
             {
@@ -204,62 +365,46 @@ namespace JsonWebToken
                 throw new NotSupportedException($"The algorithm '{alg}' is not supported.");
             }
 
-            return RequireSignature(new Jwks(key), alg);
+            return DefaultSignature(new Jwks(key), alg);
         }
 
         /// <summary>
-        /// Requires a valid signature.
+        /// Defines the default signature validation when there is no issuer configuration.
+        /// Use the method <see cref="RequireIssuer(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
         /// </summary>
         /// <param name="keys"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(IList<Jwk> keys) => RequireSignature(keys, null);
+        public TokenValidationPolicyBuilder DefaultSignature(IList<Jwk> keys)
+            => RequireSignature(keys, null);
 
         /// <summary>
-        /// Requires a valid signature.
+        /// Defines the default signature validation when there is no issuer configuration.
+        /// Use the method <see cref="RequireIssuer(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
         /// </summary>
         /// <param name="keys"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(IList<Jwk> keys, SignatureAlgorithm? algorithm) => RequireSignature(new Jwks(keys), algorithm);
+        public TokenValidationPolicyBuilder RequireSignature(IList<Jwk> keys, SignatureAlgorithm? algorithm)
+            => DefaultSignature(new Jwks(keys), algorithm);
 
         /// <summary>
-        /// Requires a valid signature.
+        /// Defines the default signature validation when there is no issuer configuration.
+        /// Use the method <see cref="RequireIssuer(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
         /// </summary>
         /// <param name="keySet"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(Jwks keySet) => RequireSignature(keySet, null);
+        public TokenValidationPolicyBuilder DefaultSignature(Jwks keySet)
+            => DefaultSignature(keySet, null);
 
         /// <summary>
-        /// Requires a valid signature.
+        /// Defines the default signature validation when there is no issuer configuration.
+        /// Use the method <see cref="RequireIssuer(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
         /// </summary>
         /// <param name="keySet"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(Jwks keySet, SignatureAlgorithm? algorithm)
-            => RequireSignature(new StaticKeyProvider(keySet), algorithm);
-
-        /// <summary>
-        /// Requires a valid signature.
-        /// </summary>
-        /// <param name="keyProviders"></param>
-        /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(IEnumerable<IKeyProvider> keyProviders) => RequireSignature(keyProviders, null);
-
-        /// <summary>
-        /// Requires a valid signature.
-        /// </summary>
-        /// <param name="keyProviders"></param>
-        /// <param name="algorithm"></param>
-        /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(IEnumerable<IKeyProvider> keyProviders, SignatureAlgorithm? algorithm)
-        {
-            foreach (var keyProvider in keyProviders)
-            {
-                RequireSignature(keyProvider, algorithm);
-            }
-
-            return this;
-        }
+        public TokenValidationPolicyBuilder DefaultSignature(Jwks keySet, SignatureAlgorithm? algorithm)
+            => DefaultSignature(new StaticKeyProvider(keySet), algorithm);
 
         /// <summary>
         /// Requires the specified claim.
@@ -267,9 +412,7 @@ namespace JsonWebToken
         /// <param name="requiredClaim"></param>
         /// <returns></returns>
         public TokenValidationPolicyBuilder RequireClaim(string requiredClaim)
-        {
-            return AddValidator(new RequiredClaimValidator(requiredClaim));
-        }
+            => AddValidator(new RequiredClaimValidator(requiredClaim));
 
         /// <summary>
         /// Requires the specified claim.
@@ -277,15 +420,13 @@ namespace JsonWebToken
         /// <param name="requiredClaim"></param>
         /// <returns></returns>
         public TokenValidationPolicyBuilder RequireClaim(ReadOnlySpan<byte> requiredClaim)
-        {
-            return RequireClaim(Utf8.GetString(requiredClaim));
-        }
+            => RequireClaim(Utf8.GetString(requiredClaim));
 
         /// <summary>
-        /// Adds lifetime validation.
+        /// Enables lifetime validation. 
         /// </summary>
-        /// <param name="requireExpirationTime"></param>
-        /// <param name="clockSkew"></param>
+        /// <param name="requireExpirationTime">Defines whether the 'exp' claim must be present.</param>
+        /// <param name="clockSkew">Defines the time span in seconds to apply.</param>
         /// <returns></returns>
         public TokenValidationPolicyBuilder EnableLifetimeValidation(bool requireExpirationTime = true, int clockSkew = 300)
         {
@@ -322,7 +463,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Requires an audience contained in the <paramref name="audiences"/>.
+        /// Requires a least one audience contained in the <paramref name="audiences"/>.
         /// </summary>
         /// <param name="audiences"></param>
         /// <returns></returns>
@@ -346,18 +487,18 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Requires a specific issuer.
+        /// Requires a specific issuer. This value is used if no issuer is defined by the method <see cref="RequireIssuer(string, IKeyProvider, SignatureAlgorithm?)"/>.
         /// </summary>
         /// <param name="issuer"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireIssuer(string issuer)
+        public TokenValidationPolicyBuilder DefaultIssuer(string issuer)
         {
             if (string.IsNullOrEmpty(issuer))
             {
                 throw new ArgumentNullException(nameof(issuer));
             }
 
-            _issuer = Utf8.GetBytes(issuer);
+            _issuers.Add(Utf8.GetBytes(issuer));
             _control |= TokenValidationPolicy.IssuerFlag;
             return this;
         }
@@ -391,7 +532,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Ignore the 'crit' header if present.
+        /// Ignore the 'crit' header if present. <seealso cref="AddCriticalHeaderHandler(string, ICriticalHeaderHandler)"/>
         /// </summary>
         /// <returns></returns>
         public TokenValidationPolicyBuilder IgnoreCriticalHeader()
@@ -417,7 +558,7 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Ignores the nested token. If present like a JWE containing a nested JWS, the nested token will be leaved as uncompress and decrypted binary data.
+        /// Ignores the nested token. If a JWE contains a nested JWS, the nested token will be leaved as uncompress and decrypted binary data.
         /// </summary>
         /// <returns></returns>
         public TokenValidationPolicyBuilder IgnoreNestedToken()
@@ -495,6 +636,16 @@ namespace JsonWebToken
         {
             Validate();
 
+            SignatureValidationPolicy signaturePolicy;
+            if (_signaturePolicies.Count == 0)
+            {
+                signaturePolicy = _defaultSignaturePolicy;
+            }
+            else
+            {
+                signaturePolicy = SignatureValidationPolicy.Create(_signaturePolicies, _defaultSignaturePolicy);
+            }
+
             var policy = new TokenValidationPolicy(
                 validators: _validators.ToArray(),
                 criticalHandlers: _criticalHeaderHandlers,
@@ -502,9 +653,9 @@ namespace JsonWebToken
                 ignoreCriticalHeader: _ignoreCriticalHeader,
                 ignoreNestedToken: _ignoreNestedToken,
                 headerCacheDisabled: _headerCacheDisabled,
-                signatureValidation: _signatureValidation,
+                signaturePolicy: signaturePolicy,
                 encryptionKeyProviders: _decryptionKeysProviders,
-                issuer: _issuer,
+                issuers: _issuers.ToArray(),
                 audiences: _audiences.ToArray(),
                 clockSkew: _clockSkew,
                 control: _control);
@@ -516,18 +667,16 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="builder"></param>
         public static implicit operator TokenValidationPolicy?(TokenValidationPolicyBuilder builder)
-        {
-            return builder?.Build();
-        }
+            => builder?.Build();
 
         private sealed class EmptyKeyProvider : IKeyProvider
         {
             private static readonly Jwk[] Empty = Array.Empty<Jwk>();
 
             public Jwk[] GetKeys(JwtHeaderDocument header)
-            {
-                return Empty;
-            }
+                => Empty;
+
+            public string Issuer => string.Empty;
         }
     }
 }

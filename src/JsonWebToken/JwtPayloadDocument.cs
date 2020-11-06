@@ -195,13 +195,15 @@ namespace JsonWebToken
         {
             if (policy.RequireIssuer)
             {
-                if (reader.ValueTextEquals(policy.RequiredIssuerBinary))
+                validationControl &= unchecked((byte)~JwtPayload.MissingIssuerFlag);
+                var issuerBinary = policy.RequiredIssuersBinary;
+                for (int i = 0; i < issuerBinary.Length; i++)
                 {
-                    validationControl &= unchecked((byte)~TokenValidationPolicy.IssuerFlag);
-                }
-                else
-                {
-                    validationControl &= unchecked((byte)~JwtPayload.MissingIssuerFlag);
+                    if (reader.ValueTextEquals(issuerBinary[i]))
+                    {
+                        validationControl &= unchecked((byte)~TokenValidationPolicy.IssuerFlag);
+                        break;
+                    }
                 }
             }
         }

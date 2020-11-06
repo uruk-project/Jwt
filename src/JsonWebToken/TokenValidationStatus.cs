@@ -11,7 +11,7 @@ namespace JsonWebToken
         /// <summary>
         /// The token is valid.
         /// </summary>
-        Success = 0x00000000,
+        NoError = 0x00000000,
 
         /// <summary>
         /// A key error-related occurred.

@@ -13,7 +13,7 @@ namespace JsonWebToken.Tests
         public void Fuzz(string value)
         {
             var policy = new TokenValidationPolicyBuilder()
-                            .IgnoreSignature()
+                            .IgnoreSignatureByDefault()
                             .WithDecryptionKey(key)
                             .Build();
             var parsed = Jwt.TryParse(value, policy, out var jwt);

@@ -14,7 +14,7 @@ namespace JsonWebToken
     {
         private static readonly TokenValidationResult _success = new TokenValidationResult
         {
-            Status = TokenValidationStatus.Success,
+            Status = TokenValidationStatus.NoError,
         };
         private static readonly TokenValidationResult _decryptionFailed = new TokenValidationResult
         {
@@ -53,7 +53,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets whether the token validation is successful.
         /// </summary>
-        public bool Succedeed => Status == TokenValidationStatus.Success;
+        public bool Succedeed => Status == TokenValidationStatus.NoError;
 
         /// <summary>
         /// Gets of set the <see cref="Jwt"/>.
@@ -205,7 +205,7 @@ namespace JsonWebToken
         {
             return new TokenValidationResult
             {
-                Status = TokenValidationStatus.Success,
+                Status = TokenValidationStatus.NoError,
                 Token = jwtToken
             };
         }
@@ -363,7 +363,7 @@ namespace JsonWebToken
     /// </summary>
     public sealed class TokenValidationError
     {
-        private static readonly TokenValidationError _noError = new TokenValidationError(TokenValidationStatus.Success);
+        private static readonly TokenValidationError _noError = new TokenValidationError(TokenValidationStatus.NoError);
         private static readonly TokenValidationError _decryptionFailed = new TokenValidationError(TokenValidationStatus.DecryptionFailed);
         private static readonly TokenValidationError _malformedToken = new TokenValidationError(TokenValidationStatus.MalformedToken);
         private static readonly TokenValidationError _missingEncryptionAlgorithm = new TokenValidationError(TokenValidationStatus.MissingEncryptionAlgorithm);

@@ -100,21 +100,21 @@ namespace JsonWebToken
             {
                 if (key.Length == 3)
                 {
-                    switch (IntegerMarshal.ReadUInt24(key))
+                    switch ((JwtClaims)IntegerMarshal.ReadUInt24(key))
                     {
-                        case JwtPayloadParser.Aud:
+                        case JwtClaims.Aud:
                             return _aud;
-                        case JwtPayloadParser.Iss:
+                        case JwtClaims.Iss:
                             return _iss;
-                        case JwtPayloadParser.Jti:
+                        case JwtClaims.Jti:
                             return _jti;
-                        case JwtPayloadParser.Exp:
+                        case JwtClaims.Exp:
                             return _exp;
-                        case JwtPayloadParser.Iat:
+                        case JwtClaims.Iat:
                             return _iat;
-                        case JwtPayloadParser.Nbf:
+                        case JwtClaims.Nbf:
                             return _nbf;
-                        case JwtPayloadParser.Sub:
+                        case JwtClaims.Sub:
                             return _sub;
                     }
                 }
@@ -246,21 +246,21 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool ContainsKey(ReadOnlySpan<byte> key)
         {
-            switch (IntegerMarshal.ReadUInt24(key))
+            switch ((JwtClaims)IntegerMarshal.ReadUInt24(key))
             {
-                case JwtPayloadParser.Aud:
+                case JwtClaims.Aud:
                     return !(_aud is null);
-                case JwtPayloadParser.Iss:
+                case JwtClaims.Iss:
                     return !(_iss is null);
-                case JwtPayloadParser.Jti:
+                case JwtClaims.Jti:
                     return !(_jti is null);
-                case JwtPayloadParser.Exp:
+                case JwtClaims.Exp:
                     return _exp.HasValue;
-                case JwtPayloadParser.Iat:
+                case JwtClaims.Iat:
                     return _iat.HasValue;
-                case JwtPayloadParser.Nbf:
+                case JwtClaims.Nbf:
                     return _nbf.HasValue;
-                case JwtPayloadParser.Sub:
+                case JwtClaims.Sub:
                     return !(_sub is null);
             }
 
@@ -279,51 +279,51 @@ namespace JsonWebToken
         {
             if (key.Length == 3)
             {
-                switch (IntegerMarshal.ReadUInt24(key))
+                switch ((JwtClaims)IntegerMarshal.ReadUInt24(key))
                 {
-                    case JwtPayloadParser.Aud:
+                    case JwtClaims.Aud:
                         if (!(_aud is null))
                         {
                             value = new JwtProperty(WellKnownProperty.Aud, new JwtArray(new List<string>(_aud)));
                             return true;
                         }
                         break;
-                    case JwtPayloadParser.Iss:
+                    case JwtClaims.Iss:
                         if (!(_iss is null))
                         {
                             value = new JwtProperty(WellKnownProperty.Iss, _iss);
                             return true;
                         }
                         break;
-                    case JwtPayloadParser.Jti:
+                    case JwtClaims.Jti:
                         if (!(_jti is null))
                         {
                             value = new JwtProperty(WellKnownProperty.Jti, _jti);
                             return true;
                         }
                         break;
-                    case JwtPayloadParser.Exp:
+                    case JwtClaims.Exp:
                         if (_exp.HasValue)
                         {
                             value = new JwtProperty(WellKnownProperty.Exp, _exp.Value);
                             return true;
                         }
                         break;
-                    case JwtPayloadParser.Iat:
+                    case JwtClaims.Iat:
                         if (_iat.HasValue)
                         {
                             value = new JwtProperty(WellKnownProperty.Iat, _iat.Value);
                             return true;
                         }
                         break;
-                    case JwtPayloadParser.Nbf:
+                    case JwtClaims.Nbf:
                         if (_nbf.HasValue)
                         {
                             value = new JwtProperty(WellKnownProperty.Nbf, _nbf.Value);
                             return true;
                         }
                         break;
-                    case JwtPayloadParser.Sub:
+                    case JwtClaims.Sub:
                         if (!(_sub is null))
                         {
                             value = new JwtProperty(WellKnownProperty.Sub, _sub);

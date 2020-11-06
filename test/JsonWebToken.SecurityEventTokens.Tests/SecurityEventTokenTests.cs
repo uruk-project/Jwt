@@ -74,7 +74,7 @@ namespace JsonWebToken.Tests
         public void Read()
         {
             var policy = new TokenValidationPolicyBuilder()
-                                .AcceptUnsecureToken()
+                                .AcceptUnsecureTokenByDefault()
                                 .RequireSecurityEventToken()
                                 .WithDecryptionKeys(_keys.Jwks)
                                 .Build();

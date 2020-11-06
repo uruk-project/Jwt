@@ -10,7 +10,7 @@ namespace JsonWebToken
     /// </summary>
     public class SignatureValidationResult
     {
-        private static readonly SignatureValidationResult _success = new SignatureValidationResult(TokenValidationStatus.Success);
+        private static readonly SignatureValidationResult _success = new SignatureValidationResult(TokenValidationStatus.NoError);
         private static readonly SignatureValidationResult _invalidSignature = new SignatureValidationResult(TokenValidationStatus.InvalidSignature);
         private static readonly SignatureValidationResult _missingSignature = new SignatureValidationResult(TokenValidationStatus.MissingSignature);
         private static readonly SignatureValidationResult _signatureKeyNotFound = new SignatureValidationResult(TokenValidationStatus.SignatureKeyNotFound);
@@ -46,7 +46,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets whether the token validation is successful.
         /// </summary>
-        public bool Succedeed => Status == TokenValidationStatus.Success;
+        public bool Succedeed => Status == TokenValidationStatus.NoError;
 
         /// <summary>
         /// Gets the status of the validation.
@@ -73,7 +73,7 @@ namespace JsonWebToken
         /// The signature is valid.
         /// </summary>
         public static SignatureValidationResult Success(Jwk key)
-            => new SignatureValidationResult(TokenValidationStatus.Success, key);
+            => new SignatureValidationResult(TokenValidationStatus.NoError, key);
 
         /// <summary>
         /// The signature is invalid.

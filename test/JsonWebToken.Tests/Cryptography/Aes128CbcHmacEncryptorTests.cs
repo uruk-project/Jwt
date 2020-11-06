@@ -141,7 +141,7 @@ namespace JsonWebToken.Tests
 
             var policy = new TokenValidationPolicyBuilder()
                 .WithDecryptionKey(encryptionKey)
-                .IgnoreSignature()
+                .IgnoreSignatureByDefault()
                 .Build();
 
             var result = Jwt.TryParse(token, policy, out var jwt);

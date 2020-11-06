@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace JsonWebToken
     /// Contains a collection of <see cref="Jwk"/>.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
-    public sealed class Jwks : IDisposable
+    public sealed class Jwks : IDisposable, IEnumerable<Jwk>
     {
         private const uint keys = 1937335659u;
         private readonly List<Jwk> _keys = new List<Jwk>();
@@ -329,6 +330,16 @@ namespace JsonWebToken
             {
                 keys[i].Dispose();
             }
+        }
+
+        public IEnumerator<Jwk> GetEnumerator()
+        {
+            return ((IEnumerable<Jwk>)_keys).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)_keys).GetEnumerator();
         }
     }
 }

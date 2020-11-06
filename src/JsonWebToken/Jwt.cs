@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -319,17 +317,7 @@ namespace JsonWebToken
             TokenSegment payloadSegment = Unsafe.Add(ref segments, 1);
             TokenSegment signatureSegment = Unsafe.Add(ref segments, 2);
             var rawPayload = utf8Token.Slice(payloadSegment.Start, payloadSegment.Length);
-            var result = policy.TryValidateSignature(
-                header,
-                utf8Token.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1),
-                utf8Token.Slice(signatureSegment.Start, signatureSegment.Length));
-
-            if (!result.Succedeed)
-            {
-                jwt = new Jwt(TokenValidationError.SignatureValidationFailed(result));
-                goto ExitFalse;
-            }
-
+ 
             int jsonBufferLength = Base64Url.GetArraySizeRequiredToDecode(payloadSegment.Length);
             byte[] jsonBuffer = ArrayPool<byte>.Shared.Rent(jsonBufferLength);
 
@@ -345,6 +333,18 @@ namespace JsonWebToken
                 {
                     jwt = new Jwt(error);
                     goto ExitFalseClearBuffer;
+                }
+
+                var signatureResult = policy.TryValidateSignature(
+                    header,
+                    payload,
+                    utf8Token.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1),
+                    utf8Token.Slice(signatureSegment.Start, signatureSegment.Length));
+
+                if (!signatureResult.Succedeed)
+                {
+                    jwt = new Jwt(TokenValidationError.SignatureValidationFailed(signatureResult));
+                    goto ExitFalse;
                 }
 
                 if (!policy.TryValidateJwt(header, payload, out error))

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -31,7 +30,7 @@ namespace JsonWebToken
         /// Represents an policy without any validation. Do not use it without consideration.
         /// </summary>
         public static readonly TokenValidationPolicy NoValidation = new TokenValidationPolicyBuilder()
-                                                            .IgnoreSignature()
+                                                            .IgnoreSignatureByDefault()
                                                             .IgnoreCriticalHeader()
                                                             .Build();
 
@@ -47,16 +46,16 @@ namespace JsonWebToken
             bool ignoreCriticalHeader,
             bool ignoreNestedToken,
             bool headerCacheDisabled,
-            SignatureValidationPolicy? signatureValidation,
+            SignatureValidationPolicy? signaturePolicy,
             IKeyProvider[]? encryptionKeyProviders,
-            byte[]? issuer,
+            byte[][] issuers,
             byte[][] audiences,
             int clockSkew,
             byte control)
         {
             _validators = validators ?? throw new ArgumentNullException(nameof(validators));
             _criticalHandlers = criticalHandlers ?? throw new ArgumentNullException(nameof(criticalHandlers));
-            SignatureValidationPolicy = signatureValidation ?? throw new ArgumentNullException(nameof(signatureValidation));
+            SignatureValidationPolicy = signaturePolicy ?? throw new ArgumentNullException(nameof(signaturePolicy));
             DecryptionKeyProviders = encryptionKeyProviders ?? Array.Empty<IKeyProvider>();
             _ignoreCriticalHeader = ignoreCriticalHeader;
             IgnoreNestedToken = ignoreNestedToken;
@@ -64,13 +63,10 @@ namespace JsonWebToken
             ClockSkew = clockSkew;
             _control = control;
             RequiredAudiencesBinary = audiences;
-            RequiredAudiences = audiences.Select(a => Encoding.UTF8.GetString(a)).ToArray();
+            RequiredAudiences = audiences.Select(a => Utf8.GetString(a)).ToArray();
+            RequiredIssuersBinary = issuers;
+            RequiredIssuers = issuers.Select(i => Utf8.GetString(i)).ToArray();
             HeaderCache = headerCacheDisabled ? _disabledJwtHeaderCache : new LruJwtHeaderCache();
-            if (issuer != null)
-            {
-                RequiredIssuerBinary = issuer;
-                RequiredIssuer = Encoding.UTF8.GetString(issuer);
-            }
         }
 
         /// <summary>
@@ -94,14 +90,14 @@ namespace JsonWebToken
         public bool RequireIssuer => (Control & IssuerFlag) == IssuerFlag;
 
         /// <summary>
-        /// Gets the required issuer, in UTF8 binary format.
+        /// Gets the required issuers, in UTF8 binary format. At least one issuer of this list is required.
         /// </summary>
-        internal byte[]? RequiredIssuerBinary { get; }
+        public byte[][] RequiredIssuersBinary { get; }
 
         /// <summary>
-        /// Gets the required issuer.
+        /// Gets the required issuers.
         /// </summary>
-        public string? RequiredIssuer { get; }
+        public string[] RequiredIssuers { get; }
 
         /// <summary>
         /// Gets whether the audience 'aud' is required.
@@ -111,7 +107,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the required audience array, in UTF8 binary format. At least one audience of this list is required.
         /// </summary>
-        public byte[][] RequiredAudiencesBinary { get; }
+        internal byte[][] RequiredAudiencesBinary { get; }
 
         /// <summary>
         /// Gets the required issuer.
@@ -289,12 +285,13 @@ namespace JsonWebToken
         /// Try to validate the token signature.
         /// </summary>
         /// <param name="header"></param>
+        /// <param name="payload"></param>
         /// <param name="contentBytes"></param>
         /// <param name="signatureSegment"></param>
         /// <returns></returns>
-        public SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
+        public SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
         {
-            return SignatureValidationPolicy.TryValidateSignature(header, contentBytes, signatureSegment);
+            return SignatureValidationPolicy.TryValidateSignature(header, payload, contentBytes, signatureSegment);
         }
 
         private class DisabledJwtHeaderCache : IJwtHeaderCache

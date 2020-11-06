@@ -97,9 +97,11 @@ namespace JsonWebToken
             WriteToken(descriptor, bufferWriter);
             return Utf8.GetString(bufferWriter.WrittenSpan);
         }
-    }  /// <summary>
-       /// Writes a JWT.
-       /// </summary>
+    }
+
+    /// <summary>
+    /// Writes a JWT.
+    /// </summary>
     public sealed class JwtWriterX
     {
         private readonly JsonHeaderCache _headerCache = new JsonHeaderCache();
