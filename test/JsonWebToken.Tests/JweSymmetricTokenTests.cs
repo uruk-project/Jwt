@@ -6,17 +6,17 @@ namespace JsonWebToken.Tests
 {
     public class JweSymmetricTokenTests
     {
-        private readonly SymmetricJwk _symmetric128Key = new SymmetricJwk("LxOcGxlu169Vxa1A7HyelQ");
+        private readonly SymmetricJwk _symmetric128Key = SymmetricJwk.FromBase64Url("LxOcGxlu169Vxa1A7HyelQ");
 
-        private readonly SymmetricJwk _symmetric192Key = new SymmetricJwk("kVdKe3BiLcrc7LujDzaD-3EdZCVTStnc");
+        private readonly SymmetricJwk _symmetric192Key = SymmetricJwk.FromBase64Url("kVdKe3BiLcrc7LujDzaD-3EdZCVTStnc");
 
-        private readonly SymmetricJwk _symmetric256Key = new SymmetricJwk("-PYUNdvLXVnc8yJQw7iQkSlNmAb202ZO-rfCyrAc1Lo");
+        private readonly SymmetricJwk _symmetric256Key = SymmetricJwk.FromBase64Url("-PYUNdvLXVnc8yJQw7iQkSlNmAb202ZO-rfCyrAc1Lo");
 
-        private readonly SymmetricJwk _symmetric384Key = new SymmetricJwk("V4hBa9WfvqqZ4ZWfm2oIoKZaCdy_FEf9cPXMwFSSOivAUMqs931xgQ-fSjTfB9tm");
+        private readonly SymmetricJwk _symmetric384Key = SymmetricJwk.FromBase64Url("V4hBa9WfvqqZ4ZWfm2oIoKZaCdy_FEf9cPXMwFSSOivAUMqs931xgQ-fSjTfB9tm");
 
-        private readonly SymmetricJwk _symmetric512Key = new SymmetricJwk("98TDxdDvd5mKZNFitgMCwH_z7nzKS6sk_vykNTowymsJ4e8eGviJnVWI9i-YLreuBfhHDhis3CY2aKoK1RT6sg");
+        private readonly SymmetricJwk _symmetric512Key = SymmetricJwk.FromBase64Url("98TDxdDvd5mKZNFitgMCwH_z7nzKS6sk_vykNTowymsJ4e8eGviJnVWI9i-YLreuBfhHDhis3CY2aKoK1RT6sg");
 
-        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256);
+        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
 
         [Fact]
         public void Encode_Decode_NotSupported()

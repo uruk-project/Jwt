@@ -7,17 +7,29 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using JsonWebToken.Internal;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     internal sealed class MemberStore : IEnumerable<JwtMemberX>
     {
-        private Map _map = EmptyMap.Empty;
+        public static MemberStore CreateForPayload()
+            => new MemberStore(EmptyMapForPayload.Empty);
+
+        public static MemberStore CreateForHeader()
+            => new MemberStore(EmptyMapForHeader.Empty);
+
+        private Map _map;
 
         /// <summary>
         /// Gets the count of elements.
         /// </summary>
         public int Count => _map.Count;
+
+        private MemberStore(Map map)
+        {
+            _map = map;
+        }
 
         public void WriteTo(Utf8JsonWriter writer)
         {
@@ -82,9 +94,54 @@ namespace JsonWebToken.Internal
         }
 
         // Instance without any key/value pairs. Used as a singleton.
-        private sealed class EmptyMap : Map
+        private sealed class EmptyMapForPayload : Map
         {
-            public static readonly EmptyMap Empty = new EmptyMap();
+            public static readonly EmptyMapForPayload Empty = new EmptyMapForPayload();
+
+            public int Count => 0;
+
+            public bool TryAdd(JwtMemberX value, out Map map)
+            {
+                // Create a new one-element map to store the key/value pair
+                //map = new OneElementMap(value);
+                var newMap = new MultiElementMap(1);
+                newMap.UnsafeStore(0, value);
+                map = newMap;
+                return true;
+            }
+
+            public bool TryGetValue(string key, [NotNullWhen(true)] out JwtMemberX value)
+            {
+                // Nothing here
+                value = default;
+                return false;
+            }
+
+            public bool ContainsKey(string key)
+                => false;
+
+            public IEnumerator<JwtMemberX> GetEnumerator()
+            {
+                return EmptyObjectEnumerator.Empty;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+                => GetEnumerator();
+
+            public void WriteTo(Utf8JsonWriter writer)
+            {
+            }
+
+            public Map Merge(Map map)
+            {
+                return map;
+            }
+        }
+
+        // Instance without any key/value pairs. Used as a singleton.
+        private sealed class EmptyMapForHeader : Map
+        {
+            public static readonly EmptyMapForPayload Empty = new EmptyMapForPayload();
 
             public int Count => 0;
 
@@ -107,7 +164,7 @@ namespace JsonWebToken.Internal
 
             public IEnumerator<JwtMemberX> GetEnumerator()
             {
-                return new ObjectEnumerator(this);
+                return EmptyObjectEnumerator.Empty;
             }
 
             IEnumerator IEnumerable.GetEnumerator()
@@ -121,49 +178,37 @@ namespace JsonWebToken.Internal
             {
                 return map;
             }
+        }
 
-            /// <summary>
-            ///   An enumerable and enumerator for the properties of a JSON object.
-            /// </summary>
-            [DebuggerDisplay("{Current,nq}")]
-            public struct ObjectEnumerator : IEnumerator<JwtMemberX>
+        /// <summary>
+        ///   An enumerable and enumerator for the properties of a JSON object.
+        /// </summary>
+        [DebuggerDisplay("{Current,nq}")]
+        private struct EmptyObjectEnumerator : IEnumerator<JwtMemberX>
+        {
+            public static readonly EmptyObjectEnumerator Empty = new EmptyObjectEnumerator();
+
+            /// <inheritdoc />
+            public JwtMemberX Current
+                => default;
+
+            /// <inheritdoc />
+            public void Dispose()
             {
-                private readonly EmptyMap _map;
-
-                internal ObjectEnumerator(EmptyMap map)
-                {
-                    _map = map;
-                }
-
-                /// <inheritdoc />
-                public JwtMemberX Current
-                {
-                    get
-                    {
-                        return default;
-                    }
-                }
-
-                /// <inheritdoc />
-                public void Dispose()
-                {
-                }
-
-                /// <inheritdoc />
-                public void Reset()
-                {
-                }
-
-                /// <inheritdoc />
-                object IEnumerator.Current => Current;
-
-
-                /// <inheritdoc />
-                public bool MoveNext()
-                {
-                    return false;
-                }
             }
+
+            /// <inheritdoc />
+            public void Reset()
+            {
+            }
+
+            /// <inheritdoc />
+            object IEnumerator.Current => Current;
+
+
+            /// <inheritdoc />
+            public bool MoveNext()
+                => false;
         }
 
         private sealed class OneElementMap : Map
@@ -275,6 +320,7 @@ namespace JsonWebToken.Internal
                 }
             }
         }
+
 
         private sealed class TwoElementMap : Map
         {
@@ -424,16 +470,11 @@ namespace JsonWebToken.Internal
                 if (value.Name == _value1.Name || value.Name == _value2.Name || value.Name == _value3.Name)
                 {
                     map = this;
-                    return false;
+                    return true;
                 }
                 else
                 {
-                    var multi = new MultiElementMap(4);
-                    multi.UnsafeStore(0, _value1);
-                    multi.UnsafeStore(1, _value2);
-                    multi.UnsafeStore(2, _value3);
-                    multi.UnsafeStore(3, value);
-                    map = multi;
+                    map = new FourElementMap(_value1, _value2, _value3, value);
                     return true;
                 }
             }
@@ -450,7 +491,7 @@ namespace JsonWebToken.Internal
                     value = _value2;
                     goto Found;
                 }
-                else if (key == _value3.Name)
+                if (key == _value3.Name)
                 {
                     value = _value3;
                     goto Found;
@@ -550,17 +591,178 @@ namespace JsonWebToken.Internal
             }
         }
 
+        private sealed class FourElementMap : Map
+        {
+            private readonly JwtMemberX _value1;
+            private readonly JwtMemberX _value2;
+            private readonly JwtMemberX _value3;
+            private readonly JwtMemberX _value4;
+
+            public FourElementMap(JwtMemberX value1, JwtMemberX value2, JwtMemberX value3, JwtMemberX value4)
+            {
+                _value1 = value1;
+                _value2 = value2;
+                _value3 = value3;
+                _value4 = value4;
+            }
+
+            public int Count => 4;
+
+            public bool TryAdd(JwtMemberX value, out Map map)
+            {
+                if (value.Name == _value1.Name || value.Name == _value2.Name || value.Name == _value3.Name || value.Name == _value4.Name)
+                {
+                    map = this;
+                    return false;
+                }
+                else
+                {
+                    var multi = new MultiElementMap(5);
+                    multi.UnsafeStore(0, _value1);
+                    multi.UnsafeStore(1, _value2);
+                    multi.UnsafeStore(2, _value3);
+                    multi.UnsafeStore(3, _value4);
+                    multi.UnsafeStore(4, value);
+                    map = multi;
+                    return true;
+                }
+            }
+
+            public bool TryGetValue(string key, out JwtMemberX value)
+            {
+                if (key == _value1.Name)
+                {
+                    value = _value1;
+                    goto Found;
+                }
+                if (key == _value2.Name)
+                {
+                    value = _value2;
+                    goto Found;
+                }
+                else if (key == _value3.Name)
+                {
+                    value = _value3;
+                    goto Found;
+                }
+                else if (key == _value4.Name)
+                {
+                    value = _value4;
+                    goto Found;
+                }
+                else
+                {
+                    value = default;
+                    return false;
+                }
+
+            Found:
+                return true;
+            }
+
+            public void WriteTo(Utf8JsonWriter writer)
+            {
+                _value1.WriteTo(writer);
+                _value2.WriteTo(writer);
+                _value3.WriteTo(writer);
+                _value4.WriteTo(writer);
+            }
+
+            public bool ContainsKey(string key)
+            {
+                return key == _value1.Name || key == _value2.Name || key == _value3.Name || key == _value4.Name;
+            }
+
+            public IEnumerator<JwtMemberX> GetEnumerator()
+            {
+                return new ObjectEnumerator(this);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+                => GetEnumerator();
+
+            public Map Merge(Map map)
+            {
+                map.TryAdd(_value1, out map);
+                map.TryAdd(_value2, out map);
+                map.TryAdd(_value3, out map);
+                map.TryAdd(_value4, out map);
+                return map;
+            }
+
+            /// <summary>
+            ///   An enumerable and enumerator for the properties of a JSON object.
+            /// </summary>
+            [DebuggerDisplay("{Current,nq}")]
+            public struct ObjectEnumerator : IEnumerator<JwtMemberX>
+            {
+                private readonly FourElementMap _map;
+                private int _counter;
+                internal ObjectEnumerator(FourElementMap map)
+                {
+                    _map = map;
+                    _counter = 0;
+                }
+
+                /// <inheritdoc />
+                public JwtMemberX Current
+                {
+                    get
+                    {
+                        if (_counter == 0)
+                        {
+                            return _map._value1;
+                        }
+                        else if (_counter == 1)
+                        {
+                            return _map._value2;
+                        }
+                        else if (_counter == 2)
+                        {
+                            return _map._value3;
+                        }
+                        else
+                        {
+                            return _map._value4;
+                        }
+                    }
+                }
+
+                /// <inheritdoc />
+                public void Dispose()
+                {
+                }
+
+                /// <inheritdoc />
+                public void Reset()
+                {
+                    _counter = 0;
+                }
+
+                /// <inheritdoc />
+                object IEnumerator.Current => Current;
+
+
+                /// <inheritdoc />
+                public bool MoveNext()
+                {
+                    return _counter++ < 4;
+                }
+            }
+        }
+
         private sealed class MultiElementMap : Map
         {
             private const int MaxMultiElements = 16;
             private readonly JwtMemberX[] _keyValues;
+            private int _count;
 
-            public int Count => _keyValues.Length;
+            public int Count => _count;
 
             public MultiElementMap(int count)
             {
-                Debug.Assert(count <= MaxMultiElements);
-                _keyValues = new JwtMemberX[count];
+                _keyValues = new JwtMemberX[MaxMultiElements];
+                _count = count;
             }
 
             public void UnsafeStore(int index, JwtMemberX value)
@@ -571,7 +773,7 @@ namespace JsonWebToken.Internal
 
             public bool TryAdd(JwtMemberX value, out Map map)
             {
-                for (int i = 0; i < _keyValues.Length; i++)
+                for (int i = 0; i < _count - 1; i++)
                 {
                     if (value.Name == _keyValues[i].Name)
                     {
@@ -581,22 +783,19 @@ namespace JsonWebToken.Internal
                     }
                 }
 
-                // The key does not already exist in this map.
-                // We need to create a new map that has the additional key/value pair.
-                // If with the addition we can still fit in a multi map, create one.
-                if (_keyValues.Length < MaxMultiElements)
+                if (_count < _keyValues.Length)
                 {
-                    var multi = new MultiElementMap(_keyValues.Length + 1);
-                    Array.Copy(_keyValues, 0, multi._keyValues, 0, _keyValues.Length);
-                    multi._keyValues[_keyValues.Length] = value;
-                    map = multi;
+                    UnsafeStore(_count, value);
+                    _count++;
+                    map = this;
                     return true;
                 }
 
                 // Otherwise, upgrade to a many map.
                 var many = new ManyElementMap(MaxMultiElements + 1);
-                foreach (JwtMemberX pair in _keyValues)
+                for (int i = 0; i < _count; i++)
                 {
+                    JwtMemberX pair = _keyValues[i];
                     many[pair.Name] = pair;
                 }
 
@@ -607,8 +806,9 @@ namespace JsonWebToken.Internal
 
             public bool TryGetValue(string key, out JwtMemberX value)
             {
-                foreach (JwtMemberX pair in _keyValues)
+                for (int i = 0; i < _count; i++)
                 {
+                    JwtMemberX pair = _keyValues[i];
                     if (key == pair.Name)
                     {
                         value = pair;
@@ -622,16 +822,18 @@ namespace JsonWebToken.Internal
 
             public void WriteTo(Utf8JsonWriter writer)
             {
-                foreach (JwtMemberX pair in _keyValues)
+                for (int i = 0; i < _count; i++)
                 {
+                    JwtMemberX pair = _keyValues[i];
                     pair.WriteTo(writer);
                 }
             }
 
             public bool ContainsKey(string key)
             {
-                foreach (JwtMemberX pair in _keyValues)
+                for (int i = 0; i < _count; i++)
                 {
+                    JwtMemberX pair = _keyValues[i];
                     if (key == pair.Name)
                     {
                         return true;
@@ -651,8 +853,9 @@ namespace JsonWebToken.Internal
 
             public Map Merge(Map map)
             {
-                foreach (var item in _keyValues)
+                for (int i = 0; i < _count; i++)
                 {
+                    JwtMemberX item = _keyValues[i];
                     map.TryAdd(item, out map);
                 }
 

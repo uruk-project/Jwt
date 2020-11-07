@@ -170,7 +170,7 @@ namespace JsonWebToken
                         var temporaryUnwrappedKey = unwrappedKey.Length != kpv.Item1 ? unwrappedKey.Slice(0, kpv.Item1) : unwrappedKey;
                         if (kpv.Item2.TryUnwrapKey(encryptedKey, temporaryUnwrappedKey, header, out int keyUnwrappedBytesWritten))
                         {
-                            var jwk = new SymmetricJwk(unwrappedKey.Slice(0, keyUnwrappedBytesWritten).ToArray());
+                            var jwk = SymmetricJwk.FromByteArray(unwrappedKey.Slice(0, keyUnwrappedBytesWritten).ToArray(), false);
                             keys.Add(jwk);
                         }
                     }

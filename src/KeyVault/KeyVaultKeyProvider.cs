@@ -55,7 +55,7 @@ namespace JsonWebToken.KeyVault
                 var kvKey = await _client.GetKeyAsync(keyIdentifier.Identifier.Identifier);
                 Jwk? key = kvKey.Key.Kty switch
                 {
-                    JsonWebKeyType.Octet => SymmetricJwk.FromByteArray(kvKey.Key.K),
+                    JsonWebKeyType.Octet => SymmetricJwk.FromByteArray(kvKey.Key.K, false),
                     JsonWebKeyType.Rsa => RsaJwk.FromParameters(kvKey.Key.ToRSAParameters()),
                     JsonWebKeyType.RsaHsm => RsaJwk.FromParameters(kvKey.Key.ToRSAParameters()),
 #if !NETFRAMEWORK

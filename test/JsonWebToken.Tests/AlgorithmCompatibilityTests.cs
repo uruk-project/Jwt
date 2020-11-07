@@ -9,7 +9,7 @@ namespace JsonWebToken.Tests
     public class JwtXTests
     {
         [Fact]
-        public void Descriptor()
+        public void Descriptor_AllKindOfObject()
         {
             var descriptor = new JweDescriptorX
             {
@@ -23,40 +23,112 @@ namespace JsonWebToken.Tests
                     SigningKey = SymmetricJwk.GenerateKey(256),
                     Header = new JwtHeaderX
                     {
-                        { "prop1", "value1" },
-                        { "prop2",  new Dictionary<string, object> { { "prop1", "value2" } } },
-                        { "prop3", 123L },
-                        { "prop4", new Fake { Inner = new Fake { Value = "Inner1", Inner = new Fake { Value = "Inner2" } }, Value = "Inner0" } },
-                        { "prop5", new [] { "a", "b", "c"} },
-                        { "prop6", new [] { new object(), new object(), "abc", 123 } }
+                        { "H1", "value1" },
+                        { "H2",  new Dictionary<string, object> { { "prop1", "value2" } } },
+                        { "H3", 123L },
+                        { "H4", new Fake { Inner = new Fake { Value = "Inner1", Inner = new Fake { Value = "Inner2" } }, Value = "Inner0" } },
+                        { "H5", new [] { "a", "b", "c"} },
+                        { "H6", new [] { new object(), new object(), "abc", 123 } },
+                        { "H7", true },
+                        { "H8", false },
                     },
                     Payload = new JwtPayloadX
                     {
-                        { "prop1", "value1" },
-                        { "prop2",  new Dictionary<string, object> { { "prop1", "value2" } } },
-                        { "prop3", 123L },
-                        { "prop4", new Fake { Inner = new Fake { Value = "Inner1", Inner = new Fake { Value = "Inner2" } }, Value = "Inner0" } },
-                        { "prop5", new [] { "a", "b", "c"} },
-                        { "prop6", new [] { new object(), new object(), "abc", 123 } }
+                        { "P1", "value1" },
+                        { "P2",  new Dictionary<string, object> { { "prop1", "value2" } } },
+                        { "P3", 123L },
+                        { "P4", new Fake { Inner = new Fake { Value = "Inner1", Inner = new Fake { Value = "Inner2" } }, Value = "Inner0" } },
+                        { "P5", new [] { "a", "b", "c"} },
+                        { "P6", new [] { new object(), new object(), "abc", 123 } },
+                        { "H7", true },
+                        { "H8", false },
                     }
                 }
             };
 
-            //descriptor.Header.TryGetValue("prop1", out var tokenType);
-            //Assert.Equal(JsonValueKind.String, tokenType.Type);
-            //descriptor.Payload.TryGetValue("prop2", out tokenType);
-            //Assert.Equal(JsonValueKind.Object, tokenType.Type);
-            //descriptor.Payload.TryGetValue("prop3", out tokenType);
-            //Assert.Equal(JsonValueKind.Number, tokenType.Type);
-            //descriptor.Payload.TryGetValue("prop4", out tokenType);
-            //Assert.Equal(JsonValueKind.Object, tokenType.Type);
-            //descriptor.Header.TryGetValue("prop5", out tokenType);
-            //Assert.Equal(JsonValueKind.Array, tokenType.Type);
-            //descriptor.Header.TryGetValue("prop6", out tokenType);
-            //Assert.Equal(JsonValueKind.Array, tokenType.Type);
+            Assert.True(descriptor.Payload.TryGetValue("P1", out var claim));
+            Assert.Equal(JsonValueKind.String, claim.Type);
+            Assert.True(descriptor.Payload.TryGetValue("P2", out claim));
+            Assert.Equal(JsonValueKind.Object, claim.Type);
+            Assert.True(descriptor.Payload.TryGetValue("P3", out claim));
+            Assert.Equal(JsonValueKind.Number, claim.Type);
+            Assert.True(descriptor.Payload.TryGetValue("P4", out claim));
+            Assert.Equal(JsonValueKind.Object, claim.Type);
+            Assert.True(descriptor.Payload.TryGetValue("P5", out claim));
+            Assert.Equal(JsonValueKind.Array, claim.Type);
+            Assert.True(descriptor.Payload.TryGetValue("P6", out claim));
+            Assert.Equal(JsonValueKind.Array, claim.Type);
+            Assert.True(descriptor.Payload.TryGetValue("P7", out claim));
+            Assert.Equal(JsonValueKind.True, claim.Type);
+            Assert.True(descriptor.Payload.TryGetValue("P8", out claim));
+            Assert.Equal(JsonValueKind.False, claim.Type);
 
-            //descriptor.Header.TryGetValue("prop1", out var value1);
-            //Assert.Equal("value1", (string)value1.Value);
+            Assert.True(descriptor.Payload.Header.TryGetValue("alg", out var jwsHeaderParameter));
+            Assert.Equal(JsonValueKind.String, jwsHeaderParameter.Type);
+            Assert.True(descriptor.Payload.Header.TryGetValue("kid", out jwsHeaderParameter));
+            Assert.Equal(JsonValueKind.String, jwsHeaderParameter.Type);
+            Assert.Equal(SignatureAlgorithm.HmacSha256.Name, (string)jwsHeaderParameter.Value);
+            Assert.True(descriptor.Payload.Header.TryGetValue("H1", out jwsHeaderParameter));
+            Assert.Equal(JsonValueKind.String, jwsHeaderParameter.Type);
+            Assert.True(descriptor.Payload.Header.TryGetValue("H2", out jwsHeaderParameter));
+            Assert.Equal(JsonValueKind.Object, jwsHeaderParameter.Type);
+            Assert.True(descriptor.Payload.Header.TryGetValue("H3", out jwsHeaderParameter));
+            Assert.Equal(JsonValueKind.Number, jwsHeaderParameter.Type);
+            Assert.True(descriptor.Payload.Header.TryGetValue("H4", out jwsHeaderParameter));
+            Assert.Equal(JsonValueKind.Object, jwsHeaderParameter.Type);
+            Assert.True(descriptor.Payload.Header.TryGetValue("H5", out jwsHeaderParameter));
+            Assert.Equal(JsonValueKind.Array, jwsHeaderParameter.Type);
+            Assert.True(descriptor.Payload.Header.TryGetValue("H6", out jwsHeaderParameter));
+            Assert.Equal(JsonValueKind.Array, jwsHeaderParameter.Type);
+            Assert.True(descriptor.Payload.Header.TryGetValue("H7", out jwsHeaderParameter));
+            Assert.Equal(JsonValueKind.True, jwsHeaderParameter.Type);
+            Assert.True(descriptor.Payload.Header.TryGetValue("H8", out jwsHeaderParameter));
+            Assert.Equal(JsonValueKind.False, jwsHeaderParameter.Type);
+
+            Assert.True(descriptor.Header.TryGetValue("kid", out var jweeHeaderParameter));
+            Assert.Equal("", (string)jweeHeaderParameter.Value);
+            Assert.True(descriptor.Header.TryGetValue("alg", out jweeHeaderParameter));
+            Assert.Equal(KeyManagementAlgorithm.Direct.Name, (string)jweeHeaderParameter.Value);
+            Assert.True(descriptor.Header.TryGetValue("enc", out jweeHeaderParameter));
+            Assert.Equal(EncryptionAlgorithm.Aes128CbcHmacSha256.Name, (string)jweeHeaderParameter.Value);
+            Assert.True(descriptor.Header.TryGetValue("zip", out jweeHeaderParameter));
+            Assert.Equal(CompressionAlgorithm.Deflate.Name, (string)jweeHeaderParameter.Value);
+
+            PooledByteBufferWriter writer = new PooledByteBufferWriter();
+            var context = new EncodingContext(writer, null, 0, false);
+            descriptor.Encode(context);
+        }
+
+        [Fact]
+        public void Descriptor_FullCapacity()
+        {
+            var payload = new JwtPayloadX();
+            for (int i = 0; i < 256; i++)
+            {
+                payload.Add(i.ToString(), i);
+            }
+
+            var descriptor = new JweDescriptorX
+            {
+                Algorithm = KeyManagementAlgorithm.Direct,
+                Enc = EncryptionAlgorithm.Aes128CbcHmacSha256,
+                EncryptionKey = SymmetricJwk.GenerateKey(256),
+                Zip = CompressionAlgorithm.Deflate,
+                Payload = new JwsDescriptorX
+                {
+                    Alg = SignatureAlgorithm.HmacSha256,
+                    SigningKey = SymmetricJwk.GenerateKey(256),
+                    Payload = payload
+                }
+            };
+
+            for (int i = 0; i < 256; i++)
+            {
+                descriptor.Payload.TryGetValue(i.ToString(), out var member);
+                Assert.Equal(JsonValueKind.Number, member.Type);
+                Assert.Equal(i.ToString(), member.Name);
+                Assert.Equal(i, (long)member.Value);
+            }
 
             PooledByteBufferWriter writer = new PooledByteBufferWriter();
             var context = new EncodingContext(writer, null, 0, false);
@@ -79,7 +151,7 @@ namespace JsonWebToken.Tests
             _keys = keys;
         }
 
-        private static readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256);
+        private static readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
         private readonly KeyFixture _keys;
 
         [Theory]

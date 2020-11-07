@@ -68,7 +68,7 @@ namespace JsonWebToken.Tests
             var ciphertext = new Span<byte>(new byte[(data.Length + 16) & ~15]);
             var authenticationTag = new Span<byte>(new byte[32]);
             var plaintext = new Span<byte>(new byte[ciphertext.Length]);
-            var key = new SymmetricJwk(Encoding.UTF8.GetBytes("ThisIsA128bitKey" + "ThisIsA128bitKey"));
+            var key = SymmetricJwk.FromByteArray(Encoding.UTF8.GetBytes("ThisIsA128bitKey" + "ThisIsA128bitKey"));
             var nonce = Encoding.UTF8.GetBytes("ThisIsAnInitVect");
             var encryptorNi = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256, new Aes128CbcEncryptor());
             encryptorNi.Encrypt(key.K, data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);

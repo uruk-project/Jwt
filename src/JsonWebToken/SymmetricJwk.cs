@@ -28,7 +28,7 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         /// <param name="k">The binary key material.</param>
-        internal SymmetricJwk(ReadOnlySpan<byte> k)
+        private SymmetricJwk(ReadOnlySpan<byte> k)
         {
             _k = k.ToArray();
         }
@@ -37,7 +37,7 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         /// <param name="k">The binary key material.</param>
-        internal SymmetricJwk(byte[] k)
+        private SymmetricJwk(byte[] k)
         {
             if (k is null)
             {
@@ -51,7 +51,7 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         /// <param name="k">The key material encoded in Base64-URL.</param>
-        internal SymmetricJwk(string k)
+        private SymmetricJwk(string k)
         {
             if (k is null)
             {
@@ -157,7 +157,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="k">The binary key material.</param>
         /// <param name="alg">The <see cref="SignatureAlgorithm"/>.</param>
-        public SymmetricJwk(byte[] k, SignatureAlgorithm alg)
+        private SymmetricJwk(byte[] k, SignatureAlgorithm alg)
             : base(alg)
         {
             if (k is null)
@@ -177,7 +177,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="k">The binary key material.</param>
         /// <param name="alg">The <see cref="SignatureAlgorithm"/>.</param>
-        public SymmetricJwk(ReadOnlySpan<byte> k, SignatureAlgorithm alg)
+        private SymmetricJwk(ReadOnlySpan<byte> k, SignatureAlgorithm alg)
             : base(alg)
         {
             _k = k.ToArray();
@@ -192,7 +192,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="k">The key material encoded in Base64-URL.</param>
         /// <param name="alg">The <see cref="SignatureAlgorithm"/>.</param>
-        public SymmetricJwk(string k, SignatureAlgorithm alg)
+        private SymmetricJwk(string k, SignatureAlgorithm alg)
             : base(alg)
         {
             if (k is null)
@@ -212,7 +212,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="k">The binary key material.</param>
         /// <param name="alg">The <see cref="SignatureAlgorithm"/>.</param>
-        public SymmetricJwk(byte[] k, KeyManagementAlgorithm alg)
+        private SymmetricJwk(byte[] k, KeyManagementAlgorithm alg)
             : base(alg)
         {
             if (k is null)
@@ -232,7 +232,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="k">The binary key material.</param>
         /// <param name="alg">The <see cref="SignatureAlgorithm"/>.</param>
-        public SymmetricJwk(ReadOnlySpan<byte> k, KeyManagementAlgorithm alg)
+        private SymmetricJwk(ReadOnlySpan<byte> k, KeyManagementAlgorithm alg)
             : base(alg)
         {
             _k = k.ToArray();
@@ -247,7 +247,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="k">The key material encoded in Base64-URL.</param>
         /// <param name="alg">The <see cref="KeyManagementAlgorithm"/>.</param>
-        public SymmetricJwk(string k, KeyManagementAlgorithm alg)
+        private SymmetricJwk(string k, KeyManagementAlgorithm alg)
             : base(alg)
         {
             if (k is null)
@@ -273,24 +273,15 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override int KeySizeInBits => _k.Length << 3;
 
-        /// <summary>
-        /// Creates a new <see cref="SymmetricJwk"/> from the <paramref name="bytes"/>.
-        /// </summary>
-        /// <param name="bytes"></param>
-        /// <returns></returns>
-        public static SymmetricJwk FromByteArray(byte[] bytes) => FromByteArray(bytes, computeThumbprint: false);
-
         internal byte[] ToArray()
-        {
-            return _k;
-        }
+            => _k;
 
         /// <summary>
         /// Returns a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         /// <param name="bytes">An array of <see cref="byte"/> that contains the key in binary.</param>
         /// <param name="computeThumbprint"></param>
-        public static SymmetricJwk FromByteArray(byte[] bytes, bool computeThumbprint)
+        public static SymmetricJwk FromByteArray(byte[] bytes, bool computeThumbprint = true)
         {
             if (bytes is null)
             {
@@ -312,7 +303,7 @@ namespace JsonWebToken
         /// <param name="bytes">An array of <see cref="byte"/> that contains the key in binary.</param>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/>.</param>
         /// <param name="computeThumbprint"></param>
-        public static SymmetricJwk FromByteArray(byte[] bytes, SignatureAlgorithm algorithm, bool computeThumbprint)
+        public static SymmetricJwk FromByteArray(byte[] bytes, SignatureAlgorithm algorithm, bool computeThumbprint = true)
         {
             if (bytes is null)
             {
@@ -334,7 +325,7 @@ namespace JsonWebToken
         /// <param name="bytes">An array of <see cref="byte"/> that contains the key in binary.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/>.</param>
         /// <param name="computeThumbprint"></param>
-        public static SymmetricJwk FromByteArray(byte[] bytes, KeyManagementAlgorithm algorithm, bool computeThumbprint)
+        public static SymmetricJwk FromByteArray(byte[] bytes, KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
         {
             if (bytes is null)
             {
@@ -354,16 +345,9 @@ namespace JsonWebToken
         /// Returns a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         /// <param name="bytes"></param>
-        /// <returns></returns>
-        public static SymmetricJwk FromSpan(ReadOnlySpan<byte> bytes) => FromSpan(bytes, computeThumbprint: false);
-
-        /// <summary>
-        /// Returns a new instance of <see cref="SymmetricJwk"/>.
-        /// </summary>
-        /// <param name="bytes"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static SymmetricJwk FromSpan(ReadOnlySpan<byte> bytes, bool computeThumbprint)
+        public static SymmetricJwk FromSpan(ReadOnlySpan<byte> bytes, bool computeThumbprint = true)
         {
             var key = new SymmetricJwk(bytes);
             if (computeThumbprint)
@@ -434,16 +418,9 @@ namespace JsonWebToken
         /// Returns a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
         /// <param name="k"></param>
-        /// <returns></returns>
-        public static SymmetricJwk FromBase64Url(string k) => FromBase64Url(k, computeThumbprint: false);
-
-        /// <summary>
-        /// Returns a new instance of <see cref="SymmetricJwk"/>.
-        /// </summary>
-        /// <param name="k"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static SymmetricJwk FromBase64Url(string k, bool computeThumbprint)
+        public static SymmetricJwk FromBase64Url(string k, bool computeThumbprint = true)
         {
             if (k is null)
             {
@@ -462,30 +439,81 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Generates a new <see cref="SymmetricJwk"/>.
+        /// Returns a new instance of <see cref="SymmetricJwk"/>.
         /// </summary>
-        /// <param name="sizeInBits"></param>
+        /// <param name="k"></param>
+        /// <param name="alg"></param>
+        /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static SymmetricJwk GenerateKey(int sizeInBits)
-            => FromByteArray(GenerateKeyBytes(sizeInBits), false);
+        public static SymmetricJwk FromBase64Url(string k, SignatureAlgorithm alg, bool computeThumbprint = true)
+        {
+            if (k is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
+            }
+
+            var key = new SymmetricJwk(k, alg);
+            if (computeThumbprint)
+            {
+                Span<byte> thumbprint = stackalloc byte[43];
+                key.ComputeThumbprint(thumbprint);
+                key.Kid = Utf8.GetString(thumbprint);
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="k"></param>
+        /// <param name="alg"></param>
+        /// <param name="computeThumbprint"></param>
+        /// <returns></returns>
+        public static SymmetricJwk FromBase64Url(string k, KeyManagementAlgorithm alg, bool computeThumbprint = true)
+        {
+            if (k is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.k);
+            }
+
+            var key = new SymmetricJwk(k, alg);
+            if (computeThumbprint)
+            {
+                Span<byte> thumbprint = stackalloc byte[43];
+                key.ComputeThumbprint(thumbprint);
+                key.Kid = Utf8.GetString(thumbprint);
+            }
+
+            return key;
+        }
 
         /// <summary>
         /// Generates a new <see cref="SymmetricJwk"/>.
         /// </summary>
         /// <param name="sizeInBits"></param>
-        /// <param name="algorithm"></param>
+        /// <param name="computeThumbprint">Indicates if the 'kid' should be generated.</param>
         /// <returns></returns>
-        public static SymmetricJwk GenerateKey(int sizeInBits, SignatureAlgorithm algorithm)
-           => FromByteArray(GenerateKeyBytes(sizeInBits), algorithm, false);
+        public static SymmetricJwk GenerateKey(int sizeInBits, bool computeThumbprint = true)
+            => FromByteArray(GenerateKeyBytes(sizeInBits), computeThumbprint);
 
         /// <summary>
         /// Generates a new <see cref="SymmetricJwk"/>.
         /// </summary>
-        /// <param name="sizeInBits"></param>
         /// <param name="algorithm"></param>
+        /// <param name="computeThumbprint">Indicates if the 'kid' should be generated.</param>
         /// <returns></returns>
-        public static SymmetricJwk GenerateKey(int sizeInBits, KeyManagementAlgorithm algorithm)
-           => FromByteArray(GenerateKeyBytes(sizeInBits), algorithm, false);
+        public static SymmetricJwk GenerateKey(SignatureAlgorithm algorithm, bool computeThumbprint = true)
+            => FromByteArray(GenerateKeyBytes(algorithm.RequiredKeySizeInBits * 8), computeThumbprint);
+        
+        /// <summary>
+        /// Generates a new <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="algorithm"></param>
+        /// <param name="computeThumbprint">Indicates if the 'kid' should be generated.</param>
+        /// <returns></returns>
+        public static SymmetricJwk GenerateKey(KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
+            => FromByteArray(GenerateKeyBytes(algorithm.RequiredKeySizeInBits * 8), computeThumbprint);
 
         private static byte[] GenerateKeyBytes(int sizeInBits)
         {

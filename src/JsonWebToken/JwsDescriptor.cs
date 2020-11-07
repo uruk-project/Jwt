@@ -919,6 +919,11 @@ namespace JsonWebToken
             //CheckRequiredHeader(HeaderParameters.Alg, JsonValueKind.String);
         }
 
+        internal bool TryGetValue(string name, out JwtMemberX value)
+        {
+            return _payload.TryGetValue(name, out value);
+        }
+
         ///// <summary>
         ///// Validates the presence and the type of a required claim.
         ///// </summary>

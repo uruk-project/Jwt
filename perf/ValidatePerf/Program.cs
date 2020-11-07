@@ -1,5 +1,6 @@
 ﻿using System;
 using JsonWebToken;
+using JsonWebToken.Internal;
 
 namespace ValidatePerf
 {
@@ -13,10 +14,10 @@ namespace ValidatePerf
             ExpirationTime = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc),
             Issuer = "https://idp.example.com/",
             Audience = "636C69656E745F6964",
-            SigningKey = signingKey, 
+            SigningKey = signingKey,
             Subject = "admin@example.com",
             JwtId = "12345667890"
-            
+
         };
         private static readonly JwsDescriptorX jwsDescriptorX = new JwsDescriptorX()
         {
@@ -63,57 +64,29 @@ namespace ValidatePerf
             Console.WriteLine("Starting...");
             while (true)
             {
-                Encode1();
-                Encode2();
-                Encode3();
-                Encode4();
-                Encode5();
                 Encode6();
-                Encode7();
+                Encode6X();
             }
         }
 
-        //private static void Encode1()
-        //{
-        //    JwsDescriptor jwsDescriptor = new JwsDescriptor()
-        //    {
-        //        IssuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc),
-        //        ExpirationTime = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc),
-        //        Issuer = "https://idp.example.com/",
-        //        Audience = "636C69656E745F6964",
-        //        SigningKey = signingKey,
-        //        Subject = "admin@example.com",
-        //        JwtId = "12345667890"
-        //    };
-        //    var bufferWriter1 = new PooledByteBufferWriter();
-        //    var context1 = new EncodingContext(bufferWriter1, null, 0, false);
-        //    jwsDescriptor.Encode(context1);
-        //    bufferWriter1.Dispose();
-        //}
-
-        //private static void Encode2()
-        //{
-        //    JwsDescriptorX jwsDescriptorX = new JwsDescriptorX()
-        //    {
-        //        SigningKey = signingKey,
-        //        Alg = SignatureAlgorithm.HmacSha256,
-        //        Payload = new JwtPayloadX
-        //        {
-        //            { "iat", 1500000000L },
-        //            { "exp", 2000000000L },
-        //            { "iss", "https://idp.example.com/" },
-        //            { "aud", "636C69656E745F6964" },
-        //            { "sub", "admin@example.com" },
-        //            { "jti", "12345667890" }
-        //        }
-        //    };
-
-        //    var bufferWriter2 = new PooledByteBufferWriter();
-        //    var context2 = new EncodingContext(bufferWriter2, null, 0, false);
-        //    jwsDescriptorX.Encode(context2);
-        //    bufferWriter2.Dispose();
-        //}
-
+        private static void Encode6()
+        {
+            JwsDescriptor jwsDescriptor = new JwsDescriptor()
+            {
+                IssuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc),
+                ExpirationTime = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc),
+                Issuer = "https://idp.example.com/",
+                Audience = "636C69656E745F6964",
+                //SigningKey = signingKey,
+                Algorithm = SignatureAlgorithm.None,
+                Subject = "admin@example.com",
+                JwtId = "12345667890"
+            };
+            var bufferWriter1 = new PooledByteBufferWriter();
+            var context1 = new EncodingContext(bufferWriter1, null, 0, false);
+            jwsDescriptor.Encode(context1);
+            bufferWriter1.Dispose();
+        }
 
         private static void Encode1()
         {
@@ -222,20 +195,20 @@ namespace ValidatePerf
 
 
 
-        private static void Encode6()
+        private static void Encode6X()
         {
             JwsDescriptorX jwsDescriptorX = new JwsDescriptorX()
             {
-                SigningKey = signingKey,
-                Alg = SignatureAlgorithm.HmacSha256,
+                //SigningKey = signingKey,
+                Alg = SignatureAlgorithm.None,
                 Payload = new JwtPayloadX
                 {
-                    { "iat", 1500000000L },
-                    { "exp", 2000000000L },
-                    { "iss", "https://idp.example.com/" },
-                    { "aud", "636C69656E745F6964" },
-                    { "sub", "admin@example.com" },
-                    { "jti", "12345667890" }
+                    { Claims.Iat, 1500000000L },
+                    { Claims.Exp, 2000000000L },
+                    { Claims.Iss, "https://idp.example.com/" },
+                    { Claims.Aud, "636C69656E745F6964" },
+                    { Claims.Sub, "admin@example.com" },
+                    { Claims.Jti, "12345667890" }
                 }
             };
 

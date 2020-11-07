@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using JsonWebToken.Internal;
@@ -482,7 +483,7 @@ namespace JsonWebToken
         /// </summary>
         public JwtPayloadX()
         {
-            _payload = new MemberStore();
+            _payload = MemberStore.CreateForPayload();
         }
 
         internal MemberStore Inner => _payload;
