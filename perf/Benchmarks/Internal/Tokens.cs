@@ -49,78 +49,17 @@ namespace JsonWebToken.Performance
 
         private static SymmetricJwk CreateSigningKey()
         {
-            return SymmetricJwk.GenerateKey(128, SignatureAlgorithm.HmacSha256);
+            return SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
         }
 
         private static SymmetricJwk CreateEncryptionKey()
         {
-            return SymmetricJwk.GenerateKey(128, KeyManagementAlgorithm.Aes128KW);
+            return SymmetricJwk.GenerateKey(KeyManagementAlgorithm.Aes128KW);
         }
 
         private static IDictionary<string, JObject> CreatePayloads()
         {
-            //byte[] bigData = new byte[1024 * 128];
-            //using (var rnd = RandomNumberGenerator.Create())
-            //{
-            //    rnd.GetNonZeroBytes(bigData);
-            //}
-
-            var payloads = new Dictionary<string, JObject>
-            {
-                //{
-                //    "empty", new JObject()
-                //},
-                //{
-                //    "small", new JObject
-                //    {
-                //        { "jti", "756E69717565206964656E746966696572"},
-                //        { "iss", "https://idp.example.com/"},
-                //        { "iat", 1508184845},
-                //        { "aud", "636C69656E745F6964"},
-                //        { "exp", 1628184845},
-                //        { "nbf",  1508184845}
-                //    }
-                //},
-                //{
-                //    "medium", new JObject
-                //    {
-                //        { "jti", "756E69717565206964656E746966696572"},
-                //        { "iss", "https://idp.example.com/"},
-                //        { "iat", 1508184845},
-                //        { "aud", "636C69656E745F6964"},
-                //        { "exp", 1628184845},
-                //        { "nbf",  1508184845},
-                //        { "claim1", "value1ABCDEFGH" },
-                //        { "claim2", "value1ABCDEFGH" },
-                //        { "claim3", "value1ABCDEFGH" },
-                //        { "claim4", "value1ABCDEFGH" },
-                //        { "claim5", "value1ABCDEFGH" },
-                //        { "claim6", "value1ABCDEFGH" },
-                //        { "claim7", "value1ABCDEFGH" },
-                //        { "claim8", "value1ABCDEFGH" },
-                //        { "claim9", "value1ABCDEFGH" },
-                //        { "claim10", "value1ABCDEFGH" },
-                //        { "claim11", "value1ABCDEFGH" },
-                //        { "claim12", "value1ABCDEFGH" },
-                //        { "claim13", "value1ABCDEFGH" },
-                //        { "claim14", "value1ABCDEFGH" },
-                //        { "claim15", "value1ABCDEFGH" },
-                //        { "claim16", "value1ABCDEFGH" }
-                //    }
-                //},
-                //{
-                //    "big", new JObject
-                //    {
-                //        { "jti", "756E69717565206964656E746966696572" },
-                //        { "iss", "https://idp.example.com/" },
-                //        { "iat", 1508184845 },
-                //        { "aud", "636C69656E745F6964" },
-                //        { "exp", 1628184845 },
-                //        { "nbf",  1508184845},
-                //        { "big_claim", Convert.ToBase64String(bigData) }
-                //    }
-                //},
-            };
+            var payloads = new Dictionary<string, JObject>();
 
             for (int i = 0; i < 10; i++)
             {

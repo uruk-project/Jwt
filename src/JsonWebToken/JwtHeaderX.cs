@@ -68,6 +68,16 @@ namespace JsonWebToken
             _header.TryAdd(new JwtMemberX(propertyName, value));
         }
 
+        /// <summary>
+        /// Adds an <see cref="bool"/> as header parameters.
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <param name="value"></param>
+        public void Add(string propertyName, bool value)
+        {
+            _header.TryAdd(new JwtMemberX(propertyName, value));
+        }
+
         internal void Add(JwtMemberX value)
         {
             _header.TryAdd(value);

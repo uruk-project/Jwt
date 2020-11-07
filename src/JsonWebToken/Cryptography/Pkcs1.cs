@@ -31,7 +31,7 @@ namespace JsonWebToken.Cryptography
                 ThrowHelper.ThrowInvalidOperationException_InvalidPem();
             }
 
-            return new RsaJwk(
+            return RsaJwk.FromByteArray(
                 n: AsnReader.TrimLeadingZeroes(n),
                 e: AsnReader.TrimLeadingZeroes(e, align: false));
         }
@@ -72,7 +72,7 @@ namespace JsonWebToken.Cryptography
                 ThrowHelper.ThrowInvalidOperationException_InvalidPem();
             }
 
-            return new RsaJwk(
+            return RsaJwk.FromByteArray(
                 n: AsnReader.TrimLeadingZeroes(n),
                 e: AsnReader.TrimLeadingZeroes(e, align: false),
                 d: AsnReader.TrimLeadingZeroes(d),
@@ -131,21 +131,21 @@ namespace JsonWebToken.Cryptography
 
             if (Pkcs8.IsP256(curveOid))
             {
-                return new ECJwk(EllipticalCurve.P256,
+                return ECJwk.FromByteArray(EllipticalCurve.P256,
                     d: privateKey,
                     x: x,
                     y: y);
             }
             else if (Pkcs8.IsP384(curveOid))
             {
-                return new ECJwk(EllipticalCurve.P384,
+                return ECJwk.FromByteArray(EllipticalCurve.P384,
                     d: privateKey,
                     x: x,
                     y: y);
             }
             else if (Pkcs8.IsP521(curveOid))
             {
-                return new ECJwk(EllipticalCurve.P521,
+                return ECJwk.FromByteArray(EllipticalCurve.P521,
                     d: privateKey,
                     x: x,
                     y: y);

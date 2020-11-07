@@ -6,14 +6,14 @@ namespace JsonWebToken.Tests
 {
     public class JweEllipticCurveTokenTests
     {
-        private readonly ECJwk _bobKey = new ECJwk
+        private readonly ECJwk _bobKey = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P256,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
             y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck",
             d: "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
         );
-        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256);
+        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
 
         [Theory]
         [MemberData(nameof(GetSupportedAlgorithm))]

@@ -705,7 +705,7 @@ namespace JsonWebToken
                 if (!(rsa is null))
                 {
                     var rsaParameters = rsa.ExportParameters(withPrivateKey);
-                    key = new RsaJwk(rsaParameters);
+                    key = RsaJwk.FromParameters(rsaParameters, false);
                 }
 #if SUPPORT_ELLIPTIC_CURVE
                 else
@@ -714,7 +714,7 @@ namespace JsonWebToken
                     if (!(ecdsa is null))
                     {
                         var ecParameters = ecdsa.ExportParameters(withPrivateKey);
-                        key = new ECJwk(ecParameters);
+                        key = ECJwk.FromParameters(ecParameters,false);
                     }
                 }
 #endif
@@ -725,7 +725,7 @@ namespace JsonWebToken
                 if (!(rsa is null))
                 {
                     var rsaParameters = rsa.ExportParameters(withPrivateKey);
-                    key = new RsaJwk(rsaParameters);
+                    key = RsaJwk.FromParameters(rsaParameters, false);
                 }
 #if SUPPORT_ELLIPTIC_CURVE
                 else
@@ -734,7 +734,7 @@ namespace JsonWebToken
                     if (!(ecdsa is null))
                     {
                         var ecParameters = ecdsa.ExportParameters(withPrivateKey);
-                        key = new ECJwk(ecParameters);
+                        key = ECJwk.FromParameters(ecParameters, false);
                     }
                 }
 #endif

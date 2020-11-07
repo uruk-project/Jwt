@@ -610,6 +610,14 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Adds the claim of type <see cref="bool"/> to the current <see cref="JwtPayloadX"/>.
+        /// </summary>
+        public void Add(string claimName, bool value)
+        {
+            _payload.TryAdd(new JwtMemberX(claimName, value));
+        }
+
+        /// <summary>
         /// Adds the claim of type <see cref="object"/> to the current <see cref="JwtPayloadX"/>.
         /// </summary>
         public void Add(string claimName, object value)

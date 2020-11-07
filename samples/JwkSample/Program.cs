@@ -36,7 +36,7 @@ namespace JwkSample
             Console.WriteLine();
 
             // The GenerateKey method creates a new crypto-random symmetric key for symmetric algorithms
-            var symmetricKey = SymmetricJwk.GenerateKey(128, SignatureAlgorithm.HmacSha256);
+            var symmetricKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
             symmetricKey.Kid = "Generated-HS256";
             Console.WriteLine("Symmetric generated JWK of 128 bits, for HS256 signature algorithm:");
             Console.WriteLine(symmetricKey);

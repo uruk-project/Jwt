@@ -352,7 +352,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             return parameters;
         }
 
-        private static ECJwk PrivateEcc256Key => new ECJwk
+        private static ECJwk PrivateEcc256Key => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P256,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
@@ -360,7 +360,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             d: "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
         );
 
-        private static ECJwk PrivateEcc256XKey => new ECJwk
+        private static ECJwk PrivateEcc256XKey => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.Secp256k1,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
@@ -368,7 +368,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             d: "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
         );
 
-        private static ECJwk PublicEcc256Key => new ECJwk
+        private static ECJwk PublicEcc256Key => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P256,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
@@ -376,14 +376,14 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
         );
         
 
-        private static ECJwk PublicEcc256XKey => new ECJwk
+        private static ECJwk PublicEcc256XKey => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.Secp256k1,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
             y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck"
         );
 
-        private static ECJwk PublicEcc384Key => new ECJwk
+        private static ECJwk PublicEcc384Key => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P384,
             d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
@@ -391,7 +391,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         );
 
-        private static ECJwk PrivateEcc384Key => new ECJwk
+        private static ECJwk PrivateEcc384Key => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P384,
             d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
@@ -399,7 +399,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         );
 
-        private static ECJwk PrivateEcc521Key => new ECJwk
+        private static ECJwk PrivateEcc521Key => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P521,
             d: "Adri8PbGJBWN5upp_67cKF8E0ADCF-w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HISTMh_RSmFFhTfBH",
@@ -407,7 +407,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             y: "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y"
         );
 
-        private static ECJwk PublicEcc521Key => new ECJwk
+        private static ECJwk PublicEcc521Key => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P521,
             x: "AEeo_Y06znu6MVjyvJW2_SX_JKK2DxbxF3QjAqkZhMTvwgLc3Z073vFwwiCHKcOwK2b5H8H4a7PDN6DGJ6YJjpN0",

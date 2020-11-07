@@ -39,23 +39,17 @@ namespace JsonWebToken.Tests
 
         public SymmetricJwk CreateSigningKey()
         {
-            return new SymmetricJwk("1ZwTfcBMuxcCltXX5b7rVw", SignatureAlgorithm.HmacSha256)
-            {
-                //Kid = "signature-key"
-            };
+            return SymmetricJwk.FromBase64Url("1ZwTfcBMuxcCltXX5b7rVw", SignatureAlgorithm.HmacSha256);
         }
 
         public SymmetricJwk CreateEncryptionKey()
         {
-            return new SymmetricJwk("vXOB3TzeAzoTy2gaiiraLA", KeyManagementAlgorithm.Aes128KW)
-            {
-                //Kid = "encryption-key"
-            };
+            return SymmetricJwk.FromBase64Url("vXOB3TzeAzoTy2gaiiraLA", KeyManagementAlgorithm.Aes128KW);
         }
 
         public Jwks Jwks { get; }
 
-        public readonly RsaJwk PrivateRsa2048Key = new RsaJwk
+        public readonly RsaJwk PrivateRsa2048Key =  RsaJwk.FromBase64Url
         (
             n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
             e: "AQAB",
@@ -67,13 +61,13 @@ namespace JsonWebToken.Tests
             qi: "GyM_p6JrXySiz1toFgKbWV-JdI3jQ4ypu9rbMWx3rQJBfmt0FoYzgUIZEVFEcOqwemRN81zoDAaa-Bk0KWNGDjJHZDdDmFhW3AN7lI-puxk_mHZGJ11rxyR8O55XLSe3SPmRfKwZI6yU24ZxvQKFYItdldUKGzO6Ia6zTKhAVRU"
         );
 
-        public readonly RsaJwk PublicRsa2048Key = new RsaJwk
+        public readonly RsaJwk PublicRsa2048Key = RsaJwk.FromBase64Url
         (
             n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
             e: "AQAB"
         );
 #if !NET461
-        public readonly ECJwk PrivateEcc256Key = new ECJwk
+        public readonly ECJwk PrivateEcc256Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P256,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
@@ -81,14 +75,14 @@ namespace JsonWebToken.Tests
             d: "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
         );
 
-        public readonly ECJwk PublicEcc256Key = new ECJwk
+        public readonly ECJwk PublicEcc256Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P256,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
             y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck"
         );
 
-        public readonly ECJwk PublicEcc384Key = new ECJwk
+        public readonly ECJwk PublicEcc384Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P384,
             d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
@@ -96,7 +90,7 @@ namespace JsonWebToken.Tests
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         );
 
-        public readonly ECJwk PrivateEcc384Key = new ECJwk
+        public readonly ECJwk PrivateEcc384Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P384,
             d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
@@ -104,7 +98,7 @@ namespace JsonWebToken.Tests
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         );
 
-        public readonly ECJwk PrivateEcc512Key = new ECJwk
+        public readonly ECJwk PrivateEcc512Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P521,
             d: "Adri8PbGJBWN5upp_67cKF8E0ADCF-w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HISTMh_RSmFFhTfBH",
@@ -112,22 +106,22 @@ namespace JsonWebToken.Tests
             y: "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y"
         );
 
-        public readonly ECJwk PublicEcc512Key = new ECJwk
+        public readonly ECJwk PublicEcc512Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P521,
             x: "AEeo_Y06znu6MVjyvJW2_SX_JKK2DxbxF3QjAqkZhMTvwgLc3Z073vFwwiCHKcOwK2b5H8H4a7PDN6DGJ6YJjpN0",
             y: "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y"
         );
 #endif
-        public readonly SymmetricJwk Symmetric128Key = new SymmetricJwk("LxOcGxlu169Vxa1A7HyelQ");
+        public readonly SymmetricJwk Symmetric128Key = SymmetricJwk.FromBase64Url("LxOcGxlu169Vxa1A7HyelQ");
 
-        public readonly SymmetricJwk Symmetric192Key = new SymmetricJwk("kVdKe3BiLcrc7LujDzaD-3EdZCVTStnc");
+        public readonly SymmetricJwk Symmetric192Key = SymmetricJwk.FromBase64Url("kVdKe3BiLcrc7LujDzaD-3EdZCVTStnc");
 
-        public readonly SymmetricJwk Symmetric256Key = new SymmetricJwk("-PYUNdvLXVnc8yJQw7iQkSlNmAb202ZO-rfCyrAc1Lo");
+        public readonly SymmetricJwk Symmetric256Key = SymmetricJwk.FromBase64Url("-PYUNdvLXVnc8yJQw7iQkSlNmAb202ZO-rfCyrAc1Lo");
 
-        public readonly SymmetricJwk Symmetric384Key = new SymmetricJwk("V4hBa9WfvqqZ4ZWfm2oIoKZaCdy_FEf9cPXMwFSSOivAUMqs931xgQ-fSjTfB9tm");
+        public readonly SymmetricJwk Symmetric384Key = SymmetricJwk.FromBase64Url("V4hBa9WfvqqZ4ZWfm2oIoKZaCdy_FEf9cPXMwFSSOivAUMqs931xgQ-fSjTfB9tm");
 
-        public readonly SymmetricJwk Symmetric512Key = new SymmetricJwk("98TDxdDvd5mKZNFitgMCwH_z7nzKS6sk_vykNTowymsJ4e8eGviJnVWI9i-YLreuBfhHDhis3CY2aKoK1RT6sg");
+        public readonly SymmetricJwk Symmetric512Key = SymmetricJwk.FromBase64Url("98TDxdDvd5mKZNFitgMCwH_z7nzKS6sk_vykNTowymsJ4e8eGviJnVWI9i-YLreuBfhHDhis3CY2aKoK1RT6sg");
     }
 
     internal class FixedSizedBufferWriter : IBufferWriter<byte>

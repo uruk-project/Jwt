@@ -56,11 +56,11 @@ namespace JsonWebToken.KeyVault
                 Jwk? key = kvKey.Key.Kty switch
                 {
                     JsonWebKeyType.Octet => SymmetricJwk.FromByteArray(kvKey.Key.K, false),
-                    JsonWebKeyType.Rsa => RsaJwk.FromParameters(kvKey.Key.ToRSAParameters()),
-                    JsonWebKeyType.RsaHsm => RsaJwk.FromParameters(kvKey.Key.ToRSAParameters()),
+                    JsonWebKeyType.Rsa => RsaJwk.FromParameters(kvKey.Key.ToRSAParameters(), false),
+                    JsonWebKeyType.RsaHsm => RsaJwk.FromParameters(kvKey.Key.ToRSAParameters(), false),
 #if !NETFRAMEWORK
-                    JsonWebKeyType.EllipticCurve => ECJwk.FromParameters(ConvertToECParameters(kvKey.Key.ToEcParameters())),
-                    JsonWebKeyType.EllipticCurveHsm => ECJwk.FromParameters(ConvertToECParameters(kvKey.Key.ToEcParameters())),
+                    JsonWebKeyType.EllipticCurve => ECJwk.FromParameters(ConvertToECParameters(kvKey.Key.ToEcParameters()), computeThumbprint: false),
+                    JsonWebKeyType.EllipticCurveHsm => ECJwk.FromParameters(ConvertToECParameters(kvKey.Key.ToEcParameters()), computeThumbprint: false),
 #endif
                     _ => null
                 };

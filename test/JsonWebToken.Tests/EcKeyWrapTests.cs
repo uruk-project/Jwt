@@ -9,14 +9,14 @@ namespace JsonWebToken.Tests
 {
     public class EcKeyWrapTests
     {
-        private readonly ECJwk _aliceKey = new ECJwk
+        private readonly ECJwk _aliceKey = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P256,
             d: "0_NxaRPUMQoAJt50Gz8YiTr8gRTwyEaCumd-MToTmIo",
             x: "gI0GAILBdu7T53akrFmMyGcsF3n5dO7MmwNBHKW5SV0",
             y: "SLW_xSffzlPWrHEVI30DHM_4egVwt3NQqeUD7nMFpps"
         );
-        private readonly ECJwk _bobKey = new ECJwk
+        private readonly ECJwk _bobKey = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P256,
             d: "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw",

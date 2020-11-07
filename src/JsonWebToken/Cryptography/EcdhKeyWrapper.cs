@@ -102,7 +102,7 @@ namespace JsonWebToken.Internal
             using (var ephemeralKey = (staticKey is null) ? ECDiffieHellman.Create(keyParameters.Curve) : ECDiffieHellman.Create(((ECJwk)staticKey).ExportParameters(true)))
             {
                 exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
-                using var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
+                using var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false), computeThumbprint: false);
                 header.Add(new JwtProperty(HeaderParameters.EpkUtf8, epk.AsJwtObject()));
             }
 

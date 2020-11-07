@@ -40,8 +40,8 @@ namespace JsonWebToken.Tests
                         { "P4", new Fake { Inner = new Fake { Value = "Inner1", Inner = new Fake { Value = "Inner2" } }, Value = "Inner0" } },
                         { "P5", new [] { "a", "b", "c"} },
                         { "P6", new [] { new object(), new object(), "abc", 123 } },
-                        { "H7", true },
-                        { "H8", false },
+                        { "P7", true },
+                        { "P8", false },
                     }
                 }
             };
@@ -67,7 +67,6 @@ namespace JsonWebToken.Tests
             Assert.Equal(JsonValueKind.String, jwsHeaderParameter.Type);
             Assert.True(descriptor.Payload.Header.TryGetValue("kid", out jwsHeaderParameter));
             Assert.Equal(JsonValueKind.String, jwsHeaderParameter.Type);
-            Assert.Equal(SignatureAlgorithm.HmacSha256.Name, (string)jwsHeaderParameter.Value);
             Assert.True(descriptor.Payload.Header.TryGetValue("H1", out jwsHeaderParameter));
             Assert.Equal(JsonValueKind.String, jwsHeaderParameter.Type);
             Assert.True(descriptor.Payload.Header.TryGetValue("H2", out jwsHeaderParameter));
@@ -85,14 +84,13 @@ namespace JsonWebToken.Tests
             Assert.True(descriptor.Payload.Header.TryGetValue("H8", out jwsHeaderParameter));
             Assert.Equal(JsonValueKind.False, jwsHeaderParameter.Type);
 
-            Assert.True(descriptor.Header.TryGetValue("kid", out var jweeHeaderParameter));
-            Assert.Equal("", (string)jweeHeaderParameter.Value);
-            Assert.True(descriptor.Header.TryGetValue("alg", out jweeHeaderParameter));
-            Assert.Equal(KeyManagementAlgorithm.Direct.Name, (string)jweeHeaderParameter.Value);
-            Assert.True(descriptor.Header.TryGetValue("enc", out jweeHeaderParameter));
-            Assert.Equal(EncryptionAlgorithm.Aes128CbcHmacSha256.Name, (string)jweeHeaderParameter.Value);
-            Assert.True(descriptor.Header.TryGetValue("zip", out jweeHeaderParameter));
-            Assert.Equal(CompressionAlgorithm.Deflate.Name, (string)jweeHeaderParameter.Value);
+            Assert.True(descriptor.Header.TryGetValue("kid", out var jweHeaderParameter));
+            Assert.True(descriptor.Header.TryGetValue("alg", out jweHeaderParameter));
+            Assert.Equal(KeyManagementAlgorithm.Direct.Name, (string)jweHeaderParameter.Value);
+            Assert.True(descriptor.Header.TryGetValue("enc", out jweHeaderParameter));
+            Assert.Equal(EncryptionAlgorithm.Aes128CbcHmacSha256.Name, (string)jweHeaderParameter.Value);
+            Assert.True(descriptor.Header.TryGetValue("zip", out jweHeaderParameter));
+            Assert.Equal(CompressionAlgorithm.Deflate.Name, (string)jweHeaderParameter.Value);
 
             PooledByteBufferWriter writer = new PooledByteBufferWriter();
             var context = new EncodingContext(writer, null, 0, false);

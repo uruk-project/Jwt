@@ -21,8 +21,8 @@ namespace JsonWebToken
         private const ushort dp = (ushort)28772u;
         private const ushort dq = (ushort)29028u;
 
-        private byte[] _e;
         private byte[] _n;
+        private byte[] _e;
         private byte[]? _dp;
         private byte[]? _dq;
         private byte[]? _p;
@@ -33,7 +33,136 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
         /// </summary>
-        public RsaJwk(
+        private RsaJwk(RSAParameters rsaParameters)
+        {
+            Initialize(rsaParameters);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        private RsaJwk(RSAParameters rsaParameters, KeyManagementAlgorithm alg)
+            : base(alg)
+        {
+            Initialize(rsaParameters);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        private RsaJwk(RSAParameters rsaParameters, SignatureAlgorithm alg)
+            : base(alg)
+        {
+            Initialize(rsaParameters);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        private RsaJwk(
+            string n,
+            string e,
+            string d,
+            string p,
+            string q,
+            string dp,
+            string dq,
+            string qi)
+            : base(d)
+        {
+            Initialize(n: n, e: e, p: p, q: q, dp: dp, dq: dq, qi: qi);
+        }   
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        private RsaJwk(string n, string e, SignatureAlgorithm algorithm)
+            : base(algorithm)
+        {
+            Initialize(n: n, e: e);
+            if (!SupportSignature(algorithm))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm);
+            }
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        private RsaJwk(string n, string e, KeyManagementAlgorithm algorithm)
+            : base(algorithm)
+        {
+            Initialize(n: n, e: e);
+            if (!SupportKeyManagement(algorithm))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm);
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        private RsaJwk(string n, string e)
+        {
+            Initialize(n: n, e: e);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        private RsaJwk(
+            string n,
+            string e,
+            string d,
+            string p,
+            string q,
+            string dp,
+            string dq,
+            string qi,
+            SignatureAlgorithm alg)
+            : base(d, alg)
+        {
+            Initialize(n: n, e: e, p: p, q: q, dp: dp, dq: dq, qi: qi);
+            if (!SupportSignature(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        private RsaJwk(
+            string n,
+            string e,
+            string d,
+            string p,
+            string q,
+            string dp,
+            string dq,
+            string qi,
+            KeyManagementAlgorithm alg)
+            : base(d, alg)
+        {     
+            Initialize(n: n, e: e, p: p, q: q, dp: dp, dq: dq, qi: qi);
+            if (!SupportKeyManagement(alg))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        private RsaJwk(
             byte[] n,
             byte[] e,
             byte[] d,
@@ -44,54 +173,47 @@ namespace JsonWebToken
             byte[] qi)
             : base(d)
         {
-            Initialize(n, e, p, q, dp, dq, qi);
-        }
+            Initialize(n: n, e: e, p: p, q: q, dp: dp, dq: dq, qi: qi);
+        }   
 
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
         /// </summary>
-        public RsaJwk(
-            string d,
-            string p,
-            string q,
-            string dp,
-            string dq,
-            string qi,
-            string e,
-            string n)
-            : base(d)
+        private RsaJwk(byte[] n, byte[] e, SignatureAlgorithm algorithm)
+            : base(algorithm)
         {
-            Initialize(p, q, dp, dq, qi, e, n);
+            Initialize(n, e);
+            if (!SupportSignature(algorithm))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm);
+            }
         }
-
+        
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
         /// </summary>
-        internal RsaJwk(RSAParameters rsaParameters)
+        private RsaJwk(byte[] n, byte[] e, KeyManagementAlgorithm algorithm)
+            : base(algorithm)
         {
-            Initialize(rsaParameters);
+            Initialize(n, e);
+            if (!SupportKeyManagement(algorithm))
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm);
+            }
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
         /// </summary>
-        internal RsaJwk(byte[] e, byte[] n)
+        private RsaJwk(byte[] n, byte[] e)
         {
-            Initialize(e, n);
+            Initialize(n: n, e: e);
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
         /// </summary>
-        public RsaJwk(string e, string n)
-        {
-            Initialize(e, n);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        public RsaJwk(
+        private RsaJwk(
             byte[] n,
             byte[] e,
             byte[] d,
@@ -103,7 +225,7 @@ namespace JsonWebToken
             SignatureAlgorithm alg)
             : base(d, alg)
         {
-            Initialize(n, e, p, q, dp, dq, qi);
+            Initialize(n: n, e: e, p: p, q: q, dp: dp, dq: dq, qi: qi);
             if (!SupportSignature(alg))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
@@ -113,68 +235,7 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
         /// </summary>
-        public RsaJwk(
-            string d,
-            string p,
-            string q,
-            string dp,
-            string dq,
-            string qi,
-            string e,
-            string n,
-            SignatureAlgorithm alg)
-            : base(d, alg)
-        {
-            Initialize(p, q, dp, dq, qi, e, n);
-            if (!SupportSignature(alg))
-            {
-                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        public RsaJwk(RSAParameters rsaParameters, SignatureAlgorithm alg)
-            : base(alg)
-        {
-            Initialize(rsaParameters);
-            if (!SupportSignature(alg))
-            {
-                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        public RsaJwk(byte[] e, byte[] n, SignatureAlgorithm alg)
-            : base(alg)
-        {
-            Initialize(e, n);
-            if (!SupportSignature(alg))
-            {
-                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        public RsaJwk(string e, string n, SignatureAlgorithm alg)
-            : base(alg)
-        {
-            Initialize(e, n);
-            if (!SupportSignature(alg))
-            {
-                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        public RsaJwk(
+        private RsaJwk(
             byte[] n,
             byte[] e,
             byte[] d,
@@ -186,68 +247,7 @@ namespace JsonWebToken
             KeyManagementAlgorithm alg)
             : base(d, alg)
         {     
-            Initialize(n, e, p, q, dp, dq, qi);
-            if (!SupportKeyManagement(alg))
-            {
-                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        public RsaJwk(
-            string d,
-            string p,
-            string q,
-            string dp,
-            string dq,
-            string qi,
-            string e,
-            string n,
-            KeyManagementAlgorithm alg)
-            : base(d, alg)
-        {
-            Initialize(p, q, dp, dq, qi, e, n);
-            if (!SupportKeyManagement(alg))
-            {
-                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        public RsaJwk(RSAParameters rsaParameters, KeyManagementAlgorithm alg)
-            : base(alg)
-        {        
-            Initialize(rsaParameters);
-            if (!SupportKeyManagement(alg))
-            {
-                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        public RsaJwk(byte[] e, byte[] n, KeyManagementAlgorithm alg)
-            : base(alg)
-        {
-            Initialize(e, n);
-            if (!SupportKeyManagement(alg))
-            {
-                ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
-        public RsaJwk(string e, string n, KeyManagementAlgorithm alg)
-            : base(alg)
-        {
-            Initialize(e, n);
+            Initialize(n: n, e: e, p: p, q: q, dp: dp, dq: dq, qi: qi);
             if (!SupportKeyManagement(alg))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
@@ -289,14 +289,14 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.p);
             }
 
-            if (e is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
-            }
-
             if (n is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
+            }
+
+            if (e is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
             _dp = dp;
@@ -304,11 +304,11 @@ namespace JsonWebToken
             _qi = qi;
             _p = p;
             _q = q;
-            _e = e;
             _n = n;
+            _e = e;
         }
 
-        private void Initialize(string p, string q, string dp, string dq, string qi, string e, string n)
+        private void Initialize(string n, string e, string p, string q, string dp, string dq, string qi)
         {
             if (dp is null)
             {
@@ -335,14 +335,14 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.p);
             }
 
-            if (e is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
-            }
-
             if (n is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
+            }
+
+            if (e is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
             _dp = Base64Url.Decode(dp);
@@ -350,14 +350,14 @@ namespace JsonWebToken
             _qi = Base64Url.Decode(qi);
             _p = Base64Url.Decode(p);
             _q = Base64Url.Decode(q);
-            _e = Base64Url.Decode(e);
             _n = Base64Url.Decode(n);
+            _e = Base64Url.Decode(e);
         }
 
         private void Initialize(RSAParameters rsaParameters)
         {
-            _e = rsaParameters.Exponent ?? throw new ArgumentNullException(nameof(rsaParameters.Exponent));
             _n = rsaParameters.Modulus ?? throw new ArgumentNullException(nameof(rsaParameters.Modulus));
+            _e = rsaParameters.Exponent ?? throw new ArgumentNullException(nameof(rsaParameters.Exponent));
 
             _d = rsaParameters.D;
             _dp = rsaParameters.DP;
@@ -368,7 +368,7 @@ namespace JsonWebToken
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Initialize(string e, string n)
+        private void Initialize(string n, string e)
         {
             if (e is null)
             {
@@ -380,26 +380,26 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
-            _e = Base64Url.Decode(e);
             _n = Base64Url.Decode(n);
+            _e = Base64Url.Decode(e);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Initialize(byte[] e, byte[] n)
+        private void Initialize(byte[] n, byte[] e)
         {
+
+               if (n is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
+            }
 
             if (e is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
-            if (n is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
-            }
-
-            _e = e;
             _n = n;
+            _e = e;
         }
 
         /// <inheritsdoc />
@@ -611,12 +611,243 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="RsaJwk"/>.
         /// </summary>
-        /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
-        /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/></param>
-        /// <param name="computeThumbprint">Defines whether the thumbprint of the key should be computed </param>
-        public static RsaJwk FromParameters(RSAParameters parameters, KeyManagementAlgorithm algorithm, bool computeThumbprint)
+        public static RsaJwk FromByteArray(
+            byte[] n,
+            byte[] e,
+            byte[] d,
+            byte[] p,
+            byte[] q,
+            byte[] dp,
+            byte[] dq,
+            byte[] qi,
+            bool computeThumbprint = true)
         {
-            var key = new RsaJwk(parameters, algorithm);
+            var key = new RsaJwk(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi);
+            if (computeThumbprint)
+            {
+                ComputeKid(key);
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public static RsaJwk FromBase64Url(
+            string n,
+            string e,
+            string d,
+            string p,
+            string q,
+            string dp,
+            string dq,
+            string qi,
+            bool computeThumbprint = true)
+        {
+            var key = new RsaJwk(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi);
+            if (computeThumbprint)
+            {
+                ComputeKid(key);
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public static RsaJwk FromByteArray(
+            byte[] n,
+            byte[] e,
+            bool computeThumbprint = true)
+        {
+            var key = new RsaJwk(n: n, e: e);
+            if (computeThumbprint)
+            {
+                ComputeKid(key);
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public static RsaJwk FromBase64Url(
+            string n,
+            string e,
+            bool computeThumbprint = true)
+        {
+            var key = new RsaJwk(n: n, e: e);
+            if (computeThumbprint)
+            {
+                ComputeKid(key);
+            }
+
+            return key;
+        }
+        
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public static RsaJwk FromByteArray(
+            byte[] n,
+            byte[] e,
+            byte[] d,
+            byte[] p,
+            byte[] q,
+            byte[] dp,
+            byte[] dq,
+            byte[] qi,
+            SignatureAlgorithm alg,
+            bool computeThumbprint = true)
+        {
+            var key = new RsaJwk(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi, alg: alg);
+            if (computeThumbprint)
+            {
+                ComputeKid(key);
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public static RsaJwk FromBase64Url(
+            string n,
+            string e,
+            string d,
+            string p,
+            string q,
+            string dp,
+            string dq,
+            string qi,
+            SignatureAlgorithm alg,
+            bool computeThumbprint = true)
+        {
+            var key = new RsaJwk(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi, alg);
+            if (computeThumbprint)
+            {
+                ComputeKid(key);
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public static RsaJwk FromByteArray(
+            byte[] n,
+            byte[] e,
+            SignatureAlgorithm alg,
+            bool computeThumbprint = true)
+        {
+            var key = new RsaJwk(n: n, e: e, algorithm: alg);
+            if (computeThumbprint)
+            {
+                ComputeKid(key);
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public static RsaJwk FromBase64Url(
+            string n,
+            string e,
+            SignatureAlgorithm alg,
+            bool computeThumbprint = true)
+        {
+            var key = new RsaJwk(n: n, e: e, alg);
+            if (computeThumbprint)
+            {
+                ComputeKid(key);
+            }
+
+            return key;
+        }
+        
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public static RsaJwk FromByteArray(
+            byte[] n,
+            byte[] e,
+            byte[] d,
+            byte[] p,
+            byte[] q,
+            byte[] dp,
+            byte[] dq,
+            byte[] qi,
+            KeyManagementAlgorithm alg,
+            bool computeThumbprint = true)
+        {
+            var key = new RsaJwk(n, e, d, p, q, dp, dq, qi, alg);
+            if (computeThumbprint)
+            {
+                ComputeKid(key);
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public static RsaJwk FromBase64Url(
+            string n,
+            string e,
+            string d,
+            string p,
+            string q,
+            string dp,
+            string dq,
+            string qi,
+            KeyManagementAlgorithm alg,
+            bool computeThumbprint = true)
+        {
+            var key = new RsaJwk(n, e, d, p, q, dp, qi, dq, alg);
+            if (computeThumbprint)
+            {
+                ComputeKid(key);
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public static RsaJwk FromByteArray(
+            byte[] n,
+            byte[] e,
+            KeyManagementAlgorithm alg,
+            bool computeThumbprint = true)
+        {
+            var key = new RsaJwk(n: n, e: e, algorithm: alg);
+            if (computeThumbprint)
+            {
+                ComputeKid(key);
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        public static RsaJwk FromBase64Url(
+            string n,
+            string e,
+            KeyManagementAlgorithm alg,
+            bool computeThumbprint = true)
+        {
+            var key = new RsaJwk(n: n, e: e, alg);
             if (computeThumbprint)
             {
                 ComputeKid(key);
@@ -629,11 +860,28 @@ namespace JsonWebToken
         /// Returns a new instance of <see cref="RsaJwk"/>.
         /// </summary>
         /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
-        /// <param name="algorithm">The <see cref="SignatureAlgorithm"/></param>
+        /// <param name="alg">The <see cref="KeyManagementAlgorithm"/></param>
         /// <param name="computeThumbprint">Defines whether the thumbprint of the key should be computed </param>
-        public static RsaJwk FromParameters(RSAParameters parameters, SignatureAlgorithm algorithm, bool computeThumbprint)
+        public static RsaJwk FromParameters(RSAParameters parameters, KeyManagementAlgorithm alg, bool computeThumbprint = true)
         {
-            var key = new RsaJwk(parameters, algorithm);
+            var key = new RsaJwk(parameters, alg);
+            if (computeThumbprint)
+            {
+                ComputeKid(key);
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="RsaJwk"/>.
+        /// </summary>
+        /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
+        /// <param name="alg">The <see cref="SignatureAlgorithm"/></param>
+        /// <param name="computeThumbprint">Defines whether the thumbprint of the key should be computed </param>
+        public static RsaJwk FromParameters(RSAParameters parameters, SignatureAlgorithm alg, bool computeThumbprint)
+        {
+            var key = new RsaJwk(parameters, alg);
             if (computeThumbprint)
             {
                 ComputeKid(key);
@@ -647,7 +895,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
         /// <param name="computeThumbprint">Defines whether the thumbprint of the key should be computed </param>
-        public static RsaJwk FromParameters(RSAParameters parameters, bool computeThumbprint)
+        public static RsaJwk FromParameters(RSAParameters parameters, bool computeThumbprint = true)
         {
             var key = new RsaJwk(parameters);
             if (computeThumbprint)

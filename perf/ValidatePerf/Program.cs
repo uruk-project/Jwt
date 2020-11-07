@@ -6,7 +6,7 @@ namespace ValidatePerf
 {
     class Program
     {
-        private static readonly Jwk signingKey = SymmetricJwk.GenerateKey(128, SignatureAlgorithm.HmacSha256);
+        private static readonly Jwk signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
         private static readonly JwtWriter _writer = new JwtWriter();
         private static readonly JwsDescriptor jwsDescriptor = new JwsDescriptor()
         {
@@ -35,7 +35,7 @@ namespace ValidatePerf
         };
         private static readonly byte[] jwsToken = _writer.WriteToken(jwsDescriptor);
 
-        private static readonly Jwk encryptionKey = SymmetricJwk.GenerateKey(256, KeyManagementAlgorithm.Aes256KW);
+        private static readonly Jwk encryptionKey = SymmetricJwk.GenerateKey(KeyManagementAlgorithm.Aes256KW);
         private static JweDescriptor jweDescriptor = new JweDescriptor
         {
             Payload = new JwsDescriptor

@@ -234,7 +234,7 @@ namespace JsonWebToken.Tests
         {
             var policy = new TokenValidationPolicyBuilder()
                 .IgnoreSignatureByDefault()
-                .WithDecryptionKeys(new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4T"))
+                .WithDecryptionKeys(SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4T"))
                 .Build();
 
             var result = Jwt.TryParse(token, policy, out var jwt);
@@ -248,7 +248,7 @@ namespace JsonWebToken.Tests
         public void Issue504_Invalid(string token, bool requireAudience, bool requireSignature, bool requireOther)
         {
             var builder = new TokenValidationPolicyBuilder()
-                .WithDecryptionKeys(new SymmetricJwk("R9MyWaEoyiMYViVWo8Fk4T"));
+                .WithDecryptionKeys(SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4T"));
             if (requireAudience)
             {
                 builder.RequireAudience("test");
