@@ -20,8 +20,7 @@ namespace JsonWebToken
     public sealed class ECJwk : AsymmetricJwk, IJwtSerializable
     {
         private const uint crv = 7762531u;
-        private byte[] _x;
-        private byte[] _y;
+        private ECParameters _parameters;
 
         /// <summary>
         /// Initializes a new instance of <see cref="ECJwk"/>.
@@ -36,18 +35,16 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="ECJwk"/>.
         /// </summary>
         private ECJwk(in EllipticalCurve crv, byte[] d, byte[] x, byte[] y)
-            : base(d)
         {
-            Initialize(crv, x, y);
+            Initialize(crv, d, x, y);
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="ECJwk"/>.
         /// </summary>
         private ECJwk(in EllipticalCurve crv, string d, string x, string y)
-            : base(d)
         {
-            Initialize(crv, x, y);
+            Initialize(crv, d, x, y);
         }
 
         /// <summary>
@@ -85,9 +82,9 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="ECJwk"/>.
         /// </summary>
         private ECJwk(in EllipticalCurve crv, byte[] d, byte[] x, byte[] y, SignatureAlgorithm alg)
-            : base(d, alg)
+            : base(alg)
         {
-            Initialize(crv, x, y, alg);
+            Initialize(crv, d, x, y, alg);
             if (!SupportSignature(alg))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
@@ -98,9 +95,9 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="ECJwk"/>.
         /// </summary>
         private ECJwk(in EllipticalCurve crv, string d, string x, string y, SignatureAlgorithm alg)
-            : base(d, alg)
+            : base(alg)
         {
-            Initialize(crv, x, y, alg);
+            Initialize(crv, d, x, y, alg);
             if (!SupportSignature(alg))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
@@ -152,9 +149,9 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="ECJwk"/>.
         /// </summary>
         private ECJwk(in EllipticalCurve crv, byte[] d, byte[] x, byte[] y, KeyManagementAlgorithm alg)
-            : base(d, alg)
+            : base(alg)
         {
-            Initialize(crv, x, y);
+            Initialize(crv, d, x, y);
             if (!SupportKeyManagement(alg))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
@@ -165,9 +162,9 @@ namespace JsonWebToken
         /// Initializes a new instance of <see cref="ECJwk"/>.
         /// </summary>
         private ECJwk(in EllipticalCurve crv, string d, string x, string y, KeyManagementAlgorithm alg)
-            : base(d, alg)
+            : base(alg)
         {
-            Initialize(crv, x, y);
+            Initialize(crv, d, x, y);
             if (!SupportKeyManagement(alg))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
@@ -212,9 +209,7 @@ namespace JsonWebToken
         {
             parameters.Validate();
 
-            _d = parameters.D;
-            _x = parameters.Q.X;
-            _y = parameters.Q.Y;
+            _parameters = parameters;
             Crv = parameters.Curve.Oid.FriendlyName switch
             {
                 "nistP256" => EllipticalCurve.P256,
@@ -236,6 +231,16 @@ namespace JsonWebToken
 
             Initialize(crv, x, y);
         }
+        private void Initialize(in EllipticalCurve crv, string d, string x, string y, SignatureAlgorithm alg)
+        {
+            if (d is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
+            }
+
+            _parameters.D = Base64Url.Decode(d);
+            Initialize(crv, x, y, alg);
+        }
 
         private void Initialize(in EllipticalCurve crv, string x, string y)
         {
@@ -250,8 +255,20 @@ namespace JsonWebToken
             }
 
             Crv = crv;
-            _x = Base64Url.Decode(x);
-            _y = Base64Url.Decode(y);
+            _parameters.Curve = crv.CurveParameters;
+            _parameters.Q.X = Base64Url.Decode(x);
+            _parameters.Q.Y = Base64Url.Decode(y);
+        }
+
+        private void Initialize(in EllipticalCurve crv, string d, string x, string y)
+        {
+            if (d is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
+            }
+
+            _parameters.D = Base64Url.Decode(d);
+            Initialize(crv, x, y);
         }
 
         private void Initialize(in EllipticalCurve crv, byte[] x, byte[] y, SignatureAlgorithm alg)
@@ -262,6 +279,12 @@ namespace JsonWebToken
             }
 
             Initialize(crv, x, y);
+        }
+
+        private void Initialize(in EllipticalCurve crv, byte[] d, byte[] x, byte[] y, SignatureAlgorithm alg)
+        {
+            _parameters.D = d;
+            Initialize(crv, x, y, alg);
         }
 
         private void Initialize(in EllipticalCurve crv, byte[] x, byte[] y)
@@ -277,12 +300,32 @@ namespace JsonWebToken
             }
 
             Crv = crv;
-            _x = x;
-            _y = y;
+            _parameters.Curve = crv.CurveParameters;
+            _parameters.Q.X = x;
+            _parameters.Q.Y = y;
         }
+
+        private void Initialize(in EllipticalCurve crv, byte[] d, byte[] x, byte[] y)
+        {
+            if (d is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
+            }
+
+            _parameters.D = d;
+            Initialize(crv, x, y);
+        }
+
+        /// <inheritdoc/>
+        public override bool HasPrivateKey => !(_parameters.D is null);
 
         /// <inheritsdoc />
         public override ReadOnlySpan<byte> Kty => JwkTypeNames.EllipticCurve;
+
+        /// <summary>
+        /// Gets the 'd' (Private Key).
+        /// </summary>
+        public ReadOnlySpan<byte> D => _parameters.D;
 
         /// <summary>
         /// Gets or sets the 'crv' (Curve).
@@ -292,12 +335,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'x' (X Coordinate).
         /// </summary>
-        public ReadOnlySpan<byte> X => _x;
+        public ReadOnlySpan<byte> X => _parameters.Q.X;
 
         /// <summary>
         /// Gets or sets the 'y' (Y Coordinate).
         /// </summary>
-        public ReadOnlySpan<byte> Y => _y;
+        public ReadOnlySpan<byte> Y => _parameters.Q.Y;
 
         /// <inheritdoc />
         public override int KeySizeInBits => Crv.KeySizeInBits;
@@ -326,9 +369,6 @@ namespace JsonWebToken
         {
 #if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
             return Crv.SupportedSignatureAlgorithm == algorithm;
-            //return algorithm.Category == AlgorithmCategory.EllipticCurve 
-            //    && algorithm.RequiredKeySizeInBits == KeySizeInBits
-            //    ;
 #else
             return false;
 #endif
@@ -383,25 +423,16 @@ namespace JsonWebToken
         /// <summary>
         /// Exports the key parameters.
         /// </summary>
-        public ECParameters ExportParameters() => ExportParameters(false);
-
-        /// <summary>
-        /// Exports the key parameters.
-        /// </summary>
-        public ECParameters ExportParameters(bool includePrivateParameters)
+        public ECParameters ExportParameters(bool includePrivateParameters = false)
         {
             var parameters = new ECParameters
             {
-                Q = new ECPoint
-                {
-                    X = _x,
-                    Y = _y
-                },
-                Curve = Crv.CurveParameters
+                Q = _parameters.Q,
+                Curve = _parameters.Curve
             };
             if (includePrivateParameters)
             {
-                parameters.D = _d;
+                parameters.D = _parameters.D;
             }
 
             return parameters;
@@ -473,6 +504,38 @@ namespace JsonWebToken
             return ecdsa.ExportParameters(withPrivateKey);
         }
 
+        private static ReadOnlySpan<byte> StartCanonicalizeValue => new byte[] { (byte)'{', (byte)'"', (byte)'c', (byte)'r', (byte)'v', (byte)'"', (byte)':', (byte)'"' };
+        private static ReadOnlySpan<byte> MiddleCanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'k', (byte)'t', (byte)'y', (byte)'"', (byte)':', (byte)'"', (byte)'E', (byte)'C', (byte)'"', (byte)',', (byte)'"', (byte)'x', (byte)'"', (byte)':', (byte)'"' };
+        private static ReadOnlySpan<byte> Middle2CanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'y' ,(byte)'"', (byte)':', (byte)'"' };
+        private static ReadOnlySpan<byte> EndCanonicalizeValue => new byte[] { (byte)'"', (byte)'}' };
+
+        /// <inheritdoc />
+        protected override void Canonicalize(Span<byte> buffer)
+        {
+            // {"crv":"XXXX","kty":"EC","X":"XXXX","Y":"XXXX"}
+            int offset = StartCanonicalizeValue.Length;
+            StartCanonicalizeValue.CopyTo(buffer);
+            Crv.Name.AsSpan().CopyTo(buffer.Slice(offset));
+            offset += Crv.Name.Length;
+            MiddleCanonicalizeValue.CopyTo(buffer.Slice(offset));
+            offset += MiddleCanonicalizeValue.Length;
+            offset += Base64Url.Encode(X, buffer.Slice(offset));
+            Middle2CanonicalizeValue.CopyTo(buffer.Slice(offset));
+            offset += Middle2CanonicalizeValue.Length;
+            offset += Base64Url.Encode(Y, buffer.Slice(offset));
+            EndCanonicalizeValue.CopyTo(buffer.Slice(offset));
+        }
+
+        /// <inheritdoc />
+        protected override int GetCanonicalizeSize()
+        {
+            // 35 = StartCanonicalizeValue.Length + Middle1CanonicalizeValue.Length + Middle2CanonicalizeValue.Length + EndCanonicalizeValue.Length 
+            return 35
+                + Base64Url.GetArraySizeRequiredToEncode(Crv.Name.Length) 
+                + Base64Url.GetArraySizeRequiredToEncode(X!.Length)
+                + Base64Url.GetArraySizeRequiredToEncode(Y!.Length);
+        }
+
         /// <inheritdoc />
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
@@ -480,7 +543,7 @@ namespace JsonWebToken
             writer.WriteStartObject();
             writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
             writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
-            Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(_x.Length)];
+            Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(_parameters.Q.X!.Length)];
             Base64Url.Encode(X, buffer);
             writer.WriteString(JwkParameterNames.XUtf8, buffer);
             Base64Url.Encode(Y, buffer);
@@ -827,17 +890,18 @@ namespace JsonWebToken
                         switch (propertyName.Length)
                         {
                             case 1 when propertyNameRef == (byte)'x':
-                                key._x = Base64Url.Decode(reader.ValueSpan);
+                                key._parameters.Q.X = Base64Url.Decode(reader.ValueSpan);
                                 break;
                             case 1 when propertyNameRef == (byte)'y':
-                                key._y = Base64Url.Decode(reader.ValueSpan);
+                                key._parameters.Q.Y = Base64Url.Decode(reader.ValueSpan);
                                 break;
                             case 1 when propertyNameRef == (byte)'d':
-                                key._d = Base64Url.Decode(reader.ValueSpan);
+                                key._parameters.D = Base64Url.Decode(reader.ValueSpan);
                                 break;
 
                             case 3 when IntegerMarshal.ReadUInt24(ref propertyNameRef) == crv:
                                 key.Crv = EllipticalCurve.FromSpan(reader.ValueSpan);
+                                key._parameters.Curve = key.Crv.CurveParameters;
                                 break;
                             case 3:
                                 PopulateThree(ref reader, ref propertyNameRef, key);
@@ -885,15 +949,15 @@ namespace JsonWebToken
                         }
                         else if (name.SequenceEqual(JwkParameterNames.XUtf8))
                         {
-                            key._x = Base64Url.Decode((string)property.Value!);
+                            key._parameters.Q.X = Base64Url.Decode((string)property.Value!);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.YUtf8))
                         {
-                            key._y = Base64Url.Decode((string)property.Value!);
+                            key._parameters.Q.Y = Base64Url.Decode((string)property.Value!);
                         }
                         else if (name.SequenceEqual(JwkParameterNames.DUtf8))
                         {
-                            key._d = Base64Url.Decode((string)property.Value!);
+                            key._parameters.D = Base64Url.Decode((string)property.Value!);
                         }
                         else
                         {
@@ -922,12 +986,12 @@ namespace JsonWebToken
             writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
 
             // X & Y & D have the same length
-            Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(_x.Length)];
+            Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(_parameters.Q.X!.Length)];
 
-            WriteBase64UrlProperty(writer, buffer, _x, JwkParameterNames.XUtf8);
-            WriteBase64UrlProperty(writer, buffer, _y, JwkParameterNames.YUtf8);
+            WriteBase64UrlProperty(writer, buffer, _parameters.Q.X!, JwkParameterNames.XUtf8);
+            WriteBase64UrlProperty(writer, buffer, _parameters.Q.Y!, JwkParameterNames.YUtf8);
 
-            WriteOptionalBase64UrlProperty(writer, buffer, _d, JwkParameterNames.DUtf8);
+            WriteOptionalBase64UrlProperty(writer, buffer, _parameters.D, JwkParameterNames.DUtf8);
             writer.WriteEndObject();
         }
 
@@ -958,7 +1022,7 @@ namespace JsonWebToken
 
                 int hash = ((int)2166136261 ^ Crv.Id) * p;
 
-                var x = _x;
+                var x = _parameters.Q.X!;
                 if (x.Length >= sizeof(int))
                 {
                     hash = (hash ^ Unsafe.ReadUnaligned<int>(ref x[0])) * p;
@@ -971,7 +1035,7 @@ namespace JsonWebToken
                     }
                 }
 
-                var y = _y;
+                var y = _parameters.Q.Y!;
                 if (y.Length >= sizeof(int))
                 {
                     hash = (hash ^ Unsafe.ReadUnaligned<int>(ref y[0])) * p;
@@ -992,15 +1056,8 @@ namespace JsonWebToken
         public override void Dispose()
         {
             base.Dispose();
-            if (_x != null)
-            {
-                CryptographicOperations.ZeroMemory(_x);
-            }
-
-            if (_y != null)
-            {
-                CryptographicOperations.ZeroMemory(_y);
-            }
+            CryptographicOperations.ZeroMemory(_parameters.Q.X);
+            CryptographicOperations.ZeroMemory(_parameters.Q.Y);
         }
     }
 }

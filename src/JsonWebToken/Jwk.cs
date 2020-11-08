@@ -648,9 +648,23 @@ namespace JsonWebToken
         /// <returns></returns>
         public byte[] Canonicalize()
         {
-            using var bufferWriter = new PooledByteBufferWriter();
-            Canonicalize(bufferWriter);
-            return bufferWriter.WrittenSpan.ToArray();
+            int size = GetCanonicalizeSize();
+            byte[]? arrayToReturn = null;
+            try
+            {
+                Span<byte> buffer = size > Constants.MaxStackallocBytes
+                                    ? stackalloc byte[size]
+                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(size));
+                Canonicalize(buffer);
+                return buffer.Slice(0, size).ToArray();
+            }
+            finally
+            {
+                if (arrayToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturn);
+                }
+            }
         }
 
         /// <summary>
@@ -660,16 +674,26 @@ namespace JsonWebToken
         protected abstract void Canonicalize(IBufferWriter<byte> bufferWriter);
 
         /// <summary>
+        /// Compute the normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2, and writes it to the <paramref name="buffer"/>.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract void Canonicalize(Span<byte> buffer);
+
+        /// <summary>
+        /// Returns the required size for representing a canonicalized key.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract int GetCanonicalizeSize();
+
+        /// <summary>
         /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
         /// </summary>
         /// <returns></returns>
         public byte[] ComputeThumbprint()
         {
-            Span<byte> hash = stackalloc byte[32];
-            using var bufferWriter = new PooledByteBufferWriter();
-            Canonicalize(bufferWriter);
-            Sha256.Shared.ComputeHash(bufferWriter.WrittenSpan, hash);
-            return Base64Url.Encode(hash);
+            var thumbprint = new byte[43];
+            ComputeThumbprint(thumbprint);
+            return thumbprint;
         }
 
         /// <summary>
@@ -680,10 +704,25 @@ namespace JsonWebToken
         {
             Debug.Assert(destination.Length == 43); // 43 => Base64Url.GetArraySizeRequiredToEncode(32)
             Span<byte> hash = stackalloc byte[32];
-            using var bufferWriter = new PooledByteBufferWriter();
-            Canonicalize(bufferWriter);
-            Sha256.Shared.ComputeHash(bufferWriter.WrittenSpan, hash);
-            Base64Url.Encode(hash, destination);
+
+            int size = GetCanonicalizeSize();
+            byte[]? arrayToReturn = null;
+            try
+            {
+                Span<byte> buffer = size > Constants.MaxStackallocBytes
+                                    ? stackalloc byte[size]
+                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(size));
+                Canonicalize(buffer);
+                Sha256.Shared.ComputeHash(buffer, hash);
+                Base64Url.Encode(hash, destination);
+            }
+            finally
+            {
+                if (arrayToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturn);
+                }
+            }            
         }
 
         /// <summary>
@@ -714,7 +753,7 @@ namespace JsonWebToken
                     if (!(ecdsa is null))
                     {
                         var ecParameters = ecdsa.ExportParameters(withPrivateKey);
-                        key = ECJwk.FromParameters(ecParameters,false);
+                        key = ECJwk.FromParameters(ecParameters, false);
                     }
                 }
 #endif
@@ -1128,38 +1167,36 @@ namespace JsonWebToken
                 _algorithm = new EmptyAlgorithm();
             }
 
-            public override ReadOnlySpan<byte> Kty => ReadOnlySpan<byte>.Empty;
+            public override ReadOnlySpan<byte> Kty
+                => ReadOnlySpan<byte>.Empty;
 
-            public override int KeySizeInBits => 0;
+            public override int KeySizeInBits
+                => 0;
 
             public override ReadOnlySpan<byte> AsSpan()
-            {
-                return ReadOnlySpan<byte>.Empty;
-            }
+                => ReadOnlySpan<byte>.Empty;
 
             protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
             {
             }
+            protected override void Canonicalize(Span<byte> bufferWriter)
+            {
+            }
+
+            protected override int GetCanonicalizeSize()
+                => 0;
 
             public override bool Equals(Jwk? other)
-            {
-                return ReferenceEquals(this, other);
-            }
+                => ReferenceEquals(this, other);
 
             public override bool SupportSignature(SignatureAlgorithm algorithm)
-            {
-                return algorithm == SignatureAlgorithm.None;
-            }
+                => algorithm == SignatureAlgorithm.None;
 
             public override bool SupportKeyManagement(KeyManagementAlgorithm algorithm)
-            {
-                return false;
-            }
+                => false;
 
             public override bool SupportEncryption(EncryptionAlgorithm algorithm)
-            {
-                return false;
-            }
+                => false;
 
             protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             {
@@ -1174,9 +1211,7 @@ namespace JsonWebToken
             }
 
             protected override Signer CreateSigner(SignatureAlgorithm algorithm)
-            {
-                return Signer.None;
-            }
+                => Signer.None;
         }
 
         private sealed class UnknownAlgorithm : IAlgorithm

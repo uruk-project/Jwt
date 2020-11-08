@@ -21,13 +21,7 @@ namespace JsonWebToken
         private const ushort dp = (ushort)28772u;
         private const ushort dq = (ushort)29028u;
 
-        private byte[] _n;
-        private byte[] _e;
-        private byte[]? _dp;
-        private byte[]? _dq;
-        private byte[]? _p;
-        private byte[]? _q;
-        private byte[]? _qi;
+        private RSAParameters _parameters;
 
 #nullable disable
         /// <summary>
@@ -35,7 +29,8 @@ namespace JsonWebToken
         /// </summary>
         private RsaJwk(RSAParameters rsaParameters)
         {
-            Initialize(rsaParameters);
+            Verify(rsaParameters);
+            _parameters = rsaParameters;
         }
 
         /// <summary>
@@ -44,11 +39,13 @@ namespace JsonWebToken
         private RsaJwk(RSAParameters rsaParameters, KeyManagementAlgorithm alg)
             : base(alg)
         {
-            Initialize(rsaParameters);
+            Verify(rsaParameters);
             if (!SupportKeyManagement(alg))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
             }
+
+            _parameters = rsaParameters;
         }
 
         /// <summary>
@@ -57,11 +54,13 @@ namespace JsonWebToken
         private RsaJwk(RSAParameters rsaParameters, SignatureAlgorithm alg)
             : base(alg)
         {
-            Initialize(rsaParameters);
+            Verify(rsaParameters);
             if (!SupportSignature(alg))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
             }
+
+            _parameters = rsaParameters;
         }
 
         /// <summary>
@@ -76,10 +75,9 @@ namespace JsonWebToken
             string dp,
             string dq,
             string qi)
-            : base(d)
         {
-            Initialize(n: n, e: e, p: p, q: q, dp: dp, dq: dq, qi: qi);
-        }   
+            Initialize(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi);
+        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
@@ -93,7 +91,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm);
             }
         }
-        
+
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
         /// </summary>
@@ -128,9 +126,9 @@ namespace JsonWebToken
             string dq,
             string qi,
             SignatureAlgorithm alg)
-            : base(d, alg)
+            : base(alg)
         {
-            Initialize(n: n, e: e, p: p, q: q, dp: dp, dq: dq, qi: qi);
+            Initialize(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi);
             if (!SupportSignature(alg))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
@@ -150,9 +148,9 @@ namespace JsonWebToken
             string dq,
             string qi,
             KeyManagementAlgorithm alg)
-            : base(d, alg)
-        {     
-            Initialize(n: n, e: e, p: p, q: q, dp: dp, dq: dq, qi: qi);
+            : base(alg)
+        {
+            Initialize(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi);
             if (!SupportKeyManagement(alg))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
@@ -171,10 +169,9 @@ namespace JsonWebToken
             byte[] dp,
             byte[] dq,
             byte[] qi)
-            : base(d)
         {
-            Initialize(n: n, e: e, p: p, q: q, dp: dp, dq: dq, qi: qi);
-        }   
+            Initialize(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi);
+        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
@@ -188,7 +185,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm);
             }
         }
-        
+
         /// <summary>
         /// Initializes a new instance of <see cref="RsaJwk"/>.
         /// </summary>
@@ -223,9 +220,9 @@ namespace JsonWebToken
             byte[] dq,
             byte[] qi,
             SignatureAlgorithm alg)
-            : base(d, alg)
+            : base(alg)
         {
-            Initialize(n: n, e: e, p: p, q: q, dp: dp, dq: dq, qi: qi);
+            Initialize(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi);
             if (!SupportSignature(alg))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
@@ -245,9 +242,9 @@ namespace JsonWebToken
             byte[] dq,
             byte[] qi,
             KeyManagementAlgorithm alg)
-            : base(d, alg)
-        {     
-            Initialize(n: n, e: e, p: p, q: q, dp: dp, dq: dq, qi: qi);
+            : base(alg)
+        {
+            Initialize(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi);
             if (!SupportKeyManagement(alg))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
@@ -262,7 +259,7 @@ namespace JsonWebToken
         }
 #nullable enable
 
-        private void Initialize(byte[] n, byte[] e, byte[] p, byte[] q, byte[] dp, byte[] dq, byte[] qi)
+        private void Initialize(byte[] n, byte[] e, byte[] d, byte[] p, byte[] q, byte[] dp, byte[] dq, byte[] qi)
         {
             if (dp is null)
             {
@@ -299,16 +296,23 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
-            _dp = dp;
-            _dq = dq;
-            _qi = qi;
-            _p = p;
-            _q = q;
-            _n = n;
-            _e = e;
+            if (d is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
+            }
+
+            _parameters.D = d;
+            _parameters.DP = dp;
+            _parameters.DQ = dq;
+            _parameters.InverseQ = qi;
+            _parameters.P = p;
+            _parameters.Q = q;
+            _parameters.Modulus = n;
+            _parameters.Exponent = e;
+
         }
 
-        private void Initialize(string n, string e, string p, string q, string dp, string dq, string qi)
+        private void Initialize(string n, string e, string d, string p, string q, string dp, string dq, string qi)
         {
             if (dp is null)
             {
@@ -345,26 +349,25 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
-            _dp = Base64Url.Decode(dp);
-            _dq = Base64Url.Decode(dq);
-            _qi = Base64Url.Decode(qi);
-            _p = Base64Url.Decode(p);
-            _q = Base64Url.Decode(q);
-            _n = Base64Url.Decode(n);
-            _e = Base64Url.Decode(e);
+            if (d is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.d);
+            }
+
+            _parameters.D = Base64Url.Decode(d);
+            _parameters.DP = Base64Url.Decode(dp);
+            _parameters.DQ = Base64Url.Decode(dq);
+            _parameters.InverseQ = Base64Url.Decode(qi);
+            _parameters.P = Base64Url.Decode(p);
+            _parameters.Q = Base64Url.Decode(q);
+            _parameters.Modulus = Base64Url.Decode(n);
+            _parameters.Exponent = Base64Url.Decode(e);
         }
 
-        private void Initialize(RSAParameters rsaParameters)
+        private void Verify(RSAParameters rsaParameters)
         {
-            _n = rsaParameters.Modulus ?? throw new ArgumentNullException(nameof(rsaParameters.Modulus));
-            _e = rsaParameters.Exponent ?? throw new ArgumentNullException(nameof(rsaParameters.Exponent));
-
-            _d = rsaParameters.D;
-            _dp = rsaParameters.DP;
-            _dq = rsaParameters.DQ;
-            _qi = rsaParameters.InverseQ;
-            _p = rsaParameters.P;
-            _q = rsaParameters.Q;
+            if (rsaParameters.Modulus is null) throw new ArgumentNullException(nameof(rsaParameters.Modulus));
+            if (rsaParameters.Exponent is null) throw new ArgumentNullException(nameof(rsaParameters.Exponent));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -380,15 +383,15 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
 
-            _n = Base64Url.Decode(n);
-            _e = Base64Url.Decode(e);
+            _parameters.Modulus = Base64Url.Decode(n);
+            _parameters.Exponent = Base64Url.Decode(e);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Initialize(byte[] n, byte[] e)
         {
 
-               if (n is null)
+            if (n is null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.n);
             }
@@ -398,9 +401,12 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.e);
             }
 
-            _n = n;
-            _e = e;
+            _parameters.Modulus = n;
+            _parameters.Exponent = e;
         }
+
+        /// <inheritdoc/>
+        public override bool HasPrivateKey => !(_parameters.D is null);
 
         /// <inheritsdoc />
         public override ReadOnlySpan<byte> Kty => JwkTypeNames.Rsa;
@@ -411,19 +417,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public RSAParameters ExportParameters()
         {
-            RSAParameters parameters = new RSAParameters
-            {
-                D = _d,
-                DP = _dp,
-                DQ = _dq,
-                InverseQ = _qi,
-                P = _p,
-                Q = _q,
-                Exponent = _e,
-                Modulus = _n
-            };
-
-            return parameters;
+            return _parameters;
         }
 
         /// <inheritsdoc />
@@ -463,42 +457,47 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override int KeySizeInBits => _n.Length << 3;
+        public override int KeySizeInBits => _parameters.Modulus!.Length << 3;
+
+        /// <summary>
+        /// Gets the 'd' (RSA - Private Exponent).
+        /// </summary>
+        public ReadOnlySpan<byte> D => _parameters.D;
 
         /// <summary>
         /// Gets or sets the 'dp' (First Factor CRT Exponent).
         /// </summary>
-        public ReadOnlySpan<byte> DP => _dp;
+        public ReadOnlySpan<byte> DP => _parameters.DP;
 
         /// <summary>
         /// Gets or sets the 'dq' (Second Factor CRT Exponent).
         /// </summary>
-        public ReadOnlySpan<byte> DQ => _dq;
+        public ReadOnlySpan<byte> DQ => _parameters.DQ;
 
         /// <summary>
         /// Gets or sets the 'e' ( Exponent).
         /// </summary>
-        public ReadOnlySpan<byte> E => _e;
+        public ReadOnlySpan<byte> E => _parameters.Exponent;
 
         /// <summary>
         /// Gets or sets the 'n' (Modulus).
         /// </summary>
-        public ReadOnlySpan<byte> N => _n;
+        public ReadOnlySpan<byte> N => _parameters.Modulus;
 
         /// <summary>
         /// Gets or sets the 'p' (First Prime Factor).
         /// </summary>
-        public ReadOnlySpan<byte> P => _p;
+        public ReadOnlySpan<byte> P => _parameters.P;
 
         /// <summary>
         /// Gets or sets the 'q' (Second  Prime Factor).
         /// </summary>
-        public ReadOnlySpan<byte> Q => _q;
+        public ReadOnlySpan<byte> Q => _parameters.Q;
 
         /// <summary>
         /// Gets or sets the 'qi' (First CRT Coefficient).
         /// </summary>
-        public ReadOnlySpan<byte> QI => _qi;
+        public ReadOnlySpan<byte> QI => _parameters.InverseQ;
 
         /// <summary>
         /// Generates a new random private <see cref="RsaJwk"/>.
@@ -506,7 +505,7 @@ namespace JsonWebToken
         /// <param name="sizeInBits"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static RsaJwk GeneratePrivateKey(int sizeInBits, SignatureAlgorithm algorithm) 
+        public static RsaJwk GeneratePrivateKey(int sizeInBits, SignatureAlgorithm algorithm)
             => GenerateKey(sizeInBits, withPrivateKey: true, algorithm);
 
         /// <summary>
@@ -532,7 +531,7 @@ namespace JsonWebToken
         /// <param name="sizeInBits"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static RsaJwk GeneratePublicKey(int sizeInBits, SignatureAlgorithm algorithm) 
+        public static RsaJwk GeneratePublicKey(int sizeInBits, SignatureAlgorithm algorithm)
             => GenerateKey(sizeInBits, withPrivateKey: false, algorithm);
 
         /// <summary>
@@ -541,7 +540,7 @@ namespace JsonWebToken
         /// <param name="sizeInBits"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public static RsaJwk GeneratePublicKey(int sizeInBits, KeyManagementAlgorithm algorithm) 
+        public static RsaJwk GeneratePublicKey(int sizeInBits, KeyManagementAlgorithm algorithm)
             => GenerateKey(sizeInBits, withPrivateKey: false, algorithm);
 
         /// <summary>
@@ -549,7 +548,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="sizeInBits"></param>
         /// <returns></returns>
-        public static RsaJwk GeneratePublicKey(int sizeInBits) 
+        public static RsaJwk GeneratePublicKey(int sizeInBits)
             => GenerateKey(sizeInBits, false);
 
         /// <summary>
@@ -687,7 +686,7 @@ namespace JsonWebToken
 
             return key;
         }
-        
+
         /// <summary>
         /// Returns a new instance of <see cref="RsaJwk"/>.
         /// </summary>
@@ -771,7 +770,7 @@ namespace JsonWebToken
 
             return key;
         }
-        
+
         /// <summary>
         /// Returns a new instance of <see cref="RsaJwk"/>.
         /// </summary>
@@ -933,6 +932,29 @@ namespace JsonWebToken
             return rsaJwk;
         }
 
+        private static ReadOnlySpan<byte> StartCanonicalizeValue => new byte[] { (byte)'{', (byte)'"', (byte)'e', (byte)'"', (byte)':', (byte)'"' };
+        private static ReadOnlySpan<byte> MiddleCanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'k', (byte)'t', (byte)'y', (byte)'"', (byte)':', (byte)'"', (byte)'R', (byte)'S', (byte)'A', (byte)'"', (byte)',', (byte)'"', (byte)'n', (byte)'"', (byte)':', (byte)'"' };
+        private static ReadOnlySpan<byte> EndCanonicalizeValue => new byte[] { (byte)'"', (byte)'}' };
+
+        /// <inheritdoc />
+        protected override void Canonicalize(Span<byte> buffer)
+        {
+            // {"e":"XXXX","kty":"RSA","n":"XXXX"}
+            int offset = StartCanonicalizeValue.Length;
+            StartCanonicalizeValue.CopyTo(buffer);
+            offset += Base64Url.Encode(E, buffer.Slice(offset));
+            MiddleCanonicalizeValue.CopyTo(buffer.Slice(offset));
+            offset += MiddleCanonicalizeValue.Length;
+            offset += Base64Url.Encode(N, buffer.Slice(offset));
+            EndCanonicalizeValue.CopyTo(buffer.Slice(offset));
+        }
+
+        /// <inheritdoc />
+        protected override int GetCanonicalizeSize()
+        {
+            return 27 + Base64Url.GetArraySizeRequiredToEncode(_parameters.Exponent!.Length) + Base64Url.GetArraySizeRequiredToEncode(_parameters.Modulus!.Length);
+        }
+
         /// <inheritdoc />
         protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
         {
@@ -940,7 +962,7 @@ namespace JsonWebToken
             writer.WriteStartObject();
 
             // the RSA exponent E is always smaller than the modulus N
-            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(_n.Length);
+            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(_parameters.Modulus!.Length);
             byte[]? arrayToReturn = null;
             try
             {
@@ -1005,35 +1027,35 @@ namespace JsonWebToken
             string value = (string)property.Value!;
             if (name.SequenceEqual(JwkParameterNames.NUtf8))
             {
-                key._n = Base64Url.Decode(value);
+                key._parameters.Modulus = Base64Url.Decode(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.EUtf8))
             {
-                key._e = Base64Url.Decode(value);
+                key._parameters.Exponent = Base64Url.Decode(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.DUtf8))
             {
-                key._d = Base64Url.Decode(value);
+                key._parameters.D = Base64Url.Decode(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.DPUtf8))
             {
-                key._dp = Base64Url.Decode(value);
+                key._parameters.DP = Base64Url.Decode(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.DQUtf8))
             {
-                key._dq = Base64Url.Decode(value);
+                key._parameters.DQ = Base64Url.Decode(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.PUtf8))
             {
-                key._p = Base64Url.Decode(value);
+                key._parameters.P = Base64Url.Decode(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.QUtf8))
             {
-                key._q = Base64Url.Decode(value);
+                key._parameters.Q = Base64Url.Decode(value);
             }
             else if (name.SequenceEqual(JwkParameterNames.QIUtf8))
             {
-                key._qi = Base64Url.Decode(value);
+                key._parameters.InverseQ = Base64Url.Decode(value);
             }
             else
             {
@@ -1102,13 +1124,13 @@ namespace JsonWebToken
             switch (pKtyShort)
             {
                 case qi:
-                    key._qi = Base64Url.Decode(reader.ValueSpan);
+                    key._parameters.InverseQ = Base64Url.Decode(reader.ValueSpan);
                     break;
                 case dp:
-                    key._dp = Base64Url.Decode(reader.ValueSpan);
+                    key._parameters.DP = Base64Url.Decode(reader.ValueSpan);
                     break;
                 case dq:
-                    key._dq = Base64Url.Decode(reader.ValueSpan);
+                    key._parameters.DQ = Base64Url.Decode(reader.ValueSpan);
                     break;
             }
         }
@@ -1119,19 +1141,19 @@ namespace JsonWebToken
             switch (propertyNameRef)
             {
                 case (byte)'e':
-                    key._e = Base64Url.Decode(reader.ValueSpan);
+                    key._parameters.Exponent = Base64Url.Decode(reader.ValueSpan);
                     break;
                 case (byte)'n':
-                    key._n = Base64Url.Decode(reader.ValueSpan);
+                    key._parameters.Modulus = Base64Url.Decode(reader.ValueSpan);
                     break;
                 case (byte)'p':
-                    key._p = Base64Url.Decode(reader.ValueSpan);
+                    key._parameters.P = Base64Url.Decode(reader.ValueSpan);
                     break;
                 case (byte)'q':
-                    key._q = Base64Url.Decode(reader.ValueSpan);
+                    key._parameters.Q = Base64Url.Decode(reader.ValueSpan);
                     break;
                 case (byte)'d':
-                    key._d = Base64Url.Decode(reader.ValueSpan);
+                    key._parameters.D = Base64Url.Decode(reader.ValueSpan);
                     break;
             }
         }
@@ -1143,7 +1165,7 @@ namespace JsonWebToken
             base.WriteTo(writer);
 
             // the modulus N is always the biggest field
-            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(_n.Length);
+            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(_parameters.Modulus!.Length);
             byte[]? arrayToReturn = null;
             try
             {
@@ -1151,15 +1173,15 @@ namespace JsonWebToken
                                     ? stackalloc byte[requiredBufferSize]
                                     : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
 
-                WriteBase64UrlProperty(writer, buffer, _e, JwkParameterNames.EUtf8);
-                WriteBase64UrlProperty(writer, buffer, _n, JwkParameterNames.NUtf8);
+                WriteBase64UrlProperty(writer, buffer, _parameters.Exponent!, JwkParameterNames.EUtf8);
+                WriteBase64UrlProperty(writer, buffer, _parameters.Modulus!, JwkParameterNames.NUtf8);
 
-                WriteOptionalBase64UrlProperty(writer, buffer, _d, JwkParameterNames.DUtf8);
-                WriteOptionalBase64UrlProperty(writer, buffer, _dp, JwkParameterNames.DPUtf8);
-                WriteOptionalBase64UrlProperty(writer, buffer, _dq, JwkParameterNames.DQUtf8);
-                WriteOptionalBase64UrlProperty(writer, buffer, _p, JwkParameterNames.PUtf8);
-                WriteOptionalBase64UrlProperty(writer, buffer, _q, JwkParameterNames.QUtf8);
-                WriteOptionalBase64UrlProperty(writer, buffer, _qi, JwkParameterNames.QIUtf8);
+                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.D, JwkParameterNames.DUtf8);
+                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.DP, JwkParameterNames.DPUtf8);
+                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.DQ, JwkParameterNames.DQUtf8);
+                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.P, JwkParameterNames.PUtf8);
+                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.Q, JwkParameterNames.QUtf8);
+                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.InverseQ, JwkParameterNames.QIUtf8);
             }
             finally
             {
@@ -1199,7 +1221,7 @@ namespace JsonWebToken
 
                 int hash = (int)2166136261;
 
-                var e = _e;
+                var e = _parameters.Exponent!;
                 if (e.Length >= sizeof(int))
                 {
                     hash = (hash ^ Unsafe.ReadUnaligned<int>(ref e[0])) * p;
@@ -1212,7 +1234,7 @@ namespace JsonWebToken
                     }
                 }
 
-                var n = _n;
+                var n = _parameters.Modulus!;
                 if (n.Length >= sizeof(int))
                 {
                     hash = (hash ^ Unsafe.ReadUnaligned<int>(ref n[0])) * p;
@@ -1233,29 +1255,13 @@ namespace JsonWebToken
         public override void Dispose()
         {
             base.Dispose();
-            if (_dp != null)
+            if (_parameters.DP != null)
             {
-                CryptographicOperations.ZeroMemory(_dp);
-            }
-
-            if (_dq != null)
-            {
-                CryptographicOperations.ZeroMemory(_dq);
-            }
-
-            if (_qi != null)
-            {
-                CryptographicOperations.ZeroMemory(_qi);
-            }
-
-            if (_p != null)
-            {
-                CryptographicOperations.ZeroMemory(_p);
-            }
-
-            if (_q != null)
-            {
-                CryptographicOperations.ZeroMemory(_q);
+                CryptographicOperations.ZeroMemory(_parameters.DP);
+                CryptographicOperations.ZeroMemory(_parameters.DQ);
+                CryptographicOperations.ZeroMemory(_parameters.InverseQ);
+                CryptographicOperations.ZeroMemory(_parameters.P);
+                CryptographicOperations.ZeroMemory(_parameters.Q);
             }
         }
     }

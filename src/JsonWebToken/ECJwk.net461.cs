@@ -13,6 +13,9 @@ namespace JsonWebToken
     public sealed class ECJwk : AsymmetricJwk
     {
         /// <inheritsdoc />
+        public override bool HasPrivateKey => throw new NotImplementedException();
+
+        /// <inheritsdoc />
         public override ReadOnlySpan<byte> Kty => throw new NotImplementedException();
 
         /// <inheritsdoc />
@@ -44,6 +47,12 @@ namespace JsonWebToken
 
         /// <inheritsdoc />
         protected override Signer CreateSigner(SignatureAlgorithm algorithm) => throw new NotImplementedException();
+
+        /// <inheritdoc />
+        protected override void Canonicalize(Span<byte> buffer) => throw new NotImplementedException();
+
+        /// <inheritdoc />
+        protected override int GetCanonicalizeSize() => throw new NotImplementedException();      
     }
 }
 #endif

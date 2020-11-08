@@ -505,7 +505,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public static SymmetricJwk GenerateKey(SignatureAlgorithm algorithm, bool computeThumbprint = true)
             => FromByteArray(GenerateKeyBytes(algorithm.RequiredKeySizeInBits * 8), algorithm, computeThumbprint: computeThumbprint);
-        
+
         /// <summary>
         /// Generates a new <see cref="SymmetricJwk"/>.
         /// </summary>
@@ -524,6 +524,24 @@ namespace JsonWebToken
             _randomNumberGenerator.GetBytes(key);
 #endif
             return key;
+        }
+
+        private static ReadOnlySpan<byte> StartCanonicalizeValue => new byte[] { (byte)'{', (byte)'"', (byte)'k', (byte)'"', (byte)':', (byte)'"' };
+        private static ReadOnlySpan<byte> EndCanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'k', (byte)'t', (byte)'y', (byte)'"', (byte)':', (byte)'"', (byte)'o', (byte)'c', (byte)'t', (byte)'"', (byte)'}' };
+
+        protected override void Canonicalize(Span<byte> buffer)
+        {
+            // {"k":"XXXX","kty":"oct"}
+            int offset = StartCanonicalizeValue.Length;
+            StartCanonicalizeValue.CopyTo(buffer);
+            offset += Base64Url.Encode(_k, buffer.Slice(offset));
+            EndCanonicalizeValue.CopyTo(buffer.Slice(offset));
+        }
+
+        protected override int GetCanonicalizeSize()
+        {
+            // 20 = StartCanonicalizeValue.Length + EndCanonicalizeValue.Length
+            return 20 + Base64Url.GetArraySizeRequiredToEncode(_k.Length);
         }
 
         /// <inheritdoc />      

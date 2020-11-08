@@ -19,14 +19,14 @@ namespace JsonWebToken
         public static MemberStore CreateForHeader()
             => new MemberStore(EmptyMapForHeader.Empty);
 
-        private Map _map;
+        private IMap _map;
 
         /// <summary>
         /// Gets the count of elements.
         /// </summary>
         public int Count => _map.Count;
 
-        private MemberStore(Map map)
+        private MemberStore(IMap map)
         {
             _map = map;
         }
@@ -78,11 +78,11 @@ namespace JsonWebToken
             throw new NotImplementedException();
         }
 
-        private interface Map : IEnumerable<JwtMemberX>
+        private interface IMap : IEnumerable<JwtMemberX>
         {
             public int Count { get; }
 
-            public bool TryAdd(JwtMemberX value, out Map map);
+            public bool TryAdd(JwtMemberX value, out IMap map);
 
             public bool TryGetValue(string key, [NotNullWhen(true)] out JwtMemberX value);
 
@@ -90,17 +90,17 @@ namespace JsonWebToken
 
             void WriteTo(Utf8JsonWriter writer);
 
-            Map Merge(Map map);
+            IMap Merge(IMap map);
         }
 
         // Instance without any key/value pairs. Used as a singleton.
-        private sealed class EmptyMapForPayload : Map
+        private sealed class EmptyMapForPayload : IMap
         {
             public static readonly EmptyMapForPayload Empty = new EmptyMapForPayload();
 
             public int Count => 0;
 
-            public bool TryAdd(JwtMemberX value, out Map map)
+            public bool TryAdd(JwtMemberX value, out IMap map)
             {
                 // Create a new one-element map to store the key/value pair
                 //map = new OneElementMap(value);
@@ -132,20 +132,20 @@ namespace JsonWebToken
             {
             }
 
-            public Map Merge(Map map)
+            public IMap Merge(IMap map)
             {
                 return map;
             }
         }
 
         // Instance without any key/value pairs. Used as a singleton.
-        private sealed class EmptyMapForHeader : Map
+        private sealed class EmptyMapForHeader : IMap
         {
             public static readonly EmptyMapForPayload Empty = new EmptyMapForPayload();
 
             public int Count => 0;
 
-            public bool TryAdd(JwtMemberX value, out Map map)
+            public bool TryAdd(JwtMemberX value, out IMap map)
             {
                 // Create a new one-element map to store the key/value pair
                 map = new OneElementMap(value);
@@ -174,7 +174,7 @@ namespace JsonWebToken
             {
             }
 
-            public Map Merge(Map map)
+            public IMap Merge(IMap map)
             {
                 return map;
             }
@@ -186,7 +186,7 @@ namespace JsonWebToken
         [DebuggerDisplay("{Current,nq}")]
         private struct EmptyObjectEnumerator : IEnumerator<JwtMemberX>
         {
-            public static readonly EmptyObjectEnumerator Empty = new EmptyObjectEnumerator();
+            public static readonly EmptyObjectEnumerator Empty = default;
 
             /// <inheritdoc />
             public JwtMemberX Current
@@ -211,7 +211,7 @@ namespace JsonWebToken
                 => false;
         }
 
-        private sealed class OneElementMap : Map
+        private sealed class OneElementMap : IMap
         {
             private readonly JwtMemberX _value1;
 
@@ -222,7 +222,7 @@ namespace JsonWebToken
 
             public int Count => 1;
 
-            public bool TryAdd(JwtMemberX value, out Map map)
+            public bool TryAdd(JwtMemberX value, out IMap map)
             {
                 if (value.Name == _value1.Name)
                 {
@@ -268,7 +268,7 @@ namespace JsonWebToken
                 _value1.WriteTo(writer);
             }
 
-            public Map Merge(Map map)
+            public IMap Merge(IMap map)
             {
                 map.TryAdd(_value1, out map);
                 return map;
@@ -322,7 +322,7 @@ namespace JsonWebToken
         }
 
 
-        private sealed class TwoElementMap : Map
+        private sealed class TwoElementMap : IMap
         {
             private readonly JwtMemberX _value1;
             private readonly JwtMemberX _value2;
@@ -335,7 +335,7 @@ namespace JsonWebToken
 
             public int Count => 2;
 
-            public bool TryAdd(JwtMemberX value, out Map map)
+            public bool TryAdd(JwtMemberX value, out IMap map)
             {
                 if (value.Name == _value1.Name || value.Name == _value2.Name)
                 {
@@ -390,7 +390,7 @@ namespace JsonWebToken
             IEnumerator IEnumerable.GetEnumerator()
                 => GetEnumerator();
 
-            public Map Merge(Map map)
+            public IMap Merge(IMap map)
             {
                 map.TryAdd(_value1, out map);
                 map.TryAdd(_value2, out map);
@@ -450,7 +450,7 @@ namespace JsonWebToken
             }
         }
 
-        private sealed class ThreeElementMap : Map
+        private sealed class ThreeElementMap : IMap
         {
             private readonly JwtMemberX _value1;
             private readonly JwtMemberX _value2;
@@ -465,7 +465,7 @@ namespace JsonWebToken
 
             public int Count => 3;
 
-            public bool TryAdd(JwtMemberX value, out Map map)
+            public bool TryAdd(JwtMemberX value, out IMap map)
             {
                 if (value.Name == _value1.Name || value.Name == _value2.Name || value.Name == _value3.Name)
                 {
@@ -526,7 +526,7 @@ namespace JsonWebToken
             IEnumerator IEnumerable.GetEnumerator()
                 => GetEnumerator();
 
-            public Map Merge(Map map)
+            public IMap Merge(IMap map)
             {
                 map.TryAdd(_value1, out map);
                 map.TryAdd(_value2, out map);
@@ -591,7 +591,7 @@ namespace JsonWebToken
             }
         }
 
-        private sealed class FourElementMap : Map
+        private sealed class FourElementMap : IMap
         {
             private readonly JwtMemberX _value1;
             private readonly JwtMemberX _value2;
@@ -608,7 +608,7 @@ namespace JsonWebToken
 
             public int Count => 4;
 
-            public bool TryAdd(JwtMemberX value, out Map map)
+            public bool TryAdd(JwtMemberX value, out IMap map)
             {
                 if (value.Name == _value1.Name || value.Name == _value2.Name || value.Name == _value3.Name || value.Name == _value4.Name)
                 {
@@ -681,7 +681,7 @@ namespace JsonWebToken
             IEnumerator IEnumerable.GetEnumerator()
                 => GetEnumerator();
 
-            public Map Merge(Map map)
+            public IMap Merge(IMap map)
             {
                 map.TryAdd(_value1, out map);
                 map.TryAdd(_value2, out map);
@@ -751,7 +751,7 @@ namespace JsonWebToken
             }
         }
 
-        private sealed class MultiElementMap : Map
+        private sealed class MultiElementMap : IMap
         {
             private const int MaxMultiElements = 16;
             private readonly JwtMemberX[] _keyValues;
@@ -771,7 +771,7 @@ namespace JsonWebToken
                 _keyValues[index] = value;
             }
 
-            public bool TryAdd(JwtMemberX value, out Map map)
+            public bool TryAdd(JwtMemberX value, out IMap map)
             {
                 for (int i = 0; i < _count - 1; i++)
                 {
@@ -851,7 +851,7 @@ namespace JsonWebToken
             IEnumerator IEnumerable.GetEnumerator()
                 => GetEnumerator();
 
-            public Map Merge(Map map)
+            public IMap Merge(IMap map)
             {
                 for (int i = 0; i < _count; i++)
                 {
@@ -908,7 +908,7 @@ namespace JsonWebToken
             }
         }
 
-        private sealed class ManyElementMap : Map
+        private sealed class ManyElementMap : IMap
         {
             private readonly Dictionary<string, JwtMemberX> _dictionary;
 
@@ -919,7 +919,7 @@ namespace JsonWebToken
                 _dictionary = new Dictionary<string, JwtMemberX>(capacity);
             }
 
-            public bool TryAdd(JwtMemberX value, out Map map)
+            public bool TryAdd(JwtMemberX value, out IMap map)
             {
                 map = this;
 #if NETCOREAPP
@@ -971,7 +971,7 @@ namespace JsonWebToken
             IEnumerator IEnumerable.GetEnumerator()
                 => GetEnumerator();
 
-            public Map Merge(Map map)
+            public IMap Merge(IMap map)
             {
                 foreach (var item in _dictionary.Values)
                 {
