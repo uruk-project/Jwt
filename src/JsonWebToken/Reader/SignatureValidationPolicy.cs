@@ -183,9 +183,9 @@ namespace JsonWebToken
                                 var alg = algorithm ?? key.SignatureAlgorithm;
                                 if (!(alg is null))
                                 {
-                                    if (key.TryGetSigner(alg, out var signer))
+                                    if (key.TryGetSignatureVerifier(alg, out var signatureVerifier))
                                     {
-                                        if (signer.Verify(contentBytes, signatureBytes))
+                                        if (signatureVerifier.Verify(contentBytes, signatureBytes))
                                         {
                                             return SignatureValidationResult.Success(key);
                                         }

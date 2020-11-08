@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections;
-using System.Text;
 using System.Text.Json;
 using JsonWebToken.Internal;
 
@@ -87,7 +86,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the value associated with the specified key.
         /// </summary>
-        public bool TryGetValue(string key, out JwtMemberX value)
+        public bool TryGetValue(string key, out JwtMember value)
         {
             return _events.TryGetValue(key, out value);
         }
@@ -105,7 +104,7 @@ namespace JsonWebToken
             return Utf8.GetString(input);
         }
 
-        internal void Add(JwtMemberX value)
+        internal void Add(JwtMember value)
         {
             _events.TryAdd(value);
         }
@@ -115,7 +114,7 @@ namespace JsonWebToken
         /// </summary>
         public void Add(string claimName, object value)
         {
-            _events.TryAdd(new JwtMemberX(claimName, value));
+            _events.TryAdd(new JwtMember(claimName, value));
         }
 
         /// <inheritdoc/>

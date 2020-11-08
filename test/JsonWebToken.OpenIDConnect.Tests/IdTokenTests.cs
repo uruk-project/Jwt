@@ -27,7 +27,7 @@ namespace JsonWebToken.Tests
                     { "gender", "female" },
                     { "birthdate", "0000-10-31" },
                     { "email", "janedoe@example.com" },
-                    { "picture", "http,//example.com/janedoe/me.jpg" }
+                    { "picture", "http://example.com/janedoe/me.jpg" }
                 }
             };
             var writer = new JwtWriter();

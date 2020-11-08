@@ -384,6 +384,12 @@ namespace JsonWebToken
             return new SymmetricSigner(this, algorithm);
         }
 
+        /// <inheritdoc />
+        protected override SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm)
+        {
+            return new SymmetricSignatureVerifier(this, algorithm);
+        }
+
         /// <inheritsdoc />
         protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {

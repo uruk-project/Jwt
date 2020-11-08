@@ -78,13 +78,6 @@ namespace JsonWebToken.Performance
             }
         }
 
-        [Benchmark(Baseline = false)]
-        public void Compress_Stream()
-        {
-            var payload = GetPayload(Size);
-            _compressor.Compress(payload);
-        }
-
         private static byte[] GetPayload(int size)
         {
             switch (size)

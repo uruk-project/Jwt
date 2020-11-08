@@ -30,7 +30,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void Add(string propertyName, string value)
         {
-            _header.TryAdd(new JwtMemberX(propertyName, value));
+            _header.TryAdd(new JwtMember(propertyName, value));
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void Add(string propertyName, long value)
         {
-            _header.TryAdd(new JwtMemberX(propertyName, value));
+            _header.TryAdd(new JwtMember(propertyName, value));
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void Add(string propertyName, object[] value)
         {
-            _header.TryAdd(new JwtMemberX(propertyName, value));
+            _header.TryAdd(new JwtMember(propertyName, value));
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace JsonWebToken
         /// <param name="values"></param>
         public void Add(string propertyName, string?[] values)
         {
-            _header.TryAdd(new JwtMemberX(propertyName, values));
+            _header.TryAdd(new JwtMember(propertyName, values));
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void Add(string propertyName, object value)
         {
-            _header.TryAdd(new JwtMemberX(propertyName, value));
+            _header.TryAdd(new JwtMember(propertyName, value));
         }
 
         /// <summary>
@@ -80,15 +80,15 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public void Add(string propertyName, bool value)
         {
-            _header.TryAdd(new JwtMemberX(propertyName, value));
+            _header.TryAdd(new JwtMember(propertyName, value));
         }
 
-        internal void Add(JwtMemberX value)
+        internal void Add(JwtMember value)
         {
             _header.TryAdd(value);
         }
 
-        internal bool TryGetValue(string utf8Name, out JwtMemberX value)
+        internal bool TryGetValue(string utf8Name, out JwtMember value)
         {
             return _header.TryGetValue(utf8Name, out value);
         }

@@ -13,7 +13,6 @@ namespace JsonWebToken.Internal
         private readonly int _hashSize;
         private readonly Sha2 _sha;
         private readonly int _base64HashSize;
-        private readonly bool _canOnlyVerify;
         private bool _disposed;
 
         public EcdsaSigner(ECJwk key, SignatureAlgorithm algorithm)
@@ -29,7 +28,6 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentOutOfRangeException_InvalidSigningKeySize(key, algorithm.RequiredKeySizeInBits);
             }
 
-            _canOnlyVerify = !key.HasPrivateKey;
             _sha = algorithm.Sha;
             _hashSize = key.Crv.HashSize;
             _base64HashSize = Base64Url.GetArraySizeRequiredToEncode(_hashSize);
@@ -55,11 +53,6 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            if (_canOnlyVerify)
-            {
-                ThrowHelper.ThrowInvalidOperationException_RequirePrivateKey();
-            }
-
             var ecdsa = _ecdsaPool.Get();
 #if SUPPORT_SPAN_CRYPTO
             Span<byte> hash = stackalloc byte[_sha.HashSize];
@@ -74,6 +67,55 @@ namespace JsonWebToken.Internal
             return true;
 #endif
         }
+
+        /// <inheritsdoc />
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _ecdsaPool.Dispose();
+                }
+
+                _disposed = true;
+            }
+        }
+
+    }   
+    
+    internal sealed class EcdsaSignatureVerifier : SignatureVerifier
+    {
+        private readonly ObjectPool<ECDsa> _ecdsaPool;
+        private readonly int _hashSize;
+        private readonly Sha2 _sha;
+        private readonly int _base64HashSize;
+        private bool _disposed;
+
+        public EcdsaSignatureVerifier(ECJwk key, SignatureAlgorithm algorithm)
+            : base(algorithm)
+        {
+            if (key is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
+            }
+
+            if (key.KeySizeInBits != algorithm.RequiredKeySizeInBits)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException_InvalidSigningKeySize(key, algorithm.RequiredKeySizeInBits);
+            }
+
+            _sha = algorithm.Sha;
+            _hashSize = key.Crv.HashSize;
+            _base64HashSize = Base64Url.GetArraySizeRequiredToEncode(_hashSize);
+
+            _ecdsaPool = new ObjectPool<ECDsa>(new ECDsaObjectPoolPolicy(key, algorithm));
+        }
+
+        /// <inheritsdoc />
+        public override int HashSizeInBytes => _hashSize;
+
+        public override int Base64HashSizeInBytes => _base64HashSize;
 
         /// <inheritsdoc />
         public override bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
@@ -123,24 +165,24 @@ namespace JsonWebToken.Internal
                 _disposed = true;
             }
         }
+    }
 
-        private sealed class ECDsaObjectPoolPolicy : PooledObjectFactory<ECDsa>
+    internal sealed class ECDsaObjectPoolPolicy : PooledObjectFactory<ECDsa>
+    {
+        private readonly ECJwk _key;
+        private readonly SignatureAlgorithm _algorithm;
+        private readonly bool _usePrivateKey;
+
+        public ECDsaObjectPoolPolicy(ECJwk key, SignatureAlgorithm algorithm)
         {
-            private readonly ECJwk _key;
-            private readonly SignatureAlgorithm _algorithm;
-            private readonly bool _usePrivateKey;
+            _key = key;
+            _algorithm = algorithm;
+            _usePrivateKey = key.HasPrivateKey;
+        }
 
-            public ECDsaObjectPoolPolicy(ECJwk key, SignatureAlgorithm algorithm)
-            {
-                _key = key;
-                _algorithm = algorithm;
-                _usePrivateKey = key.HasPrivateKey;
-            }
-
-            public override ECDsa Create()
-            {
-                return _key.CreateECDsa(_algorithm, _usePrivateKey);
-            }
+        public override ECDsa Create()
+        {
+            return _key.CreateECDsa(_algorithm, _usePrivateKey);
         }
     }
 }

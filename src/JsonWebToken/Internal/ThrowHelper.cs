@@ -508,6 +508,7 @@ namespace JsonWebToken
                 case ExceptionArgument.value: return "value";
                 case ExceptionArgument.name: return "name";
                 case ExceptionArgument.compressor: return "compressor";
+                case ExceptionArgument.decompressor: return "decompressor";
                 case ExceptionArgument.key: return "key";
                 case ExceptionArgument.d: return "d";
                 case ExceptionArgument.x: return "x";
@@ -574,6 +575,7 @@ namespace JsonWebToken
         value,
         name,
         compressor,
+        decompressor,
         key,
         d,
         x,

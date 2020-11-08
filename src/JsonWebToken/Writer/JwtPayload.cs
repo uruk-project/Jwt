@@ -47,49 +47,49 @@ namespace JsonWebToken
         /// Adds the value of the 'sub' claim.
         /// </summary>
         public void AddSub(string value)
-            => _payload.TryAdd(new JwtMemberX(Claims.Sub, value));
+            => _payload.TryAdd(new JwtMember(Claims.Sub, value));
 
         /// <summary>
         /// Adds the value of the 'jti' claim.
         /// </summary>
         public void AddJti(string value)
-            => _payload.TryAdd(new JwtMemberX(Claims.Jti, value));
+            => _payload.TryAdd(new JwtMember(Claims.Jti, value));
 
         /// <summary>
         /// Adds the value of the 'aud' claim.
         /// </summary>
         public void AddAud(string value)
-            => _payload.TryAdd(new JwtMemberX(Claims.Aud, value));
+            => _payload.TryAdd(new JwtMember(Claims.Aud, value));
 
         /// <summary>
         /// Adds the value of the 'aud' claim.
         /// </summary>
         public void AddAud(string[] value)
-            => _payload.TryAdd(new JwtMemberX(Claims.Aud, value));
+            => _payload.TryAdd(new JwtMember(Claims.Aud, value));
 
         /// <summary>
         /// Adds the value of the 'exp' claim.
         /// </summary>
         public void AddExp(long value)
-            => _payload.TryAdd(new JwtMemberX(Claims.Exp, value));
+            => _payload.TryAdd(new JwtMember(Claims.Exp, value));
 
         /// <summary>
         /// Adds the value of the 'iss' claim.
         /// </summary>
         public void AddIss(string value)
-            => _payload.TryAdd(new JwtMemberX(Claims.Iss, value));
+            => _payload.TryAdd(new JwtMember(Claims.Iss, value));
 
         /// <summary>
         /// Adds the value of the 'iat' claim.
         /// </summary>
         public void AddIat(string value)
-            => _payload.TryAdd(new JwtMemberX(Claims.Iat, value));
+            => _payload.TryAdd(new JwtMember(Claims.Iat, value));
 
         /// <summary>
         ///Adds the value of the 'nbf' claim.
         /// </summary>
         public void AddNbf(long value)
-            => _payload.TryAdd(new JwtMemberX(Claims.Nbf, value));
+            => _payload.TryAdd(new JwtMember(Claims.Nbf, value));
 
         /// <summary>
         /// Determines whether the <see cref="JwtPayload"/> contains the specified key.
@@ -104,7 +104,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the value associated with the specified key.
         /// </summary>
-        public bool TryGetValue(string key, out JwtMemberX value)
+        public bool TryGetValue(string key, out JwtMember value)
         {
             return _payload.TryGetValue(key, out value);
         }
@@ -122,7 +122,7 @@ namespace JsonWebToken
             return Utf8.GetString(input);
         }
 
-        internal void Add(JwtMemberX value)
+        internal void Add(JwtMember value)
         {
             _payload.TryAdd(value);
         }
@@ -132,7 +132,7 @@ namespace JsonWebToken
         /// </summary>
         public void Add(string claimName, string value)
         {
-            _payload.TryAdd(new JwtMemberX(claimName, value));
+            _payload.TryAdd(new JwtMember(claimName, value));
         }
 
         /// <summary>
@@ -140,7 +140,23 @@ namespace JsonWebToken
         /// </summary>
         public void Add(string claimName, long value)
         {
-            _payload.TryAdd(new JwtMemberX(claimName, value));
+            _payload.TryAdd(new JwtMember(claimName, value));
+        }
+
+        /// <summary>
+        /// Adds the claim of type <see cref="int"/> to the current <see cref="JwtPayload"/>.
+        /// </summary>
+        public void Add(string claimName, int value)
+        {
+            _payload.TryAdd(new JwtMember(claimName, value));
+        }
+
+        /// <summary>
+        /// Adds the claim of type <see cref="int"/> to the current <see cref="JwtPayload"/>.
+        /// </summary>
+        public void Add(string claimName, short value)
+        {
+            _payload.TryAdd(new JwtMember(claimName, value));
         }
 
         /// <summary>
@@ -148,7 +164,7 @@ namespace JsonWebToken
         /// </summary>
         public void Add(string claimName, object[] value)
         {
-            _payload.TryAdd(new JwtMemberX(claimName, value));
+            _payload.TryAdd(new JwtMember(claimName, value));
         }
 
         /// <summary>
@@ -156,7 +172,7 @@ namespace JsonWebToken
         /// </summary>
         public void Add(string claimName, string?[] values)
         {
-            _payload.TryAdd(new JwtMemberX(claimName, values));
+            _payload.TryAdd(new JwtMember(claimName, values));
         }
 
         /// <summary>
@@ -164,7 +180,7 @@ namespace JsonWebToken
         /// </summary>
         public void Add(string claimName, bool value)
         {
-            _payload.TryAdd(new JwtMemberX(claimName, value));
+            _payload.TryAdd(new JwtMember(claimName, value));
         }
 
         /// <summary>
@@ -172,7 +188,7 @@ namespace JsonWebToken
         /// </summary>
         public void Add(string claimName, object value)
         {
-            _payload.TryAdd(new JwtMemberX(claimName, value));
+            _payload.TryAdd(new JwtMember(claimName, value));
         }
 
         /// <inheritdoc/>

@@ -1107,7 +1107,7 @@ namespace JsonWebToken
         ///   An enumerable and enumerator for the properties of a JSON object.
         /// </summary>
         [DebuggerDisplay("{Current,nq}")]
-        public struct ObjectEnumerator : IEnumerable<JwtMember>, IEnumerator<JwtMember>
+        public struct ObjectEnumerator : IEnumerable<JwtMemberElement>, IEnumerator<JwtMemberElement>
         {
             private int _curIdx;
             private JwtDocument _document;
@@ -1129,7 +1129,7 @@ namespace JsonWebToken
             }
 
             /// <inheritdoc />
-            public JwtMember Current
+            public JwtMemberElement Current
             {
                 get
                 {
@@ -1138,7 +1138,7 @@ namespace JsonWebToken
                         return default;
                     }
 
-                    return new JwtMember(new JwtElement(_document, _curIdx));
+                    return new JwtMemberElement(new JwtElement(_document, _curIdx));
                 }
             }
 
@@ -1163,7 +1163,7 @@ namespace JsonWebToken
             }
 
             /// <inheritdoc />
-            IEnumerator<JwtMember> IEnumerable<JwtMember>.GetEnumerator() => GetEnumerator();
+            IEnumerator<JwtMemberElement> IEnumerable<JwtMemberElement>.GetEnumerator() => GetEnumerator();
 
             /// <inheritdoc />
             public void Dispose()

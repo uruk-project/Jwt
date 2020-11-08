@@ -50,6 +50,9 @@ namespace JsonWebToken
 
         /// <inheritsdoc />
         protected override Signer CreateSigner(SignatureAlgorithm algorithm) => throw new NotImplementedException();    
+ 
+        /// <inheritsdoc />
+        protected override SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm) => throw new NotImplementedException();    
     }
 }
 #endif

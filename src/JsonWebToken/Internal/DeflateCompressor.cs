@@ -12,7 +12,10 @@ namespace JsonWebToken.Internal
         {
             return new DeflateStream(outputStream, CompressionLevel.Optimal, false);
         }
+    }
 
+    internal sealed class DeflateDecompressor : Decompressor<DeflateStream>
+    {
         public override DeflateStream CreateDecompressionStream(Stream inputStream)
         {
             return new DeflateStream(inputStream, CompressionMode.Decompress);

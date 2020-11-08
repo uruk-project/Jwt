@@ -44,6 +44,7 @@ namespace JsonWebToken
         private static readonly EmptyAlgorithm EmptyAlg = new EmptyAlgorithm();
 
         private CryptographicStore<Signer>? _signers;
+        private CryptographicStore<SignatureVerifier>? _signatureVerifiers;
         private CryptographicStore<KeyWrapper>? _keyWrappers;
         private CryptographicStore<KeyUnwrapper>? _keyUnwrappers;
 
@@ -483,6 +484,12 @@ namespace JsonWebToken
         protected abstract Signer CreateSigner(SignatureAlgorithm algorithm);
 
         /// <summary>
+        /// Creates a fresh new <see cref="SignatureVerifier"/> with the current <see cref="Jwk"/> as key.
+        /// </summary>
+        /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
+        protected abstract SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm);
+
+        /// <summary>
         /// Tries to provide a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
         /// </summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
@@ -522,6 +529,52 @@ namespace JsonWebToken
             }
 
             signer = null;
+            return false;
+
+        Found:
+            return true;
+        }
+
+        /// <summary>
+        /// Tries to provide a <see cref="SignatureVerifier"/> with the current <see cref="Jwk"/> as key.
+        /// </summary>
+        /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
+        /// <param name="signatureVerifier">The created <see cref="SignatureVerifier"/>.</param>
+        /// <returns><c>true</c> if the <paramref name="signatureVerifier"/> is available for the requested <paramref name="algorithm"/>; <c>false</c> otherwise.</returns>
+        public bool TryGetSignatureVerifier(SignatureAlgorithm? algorithm, [NotNullWhen(true)] out SignatureVerifier? signatureVerifier)
+        {
+            if (!(algorithm is null))
+            {
+                var signatureVerifiers = _signatureVerifiers;
+                if (signatureVerifiers is null)
+                {
+                    signatureVerifiers = new CryptographicStore<SignatureVerifier>();
+                    _signatureVerifiers = signatureVerifiers;
+                }
+                else if (signatureVerifiers.TryGetValue(algorithm.Id, out signatureVerifier))
+                {
+                    goto Found;
+                }
+
+                if (SupportSignature(algorithm))
+                {
+                    signatureVerifier = CreateSignatureVerifier(algorithm);
+                    if (signatureVerifiers.TryAdd(algorithm.Id, signatureVerifier))
+                    {
+                        goto Found;
+                    }
+
+                    signatureVerifier.Dispose();
+                    if (signatureVerifiers.TryGetValue(algorithm.Id, out signatureVerifier))
+                    {
+                        goto Found;
+                    }
+
+                    ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+                }
+            }
+
+            signatureVerifier = null;
             return false;
 
         Found:
@@ -1203,6 +1256,9 @@ namespace JsonWebToken
 
             protected override Signer CreateSigner(SignatureAlgorithm algorithm)
                 => Signer.None;
+
+            protected override SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm)
+               => SignatureVerifier.None;
         }
 
         private sealed class UnknownAlgorithm : IAlgorithm

@@ -441,11 +441,11 @@ namespace JsonWebToken
                     goto Error;
                 }
 
-                var compressor = compressionAlgorithm.Compressor;
+                var decompressor = compressionAlgorithm.Decompressor;
                 decompressionsBufferWriter = new PooledByteBufferWriter(decryptedBytes.Length * 4);
                 try
                 {
-                    compressor.Decompress(decryptedBytes, decompressionsBufferWriter);
+                    decompressor.Decompress(decryptedBytes, decompressionsBufferWriter);
 
                     // There is no need to keep this buffer anymore
                     ArrayPool<byte>.Shared.Return(ciphertextBuffer, clearArray: true);

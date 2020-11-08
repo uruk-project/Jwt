@@ -443,6 +443,12 @@ namespace JsonWebToken
         {
             return new RsaSigner(this, algorithm);
         }
+        
+        /// <inheritsdoc />
+        protected override SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm)
+        {
+            return new RsaSignatureVerifier(this, algorithm);
+        }
 
         /// <inheritsdoc />
         protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)

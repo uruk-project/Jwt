@@ -222,7 +222,7 @@ namespace JsonWebToken.Tests
                     case "iat":
                     case "nbf":
                     case "exp":
-                        descriptor.Payload.Add(property.Name, EpochTime.ToDateTime((long)property.Value));
+                        descriptor.Payload.Add(property.Name, (long)property.Value);
                         break;
                     default:
                         if (property.Value is JArray)

@@ -18,7 +18,7 @@ namespace JsonWebToken
         /// <summary>
         /// Deflate
         /// </summary>
-        public static readonly CompressionAlgorithm Deflate = new CompressionAlgorithm(id: 1, "DEF", new DeflateCompressor());
+        public static readonly CompressionAlgorithm Deflate = new CompressionAlgorithm(id: 1, "DEF", new DeflateCompressor(), new DeflateDecompressor());
 
         /// <summary>
         /// Gets the algorithm identifier. 
@@ -40,6 +40,11 @@ namespace JsonWebToken
         /// </summary>
         public Compressor Compressor { get; }
 
+        /// <summary>
+        /// Gets the <see cref="Decompressor"/>.
+        /// </summary>
+        public Decompressor Decompressor { get; }
+
         private readonly sbyte _id;
         private readonly byte[] _utf8Name;
 
@@ -49,7 +54,8 @@ namespace JsonWebToken
         /// <param name="id"></param>
         /// <param name="name"></param>
         /// <param name="compressor"></param>
-        public CompressionAlgorithm(sbyte id, string name, Compressor compressor)
+        /// <param name="decompressor"></param>
+        public CompressionAlgorithm(sbyte id, string name, Compressor compressor, Decompressor decompressor)
         {
             if (name is null)
             {
@@ -61,9 +67,15 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.compressor);
             }
 
+            if (decompressor is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.decompressor);
+            }
+
             _id = id;
             _utf8Name = Utf8.GetBytes(name);
             Compressor = compressor;
+            Decompressor = decompressor;
         }
 
         /// <summary>
@@ -269,6 +281,6 @@ namespace JsonWebToken
         }
 
         internal static CompressionAlgorithm Create(string name)
-            => new CompressionAlgorithm(127, name, Compressor.Null);
+            => new CompressionAlgorithm(127, name, Compressor.Null, Decompressor.Null);
     }
 }

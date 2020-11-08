@@ -223,7 +223,7 @@ namespace JsonWebToken
             //CheckRequiredHeader(HeaderParameters.Alg, JsonValueKind.String);
         }
 
-        internal bool TryGetValue(string name, out JwtMemberX value)
+        internal bool TryGetValue(string name, out JwtMember value)
         {
             return _payload.TryGetValue(name, out value);
         }

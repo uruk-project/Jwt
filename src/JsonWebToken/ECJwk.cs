@@ -401,6 +401,16 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
+        protected override SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm)
+        {
+#if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
+            return new EcdsaSignatureVerifier(this, algorithm);
+#else
+            throw new NotImplementedException();
+#endif
+        }
+
+        /// <inheritdoc />
         protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
 #if SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
