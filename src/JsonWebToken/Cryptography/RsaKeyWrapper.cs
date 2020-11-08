@@ -65,7 +65,7 @@ namespace JsonWebToken.Internal
 
             return cek;
         }      
-        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeaderX header, Span<byte> destination)
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeader header, Span<byte> destination)
         {
             if (_disposed)
             {

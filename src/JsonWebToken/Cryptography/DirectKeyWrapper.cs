@@ -26,7 +26,7 @@ namespace JsonWebToken.Internal
             return SymmetricJwk.FromSpan(bytes, false);
         }
 
-        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeaderX header, Span<byte> destination)
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeader header, Span<byte> destination)
         {
             if (staticKey != null)
             {

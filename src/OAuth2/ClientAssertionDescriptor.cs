@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
+using System.Text.Json;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -11,17 +12,10 @@ namespace JsonWebToken
     public sealed class ClientAssertionDescriptor : JwsDescriptor
     {
         public ClientAssertionDescriptor()
-            : base()
         {
         }
 
-        public ClientAssertionDescriptor(JwtObject payload)
-            : base(new JwtObject(), payload)
-        {
-        }
-
-        public ClientAssertionDescriptor(JwtObject header, JwtObject payload)
-            : base(header, payload)
+        public ClientAssertionDescriptor(JwtPayload payload) : base(payload)
         {
         }
 
@@ -34,10 +28,10 @@ namespace JsonWebToken
 
             base.Validate();
 
-            RequireClaim(Claims.IssUtf8, JwtTokenType.String);
-            RequireClaim(Claims.SubUtf8, JwtTokenType.String);
-            ValidateClaim(Claims.AudUtf8, new[] { JwtTokenType.String, JwtTokenType.Array });
-            RequireClaim(Claims.ExpUtf8, JwtTokenType.Integer);
+            RequireClaim(Claims.Iss, JsonValueKind.String);
+            RequireClaim(Claims.Sub, JsonValueKind.String);
+            ValidateClaim(Claims.Aud, new[] { JsonValueKind.String, JsonValueKind.Array });
+            RequireClaim(Claims.Exp, JsonValueKind.Number);
         }
     }
 }

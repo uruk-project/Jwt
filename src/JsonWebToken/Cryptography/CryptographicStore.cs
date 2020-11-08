@@ -16,17 +16,17 @@ namespace JsonWebToken.Internal
     public readonly struct JwtMemberX
     {
         /// <summary>
-        /// Gets the <see cref="JwtTokenType"/> of the <see cref="JwtValue"/>.
+        /// Gets the <see cref="JsonValueKind"/> of the <see cref="JwtMemberX"/>.
         /// </summary>
         public readonly JsonValueKind Type;
 
         /// <summary>
-        /// Gets the value of the <see cref="JwtValue"/>.
+        /// Gets the value of the <see cref="JwtMemberX"/>.
         /// </summary>
         public readonly object? Value;
 
         /// <summary>
-        /// Gets the value of the <see cref="JwtValue"/>.
+        /// Gets the value of the <see cref="JwtMemberX"/>.
         /// </summary>
         public readonly string Name;
 

@@ -42,12 +42,14 @@ namespace JsonWebToken
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public static ReadOnlySpan<byte> CHashUtf8 => new[] { (byte)'c', (byte)'_', (byte)'h', (byte)'a', (byte)'s', (byte)'h' };
+        public static readonly string CHash = "c_hash";
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
         /// </summary>
         public static ReadOnlySpan<byte> AtHashUtf8 => new[] { (byte)'a', (byte)'t', (byte)'_', (byte)'h', (byte)'a', (byte)'s', (byte)'h' };
-
+        public static readonly string AtHash = "at_hash";
+        
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
@@ -72,6 +74,7 @@ namespace JsonWebToken
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public static ReadOnlySpan<byte> NonceUtf8 => new[] { (byte)'n', (byte)'o', (byte)'n', (byte)'c', (byte)'e' };
+        public static readonly string Nonce = "nonce";
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-frontchannel-1_0.html#OPLogout

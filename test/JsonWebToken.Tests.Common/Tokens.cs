@@ -139,7 +139,7 @@ namespace JsonWebToken.Tests
             {
                 var descriptor = new JwsDescriptor()
                 {
-                    Algorithm = SignatureAlgorithm.None
+                    Alg = SignatureAlgorithm.None
                 };
 
                 FillPayload(payload, descriptor);
@@ -152,7 +152,7 @@ namespace JsonWebToken.Tests
                 var descriptor = new JwsDescriptor()
                 {
                     SigningKey = signingKey,
-                    Algorithm = signingKey.SignatureAlgorithm
+                    Alg = signingKey.SignatureAlgorithm
                 };
 
                 FillPayload(payload, descriptor);
@@ -164,7 +164,7 @@ namespace JsonWebToken.Tests
                 var descriptor = new JwsDescriptor()
                 {
                     SigningKey = signingKey,
-                    Algorithm = signingKey.SignatureAlgorithm
+                    Alg = signingKey.SignatureAlgorithm
                 };
 
                 FillPayload(payload, descriptor);
@@ -173,9 +173,12 @@ namespace JsonWebToken.Tests
                 {
                     Payload = descriptor,
                     EncryptionKey = encryptionKey,
-                    EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                    Algorithm = KeyManagementAlgorithm.Aes128KW,
-                    ContentType = "JWT"
+                    Enc = EncryptionAlgorithm.Aes128CbcHmacSha256,
+                    Alg = KeyManagementAlgorithm.Aes128KW,
+                    Header = new JwtHeader
+                    {
+                        {"cty", "JWT" }
+                    }
                 };
 
                 descriptors.Add("JWE-" + payload.Key, jwe);
@@ -186,7 +189,7 @@ namespace JsonWebToken.Tests
                 var descriptor = new JwsDescriptor()
                 {
                     SigningKey = signingKey,
-                    Algorithm = signingKey.SignatureAlgorithm
+                    Alg = signingKey.SignatureAlgorithm
                 };
 
                 FillPayload(payload, descriptor);
@@ -195,10 +198,13 @@ namespace JsonWebToken.Tests
                 {
                     Payload = descriptor,
                     EncryptionKey = encryptionKey,
-                    EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                    Algorithm = KeyManagementAlgorithm.Aes128KW,
-                    ContentType = "JWT",
-                    CompressionAlgorithm = CompressionAlgorithm.Deflate
+                    Enc = EncryptionAlgorithm.Aes128CbcHmacSha256,
+                    Alg = KeyManagementAlgorithm.Aes128KW,
+                    Zip = CompressionAlgorithm.Deflate,
+                    Header = new JwtHeader
+                    {
+                        {"cty", "JWT" }
+                    }
                 };
 
                 descriptors.Add("JWE-DEF-" + payload.Key, jwe);
@@ -216,17 +222,17 @@ namespace JsonWebToken.Tests
                     case "iat":
                     case "nbf":
                     case "exp":
-                        descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
+                        descriptor.Payload.Add(property.Name, EpochTime.ToDateTime((long)property.Value));
                         break;
                     default:
                         if (property.Value is JArray)
                         {
                             var array = new List<string>(((JArray)property.Value).ToObject<string[]>());
-                            descriptor.Audiences = array;
+                            descriptor.Payload.Add("aud", array);
                         }
                         else
                         {
-                            descriptor.AddClaim(property.Name, (string)property.Value);
+                            descriptor.Payload.Add(property.Name, (string)property.Value);
                         }
                         break;
                 }
@@ -248,7 +254,7 @@ namespace JsonWebToken.Tests
             invalidTokens.Add(token);
 
             payload = CreateJws(json, TokenValidationStatus.InvalidClaim, "aud");
-            payload.Audiences = new List<string>(new[] { "X", "Y", "Z" });
+            payload.Payload.Add("aud", new List<string>(new[] { "X", "Y", "Z" }));
             token = CreateInvalidToken(key, TokenValidationStatus.InvalidClaim, payload, "aud");
             invalidTokens.Add(token);
 
@@ -297,7 +303,7 @@ namespace JsonWebToken.Tests
 
         private static JwsDescriptor CreateJws(JObject descriptor, TokenValidationStatus status, string claim = null)
         {
-            var payload = new JObject();
+            var payload = new JwtPayload();
             foreach (var kvp in descriptor)
             {
                 switch (status)
@@ -357,7 +363,7 @@ namespace JsonWebToken.Tests
                 payload.Add(kvp.Key, kvp.Value);
             }
 
-            return new JwsDescriptor(new JwtObject(), ToJwtObject(payload));
+            return new JwsDescriptor(payload);
         }
 
         private static TokenState CreateInvalidToken(TokenValidationStatus status, JwtDescriptor descriptor)
@@ -365,10 +371,10 @@ namespace JsonWebToken.Tests
             switch (status)
             {
                 case TokenValidationStatus.SignatureKeyNotFound:
-                    descriptor.Header.Replace(new JwtProperty(HeaderParameters.KidUtf8, (string)descriptor.Header[HeaderParameters.KidUtf8].Value + "x"));
+                    descriptor.Header.Add("kid", "X");
                     break;
                 case TokenValidationStatus.MissingEncryptionAlgorithm:
-                    descriptor.Header.Replace(new JwtProperty(HeaderParameters.EncUtf8));
+                    descriptor.Header.Add("enc", (object)null);
                     break;
             }
 
@@ -404,7 +410,7 @@ namespace JsonWebToken.Tests
         private static TokenState CreateInvalidToken(Jwk signingKey, TokenValidationStatus status, JwsDescriptor descriptor, string claim = null)
         {
             descriptor.SigningKey = signingKey;
-            descriptor.Algorithm = signingKey.SignatureAlgorithm;
+            descriptor.Alg = signingKey.SignatureAlgorithm;
 
             return CreateInvalidToken(status, descriptor);
         }

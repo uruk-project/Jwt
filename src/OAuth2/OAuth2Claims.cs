@@ -53,6 +53,7 @@ namespace JsonWebToken.Internal
         /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
         public static ReadOnlySpan<byte> RfpUtf8 => new byte[] { (byte)'r', (byte)'f', (byte)'p' };
+        public static readonly string Rfp = "rfp";
 
         /// <summary>
         /// https://tools.ietf.org/html/rfc7591#section-2

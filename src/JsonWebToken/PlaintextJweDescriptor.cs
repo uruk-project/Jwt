@@ -14,21 +14,14 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="PlaintextJweDescriptor"/>.
         /// </summary>
-        /// <param name="header"></param>
-        /// <param name="payload"></param>
-        public PlaintextJweDescriptor(JwtObject header, string payload)
-            : base(header, payload)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="PlaintextJweDescriptor"/>.
-        /// </summary>
         /// <param name="payload"></param>
         public PlaintextJweDescriptor(string payload)
-            : base(payload)
         {
+            Payload = payload;
         }
+
+        /// <inheritsdoc />
+        public override string Payload { get; set; }
 
         /// <inheritsdoc />
         public override void Encode(EncodingContext context)

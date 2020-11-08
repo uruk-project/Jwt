@@ -82,7 +82,7 @@ namespace JsonWebToken
         /// <param name="header"></param>
         /// <param name="bytesWritten"></param>
         /// <returns>Unwrapped key.</returns>
-        public abstract bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, IJwtHeader header, out int bytesWritten);
+        public abstract bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeaderDocument header, out int bytesWritten);
 
         /// <summary>
         /// Gets the size of the unwrapped key.

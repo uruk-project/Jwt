@@ -120,7 +120,7 @@ namespace JsonWebToken.Internal
         /// <param name="staticKey">the key to be wrapped. If <c>null</c>, a new <see cref="SymmetricJwk"/> will be generated.</param>
         /// <param name="header"></param>
         /// <param name="destination"></param>
-        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeaderX header, Span<byte> destination)
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeader header, Span<byte> destination)
         {
             if (_disposed)
             {

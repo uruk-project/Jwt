@@ -140,7 +140,7 @@ namespace JsonWebToken.Internal
 
             return contentEncryptionKey;
         }
-        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeaderX header, Span<byte> destination)
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeader header, Span<byte> destination)
         {
             if (header is null)
             {
@@ -234,7 +234,7 @@ namespace JsonWebToken.Internal
             return null;
         }
 
-        private static string? GetPartyInfo(JwtHeaderX header, string name)
+        private static string? GetPartyInfo(JwtHeader header, string name)
         {
             if (header.TryGetValue(name, out var token))
             {

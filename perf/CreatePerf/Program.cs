@@ -11,10 +11,13 @@ namespace CreatePerf
 
         private static readonly JwsDescriptor jwsDescriptor = new JwsDescriptor
         {
-            IssuedAt = new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc),
-            ExpirationTime = new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc),
-            Issuer = "https://idp.example.com/",
-            Audience = "636C69656E745F6964",
+            Payload = new JwtPayload
+            {
+                { "iat", new DateTime(2017, 7, 14, 4, 40, 0, DateTimeKind.Utc).ToEpochTime() },
+                { "exp", new DateTime(2033, 5, 18, 5, 33, 20, DateTimeKind.Utc).ToEpochTime() },
+                { "iss", "https://idp.example.com/" },
+                { "aud", "636C69656E745F6964" },
+            },
             SigningKey = signingKey
         };
 
@@ -22,7 +25,7 @@ namespace CreatePerf
         {
             Payload = jwsDescriptor,
             EncryptionKey = encryptionKey,
-            EncryptionAlgorithm = EncryptionAlgorithm.Aes256CbcHmacSha512
+            Enc = EncryptionAlgorithm.Aes256CbcHmacSha512
         };
 
         private static void Main()

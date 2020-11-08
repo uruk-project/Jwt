@@ -99,7 +99,7 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new JwsDescriptor()
                 {
-                    Algorithm = SignatureAlgorithm.None
+                    Alg = SignatureAlgorithm.None
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -109,10 +109,10 @@ namespace JsonWebToken.Performance
                         case "iat":
                         case "nbf":
                         case "exp":
-                            descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
+                            descriptor.Payload.Add(property.Name, EpochTime.ToDateTime((long)property.Value));
                             break;
                         default:
-                            descriptor.AddClaim(property.Name, (string)property.Value);
+                            descriptor.Payload.Add(property.Name, (string)property.Value);
                             break;
                     }
                 }
@@ -125,7 +125,7 @@ namespace JsonWebToken.Performance
                 var descriptor = new JwsDescriptor()
                 {
                     SigningKey = signingKey,
-                    Algorithm = signingKey.SignatureAlgorithm
+                    Alg = signingKey.SignatureAlgorithm
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -135,10 +135,10 @@ namespace JsonWebToken.Performance
                         case "iat":
                         case "nbf":
                         case "exp":
-                            descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
+                            descriptor.Payload.Add(property.Name, EpochTime.ToDateTime((long)property.Value));
                             break;
                         default:
-                            descriptor.AddClaim(property.Name, (string)property.Value);
+                            descriptor.Payload.Add(property.Name, (string)property.Value);
                             break;
                     }
                 }
@@ -151,7 +151,7 @@ namespace JsonWebToken.Performance
                 var descriptor = new JwsDescriptor()
                 {
                     SigningKey = signingKey,
-                    Algorithm = signingKey.SignatureAlgorithm
+                    Alg = signingKey.SignatureAlgorithm
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -161,10 +161,10 @@ namespace JsonWebToken.Performance
                         case "iat":
                         case "nbf":
                         case "exp":
-                            descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
+                            descriptor.Payload.Add(property.Name, EpochTime.ToDateTime((long)property.Value));
                             break;
                         default:
-                            descriptor.AddClaim(property.Name, (string)property.Value);
+                            descriptor.Payload.Add(property.Name, (string)property.Value);
                             break;
                     }
                 }
@@ -173,9 +173,12 @@ namespace JsonWebToken.Performance
                 {
                     Payload = descriptor,
                     EncryptionKey = encryptionKey,
-                    EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                    Algorithm = KeyManagementAlgorithm.Aes128KW,
-                    ContentType = "JWT"
+                    Enc = EncryptionAlgorithm.Aes128CbcHmacSha256,
+                    Alg = KeyManagementAlgorithm.Aes128KW,
+                    Header = new JwtHeader
+                    {
+                        { "cty", "JWT" }
+                    }
                 };
 
                 descriptors.Add("JWE " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwe);
@@ -186,7 +189,7 @@ namespace JsonWebToken.Performance
                 var descriptor = new JwsDescriptor()
                 {
                     SigningKey = signingKey,
-                    Algorithm = signingKey.SignatureAlgorithm
+                    Alg = signingKey.SignatureAlgorithm
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -196,10 +199,10 @@ namespace JsonWebToken.Performance
                         case "iat":
                         case "nbf":
                         case "exp":
-                            descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
+                            descriptor.Payload.Add(property.Name, EpochTime.ToDateTime((long)property.Value));
                             break;
                         default:
-                            descriptor.AddClaim(property.Name, (string)property.Value);
+                            descriptor.Payload.Add(property.Name, (string)property.Value);
                             break;
                     }
                 }
@@ -208,10 +211,13 @@ namespace JsonWebToken.Performance
                 {
                     Payload = descriptor,
                     EncryptionKey = encryptionKey,
-                    EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                    Algorithm = KeyManagementAlgorithm.Aes128KW,
-                    ContentType = "JWT",
-                    CompressionAlgorithm = CompressionAlgorithm.Deflate
+                    Enc = EncryptionAlgorithm.Aes128CbcHmacSha256,
+                    Alg = KeyManagementAlgorithm.Aes128KW,
+                    Zip = CompressionAlgorithm.Deflate,
+                    Header = new JwtHeader
+                    {
+                        { "cty", "JWT" }
+                    }
                 };
 
                 descriptors.Add("JWE DEF " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwe);
@@ -279,7 +285,7 @@ namespace JsonWebToken.Performance
 
         private static JwsDescriptor CreateJws(JObject descriptor, TokenValidationStatus status, string? claim = null)
         {
-            var payload = new JObject();
+            var payload = new JwtPayload();
             foreach (var kvp in descriptor)
             {
                 switch (status)
@@ -339,7 +345,7 @@ namespace JsonWebToken.Performance
                 payload.Add(kvp.Key, kvp.Value);
             }
 
-            return new JwsDescriptor(new JwtObject(), ToJwtObject(payload));
+            return new JwsDescriptor(payload);
         }
 
         private static TokenState CreateInvalidToken(TokenValidationStatus status, JwtDescriptor descriptor, string? claim = null)
@@ -347,10 +353,10 @@ namespace JsonWebToken.Performance
             switch (status)
             {
                 case TokenValidationStatus.SignatureKeyNotFound:
-                    descriptor.Header.Replace(new JwtProperty(HeaderParameters.KidUtf8, (string?)descriptor.Header[HeaderParameters.KidUtf8].Value + "x"));
+                    descriptor.Header.Add(HeaderParameters.Kid, "x");
                     break;
                 case TokenValidationStatus.MissingEncryptionAlgorithm:
-                    descriptor.Header.Replace(new JwtProperty(HeaderParameters.EncUtf8));
+                    descriptor.Header.Add(HeaderParameters.Enc, (object)null!);
                     break;
             }
 
@@ -386,7 +392,7 @@ namespace JsonWebToken.Performance
         private static TokenState CreateInvalidToken(Jwk signingKey, TokenValidationStatus status, JwsDescriptor descriptor, string? claim = null)
         {
             descriptor.SigningKey = signingKey;
-            descriptor.Algorithm = signingKey.SignatureAlgorithm;
+            descriptor.Alg = signingKey.SignatureAlgorithm;
 
             return CreateInvalidToken(status, descriptor, claim);
         }

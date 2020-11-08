@@ -226,14 +226,14 @@ namespace JsonWebToken
             {
                 if (value.Name == _value1.Name)
                 {
-                    map = this;
-                    return false;
+                    map = new OneElementMap(value);
                 }
                 else
                 {
                     map = new TwoElementMap(_value1, value);
-                    return true;
                 }
+
+                return true;
             }
 
             public bool TryGetValue(string key, out JwtMemberX value)
@@ -321,7 +321,6 @@ namespace JsonWebToken
             }
         }
 
-
         private sealed class TwoElementMap : IMap
         {
             private readonly JwtMemberX _value1;
@@ -337,16 +336,20 @@ namespace JsonWebToken
 
             public bool TryAdd(JwtMemberX value, out IMap map)
             {
-                if (value.Name == _value1.Name || value.Name == _value2.Name)
+                if (value.Name == _value1.Name)
                 {
-                    map = this;
-                    return true;
+                    map = new TwoElementMap(value, _value2);
+                }
+                else if (value.Name == _value2.Name)
+                {
+                    map = new TwoElementMap(_value1, value);
                 }
                 else
                 {
                     map = new ThreeElementMap(_value1, _value2, value);
-                    return true;
                 }
+
+                return true;
             }
 
             public bool TryGetValue(string key, out JwtMemberX value)
@@ -467,16 +470,24 @@ namespace JsonWebToken
 
             public bool TryAdd(JwtMemberX value, out IMap map)
             {
-                if (value.Name == _value1.Name || value.Name == _value2.Name || value.Name == _value3.Name)
+                if (value.Name == _value1.Name)
                 {
-                    map = this;
-                    return true;
+                    map = new ThreeElementMap(value, _value2, _value3);
+                }
+                else if (value.Name == _value2.Name)
+                {
+                    map = new ThreeElementMap(_value1, value, _value3);
+                }
+                else if (value.Name == _value3.Name)
+                {
+                    map = new ThreeElementMap(_value1, _value2, value);
                 }
                 else
                 {
                     map = new FourElementMap(_value1, _value2, _value3, value);
-                    return true;
                 }
+
+                return true;
             }
 
             public bool TryGetValue(string key, out JwtMemberX value)
@@ -610,10 +621,21 @@ namespace JsonWebToken
 
             public bool TryAdd(JwtMemberX value, out IMap map)
             {
-                if (value.Name == _value1.Name || value.Name == _value2.Name || value.Name == _value3.Name || value.Name == _value4.Name)
+                if (value.Name == _value1.Name)
                 {
-                    map = this;
-                    return false;
+                    map = new FourElementMap(value, _value2, _value3, _value4);
+                }
+                else if (value.Name == _value2.Name)
+                {
+                    map = new FourElementMap(_value1, value, _value3, _value4);
+                }
+                else if (value.Name == _value3.Name)
+                {
+                    map = new FourElementMap(_value1, _value2, value, _value4);
+                }
+                else if (value.Name == _value4.Name)
+                {
+                    map = new FourElementMap(_value1, _value2, _value3, value);
                 }
                 else
                 {
@@ -624,8 +646,9 @@ namespace JsonWebToken
                     multi.UnsafeStore(3, _value4);
                     multi.UnsafeStore(4, value);
                     map = multi;
-                    return true;
                 }
+
+                return true;
             }
 
             public bool TryGetValue(string key, out JwtMemberX value)
@@ -778,17 +801,18 @@ namespace JsonWebToken
                     if (value.Name == _keyValues[i].Name)
                     {
                         // The key is in the map. 
+                        _keyValues[i] = value;
                         map = this;
-                        return false;
+                        goto Exit;
                     }
                 }
 
-                if (_count < _keyValues.Length)
+                if (_count < MaxMultiElements)
                 {
                     UnsafeStore(_count, value);
                     _count++;
                     map = this;
-                    return true;
+                    goto Exit;
                 }
 
                 // Otherwise, upgrade to a many map.
@@ -801,6 +825,8 @@ namespace JsonWebToken
 
                 many[value.Name] = value;
                 map = many;
+
+            Exit:
                 return true;
             }
 
@@ -922,19 +948,9 @@ namespace JsonWebToken
             public bool TryAdd(JwtMemberX value, out IMap map)
             {
                 map = this;
-#if NETCOREAPP
-                return _dictionary.TryAdd(value.Name, value);
-#else
-                if (_dictionary.ContainsKey(value.Name))
-                {
-                    return false;
-                }
-                else
-                {
-                    _dictionary[value.Name] = value;
-                    return true;
-                }
-#endif
+                _dictionary[value.Name] = value;
+
+                return true;
             }
 
             public bool TryGetValue(string key, out JwtMemberX value)

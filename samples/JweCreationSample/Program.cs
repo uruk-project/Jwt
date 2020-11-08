@@ -1,5 +1,6 @@
 ﻿using System;
 using JsonWebToken;
+using JsonWebToken.Internal;
 
 namespace JweCreationSample
 {
@@ -17,16 +18,19 @@ namespace JweCreationSample
             var descriptor = new JweDescriptor<JwsDescriptor>()
             {
                 EncryptionKey = encryptionKey,
-                EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                Algorithm = KeyManagementAlgorithm.Aes128KW,
+                Enc = EncryptionAlgorithm.Aes128CbcHmacSha256,
+                Alg = KeyManagementAlgorithm.Aes128KW,
                 Payload = new JwsDescriptor
                 {
                     SigningKey = signatureKey,
-                    Algorithm = SignatureAlgorithm.HmacSha256,
-                    IssuedAt = DateTime.UtcNow,
-                    ExpirationTime = DateTime.UtcNow.AddHours(1),
-                    Issuer = "https://idp.example.com/",
-                    Audience = "636C69656E745F6964"
+                    Alg = SignatureAlgorithm.HmacSha256,
+                    Payload = new JwtPayload
+                    {
+                        {"iat", EpochTime.UtcNow },
+                        {"exp", EpochTime.UtcNow + (TimeSpan.TicksPerHour / 10000000) },
+                        {"iss", "https://idp.example.com/" },
+                        {"aud", "636C69656E745F6964" }
+                    }
                 }
             };
 

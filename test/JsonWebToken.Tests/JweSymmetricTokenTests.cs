@@ -25,13 +25,16 @@ namespace JsonWebToken.Tests
 
             var descriptor = new JweDescriptor
             {
-                EncryptionAlgorithm = new EncryptionAlgorithm(-99, "unsupported", 0, SignatureAlgorithm.None, 0, EncryptionType.NotSupported),
-                Algorithm = KeyManagementAlgorithm.Direct,
+                Enc = new EncryptionAlgorithm(-99, "unsupported", 0, SignatureAlgorithm.None, 0, EncryptionType.NotSupported),
+                Alg = KeyManagementAlgorithm.Direct,
                 Payload = new JwsDescriptor
                 {
                     SigningKey = _signingKey,
-                    Algorithm = SignatureAlgorithm.HmacSha256,
-                    Subject = "Alice"
+                    Alg = SignatureAlgorithm.HmacSha256,
+                    Payload = new JwtPayload
+                    {
+                        { "sub", "Alice" }
+                    }
                 }
             };
 
@@ -51,13 +54,16 @@ namespace JsonWebToken.Tests
             var descriptor = new JweDescriptor
             {
                 EncryptionKey = encryptionKey,
-                EncryptionAlgorithm = enc,
-                Algorithm = alg,
+                Enc = enc,
+                Alg = alg,
                 Payload = new JwsDescriptor
                 {
                     SigningKey = _signingKey,
-                    Algorithm = SignatureAlgorithm.HmacSha256,
-                    Subject = "Alice"
+                    Alg = SignatureAlgorithm.HmacSha256,
+                    Payload = new JwtPayload
+                    {
+                        { "sub", "Alice" }
+                    }
                 }
             };
 

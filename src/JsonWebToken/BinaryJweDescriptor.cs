@@ -13,19 +13,12 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="payload"></param>
         public BinaryJweDescriptor(byte[] payload)
-            : base(payload)
         {
+            Payload = payload;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryJweDescriptor"/> class.
-        /// </summary>
-        /// <param name="header"></param>
-        /// <param name="payload"></param>
-        public BinaryJweDescriptor(JwtObject header, byte[] payload)
-            : base(header, payload)
-        {
-        }
+        /// <inheritdoc/>
+        public override byte[] Payload { get; set; }
 
         /// <inheritdoc />
         public override void Encode(EncodingContext context)

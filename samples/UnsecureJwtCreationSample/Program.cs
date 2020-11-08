@@ -10,11 +10,14 @@ namespace UnsecureJwtCreationSample
             // Creates a JWS descriptor with all its properties
             var descriptor = new JwsDescriptor()
             {
-                Algorithm = SignatureAlgorithm.None,
-                IssuedAt = DateTime.UtcNow,
-                ExpirationTime = DateTime.UtcNow.AddHours(1),
-                Issuer = "https://idp.example.com/",
-                Audience = "636C69656E745F6964"
+                Alg = SignatureAlgorithm.None,
+                Payload = new JwtPayload
+                    {
+                        {"iat", EpochTime.UtcNow },
+                        {"exp", EpochTime.UtcNow + (TimeSpan.TicksPerDay / 10000000) },
+                        {"iss", "https://idp.example.com/" },
+                        {"aud", "636C69656E745F6964" }
+                    }
             };
 
             // Generates the UTF-8 string representation of the JWT

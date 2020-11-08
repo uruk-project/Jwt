@@ -77,10 +77,6 @@
 		<PackageReference Include="System.Net.Http" Version="4.3.4" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Folder Include="old\" />
-	</ItemGroup>
-
 	<!--
   SUPPORT_ELLIPTIC_CURVE
   SUPPORT_ELLIPTIC_CURVE_SIGNATURE

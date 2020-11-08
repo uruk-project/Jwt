@@ -42,7 +42,7 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override bool TryUnwrapKey(ReadOnlySpan<byte> key, Span<byte> destination, IJwtHeader header, out int bytesWritten)
+        public override bool TryUnwrapKey(ReadOnlySpan<byte> key, Span<byte> destination, JwtHeaderDocument header, out int bytesWritten)
         {
             if (key.IsEmpty)
             {

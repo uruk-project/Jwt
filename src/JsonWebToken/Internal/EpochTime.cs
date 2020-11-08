@@ -5,12 +5,11 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     /// <summary>
     /// Provides helper methods for UNIX-like time.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public static class EpochTime
     {
         private const ulong UnixEpochTicks = 621355968000000000;

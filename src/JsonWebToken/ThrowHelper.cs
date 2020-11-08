@@ -83,6 +83,17 @@ namespace JsonWebToken
             var value = Utf8.GetString(utf8Name);
             return new JwtDescriptorException($"The claim '{value}' must be of type [{claimTypes}].");
         }
+
+        [DoesNotReturn]
+        internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonValueKind[] types) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, types);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonValueKind[] types)
+        {
+            var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
+            var value = (utf8Name);
+            return new JwtDescriptorException($"The claim '{value}' must be of type [{claimTypes}].");
+        }
+
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonTokenType[] types) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, types);
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -111,6 +122,16 @@ namespace JsonWebToken
             var value = Utf8.GetString(utf8Name);
             return new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
         }
+
+        [DoesNotReturn]
+        internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonValueKind type) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, type);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonValueKind type)
+        {
+            var value = (utf8Name);
+            return new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
+        }
+
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonTokenType type) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, type);
         [MethodImpl(MethodImplOptions.NoInlining)]

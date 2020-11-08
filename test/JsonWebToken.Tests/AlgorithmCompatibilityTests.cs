@@ -11,17 +11,17 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Descriptor_AllKindOfObject()
         {
-            var descriptor = new JweDescriptorX
+            var descriptor = new JweDescriptor
             {
-                Algorithm = KeyManagementAlgorithm.Direct,
+                Alg = KeyManagementAlgorithm.Direct,
                 Enc = EncryptionAlgorithm.Aes128CbcHmacSha256,
                 EncryptionKey = SymmetricJwk.GenerateKey(256),
                 Zip = CompressionAlgorithm.Deflate,
-                Payload = new JwsDescriptorX
+                Payload = new JwsDescriptor
                 {
                     Alg = SignatureAlgorithm.HmacSha256,
                     SigningKey = SymmetricJwk.GenerateKey(256),
-                    Header = new JwtHeaderX
+                    Header = new JwtHeader
                     {
                         { "H1", "value1" },
                         { "H2",  new Dictionary<string, object> { { "prop1", "value2" } } },
@@ -32,7 +32,7 @@ namespace JsonWebToken.Tests
                         { "H7", true },
                         { "H8", false },
                     },
-                    Payload = new JwtPayloadX
+                    Payload = new JwtPayload
                     {
                         { "P1", "value1" },
                         { "P2",  new Dictionary<string, object> { { "prop1", "value2" } } },
@@ -100,19 +100,19 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Descriptor_FullCapacity()
         {
-            var payload = new JwtPayloadX();
+            var payload = new JwtPayload();
             for (int i = 0; i < 256; i++)
             {
                 payload.Add(i.ToString(), i);
             }
 
-            var descriptor = new JweDescriptorX
+            var descriptor = new JweDescriptor
             {
-                Algorithm = KeyManagementAlgorithm.Direct,
+                Alg = KeyManagementAlgorithm.Direct,
                 Enc = EncryptionAlgorithm.Aes128CbcHmacSha256,
                 EncryptionKey = SymmetricJwk.GenerateKey(256),
                 Zip = CompressionAlgorithm.Deflate,
-                Payload = new JwsDescriptorX
+                Payload = new JwsDescriptor
                 {
                     Alg = SignatureAlgorithm.HmacSha256,
                     SigningKey = SymmetricJwk.GenerateKey(256),
@@ -162,13 +162,16 @@ namespace JsonWebToken.Tests
                 var descriptor = new JweDescriptor
                 {
                     EncryptionKey = encryptionKey,
-                    EncryptionAlgorithm = enc,
-                    Algorithm = alg,
+                    Enc = enc,
+                    Alg = alg,
                     Payload = new JwsDescriptor
                     {
                         SigningKey = _signingKey,
-                        Algorithm = SignatureAlgorithm.HmacSha256,
-                        Subject = "Alice"
+                        Alg = SignatureAlgorithm.HmacSha256,
+                        Payload = new JwtPayload
+                        {
+                            { "sub", "Alice" }
+                        }
                     }
                 };
 

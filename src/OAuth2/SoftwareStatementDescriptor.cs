@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
+using System.Text.Json;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -10,24 +11,19 @@ namespace JsonWebToken
     /// </summary>
     public sealed class SoftwareStatementDescriptor : JwsDescriptor
     {
-        public SoftwareStatementDescriptor(JwtObject payload)
-            : base(new JwtObject(), payload)
+        public SoftwareStatementDescriptor()
         {
         }
 
-        /// <summary>
-        /// Gets or sets the value of the 'software_id' claim.
-        /// </summary>
-        public string? SoftwareId
+        public SoftwareStatementDescriptor(JwtPayload payload) 
+            : base(payload)
         {
-            get { return GetStringClaim(OAuth2Claims.SoftwareIdUtf8); }
-            set { AddClaim(OAuth2Claims.SoftwareIdUtf8, value); }
         }
 
         public override void Validate()
         {
             base.Validate();
-            RequireClaim(Claims.IssUtf8, JwtTokenType.String);
+            RequireClaim(Claims.Iss, JsonValueKind.String);
         }
     }
 }

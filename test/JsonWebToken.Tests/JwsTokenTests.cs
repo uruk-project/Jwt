@@ -82,8 +82,11 @@ namespace JsonWebToken.Tests
             var descriptor = new JwsDescriptor
             {
                 SigningKey = signingKey,
-                Algorithm = (SignatureAlgorithm)alg,
-                Subject = "Alice"
+                Alg = (SignatureAlgorithm)alg,
+                Payload = new JwtPayload
+                {
+                    {"sub", "Alice"}
+                }
             };
 
             var token = writer.WriteToken(descriptor);
