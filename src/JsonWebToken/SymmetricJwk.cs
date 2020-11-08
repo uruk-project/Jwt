@@ -529,6 +529,7 @@ namespace JsonWebToken
         private static ReadOnlySpan<byte> StartCanonicalizeValue => new byte[] { (byte)'{', (byte)'"', (byte)'k', (byte)'"', (byte)':', (byte)'"' };
         private static ReadOnlySpan<byte> EndCanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'k', (byte)'t', (byte)'y', (byte)'"', (byte)':', (byte)'"', (byte)'o', (byte)'c', (byte)'t', (byte)'"', (byte)'}' };
 
+        /// <inheritdoc />      
         protected override void Canonicalize(Span<byte> buffer)
         {
             // {"k":"XXXX","kty":"oct"}
@@ -538,38 +539,11 @@ namespace JsonWebToken
             EndCanonicalizeValue.CopyTo(buffer.Slice(offset));
         }
 
+        /// <inheritdoc />      
         protected override int GetCanonicalizeSize()
         {
             // 20 = StartCanonicalizeValue.Length + EndCanonicalizeValue.Length
             return 20 + Base64Url.GetArraySizeRequiredToEncode(_k.Length);
-        }
-
-        /// <inheritdoc />      
-        protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
-        {
-            using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
-            writer.WriteStartObject();
-            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(_k.Length);
-            byte[]? arrayToReturn = null;
-            try
-            {
-                Span<byte> buffer = requiredBufferSize > Constants.MaxStackallocBytes
-                                    ? stackalloc byte[requiredBufferSize]
-                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
-                int bytesWritten = Base64Url.Encode(_k, buffer);
-                writer.WriteString(JwkParameterNames.KUtf8, buffer.Slice(0, bytesWritten));
-            }
-            finally
-            {
-                if (arrayToReturn != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturn);
-                }
-            }
-
-            writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
-            writer.WriteEndObject();
-            writer.Flush();
         }
 
         /// <inheritsdoc />

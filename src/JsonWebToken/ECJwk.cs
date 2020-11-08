@@ -536,22 +536,6 @@ namespace JsonWebToken
                 + Base64Url.GetArraySizeRequiredToEncode(Y!.Length);
         }
 
-        /// <inheritdoc />
-        protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
-        {
-            using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
-            writer.WriteStartObject();
-            writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
-            writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
-            Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(_parameters.Q.X!.Length)];
-            Base64Url.Encode(X, buffer);
-            writer.WriteString(JwkParameterNames.XUtf8, buffer);
-            Base64Url.Encode(Y, buffer);
-            writer.WriteString(JwkParameterNames.YUtf8, buffer);
-            writer.WriteEndObject();
-            writer.Flush();
-        }
-
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>

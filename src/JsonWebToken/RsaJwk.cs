@@ -952,38 +952,9 @@ namespace JsonWebToken
         /// <inheritdoc />
         protected override int GetCanonicalizeSize()
         {
-            return 27 + Base64Url.GetArraySizeRequiredToEncode(_parameters.Exponent!.Length) + Base64Url.GetArraySizeRequiredToEncode(_parameters.Modulus!.Length);
-        }
-
-        /// <inheritdoc />
-        protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
-        {
-            using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
-            writer.WriteStartObject();
-
-            // the RSA exponent E is always smaller than the modulus N
-            int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(_parameters.Modulus!.Length);
-            byte[]? arrayToReturn = null;
-            try
-            {
-                Span<byte> buffer = requiredBufferSize > Constants.MaxStackallocBytes
-                                    ? stackalloc byte[requiredBufferSize]
-                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
-                int bytesWritten = Base64Url.Encode(E, buffer);
-                writer.WriteString(JwkParameterNames.EUtf8, buffer.Slice(0, bytesWritten));
-                writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
-                bytesWritten = Base64Url.Encode(N, buffer);
-                writer.WriteString(JwkParameterNames.NUtf8, buffer.Slice(0, bytesWritten));
-            }
-            finally
-            {
-                if (arrayToReturn != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturn);
-                }
-            }
-            writer.WriteEndObject();
-            writer.Flush();
+            return 27
+                + Base64Url.GetArraySizeRequiredToEncode(_parameters.Exponent!.Length)
+                + Base64Url.GetArraySizeRequiredToEncode(_parameters.Modulus!.Length);
         }
 
         /// <inheritsdoc />

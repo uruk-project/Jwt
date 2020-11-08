@@ -668,12 +668,6 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
-        /// </summary>
-        /// <returns></returns>
-        protected abstract void Canonicalize(IBufferWriter<byte> bufferWriter);
-
-        /// <summary>
         /// Compute the normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2, and writes it to the <paramref name="buffer"/>.
         /// </summary>
         /// <returns></returns>
@@ -1176,9 +1170,6 @@ namespace JsonWebToken
             public override ReadOnlySpan<byte> AsSpan()
                 => ReadOnlySpan<byte>.Empty;
 
-            protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
-            {
-            }
             protected override void Canonicalize(Span<byte> bufferWriter)
             {
             }

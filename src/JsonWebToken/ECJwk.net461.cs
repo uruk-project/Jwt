@@ -36,8 +36,11 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override bool SupportEncryption(EncryptionAlgorithm algorithm) => throw new NotImplementedException();
 
-        /// <inheritsdoc />
-        protected override void Canonicalize(IBufferWriter<byte> bufferWriter) => throw new NotImplementedException();
+        /// <inheritdoc />
+        protected override void Canonicalize(Span<byte> buffer) => throw new NotImplementedException();
+
+        /// <inheritdoc />
+        protected override int GetCanonicalizeSize() => throw new NotImplementedException();  
 
         /// <inheritsdoc />
         protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm) => throw new NotImplementedException();
@@ -46,13 +49,7 @@ namespace JsonWebToken
         protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm) => throw new NotImplementedException();
 
         /// <inheritsdoc />
-        protected override Signer CreateSigner(SignatureAlgorithm algorithm) => throw new NotImplementedException();
-
-        /// <inheritdoc />
-        protected override void Canonicalize(Span<byte> buffer) => throw new NotImplementedException();
-
-        /// <inheritdoc />
-        protected override int GetCanonicalizeSize() => throw new NotImplementedException();      
+        protected override Signer CreateSigner(SignatureAlgorithm algorithm) => throw new NotImplementedException();    
     }
 }
 #endif
