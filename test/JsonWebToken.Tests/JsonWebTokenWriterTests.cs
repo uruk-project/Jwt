@@ -3,9 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text.Json;
-using JsonWebToken.Internal;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace JsonWebToken.Tests

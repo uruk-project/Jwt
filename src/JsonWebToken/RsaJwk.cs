@@ -792,7 +792,7 @@ namespace JsonWebToken
             KeyManagementAlgorithm alg,
             bool computeThumbprint = true)
         {
-            var key = new RsaJwk(n, e, d, p, q, dp, dq, qi, alg);
+            var key = new RsaJwk(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi, alg);
             if (computeThumbprint)
             {
                 ComputeKid(key);
@@ -816,7 +816,7 @@ namespace JsonWebToken
             KeyManagementAlgorithm alg,
             bool computeThumbprint = true)
         {
-            var key = new RsaJwk(n, e, d, p, q, dp, qi, dq, alg);
+            var key = new RsaJwk(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi, alg);
             if (computeThumbprint)
             {
                 ComputeKid(key);
