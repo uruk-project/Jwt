@@ -751,7 +751,6 @@ namespace JsonWebToken
         {
             Debug.Assert(destination.Length == 43); // 43 => Base64Url.GetArraySizeRequiredToEncode(32)
             Span<byte> hash = stackalloc byte[32];
-
             int size = GetCanonicalizeSize();
             byte[]? arrayToReturn = null;
             try
@@ -760,7 +759,7 @@ namespace JsonWebToken
                                     ? stackalloc byte[size]
                                     : (arrayToReturn = ArrayPool<byte>.Shared.Rent(size));
                 Canonicalize(buffer);
-                Sha256.Shared.ComputeHash(buffer, hash);
+                Sha256.Shared.ComputeHash(buffer.Slice(0, size), hash);
                 Base64Url.Encode(hash, destination);
             }
             finally
@@ -769,7 +768,7 @@ namespace JsonWebToken
                 {
                     ArrayPool<byte>.Shared.Return(arrayToReturn);
                 }
-            }            
+            }
         }
 
         /// <summary>
