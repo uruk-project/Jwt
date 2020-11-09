@@ -225,7 +225,7 @@ namespace JsonWebToken
         internal void SetNumberOfRows(int index, int numberOfRows)
         {
             AssertValidIndex(index);
-            Debug.Assert(numberOfRows >= 1 && numberOfRows <= 0x0FFFFFFF);
+            Debug.Assert(numberOfRows >= 0 && numberOfRows <= 0x0FFFFFFF);
 
             Span<byte> dataPos = _data.AsSpan(index + NumberOfRowsOffset);
             int current = MemoryMarshal.Read<int>(dataPos);

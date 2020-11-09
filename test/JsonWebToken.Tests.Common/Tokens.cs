@@ -15,7 +15,7 @@ namespace JsonWebToken.Tests
         public IDictionary<string, string> ValidTokens { get; }
         public IDictionary<string, byte[]> ValidBinaryTokens { get; }
         public IEnumerable<TokenState> InvalidTokens { get; }
-        public IDictionary<string, JObject> Payloads { get; }
+        public IDictionary<string, Dictionary<string, object>> Payloads { get; }
         public IDictionary<string, JwtDescriptor> Descriptors { get; }
 
         public TokenFixture()
@@ -43,7 +43,7 @@ namespace JsonWebToken.Tests
             return result;
         }
 
-        private static IDictionary<string, JObject> CreatePayloads()
+        private static IDictionary<string, Dictionary<string, object>> CreatePayloads()
         {
             byte[] bigData = new byte[1024 * 128];
             using (var rnd = RandomNumberGenerator.Create())
@@ -51,13 +51,13 @@ namespace JsonWebToken.Tests
                 rnd.GetNonZeroBytes(bigData);
             }
 
-            var payloads = new Dictionary<string, JObject>
+            var payloads = new Dictionary<string, Dictionary<string, object>>
             {
                 {
-                    "empty", new JObject()
+                    "empty", new Dictionary<string, object>()
                 },
                 {
-                    "small", new JObject
+                    "small", new Dictionary<string, object>
                     {
                         { "jti", "756E69717565206964656E746966696572"},
                         { "iss", "https://idp.example.com/"},
@@ -68,7 +68,7 @@ namespace JsonWebToken.Tests
                     }
                 },
                 {
-                    "multiAud", new JObject
+                    "multiAud", new Dictionary<string, object>
                     {
                         { "jti", "756E69717565206964656E746966696572"},
                         { "iss", "https://idp.example.com/"},
@@ -79,7 +79,7 @@ namespace JsonWebToken.Tests
                     }
                 },
                 {
-                    "nd-nbf", new JObject
+                    "nd-nbf", new Dictionary<string, object>
                     {
                         { "jti", "756E69717565206964656E746966696572"},
                         { "iss", "https://idp.example.com/"},
@@ -89,7 +89,7 @@ namespace JsonWebToken.Tests
                     }
                 },
                 {
-                    "medium", new JObject
+                    "medium", new Dictionary<string, object>
                     {
                         { "jti", "756E69717565206964656E746966696572"},
                         { "iss", "https://idp.example.com/"},
@@ -116,7 +116,7 @@ namespace JsonWebToken.Tests
                     }
                 },
                 {
-                    "big", new JObject
+                    "big", new Dictionary<string, object>
                     {
                         { "jti", "756E69717565206964656E746966696572" },
                         { "iss", "https://idp.example.com/" },
@@ -132,7 +132,7 @@ namespace JsonWebToken.Tests
             return payloads;
         }
 
-        private static IDictionary<string, JwtDescriptor> CreateDescriptors(IDictionary<string, JObject> payloads, SymmetricJwk signingKey, SymmetricJwk encryptionKey)
+        private static IDictionary<string, JwtDescriptor> CreateDescriptors(IDictionary<string, Dictionary<string, object>> payloads, SymmetricJwk signingKey, SymmetricJwk encryptionKey)
         {
             var descriptors = new Dictionary<string, JwtDescriptor>();
             foreach (var payload in payloads)
@@ -213,16 +213,23 @@ namespace JsonWebToken.Tests
             return descriptors;
         }
 
-        private static void FillPayload(KeyValuePair<string, JObject> payload, JwsDescriptor descriptor)
+        private static void FillPayload(KeyValuePair<string, Dictionary<string, object>> payload, JwsDescriptor descriptor)
         {
-            foreach (var property in payload.Value.Properties())
+            foreach (var property in payload.Value)
             {
-                switch (property.Name)
+                switch (property.Key)
                 {
                     case "iat":
                     case "nbf":
                     case "exp":
-                        descriptor.Payload.Add(property.Name, (long)property.Value);
+                        if (property.Value is int intValue)
+                        {
+                            descriptor.Payload.Add(property.Key, intValue);
+                        }
+                        else
+                        {
+                            descriptor.Payload.Add(property.Key, (long)property.Value);
+                        }
                         break;
                     default:
                         if (property.Value is JArray)
@@ -232,7 +239,7 @@ namespace JsonWebToken.Tests
                         }
                         else
                         {
-                            descriptor.Payload.Add(property.Name, (string)property.Value);
+                            descriptor.Payload.Add(property.Key, (string)property.Value);
                         }
                         break;
                 }
@@ -245,7 +252,7 @@ namespace JsonWebToken.Tests
             return descriptors.ToDictionary(k => k.Key, k => writer.WriteTokenString(k.Value));
         }
 
-        private static IList<TokenState> CreateInvalidToken(Jwk key, JObject json)
+        private static IList<TokenState> CreateInvalidToken(Jwk key, Dictionary<string, object> json)
         {
             var invalidTokens = new List<TokenState>();
 
@@ -301,7 +308,7 @@ namespace JsonWebToken.Tests
             return invalidTokens;
         }
 
-        private static JwsDescriptor CreateJws(JObject descriptor, TokenValidationStatus status, string claim = null)
+        private static JwsDescriptor CreateJws(Dictionary<string, object> descriptor, TokenValidationStatus status, string claim = null)
         {
             var payload = new JwtPayload();
             foreach (var kvp in descriptor)

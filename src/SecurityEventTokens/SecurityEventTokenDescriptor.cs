@@ -11,34 +11,15 @@ namespace JsonWebToken
     public class SecurityEventTokenDescriptor : JwsDescriptor
     {
         public const string SecurityEventTokenType = "secevent+jwt";
-        private JwtEvents _events = new JwtEvents();
 
         public SecurityEventTokenDescriptor()
         {
-            Payload.Add("events", _events);
+            Header.Add(HeaderParameters.Typ, SecurityEventTokenType);
         }
 
-        /// <summary>
-        /// Gets or sets the set of event statements that each provide 
-        /// information describing a single logical event that has occurred about a security subject.
-        /// </summary>
-        public JwtEvents Events
+        public SecurityEventTokenDescriptor(JwtPayload payload) 
+            : base(payload)
         {
-            get
-            {
-                return _events;
-            }
-
-            set
-            {
-                _events = value;
-                Payload.Add(SetClaims.Events, value);
-            }
-        }
-
-        public void AddEvent(string eventName, object @event)
-        {
-            Events.Add(eventName, @event);
         }
 
         public override void Validate()

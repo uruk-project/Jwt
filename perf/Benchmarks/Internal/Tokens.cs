@@ -342,7 +342,31 @@ namespace JsonWebToken.Performance
                         break;
                 }
 
-                payload.Add(kvp.Key, kvp.Value);
+
+                switch (kvp.Value.Type)
+                {
+                    case JTokenType.Object:
+                        payload.Add(kvp.Key, (object)kvp.Value);
+                        break;
+                    case JTokenType.Array:
+                        payload.Add(kvp.Key, (object[])(object)kvp.Value);
+                        break;
+                    case JTokenType.Integer:
+                        payload.Add(kvp.Key, (long)kvp.Value);
+                        break;
+                    case JTokenType.Float:
+                        payload.Add(kvp.Key, (double)kvp.Value);
+                        break;
+                    case JTokenType.String:
+                        payload.Add(kvp.Key, (string)kvp.Value);
+                        break;
+                    case JTokenType.Boolean:
+                        payload.Add(kvp.Key, (bool)kvp.Value);
+                        break;
+                    case JTokenType.Null:
+                        payload.Add(kvp.Key, (object)kvp.Value);
+                        break;
+                }
             }
 
             return new JwsDescriptor(payload);
