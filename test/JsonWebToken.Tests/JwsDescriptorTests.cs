@@ -10,7 +10,7 @@ namespace JsonWebToken.Tests
             var descriptor = new JwsDescriptor(Jwk.None, SignatureAlgorithm.None);
             using (var bufferWriter = new PooledByteBufferWriter())
             {
-                var context = new EncodingContext(bufferWriter, new JsonHeaderCache(), 60, true);
+                var context = new EncodingContext(bufferWriter, new LruJwtHeaderCache(), 60, true);
                 descriptor.Encode(context);
 
                 var result = Jwt.TryParse(bufferWriter.WrittenSpan, TokenValidationPolicy.NoValidation, out var jwt);

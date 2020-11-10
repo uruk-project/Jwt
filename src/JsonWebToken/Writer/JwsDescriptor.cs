@@ -114,7 +114,7 @@ namespace JsonWebToken
         public override void Encode(EncodingContext context)
         {
             var key = _signingKey;
-            var alg = (Alg ?? key?.SignatureAlgorithm) ?? SignatureAlgorithm.None;
+            var alg = _alg;
             if (!(key is null) && key.TryGetSigner(alg, out var signer))
             {
                 if (context.TokenLifetimeInSeconds != 0 || context.GenerateIssuedTime)
@@ -141,7 +141,7 @@ namespace JsonWebToken
                 ReadOnlySpan<byte> headerJson = default;
                 var headerCache = context.HeaderCache;
                 byte[]? cachedHeader = null;
-                if (headerCache != null && headerCache.TryGetHeader(Header, alg, out cachedHeader))
+                if (headerCache.TryGetHeader(Header, alg, out cachedHeader))
                 {
                     writer.Flush();
                     length += cachedHeader.Length;
@@ -164,7 +164,7 @@ namespace JsonWebToken
                 else
                 {
                     offset = Base64Url.Encode(headerJson, buffer);
-                    //headerCache?.AddHeader(Header, alg, buffer.Slice(0, offset));
+                    headerCache.AddHeader(Header, alg, buffer.Slice(0, offset));
                 }
 
                 buffer[offset++] = Constants.ByteDot;
@@ -184,15 +184,6 @@ namespace JsonWebToken
             {
                 ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(alg, _signingKey);
             }
-        }
-
-        /// <inheritsdoc />
-        public override void Validate()
-        {
-            base.Validate();
-
-            // It will be validated afterward
-            //CheckRequiredHeader(HeaderParameters.Alg, JsonValueKind.String);
         }
 
         internal bool TryGetValue(string name, out JwtMember value)

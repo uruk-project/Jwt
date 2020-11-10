@@ -11,7 +11,7 @@ namespace JsonWebToken.Tests
         public void AddHeader()
         {
             const int Count = 10;
-            var cache = new LruJwtHeaderCache();
+            var cache = new LruJwtHeaderDocumentCache();
             var rawHeaders = new byte[10][];
             for (int i = 0; i < Count; i++)
             {
@@ -34,7 +34,7 @@ namespace JsonWebToken.Tests
         public void AddHeader_BeyondCapacity()
         {
             const int Count = 20;
-            var cache = new LruJwtHeaderCache();
+            var cache = new LruJwtHeaderDocumentCache();
             var rawHeaders = new byte[Count][];
             for (int i = 0; i < Count; i++)
             {
@@ -63,7 +63,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void AddHeader_Lru()
         {
-            var cache = new LruJwtHeaderCache();
+            var cache = new LruJwtHeaderDocumentCache();
             var rawHeaders = new byte[10][];
             for (int i = 0; i < 10; i++)
             {
@@ -84,7 +84,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void AddHeader_Parallel()
         {
-            var cache = new LruJwtHeaderCache();
+            var cache = new LruJwtHeaderDocumentCache();
             var rawHeaders = new byte[1000][];
             for (int i = 0; i < 1000; i++)
             {

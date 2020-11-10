@@ -6,7 +6,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines an encrypted JWT with a binary payload.
     /// </summary>
-    public sealed class BinaryJweDescriptor : EncryptedJwtDescriptor<byte[]>
+    public sealed class BinaryJweDescriptor : JweDescriptor<byte[]>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BinaryJweDescriptor"/> class.

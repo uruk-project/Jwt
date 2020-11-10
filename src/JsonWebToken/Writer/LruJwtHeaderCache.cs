@@ -13,8 +13,11 @@ namespace JsonWebToken
     /// <summary>
     /// Represents a cache for JWT Header in JSON.
     /// </summary>
-    public sealed class JsonHeaderCache
+    public sealed class LruJwtHeaderCache : IJwtHeaderCache
     {
+        /// <inheritdoc/>
+        public bool Enabled => true;
+
         private sealed class Bucket
         {
             public Dictionary<int, byte[]> Entries;
@@ -33,6 +36,7 @@ namespace JsonWebToken
         }
 
         private SpinLock _spinLock = new SpinLock();
+        private int _count = 0;
 
         /// <summary>
         /// The maximum size of the cache.
@@ -41,6 +45,7 @@ namespace JsonWebToken
 
         private Bucket? _head = null;
         private Bucket? _tail = null;
+        private WrappedHeader _firstHeader;
 
         /// <summary>
         ///  Try to get the header.
@@ -84,6 +89,90 @@ namespace JsonWebToken
         NotFound:
             base64UrlHeader = null;
             return false;
+        }
+
+        /// <summary>
+        /// Adds a base64url encoded header to the cache.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="alg"></param>
+        /// <param name="base6UrlHeader"></param>
+        public void AddHeader(JwtHeader header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
+        {
+            if (_firstHeader.Header is null)
+            {
+                // concurrency issue: the first cached header may not be the first, but it does not matter
+                _firstHeader = new WrappedHeader(header, base6UrlHeader.ToArray());
+                _count++;
+            }
+            else
+            {
+                if (header.TryGetValue(HeaderParameters.Kid, out var kidProperty)
+                    && kidProperty.Type == JsonValueKind.String
+                    && header.Count == 2)
+                {
+                    var kid = (string)kidProperty.Value!;
+                    bool lockTaken = false;
+                    try
+                    {
+                        _spinLock.Enter(ref lockTaken);
+
+                        var node = _head;
+                        while (node != null)
+                        {
+                            if (string.Equals(node.Kid, kid, StringComparison.Ordinal))
+                            {
+                                break;
+                            }
+
+                            node = node.Next;
+                        }
+
+                        var key = alg.Id;
+                        if (node is null)
+                        {
+                            node = new Bucket(kid, new Dictionary<int, byte[]>(1) { { key, base6UrlHeader.ToArray() } })
+                            {
+                                Next = _head
+                            };
+                        }
+                        else
+                        {
+                            if (node.Entries.ContainsKey(key))
+                            {
+                                node.Entries[key] = base6UrlHeader.ToArray();
+                            }
+                        }
+
+                        if (_count >= MaxSize)
+                        {
+                            RemoveLeastRecentlyUsed();
+                        }
+                        else
+                        {
+                            _count++;
+                        }
+
+                        if (_head != null)
+                        {
+                            _head.Previous = node;
+                        }
+
+                        _head = node;
+                        if (_tail is null)
+                        {
+                            _tail = node;
+                        }
+                    }
+                    finally
+                    {
+                        if (lockTaken)
+                        {
+                            _spinLock.Exit();
+                        }
+                    }
+                }
+            }
         }
 
         private void MoveToHead(Bucket node)
@@ -146,6 +235,18 @@ namespace JsonWebToken
                 }
 
                 _tail = node.Previous;
+            }
+        }
+
+        private readonly struct WrappedHeader
+        {
+            public readonly JwtHeader? Header;
+            public readonly byte[] BinaryHeader;
+
+            public WrappedHeader(JwtHeader header, byte[] binaryHeader)
+            {
+                Header = header;
+                BinaryHeader = binaryHeader;
             }
         }
     }

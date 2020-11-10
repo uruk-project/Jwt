@@ -6,7 +6,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines an encrypted JWT with a <see cref="JwsDescriptor"/> payload.
     /// </summary>
-    public sealed class JweDescriptor : JweDescriptor<JwsDescriptor>
+    public sealed class JweDescriptor : JweDescriptorBase<JwsDescriptor>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="JweDescriptor"/> class.
@@ -18,16 +18,6 @@ namespace JsonWebToken
         public JweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
             : base(encryptionKey, alg, enc, zip)
         {
-        }
-
-        /// <inheritsdoc />
-        public override void Validate()
-        {
-            base.Validate();
-
-            // It will be verified afterward
-            //CheckRequiredHeader(HeaderParameters.Alg, JsonValueKind.String);
-            //CheckRequiredHeader(HeaderParameters.Enc, JsonValueKind.String);
         }
     }
 }

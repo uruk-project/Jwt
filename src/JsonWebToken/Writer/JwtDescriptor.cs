@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {

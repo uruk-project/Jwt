@@ -10,6 +10,8 @@ namespace JsonWebToken
     /// </summary>
     public sealed class EncodingContext
     {
+        private static readonly DisabledJwtHeaderCache EmptyCache = new DisabledJwtHeaderCache();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="EncodingContext"/> class.
         /// </summary>
@@ -17,12 +19,25 @@ namespace JsonWebToken
         /// <param name="headerCache"></param>
         /// <param name="tokenLifetimeInSeconds"></param>
         /// <param name="generateIssuedTime"></param>
-        public EncodingContext(IBufferWriter<byte> bufferWriter, JsonHeaderCache? headerCache, int tokenLifetimeInSeconds, bool generateIssuedTime)
+        public EncodingContext(IBufferWriter<byte> bufferWriter, IJwtHeaderCache? headerCache, int tokenLifetimeInSeconds, bool generateIssuedTime)
         {
             BufferWriter = bufferWriter;
-            HeaderCache = headerCache;
+            HeaderCache = headerCache ?? EmptyCache;
             TokenLifetimeInSeconds = tokenLifetimeInSeconds;
             GenerateIssuedTime = generateIssuedTime;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EncodingContext"/> class.
+        /// </summary>
+        /// <param name="bufferWriter"></param>
+        /// <param name="other"></param>
+        public EncodingContext(IBufferWriter<byte> bufferWriter, EncodingContext other)
+        {
+            BufferWriter = bufferWriter;
+            HeaderCache = other.HeaderCache;
+            TokenLifetimeInSeconds = other.TokenLifetimeInSeconds;
+            GenerateIssuedTime = other.GenerateIssuedTime;
         }
 
         /// <summary>
@@ -33,7 +48,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the JSON header cache.
         /// </summary>
-        public JsonHeaderCache? HeaderCache { get; }
+        public IJwtHeaderCache HeaderCache { get; }
 
         /// <summary>
         /// Gets the token lifetime, in seconds.

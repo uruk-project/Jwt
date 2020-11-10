@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
@@ -11,7 +10,7 @@ namespace JsonWebToken
     /// <summary>
     /// Represents a cache for <see cref="JwtHeaderDocument"/>.
     /// </summary>
-    public sealed class LruJwtHeaderCache : IJwtHeaderCache
+    public sealed class LruJwtHeaderDocumentCache : IJwtHeaderDocumentCache
     {
         private const int MaxSize = 16;
 

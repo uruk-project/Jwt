@@ -3,7 +3,7 @@
 
 namespace JsonWebToken
 {
-    public sealed class EncryptedSecurityEventTokenDescriptor : JweDescriptor<SecurityEventTokenDescriptor>
+    public sealed class EncryptedSecurityEventTokenDescriptor : JweDescriptorBase<SecurityEventTokenDescriptor>
     {
         public EncryptedSecurityEventTokenDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null) 
             : base(encryptionKey, alg, enc, zip)

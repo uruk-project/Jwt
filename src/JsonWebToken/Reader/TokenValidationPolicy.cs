@@ -24,7 +24,7 @@ namespace JsonWebToken
         internal const int ExpirationTimeRequiredFlag = 0x20;
         internal const int NotBeforeFlag = 0x40;
 
-        private static readonly IJwtHeaderCache _disabledJwtHeaderCache = new DisabledJwtHeaderCache();
+        private static readonly IJwtHeaderDocumentCache _disabledJwtHeaderCache = new DisabledJwtHeaderDocumentCache();
 
         /// <summary>
         /// Represents an policy without any validation. Do not use it without consideration.
@@ -66,7 +66,7 @@ namespace JsonWebToken
             RequiredAudiences = audiences.Select(a => Utf8.GetString(a)).ToArray();
             RequiredIssuersBinary = issuers;
             RequiredIssuers = issuers.Select(i => Utf8.GetString(i)).ToArray();
-            HeaderCache = headerCacheDisabled ? _disabledJwtHeaderCache : new LruJwtHeaderCache();
+            HeaderCache = headerCacheDisabled ? _disabledJwtHeaderCache : new LruJwtHeaderDocumentCache();
         }
 
         /// <summary>
@@ -145,9 +145,9 @@ namespace JsonWebToken
         public bool IgnoreCriticalHeader => _ignoreCriticalHeader;
 
         /// <summary>
-        /// Gets the <see cref="IJwtHeaderCache"/>.
+        /// Gets the <see cref="IJwtHeaderDocumentCache"/>.
         /// </summary>
-        public IJwtHeaderCache HeaderCache { get; }
+        public IJwtHeaderDocumentCache HeaderCache { get; }
 
         /// <summary>
         /// Gets the array of <see cref="IKeyProvider"/> used for decryption.
@@ -294,7 +294,7 @@ namespace JsonWebToken
             return SignatureValidationPolicy.TryValidateSignature(header, payload, contentBytes, signatureSegment);
         }
 
-        private class DisabledJwtHeaderCache : IJwtHeaderCache
+        private class DisabledJwtHeaderDocumentCache : IJwtHeaderDocumentCache
         {
             public bool Enabled => false;
 

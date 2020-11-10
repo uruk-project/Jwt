@@ -11,8 +11,11 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtWriter
     {
-        private readonly JsonHeaderCache _headerCache = new JsonHeaderCache();
+        private static readonly DisabledJwtHeaderCache _disabledCache = new DisabledJwtHeaderCache();
+
+        private IJwtHeaderCache _headerCache = new LruJwtHeaderCache();
         private int _tokenLifetimeInSeconds;
+        private bool _enableHeaderCaching = true;
 
         /// <summary>
         /// Gets or sets the token lifetime in seconds.
@@ -45,7 +48,23 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets whether the JWT header will be cached. Default value is <c>true</c>.
         /// </summary>
-        public bool EnableHeaderCaching { get; set; } = true;
+        public bool EnableHeaderCaching
+        {
+            get => _enableHeaderCaching;
+            set
+            {
+                if (value & !_enableHeaderCaching)
+                {
+                    _headerCache = new LruJwtHeaderCache();
+                }
+                else if (!value & _enableHeaderCaching)
+                {
+                    _headerCache = _disabledCache;
+                }
+
+                _enableHeaderCaching = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets whether the issued time must be generated. Default value is <c>false</c>.

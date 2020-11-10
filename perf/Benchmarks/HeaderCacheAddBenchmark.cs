@@ -13,11 +13,11 @@ namespace JsonWebToken.Performance
     [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
     public class HeaderCacheAddBenchmark
     {
-        private readonly CircularJwtHeaderCache _circular = new CircularJwtHeaderCache();
-        private readonly LruJwtHeaderCache _lru = new LruJwtHeaderCache();
+        private readonly CircularJwtHeaderDocumentCache _circular = new CircularJwtHeaderDocumentCache();
+        private readonly LruJwtHeaderDocumentCache _lru = new LruJwtHeaderDocumentCache();
 
-        private readonly CircularJwtHeaderCache[] _circularArray = CreateCircularCacheArray(16);
-        private readonly LruJwtHeaderCache[] _lruArray = CreateLruCacheArray(16);
+        private readonly CircularJwtHeaderDocumentCache[] _circularArray = CreateCircularCacheArray(16);
+        private readonly LruJwtHeaderDocumentCache[] _lruArray = CreateLruCacheArray(16);
                 private readonly byte[] _data = new byte[64];
 
         [Benchmark(Baseline = false)]
@@ -85,9 +85,9 @@ namespace JsonWebToken.Performance
             return data;
         }
 
-        private static CircularJwtHeaderCache CreateCircularCache(int count, int size = 64)
+        private static CircularJwtHeaderDocumentCache CreateCircularCache(int count, int size = 64)
         {
-            CircularJwtHeaderCache cache = new CircularJwtHeaderCache();
+            CircularJwtHeaderDocumentCache cache = new CircularJwtHeaderDocumentCache();
             var data = CreateData(count, size);
             for (int i = 0; i < data.Length; i++)
             {
@@ -97,9 +97,9 @@ namespace JsonWebToken.Performance
             return cache;
         }
 
-        private static CircularJwtHeaderCache[] CreateCircularCacheArray(int count, int size = 64)
+        private static CircularJwtHeaderDocumentCache[] CreateCircularCacheArray(int count, int size = 64)
         {
-            var caches = new CircularJwtHeaderCache[count];
+            var caches = new CircularJwtHeaderDocumentCache[count];
             for (int i = 0; i < count; i++)
             {
                 caches[i] = CreateCircularCache(i, size);
@@ -108,9 +108,9 @@ namespace JsonWebToken.Performance
             return caches;
         }
 
-        private static LruJwtHeaderCache CreateLruCache(int count, int size = 64)
+        private static LruJwtHeaderDocumentCache CreateLruCache(int count, int size = 64)
         {
-            LruJwtHeaderCache cache = new LruJwtHeaderCache();
+            LruJwtHeaderDocumentCache cache = new LruJwtHeaderDocumentCache();
             var data = CreateData(count, size);
             for (int i = 0; i < data.Length; i++)
             {
@@ -120,9 +120,9 @@ namespace JsonWebToken.Performance
             return cache;
         }
 
-        private static LruJwtHeaderCache[] CreateLruCacheArray(int count, int size = 64)
+        private static LruJwtHeaderDocumentCache[] CreateLruCacheArray(int count, int size = 64)
         {
-            var caches = new LruJwtHeaderCache[count];
+            var caches = new LruJwtHeaderDocumentCache[count];
             for (int i = 0; i < count; i++)
             {
                 caches[i] = CreateLruCache(i, size);
@@ -134,11 +134,11 @@ namespace JsonWebToken.Performance
         /// <summary>
         /// Represents a cache for <see cref="JwtHeaderDocument"/>.
         /// </summary>
-        public sealed class CircularJwtHeaderCache : IJwtHeaderCache
+        public sealed class CircularJwtHeaderDocumentCache : IJwtHeaderDocumentCache
         {
             private const int MaxItems = 16;
 #if DEBUG
-            static CircularJwtHeaderCache()
+            static CircularJwtHeaderDocumentCache()
             {
                 Debug.Assert(MaxItems % 2 == 0);
             }
