@@ -12,11 +12,6 @@ namespace JsonWebToken
     public interface IJwtHeaderCache
     {
         /// <summary>
-        /// Gets or sets whether the cache is enabled.
-        /// </summary>
-        bool Enabled { get; }
-
-        /// <summary>
         /// Adds a base64url encoded header to the cache.
         /// </summary>
         /// <param name="header"></param>

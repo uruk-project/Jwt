@@ -8,8 +8,6 @@ namespace JsonWebToken
 {
     internal class DisabledJwtHeaderCache : IJwtHeaderCache
     {
-        public bool Enabled => false;
-
         public void AddHeader(JwtHeader header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
         {
         }

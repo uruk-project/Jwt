@@ -15,12 +15,11 @@ namespace JsonWebToken
     /// </summary>
     public sealed class LruJwtHeaderCache : IJwtHeaderCache
     {
-        /// <inheritdoc/>
-        public bool Enabled => true;
-
         private sealed class Bucket
         {
-            public Dictionary<int, byte[]> Entries;
+            public readonly Dictionary<int, byte[]> Entries;
+
+            public KeyValuePair<int, byte[]> LatestEntry;
 
             public Bucket? Next;
 
@@ -32,6 +31,20 @@ namespace JsonWebToken
             {
                 Kid = kid;
                 Entries = entries;
+                LatestEntry = default;
+            }
+
+            public bool TryGetEntry(int key, [NotNullWhen(true)] out byte[]? entry)
+            {
+                // Fast path. Try to avoid the lookup to the dictionary 
+                // as we should only have 1 entry
+                if (LatestEntry.Key == key)
+                {
+                    entry = LatestEntry.Value;
+                    return true;
+                }
+
+                return Entries.TryGetValue(key, out entry);
             }
         }
 
@@ -56,6 +69,12 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool TryGetHeader(JwtHeader header, SignatureAlgorithm alg, [NotNullWhen(true)] out byte[]? base64UrlHeader)
         {
+            if (ReferenceEquals(_firstHeader.Header, header))
+            {
+                base64UrlHeader = _firstHeader.BinaryHeader;
+                goto Found;
+            }
+
             if (header.TryGetValue(HeaderParameters.Kid, out var kidProperty)
                 && kidProperty.Type == JsonValueKind.String
                 && !(kidProperty.Value is null)
@@ -68,7 +87,7 @@ namespace JsonWebToken
                 {
                     if (kid == node.Kid)
                     {
-                        if (node.Entries.TryGetValue(alg.Id, out var entry))
+                        if (node.TryGetEntry(alg.Id, out var entry))
                         {
                             base64UrlHeader = entry;
                             if (node != _head)
@@ -76,7 +95,7 @@ namespace JsonWebToken
                                 MoveToHead(node);
                             }
 
-                            return true;
+                            goto Found;
                         }
 
                         goto NotFound;
@@ -89,6 +108,9 @@ namespace JsonWebToken
         NotFound:
             base64UrlHeader = null;
             return false;
+
+        Found:
+            return true;
         }
 
         /// <summary>
