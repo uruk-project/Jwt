@@ -11,10 +11,11 @@ namespace JsonWebToken
     /// </summary>
     public class StateDescriptor : JwsDescriptor
     {
-        public StateDescriptor()
+        public StateDescriptor(SignatureAlgorithm alg, Jwk signingKey)
+            : base(signingKey, alg)
         {
         }
-        
+
         public override void Validate()
         {
             base.Validate();

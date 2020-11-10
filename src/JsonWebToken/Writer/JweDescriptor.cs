@@ -8,6 +8,18 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JweDescriptor : JweDescriptor<JwsDescriptor>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JweDescriptor"/> class.
+        /// </summary>
+        /// <param name="encryptionKey"></param>
+        /// <param name="alg"></param>
+        /// <param name="enc"></param>
+        /// <param name="zip"></param>
+        public JweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
+            : base(encryptionKey, alg, enc, zip)
+        {
+        }
+
         /// <inheritsdoc />
         public override void Validate()
         {

@@ -8,13 +8,11 @@ namespace JwsCreationSample
         static void Main()
         {
             // Creates a symmetric key defined for the 'HS256' algorithm
-            var key = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
+            var signingKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
 
             // Creates a JWS descriptor with all its properties
-            var descriptor = new JwsDescriptor()
+            var descriptor = new JwsDescriptor(signingKey, SignatureAlgorithm.HmacSha256)
             {
-                SigningKey = key,
-                Alg = SignatureAlgorithm.HmacSha256,
                 Payload = new JwtPayload
                 {
                     {"iat", EpochTime.UtcNow },

@@ -9,7 +9,7 @@ namespace CreatePerf
         private static readonly Jwk encryptionKey = SymmetricJwk.GenerateKey(KeyManagementAlgorithm.Aes256KW);
         private static readonly JwtWriter writer = new JwtWriter();
 
-        private static readonly JwsDescriptor jwsDescriptor = new JwsDescriptor
+        private static readonly JwsDescriptor jwsDescriptor = new JwsDescriptor(signingKey, SignatureAlgorithm.HmacSha512)
         {
             Payload = new JwtPayload
             {
@@ -18,14 +18,11 @@ namespace CreatePerf
                 { "iss", "https://idp.example.com/" },
                 { "aud", "636C69656E745F6964" },
             },
-            SigningKey = signingKey
         };
 
-        private static readonly JweDescriptor jweDescriptor = new JweDescriptor
+        private static readonly JweDescriptor jweDescriptor = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.Aes256KW, EncryptionAlgorithm.Aes256CbcHmacSha512)
         {
             Payload = jwsDescriptor,
-            EncryptionKey = encryptionKey,
-            Enc = EncryptionAlgorithm.Aes256CbcHmacSha512
         };
 
         private static void Main()

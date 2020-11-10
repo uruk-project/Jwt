@@ -15,15 +15,10 @@ namespace JweCreationSample
             var encryptionKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4T");
 
             // Creates a JWE descriptor with all its properties
-            var descriptor = new JweDescriptor<JwsDescriptor>()
+            var descriptor = new JweDescriptor<JwsDescriptor>(encryptionKey, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256)
             {
-                EncryptionKey = encryptionKey,
-                Enc = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                Alg = KeyManagementAlgorithm.Aes128KW,
-                Payload = new JwsDescriptor
+                Payload = new JwsDescriptor(signatureKey, SignatureAlgorithm.HmacSha256)
                 {
-                    SigningKey = signatureKey,
-                    Alg = SignatureAlgorithm.HmacSha256,
                     Payload = new JwtPayload
                     {
                         {"iat", EpochTime.UtcNow },

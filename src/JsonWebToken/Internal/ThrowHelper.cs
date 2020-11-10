@@ -417,6 +417,11 @@ namespace JsonWebToken
         private static Exception CreateInvalidOperationException_UnexpectedKeyType(Jwk key, string expectedType) => new InvalidOperationException($"Unexpected key type: '{Utf8.GetString(key.Kty)}'. Expected a key of type '{expectedType}'.");
 
         [DoesNotReturn]
+        internal static void ThrowInvalidOperationException_UndefinedPayload() => throw CreateInvalidOperationExceptionUndefinedPayload();
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateInvalidOperationExceptionUndefinedPayload() => new InvalidOperationException("The 'Payload' property is not defined.");
+
+        [DoesNotReturn]
         internal static void ThrowInvalidOperationException_RequirePrivateKey() => throw CreateInvalidOperationException_RequirePrivateKey();
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateInvalidOperationException_RequirePrivateKey() => new InvalidOperationException("The operation require a private key.");

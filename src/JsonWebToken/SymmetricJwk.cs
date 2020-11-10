@@ -20,7 +20,7 @@ namespace JsonWebToken
 #if !SUPPORT_SPAN_CRYPTO
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 #endif
-        internal static new readonly SymmetricJwk Empty = new SymmetricJwk(Array.Empty<byte>());
+        internal static readonly SymmetricJwk Empty = new SymmetricJwk(Array.Empty<byte>());
 
         private readonly byte[] _k;
 
@@ -520,6 +520,15 @@ namespace JsonWebToken
         /// <returns></returns>
         public static SymmetricJwk GenerateKey(KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
             => FromByteArray(GenerateKeyBytes(algorithm.RequiredKeySizeInBits * 8), algorithm, computeThumbprint: computeThumbprint);
+        
+        /// <summary>
+        /// Generates a new <see cref="SymmetricJwk"/>.
+        /// </summary>
+        /// <param name="algorithm"></param>
+        /// <param name="computeThumbprint">Indicates if the 'kid' should be generated.</param>
+        /// <returns></returns>
+        public static SymmetricJwk GenerateKey(EncryptionAlgorithm algorithm, bool computeThumbprint = true)
+            => FromByteArray(GenerateKeyBytes(algorithm.RequiredKeySizeInBits * 8), computeThumbprint: computeThumbprint);
 
         private static byte[] GenerateKeyBytes(int sizeInBits)
         {

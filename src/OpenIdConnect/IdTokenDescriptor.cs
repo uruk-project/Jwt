@@ -8,12 +8,10 @@ namespace JsonWebToken
 {
     public class IdTokenDescriptor : JwsDescriptor
     {
-        public IdTokenDescriptor()
-            : base()
+        public IdTokenDescriptor(SignatureAlgorithm alg, Jwk signingKey)
+            : base(signingKey, alg)
         {
         }
-
-        //public OpenIdConnectFlow Flow { get; set; }
 
         public override void Validate()
         {
@@ -24,17 +22,6 @@ namespace JsonWebToken
             ValidateClaim(Claims.Aud, new[] { JsonValueKind.String, JsonValueKind.Array });
             RequireClaim(Claims.Exp, JsonValueKind.Number);
             RequireClaim(Claims.Iat, JsonValueKind.Number);
-            //if (Flow == OpenIdConnectFlow.Implicit)
-            //{
-            //RequireClaim(OidcClaims.Nonce, JsonValueKind.String);
-            //RequireClaim(OidcClaims.AtHash, JsonValueKind.String);
-            //}
-            //else if (Flow == OpenIdConnectFlow.Hybrid)
-            //{
-            //    RequireClaim(OidcClaims.Nonce, JsonValueKind.String);
-            //    RequireClaim(OidcClaims.AtHash, JsonValueKind.String);
-            //    RequireClaim(OidcClaims.CHash, JsonValueKind.String);
-            //}
         }
     }
 }

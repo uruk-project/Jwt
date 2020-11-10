@@ -14,35 +14,41 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="PlaintextJweDescriptor"/>.
         /// </summary>
-        /// <param name="payload"></param>
-        public PlaintextJweDescriptor(string payload)
+        public PlaintextJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
+            : base(encryptionKey, alg, enc, zip)
         {
-            Payload = payload;
         }
 
         /// <inheritsdoc />
-        public override string Payload { get; set; }
+        public override string? Payload { get; set; }
 
         /// <inheritsdoc />
         public override void Encode(EncodingContext context)
         {
-            int payloadLength = Utf8.GetMaxByteCount(Payload.Length);
-            byte[]? payloadToReturnToPool = null;
-            Span<byte> encodedPayload = payloadLength > Constants.MaxStackallocBytes
-                             ? (payloadToReturnToPool = ArrayPool<byte>.Shared.Rent(payloadLength))
-                             : stackalloc byte[payloadLength];
+            if (Payload != null)
+            {
+                int payloadLength = Utf8.GetMaxByteCount(Payload.Length);
+                byte[]? payloadToReturnToPool = null;
+                Span<byte> encodedPayload = payloadLength > Constants.MaxStackallocBytes
+                                 ? (payloadToReturnToPool = ArrayPool<byte>.Shared.Rent(payloadLength))
+                                 : stackalloc byte[payloadLength];
 
-            try
-            {
-                int bytesWritten = Utf8.GetBytes(Payload, encodedPayload);
-                EncryptToken(encodedPayload.Slice(0, bytesWritten), context.BufferWriter);
-            }
-            finally
-            {
-                if (payloadToReturnToPool != null)
+                try
                 {
-                    ArrayPool<byte>.Shared.Return(payloadToReturnToPool);
+                    int bytesWritten = Utf8.GetBytes(Payload, encodedPayload);
+                    EncryptToken(encodedPayload.Slice(0, bytesWritten), context.BufferWriter);
                 }
+                finally
+                {
+                    if (payloadToReturnToPool != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(payloadToReturnToPool);
+                    }
+                }
+            }
+            else
+            {
+                ThrowHelper.ThrowInvalidOperationException_UndefinedPayload();
             }
         }
     }

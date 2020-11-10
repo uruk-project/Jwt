@@ -79,10 +79,8 @@ namespace JsonWebToken.Tests
         {
             var (signingKey, validationKey) = SelectKeys(alg);
             var writer = new JwtWriter();
-            var descriptor = new JwsDescriptor
+            var descriptor = new JwsDescriptor(signingKey, (SignatureAlgorithm)alg)
             {
-                SigningKey = signingKey,
-                Alg = (SignatureAlgorithm)alg,
                 Payload = new JwtPayload
                 {
                     {"sub", "Alice"}

@@ -38,16 +38,10 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Descriptor_AllKindOfObject()
         {
-            var descriptor = new JweDescriptor
+            var descriptor = new JweDescriptor(SymmetricJwk.GenerateKey(256), KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128CbcHmacSha256, CompressionAlgorithm.Deflate)
             {
-                Alg = KeyManagementAlgorithm.Direct,
-                Enc = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                EncryptionKey = SymmetricJwk.GenerateKey(256),
-                Zip = CompressionAlgorithm.Deflate,
-                Payload = new JwsDescriptor
+                Payload = new JwsDescriptor(SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256), SignatureAlgorithm.HmacSha256)
                 {
-                    Alg = SignatureAlgorithm.HmacSha256,
-                    SigningKey = SymmetricJwk.GenerateKey(256),
                     Header = new JwtHeader
                     {
                         { "H1", "value1" },
@@ -133,16 +127,11 @@ namespace JsonWebToken.Tests
                 payload.Add(i.ToString(), i);
             }
 
-            var descriptor = new JweDescriptor
+            // TODO : SymmetricJwk.GenerateKey(EncryptionAlgorithm.Aes128CbcHmacSha256)
+            var descriptor = new JweDescriptor(SymmetricJwk.GenerateKey(256), KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128CbcHmacSha256, CompressionAlgorithm.Deflate)
             {
-                Alg = KeyManagementAlgorithm.Direct,
-                Enc = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                EncryptionKey = SymmetricJwk.GenerateKey(256),
-                Zip = CompressionAlgorithm.Deflate,
-                Payload = new JwsDescriptor
+                Payload = new JwsDescriptor(SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256), SignatureAlgorithm.HmacSha256)
                 {
-                    Alg = SignatureAlgorithm.HmacSha256,
-                    SigningKey = SymmetricJwk.GenerateKey(256),
                     Payload = payload
                 }
             };

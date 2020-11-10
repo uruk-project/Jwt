@@ -21,15 +21,10 @@ namespace JsonWebToken.Tests
             var writer = new JwtWriter();
             foreach (var encryptionKey in SelectEncryptionKey(enc.Name, alg.Name))
             {
-                var descriptor = new JweDescriptor
+                var descriptor = new JweDescriptor(encryptionKey, alg, enc)
                 {
-                    EncryptionKey = encryptionKey,
-                    Enc = enc,
-                    Alg = alg,
-                    Payload = new JwsDescriptor
+                    Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256)
                     {
-                        SigningKey = _signingKey,
-                        Alg = SignatureAlgorithm.HmacSha256,
                         Payload = new JwtPayload
                         {
                             { "sub", "Alice" }

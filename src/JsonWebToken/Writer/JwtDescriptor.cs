@@ -10,7 +10,6 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class JwtDescriptor
     {
-        private Jwk? _key;
         private JwtHeader _header;
 
         /// <summary>
@@ -38,35 +37,6 @@ namespace JsonWebToken
                 _header = value;
             }
         }
-
-        /// <summary>
-        /// Gets the <see cref="Jwk"/> used.
-        /// </summary>
-        protected Jwk Key
-        {
-            get => _key ?? Jwk.Empty;
-            set
-            {
-                if (value is null)
-                {
-                    ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
-                }
-
-                _key = value;
-                if (value.Kid != null)
-                {
-                    Header.Add(HeaderParameters.Kid, value.Kid);
-                }
-
-                OnKeyChanged(value);
-            }
-        }
-
-        /// <summary>
-        /// Called when the key is set.
-        /// </summary>
-        /// <param name="key"></param>
-        protected abstract void OnKeyChanged(Jwk? key);
 
         /// <summary>
         /// Encodes the current <see cref="JwtDescriptor"/> into it <see cref="string"/> representation.

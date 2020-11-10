@@ -11,12 +11,8 @@ namespace JsonWebToken
     /// </summary>
     public sealed class SoftwareStatementDescriptor : JwsDescriptor
     {
-        public SoftwareStatementDescriptor()
-        {
-        }
-
-        public SoftwareStatementDescriptor(JwtPayload payload) 
-            : base(payload)
+        public SoftwareStatementDescriptor(SignatureAlgorithm alg, Jwk signingKey) 
+            : base(signingKey, alg)
         {
         }
 

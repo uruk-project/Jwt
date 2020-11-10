@@ -22,6 +22,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentException_StaticKeyNotSupported();
             }
 
+            // TODO : make a copy of the Jwk instead of a copy of the span
             ReadOnlySpan<byte> bytes = Key.AsSpan();
             return SymmetricJwk.FromSpan(bytes, false);
         }

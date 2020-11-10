@@ -19,10 +19,8 @@ namespace ValidatePerf
 
         private static void Encode6()
         {
-            JwsDescriptor jwsDescriptor = new JwsDescriptor()
+            JwsDescriptor jwsDescriptor = new JwsDescriptor(Jwk.None, SignatureAlgorithm.None)
             {
-                //SigningKey = signingKey,
-                Alg = SignatureAlgorithm.None,
                 Payload = new JwtPayload
                 {
                     { Claims.Iat, 1500000000L },

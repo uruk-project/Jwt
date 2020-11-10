@@ -11,14 +11,17 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of the <see cref="BinaryJweDescriptor"/> class.
         /// </summary>
-        /// <param name="payload"></param>
-        public BinaryJweDescriptor(byte[] payload)
+        /// <param name="encryptionKey"></param>
+        /// <param name="alg"></param>
+        /// <param name="enc"></param>
+        /// <param name="zip"></param>
+        public BinaryJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
+            : base(encryptionKey, alg, enc, zip)
         {
-            Payload = payload;
         }
 
         /// <inheritdoc/>
-        public override byte[] Payload { get; set; }
+        public override byte[]? Payload { get; set; }
 
         /// <inheritdoc />
         public override void Encode(EncodingContext context)

@@ -18,7 +18,12 @@ namespace JsonWebToken
         /// <summary>
         /// Deflate
         /// </summary>
-        public static readonly CompressionAlgorithm Deflate = new CompressionAlgorithm(id: 1, "DEF", new DeflateCompressor(), new DeflateDecompressor());
+        public static readonly CompressionAlgorithm Deflate = new CompressionAlgorithm(id: 1, "DEF", new DeflateCompressor(), new DeflateDecompressor(), true);
+        
+        /// <summary>
+        /// Deflate
+        /// </summary>
+        internal static readonly CompressionAlgorithm NoCompression = new CompressionAlgorithm(id: 0, string.Empty, Compressor.Null, Decompressor.Null, false);
 
         /// <summary>
         /// Gets the algorithm identifier. 
@@ -45,6 +50,11 @@ namespace JsonWebToken
         /// </summary>
         public Decompressor Decompressor { get; }
 
+        /// <summary>
+        /// Gets whether the compressor is enabled.
+        /// </summary>
+        public bool Enabled { get; }
+
         private readonly sbyte _id;
         private readonly byte[] _utf8Name;
 
@@ -55,7 +65,8 @@ namespace JsonWebToken
         /// <param name="name"></param>
         /// <param name="compressor"></param>
         /// <param name="decompressor"></param>
-        public CompressionAlgorithm(sbyte id, string name, Compressor compressor, Decompressor decompressor)
+        /// <param name="enabled"></param>
+        public CompressionAlgorithm(sbyte id, string name, Compressor compressor, Decompressor decompressor, bool enabled)
         {
             if (name is null)
             {
@@ -76,6 +87,7 @@ namespace JsonWebToken
             _utf8Name = Utf8.GetBytes(name);
             Compressor = compressor;
             Decompressor = decompressor;
+            Enabled = enabled;
         }
 
         /// <summary>
@@ -281,6 +293,6 @@ namespace JsonWebToken
         }
 
         internal static CompressionAlgorithm Create(string name)
-            => new CompressionAlgorithm(127, name, Compressor.Null, Decompressor.Null);
+            => new CompressionAlgorithm(127, name, Compressor.Null, Decompressor.Null, false);
     }
 }

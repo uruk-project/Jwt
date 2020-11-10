@@ -24,7 +24,8 @@ namespace JsonWebToken
         {
             public override int Compress(ReadOnlySpan<byte> data, Span<byte> destination)
             {
-                return 0;
+                data.CopyTo(destination);
+                return data.Length;
             }
         }
     }

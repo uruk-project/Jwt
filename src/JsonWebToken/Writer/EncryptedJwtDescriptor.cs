@@ -13,110 +13,62 @@ namespace JsonWebToken
     /// <summary>
     /// Defines an encrypted JWT with a <typeparamref name="TPayload"/> payload.
     /// </summary>
-    public abstract class EncryptedJwtDescriptor<TPayload> : JwtDescriptor<TPayload>
+    public abstract class EncryptedJwtDescriptor<TPayload> : JwtDescriptor<TPayload> where TPayload : class
     {
-        private KeyManagementAlgorithm? _alg;
-        private EncryptionAlgorithm? _enc;
-        private CompressionAlgorithm? _zip;
+        private readonly Jwk _encryptionKey;
+        private readonly KeyManagementAlgorithm _alg;
+        private readonly EncryptionAlgorithm _enc;
+        private readonly CompressionAlgorithm _zip;
 #if NETSTANDARD2_0 || NET461 || NET47
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 #endif
 
         /// <summary>
-        /// Gets or sets the algorithm header.
+        /// Initializes a new instance of the <see cref="EncryptedJwtDescriptor{TPayload}"/> class.
         /// </summary>
-        public KeyManagementAlgorithm? Alg
+        /// <param name="encryptionKey"></param>
+        /// <param name="alg"></param>
+        /// <param name="enc"></param>
+        /// <param name="zip"></param>
+        public EncryptedJwtDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
         {
-            get
+            _encryptionKey = encryptionKey ?? throw new ArgumentNullException(nameof(encryptionKey));
+            _enc = enc ?? throw new ArgumentNullException(nameof(enc));
+            _alg = alg ?? throw new ArgumentNullException(nameof(alg));
+            _zip = zip ?? CompressionAlgorithm.NoCompression;
+            Header.Add(HeaderParameters.Alg, alg.Name);
+            Header.Add(HeaderParameters.Enc, enc.Name);
+           
+            if (zip != null)
             {
-                if (_alg is null
-                    && Header.TryGetValue(HeaderParameters.Alg, out var value)
-                    && KeyManagementAlgorithm.TryParse((string?)value.Value, out _alg))
-                {
-                    return _alg;
-                }
-
-                return _alg;
+                Header.Add(HeaderParameters.Zip, zip.Name);
             }
 
-            set
+            if (encryptionKey.Kid != null)
             {
-                if (value is null)
-                {
-                    ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
-                }
-
-                _alg = value;
-                Header.Add(HeaderParameters.Alg, value.Name);
+                Header.Add(HeaderParameters.Kid, encryptionKey.Kid);
             }
         }
+
+        /// <summary>
+        /// Gets or sets the algorithm header.
+        /// </summary>
+        public KeyManagementAlgorithm Alg => _alg;
 
         /// <summary>
         /// Gets or sets the encryption algorithm.
         /// </summary>
-        public EncryptionAlgorithm? Enc
-        {
-            get
-            {
-                if (_enc is null
-                    && Header.TryGetValue(HeaderParameters.Enc, out var value)
-                    && EncryptionAlgorithm.TryParse((string?)value.Value, out _enc))
-                {
-                    return _enc;
-                }
-
-                return _enc;
-            }
-
-            set
-            {
-                if (value is null)
-                {
-                    ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
-                }
-
-                _enc = value;
-                Header.Add(HeaderParameters.Enc, value.Name);
-            }
-        }
+        public EncryptionAlgorithm Enc => _enc;
 
         /// <summary>
         /// Gets or sets the compression algorithm.
         /// </summary>
-        public CompressionAlgorithm? Zip
-        {
-            get
-            {
-                if (_zip is null
-                    && Header.TryGetValue(HeaderParameters.Zip, out var value)
-                    && CompressionAlgorithm.TryParse((string?)value.Value, out _zip))
-                {
-                    return _zip;
-                }
-
-                return _zip;
-            }
-
-            set
-            {
-                if (value is null)
-                {
-                    ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
-                }
-
-                _zip = value;
-                Header.Add(HeaderParameters.Zip, value.Name);
-            }
-        }
+        public CompressionAlgorithm Zip => _zip;
 
         /// <summary>
         /// Gets the <see cref="Jwk"/> used.
         /// </summary>
-        public Jwk EncryptionKey
-        {
-            get => Key;
-            set => Key = value;
-        }
+        public Jwk EncryptionKey => _encryptionKey;
 
         /// <summary>
         /// Encrypt the token.
@@ -124,7 +76,7 @@ namespace JsonWebToken
         protected void EncryptToken(ReadOnlySpan<byte> payload, IBufferWriter<byte> output)
         {
             EncryptionAlgorithm? encryptionAlgorithm = Enc;
-            var key = Key;
+            var key = _encryptionKey;
             if (key is null)
             {
                 ThrowHelper.ThrowKeyNotFoundException();
@@ -143,10 +95,10 @@ namespace JsonWebToken
                     stackalloc byte[keyWrapSize] :
                     new Span<byte>(wrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(keyWrapSize), 0, keyWrapSize);
                 var cek = keyWrapper.WrapKey(null, header, wrappedKey);
-                if (!(key.Kid is null))
-                {
-                    header.Add(HeaderParameters.Kid, key.Kid);
-                }
+                //if (!(key.Kid is null))
+                //{
+                //    header.Add(HeaderParameters.Kid, key.Kid);
+                //}
 
                 try
                 {
@@ -166,21 +118,14 @@ namespace JsonWebToken
                     try
                     {
                         int bytesWritten = Base64Url.Encode(headerJson, base64EncodedHeader);
-                        Compressor? compressor = null;
                         var compressionAlgorithm = Zip;
-                        if (!(compressionAlgorithm is null))
+                        if (compressionAlgorithm.Enabled)
                         {
-                            compressor = compressionAlgorithm.Compressor;
-                            if (compressor is null)
-                            {
-                                ThrowHelper.ThrowNotSupportedException_CompressionAlgorithm(compressionAlgorithm);
-                            }
-
                             // Get a buffer a bit bigger in case of data that can't be compress 
                             // and the resulting would be slighlty bigger
                             const int overheadLeeway = 32;
                             compressedBuffer = ArrayPool<byte>.Shared.Rent(payload.Length + overheadLeeway);
-                            int payloadLength = compressor.Compress(payload, compressedBuffer);
+                            int payloadLength = compressionAlgorithm.Compressor.Compress(payload, compressedBuffer);
                             payload = new ReadOnlySpan<byte>(compressedBuffer, 0, payloadLength);
                         }
 
@@ -262,17 +207,17 @@ namespace JsonWebToken
             }
         }
 
-        /// <inheritsdoc />
-        protected override void OnKeyChanged(Jwk? key)
-        {
-            if (!(key is null))
-            {
-                var alg = key.KeyManagementAlgorithm;
-                if (!(alg is null))
-                {
-                    Alg = alg;
-                }
-            }
-        }
+        ///// <inheritsdoc />
+        //protected override void OnKeyChanged(Jwk? key)
+        //{
+        //    if (!(key is null))
+        //    {
+        //        var alg = key.KeyManagementAlgorithm;
+        //        if (!(alg is null))
+        //        {
+        //            Alg = alg;
+        //        }
+        //    }
+        //}
     }
 }

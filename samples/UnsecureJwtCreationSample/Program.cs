@@ -8,9 +8,8 @@ namespace UnsecureJwtCreationSample
         static void Main()
         {
             // Creates a JWS descriptor with all its properties
-            var descriptor = new JwsDescriptor()
+            var descriptor = new JwsDescriptor(Jwk.None, SignatureAlgorithm.None)
             {
-                Alg = SignatureAlgorithm.None,
                 Payload = new JwtPayload
                     {
                         {"iat", EpochTime.UtcNow },

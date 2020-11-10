@@ -6,29 +6,22 @@ namespace JsonWebToken
     /// <summary>
     /// Defines an encrypted JWT with a <typeparamref name="TDescriptor"/> as payload.
     /// </summary>
-    public class JweDescriptor<TDescriptor> : EncryptedJwtDescriptor<TDescriptor> where TDescriptor : JwsDescriptor, new()
+    public class JweDescriptor<TDescriptor> : EncryptedJwtDescriptor<TDescriptor> where TDescriptor : JwsDescriptor
     {
         private TDescriptor? _payload;
 
         /// <summary>
         /// Initializes a new instance of <see cref="JweDescriptor"/>.
         /// </summary>
-        public JweDescriptor()
+        public JweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
+            : base(encryptionKey, alg, enc, zip)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JweDescriptor"/>.
-        /// </summary>
-        public JweDescriptor(TDescriptor payload)
-        {
-            _payload = payload;
         }
 
         /// <inheritdoc/>
-        public override TDescriptor Payload
+        public override TDescriptor? Payload
         {
-            get => _payload ??= new TDescriptor();
+            get => _payload;
             set => _payload = value;
         }
 
@@ -37,15 +30,25 @@ namespace JsonWebToken
         {
             using var bufferWriter = new PooledByteBufferWriter();
             var ctx = new EncodingContext(bufferWriter, context.HeaderCache, context.TokenLifetimeInSeconds, context.GenerateIssuedTime);
-            Payload.Encode(ctx);
-            EncryptToken(bufferWriter.WrittenSpan, context.BufferWriter);
+            if (!(_payload is null))
+            {
+                _payload.Encode(ctx);
+                EncryptToken(bufferWriter.WrittenSpan, context.BufferWriter);
+            }
+            else
+            {
+                ThrowHelper.ThrowInvalidOperationException_UndefinedPayload();
+            }
         }
 
         /// <inheritsdoc />
         public override void Validate()
         {
-            Payload.Validate();
             base.Validate();
+            if (!(_payload is null))
+            {
+                _payload.Validate();
+            }
         }
     }
 }

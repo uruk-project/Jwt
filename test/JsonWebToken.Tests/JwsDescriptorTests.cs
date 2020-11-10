@@ -5,9 +5,9 @@ namespace JsonWebToken.Tests
     public class JwsDescriptorTests
     {
         [Fact]
-        public void Encode()
+        public void EncodeEmpty()
         {
-            var descriptor = new JwsDescriptor();
+            var descriptor = new JwsDescriptor(Jwk.None, SignatureAlgorithm.None);
             using (var bufferWriter = new PooledByteBufferWriter())
             {
                 var context = new EncodingContext(bufferWriter, new JsonHeaderCache(), 60, true);

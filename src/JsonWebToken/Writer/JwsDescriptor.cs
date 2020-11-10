@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
@@ -16,28 +15,29 @@ namespace JsonWebToken
     /// </summary>
     public partial class JwsDescriptor : JwtDescriptor<JwtPayload>
     {
-        private SignatureAlgorithm? _alg;
+        private readonly SignatureAlgorithm _alg;
+        private readonly Jwk _signingKey;
         private JwtPayload _payload;
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwsDescriptor"/>.
         /// </summary>
-        public JwsDescriptor()
-            : this(new JwtPayload())
+        /// <param name="signingKey">The signing key.</param>
+        /// <param name="alg">The signature algorithm.</param>
+        public JwsDescriptor(Jwk signingKey, SignatureAlgorithm alg)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwsDescriptor"/>.
-        /// </summary>
-        public JwsDescriptor(JwtPayload payload)
-            //: base(payload)
-        {
-            _payload = payload;
+            _alg = alg ?? throw new ArgumentNullException(nameof(alg));
+            _signingKey = signingKey ?? throw new ArgumentNullException(nameof(signingKey));
+            _payload = new JwtPayload();
+            Header.Add(HeaderParameters.Alg, alg.Name);
+            if (signingKey.Kid != null)
+            {
+                Header.Add(HeaderParameters.Kid, signingKey.Kid);
+            }
         }
 
         /// <inheritdoc/>
-        public override JwtPayload Payload
+        public override JwtPayload?Payload
         {
             get => _payload;
             set
@@ -53,115 +53,87 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Gets or sets the algorithm header.
+        /// Gets the 'alg' header.
         /// </summary>
-        public SignatureAlgorithm? Alg
-        {
-            get
-            {
-                if (_alg is null
-                    && Header.TryGetValue(HeaderParameters.Alg, out var value)
-                    && SignatureAlgorithm.TryParse((string?)value.Value, out _alg))
-                {
-                    return _alg;
-                }
-
-                return _alg;
-            }
-
-            set
-            {
-                if (value is null)
-                {
-                    ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
-                }
-
-                _alg = value;
-                Header.Add(HeaderParameters.Alg, value.Name);
-            }
-        }
+        public SignatureAlgorithm Alg => _alg;
 
         /// <summary>
-        /// Gets the <see cref="Jwk"/> used.
+        /// Gets the <see cref="Jwk"/> used for signature.
         /// </summary>
-        public Jwk SigningKey
-        {
-            get => Key;
-            set => Key = value;
-        }
+        public Jwk SigningKey => _signingKey;
 
         /// <summary>
-        /// Gets or sets the value of the 'sub' claim.
+        /// Sets the value of the 'sub' claim.
         /// </summary>
         public void AddSub(string value)
-            => Payload.AddSub(value);
+            => _payload.AddSub(value);
 
         /// <summary>
-        /// Gets or sets the value of the 'jti' claim.
+        /// Sets the value of the 'jti' claim.
         /// </summary>
         public void AddJti(string value)
-            => Payload.AddJti(value);
+            => _payload.AddJti(value);
 
         /// <summary>
-        /// Gets or sets the value of the 'aud' claim.
+        /// Sets the value of the 'aud' claim.
         /// </summary>
         public void AddAud(string value)
-            => Payload.AddAud(value);
+            => _payload.AddAud(value);
 
         /// <summary>
-        /// Gets or sets the value of the 'aud' claim.
+        /// Sets the value of the 'aud' claim.
         /// </summary>
         public void AddAud(string[] value)
-            => Payload.AddAud(value);
+            => _payload.AddAud(value);
 
         /// <summary>
-        /// Gets or sets the value of the 'exp' claim.
+        /// Sets the value of the 'exp' claim.
         /// </summary>
         public void AddExp(long value)
-            => Payload.AddExp(value);
+            => _payload.AddExp(value);
 
         /// <summary>
-        /// Gets or sets the value of the 'iss' claim.
+        /// Sets the value of the 'iss' claim.
         /// </summary>
         public void AddIss(string value)
-            => Payload.AddIss(value);
+            => _payload.AddIss(value);
 
         /// <summary>
-        /// Gets or sets the value of the 'iat' claim.
+        /// Sets the value of the 'iat' claim.
         /// </summary>
         public void AddIat(string value)
-            => Payload.AddIat(value);
+            => _payload.AddIat(value);
 
         /// <summary>
-        ///Gets or sets the value of the 'nbf' claim.
+        ///Sets the value of the 'nbf' claim.
         /// </summary>
         public void AddNbf(long value)
-            => Payload.AddNbf(value);
+            => _payload.AddNbf(value);
 
         /// <inheritsdoc />
         public override void Encode(EncodingContext context)
         {
-            var key = Key;
+            var key = _signingKey;
             var alg = (Alg ?? key?.SignatureAlgorithm) ?? SignatureAlgorithm.None;
             if (!(key is null) && key.TryGetSigner(alg, out var signer))
             {
                 if (context.TokenLifetimeInSeconds != 0 || context.GenerateIssuedTime)
                 {
                     long now = EpochTime.UtcNow;
-                    if (context.GenerateIssuedTime && !Payload.ContainsKey(Claims.Iat))
+                    if (context.GenerateIssuedTime && !_payload.ContainsKey(Claims.Iat))
                     {
-                        Payload.Add(Claims.Iat, now);
+                        _payload.Add(Claims.Iat, now);
                     }
 
-                    if (context.TokenLifetimeInSeconds != 0 && !Payload.ContainsKey(Claims.Exp))
+                    if (context.TokenLifetimeInSeconds != 0 && !_payload.ContainsKey(Claims.Exp))
                     {
-                        Payload.Add(Claims.Exp, now + context.TokenLifetimeInSeconds);
+                        _payload.Add(Claims.Exp, now + context.TokenLifetimeInSeconds);
                     }
                 }
 
                 using var bufferWriter = new PooledByteBufferWriter();
                 using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
-                Payload.WriteTo(writer);
+                _payload.WriteTo(writer);
                 int payloadLength = (int)writer.BytesCommitted + writer.BytesPending;
                 int length = Base64Url.GetArraySizeRequiredToEncode(payloadLength)
                            + signer.Base64HashSizeInBytes
@@ -210,7 +182,7 @@ namespace JsonWebToken
             }
             else
             {
-                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(alg, Key);
+                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(alg, _signingKey);
             }
         }
 
@@ -229,19 +201,9 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        protected override void OnKeyChanged(Jwk? key)
-        {
-            if (!(key is null) && !key.Alg.IsEmpty)
-            {
-                Alg = key.SignatureAlgorithm;
-            }
-        }
-
-        /// <inheritsdoc />
         public IEnumerator<JwtProperty> GetEnumerator()
         {
             throw new NotImplementedException();
-            //return Payload.GetEnumerator();
         }
 
         /// <summary>
@@ -251,7 +213,7 @@ namespace JsonWebToken
         /// <param name="type"></param>
         protected void RequireClaim(string utf8Name, JsonValueKind type)
         {
-            if (!Payload.TryGetValue(utf8Name, out var claim))
+            if (!_payload.TryGetValue(utf8Name, out var claim))
             {
                 ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
             }
@@ -269,7 +231,7 @@ namespace JsonWebToken
         /// <param name="types"></param>
         protected void ValidateClaim(string utf8Name, JsonValueKind[] types)
         {
-            if (!Payload.TryGetValue(utf8Name, out var claim) || claim.Type == JsonValueKind.Null)
+            if (!_payload.TryGetValue(utf8Name, out var claim) || claim.Type == JsonValueKind.Null)
             {
                 ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
             }
@@ -284,6 +246,5 @@ namespace JsonWebToken
 
             ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, types);
         }
-
     }
 }

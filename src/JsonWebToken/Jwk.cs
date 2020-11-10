@@ -39,7 +39,7 @@ namespace JsonWebToken
         /// <summary>
         /// An empty <see cref="Jwk"/>.
         /// </summary>
-        public static readonly Jwk Empty = new NullJwk();
+        public static readonly Jwk None = new NullJwk();
 
         private static readonly EmptyAlgorithm EmptyAlg = new EmptyAlgorithm();
 
@@ -429,7 +429,7 @@ namespace JsonWebToken
             }
 
             ThrowHelper.ThrowArgumentException_MalformedKey();
-            return Jwk.Empty;
+            return Jwk.None;
         }
 
         /// <summary>
@@ -859,7 +859,7 @@ namespace JsonWebToken
                 }
 
                 ThrowHelper.ThrowArgumentException_MalformedKey();
-                return Empty;
+                return None;
             }
             finally
             {

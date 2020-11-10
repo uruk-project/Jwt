@@ -12,14 +12,10 @@ namespace JsonWebToken
     {
         public const string SecurityEventTokenType = "secevent+jwt";
 
-        public SecurityEventTokenDescriptor()
+        public SecurityEventTokenDescriptor(Jwk signingKey, SignatureAlgorithm alg) 
+            : base(signingKey, alg)
         {
             Header.Add(HeaderParameters.Typ, SecurityEventTokenType);
-        }
-
-        public SecurityEventTokenDescriptor(JwtPayload payload) 
-            : base(payload)
-        {
         }
 
         public override void Validate()

@@ -11,21 +11,13 @@ namespace JsonWebToken
     /// </summary>
     public sealed class ClientAssertionDescriptor : JwsDescriptor
     {
-        public ClientAssertionDescriptor()
-        {
-        }
-
-        public ClientAssertionDescriptor(JwtPayload payload) : base(payload)
+        public ClientAssertionDescriptor(SignatureAlgorithm alg, Jwk signingKey)
+            : base(signingKey, alg)
         {
         }
 
         public override void Validate()
         {
-            if (Key is null)
-            {
-                throw new JwtDescriptorException("No key is defined.");
-            }
-
             base.Validate();
 
             RequireClaim(Claims.Iss, JsonValueKind.String);

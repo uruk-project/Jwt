@@ -186,10 +186,7 @@ namespace JsonWebToken.Performance
             var descriptors = new Dictionary<string, JwtDescriptor>();
             foreach (var payload in Tokens.Payloads)
             {
-                var descriptor = new JwsDescriptor()
-                {
-                    Alg = SignatureAlgorithm.None
-                };
+                var descriptor = new JwsDescriptor(SigningKey, SignatureAlgorithm.HmacSha256);
 
                 foreach (var property in payload.Value.Properties())
                 {
@@ -198,10 +195,10 @@ namespace JsonWebToken.Performance
                         case "iat":
                         case "nbf":
                         case "exp":
-                            descriptor.Payload.Add(property.Name, (long)property.Value);
+                            descriptor.Payload!.Add(property.Name, (long)property.Value);
                             break;
                         default:
-                            descriptor.Payload.Add(property.Name, (string)property.Value);
+                            descriptor.Payload!.Add(property.Name, (string)property.Value);
                             break;
                     }
                 }
@@ -211,10 +208,7 @@ namespace JsonWebToken.Performance
 
             foreach (var payload in Tokens.Payloads)
             {
-                var descriptor = new JwsDescriptor()
-                {
-                    SigningKey = SigningKey
-                };
+                var descriptor = new JwsDescriptor(SigningKey, SignatureAlgorithm.HmacSha256);
 
                 foreach (var property in payload.Value.Properties())
                 {
@@ -223,10 +217,10 @@ namespace JsonWebToken.Performance
                         case "iat":
                         case "nbf":
                         case "exp":
-                            descriptor.Payload.Add(property.Name, (long)property.Value);
+                            descriptor.Payload!.Add(property.Name, (long)property.Value);
                             break;
                         default:
-                            descriptor.Payload.Add(property.Name, (string)property.Value);
+                            descriptor.Payload!.Add(property.Name, (string)property.Value);
                             break;
                     }
                 }
@@ -236,10 +230,7 @@ namespace JsonWebToken.Performance
 
             foreach (var payload in Tokens.Payloads)
             {
-                var descriptor = new JwsDescriptor()
-                {
-                    SigningKey = SigningKey
-                };
+                var descriptor = new JwsDescriptor(SigningKey, SignatureAlgorithm.HmacSha256);
 
                 foreach (var property in payload.Value.Properties())
                 {
@@ -248,31 +239,26 @@ namespace JsonWebToken.Performance
                         case "iat":
                         case "nbf":
                         case "exp":
-                            descriptor.Payload.Add(property.Name, (long)property.Value);
+                            descriptor.Payload!.Add(property.Name, (long)property.Value);
                             break;
                         default:
-                            descriptor.Payload.Add(property.Name, (string)property.Value);
+                            descriptor.Payload!.Add(property.Name, (string)property.Value);
                             break;
                     }
                 }
 
-                var jwe = new JweDescriptor
+                var jwe = new JweDescriptor(EncryptionKey, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256)
                 {
                     Payload = descriptor,
-                    EncryptionKey = EncryptionKey,
-                    Enc = EncryptionAlgorithm.Aes128CbcHmacSha256
                 };
 
                 descriptors.Add("JWE " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwe);
 
-                var jwc = new JweDescriptor
+                var jwec = new JweDescriptor(EncryptionKey, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, CompressionAlgorithm.Deflate)
                 {
-                    Payload = descriptor,
-                    EncryptionKey = EncryptionKey,
-                    Enc = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                    Zip = CompressionAlgorithm.Deflate
+                    Payload = descriptor
                 };
-                descriptors.Add("JWE DEF " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwc);
+                descriptors.Add("JWE DEF " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwec);
             }
 
             return descriptors;
@@ -285,7 +271,6 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new SecurityTokenDescriptor()
                 {
-                    //SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.Alg),
                     Subject = new ClaimsIdentity(),
                     Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.ToDateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
                     IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.ToDateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
