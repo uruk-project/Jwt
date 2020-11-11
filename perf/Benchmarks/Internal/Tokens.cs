@@ -393,11 +393,6 @@ namespace JsonWebToken.Performance
             return new TokenState(jwt, status);
         }
 
-        private static TokenState CreateInvalidToken(TokenValidationStatus status, JwsDescriptor descriptor, string? claim = null)
-        {
-            return CreateInvalidToken(status, descriptor, claim);
-        }
-
         public static JwtObject ToJwtObject(JObject json)
         {
             var jwtObject = new JwtObject();

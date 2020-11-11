@@ -28,7 +28,7 @@ namespace JsonWebToken
         /// </summary>
         public JwtPayload()
         {
-            _payload = MemberStore.CreateForPayload();
+            _payload = MemberStore.CreateFastGrowingStore();
         }
 
         internal MemberStore Inner => _payload;

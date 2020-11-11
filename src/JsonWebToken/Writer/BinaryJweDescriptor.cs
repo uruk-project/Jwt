@@ -15,8 +15,10 @@ namespace JsonWebToken
         /// <param name="alg"></param>
         /// <param name="enc"></param>
         /// <param name="zip"></param>
-        public BinaryJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
-            : base(encryptionKey, alg, enc, zip)
+        /// <param name="typ"></param>
+        /// <param name="cty"></param>
+        public BinaryJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = "octet-stream")
+            : base(encryptionKey, alg, enc, zip, typ, cty)
         {
         }
 

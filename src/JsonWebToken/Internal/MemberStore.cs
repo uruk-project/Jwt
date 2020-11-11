@@ -13,11 +13,11 @@ namespace JsonWebToken
 {
     internal sealed class MemberStore : IEnumerable<JwtMember>
     {
-        public static MemberStore CreateForPayload()
-            => new MemberStore(EmptyMapForPayload.Empty);
+        public static MemberStore CreateFastGrowingStore()
+            => new MemberStore(FastGrowingEmptyMap.Empty);
 
-        public static MemberStore CreateForHeader()
-            => new MemberStore(EmptyMapForHeader.Empty);
+        public static MemberStore CreateSlowGrowingStore()
+            => new MemberStore(SlowGrowingEmptyMap.Empty);
 
         private IMap _map;
 
@@ -75,7 +75,7 @@ namespace JsonWebToken
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return GetEnumerator();
         }
 
         private interface IMap : IEnumerable<JwtMember>
@@ -94,9 +94,9 @@ namespace JsonWebToken
         }
 
         // Instance without any key/value pairs. Used as a singleton.
-        private sealed class EmptyMapForPayload : IMap
+        private sealed class FastGrowingEmptyMap : IMap
         {
-            public static readonly EmptyMapForPayload Empty = new EmptyMapForPayload();
+            public static readonly FastGrowingEmptyMap Empty = new FastGrowingEmptyMap();
 
             public int Count => 0;
 
@@ -139,9 +139,9 @@ namespace JsonWebToken
         }
 
         // Instance without any key/value pairs. Used as a singleton.
-        private sealed class EmptyMapForHeader : IMap
+        private sealed class SlowGrowingEmptyMap : IMap
         {
-            public static readonly EmptyMapForPayload Empty = new EmptyMapForPayload();
+            public static readonly FastGrowingEmptyMap Empty = new FastGrowingEmptyMap();
 
             public int Count => 0;
 

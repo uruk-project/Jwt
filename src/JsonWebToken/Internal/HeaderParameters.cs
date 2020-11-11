@@ -3,7 +3,7 @@
 
 using System;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     /// <summary>
     /// List of header parameter names see: http://tools.ietf.org/html/rfc7519#section-5.

@@ -11,7 +11,7 @@ namespace JsonWebToken
     /// </summary>
     public sealed class JwtHeader : IEnumerable
     {
-        private readonly MemberStore _header = MemberStore.CreateForHeader();
+        private readonly MemberStore _header = MemberStore.CreateSlowGrowingStore();
 
         /// <summary>
         /// Gets the count of parameters in the current header.

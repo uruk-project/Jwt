@@ -13,7 +13,7 @@ namespace JsonWebToken
     /// <summary>
     /// Defines a signed JWT with a JSON payload.
     /// </summary>
-    public partial class JwsDescriptor : JwtDescriptor<JwtPayload>
+    public class JwsDescriptor : JwtDescriptor<JwtPayload>
     {
         private readonly SignatureAlgorithm _alg;
         private readonly Jwk _signingKey;
@@ -24,7 +24,9 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="signingKey">The signing key.</param>
         /// <param name="alg">The signature algorithm.</param>
-        public JwsDescriptor(Jwk signingKey, SignatureAlgorithm alg)
+        /// <param name="typ">Optional. The media type.</param>
+        /// <param name="cty">Optional. The content type.</param>
+        public JwsDescriptor(Jwk signingKey, SignatureAlgorithm alg, string? typ = null, string? cty = null)
         {
             _alg = alg ?? throw new ArgumentNullException(nameof(alg));
             _signingKey = signingKey ?? throw new ArgumentNullException(nameof(signingKey));
@@ -34,10 +36,20 @@ namespace JsonWebToken
             {
                 Header.Add(HeaderParameters.Kid, signingKey.Kid);
             }
+
+            if (typ != null)
+            {
+                Header.Add(HeaderParameters.Typ, typ);
+            }
+
+            if (cty != null)
+            {
+                Header.Add(HeaderParameters.Cty, cty);
+            }
         }
 
         /// <inheritdoc/>
-        public override JwtPayload?Payload
+        public override JwtPayload? Payload
         {
             get => _payload;
             set
@@ -186,7 +198,7 @@ namespace JsonWebToken
             }
         }
 
-        internal bool TryGetValue(string name, out JwtMember value)
+        internal bool TryGetClaim(string name, out JwtMember value)
         {
             return _payload.TryGetValue(name, out value);
         }

@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -30,7 +29,9 @@ namespace JsonWebToken
         /// <param name="alg"></param>
         /// <param name="enc"></param>
         /// <param name="zip"></param>
-        public JweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
+        /// <param name="typ"></param>
+        /// <param name="cty"></param>
+        protected JweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = null)
         {
             _encryptionKey = encryptionKey ?? throw new ArgumentNullException(nameof(encryptionKey));
             _alg = alg ?? throw new ArgumentNullException(nameof(alg));
@@ -38,7 +39,7 @@ namespace JsonWebToken
             _zip = zip ?? CompressionAlgorithm.NoCompression;
             Header.Add(HeaderParameters.Alg, alg.Name);
             Header.Add(HeaderParameters.Enc, enc.Name);
-           
+
             if (zip != null)
             {
                 Header.Add(HeaderParameters.Zip, zip.Name);
@@ -47,6 +48,16 @@ namespace JsonWebToken
             if (encryptionKey.Kid != null)
             {
                 Header.Add(HeaderParameters.Kid, encryptionKey.Kid);
+            }
+
+            if (typ != null)
+            {
+                Header.Add(HeaderParameters.Typ, typ);
+            }
+
+            if (cty != null)
+            {
+                Header.Add(HeaderParameters.Cty, cty);
             }
         }
 

@@ -67,21 +67,21 @@ namespace JsonWebToken.Tests
                 }
             };
 
-            Assert.True(descriptor.Payload.TryGetValue("P1", out var claim));
+            Assert.True(descriptor.Payload.TryGetClaim("P1", out var claim));
             Assert.Equal(JsonValueKind.String, claim.Type);
-            Assert.True(descriptor.Payload.TryGetValue("P2", out claim));
+            Assert.True(descriptor.Payload.TryGetClaim("P2", out claim));
             Assert.Equal(JsonValueKind.Object, claim.Type);
-            Assert.True(descriptor.Payload.TryGetValue("P3", out claim));
+            Assert.True(descriptor.Payload.TryGetClaim("P3", out claim));
             Assert.Equal(JsonValueKind.Number, claim.Type);
-            Assert.True(descriptor.Payload.TryGetValue("P4", out claim));
+            Assert.True(descriptor.Payload.TryGetClaim("P4", out claim));
             Assert.Equal(JsonValueKind.Object, claim.Type);
-            Assert.True(descriptor.Payload.TryGetValue("P5", out claim));
+            Assert.True(descriptor.Payload.TryGetClaim("P5", out claim));
             Assert.Equal(JsonValueKind.Array, claim.Type);
-            Assert.True(descriptor.Payload.TryGetValue("P6", out claim));
+            Assert.True(descriptor.Payload.TryGetClaim("P6", out claim));
             Assert.Equal(JsonValueKind.Array, claim.Type);
-            Assert.True(descriptor.Payload.TryGetValue("P7", out claim));
+            Assert.True(descriptor.Payload.TryGetClaim("P7", out claim));
             Assert.Equal(JsonValueKind.True, claim.Type);
-            Assert.True(descriptor.Payload.TryGetValue("P8", out claim));
+            Assert.True(descriptor.Payload.TryGetClaim("P8", out claim));
             Assert.Equal(JsonValueKind.False, claim.Type);
 
             Assert.True(descriptor.Payload.Header.TryGetValue("alg", out var jwsHeaderParameter));
@@ -138,7 +138,7 @@ namespace JsonWebToken.Tests
 
             for (int i = 0; i < 256; i++)
             {
-                descriptor.Payload.TryGetValue(i.ToString(), out var member);
+                descriptor.Payload.TryGetClaim(i.ToString(), out var member);
                 Assert.Equal(JsonValueKind.Number, member.Type);
                 Assert.Equal(i.ToString(), member.Name);
                 Assert.Equal(i, (long)member.Value);

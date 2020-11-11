@@ -8,14 +8,13 @@ using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
-    public class SecurityEventTokenDescriptor : JwsDescriptor
+    public class SecEventDescriptor : JwsDescriptor
     {
-        public const string SecurityEventTokenType = "secevent+jwt";
+        public const string SecEventType = "secevent+jwt";
 
-        public SecurityEventTokenDescriptor(Jwk signingKey, SignatureAlgorithm alg) 
-            : base(signingKey, alg)
+        public SecEventDescriptor(Jwk signingKey, SignatureAlgorithm alg) 
+            : base(signingKey, alg, typ: SecEventType)
         {
-            Header.Add(HeaderParameters.Typ, SecurityEventTokenType);
         }
 
         public override void Validate()
@@ -40,7 +39,7 @@ namespace JsonWebToken
         /// </summary>
         public JwtEvents()
         {
-            _events = MemberStore.CreateForHeader();
+            _events = MemberStore.CreateSlowGrowingStore();
         }
 
         internal MemberStore Inner => _events;

@@ -510,7 +510,7 @@ namespace JsonWebToken
         /// <param name="computeThumbprint">Indicates if the 'kid' should be generated.</param>
         /// <returns></returns>
         public static SymmetricJwk GenerateKey(SignatureAlgorithm algorithm, bool computeThumbprint = true)
-            => FromByteArray(GenerateKeyBytes(algorithm.RequiredKeySizeInBits * 8), algorithm, computeThumbprint: computeThumbprint);
+            => FromByteArray(GenerateKeyBytes(algorithm.RequiredKeySizeInBits), algorithm, computeThumbprint: computeThumbprint);
 
         /// <summary>
         /// Generates a new <see cref="SymmetricJwk"/>.
@@ -519,7 +519,7 @@ namespace JsonWebToken
         /// <param name="computeThumbprint">Indicates if the 'kid' should be generated.</param>
         /// <returns></returns>
         public static SymmetricJwk GenerateKey(KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
-            => FromByteArray(GenerateKeyBytes(algorithm.RequiredKeySizeInBits * 8), algorithm, computeThumbprint: computeThumbprint);
+            => FromByteArray(GenerateKeyBytes(algorithm.RequiredKeySizeInBits), algorithm, computeThumbprint: computeThumbprint);
         
         /// <summary>
         /// Generates a new <see cref="SymmetricJwk"/>.
@@ -528,7 +528,7 @@ namespace JsonWebToken
         /// <param name="computeThumbprint">Indicates if the 'kid' should be generated.</param>
         /// <returns></returns>
         public static SymmetricJwk GenerateKey(EncryptionAlgorithm algorithm, bool computeThumbprint = true)
-            => FromByteArray(GenerateKeyBytes(algorithm.RequiredKeySizeInBits * 8), computeThumbprint: computeThumbprint);
+            => FromByteArray(GenerateKeyBytes(algorithm.RequiredKeySizeInBits), computeThumbprint: computeThumbprint);
 
         private static byte[] GenerateKeyBytes(int sizeInBits)
         {

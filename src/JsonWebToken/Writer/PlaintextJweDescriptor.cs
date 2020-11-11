@@ -14,8 +14,8 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="PlaintextJweDescriptor"/>.
         /// </summary>
-        public PlaintextJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
-            : base(encryptionKey, alg, enc, zip)
+        public PlaintextJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = "text")
+            : base(encryptionKey, alg, enc, zip, typ, cty)
         {
         }
 
