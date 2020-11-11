@@ -22,28 +22,6 @@ namespace JsonWebToken.Internal
             _claim = claim;
         }
 
-        /// <inheritdoc />
-        [Obsolete("This method is obsolete. Use TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, out TokenValidationError? error) instead.")]
-        public TokenValidationResult TryValidate(Jwt jwt)
-        {
-            if (jwt is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
-            }
-
-            if (jwt.Payload is null)
-            {
-                return TokenValidationResult.MalformedToken();
-            }
-
-            if (jwt.Payload.ContainsClaim(_claim))
-            {
-                return TokenValidationResult.Success(jwt);
-            }
-
-            return TokenValidationResult.MissingClaim(jwt, _claim);
-        }
-
         public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
             if (payload is null)

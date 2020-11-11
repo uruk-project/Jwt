@@ -15,33 +15,6 @@ namespace JsonWebToken.Internal
             _tokenReplayCache = tokenReplayCache ?? throw new ArgumentNullException(nameof(tokenReplayCache));
         }
 
-        /// <inheritdoc />
-        [Obsolete("This method is obsolete. Use TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, out TokenValidationError? error) instead.")]
-        public TokenValidationResult TryValidate(Jwt jwt)
-        {
-            if (jwt is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
-            }
-
-            if (jwt.Payload is null)
-            {
-                return TokenValidationResult.MalformedToken();
-            }
-
-            if (!jwt.Payload.TryGetClaim(Claims.ExpUtf8, out var exp) && exp.ValueKind != System.Text.Json.JsonValueKind.Number)
-            {
-                return TokenValidationResult.MissingClaim(jwt, Claims.ExpUtf8);
-            }
-
-            if (!_tokenReplayCache.TryAdd(jwt, EpochTime.ToDateTime(exp.GetInt64())))
-            {
-                return TokenValidationResult.TokenReplayed(jwt);
-            }
-
-            return TokenValidationResult.Success(jwt);
-        }
-
         public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
             if (!payload.TryGetClaim(Claims.ExpUtf8, out var expires))

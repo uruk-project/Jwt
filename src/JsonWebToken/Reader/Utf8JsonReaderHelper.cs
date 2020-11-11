@@ -39,6 +39,5 @@ namespace JsonWebToken
             }
             return count;
         }
-
     }
 }

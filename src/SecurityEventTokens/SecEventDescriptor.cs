@@ -8,12 +8,11 @@ using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
+    /// <summary>Defines a signed Security Event Token. <seealso cref="EncryptedSecEventDescriptor"/> for encrypted Security Event Token.</summary>
     public class SecEventDescriptor : JwsDescriptor
     {
-        public const string SecEventType = "secevent+jwt";
-
-        public SecEventDescriptor(Jwk signingKey, SignatureAlgorithm alg) 
-            : base(signingKey, alg, typ: SecEventType)
+        public SecEventDescriptor(Jwk signingKey, SignatureAlgorithm alg, string? typ = SecEventsMediaTypes.SecEvent, string? cty = null)
+            : base(signingKey, alg, typ, cty)
         {
         }
 
@@ -23,7 +22,7 @@ namespace JsonWebToken
             RequireClaim(Claims.Iss, JsonValueKind.String);
             RequireClaim(Claims.Iat, JsonValueKind.Number);
             RequireClaim(Claims.Jti, JsonValueKind.String);
-            RequireClaim(SetClaims.Events, JsonValueKind.Object);
+            RequireClaim(SecEventClaims.Events, JsonValueKind.Object);
         }
     }
 

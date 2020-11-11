@@ -3,10 +3,11 @@
 
 namespace JsonWebToken
 {
+    /// <summary>Defines an encrypted Security Event Token. <seealso cref="SecEventDescriptor"/> for signed Security Event Token.</summary>
     public sealed class EncryptedSecEventDescriptor : JweDescriptorBase<SecEventDescriptor>
     {
-        public EncryptedSecEventDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null) 
-            : base(encryptionKey, alg, enc, zip)
+        public EncryptedSecEventDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = null)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
         {
         }
     }
