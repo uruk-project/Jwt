@@ -203,12 +203,6 @@ namespace JsonWebToken
             return _payload.TryGetValue(name, out value);
         }
 
-        /// <inheritsdoc />
-        public IEnumerator<JwtProperty> GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
         /// Validates the presence and the type of a required claim.
         /// </summary>

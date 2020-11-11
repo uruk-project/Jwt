@@ -783,54 +783,6 @@ namespace JsonWebToken
         /// <summary>
         /// Returns a new instance of <see cref="ECJwk"/>.
         /// </summary>
-        internal static ECJwk FromJwtObject(JwtObject jwtObject)
-        {
-            Debug.Assert(jwtObject.Count == 3);
-            if (!jwtObject.TryGetProperty(JwkParameterNames.CrvUtf8, out var crv) || crv.Value is null)
-            {
-                ThrowHelper.ThrowArgumentException_MalformedKey();
-            }
-
-            if (!jwtObject.TryGetProperty(JwkParameterNames.XUtf8, out var x) || x.Value is null)
-            {
-                ThrowHelper.ThrowArgumentException_MalformedKey();
-            }
-
-            if (!jwtObject.TryGetProperty(JwkParameterNames.YUtf8, out var y) || y.Value is null)
-            {
-                ThrowHelper.ThrowArgumentException_MalformedKey();
-            }
-
-            return new ECJwk(EllipticalCurve.FromString((string)crv.Value), (string)x.Value, (string)y.Value);
-        }
-
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
-        internal static ECJwk FromJsonElement(JsonElement json)
-        {
-            //Debug.Assert(json.Count == 3);
-            if (!json.TryGetProperty(JwkParameterNames.CrvUtf8, out var crv) || crv.ValueKind is JsonValueKind.Null)
-            {
-                ThrowHelper.ThrowArgumentException_MalformedKey();
-            }
-
-            if (!json.TryGetProperty(JwkParameterNames.XUtf8, out var x) || x.ValueKind is JsonValueKind.Null)
-            {
-                ThrowHelper.ThrowArgumentException_MalformedKey();
-            }
-
-            if (!json.TryGetProperty(JwkParameterNames.YUtf8, out var y) || y.ValueKind is JsonValueKind.Null)
-            {
-                ThrowHelper.ThrowArgumentException_MalformedKey();
-            }
-
-            return new ECJwk(EllipticalCurve.FromString(crv.GetString()!), x.GetString(), y.GetString());
-        }
-
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
         internal static ECJwk FromJwtElement(JwtElement json)
         {
             var reader = new Utf8JsonReader(json.GetRawValue().Span);
@@ -856,18 +808,6 @@ namespace JsonWebToken
             }
 
             return ecJwk;
-        }
-
-        internal JwtObject AsJwtObject()
-        {
-            var jwtObject = new JwtObject
-            {
-                new JwtProperty(JwkParameterNames.CrvUtf8, Crv.Name),
-                new JwtProperty(JwkParameterNames.XUtf8, Base64Url.Encode(X)),
-                new JwtProperty(JwkParameterNames.YUtf8, Base64Url.Encode(Y))
-            };
-
-            return jwtObject;
         }
 
         internal static ECJwk FromJsonReaderFast(ref Utf8JsonReader reader)

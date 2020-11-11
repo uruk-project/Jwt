@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 
@@ -19,20 +17,14 @@ namespace JsonWebToken
             string issuer,
             string authorizationEndpoint,
             string jwksUri,
-            ICollection<string> responseTypesSupported,
-            ICollection<string> idTokenSigningAlgValuesSupported)
+            ICollection<string>responseTypesSupported,
+            ICollection<string>idTokenSigningAlgValuesSupported)
         {
             Issuer = issuer;
             AuthorizationEndpoint = authorizationEndpoint;
             JwksUri = jwksUri;
             ResponseTypesSupported = responseTypesSupported;
             IdTokenSigningAlgValuesSupported = idTokenSigningAlgValuesSupported;
-        }
-
-#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
-        private OpenIdConnectConfiguration()
-#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
-        {
         }
 
         public static OpenIdConnectConfiguration FromJson(string json)
@@ -47,295 +39,25 @@ namespace JsonWebToken
 
         public static OpenIdConnectConfiguration FromJson(ReadOnlySpan<byte> json)
         {
-            Utf8JsonReader reader = new Utf8JsonReader(json, true, default);
-            if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
+            var config = JsonSerializer.Deserialize<OpenIdConnectConfiguration>(json, Constants.DefaultSerializerOptions);
+            if (config is null)
             {
-                var config = new OpenIdConnectConfiguration();
-                while (reader.Read())
-                {
-                    switch (reader.TokenType)
-                    {
-                        case JsonTokenType.EndObject:
-                            return config;
-
-                        case JsonTokenType.PropertyName:
-                            var propertyName = reader.GetString()!;
-
-                            reader.Read();
-                            switch (reader.TokenType)
-                            {
-                                case JsonTokenType.True:
-                                    ReadTrueProperty(config, propertyName);
-                                    break;
-                                case JsonTokenType.False:
-                                    ReadFalseProperty(config, propertyName);
-                                    break;
-                                case JsonTokenType.String:
-                                    ReadStringProperty(ref reader, config, propertyName);
-                                    break;
-
-                                case JsonTokenType.StartArray:
-                                    ReadArrayProperty(ref reader, config, propertyName);
-                                    break;
-                                case JsonTokenType.StartObject:
-                                    config.AdditionalData.Add(new JwtProperty(propertyName, JsonParser.ReadJsonObject(ref reader)));
-                                    break;
-                                case JsonTokenType.Number:
-                                    if (reader.TryGetInt64(out long longValue))
-                                    {
-                                        config.AdditionalData.Add(new JwtProperty(propertyName, longValue));
-                                    }
-                                    else
-                                    {
-                                        config.AdditionalData.Add(new JwtProperty(propertyName, reader.GetDouble()));
-                                    }
-                                    break;
-                            }
-                            break;
-                        default:
-                            ThrowHelper.ThrowFormatException_MalformedJson();
-                            break;
-                    }
-                }
+                ThrowHelper.ThrowFormatException_MalformedJson();
+                return null;
             }
 
-            ThrowHelper.ThrowFormatException_MalformedJson();
-            return null;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void ReadFalseProperty(OpenIdConnectConfiguration config, string propertyName)
-        {
-            switch (propertyName)
-            {
-                case OpenIdProviderMetadataNames.ClaimsParameterSupported:
-                    config.ClaimsParameterSupported = false;
-                    break;
-                case OpenIdProviderMetadataNames.FrontChannelLogoutSessionSupported:
-                    config.FrontChannelLogoutSessionSupported = false;
-                    break;
-                case OpenIdProviderMetadataNames.FrontChannelLogoutSupported:
-                    config.FrontChannelLogoutSupported = false;
-                    break;
-                case OpenIdProviderMetadataNames.HttpLogoutSupported:
-                    config.HttpLogoutSupported = false;
-                    break;
-                case OpenIdProviderMetadataNames.LogoutSessionSupported:
-                    config.LogoutSessionSupported = false;
-                    break;
-                case OpenIdProviderMetadataNames.RequestParameterSupported:
-                    config.RequestParameterSupported = false;
-                    break;
-                case OpenIdProviderMetadataNames.RequestUriParameterSupported:
-                    config.RequestUriParameterSupported = false;
-                    break;
-                case OpenIdProviderMetadataNames.RequireRequestUriRegistration:
-                    config.RequireRequestUriRegistration = false;
-                    break;
-                default:
-                    config.AdditionalData.Add(new JwtProperty(propertyName, false));
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void ReadTrueProperty(OpenIdConnectConfiguration config, string propertyName)
-        {
-            switch (propertyName)
-            {
-                case OpenIdProviderMetadataNames.ClaimsParameterSupported:
-                    config.ClaimsParameterSupported = true;
-                    break;
-                case OpenIdProviderMetadataNames.FrontChannelLogoutSessionSupported:
-                    config.FrontChannelLogoutSessionSupported = true;
-                    break;
-                case OpenIdProviderMetadataNames.FrontChannelLogoutSupported:
-                    config.FrontChannelLogoutSupported = true;
-                    break;
-                case OpenIdProviderMetadataNames.HttpLogoutSupported:
-                    config.HttpLogoutSupported = true;
-                    break;
-                case OpenIdProviderMetadataNames.LogoutSessionSupported:
-                    config.LogoutSessionSupported = true;
-                    break;
-                case OpenIdProviderMetadataNames.RequestParameterSupported:
-                    config.RequestParameterSupported = true;
-                    break;
-                case OpenIdProviderMetadataNames.RequestUriParameterSupported:
-                    config.RequestUriParameterSupported = true;
-                    break;
-                case OpenIdProviderMetadataNames.RequireRequestUriRegistration:
-                    config.RequireRequestUriRegistration = true;
-                    break;
-
-                default:
-                    config.AdditionalData.Add(new JwtProperty(propertyName, true));
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void ReadStringProperty(ref Utf8JsonReader reader, OpenIdConnectConfiguration config, string propertyName)
-        {
-            switch (propertyName)
-            {
-                case OpenIdProviderMetadataNames.AuthorizationEndpoint:
-                    config.AuthorizationEndpoint = reader.GetString()!;
-                    break;
-                case OpenIdProviderMetadataNames.CheckSessionIframe:
-                    config.CheckSessionIframe = reader.GetString();
-                    break;
-                case OpenIdProviderMetadataNames.EndSessionEndpoint:
-                    config.EndSessionEndpoint = reader.GetString();
-                    break;
-                case OpenIdProviderMetadataNames.Issuer:
-                    config.Issuer = reader.GetString()!;
-                    break;
-                case OpenIdProviderMetadataNames.JwksUri:
-                    config.JwksUri = reader.GetString()!;
-                    break;
-                case OpenIdProviderMetadataNames.OpPolicyUri:
-                    config.OpPolicyUri = reader.GetString();
-                    break;
-                case OpenIdProviderMetadataNames.OpTosUri:
-                    config.OpTosUri = reader.GetString();
-                    break;
-                case OpenIdProviderMetadataNames.RegistrationEndpoint:
-                    config.RegistrationEndpoint = reader.GetString();
-                    break;
-                case OpenIdProviderMetadataNames.ServiceDocumentation:
-                    config.ServiceDocumentation = reader.GetString();
-                    break;
-                case OpenIdProviderMetadataNames.TokenEndpoint:
-                    config.TokenEndpoint = reader.GetString();
-                    break;
-                case OpenIdProviderMetadataNames.UserInfoEndpoint:
-                    config.UserInfoEndpoint = reader.GetString();
-                    break;
-                case OpenIdProviderMetadataNames.RevocationEndpoint:
-                    config.RevocationEndpoint = reader.GetString();
-                    break;
-                case OpenIdProviderMetadataNames.IntrospectionEndpoint:
-                    config.IntrospectionEndpoint = reader.GetString();
-                    break;
-                default:
-                    config.AdditionalData.Add(new JwtProperty(propertyName, reader.GetString()!));
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void ReadArrayProperty(ref Utf8JsonReader reader, OpenIdConnectConfiguration config, string propertyName)
-        {
-            switch (propertyName)
-            {
-                case OpenIdProviderMetadataNames.AcrValuesSupported:
-                    config.AcrValuesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.ClaimsSupported:
-                    config.ClaimsSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.ClaimsLocalesSupported:
-                    config.ClaimsLocalesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.ClaimTypesSupported:
-                    config.ClaimTypesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.DisplayValuesSupported:
-                    config.DisplayValuesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.GrantTypesSupported:
-                    config.GrantTypesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.IdTokenEncryptionAlgValuesSupported:
-                    config.IdTokenEncryptionAlgValuesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.IdTokenEncryptionEncValuesSupported:
-                    config.IdTokenEncryptionEncValuesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.IdTokenSigningAlgValuesSupported:
-                    config.IdTokenSigningAlgValuesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.RequestObjectEncryptionAlgValuesSupported:
-                    config.RequestObjectEncryptionAlgValuesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.RequestObjectEncryptionEncValuesSupported:
-                    config.RequestObjectEncryptionEncValuesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.RequestObjectSigningAlgValuesSupported:
-                    config.RequestObjectSigningAlgValuesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.ResponseModesSupported:
-                    config.ResponseModesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.ResponseTypesSupported:
-                    config.ResponseTypesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.ScopesSupported:
-                    config.ScopesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.SubjectTypesSupported:
-                    config.SubjectTypesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.TokenEndpointAuthMethodsSupported:
-                    config.TokenEndpointAuthMethodsSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.TokenEndpointAuthSigningAlgValuesSupported:
-                    config.TokenEndpointAuthSigningAlgValuesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.UILocalesSupported:
-                    config.UILocalesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.UserInfoEncryptionAlgValuesSupported:
-                    config.UserInfoEncryptionAlgValuesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.UserInfoEncryptionEncValuesSupported:
-                    config.UserInfoEncryptionEncValuesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.UserInfoSigningAlgValuesSupported:
-                    config.UserInfoSigningAlgValuesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.RevocationEndpointAuthMethodsSupported:
-                    config.RevocationEndpointAuthMethodsSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.RevocationEndpointAuthSigningAlgValuesSupported:
-                    config.RevocationEndpointAuthSigningAlgValuesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.IntrospectionEndpointAuthMethodsSupported:
-                    config.IntrospectionEndpointAuthMethodsSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.IntrospectionEndpointAuthSigningAlgValuesSupported:
-                    config.IntrospectionEndpointAuthSigningAlgValuesSupported = GetStringArray(ref reader);
-                    break;
-                case OpenIdProviderMetadataNames.CodeChallengeMethodsSupported:
-                    config.CodeChallengeMethodsSupported = GetStringArray(ref reader);
-                    break;
-                default:
-                    config.AdditionalData.Add(new JwtProperty(propertyName, JsonParser.ReadJsonArray(ref reader)));
-                    break;
-            }
-        }
-
-        private static ICollection<string> GetStringArray(ref Utf8JsonReader reader)
-        {
-            var list = new List<string>();
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
-            {
-                list.Add(reader.GetString()!);
-            }
-
-            return list;
+            return config;
         }
 
         /// <summary>
         /// When deserializing from JSON any properties that are not defined will be placed here.
         /// </summary>
-        public JwtObject AdditionalData { get; } = new JwtObject();
+        public Dictionary<string, object> AdditionalData { get; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets the collection of 'acr_values_supported'
         /// </summary>
-        public ICollection<string> AcrValuesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>AcrValuesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the 'authorization_endpoint'.
@@ -350,12 +72,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the collection of 'claims_supported'
         /// </summary>
-        public ICollection<string> ClaimsSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>ClaimsSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets the collection of 'claims_locales_supported'
         /// </summary>
-        public ICollection<string> ClaimsLocalesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>ClaimsLocalesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the 'claims_parameter_supported'
@@ -365,12 +87,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the collection of 'claim_types_supported'
         /// </summary>
-        public ICollection<string> ClaimTypesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>ClaimTypesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets the collection of 'display_values_supported'
         /// </summary>
-        public ICollection<string> DisplayValuesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>DisplayValuesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the 'end_session_endpoint'.
@@ -380,17 +102,17 @@ namespace JsonWebToken
         /// <summary>
         /// Gets or sets the 'frontchannel_logout_session_supported'.
         /// </summary>
-        public bool? FrontChannelLogoutSessionSupported { get; set; }
+        public bool? FrontchannelLogoutSessionSupported { get; set; }
 
         /// <summary>
         /// Gets or sets the 'frontchannel_logout_supported'.
         /// </summary>
-        public bool? FrontChannelLogoutSupported { get; set; }
+        public bool? FrontchannelLogoutSupported { get; set; }
 
         /// <summary>
         /// Gets the collection of 'grant_types_supported'
         /// </summary>
-        public ICollection<string> GrantTypesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>GrantTypesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Boolean value specifying whether the OP supports HTTP-based logout. Default is false.
@@ -400,17 +122,17 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the collection of 'id_token_encryption_alg_values_supported'.
         /// </summary>
-        public ICollection<string> IdTokenEncryptionAlgValuesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>IdTokenEncryptionAlgValuesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets the collection of 'id_token_encryption_enc_values_supported'.
         /// </summary>
-        public ICollection<string> IdTokenEncryptionEncValuesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>IdTokenEncryptionEncValuesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets the collection of 'id_token_signing_alg_values_supported'.
         /// </summary>
-        public ICollection<string> IdTokenSigningAlgValuesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>IdTokenSigningAlgValuesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the 'issuer'.
@@ -445,17 +167,17 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the collection of 'request_object_encryption_alg_values_supported'.
         /// </summary>
-        public ICollection<string> RequestObjectEncryptionAlgValuesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>RequestObjectEncryptionAlgValuesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets the collection of 'request_object_encryption_enc_values_supported'.
         /// </summary>
-        public ICollection<string> RequestObjectEncryptionEncValuesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>RequestObjectEncryptionEncValuesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets the collection of 'request_object_signing_alg_values_supported'.
         /// </summary>
-        public ICollection<string> RequestObjectSigningAlgValuesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>RequestObjectSigningAlgValuesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the 'request_parameter_supported'
@@ -475,12 +197,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the collection of 'response_modes_supported'.
         /// </summary>
-        public ICollection<string> ResponseModesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>ResponseModesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets the collection of 'response_types_supported'.
         /// </summary>
-        public ICollection<string> ResponseTypesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>ResponseTypesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the 'service_documentation'
@@ -490,12 +212,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the collection of 'scopes_supported'
         /// </summary>
-        public ICollection<string> ScopesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>ScopesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets the collection of 'subject_types_supported'.
         /// </summary>
-        public ICollection<string> SubjectTypesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>SubjectTypesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the 'token_endpoint'.
@@ -505,37 +227,37 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the collection of 'token_endpoint_auth_methods_supported'.
         /// </summary>
-        public ICollection<string> TokenEndpointAuthMethodsSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>TokenEndpointAuthMethodsSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets the collection of 'token_endpoint_auth_signing_alg_values_supported'.
         /// </summary>
-        public ICollection<string> TokenEndpointAuthSigningAlgValuesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>TokenEndpointAuthSigningAlgValuesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets the collection of 'ui_locales_supported'
         /// </summary>
-        public ICollection<string> UILocalesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>UILocalesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the 'user_info_endpoint'.
         /// </summary>
-        public string? UserInfoEndpoint { get; set; }
+        public string? UserinfoEndpoint { get; set; }
 
         /// <summary>
         /// Gets the collection of 'userinfo_encryption_alg_values_supported'
         /// </summary>
-        public ICollection<string> UserInfoEncryptionAlgValuesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>UserinfoEncryptionAlgValuesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets the collection of 'userinfo_encryption_enc_values_supported'
         /// </summary>
-        public ICollection<string> UserInfoEncryptionEncValuesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>UserinfoEncryptionEncValuesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets the collection of 'userinfo_signing_alg_values_supported'
         /// </summary>
-        public ICollection<string> UserInfoSigningAlgValuesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>UserinfoSigningAlgValuesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the 'revocation_endpoint'.
@@ -545,12 +267,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the collection of 'revocation_endpoint_auth_methods_supported'
         /// </summary>
-        public ICollection<string> RevocationEndpointAuthMethodsSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>RevocationEndpointAuthMethodsSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets the collection of 'revocation_endpoint_auth_signing_alg_values_supported'
         /// </summary>
-        public ICollection<string> RevocationEndpointAuthSigningAlgValuesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>RevocationEndpointAuthSigningAlgValuesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the 'introspection_endpoint'.
@@ -560,16 +282,16 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the collection of 'introspection_endpoint_auth_methods_supported'
         /// </summary>
-        public ICollection<string> IntrospectionEndpointAuthMethodsSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>IntrospectionEndpointAuthMethodsSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets the collection of 'introspection_endpoint_auth_signing_alg_values_supported'
         /// </summary>
-        public ICollection<string> IntrospectionEndpointAuthSigningAlgValuesSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>IntrospectionEndpointAuthSigningAlgValuesSupported { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets the collection of 'code_challenge_methods_supported'
         /// </summary>
-        public ICollection<string> CodeChallengeMethodsSupported { get; private set; } = new Collection<string>();
+        public ICollection<string>CodeChallengeMethodsSupported { get; set; } = new List<string>();
     }
 }

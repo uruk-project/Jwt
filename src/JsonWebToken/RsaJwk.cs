@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -443,7 +444,7 @@ namespace JsonWebToken
         {
             return new RsaSigner(this, algorithm);
         }
-        
+
         /// <inheritsdoc />
         protected override SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm)
         {
@@ -958,6 +959,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         protected override int GetCanonicalizeSize()
         {
+            Debug.Assert(27 == StartCanonicalizeValue.Length + MiddleCanonicalizeValue.Length + EndCanonicalizeValue.Length);
             return 27
                 + Base64Url.GetArraySizeRequiredToEncode(_parameters.Exponent!.Length)
                 + Base64Url.GetArraySizeRequiredToEncode(_parameters.Modulus!.Length);
@@ -967,48 +969,6 @@ namespace JsonWebToken
         public override ReadOnlySpan<byte> AsSpan()
         {
             throw new NotImplementedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void PopulateStringProperty(RsaJwk key, JwtProperty property, ReadOnlySpan<byte> name)
-        {
-            string value = (string)property.Value!;
-            if (name.SequenceEqual(JwkParameterNames.NUtf8))
-            {
-                key._parameters.Modulus = Base64Url.Decode(value);
-            }
-            else if (name.SequenceEqual(JwkParameterNames.EUtf8))
-            {
-                key._parameters.Exponent = Base64Url.Decode(value);
-            }
-            else if (name.SequenceEqual(JwkParameterNames.DUtf8))
-            {
-                key._parameters.D = Base64Url.Decode(value);
-            }
-            else if (name.SequenceEqual(JwkParameterNames.DPUtf8))
-            {
-                key._parameters.DP = Base64Url.Decode(value);
-            }
-            else if (name.SequenceEqual(JwkParameterNames.DQUtf8))
-            {
-                key._parameters.DQ = Base64Url.Decode(value);
-            }
-            else if (name.SequenceEqual(JwkParameterNames.PUtf8))
-            {
-                key._parameters.P = Base64Url.Decode(value);
-            }
-            else if (name.SequenceEqual(JwkParameterNames.QUtf8))
-            {
-                key._parameters.Q = Base64Url.Decode(value);
-            }
-            else if (name.SequenceEqual(JwkParameterNames.QIUtf8))
-            {
-                key._parameters.InverseQ = Base64Url.Decode(value);
-            }
-            else
-            {
-                key.Populate(name, value);
-            }
         }
 
         internal static Jwk FromJsonReaderFast(ref Utf8JsonReader reader)

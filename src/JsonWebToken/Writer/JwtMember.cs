@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     /// <summary>
     /// Represents a JWT member.
@@ -54,10 +54,15 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtMember"/> class.
         /// </summary>
-        /// <param name="memberName"></param>
+        /// <param name="name"></param>
         /// <param name="value"></param>
-        public JwtMember(string memberName, object value)
+        public JwtMember(string name, object value)
         {
+            if (name == null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.name);
+            }
+            
             if (value == null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
@@ -65,7 +70,7 @@ namespace JsonWebToken.Internal
 
             Type = JsonValueKind.Object;
             Value = value;
-            Name = memberName;
+            Name = name;
         }
 
         /// <summary>
@@ -85,22 +90,22 @@ namespace JsonWebToken.Internal
             Name = memberName;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JwtMember"/> class.
-        /// </summary>
-        /// <param name="memberName"></param>
-        /// <param name="value"></param>
-        public JwtMember(string memberName, byte[] value)
-        {
-            if (value == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
-            }
+        ///// <summary>
+        ///// Initializes a new instance of the <see cref="JwtMember"/> class.
+        ///// </summary>
+        ///// <param name="memberName"></param>
+        ///// <param name="value"></param>
+        //public JwtMember(string memberName, byte[] value)
+        //{
+        //    if (value == null)
+        //    {
+        //        ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
+        //    }
 
-            Type = JsonValueKind.String;
-            Value = value;
-            Name = memberName;
-        }
+        //    Type = JsonValueKind.String;
+        //    Value = value;
+        //    Name = memberName;
+        //}
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtMember"/> class.

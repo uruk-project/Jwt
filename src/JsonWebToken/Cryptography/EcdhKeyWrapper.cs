@@ -166,16 +166,6 @@ namespace JsonWebToken.Internal
             return HashAlgorithmName.SHA256;
         }
 
-        private static byte[]? GetPartyInfo(JwtObject header, ReadOnlySpan<byte> utf8Name)
-        {
-            if (header.TryGetProperty(utf8Name, out var token))
-            {
-                return (byte[]?)token.Value;
-            }
-
-            return null;
-        }
-
         private static string? GetPartyInfo(JwtHeader header, string name)
         {
             if (header.TryGetValue(name, out var token))

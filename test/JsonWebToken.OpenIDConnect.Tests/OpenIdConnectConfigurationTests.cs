@@ -20,8 +20,8 @@ namespace JsonWebToken.OpenIDConnect.Tests
             Assert.Equal(expected.ClaimTypesSupported, config.ClaimTypesSupported);
             Assert.Equal(expected.DisplayValuesSupported, config.DisplayValuesSupported);
             Assert.Equal(expected.EndSessionEndpoint, config.EndSessionEndpoint);
-            Assert.Equal(expected.FrontChannelLogoutSessionSupported, config.FrontChannelLogoutSessionSupported);
-            Assert.Equal(expected.FrontChannelLogoutSupported, config.FrontChannelLogoutSupported);
+            Assert.Equal(expected.FrontchannelLogoutSessionSupported, config.FrontchannelLogoutSessionSupported);
+            Assert.Equal(expected.FrontchannelLogoutSupported, config.FrontchannelLogoutSupported);
             Assert.Equal(expected.GrantTypesSupported, config.GrantTypesSupported);
             Assert.Equal(expected.HttpLogoutSupported, config.HttpLogoutSupported);
             Assert.Equal(expected.IdTokenEncryptionAlgValuesSupported, config.IdTokenEncryptionAlgValuesSupported);
@@ -48,10 +48,10 @@ namespace JsonWebToken.OpenIDConnect.Tests
             Assert.Equal(expected.TokenEndpointAuthMethodsSupported, config.TokenEndpointAuthMethodsSupported);
             Assert.Equal(expected.TokenEndpointAuthSigningAlgValuesSupported, config.TokenEndpointAuthSigningAlgValuesSupported);
             Assert.Equal(expected.UILocalesSupported, config.UILocalesSupported);
-            Assert.Equal(expected.UserInfoEndpoint, config.UserInfoEndpoint);
-            Assert.Equal(expected.UserInfoEncryptionAlgValuesSupported, config.UserInfoEncryptionAlgValuesSupported);
-            Assert.Equal(expected.UserInfoEncryptionEncValuesSupported, config.UserInfoEncryptionEncValuesSupported);
-            Assert.Equal(expected.UserInfoSigningAlgValuesSupported, config.UserInfoSigningAlgValuesSupported);
+            Assert.Equal(expected.UserinfoEndpoint, config.UserinfoEndpoint);
+            Assert.Equal(expected.UserinfoEncryptionAlgValuesSupported, config.UserinfoEncryptionAlgValuesSupported);
+            Assert.Equal(expected.UserinfoEncryptionEncValuesSupported, config.UserinfoEncryptionEncValuesSupported);
+            Assert.Equal(expected.UserinfoSigningAlgValuesSupported, config.UserinfoSigningAlgValuesSupported);
             Assert.Equal(expected.RevocationEndpoint, config.RevocationEndpoint);
             Assert.Equal(expected.RevocationEndpointAuthMethodsSupported, config.RevocationEndpointAuthMethodsSupported);
             Assert.Equal(expected.RevocationEndpointAuthSigningAlgValuesSupported, config.RevocationEndpointAuthSigningAlgValuesSupported);
@@ -143,17 +143,17 @@ namespace JsonWebToken.OpenIDConnect.Tests
                 new OpenIdConnectConfiguration(
                         "https://login.salesforce.com",
                         "https://login.salesforce.com/services/oauth2/authorize",
-                        "https://login.salesforce.com/id/keys", new []  {
+                        "https://login.salesforce.com/id/keys", new List<string>  {
                             "code",
                             "token",
                             "token id_token"
                         },
-                        new [] { "RS256" }
+                        new List<string> { "RS256" }
                     )
                 {
                     TokenEndpoint = "https://login.salesforce.com/services/oauth2/token",
                     RevocationEndpoint = "https://login.salesforce.com/services/oauth2/revoke",
-                    UserInfoEndpoint ="https://login.salesforce.com/services/oauth2/userinfo",
+                    UserinfoEndpoint ="https://login.salesforce.com/services/oauth2/userinfo",
                     IntrospectionEndpoint= "https://login.salesforce.com/services/oauth2/introspect",
                     ScopesSupported =
                     {
@@ -288,13 +288,13 @@ namespace JsonWebToken.OpenIDConnect.Tests
                         "https://login.microsoftonline.com/{tenantid}/v2.0",
                         "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
                         "https://login.microsoftonline.com/common/discovery/v2.0/keys",
-                        new []  {
+                        new List<string>  {
                             "code",
                             "id_token",
                             "code id_token",
                             "id_token token"
                         },
-                        new [] { "RS256" }
+                        new List<string> { "RS256" }
                     )
                 {
                     TokenEndpoint= "https://login.microsoftonline.com/common/oauth2/v2.0/token",
@@ -315,7 +315,7 @@ namespace JsonWebToken.OpenIDConnect.Tests
                         "pairwise"
                     },
                     HttpLogoutSupported= true,
-                    FrontChannelLogoutSupported= true,
+                    FrontchannelLogoutSupported= true,
                     EndSessionEndpoint= "https://login.microsoftonline.com/common/oauth2/v2.0/logout",
 
                     ScopesSupported=
@@ -348,7 +348,7 @@ namespace JsonWebToken.OpenIDConnect.Tests
                     "email"
                     },
                     RequestUriParameterSupported = false,
-                    UserInfoEndpoint= "https://graph.microsoft.com/oidc/userinfo"
+                    UserinfoEndpoint= "https://graph.microsoft.com/oidc/userinfo"
                 }
             };
 
@@ -412,18 +412,18 @@ namespace JsonWebToken.OpenIDConnect.Tests
                         "https://www.paypal.com",
                         "https://www.paypal.com/signin/authorize",
                         "https://api.paypal.com/v1/oauth2/certs",
-                        new [] {
+                        new List<string> {
                             "code",
                             "code id_token"
                         },
-                        new [] {
+                        new List<string> {
                             "HS256",
                             "RS256"
                         }
                     )
                 {
                     TokenEndpoint= "https://api.paypal.com/v1/oauth2/token",
-                    UserInfoEndpoint= "https://api.paypal.com/v1/oauth2/token/userinfo",
+                    UserinfoEndpoint= "https://api.paypal.com/v1/oauth2/token/userinfo",
                     TokenEndpointAuthMethodsSupported= {
                         "client_secret_basic"
                     },
@@ -523,7 +523,7 @@ namespace JsonWebToken.OpenIDConnect.Tests
                         "https://accounts.google.com",
                         "https://accounts.google.com/o/oauth2/v2/auth",
                         "https://www.googleapis.com/oauth2/v3/certs",
-                        new [] {
+                        new List<string> {
                             "code",
                             "token",
                             "id_token",
@@ -533,11 +533,11 @@ namespace JsonWebToken.OpenIDConnect.Tests
                             "code token id_token",
                             "none"
                         },
-                        new[] { "RS256" }
+                        new List<string> { "RS256" }
                     )
                 {
                     TokenEndpoint = "https://oauth2.googleapis.com/token",
-                    UserInfoEndpoint= "https://openidconnect.googleapis.com/v1/userinfo",
+                    UserinfoEndpoint= "https://openidconnect.googleapis.com/v1/userinfo",
                     RevocationEndpoint= "https://oauth2.googleapis.com/revoke",
                     SubjectTypesSupported= {
                         "public"

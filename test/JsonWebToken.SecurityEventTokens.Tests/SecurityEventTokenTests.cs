@@ -60,17 +60,6 @@ namespace JsonWebToken.Tests
 
             [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = "attributes", Required = Required.Default)]
             public IList<string> Attributes => _attributes;
-
-            public static implicit operator JwtObject(ScimCreateEvent @event)
-            {
-                var jwtObject = new JwtObject
-                {
-                    new JwtProperty("ref", @event.Ref),
-                    new JwtProperty("attribute", new JwtArray(@event._attributes))
-                };
-
-                return jwtObject;
-            }
         }
 
         [Fact]
