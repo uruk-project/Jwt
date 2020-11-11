@@ -13,21 +13,6 @@ namespace JsonWebToken
     public static partial class JsonParser
     {
         /// <summary>
-        /// Parses the UTF-8 <paramref name="buffer"/> as JSON and returns a <see cref="JwtObject"/>.
-        /// </summary>
-        /// <param name="buffer"></param>
-        public static JwtObject Parse(ReadOnlySpan<byte> buffer)
-        {
-            Utf8JsonReader reader = new Utf8JsonReader(buffer, true, default);
-            if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
-            {
-                ThrowHelper.ThrowFormatException_MalformedJson();
-            }
-
-            return ReadJsonObject(ref reader);
-        }
-
-        /// <summary>
         /// Use the <paramref name="reader"/> as JSON input and returns a <see cref="JwtObject"/>.
         /// </summary>
         /// <param name="reader"></param>

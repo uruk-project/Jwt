@@ -51,7 +51,7 @@ namespace JsonWebToken.Tests
             var contentEncryptionKey = SymmetricJwk.GenerateKey(256);
             var wrapper = new AesGcmKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Aes256GcmKW);
             var destination = new byte[0];
-            var header = new JwtObject();
+            var header = new JwtHeader();
             Assert.Throws<ArgumentException>(() => wrapper.WrapKey(contentEncryptionKey, header, destination));
 
             Assert.Equal(0, header.Count);

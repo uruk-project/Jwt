@@ -969,35 +969,6 @@ namespace JsonWebToken
             throw new NotImplementedException();
         }
 
-        internal static RsaJwk Populate(JwtObject @object)
-        {
-            var key = new RsaJwk();
-            for (int i = 0; i < @object.Count; i++)
-            {
-                var property = @object[i];
-                if (!(property.Value is null))
-                {
-                    var name = property.Utf8Name;
-                    switch (property.Type)
-                    {
-                        case JwtTokenType.String:
-                            PopulateStringProperty(key, property, name);
-                            break;
-                        case JwtTokenType.Utf8String:
-                            key.Populate(name, (byte[])property.Value);
-                            break;
-                        case JwtTokenType.Array:
-                            key.Populate(name, (JwtArray)property.Value);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-
-            return key;
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void PopulateStringProperty(RsaJwk key, JwtProperty property, ReadOnlySpan<byte> name)
         {

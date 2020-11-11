@@ -280,7 +280,7 @@ namespace JsonWebToken
                             {
                                 while (reader.Read() && reader.TokenType is JsonTokenType.StartObject)
                                 {
-                                    Jwk jwk = Jwk.FromJsonReader(ref reader);
+                                    Jwk jwk = Jwk.FromJsonReader(ref reader, json);
                                     jwks.Add(jwk);
                                 }
 

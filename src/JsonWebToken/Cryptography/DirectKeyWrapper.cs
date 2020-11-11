@@ -15,18 +15,6 @@ namespace JsonWebToken.Internal
         public override int GetKeyWrapSize()
             => 0;
 
-        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
-        {
-            if (staticKey != null)
-            {
-                ThrowHelper.ThrowArgumentException_StaticKeyNotSupported();
-            }
-
-            // TODO : make a copy of the Jwk instead of a copy of the span
-            ReadOnlySpan<byte> bytes = Key.AsSpan();
-            return SymmetricJwk.FromSpan(bytes, false);
-        }
-
         public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeader header, Span<byte> destination)
         {
             if (staticKey != null)

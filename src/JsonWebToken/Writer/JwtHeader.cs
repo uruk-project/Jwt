@@ -93,6 +93,17 @@ namespace JsonWebToken
             return _header.TryGetValue(utf8Name, out value);
         }
 
+
+        /// <summary>
+        /// Determines whether the <see cref="JwtHeader"/> contains the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool ContainsKey(string key)
+        {
+            return _header.ContainsKey(key);
+        }
+
         internal void WriteTo(Utf8JsonWriter writer)
         {
             _header.WriteTo(writer);

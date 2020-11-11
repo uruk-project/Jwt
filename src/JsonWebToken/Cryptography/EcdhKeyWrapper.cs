@@ -3,6 +3,7 @@
 
 #if SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
 using System;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Security.Cryptography;
 
@@ -81,65 +82,6 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
-        {
-            if (header is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
-            }
-
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
-            var partyUInfo = GetPartyInfo(header, HeaderParameters.ApuUtf8);
-            var partyVInfo = GetPartyInfo(header, HeaderParameters.ApvUtf8);
-            var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
-            byte[] exchangeHash;
-            var keyParameters = ((ECJwk)Key).ExportParameters();
-            using (var otherPartyKey = ECDiffieHellman.Create(keyParameters))
-            using (var ephemeralKey = (staticKey is null) ? ECDiffieHellman.Create(keyParameters.Curve) : ECDiffieHellman.Create(((ECJwk)staticKey).ExportParameters(true)))
-            {
-                exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
-                using var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false), computeThumbprint: false);
-                header.Add(new JwtProperty(HeaderParameters.EpkUtf8, epk.AsJwtObject()));
-            }
-
-            SymmetricJwk? kek = null;
-            SymmetricJwk? contentEncryptionKey;
-            try
-            {
-                kek = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
-                if (Algorithm.ProduceEncryptionKey)
-                {
-                    if (kek.TryGetKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm, out var keyWrapper))
-                    {
-                        contentEncryptionKey = keyWrapper.WrapKey(null, header, destination);
-                    }
-                    else
-                    {
-                        ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(Algorithm.WrappedAlgorithm);
-                        return SymmetricJwk.Empty;
-                    }
-                }
-                else
-                {
-                    contentEncryptionKey = kek;
-                }
-
-                kek = null;
-            }
-            finally
-            {
-                if (kek != null)
-                {
-                    kek.Dispose();
-                }
-            }
-
-            return contentEncryptionKey;
-        }
         public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeader header, Span<byte> destination)
         {
             if (header is null)
@@ -244,7 +186,7 @@ namespace JsonWebToken.Internal
             return null;
         }
 
-        private static void WritePartyInfo(byte[]? partyInfo, int partyInfoLength, Span<byte> destination)
+        private static void WritePartyInfo(ReadOnlySpan<byte> partyInfo, int partyInfoLength, Span<byte> destination)
         {
             if (partyInfoLength == 0)
             {
@@ -265,35 +207,56 @@ namespace JsonWebToken.Internal
 
         private byte[] BuildSecretAppend(string? apu, string? apv)
         {
-            byte[]? apuB;
-            byte[]? apvB;
-            if (apu != null)
+            byte[]? apuB = null;
+            byte[]? apvB = null;
+            try
             {
-                apuB = new byte[Utf8.GetMaxByteCount(apu.Length)];
-                Utf8.GetBytes(apu, apuB);
-            }
-            else
-            {
-                apuB = Array.Empty<byte>();
-            }
+                int apuLength;
+                Span<byte> apuS = stackalloc byte[0];
+                if (apu != null)
+                {
+                    apuLength = Utf8.GetMaxByteCount(apu.Length);
+                    apuS = apuLength < Constants.MaxStackallocBytes
+                        ? stackalloc byte[apuLength]
+                        : (apuB = ArrayPool<byte>.Shared.Rent(apuLength));
 
-            if (apv != null)
-            {
-                apvB = new byte[Utf8.GetMaxByteCount(apv.Length)];
-                Utf8.GetBytes(apv, apvB);
-            }
-            else
-            {
-                apvB = Array.Empty<byte>();
-            }
+                    apuLength = Utf8.GetBytes(apu, apuS);
+                    apuS = apuS.Slice(0, apuLength);
+                }
 
-            return BuildSecretAppend(apuB, apvB);
+                int apvLength;
+                Span<byte> apvS = stackalloc byte[0];
+                if (apv != null)
+                {
+                    apvLength = Utf8.GetMaxByteCount(apv.Length);
+                    apvS = apvLength < Constants.MaxStackallocBytes
+                        ? stackalloc byte[apvLength]
+                        : (apvB = ArrayPool<byte>.Shared.Rent(apvLength));
+
+                    apvLength = Utf8.GetBytes(apv, apvS);
+                    apvS = apvS.Slice(0, apvLength);
+                }
+
+                return BuildSecretAppend(apuS, apvS);
+            }
+            finally
+            {
+                if (apuB != null)
+                {
+                    ArrayPool<byte>.Shared.Return(apuB);
+                }
+
+                if (apvB != null)
+                {
+                    ArrayPool<byte>.Shared.Return(apvB);
+                }
+            }
         }
 
-        private byte[] BuildSecretAppend(byte[]? apu, byte[]? apv)
+        private byte[] BuildSecretAppend(ReadOnlySpan<byte> apu, ReadOnlySpan<byte> apv)
         {
-            int apuLength = apu == null ? 0 : Base64Url.GetArraySizeRequiredToDecode(apu.Length);
-            int apvLength = apv == null ? 0 : Base64Url.GetArraySizeRequiredToDecode(apv.Length);
+            int apuLength = apu.IsEmpty ? 0 : Base64Url.GetArraySizeRequiredToDecode(apu.Length);
+            int apvLength = apv.IsEmpty ? 0 : Base64Url.GetArraySizeRequiredToDecode(apv.Length);
 
             int algorithmLength = sizeof(int) + _algorithmNameLength;
             int partyUInfoLength = sizeof(int) + apuLength;

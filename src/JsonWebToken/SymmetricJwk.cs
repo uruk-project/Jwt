@@ -61,46 +61,6 @@ namespace JsonWebToken
             _k = Base64Url.Decode(k);
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="SymmetricJwk"/>.
-        /// </summary>
-#nullable disable
-        internal SymmetricJwk(JwtObject @object)
-#nullable enable
-        {
-            for (int i = 0; i < @object.Count; i++)
-            {
-                var property = @object[i];
-                var name = property.Utf8Name;
-                switch (property.Type)
-                {
-                    case JwtTokenType.Array:
-                        Populate(name, (JwtArray)property.Value!);
-                        break;
-                    case JwtTokenType.String:
-                        if (name.SequenceEqual(JwkParameterNames.KUtf8))
-                        {
-                            _k = Base64Url.Decode((string)property.Value!);
-                        }
-                        else
-                        {
-                            Populate(name, (string)property.Value!);
-                        }
-                        break;
-                    case JwtTokenType.Utf8String:
-                        Populate(name, (byte[])property.Value!);
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            if (_k is null)
-            {
-                ThrowHelper.ThrowFormatException_MalformedJson("Missing 'k' property.");
-            }
-        }
-
         internal SymmetricJwk(ref Utf8JsonReader reader)
         {
             byte[]? k = null;

@@ -927,51 +927,6 @@ namespace JsonWebToken
             return key;
         }
 
-        internal static ECJwk Populate(JwtObject @object)
-        {
-            var key = new ECJwk();
-            for (int i = 0; i < @object.Count; i++)
-            {
-                var property = @object[i];
-                var name = property.Utf8Name;
-                switch (property.Type)
-                {
-                    case JwtTokenType.String:
-                        if (name.SequenceEqual(JwkParameterNames.CrvUtf8))
-                        {
-                            key.Crv = EllipticalCurve.FromString((string)property.Value!);
-                        }
-                        else if (name.SequenceEqual(JwkParameterNames.XUtf8))
-                        {
-                            key._parameters.Q.X = Base64Url.Decode((string)property.Value!);
-                        }
-                        else if (name.SequenceEqual(JwkParameterNames.YUtf8))
-                        {
-                            key._parameters.Q.Y = Base64Url.Decode((string)property.Value!);
-                        }
-                        else if (name.SequenceEqual(JwkParameterNames.DUtf8))
-                        {
-                            key._parameters.D = Base64Url.Decode((string)property.Value!);
-                        }
-                        else
-                        {
-                            key.Populate(name, (string)property.Value!);
-                        }
-                        break;
-                    case JwtTokenType.Utf8String:
-                        key.Populate(name, (byte[])property.Value!);
-                        break;
-                    case JwtTokenType.Array:
-                        key.Populate(name, (JwtArray)property.Value!);
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            return key;
-        }
-
         /// <inheritsdoc />
         public override void WriteTo(Utf8JsonWriter writer)
         {

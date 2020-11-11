@@ -31,33 +31,6 @@ namespace JsonWebToken.Internal
             => encryptionAlgorithm.RequiredKeySizeInBytes;
 
         /// <inheritsdoc />
-        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
-        {
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
-            var cek = CreateSymmetricKey(EncryptionAlgorithm, (SymmetricJwk?)staticKey);
-            Span<byte> nonce = stackalloc byte[IVSize];
-            Span<byte> tag = stackalloc byte[TagSize];
-
-            using (var aesGcm = new AesGcm(Key.AsSpan()))
-            {
-                var keyBytes = cek.AsSpan();
-                if (destination.Length > keyBytes.Length)
-                {
-                    destination = destination.Slice(0, keyBytes.Length);
-                }
-
-                aesGcm.Encrypt(nonce, keyBytes, destination, tag);
-
-                header.Add(new JwtProperty(HeaderParameters.IVUtf8, Base64Url.Encode(nonce)));
-                header.Add(new JwtProperty(HeaderParameters.TagUtf8, Base64Url.Encode(tag)));
-            }
-
-            return cek;
-        }    
         public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeader header, Span<byte> destination)
         {
             if (_disposed)

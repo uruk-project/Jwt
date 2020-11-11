@@ -63,9 +63,9 @@ namespace JsonWebToken.Tests
             var keyEncryptionKey = ECJwk.GenerateKey(EllipticalCurve.P256, true);
             var wrapper = new EcdhKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs);
             var destination = new byte[0];
-            var header = new JwtObject();
+            var header = new JwtHeader();
             Jwk cek = null;
-            Assert.Throws<ArgumentNullException>(() => wrapper.WrapKey(null, (JwtObject)null, destination));
+            Assert.Throws<ArgumentNullException>(() => wrapper.WrapKey(null, (JwtHeader)null, destination));
             wrapper.Dispose();
             Assert.Throws<ObjectDisposedException>(() => wrapper.WrapKey(null, header, destination));
 
