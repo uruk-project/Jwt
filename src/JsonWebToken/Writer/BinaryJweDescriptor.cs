@@ -3,21 +3,17 @@
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Defines an encrypted JWT with a binary payload.
-    /// </summary>
+    /// <summary>Defines an encrypted JWT with a binary payload.</summary>
     public sealed class BinaryJweDescriptor : JweDescriptor<byte[]>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryJweDescriptor"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="BinaryJweDescriptor"/> class.</summary>
         /// <param name="encryptionKey"></param>
         /// <param name="alg"></param>
         /// <param name="enc"></param>
         /// <param name="zip"></param>
         /// <param name="typ"></param>
         /// <param name="cty"></param>
-        public BinaryJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = "octet-stream")
+        public BinaryJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = ContentTypes.OctetStream)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
         }

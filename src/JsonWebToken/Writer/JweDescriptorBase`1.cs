@@ -13,7 +13,7 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes a new instance of <see cref="JweDescriptor"/>.
         /// </summary>
-        public JweDescriptorBase(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = null)
+        public JweDescriptorBase(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = ContentTypes.Jwt)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
         }

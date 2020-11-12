@@ -6,15 +6,11 @@ using System.Buffers;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Defines an encrypted JWT with a <see cref="string"/> payload.
-    /// </summary>
+    /// <summary>Defines an encrypted JWT with a <see cref="string"/> payload.</summary>
     public sealed class PlaintextJweDescriptor : JweDescriptor<string>
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="PlaintextJweDescriptor"/>.
-        /// </summary>
-        public PlaintextJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = "text")
+        /// <summary>Initializes a new instance of <see cref="PlaintextJweDescriptor"/>.</summary>
+        public PlaintextJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = ContentTypes.Plain)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
         }
