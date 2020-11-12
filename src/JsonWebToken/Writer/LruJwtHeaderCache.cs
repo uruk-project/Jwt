@@ -6,13 +6,10 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents a cache for JWT Header in JSON.
-    /// </summary>
+    /// <summary>Represents a cache for JWT Header in JSON.</summary>
     public sealed class LruJwtHeaderCache : IJwtHeaderCache
     {
         private sealed class Bucket
@@ -51,18 +48,14 @@ namespace JsonWebToken
         private SpinLock _spinLock = new SpinLock();
         private int _count = 0;
 
-        /// <summary>
-        /// The maximum size of the cache.
-        /// </summary>
+        /// <summary>The maximum size of the cache.</summary>
         public static int MaxSize { get; set; } = 10;
 
         private Bucket? _head = null;
         private Bucket? _tail = null;
         private WrappedHeader _firstHeader;
 
-        /// <summary>
-        ///  Try to get the header.
-        /// </summary>
+        /// <summary>Try to get the header.</summary>
         /// <param name="header"></param>
         /// <param name="alg"></param>
         /// <param name="base64UrlHeader"></param>
@@ -113,9 +106,7 @@ namespace JsonWebToken
             return true;
         }
 
-        /// <summary>
-        /// Adds a base64url encoded header to the cache.
-        /// </summary>
+        /// <summary>Adds a base64-url encoded header to the cache.</summary>
         /// <param name="header"></param>
         /// <param name="alg"></param>
         /// <param name="base6UrlHeader"></param>

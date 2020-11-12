@@ -1,27 +1,24 @@
-﻿using System.Diagnostics;
+﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
+// Licensed under the MIT license. See LICENSE in the project root for license information.
+
+using System.Diagnostics;
 using System.Text.Json;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Defines an abstract class for representing a JWT.
-    /// </summary>
+    /// <summary>Defines an abstract class for representing a JWT.</summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class JwtDescriptor
     {
         private JwtHeader _header;
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwtDescriptor"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="JwtDescriptor"/>.</summary>
         protected JwtDescriptor()
         {
             _header = new JwtHeader();
         }
 
-        /// <summary>
-        /// Gets the parameters header.
-        /// </summary>
+        /// <summary>Gets the parameters header.</summary>
         public JwtHeader Header
         {
             get => _header;
@@ -37,23 +34,16 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Encodes the current <see cref="JwtDescriptor"/> into it <see cref="string"/> representation.
-        /// </summary>
+        /// <summary>Encodes the current <see cref="JwtDescriptor"/> into it compact representation.</summary>
         /// <param name="context"></param>
-        /// <returns></returns>
         public abstract void Encode(EncodingContext context);
 
-        /// <summary>
-        /// Validates the current <see cref="JwtDescriptor"/>.
-        /// </summary>
+        /// <summary>Validates the current <see cref="JwtDescriptor"/>.</summary>
         public virtual void Validate()
         {
         }
 
-        /// <summary>
-        /// Validates the presence and the type of a required header.
-        /// </summary>
+        /// <summary>Validates the presence and the type of a required header.</summary>
         /// <param name="utf8Name"></param>
         /// <param name="type"></param>
         protected void CheckRequiredHeader(string utf8Name, JsonValueKind type)
@@ -69,9 +59,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Validates the presence and the type of a required header.
-        /// </summary>
+        /// <summary>Validates the presence and the type of a required header.</summary>
         /// <param name="utf8Name"></param>
         /// <param name="types"></param>
         protected void CheckRequiredHeader(string utf8Name, JsonValueKind[] types)

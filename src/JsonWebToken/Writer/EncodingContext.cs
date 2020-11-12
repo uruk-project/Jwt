@@ -5,16 +5,12 @@ using System.Buffers;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Encapsulate the context required for a JWT encoding.
-    /// </summary>
+    /// <summary>Encapsulate the context required for a JWT encoding.</summary>
     public sealed class EncodingContext
     {
         private static readonly DisabledJwtHeaderCache EmptyCache = new DisabledJwtHeaderCache();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EncodingContext"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="EncodingContext"/> class.</summary>
         /// <param name="bufferWriter"></param>
         /// <param name="headerCache"></param>
         /// <param name="tokenLifetimeInSeconds"></param>
@@ -27,9 +23,7 @@ namespace JsonWebToken
             GenerateIssuedTime = generateIssuedTime;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EncodingContext"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="EncodingContext"/> class.</summary>
         /// <param name="bufferWriter"></param>
         /// <param name="other"></param>
         public EncodingContext(IBufferWriter<byte> bufferWriter, EncodingContext other)
@@ -40,24 +34,16 @@ namespace JsonWebToken
             GenerateIssuedTime = other.GenerateIssuedTime;
         }
 
-        /// <summary>
-        /// Gets the <see cref="IBufferWriter{T}"/> used to write data.
-        /// </summary>
+        /// <summary>Gets the <see cref="IBufferWriter{T}"/> used to write data.</summary>
         public IBufferWriter<byte> BufferWriter { get; }
 
-        /// <summary>
-        /// Gets the JSON header cache.
-        /// </summary>
+        /// <summary>Gets the JSON header cache.</summary>
         public IJwtHeaderCache HeaderCache { get; }
 
-        /// <summary>
-        /// Gets the token lifetime, in seconds.
-        /// </summary>
+        /// <summary>Gets the token lifetime, in seconds.</summary>
         public int TokenLifetimeInSeconds { get; }
 
-        /// <summary>
-        /// Gets whether the issuance time must be generated.
-        /// </summary>
+        /// <summary>Gets whether the issuance time 'iat' must be generated.</summary>
         public bool GenerateIssuedTime { get; }
     }
 }

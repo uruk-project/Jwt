@@ -3,14 +3,10 @@
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Defines an encrypted JWT with a <see cref="JwsDescriptor"/> payload.
-    /// </summary>
+    /// <summary>Defines an encrypted JWT with a <see cref="JwsDescriptor"/> payload.</summary>
     public sealed class JweDescriptor : JweDescriptorBase<JwsDescriptor>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JweDescriptor"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="JweDescriptor"/> class.</summary>
         /// <param name="encryptionKey"></param>
         /// <param name="alg"></param>
         /// <param name="enc"></param>

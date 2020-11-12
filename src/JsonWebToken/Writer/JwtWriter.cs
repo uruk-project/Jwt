@@ -6,9 +6,7 @@ using System.Buffers;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Writes a JWT.
-    /// </summary>
+    /// <summary>Writes a JWT.</summary>
     public sealed class JwtWriter
     {
         private static readonly DisabledJwtHeaderCache _disabledCache = new DisabledJwtHeaderCache();
@@ -17,18 +15,12 @@ namespace JsonWebToken
         private int _tokenLifetimeInSeconds;
         private bool _enableHeaderCaching = true;
 
-        /// <summary>
-        /// Gets or sets the token lifetime in seconds.
-        /// </summary>
+        /// <summary>Gets or sets the token lifetime in seconds.</summary>
         /// <remarks>Used by <see cref="WriteToken(JwtDescriptor)"/> to set the default expiration ('exp').</remarks>
         /// <exception cref="ArgumentOutOfRangeException">'value' less than 0.</exception>
         public int TokenLifetimeInSeconds
         {
-            get
-            {
-                return _tokenLifetimeInSeconds;
-            }
-
+            get => _tokenLifetimeInSeconds;
             set
             {
                 if (value < 0)
@@ -40,14 +32,10 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Gets or sets whether the <see cref="JwtDescriptor"/> has to be validated. Default value is <c>false</c>.
-        /// </summary>
+        /// <summary>Gets or sets whether the <see cref="JwtDescriptor"/> has to be validated. Default value is <c>false</c>.</summary>
         public bool IgnoreTokenValidation { get; set; }
 
-        /// <summary>
-        /// Gets or sets whether the JWT header will be cached. Default value is <c>true</c>.
-        /// </summary>
+        /// <summary>Gets or sets whether the JWT header will be cached. Default value is <c>true</c>.</summary>
         public bool EnableHeaderCaching
         {
             get => _enableHeaderCaching;
@@ -66,14 +54,10 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Gets or sets whether the issued time must be generated. Default value is <c>false</c>.
-        /// </summary>
+        /// <summary>Gets or sets whether the issued time must be generated. Default value is <c>false</c>.</summary>
         public bool GenerateIssuedTime { get; set; }
 
-        /// <summary>
-        /// Writes a JWT in its compact serialization format.
-        /// </summary>
+        /// <summary>Writes a JWT in its compact serialization format.</summary>
         /// <param name="descriptor">The descriptor of the JWT.</param>
         /// <returns>The array of <see cref="byte"/> representation of the JWT.</returns>
         public byte[] WriteToken(JwtDescriptor descriptor)
@@ -83,9 +67,7 @@ namespace JsonWebToken
             return bufferWriter.WrittenSpan.ToArray();
         }
 
-        /// <summary>
-        /// Writes a JWT in its compact serialization format.
-        /// </summary>
+        /// <summary>Writes a JWT in its compact serialization format.</summary>
         /// <param name="descriptor">The descriptor of the JWT.</param>
         /// <param name="output">The <see cref="IBufferWriter{T}"/> used for writing the output.</param>
         /// <returns>The array of <see cref="byte"/> representation of the JWT.</returns>
@@ -105,9 +87,7 @@ namespace JsonWebToken
             descriptor.Encode(encodingContext);
         }
 
-        /// <summary>
-        /// Writes a JWT in its compact serialization format and returns it a string.
-        /// </summary>
+        /// <summary>Writes a JWT in its compact serialization format and returns it a string.</summary>
         /// <param name="descriptor">The descriptor of the JWT.</param>
         /// <returns>The <see cref="string"/> retpresention of the JWT.</returns>
         public string WriteTokenString(JwtDescriptor descriptor)

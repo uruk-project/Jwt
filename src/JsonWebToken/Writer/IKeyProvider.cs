@@ -3,14 +3,10 @@
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents a provider of <see cref="Jwk"/>.
-    /// </summary>
+    /// <summary>Represents a provider of <see cref="Jwk"/>.</summary>
     public interface IKeyProvider
     {
-        /// <summary>
-        /// Gets a list of <see cref="Jwk"/>.
-        /// </summary>
+        /// <summary>Gets a list of <see cref="Jwk"/>.</summary>
         Jwk[] GetKeys(JwtHeaderDocument header);
     }
 }

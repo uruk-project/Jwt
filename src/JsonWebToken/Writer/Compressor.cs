@@ -5,16 +5,12 @@ using System;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Provides compression services.
-    /// </summary>
+    /// <summary>Provides compression services.</summary>
     public abstract class Compressor
     {
         internal static Compressor Null = new NullCompressor();
 
-        /// <summary>
-        /// Compresses the data.
-        /// </summary>
+        /// <summary>Compresses the data.</summary>
         /// <param name="data"></param>
         /// <param name="destination"></param>
         /// <returns></returns>

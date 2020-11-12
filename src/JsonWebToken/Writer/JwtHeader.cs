@@ -5,18 +5,15 @@ using System.Text.Json;
 namespace JsonWebToken
 {
     /// <summary>
-    /// Represents the metadata of the JWT, like 
-    /// like the cryptographic operations applied to the JWT and optionally 
-    /// any additional properties of the JWT. 
+    /// Represents the metadata of the JWT, like the cryptographic 
+    /// operations applied to the JWT and optionally any additional properties of the JWT. 
     /// </summary>
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public sealed class JwtHeader : IEnumerable
     {
         private readonly MemberStore _store = MemberStore.CreateSlowGrowingStore();
 
-        /// <summary>
-        /// Gets the count of parameters in the current header.
-        /// </summary>
+        /// <summary>Gets the count of parameters in the current header.</summary>
         public int Count => _store.Count;
 
         internal void CopyTo(JwtHeader destination)
@@ -24,9 +21,7 @@ namespace JsonWebToken
             _store.CopyTo(destination._store);
         }
 
-        /// <summary>
-        /// Adds a <see cref="string"/> as header parameters.
-        /// </summary>
+        /// <summary>Adds a <see cref="string"/> as header parameters.</summary>
         /// <param name="propertyName"></param>
         /// <param name="value"></param>
         public void Add(string propertyName, string value)
@@ -34,9 +29,7 @@ namespace JsonWebToken
             _store.TryAdd(new JwtMember(propertyName, value));
         }
 
-        /// <summary>
-        /// Adds a <see cref="long"/> as header parameters.
-        /// </summary>
+        /// <summary>Adds a <see cref="long"/> as header parameters.</summary>
         /// <param name="propertyName"></param>
         /// <param name="value"></param>
         public void Add(string propertyName, long value)
@@ -44,9 +37,7 @@ namespace JsonWebToken
             _store.TryAdd(new JwtMember(propertyName, value));
         }
 
-        /// <summary>
-        /// Adds an array of <see cref="object"/>s as header parameters.
-        /// </summary>
+        /// <summary>Adds an array of <see cref="object"/>s as header parameters.</summary>
         /// <param name="propertyName"></param>
         /// <param name="value"></param>
         public void Add(string propertyName, object[] value)
@@ -54,9 +45,7 @@ namespace JsonWebToken
             _store.TryAdd(new JwtMember(propertyName, value));
         }
 
-        /// <summary>
-        /// Adds an array of <see cref="string"/>s as header parameters.
-        /// </summary>
+        /// <summary>Adds an array of <see cref="string"/>s as header parameters.</summary>
         /// <param name="propertyName"></param>
         /// <param name="values"></param>
         public void Add(string propertyName, string?[] values)
@@ -64,9 +53,7 @@ namespace JsonWebToken
             _store.TryAdd(new JwtMember(propertyName, values));
         }
 
-        /// <summary>
-        /// Adds an <see cref="object"/> as header parameters.
-        /// </summary>
+        /// <summary>Adds an <see cref="object"/> as header parameters.</summary>
         /// <param name="propertyName"></param>
         /// <param name="value"></param>
         public void Add(string propertyName, object value)
@@ -74,9 +61,7 @@ namespace JsonWebToken
             _store.TryAdd(new JwtMember(propertyName, value));
         }
 
-        /// <summary>
-        /// Adds an <see cref="bool"/> as header parameters.
-        /// </summary>
+        /// <summary>Adds an <see cref="bool"/> as header parameters.</summary>
         /// <param name="propertyName"></param>
         /// <param name="value"></param>
         public void Add(string propertyName, bool value)
@@ -94,10 +79,7 @@ namespace JsonWebToken
             return _store.TryGetValue(utf8Name, out value);
         }
 
-
-        /// <summary>
-        /// Determines whether the <see cref="JwtHeader"/> contains the specified key.
-        /// </summary>
+        /// <summary>Determines whether the <see cref="JwtHeader"/> contains the specified key.</summary>
         /// <param name="key"></param>
         /// <returns></returns>
         public bool ContainsKey(string key)

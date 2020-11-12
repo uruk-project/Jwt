@@ -9,9 +9,7 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Defines an encrypted JWT with a <typeparamref name="TPayload"/> payload.
-    /// </summary>
+    /// <summary>Defines an encrypted JWT with a <typeparamref name="TPayload"/> payload.</summary>
     public abstract class JweDescriptor<TPayload> : JwtDescriptor<TPayload> where TPayload : class
     {
         private readonly Jwk _encryptionKey;
@@ -22,9 +20,7 @@ namespace JsonWebToken
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 #endif
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JweDescriptor{TPayload}"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="JweDescriptor{TPayload}"/> class.</summary>
         /// <param name="encryptionKey"></param>
         /// <param name="alg"></param>
         /// <param name="enc"></param>
@@ -61,29 +57,19 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Gets or sets the algorithm header.
-        /// </summary>
+        /// <summary>Gets or sets the algorithm header.</summary>
         public KeyManagementAlgorithm Alg => _alg;
 
-        /// <summary>
-        /// Gets or sets the encryption algorithm.
-        /// </summary>
+        /// <summary>Gets or sets the encryption algorithm.</summary>
         public EncryptionAlgorithm Enc => _enc;
 
-        /// <summary>
-        /// Gets or sets the compression algorithm.
-        /// </summary>
+        /// <summary>Gets or sets the compression algorithm.</summary>
         public CompressionAlgorithm Zip => _zip;
 
-        /// <summary>
-        /// Gets the <see cref="Jwk"/> used.
-        /// </summary>
+        /// <summary>Gets the <see cref="Jwk"/> used.</summary>
         public Jwk EncryptionKey => _encryptionKey;
 
-        /// <summary>
-        /// Encrypt the token.
-        /// </summary>
+        /// <summary>Encrypt the token.</summary>
         protected void EncryptToken(ReadOnlySpan<byte> payload, IBufferWriter<byte> output)
         {
             EncryptionAlgorithm encryptionAlgorithm = _enc;

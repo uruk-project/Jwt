@@ -3,26 +3,20 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Defines a signed JWT with a JSON payload.
-    /// </summary>
+    /// <summary>Defines a signed JWT with a JSON payload.</summary>
     public class JwsDescriptor : JwtDescriptor<JwtPayload>
     {
         private readonly SignatureAlgorithm _alg;
         private readonly Jwk _signingKey;
         private JwtPayload _payload;
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwsDescriptor"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="JwsDescriptor"/>.</summary>
         /// <param name="signingKey">The signing key.</param>
         /// <param name="alg">The signature algorithm.</param>
         /// <param name="typ">Optional. The media type.</param>
@@ -65,63 +59,11 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Gets the 'alg' header.
-        /// </summary>
+        /// <summary>Gets the 'alg' header.</summary>
         public SignatureAlgorithm Alg => _alg;
 
-        /// <summary>
-        /// Gets the <see cref="Jwk"/> used for signature.
-        /// </summary>
+        /// <summary>Gets the <see cref="Jwk"/> used for signature.</summary>
         public Jwk SigningKey => _signingKey;
-
-        /// <summary>
-        /// Sets the value of the 'sub' claim.
-        /// </summary>
-        public void AddSub(string value)
-            => _payload.AddSub(value);
-
-        /// <summary>
-        /// Sets the value of the 'jti' claim.
-        /// </summary>
-        public void AddJti(string value)
-            => _payload.AddJti(value);
-
-        /// <summary>
-        /// Sets the value of the 'aud' claim.
-        /// </summary>
-        public void AddAud(string value)
-            => _payload.AddAud(value);
-
-        /// <summary>
-        /// Sets the value of the 'aud' claim.
-        /// </summary>
-        public void AddAud(string[] value)
-            => _payload.AddAud(value);
-
-        /// <summary>
-        /// Sets the value of the 'exp' claim.
-        /// </summary>
-        public void AddExp(long value)
-            => _payload.AddExp(value);
-
-        /// <summary>
-        /// Sets the value of the 'iss' claim.
-        /// </summary>
-        public void AddIss(string value)
-            => _payload.AddIss(value);
-
-        /// <summary>
-        /// Sets the value of the 'iat' claim.
-        /// </summary>
-        public void AddIat(string value)
-            => _payload.AddIat(value);
-
-        /// <summary>
-        ///Sets the value of the 'nbf' claim.
-        /// </summary>
-        public void AddNbf(long value)
-            => _payload.AddNbf(value);
 
         /// <inheritsdoc />
         public override void Encode(EncodingContext context)
@@ -204,9 +146,7 @@ namespace JsonWebToken
             return _payload.TryGetValue(name, out value);
         }
 
-        /// <summary>
-        /// Validates the presence and the type of a required claim.
-        /// </summary>
+        /// <summary>Validates the presence and the type of a required claim.</summary>
         /// <param name="utf8Name"></param>
         /// <param name="type"></param>
         protected void RequireClaim(string utf8Name, JsonValueKind type)
@@ -222,9 +162,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Validates the presence and the type of a required claim.
-        /// </summary>
+        /// <summary>Validates the presence and the type of a required claim.</summary>
         /// <param name="utf8Name"></param>
         /// <param name="types"></param>
         protected void ValidateClaim(string utf8Name, JsonValueKind[] types)

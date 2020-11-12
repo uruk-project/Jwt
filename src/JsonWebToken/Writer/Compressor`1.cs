@@ -6,14 +6,10 @@ using System.IO;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Provides compression services, based on <typeparamref name="TStream"/>.
-    /// </summary>
+    /// <summary>Provides compression services, based on <typeparamref name="TStream"/>.</summary>
     public abstract class Compressor<TStream> : Compressor where TStream : Stream
     {
-        /// <summary>
-        /// Creates a compression <see cref="Stream"/>.
-        /// </summary>
+        /// <summary>Creates a compression <see cref="Stream"/>.</summary>
         public abstract TStream CreateCompressionStream(Stream inputStream);
 
         /// <inheritdoc />

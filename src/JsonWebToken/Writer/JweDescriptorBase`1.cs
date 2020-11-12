@@ -3,16 +3,12 @@
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Defines an encrypted JWT with a <typeparamref name="TDescriptor"/> as payload.
-    /// </summary>
+    /// <summary>Defines an encrypted JWT with a <typeparamref name="TDescriptor"/> as payload.</summary>
     public abstract class JweDescriptorBase<TDescriptor> : JweDescriptor<TDescriptor> where TDescriptor : JwsDescriptor
     {
         private TDescriptor? _payload;
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="JweDescriptor"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="JweDescriptor"/>.</summary>
         public JweDescriptorBase(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = ContentTypes.Jwt)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
