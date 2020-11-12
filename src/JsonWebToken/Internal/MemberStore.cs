@@ -1,17 +1,15 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
-    internal sealed class MemberStore : IEnumerable<JwtMember>
+    public sealed class MemberStore : IEnumerable<JwtMember>
     {
         public static MemberStore CreateFastGrowingStore()
             => new MemberStore(FastGrowingEmptyMap.Empty);

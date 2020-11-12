@@ -73,6 +73,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MultiIssuersValidationSampl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwkSample", "samples\JwkSample\JwkSample.csproj", "{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecEventCreationSample", "samples\SecEventCreationSample\SecEventCreationSample.csproj", "{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -171,6 +173,10 @@ Global
 		{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -199,6 +205,7 @@ Global
 		{3D743A21-CCCE-41B1-B9E9-CEBF0A3D7942} = {9B57A379-AA34-40CB-BEB1-F9EA38792A3B}
 		{36269BC7-CFC5-42F4-A63B-A7F6614B9820} = {F682D324-E173-48DF-819B-D3811CFAA68D}
 		{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE} = {F682D324-E173-48DF-819B-D3811CFAA68D}
+		{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01} = {F682D324-E173-48DF-819B-D3811CFAA68D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2F681326-7ED4-45F6-BD1D-1119EA388F42}

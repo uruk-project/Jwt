@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -262,6 +262,72 @@ namespace JsonWebToken
         public bool ContainsHeaderParameter(ReadOnlySpan<byte> headerParameterName)
         {
             return _document.ContainsKey(headerParameterName);
+        }
+
+        /// <summary>
+        ///   Looks for a header parameter named <paramref name="name"/> in the current JWT header, returning
+        ///   the value of that parameter.
+        /// </summary>
+        /// <param name="name">Name of the parameter to find.</param>
+        /// <returns>
+        ///  The value of the located parameter.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        ///   This value is not <see cref="JsonValueKind.Object"/>.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
+        /// </exception>
+        /// <exception cref="KeyNotFoundException">
+        ///   The <paramref name="name"/> is not found.
+        /// </exception>
+        public JwtElement this[string name]
+        {
+            get
+            {
+                if (_document.TryGetProperty(name, out var value))
+                {
+                    return value;
+                }
+
+                throw new KeyNotFoundException();
+            }
+        }
+
+        /// <summary>
+        ///   Looks for a header parameter named <paramref name="name"/> in the current JWT header, returning
+        ///   the value of that parameter.
+        /// </summary>
+        /// <param name="name">Name of the parameter to find.</param>
+        /// <returns>
+        ///  The value of the located parameter.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        ///   This value is not <see cref="JsonValueKind.Object"/>.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
+        /// </exception>
+        /// <exception cref="KeyNotFoundException">
+        ///   The <paramref name="name"/> is not found.
+        /// </exception>
+        public JwtElement this[ReadOnlySpan<byte> name]
+        {
+            get
+            {
+                if (_document.TryGetProperty(name, out var value))
+                {
+                    return value;
+                }
+
+                throw new KeyNotFoundException();
+            }
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return _document.ToString();
         }
     }
 }

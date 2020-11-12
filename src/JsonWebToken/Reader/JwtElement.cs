@@ -410,7 +410,7 @@ namespace JsonWebToken
             return
                 type == JsonTokenType.True ? true :
                 type == JsonTokenType.False ? false :
-                throw ThrowHelper.CreateInvalidOperationException_NotSupportedJsonType(/*nameof(Boolean), type*/JwtTokenType.Boolean);
+                throw ThrowHelper.CreateInvalidOperationException_NotSupportedJsonType(/*nameof(Boolean), type*/type);
         }
 
         /// <summary>

@@ -13,7 +13,7 @@ namespace UnsecureJwtCreationSample
                 Payload = new JwtPayload
                     {
                         {"iat", EpochTime.UtcNow },
-                        {"exp", EpochTime.UtcNow + (TimeSpan.TicksPerDay / 10000000) },
+                        {"exp", EpochTime.UtcNow + EpochTime.OneHour },
                         {"iss", "https://idp.example.com/" },
                         {"aud", "636C69656E745F6964" }
                     }

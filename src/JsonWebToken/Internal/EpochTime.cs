@@ -18,6 +18,18 @@ namespace JsonWebToken
 
         private static readonly DateTime MaxValueUtc = new DateTime(DateTime.MaxValue.Ticks, DateTimeKind.Utc);
 
+        /// <summary>Represents the number of seconds in one second.</summary>
+        public const long OneSecond = 1;
+
+        /// <summary>Represents the number of seconds in one minute.</summary>
+        public const long OneMinute = 60;
+
+        /// <summary>Represents the number of seconds in one hour.</summary>
+        public const long OneHour = 3600;
+        
+        /// <summary>Represents the number of seconds in one day</summary>
+        public const long OneDay = 86400;
+
         /// <summary>
         /// Per JWT spec:
         /// Gets the number of seconds from 1970-01-01T0:0:0Z as measured in UTC until the desired date/time.

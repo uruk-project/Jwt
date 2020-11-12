@@ -22,29 +22,27 @@ namespace JwkSample
         private static void GenerateKeys()
         {
             // The GenerateKey method creates a new crypto-random asymmetric key for elliptic curve algorithms
-            var ecKey = ECJwk.GenerateKey(EllipticalCurve.P521, withPrivateKey: true, SignatureAlgorithm.EcdsaSha512);
-            ecKey.Kid = "Generated-ES512";
+            var ecKey = ECJwk.GenerateKey(EllipticalCurve.P521, SignatureAlgorithm.EcdsaSha512, withPrivateKey: true);
             Console.WriteLine("Asymmetric generated JWK for elliptic curve P-521, for ES512 signature algorithm:");
             Console.WriteLine(ecKey);
             Console.WriteLine();
 
             // The GenerateKey method creates a new crypto-random asymmetric key for RSA algorithms
-            var rsaKey = RsaJwk.GenerateKey(2048, withPrivateKey: true, SignatureAlgorithm.RsaSsaPssSha384);
-            rsaKey.Kid = "Generated-PS384";
+            // You may specify a bigger key size. The default is the minimum size (2048 bits for RSA)
+            var rsaKey = RsaJwk.GeneratePrivateKey(SignatureAlgorithm.RsaSsaPssSha384);
             Console.WriteLine("Asymmetric generated JWK of 2048 bits for RSA, for PS384 signature algorithm:");
             Console.WriteLine(rsaKey);
             Console.WriteLine();
 
             // The GenerateKey method creates a new crypto-random symmetric key for symmetric algorithms
             var symmetricKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
-            symmetricKey.Kid = "Generated-HS256";
             Console.WriteLine("Symmetric generated JWK of 128 bits, for HS256 signature algorithm:");
             Console.WriteLine(symmetricKey);
             Console.WriteLine();
 
             // The GenerateKey method creates a new crypto-random aymmetric key for RSA algorithms
-            var symmetricKey2 = SymmetricJwk.GenerateKey(256);
-            Console.WriteLine("Symmetric generated JWK of 256 bits, without specified signature algorithm, without key identifier:");
+            var symmetricKey2 = SymmetricJwk.GenerateKey(256, computeThumbprint: false);
+            Console.WriteLine("Symmetric generated JWK of 256 bits, without specified signature algorithm, without key identifier (the thumbprint):");
             Console.WriteLine(symmetricKey2);
             Console.WriteLine();
         }

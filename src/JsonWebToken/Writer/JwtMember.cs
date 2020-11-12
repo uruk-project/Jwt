@@ -238,7 +238,9 @@ namespace JsonWebToken
             using var bufferWriter = new PooledByteBufferWriter();
             using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
             {
+                writer.WriteStartObject();
                 WriteTo(writer);
+                writer.WriteEndObject();
             }
 
             var input = bufferWriter.WrittenSpan;

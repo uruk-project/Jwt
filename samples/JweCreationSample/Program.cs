@@ -1,6 +1,5 @@
 ﻿using System;
 using JsonWebToken;
-using JsonWebToken.Internal;
 
 namespace JweCreationSample
 {
@@ -22,7 +21,7 @@ namespace JweCreationSample
                     Payload = new JwtPayload
                     {
                         {"iat", EpochTime.UtcNow },
-                        {"exp", EpochTime.UtcNow + (TimeSpan.TicksPerHour / 10000000) },
+                        {"exp", EpochTime.UtcNow + EpochTime.OneHour },
                         {"iss", "https://idp.example.com/" },
                         {"aud", "636C69656E745F6964" }
                     }

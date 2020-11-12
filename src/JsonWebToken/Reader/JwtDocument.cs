@@ -59,7 +59,9 @@ namespace JsonWebToken
         internal JwtDocument()
         {
             _isDisposable = false;
+            _utf8Json = new byte[1];
             _disposableRegistry = new List<IDisposable>(0);
+            _root = new JwtElement(this, 0);
         }
 
         ///// <summary>
@@ -735,6 +737,12 @@ namespace JsonWebToken
         public bool ContainsKey(string key)
         {
             return ContainsKey(Utf8.GetBytes(key));
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return Utf8.GetString(_utf8Json.Span);
         }
     }
 }

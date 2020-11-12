@@ -430,5 +430,11 @@ namespace JsonWebToken
                 throw new KeyNotFoundException();
             }
         }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return _document.ToString();
+        }
     }
 }

@@ -243,6 +243,11 @@ namespace JsonWebToken
         internal static void ThrowInvalidOperationException_NotSupportedJsonType(JwtTokenType type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Exception CreateInvalidOperationException_NotSupportedJsonType(JwtTokenType type) => new InvalidOperationException($"The type {type} is not supported.");
+       
+        [DoesNotReturn]
+        internal static void ThrowInvalidOperationException_NotSupportedJsonType(JsonTokenType type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static Exception CreateInvalidOperationException_NotSupportedJsonType(JsonTokenType type) => new InvalidOperationException($"The type {type} is not supported.");
         
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_NotSupportedJsonType(JsonValueKind type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);

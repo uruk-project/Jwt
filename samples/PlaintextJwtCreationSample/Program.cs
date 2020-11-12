@@ -13,7 +13,7 @@ namespace PlaintextJwtCreationSample
             // Creates a JWE descriptor with all its properties
             var descriptor = new PlaintextJweDescriptor(encryptionKey, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256)
             {
-                Payload = "Life long and prosper.hello.world"
+                Payload = "Life long and prosper."
             };
 
             // Generates the UTF-8 string representation of the JWT

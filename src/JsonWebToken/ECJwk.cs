@@ -456,6 +456,26 @@ namespace JsonWebToken
         /// <returns></returns>
         public static ECJwk GeneratePrivateKey(in EllipticalCurve curve, bool computeThumbprint = true)
             => GenerateKey(curve, true, computeThumbprint: computeThumbprint);
+        
+        /// <summary>
+        /// Generates a private <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curve"></param>
+        /// <param name="algorithm"></param>
+        /// <param name="computeThumbprint"></param>
+        /// <returns></returns>
+        public static ECJwk GeneratePrivateKey(in EllipticalCurve curve, SignatureAlgorithm algorithm, bool computeThumbprint = true)
+            => GenerateKey(curve, algorithm, true, computeThumbprint: computeThumbprint);
+        
+        /// <summary>
+        /// Generates a private <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curve"></param>
+        /// <param name="algorithm"></param>
+        /// <param name="computeThumbprint"></param>
+        /// <returns></returns>
+        public static ECJwk GeneratePrivateKey(in EllipticalCurve curve, KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
+            => GenerateKey(curve, algorithm, true, computeThumbprint: computeThumbprint);
 
         /// <summary>
         /// Generates a public <see cref="ECJwk"/>.
@@ -465,6 +485,26 @@ namespace JsonWebToken
         /// <returns></returns>
         public static ECJwk GeneratePublicKey(in EllipticalCurve curve, bool computeThumbprint = true)
             => GenerateKey(curve, false, computeThumbprint: computeThumbprint);
+
+        /// <summary>
+        /// Generates a public <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curve"></param>
+        /// <param name="algorithm"></param>
+        /// <param name="computeThumbprint"></param>
+        /// <returns></returns>
+        public static ECJwk GeneratePublicKey(in EllipticalCurve curve, SignatureAlgorithm algorithm, bool computeThumbprint = true)
+            => GenerateKey(curve, algorithm, false, computeThumbprint: computeThumbprint);
+
+        /// <summary>
+        /// Generates a public <see cref="ECJwk"/>.
+        /// </summary>
+        /// <param name="curve"></param>
+        /// <param name="algorithm"></param>
+        /// <param name="computeThumbprint"></param>
+        /// <returns></returns>
+        public static ECJwk GeneratePublicKey(in EllipticalCurve curve, KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
+            => GenerateKey(curve, algorithm, false, computeThumbprint: computeThumbprint);
 
         /// <summary>
         /// Generates a <see cref="ECJwk"/>.
@@ -483,11 +523,11 @@ namespace JsonWebToken
         /// Generates a <see cref="ECJwk"/>.
         /// </summary>
         /// <param name="curve"></param>
-        /// <param name="withPrivateKey"></param>
         /// <param name="algorithm"></param>
+        /// <param name="withPrivateKey"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, SignatureAlgorithm algorithm, bool computeThumbprint = true)
+        public static ECJwk GenerateKey(in EllipticalCurve curve, SignatureAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
         {
             ECParameters parameters = GenerateParameters(curve, withPrivateKey);
             return FromParameters(parameters, algorithm, computeThumbprint: computeThumbprint);
@@ -497,11 +537,11 @@ namespace JsonWebToken
         /// Generates a <see cref="ECJwk"/>.
         /// </summary>
         /// <param name="curve"></param>
-        /// <param name="withPrivateKey"></param>
         /// <param name="algorithm"></param>
+        /// <param name="withPrivateKey"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
+        public static ECJwk GenerateKey(in EllipticalCurve curve, KeyManagementAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
         {
             ECParameters parameters = GenerateParameters(curve, withPrivateKey);
             return FromParameters(parameters, algorithm, computeThumbprint: computeThumbprint);
@@ -515,20 +555,20 @@ namespace JsonWebToken
         }
 
         private static ReadOnlySpan<byte> StartCanonicalizeValue => new byte[] { (byte)'{', (byte)'"', (byte)'c', (byte)'r', (byte)'v', (byte)'"', (byte)':', (byte)'"' };
-        private static ReadOnlySpan<byte> MiddleCanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'k', (byte)'t', (byte)'y', (byte)'"', (byte)':', (byte)'"', (byte)'E', (byte)'C', (byte)'"', (byte)',', (byte)'"', (byte)'x', (byte)'"', (byte)':', (byte)'"' };
+        private static ReadOnlySpan<byte> Middle1CanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'k', (byte)'t', (byte)'y', (byte)'"', (byte)':', (byte)'"', (byte)'E', (byte)'C', (byte)'"', (byte)',', (byte)'"', (byte)'x', (byte)'"', (byte)':', (byte)'"' };
         private static ReadOnlySpan<byte> Middle2CanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'y' ,(byte)'"', (byte)':', (byte)'"' };
         private static ReadOnlySpan<byte> EndCanonicalizeValue => new byte[] { (byte)'"', (byte)'}' };
 
         /// <inheritdoc />
         protected override void Canonicalize(Span<byte> buffer)
         {
-            // {"crv":"XXXX","kty":"EC","X":"XXXX","Y":"XXXX"}
+            // {"crv":"XXXX","kty":"EC","x":"XXXX","y":"XXXX"}
             int offset = StartCanonicalizeValue.Length;
             StartCanonicalizeValue.CopyTo(buffer);
             Crv.Name.AsSpan().CopyTo(buffer.Slice(offset));
             offset += Crv.Name.Length;
-            MiddleCanonicalizeValue.CopyTo(buffer.Slice(offset));
-            offset += MiddleCanonicalizeValue.Length;
+            Middle1CanonicalizeValue.CopyTo(buffer.Slice(offset));
+            offset += Middle1CanonicalizeValue.Length;
             offset += Base64Url.Encode(X, buffer.Slice(offset));
             Middle2CanonicalizeValue.CopyTo(buffer.Slice(offset));
             offset += Middle2CanonicalizeValue.Length;
@@ -539,7 +579,11 @@ namespace JsonWebToken
         /// <inheritdoc />
         protected override int GetCanonicalizeSize()
         {
-            // 35 = StartCanonicalizeValue.Length + Middle1CanonicalizeValue.Length + Middle2CanonicalizeValue.Length + EndCanonicalizeValue.Length 
+            Debug.Assert(35 == 
+                StartCanonicalizeValue.Length 
+                + Middle1CanonicalizeValue.Length 
+                + Middle2CanonicalizeValue.Length
+                + EndCanonicalizeValue.Length); 
             return 35
                 + Base64Url.GetArraySizeRequiredToEncode(Crv.Name.Length) 
                 + Base64Url.GetArraySizeRequiredToEncode(X!.Length)

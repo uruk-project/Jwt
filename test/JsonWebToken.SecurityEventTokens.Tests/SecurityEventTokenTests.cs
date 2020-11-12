@@ -27,7 +27,7 @@ namespace JsonWebToken.Tests
                     { "iat", 1458496404 },
                     { "jti", "4d3559ec67504aaba65d40b0363faad8" },
                     { "aud", new [] { "https://scim.example.com/Feeds/98d52461fa5bbc879593b7754", "https://scim.example.com/Feeds/5d7604516b1d08641d7676ee7" } },
-                    { "events", new JwtEvents
+                    { "events", new JsonObject
                         {
                             { "urn:ietf:params:scim:event:create", new ScimCreateEvent
                                 {
