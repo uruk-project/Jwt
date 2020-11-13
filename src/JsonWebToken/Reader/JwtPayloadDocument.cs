@@ -20,14 +20,6 @@ namespace JsonWebToken
     /// </remarks>
     public sealed class JwtPayloadDocument : IDisposable
     {
-        internal const byte InvalidAudienceFlag = 0x01;
-        internal const byte MissingAudienceFlag = 0x02;
-        internal const byte InvalidIssuerFlag = 0x04;
-        internal const byte MissingIssuerFlag = 0x08;
-        internal const byte ExpiredFlag = 0x10;
-        internal const byte MissingExpirationFlag = 0x20;
-        internal const byte NotYetFlag = 0x40;
-
         private readonly JwtDocument _document;
         private readonly byte _control;
 
@@ -35,13 +27,13 @@ namespace JsonWebToken
         /// Gets the validation control bits.
         /// </summary>
         public byte Control => _control;
-        internal bool InvalidAudience => (_control & InvalidAudienceFlag) == InvalidAudienceFlag;
-        internal bool MissingAudience => (_control & MissingAudienceFlag) == MissingAudienceFlag;
-        internal bool InvalidIssuer => (_control & InvalidIssuerFlag) == InvalidIssuerFlag;
-        internal bool MissingIssuer => (_control & MissingIssuerFlag) == MissingIssuerFlag;
-        internal bool MissingExpirationTime => (_control & MissingExpirationFlag) == MissingExpirationFlag;
-        internal bool Expired => (_control & ExpiredFlag) == ExpiredFlag;
-        internal bool NotYetValid => (_control & NotYetFlag) == NotYetFlag;
+        internal bool InvalidAudience => (_control & TokenValidationPolicy.InvalidAudienceFlag) == TokenValidationPolicy.InvalidAudienceFlag;
+        internal bool MissingAudience => (_control & TokenValidationPolicy.MissingAudienceFlag) == TokenValidationPolicy.MissingAudienceFlag;
+        internal bool InvalidIssuer => (_control & TokenValidationPolicy.InvalidIssuerFlag) == TokenValidationPolicy.InvalidIssuerFlag;
+        internal bool MissingIssuer => (_control & TokenValidationPolicy.MissingIssuerFlag) == TokenValidationPolicy.MissingIssuerFlag;
+        internal bool MissingExpirationTime => (_control & TokenValidationPolicy.ExpirationTimeRequiredFlag) == TokenValidationPolicy.ExpirationTimeRequiredFlag;
+        internal bool Expired => (_control & TokenValidationPolicy.ExpirationTimeFlag) == TokenValidationPolicy.ExpirationTimeFlag;
+        internal bool NotYetValid => (_control & TokenValidationPolicy.NotBeforeFlag) == TokenValidationPolicy.NotBeforeFlag;
 
         /// <summary>
         /// Gets the raw binary value of the current <see cref="JwtPayloadDocument"/>.
@@ -191,7 +183,7 @@ namespace JsonWebToken
         {
             if (policy.RequireIssuer)
             {
-                validationControl &= unchecked((byte)~JwtPayload.MissingIssuerFlag);
+                validationControl &= unchecked((byte)~TokenValidationPolicy.MissingIssuerFlag);
                 var issuerBinary = policy.RequiredIssuersBinary;
                 for (int i = 0; i < issuerBinary.Length; i++)
                 {
@@ -214,10 +206,10 @@ namespace JsonWebToken
                     return false;
                 }
 
-                validationControl &= unchecked((byte)~JwtPayload.MissingExpirationFlag);
+                validationControl &= unchecked((byte)~TokenValidationPolicy.ExpirationTimeRequiredFlag);
                 if (exp + policy.ClockSkew >= EpochTime.UtcNow)
                 {
-                    validationControl &= unchecked((byte)~JwtPayload.ExpiredFlag);
+                    validationControl &= unchecked((byte)~TokenValidationPolicy.ExpirationTimeFlag);
                 }
             }
 
@@ -233,9 +225,9 @@ namespace JsonWebToken
 
             // the 'nbf' claim is not common. A 2nd call to EpochTime.UtcNow should be rare.
             if (nbf > EpochTime.UtcNow + policy.ClockSkew
-                && (policy.Control & JwtPayload.ExpiredFlag) == JwtPayload.ExpiredFlag)
+                && (policy.Control & TokenValidationPolicy.ExpirationTimeFlag) == TokenValidationPolicy.ExpirationTimeFlag)
             {
-                validationControl |= JwtPayload.NotYetFlag;
+                validationControl |= TokenValidationPolicy.NotBeforeFlag;
             }
 
             return true;
@@ -246,7 +238,7 @@ namespace JsonWebToken
         {
             if (policy.RequireAudience)
             {
-                validationControl &= unchecked((byte)~JwtPayload.MissingAudienceFlag);
+                validationControl &= unchecked((byte)~TokenValidationPolicy.MissingAudienceFlag);
                 var audiencesBinary = policy.RequiredAudiencesBinary;
                 for (int i = 0; i < audiencesBinary.Length; i++)
                 {
@@ -264,7 +256,7 @@ namespace JsonWebToken
             int count = 0;
             if (policy.RequireAudience)
             {
-                validationControl &= unchecked((byte)~JwtPayload.MissingAudienceFlag);
+                validationControl &= unchecked((byte)~TokenValidationPolicy.MissingAudienceFlag);
                 while (reader.Read() && reader.TokenType == JsonTokenType.String)
                 {
                     count++;

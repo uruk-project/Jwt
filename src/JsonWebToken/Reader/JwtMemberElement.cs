@@ -87,38 +87,6 @@ namespace JsonWebToken
             return Value.TextEqualsHelper(text, isPropertyName: true);
         }
 
-        //internal bool EscapedNameEquals(ReadOnlySpan<byte> utf8Text)
-        //{
-        //    return Value.TextEqualsHelper(utf8Text, isPropertyName: true, shouldUnescape: false);
-        //}
-
-        ///// <summary>
-        /////   Write the property into the provided writer as a named JSON object property.
-        ///// </summary>
-        ///// <param name="writer">The writer.</param>
-        ///// <exception cref="ArgumentNullException">
-        /////   The <paramref name="writer"/> parameter is <see langword="null"/>.
-        ///// </exception>
-        ///// <exception cref="ArgumentException">
-        /////   This <see cref="Name"/>'s length is too large to be a JSON object property.
-        ///// </exception>
-        ///// <exception cref="InvalidOperationException">
-        /////   This <see cref="Value"/>'s <see cref="JsonElement.ValueKind"/> would result in an invalid JSON.
-        ///// </exception>
-        ///// <exception cref="ObjectDisposedException">
-        /////   The parent <see cref="JsonDocument"/> has been disposed.
-        ///// </exception>>
-        //public void WriteTo(Utf8JsonWriter writer)
-        //{
-        //    if (writer == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(writer));
-        //    }
-
-        //    writer.WritePropertyName(Name);
-        //    Value.WriteTo(writer);
-        //}
-
         /// <summary>
         ///   Provides a <see cref="string"/> representation of the property for
         ///   debugging purposes.

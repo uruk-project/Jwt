@@ -13,6 +13,16 @@ namespace JsonWebToken
         /// <summary>
         /// Initializes an new instance of <see cref="OpenIdConnectConfiguration"/>.
         /// </summary>
+        public OpenIdConnectConfiguration()
+        {
+            AuthorizationEndpoint = string.Empty;
+            Issuer = string.Empty;
+            JwksUri = string.Empty;
+        }
+
+        /// <summary>
+        /// Initializes an new instance of <see cref="OpenIdConnectConfiguration"/>.
+        /// </summary>
         public OpenIdConnectConfiguration(
             string issuer,
             string authorizationEndpoint,

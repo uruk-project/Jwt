@@ -7,16 +7,20 @@ namespace JsonWebToken
     {
         public override string Name => "https://schemas.openid.net/secevent/risc/event-type/account-credential-change-required";
     }
-    
+
     public class AccountDisabledSecEvent : SecEvent
     {
         public const string HijackingReason = "hijacking";
         public const string BulkAccountReason = "bulk-account";
 
         public override string Name => "https://schemas.openid.net/secevent/risc/event-type/account-disabled";
+
+        public override void Validate()
+        {
+            RequireAttribute("reason", JwtValueKind.String);
+        }
     }
-    
-    
+
     public class AccountEnabledSecEvent : SecEvent
     {
         public override string Name => "https://schemas.openid.net/secevent/risc/event-type/account-enabled";
@@ -29,6 +33,11 @@ namespace JsonWebToken
     public class IdentifierChangedSecEvent : SecEvent
     {
         public override string Name => "https://schemas.openid.net/secevent/risc/event-type/identifier-changed";
+
+        public override void Validate()
+        {
+            RequireAttribute("new-value", JwtValueKind.String);
+        }
     }
     public class IdentifierRecycledSecEvent : SecEvent
     {

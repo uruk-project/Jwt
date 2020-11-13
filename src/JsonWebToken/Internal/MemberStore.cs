@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,11 +10,24 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
+    /// <summary>Represents a store for JSON memebers.</summary>
+    /// <remarks>Designed for progressive </remarks>
     public sealed class MemberStore : IEnumerable<JwtMember>
     {
+        /// <summary>
+        /// Creates a store that will grow its capacity from 0 item to a <see cref="Array"/> of 16 items.
+        /// Beyond 16 items, the implementation will switch to a <see cref="Dictionary{TKey, TValue}"/>.
+        /// </summary>
+        /// <returns></returns>
         public static MemberStore CreateFastGrowingStore()
             => new MemberStore(FastGrowingEmptyMap.Empty);
 
+        /// <summary>
+        /// Creates a store that will grow its capacity item by item until 4, 
+        /// then to a <see cref="Array"/> of 16 items.
+        /// Beyond 16 items, the implementation will switch to a <see cref="Dictionary{TKey, TValue}"/>.
+        /// </summary>
+        /// <returns></returns>
         public static MemberStore CreateSlowGrowingStore()
             => new MemberStore(SlowGrowingEmptyMap.Empty);
 
@@ -29,18 +43,25 @@ namespace JsonWebToken
             _map = map;
         }
 
+        /// <summary>
+        /// Writes in JSON the current <see cref="MemberStore"/> into the <paramref name="writer"/>>.
+        /// </summary>
+        /// <param name="writer"></param>
         public void WriteTo(Utf8JsonWriter writer)
         {
-            writer.WriteStartObject();
             _map.WriteTo(writer);
-            writer.WriteEndObject();
         }
 
+        /// <summary>
+        /// Copy the current <see cref="MemberStore"/> into the <paramref name="destination"/>.
+        /// </summary>
+        /// <param name="destination"></param>
         public void CopyTo(MemberStore destination)
         {
             destination._map = _map.Merge(destination._map);
         }
 
+        /// <inheritdoc/>
         public IEnumerator<JwtMember> GetEnumerator()
         {
             return _map.GetEnumerator();
@@ -51,8 +72,8 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryAdd(JwtMember value)
-            => _map.TryAdd(value, out _map);
+        public void Add(JwtMember value)
+            => _map.Add(value, out _map);
 
         /// <summary>
         /// Tries to get the <paramref name="value"/> with the <paramref name="key"/> as key.
@@ -80,7 +101,7 @@ namespace JsonWebToken
         {
             public int Count { get; }
 
-            public bool TryAdd(JwtMember value, out IMap map);
+            public void Add(JwtMember value, out IMap map);
 
             public bool TryGetValue(string key, [NotNullWhen(true)] out JwtMember value);
 
@@ -98,14 +119,13 @@ namespace JsonWebToken
 
             public int Count => 0;
 
-            public bool TryAdd(JwtMember value, out IMap map)
+            public void Add(JwtMember value, out IMap map)
             {
                 // Create a new one-element map to store the key/value pair
                 //map = new OneElementMap(value);
                 var newMap = new MultiElementMap(1);
                 newMap.UnsafeStore(0, value);
                 map = newMap;
-                return true;
             }
 
             public bool TryGetValue(string key, [NotNullWhen(true)] out JwtMember value)
@@ -143,11 +163,10 @@ namespace JsonWebToken
 
             public int Count => 0;
 
-            public bool TryAdd(JwtMember value, out IMap map)
+            public void Add(JwtMember value, out IMap map)
             {
                 // Create a new one-element map to store the key/value pair
                 map = new OneElementMap(value);
-                return true;
             }
 
             public bool TryGetValue(string key, [NotNullWhen(true)] out JwtMember value)
@@ -220,7 +239,7 @@ namespace JsonWebToken
 
             public int Count => 1;
 
-            public bool TryAdd(JwtMember value, out IMap map)
+            public void Add(JwtMember value, out IMap map)
             {
                 if (value.Name == _value1.Name)
                 {
@@ -230,8 +249,6 @@ namespace JsonWebToken
                 {
                     map = new TwoElementMap(_value1, value);
                 }
-
-                return true;
             }
 
             public bool TryGetValue(string key, out JwtMember value)
@@ -268,7 +285,7 @@ namespace JsonWebToken
 
             public IMap Merge(IMap map)
             {
-                map.TryAdd(_value1, out map);
+                map.Add(_value1, out map);
                 return map;
             }
 
@@ -332,7 +349,7 @@ namespace JsonWebToken
 
             public int Count => 2;
 
-            public bool TryAdd(JwtMember value, out IMap map)
+            public void Add(JwtMember value, out IMap map)
             {
                 if (value.Name == _value1.Name)
                 {
@@ -346,8 +363,6 @@ namespace JsonWebToken
                 {
                     map = new ThreeElementMap(_value1, _value2, value);
                 }
-
-                return true;
             }
 
             public bool TryGetValue(string key, out JwtMember value)
@@ -393,8 +408,8 @@ namespace JsonWebToken
 
             public IMap Merge(IMap map)
             {
-                map.TryAdd(_value1, out map);
-                map.TryAdd(_value2, out map);
+                map.Add(_value1, out map);
+                map.Add(_value2, out map);
                 return map;
             }
 
@@ -466,7 +481,7 @@ namespace JsonWebToken
 
             public int Count => 3;
 
-            public bool TryAdd(JwtMember value, out IMap map)
+            public void Add(JwtMember value, out IMap map)
             {
                 if (value.Name == _value1.Name)
                 {
@@ -484,8 +499,6 @@ namespace JsonWebToken
                 {
                     map = new FourElementMap(_value1, _value2, _value3, value);
                 }
-
-                return true;
             }
 
             public bool TryGetValue(string key, out JwtMember value)
@@ -537,9 +550,9 @@ namespace JsonWebToken
 
             public IMap Merge(IMap map)
             {
-                map.TryAdd(_value1, out map);
-                map.TryAdd(_value2, out map);
-                map.TryAdd(_value3, out map);
+                map.Add(_value1, out map);
+                map.Add(_value2, out map);
+                map.Add(_value3, out map);
                 return map;
             }
 
@@ -617,7 +630,7 @@ namespace JsonWebToken
 
             public int Count => 4;
 
-            public bool TryAdd(JwtMember value, out IMap map)
+            public void Add(JwtMember value, out IMap map)
             {
                 if (value.Name == _value1.Name)
                 {
@@ -645,8 +658,6 @@ namespace JsonWebToken
                     multi.UnsafeStore(4, value);
                     map = multi;
                 }
-
-                return true;
             }
 
             public bool TryGetValue(string key, out JwtMember value)
@@ -704,10 +715,10 @@ namespace JsonWebToken
 
             public IMap Merge(IMap map)
             {
-                map.TryAdd(_value1, out map);
-                map.TryAdd(_value2, out map);
-                map.TryAdd(_value3, out map);
-                map.TryAdd(_value4, out map);
+                map.Add(_value1, out map);
+                map.Add(_value2, out map);
+                map.Add(_value3, out map);
+                map.Add(_value4, out map);
                 return map;
             }
 
@@ -792,7 +803,7 @@ namespace JsonWebToken
                 _keyValues[index] = value;
             }
 
-            public bool TryAdd(JwtMember value, out IMap map)
+            public void Add(JwtMember value, out IMap map)
             {
                 for (int i = 0; i < _count; i++)
                 {
@@ -801,7 +812,7 @@ namespace JsonWebToken
                         // The key is in the map. 
                         _keyValues[i] = value;
                         map = this;
-                        goto Exit;
+                        return;
                     }
                 }
 
@@ -810,7 +821,7 @@ namespace JsonWebToken
                     UnsafeStore(_count, value);
                     _count++;
                     map = this;
-                    goto Exit;
+                    return;
                 }
 
                 // Otherwise, upgrade to a many map.
@@ -823,9 +834,6 @@ namespace JsonWebToken
 
                 many[value.Name] = value;
                 map = many;
-
-            Exit:
-                return true;
             }
 
             public bool TryGetValue(string key, out JwtMember value)
@@ -880,7 +888,7 @@ namespace JsonWebToken
                 for (int i = 0; i < _count; i++)
                 {
                     JwtMember item = _keyValues[i];
-                    map.TryAdd(item, out map);
+                    map.Add(item, out map);
                 }
 
                 return map;
@@ -943,12 +951,10 @@ namespace JsonWebToken
                 _dictionary = new Dictionary<string, JwtMember>(capacity);
             }
 
-            public bool TryAdd(JwtMember value, out IMap map)
+            public void Add(JwtMember value, out IMap map)
             {
                 map = this;
                 _dictionary[value.Name] = value;
-
-                return true;
             }
 
             public bool TryGetValue(string key, out JwtMember value)
@@ -989,7 +995,7 @@ namespace JsonWebToken
             {
                 foreach (var item in _dictionary.Values)
                 {
-                    map.TryAdd(item, out map);
+                    map.Add(item, out map);
                 }
 
                 return map;

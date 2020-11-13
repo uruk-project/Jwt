@@ -10,7 +10,7 @@ namespace JsonWebToken
         /// </summary>
         public static void Add(this JsonObject jsonObject, SecEvent secEvent)
         {
-            jsonObject.Add(new JwtMember(secEvent.Name, secEvent));
+            jsonObject.Add(secEvent.Name, secEvent);
         }
     }    
 }

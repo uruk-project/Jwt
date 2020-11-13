@@ -10,8 +10,8 @@ namespace JsonWebToken
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public readonly struct JwtMember
     {
-        /// <summary>Gets the <see cref="JsonValueKind"/> of the <see cref="JwtMember"/>.</summary>
-        public readonly JsonValueKind Type;
+        /// <summary>Gets the <see cref="JwtValueKind"/> of the <see cref="JwtMember"/>.</summary>
+        public readonly JwtValueKind Type;
 
         /// <summary>Gets the value of the <see cref="JwtMember"/>.</summary>
         public readonly object? Value;
@@ -24,7 +24,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public JwtMember(string memberName, object[] value)
         {
-            Type = JsonValueKind.Array;
+            Type = JwtValueKind.Array;
             Value = value;
             Name = memberName;
         }
@@ -34,7 +34,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public JwtMember(string memberName, string?[] value)
         {
-            Type = JsonValueKind.Array;
+            Type = JwtValueKind.Array;
             Value = value;
             Name = memberName;
         }
@@ -48,13 +48,13 @@ namespace JsonWebToken
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.name);
             }
-            
+
             if (value == null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
-            Type = JsonValueKind.Object;
+            Type = JwtValueKind.Object;
             Value = value;
             Name = name;
         }
@@ -69,7 +69,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
-            Type = JsonValueKind.String;
+            Type = JwtValueKind.String;
             Value = value;
             Name = memberName;
         }
@@ -79,7 +79,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public JwtMember(string memberName, long value)
         {
-            Type = JsonValueKind.Number;
+            Type = JwtValueKind.Int64;
             Value = value;
             Name = memberName;
         }
@@ -89,8 +89,8 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public JwtMember(string memberName, int value)
         {
-            Type = JsonValueKind.Number;
-            Value = (long)value;
+            Type = JwtValueKind.Int32;
+            Value = value;
             Name = memberName;
         }
 
@@ -101,8 +101,8 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public JwtMember(string memberName, short value)
         {
-            Type = JsonValueKind.Number;
-            Value = (long)value;
+            Type = JwtValueKind.Int16;
+            Value = value;
             Name = memberName;
         }
 
@@ -111,7 +111,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public JwtMember(string memberName, double value)
         {
-            Type = JsonValueKind.Number;
+            Type = JwtValueKind.Double;
             Value = value;
             Name = memberName;
         }
@@ -121,8 +121,8 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public JwtMember(string memberName, float value)
         {
-            Type = JsonValueKind.Number;
-            Value = (double)value;
+            Type = JwtValueKind.Float;
+            Value = value;
             Name = memberName;
         }
 
@@ -131,7 +131,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public JwtMember(string memberName, bool value)
         {
-            Type = value ? JsonValueKind.True : JsonValueKind.False;
+            Type = value ? JwtValueKind.True : JwtValueKind.False;
             Value = value;
             Name = memberName;
         }
@@ -140,20 +140,25 @@ namespace JsonWebToken
         {
             switch (Type)
             {
-                case JsonValueKind.String:
+                case JwtValueKind.String:
                     writer.WriteString(Name, (string)Value!);
                     break;
-                case JsonValueKind.Number:
-                    if (Value is long)
-                    {
-                        writer.WriteNumber(Name, (long)Value!);
-                    }
-                    else
-                    {
-                        writer.WriteNumber(Name, (double)Value!);
-                    }
+                case JwtValueKind.Int16:
+                    writer.WriteNumber(Name, (short)Value!);
                     break;
-                case JsonValueKind.Object:
+                case JwtValueKind.Int32:
+                    writer.WriteNumber(Name, (int)Value!);
+                    break;
+                case JwtValueKind.Int64:
+                    writer.WriteNumber(Name, (long)Value!);
+                    break;
+                case JwtValueKind.Float:
+                    writer.WriteNumber(Name, (float)Value!);
+                    break;
+                case JwtValueKind.Double:
+                    writer.WriteNumber(Name, (double)Value!);
+                    break;
+                case JwtValueKind.Object:
                     if (Value is IJwtSerializable serializable)
                     {
                         writer.WritePropertyName(Name);
@@ -165,17 +170,17 @@ namespace JsonWebToken
                         JsonSerializer.Serialize(writer, Value, Constants.DefaultSerializerOptions);
                     }
                     break;
-                case JsonValueKind.Array:
+                case JwtValueKind.Array:
                     writer.WritePropertyName(Name);
                     JsonSerializer.Serialize(writer, Value);
                     break;
-                case JsonValueKind.True:
+                case JwtValueKind.True:
                     writer.WriteBoolean(Name, true);
                     break;
-                case JsonValueKind.False:
+                case JwtValueKind.False:
                     writer.WriteBoolean(Name, false);
                     break;
-                case JsonValueKind.Null:
+                case JwtValueKind.Null:
                     writer.WriteNull(Name);
                     break;
                 default:
@@ -183,7 +188,7 @@ namespace JsonWebToken
                     break;
             }
         }
-
+         
         private string DebuggerDisplay()
         {
             return ToString();

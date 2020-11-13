@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using System.Text.Json;
 using JsonWebToken.Internal;
 
 namespace JsonWebToken
@@ -17,10 +16,32 @@ namespace JsonWebToken
         public override void Validate()
         {
             base.Validate();
-            RequireClaim(Claims.Iss, JsonValueKind.String);
-            RequireClaim(Claims.Iat, JsonValueKind.Number);
-            RequireClaim(Claims.Jti, JsonValueKind.String);
-            RequireClaim(SecEventClaims.Events, JsonValueKind.Object);
+            RequireClaim(Claims.Iss, JwtValueKind.String);
+            RequireClaim(Claims.Iat, JwtValueKind.Int64, JwtValueKind.Int32);
+            RequireClaim(Claims.Jti, JwtValueKind.String);
+            RequireClaim(SecEventClaims.Events, JwtValueKind.Object);
+            if (TryGetClaim(SecEventClaims.Events, out var events))
+            {
+                if (events.Type == JwtValueKind.Object)
+                {
+                    var evts = (JsonObject)events.Value!;
+                    foreach (JwtMember evt in evts)
+                    {
+                        if (evt.Value is SecEvent evcts)
+                        {
+                            evcts.Validate();
+                        }
+                    }
+                }
+                else
+                {
+                    ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(SecEventClaims.Events, JwtValueKind.Object);
+                }
+            }
+            else
+            {
+                ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(SecEventClaims.Events);
+            }
         }
     }
 }

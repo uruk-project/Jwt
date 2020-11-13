@@ -2,53 +2,107 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents the a JSON object.
-    /// </summary>
+    /// <summary>Represents the a JSON object.</summary>
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
-    public class JsonObject : IEnumerable, IJwtSerializable
+    public class JsonObject : IEnumerable, IEnumerable<JwtMember>, IJwtSerializable
     {
         private readonly MemberStore _store;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JsonObject"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="JsonObject"/> class.</summary>
         public JsonObject()
         {
             _store = MemberStore.CreateSlowGrowingStore();
         }
 
-        /// <summary>
-        /// Gets the member store used to keep track of JSON key-values.
-        /// </summary>
-        protected MemberStore Store => _store;
-
-        internal void CopyTo(JsonObject destination)
+        /// <summary>Initializes a new instance of the <see cref="JsonObject"/> class.</summary>
+        protected JsonObject(MemberStore store)
         {
-            _store.CopyTo(destination._store);
+            _store = store;
         }
 
-        /// <summary>
-        /// Determines whether the <see cref="JwtPayload"/> contains the specified key.
-        /// </summary>
+        /// <summary>Gets the member store used to keep track of JSON key-values.</summary>
+        protected MemberStore Store => _store;
+
+        /// <summary>Gets the number of items in the current <see cref="JsonObject"/>.</summary>
+        public int Count => _store.Count;
+
+        internal void CopyTo(JsonObject destination)
+            => _store.CopyTo(destination._store);
+
+        /// <summary>Determines whether the <see cref="JsonObject"/> contains the specified key.</summary>
         /// <param name="key"></param>
         /// <returns></returns>
         public bool ContainsKey(string key)
-        {
-            return _store.ContainsKey(key);
-        }
+            => _store.ContainsKey(key);
 
-        /// <summary>
-        /// Gets the value associated with the specified key.
-        /// </summary>
+        /// <summary>Gets the value associated with the specified key.</summary>
         public bool TryGetValue(string key, out JwtMember value)
+            => _store.TryGetValue(key, out value);
+
+        /// <summary>Adds the value of type <see cref="object"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(string name, object value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type <see cref="object"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(string name, JsonObject jsonObject)
+            => _store.Add(new JwtMember(name, jsonObject));
+
+        /// <summary>Adds the value of type <see cref="string"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(string name, string value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type <see cref="long"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(string name, long value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type <see cref="int"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(string name, int value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type <see cref="short"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(string name, short value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type <see cref="float"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(string name, float value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type <see cref="double"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(string name, double value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type array of <see cref="object"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(string name, object[] value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type array of <see cref="string"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(string name, string?[] values)
+            => _store.Add(new JwtMember(name, values));
+
+        /// <summary>Adds the value of type <see cref="bool"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(string name, bool value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <inheritdoc/>
+        IEnumerator IEnumerable.GetEnumerator()
+            => GetEnumerator();
+
+        /// <inheritdoc/>
+        public IEnumerator<JwtMember> GetEnumerator()
+            => _store.GetEnumerator();
+
+        /// <inheritdoc/>
+        public void WriteTo(Utf8JsonWriter writer)
         {
-            return _store.TryGetValue(key, out value);
+            writer.WriteStartObject();
+            _store.WriteTo(writer);
+            writer.WriteEndObject();
         }
 
         /// <inheritsdoc />
@@ -66,42 +120,7 @@ namespace JsonWebToken
             return Utf8.GetString(input);
         }
 
-        internal void Add(JwtMember value)
-        {
-            _store.TryAdd(value);
-        }
-
-        /// <summary>
-        /// Adds the claim of type <see cref="object"/> to the current <see cref="JwtPayload"/>.
-        /// </summary>
-        public void Add(string claimName, object value)
-        {
-            _store.TryAdd(new JwtMember(claimName, value));
-        }
-
-        /// <summary>
-        /// Adds the claim of type <see cref="object"/> to the current <see cref="JwtPayload"/>.
-        /// </summary>
-        public void Add(string name, JsonObject jsonObject)
-        {
-            _store.TryAdd(new JwtMember(name, jsonObject));
-        }
-
-        /// <inheritdoc/>
-        public IEnumerator GetEnumerator()
-        {
-            return _store.GetEnumerator();
-        }
-
-        /// <inheritdoc/>
-        public void WriteTo(Utf8JsonWriter writer)
-        {
-            _store.WriteTo(writer);
-        }
-
         private string GetDebuggerDisplay()
-        {
-            return ToString();
-        }
+            => ToString();
     }
 }

@@ -17,6 +17,7 @@ namespace JsonWebToken
 
         /// <summary>Initializes a new instance of <see cref="JwtDescriptorException"/>.</summary>
         /// <param name="message"></param>
+        /// <param name="innerException"></param>
         public JwtDescriptorException(string message, Exception? innerException)
             : base(message, innerException)
         {

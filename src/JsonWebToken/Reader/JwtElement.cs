@@ -781,31 +781,6 @@ namespace JsonWebToken
             return _parent.TextEquals(_idx, text, isPropertyName);
         }
 
-        ///// <summary>
-        /////   Write the element into the provided writer as a JSON value.
-        ///// </summary>
-        ///// <param name="writer">The writer.</param>
-        ///// <exception cref="ArgumentNullException">
-        /////   The <paramref name="writer"/> parameter is <see langword="null"/>.
-        ///// </exception>
-        ///// <exception cref="InvalidOperationException">
-        /////   This value's <see cref="ValueKind"/> is <see cref="JsonValueKind.Undefined"/>.
-        ///// </exception>
-        ///// <exception cref="ObjectDisposedException">
-        /////   The parent <see cref="JwtDocument"/> has been disposed.
-        ///// </exception>
-        //public void WriteTo(Utf8JsonWriter writer)
-        //{
-        //    if (writer == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(writer));
-        //    }
-
-        //    CheckValidInstance();
-
-        //    _parent.WriteElementTo(_idx, writer);
-        //}
-
         /// <summary>
         ///   Get an enumerator to enumerate the values in the JSON array represented by this JsonElement.
         /// </summary>

@@ -854,34 +854,6 @@ namespace JsonWebToken
             }
         }
 
-        //internal void Populate(ReadOnlySpan<byte> name, JwtArray value)
-        //{
-        //    if (name.SequenceEqual(JwkParameterNames.X5cUtf8))
-        //    {
-        //        _x5c = new List<byte[]>(value.Count);
-        //        for (int i = 0; i < value.Count; i++)
-        //        {
-        //            var bytes = (byte[]?)value[i].Value;
-        //            if (!(bytes is null))
-        //            {
-        //                _x5c.Add(bytes);
-        //            }
-        //        }
-        //    }
-        //    else if (name.SequenceEqual(JwkParameterNames.KeyOpsUtf8))
-        //    {
-        //        _keyOps = new List<string>(value.Count);
-        //        for (int i = 0; i < value.Count; i++)
-        //        {
-        //            var ops = (string?)value[i].Value;
-        //            if (!(ops is null))
-        //            {
-        //                _keyOps.Add(ops);
-        //            }
-        //        }
-        //    }
-        //}
-
         internal void Populate(ReadOnlySpan<byte> name, byte[] value)
         {
             if (name.SequenceEqual(JwkParameterNames.AlgUtf8))
@@ -1060,14 +1032,7 @@ namespace JsonWebToken
 
         private string DebuggerDisplay()
         {
-            using var bufferWriter = new PooledByteBufferWriter();
-            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
-            {
-                WriteTo(writer);
-            }
-
-            var input = bufferWriter.WrittenSpan;
-            return Utf8.GetString(input);
+            return ToString();
         }
 
         /// <summary>
@@ -1215,6 +1180,12 @@ namespace JsonWebToken
 
             protected override SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm)
                => SignatureVerifier.None;
+
+            public override void WriteTo(Utf8JsonWriter writer)
+            {
+                writer.WriteStartObject();
+                writer.WriteEndObject();
+            }
         }
 
         private sealed class UnknownAlgorithm : IAlgorithm

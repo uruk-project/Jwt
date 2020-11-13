@@ -68,8 +68,10 @@ namespace JsonWebToken
                 goto Found;
             }
 
+            // TODO : Review the header parameters is usage => currently we should never be able to hit the cach
+
             if (header.TryGetValue(HeaderParameters.Kid, out var kidProperty)
-                && kidProperty.Type == JsonValueKind.String
+                && kidProperty.Type == JwtValueKind.String
                 && !(kidProperty.Value is null)
                 && !(alg is null)
                 && header.Count == 2)
@@ -121,7 +123,7 @@ namespace JsonWebToken
             else
             {
                 if (header.TryGetValue(HeaderParameters.Kid, out var kidProperty)
-                    && kidProperty.Type == JsonValueKind.String
+                    && kidProperty.Type == JwtValueKind.String
                     && header.Count == 2)
                 {
                     var kid = (string)kidProperty.Value!;

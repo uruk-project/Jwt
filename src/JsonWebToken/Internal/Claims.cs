@@ -4,7 +4,7 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     /// <summary>
     /// List of registered claims from different sources

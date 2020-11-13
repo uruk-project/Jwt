@@ -40,7 +40,42 @@ namespace JsonWebToken.Tests
 #endif
         }
 
-        [JsonObject]
+        [Fact]
+        public void Validate_Fail()
+        {
+            var descriptor = CreateDescriptor(new MissingAttributeSecEvent());
+            Assert.Throws<JwtDescriptorException>(() => descriptor.Validate());
+
+            var descriptor2 = CreateDescriptor(new InvalidAttributeSecEvent());
+            Assert.Throws<JwtDescriptorException>(() => descriptor2.Validate());
+        }
+
+        [Fact]
+        public void Validate_Success()
+        {
+            var descriptor = CreateDescriptor(new ValidSecEvent());
+            descriptor.Validate();
+        }
+
+        private static SecEventDescriptor CreateDescriptor(SecEvent evt)
+        {
+            return new SecEventDescriptor(Jwk.None, SignatureAlgorithm.None)
+            {
+                Payload = new JwtPayload
+                {
+                    { "iss", "https://scim.example.com" },
+                    { "iat", 1458496404 },
+                    { "jti", "4d3559ec67504aaba65d40b0363faad8" },
+                    { "aud", new [] { "https://scim.example.com/Feeds/98d52461fa5bbc879593b7754", "https://scim.example.com/Feeds/5d7604516b1d08641d7676ee7" } },
+                    { "events", new JsonObject
+                        {
+                            evt
+                        }
+                    }
+                }
+            };
+        }
+
         private class ScimCreateEvent
         {
             private readonly List<string> _attributes = new List<string>();
@@ -50,6 +85,44 @@ namespace JsonWebToken.Tests
 
             [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore, PropertyName = "attributes", Required = Required.Default)]
             public IList<string> Attributes => _attributes;
+        }
+
+        public class MissingAttributeSecEvent : SecEvent
+        {
+            public override string Name => "MissingAttribute";
+
+            public override void Validate()
+            {
+                RequireAttribute("XXX", JwtValueKind.String);
+            }
+        }
+
+        public class InvalidAttributeSecEvent : SecEvent
+        {
+            public override string Name => "InvalidAttribute";
+
+            public InvalidAttributeSecEvent()
+            {
+                Add("XXX", "this is a string");
+            }
+
+            public override void Validate()
+            {
+                RequireAttribute("XXX", JwtValueKind.Int32);
+            }
+        }
+        public class ValidSecEvent : SecEvent
+        {
+            public override string Name => "Valid";
+            public ValidSecEvent()
+            {
+                Add("XXX", "this is a string");
+            }
+
+            public override void Validate()
+            {
+                RequireAttribute("XXX", JwtValueKind.String);
+            }
         }
     }
 }

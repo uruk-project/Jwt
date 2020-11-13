@@ -44,14 +44,14 @@ namespace JsonWebToken.Tests
             yield return new object[] { new JwtMember("int8", (byte)1), "{\"int8\":1}" };
 #if NETCOREAPP2_1 || NETFRAMEWORK || NETSTANDARD
             yield return new object[] { new JwtMember("float", 1.0f), "{\"float\":1}" };
-            yield return new object[] { new JwtMember("float", 1.1f), "{\"float\":" + (1.1f).ToString("G9", CultureInfo.InvariantCulture) + "}" };
+            yield return new object[] { new JwtMember("float", 1.1f), "{\"float\":" + ((double)1.1f).ToString("G9", CultureInfo.InvariantCulture) + "}" };
             yield return new object[] { new JwtMember("double", 1.0d), "{\"double\":1}" };
             yield return new object[] { new JwtMember("double", 1.1d), "{\"double\":" + (1.1d).ToString("G17", CultureInfo.InvariantCulture) + "}" };
 #else
             byte[] destination = new byte[256];
             Utf8Formatter.TryFormat(1.0f, destination, out int bytesWritten);
             yield return new object[] { new JwtMember("float", 1.0f), "{\"float\":" + Encoding.UTF8.GetString(destination.AsSpan().Slice(0, bytesWritten)) + "}" };
-            Utf8Formatter.TryFormat((double)1.1f, destination, out bytesWritten);
+            Utf8Formatter.TryFormat(1.1f, destination, out bytesWritten);
             yield return new object[] { new JwtMember("float", 1.1f), "{\"float\":" + Encoding.UTF8.GetString(destination.AsSpan().Slice(0, bytesWritten)) + "}" };
             Utf8Formatter.TryFormat(1.0d, destination, out bytesWritten);
             yield return new object[] { new JwtMember("double", 1.0d), "{\"double\":" + Encoding.UTF8.GetString(destination.AsSpan().Slice(0, bytesWritten)) + "}" };

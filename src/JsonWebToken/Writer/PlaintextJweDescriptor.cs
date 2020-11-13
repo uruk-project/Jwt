@@ -10,7 +10,7 @@ namespace JsonWebToken
     public sealed class PlaintextJweDescriptor : JweDescriptor<string>
     {
         /// <summary>Initializes a new instance of <see cref="PlaintextJweDescriptor"/>.</summary>
-        public PlaintextJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = ContentTypes.Plain)
+        public PlaintextJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = MediaTypes.Plain, string? cty = null)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
         }

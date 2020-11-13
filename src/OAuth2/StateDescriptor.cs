@@ -1,9 +1,6 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using System.Text.Json;
-using JsonWebToken.Internal;
-
 namespace JsonWebToken
 {
     /// <summary>
@@ -20,7 +17,7 @@ namespace JsonWebToken
         {
             base.Validate();
 
-            RequireClaim(OAuth2Claims.Rfp , JsonValueKind.String);
+            RequireClaim(OAuth2Claims.Rfp , JwtValueKind.String);
         }
     }
 }

@@ -46,7 +46,7 @@ namespace JsonWebToken
         /// <summary>Validates the presence and the type of a required header.</summary>
         /// <param name="utf8Name"></param>
         /// <param name="type"></param>
-        protected void CheckRequiredHeader(string utf8Name, JsonValueKind type)
+        protected void CheckRequiredHeader(string utf8Name, JwtValueKind type)
         {
             if (!Header.TryGetValue(utf8Name, out var tokenType))
             {
@@ -62,7 +62,7 @@ namespace JsonWebToken
         /// <summary>Validates the presence and the type of a required header.</summary>
         /// <param name="utf8Name"></param>
         /// <param name="types"></param>
-        protected void CheckRequiredHeader(string utf8Name, JsonValueKind[] types)
+        protected void CheckRequiredHeader(string utf8Name, JwtValueKind[] types)
         {
             if (!Header.TryGetValue(utf8Name, out var tokenType))
             {
@@ -78,6 +78,23 @@ namespace JsonWebToken
             }
 
             ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(utf8Name, types);
+        }
+
+        /// <summary>Validates the presence and the type of a required header.</summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="type1"></param>
+        /// <param name="type2"></param>
+        protected void CheckRequiredHeader(string utf8Name, JwtValueKind type1, JwtValueKind type2)
+        {
+            if (!Header.TryGetValue(utf8Name, out var tokenType))
+            {
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(utf8Name);
+            }
+
+            if (tokenType.Type != type1 && tokenType.Type != type2)
+            {
+                ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(utf8Name, new[] { type1, type2 });
+            }
         }
     }
 }

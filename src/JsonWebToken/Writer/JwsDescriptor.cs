@@ -149,7 +149,7 @@ namespace JsonWebToken
         /// <summary>Validates the presence and the type of a required claim.</summary>
         /// <param name="utf8Name"></param>
         /// <param name="type"></param>
-        protected void RequireClaim(string utf8Name, JsonValueKind type)
+        protected void RequireClaim(string utf8Name, JwtValueKind type)
         {
             if (!_payload.TryGetValue(utf8Name, out var claim))
             {
@@ -164,10 +164,27 @@ namespace JsonWebToken
 
         /// <summary>Validates the presence and the type of a required claim.</summary>
         /// <param name="utf8Name"></param>
-        /// <param name="types"></param>
-        protected void ValidateClaim(string utf8Name, JsonValueKind[] types)
+        /// <param name="type1"></param>
+        /// <param name="type2"></param>
+        protected void RequireClaim(string utf8Name, JwtValueKind type1, JwtValueKind type2 )
         {
-            if (!_payload.TryGetValue(utf8Name, out var claim) || claim.Type == JsonValueKind.Null)
+            if (!_payload.TryGetValue(utf8Name, out var claim))
+            {
+                ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
+            }
+
+            if (claim.Type != type1 && claim.Type != type2)
+            {
+                ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] { type1, type2 });
+            }
+        }
+
+        /// <summary>Validates the presence and the type of a required claim.</summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="types"></param>
+        protected void ValidateClaim(string utf8Name, JwtValueKind[] types)
+        {
+            if (!_payload.TryGetValue(utf8Name, out var claim) || claim.Type == JwtValueKind.Null)
             {
                 ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
             }
@@ -181,6 +198,23 @@ namespace JsonWebToken
             }
 
             ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, types);
+        }
+
+        /// <summary>Validates the presence and the type of a required claim.</summary>
+        /// <param name="utf8Name"></param>
+        /// <param name="type1"></param>
+        /// <param name="type2"></param>
+        protected void ValidateClaim(string utf8Name, JwtValueKind type1, JwtValueKind type2)
+        {
+            if (!_payload.TryGetValue(utf8Name, out var claim) || claim.Type == JwtValueKind.Null)
+            {
+                ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
+            }
+
+            if (claim.Type != type1 && claim.Type != type2)
+            {
+                ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] { type1, type2 });
+            }
         }
     }
 }

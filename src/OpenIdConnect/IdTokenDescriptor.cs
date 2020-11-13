@@ -16,13 +16,13 @@ namespace JsonWebToken
 
         public override void Validate()
         {
-            CheckRequiredHeader(HeaderParameters.Alg, JsonValueKind.String);
+            CheckRequiredHeader(HeaderParameters.Alg, JwtValueKind.String);
 
-            RequireClaim(Claims.Iss, JsonValueKind.String);
-            RequireClaim(Claims.Sub, JsonValueKind.String);
-            ValidateClaim(Claims.Aud, new[] { JsonValueKind.String, JsonValueKind.Array });
-            RequireClaim(Claims.Exp, JsonValueKind.Number);
-            RequireClaim(Claims.Iat, JsonValueKind.Number);
+            RequireClaim(Claims.Iss, JwtValueKind.String);
+            RequireClaim(Claims.Sub, JwtValueKind.String);
+            ValidateClaim(Claims.Aud, JwtValueKind.String, JwtValueKind.Array);
+            RequireClaim(Claims.Exp, JwtValueKind.Int64, JwtValueKind.Int32);
+            RequireClaim(Claims.Iat, JwtValueKind.Int64, JwtValueKind.Int32);
         }
     }
 }
