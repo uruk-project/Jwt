@@ -507,6 +507,11 @@ namespace JsonWebToken
         internal static void ThrowInvalidOperationException_UndefinedPayload() => throw CreateInvalidOperationExceptionUndefinedPayload();
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateInvalidOperationExceptionUndefinedPayload() => new InvalidOperationException("The 'Payload' property is not defined.");
+       
+        [DoesNotReturn]
+        internal static void ThrowInvalidOperationException_DuplicateJsonMember(string name) => throw CreateInvalidOperationException_DuplicateJsonMember(name);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateInvalidOperationException_DuplicateJsonMember(string name) => new InvalidOperationException($"The JSON member '{name}' is duplicated.");
 
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_RequirePrivateKey() => throw CreateInvalidOperationException_RequirePrivateKey();

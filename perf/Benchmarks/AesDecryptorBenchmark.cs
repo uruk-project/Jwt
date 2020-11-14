@@ -12,7 +12,6 @@ using JsonWebToken.Internal;
 
 namespace JsonWebToken.Performance
 {
-
     [MemoryDiagnoser]
     public class CompressionBenchmark
     {

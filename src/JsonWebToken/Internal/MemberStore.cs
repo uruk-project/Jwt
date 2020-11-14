@@ -68,12 +68,12 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Tries to add the <paramref name="value"/>.
+        /// Adds the <paramref name="value"/>.
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
         public void Add(JwtMember value)
-            => _map.Add(value, out _map);
+            => _map = _map.Add(value);
 
         /// <summary>
         /// Tries to get the <paramref name="value"/> with the <paramref name="key"/> as key.
@@ -101,7 +101,7 @@ namespace JsonWebToken
         {
             public int Count { get; }
 
-            public void Add(JwtMember value, out IMap map);
+            public IMap Add(JwtMember value);
 
             public bool TryGetValue(string key, [NotNullWhen(true)] out JwtMember value);
 
@@ -119,13 +119,13 @@ namespace JsonWebToken
 
             public int Count => 0;
 
-            public void Add(JwtMember value, out IMap map)
+            public IMap Add(JwtMember value)
             {
                 // Create a new one-element map to store the key/value pair
                 //map = new OneElementMap(value);
-                var newMap = new MultiElementMap(1);
-                newMap.UnsafeStore(0, value);
-                map = newMap;
+                var map = new MultiElementMap(1);
+                map.UnsafeStore(0, value);
+                return map;
             }
 
             public bool TryGetValue(string key, [NotNullWhen(true)] out JwtMember value)
@@ -163,11 +163,8 @@ namespace JsonWebToken
 
             public int Count => 0;
 
-            public void Add(JwtMember value, out IMap map)
-            {
-                // Create a new one-element map to store the key/value pair
-                map = new OneElementMap(value);
-            }
+            public IMap Add(JwtMember value)
+                => new OneElementMap(value);
 
             public bool TryGetValue(string key, [NotNullWhen(true)] out JwtMember value)
             {
@@ -180,9 +177,7 @@ namespace JsonWebToken
                 => false;
 
             public IEnumerator<JwtMember> GetEnumerator()
-            {
-                return EmptyObjectEnumerator.Empty;
-            }
+                => EmptyObjectEnumerator.Empty;
 
             IEnumerator IEnumerable.GetEnumerator()
                 => GetEnumerator();
@@ -192,9 +187,7 @@ namespace JsonWebToken
             }
 
             public IMap Merge(IMap map)
-            {
-                return map;
-            }
+                => map;
         }
 
         /// <summary>
@@ -239,17 +232,8 @@ namespace JsonWebToken
 
             public int Count => 1;
 
-            public void Add(JwtMember value, out IMap map)
-            {
-                if (value.Name == _value1.Name)
-                {
-                    map = new OneElementMap(value);
-                }
-                else
-                {
-                    map = new TwoElementMap(_value1, value);
-                }
-            }
+            public IMap Add(JwtMember value)
+                => new TwoElementMap(_value1, value);
 
             public bool TryGetValue(string key, out JwtMember value)
             {
@@ -266,28 +250,19 @@ namespace JsonWebToken
             }
 
             public bool ContainsKey(string key)
-            {
-                return key == _value1.Name;
-            }
+                => key == _value1.Name;
 
             public IEnumerator<JwtMember> GetEnumerator()
-            {
-                return new ObjectEnumerator(this);
-            }
+                => new ObjectEnumerator(this);
 
             IEnumerator IEnumerable.GetEnumerator()
                 => GetEnumerator();
 
             public void WriteTo(Utf8JsonWriter writer)
-            {
-                _value1.WriteTo(writer);
-            }
+                => _value1.WriteTo(writer);
 
             public IMap Merge(IMap map)
-            {
-                map.Add(_value1, out map);
-                return map;
-            }
+                => map.Add(_value1);
 
             /// <summary>
             ///   An enumerable and enumerator for the properties of a JSON object.
@@ -305,13 +280,7 @@ namespace JsonWebToken
                 }
 
                 /// <inheritdoc />
-                public JwtMember Current
-                {
-                    get
-                    {
-                        return _map._value1;
-                    }
-                }
+                public JwtMember Current => _map._value1;
 
                 /// <inheritdoc />
                 public void Dispose()
@@ -349,8 +318,9 @@ namespace JsonWebToken
 
             public int Count => 2;
 
-            public void Add(JwtMember value, out IMap map)
+            public IMap Add(JwtMember value)
             {
+                IMap map;
                 if (value.Name == _value1.Name)
                 {
                     map = new TwoElementMap(value, _value2);
@@ -363,6 +333,8 @@ namespace JsonWebToken
                 {
                     map = new ThreeElementMap(_value1, _value2, value);
                 }
+
+                return map;
             }
 
             public bool TryGetValue(string key, out JwtMember value)
@@ -370,12 +342,10 @@ namespace JsonWebToken
                 if (key == _value1.Name)
                 {
                     value = _value1;
-                    goto Found;
                 }
-                if (key == _value2.Name)
+                else if (key == _value2.Name)
                 {
                     value = _value2;
-                    goto Found;
                 }
                 else
                 {
@@ -383,7 +353,6 @@ namespace JsonWebToken
                     return false;
                 }
 
-            Found:
                 return true;
             }
 
@@ -394,24 +363,17 @@ namespace JsonWebToken
             }
 
             public bool ContainsKey(string key)
-            {
-                return key == _value1.Name || key == _value2.Name;
-            }
+                => key == _value1.Name || key == _value2.Name;
 
             public IEnumerator<JwtMember> GetEnumerator()
-            {
-                return new ObjectEnumerator(this);
-            }
+                => new ObjectEnumerator(this);
 
             IEnumerator IEnumerable.GetEnumerator()
                 => GetEnumerator();
 
             public IMap Merge(IMap map)
-            {
-                map.Add(_value1, out map);
-                map.Add(_value2, out map);
-                return map;
-            }
+                => map.Add(_value1)
+                          .Add(_value2);
 
             /// <summary>
             ///   An enumerable and enumerator for the properties of a JSON object.
@@ -429,19 +391,7 @@ namespace JsonWebToken
 
                 /// <inheritdoc />
                 public JwtMember Current
-                {
-                    get
-                    {
-                        if (_counter == 0)
-                        {
-                            return _map._value1;
-                        }
-                        else
-                        {
-                            return _map._value2;
-                        }
-                    }
-                }
+                    => _counter == 0 ? _map._value1 : _map._value2;
 
                 /// <inheritdoc />
                 public void Dispose()
@@ -460,9 +410,7 @@ namespace JsonWebToken
 
                 /// <inheritdoc />
                 public bool MoveNext()
-                {
-                    return _counter++ < 2;
-                }
+                    => _counter++ < 2;
             }
         }
 
@@ -481,8 +429,9 @@ namespace JsonWebToken
 
             public int Count => 3;
 
-            public void Add(JwtMember value, out IMap map)
+            public IMap Add(JwtMember value)
             {
+                IMap map;
                 if (value.Name == _value1.Name)
                 {
                     map = new ThreeElementMap(value, _value2, _value3);
@@ -499,6 +448,8 @@ namespace JsonWebToken
                 {
                     map = new FourElementMap(_value1, _value2, _value3, value);
                 }
+
+                return map;
             }
 
             public bool TryGetValue(string key, out JwtMember value)
@@ -506,17 +457,14 @@ namespace JsonWebToken
                 if (key == _value1.Name)
                 {
                     value = _value1;
-                    goto Found;
                 }
-                if (key == _value2.Name)
+                else if (key == _value2.Name)
                 {
                     value = _value2;
-                    goto Found;
                 }
-                if (key == _value3.Name)
+                else if (key == _value3.Name)
                 {
                     value = _value3;
-                    goto Found;
                 }
                 else
                 {
@@ -524,7 +472,6 @@ namespace JsonWebToken
                     return false;
                 }
 
-            Found:
                 return true;
             }
 
@@ -536,25 +483,18 @@ namespace JsonWebToken
             }
 
             public bool ContainsKey(string key)
-            {
-                return key == _value1.Name || key == _value2.Name || key == _value3.Name;
-            }
+                => key == _value1.Name || key == _value2.Name || key == _value3.Name;
 
             public IEnumerator<JwtMember> GetEnumerator()
-            {
-                return new ObjectEnumerator(this);
-            }
+                => new ObjectEnumerator(this);
 
             IEnumerator IEnumerable.GetEnumerator()
                 => GetEnumerator();
 
             public IMap Merge(IMap map)
-            {
-                map.Add(_value1, out map);
-                map.Add(_value2, out map);
-                map.Add(_value3, out map);
-                return map;
-            }
+                => map.Add(_value1)
+                      .Add(_value2)
+                      .Add(_value3);
 
             /// <summary>
             ///   An enumerable and enumerator for the properties of a JSON object.
@@ -571,24 +511,12 @@ namespace JsonWebToken
                 }
 
                 /// <inheritdoc />
-                public JwtMember Current
+                public JwtMember Current => _counter switch
                 {
-                    get
-                    {
-                        if (_counter == 0)
-                        {
-                            return _map._value1;
-                        }
-                        else if (_counter == 1)
-                        {
-                            return _map._value2;
-                        }
-                        else
-                        {
-                            return _map._value3;
-                        }
-                    }
-                }
+                    0 => _map._value1,
+                    1 => _map._value2,
+                    _ => _map._value3
+                };
 
                 /// <inheritdoc />
                 public void Dispose()
@@ -607,9 +535,7 @@ namespace JsonWebToken
 
                 /// <inheritdoc />
                 public bool MoveNext()
-                {
-                    return _counter++ < 3;
-                }
+                    => _counter++ < 3;
             }
         }
 
@@ -630,8 +556,9 @@ namespace JsonWebToken
 
             public int Count => 4;
 
-            public void Add(JwtMember value, out IMap map)
+            public IMap Add(JwtMember value)
             {
+                IMap map;
                 if (value.Name == _value1.Name)
                 {
                     map = new FourElementMap(value, _value2, _value3, _value4);
@@ -658,6 +585,8 @@ namespace JsonWebToken
                     multi.UnsafeStore(4, value);
                     map = multi;
                 }
+
+                return map;
             }
 
             public bool TryGetValue(string key, out JwtMember value)
@@ -665,22 +594,18 @@ namespace JsonWebToken
                 if (key == _value1.Name)
                 {
                     value = _value1;
-                    goto Found;
                 }
-                if (key == _value2.Name)
+                else if (key == _value2.Name)
                 {
                     value = _value2;
-                    goto Found;
                 }
                 else if (key == _value3.Name)
                 {
                     value = _value3;
-                    goto Found;
                 }
                 else if (key == _value4.Name)
                 {
                     value = _value4;
-                    goto Found;
                 }
                 else
                 {
@@ -688,7 +613,6 @@ namespace JsonWebToken
                     return false;
                 }
 
-            Found:
                 return true;
             }
 
@@ -701,26 +625,19 @@ namespace JsonWebToken
             }
 
             public bool ContainsKey(string key)
-            {
-                return key == _value1.Name || key == _value2.Name || key == _value3.Name || key == _value4.Name;
-            }
+                => key == _value1.Name || key == _value2.Name || key == _value3.Name || key == _value4.Name;
 
             public IEnumerator<JwtMember> GetEnumerator()
-            {
-                return new ObjectEnumerator(this);
-            }
+                => new ObjectEnumerator(this);
 
             IEnumerator IEnumerable.GetEnumerator()
                 => GetEnumerator();
 
             public IMap Merge(IMap map)
-            {
-                map.Add(_value1, out map);
-                map.Add(_value2, out map);
-                map.Add(_value3, out map);
-                map.Add(_value4, out map);
-                return map;
-            }
+                => map.Add(_value1)
+                      .Add(_value2)
+                      .Add(_value3)
+                      .Add(_value4);
 
             /// <summary>
             ///   An enumerable and enumerator for the properties of a JSON object.
@@ -738,27 +655,13 @@ namespace JsonWebToken
 
                 /// <inheritdoc />
                 public JwtMember Current
-                {
-                    get
+                    => _counter switch
                     {
-                        if (_counter == 0)
-                        {
-                            return _map._value1;
-                        }
-                        else if (_counter == 1)
-                        {
-                            return _map._value2;
-                        }
-                        else if (_counter == 2)
-                        {
-                            return _map._value3;
-                        }
-                        else
-                        {
-                            return _map._value4;
-                        }
-                    }
-                }
+                        0 => _map._value1,
+                        1 => _map._value2,
+                        2 => _map._value3,
+                        _ => _map._value4
+                    };
 
                 /// <inheritdoc />
                 public void Dispose()
@@ -803,25 +706,13 @@ namespace JsonWebToken
                 _keyValues[index] = value;
             }
 
-            public void Add(JwtMember value, out IMap map)
+            public IMap Add(JwtMember value)
             {
-                for (int i = 0; i < _count; i++)
-                {
-                    if (value.Name == _keyValues[i].Name)
-                    {
-                        // The key is in the map. 
-                        _keyValues[i] = value;
-                        map = this;
-                        return;
-                    }
-                }
-
                 if (_count < MaxMultiElements)
                 {
                     UnsafeStore(_count, value);
                     _count++;
-                    map = this;
-                    return;
+                    return this;
                 }
 
                 // Otherwise, upgrade to a many map.
@@ -833,7 +724,7 @@ namespace JsonWebToken
                 }
 
                 many[value.Name] = value;
-                map = many;
+                return many;
             }
 
             public bool TryGetValue(string key, out JwtMember value)
@@ -888,7 +779,7 @@ namespace JsonWebToken
                 for (int i = 0; i < _count; i++)
                 {
                     JwtMember item = _keyValues[i];
-                    map.Add(item, out map);
+                    map = map.Add(item);
                 }
 
                 return map;
@@ -910,12 +801,7 @@ namespace JsonWebToken
 
                 /// <inheritdoc />
                 public JwtMember Current
-                {
-                    get
-                    {
-                        return _map._keyValues[_idx];
-                    }
-                }
+                    => _map._keyValues[_idx];
 
                 /// <inheritdoc />
                 public void Dispose()
@@ -934,9 +820,7 @@ namespace JsonWebToken
 
                 /// <inheritdoc />
                 public bool MoveNext()
-                {
-                    return ++_idx < _map.Count;
-                }
+                    => ++_idx < _map.Count;
             }
         }
 
@@ -951,10 +835,10 @@ namespace JsonWebToken
                 _dictionary = new Dictionary<string, JwtMember>(capacity);
             }
 
-            public void Add(JwtMember value, out IMap map)
+            public IMap Add(JwtMember value)
             {
-                map = this;
                 _dictionary[value.Name] = value;
+                return this;
             }
 
             public bool TryGetValue(string key, out JwtMember value)
@@ -973,9 +857,7 @@ namespace JsonWebToken
             }
 
             public bool ContainsKey(string key)
-            {
-                return _dictionary.ContainsKey(key);
-            }
+                => _dictionary.ContainsKey(key);
 
             public JwtMember this[string key]
             {
@@ -984,9 +866,7 @@ namespace JsonWebToken
             }
 
             public IEnumerator<JwtMember> GetEnumerator()
-            {
-                return _dictionary.Values.GetEnumerator();
-            }
+                => _dictionary.Values.GetEnumerator();
 
             IEnumerator IEnumerable.GetEnumerator()
                 => GetEnumerator();
@@ -995,56 +875,11 @@ namespace JsonWebToken
             {
                 foreach (var item in _dictionary.Values)
                 {
-                    map.Add(item, out map);
+                    map = map.Add(item);
                 }
 
                 return map;
             }
-
-            ///// <summary>
-            /////   An enumerable and enumerator for the properties of a JSON object.
-            ///// </summary>
-            //[DebuggerDisplay("{Current,nq}")]
-            //public struct ObjectEnumerator : IEnumerator<KeyValuePair<string, JwtValueX>>
-            //{
-            //    private readonly ManyElementMap _map;
-            //    private int _idx;
-            //    internal ObjectEnumerator(ManyElementMap map)
-            //    {
-            //        _map = map;
-            //        _idx = 0;
-            //    }
-
-            //    /// <inheritdoc />
-            //    public KeyValuePair<string, JwtValueX> Current
-            //    {
-            //        get
-            //        {
-            //            return _map._dictionary.[_idx];
-            //        }
-            //    }
-
-            //    /// <inheritdoc />
-            //    public void Dispose()
-            //    {
-            //    }
-
-            //    /// <inheritdoc />
-            //    public void Reset()
-            //    {
-            //        _idx = 0;
-            //    }
-
-            //    /// <inheritdoc />
-            //    object IEnumerator.Current => Current;
-
-
-            //    /// <inheritdoc />
-            //    public bool MoveNext()
-            //    {
-            //        return _idx++ >= _map.Count;
-            //    }
-            //}
         }
     }
 }
