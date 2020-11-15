@@ -1,10 +1,6 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-
 namespace JsonWebToken
 {
     internal static class Algorithms
@@ -218,14 +214,5 @@ namespace JsonWebToken
         /// https://tools.ietf.org/html/rfc8152#section-10.1
         /// </summary>
         public const sbyte Aes256Gcm = 3;
-
-#if DEBUG
-        static Algorithms()
-        {
-            FieldInfo[] fieldInfos = typeof(Algorithms).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
-            var values = fieldInfos.Where(fi => fi.IsLiteral && !fi.IsInitOnly).ToList();
-            Debug.Assert(true); 
-        }
-#endif
     }
 }
