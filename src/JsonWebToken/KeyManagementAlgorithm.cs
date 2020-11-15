@@ -124,7 +124,7 @@ namespace JsonWebToken
         /// </summary>
         public static readonly KeyManagementAlgorithm EcdhEsAes256KW = new KeyManagementAlgorithm(id: Algorithms.EcdhEsAes256KW, "ECDH-ES+A256KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: Aes256KW);
 
-        private readonly int _id;
+        private readonly short _id;
         private readonly ushort _requiredKeySizeInBits;
         private readonly AlgorithmCategory _category;
         private readonly KeyManagementAlgorithm? _wrappedAlgorithm;
@@ -134,7 +134,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the algorithm identifier. 
         /// </summary>
-        public int Id => _id;
+        public short Id => _id;
 
         /// <summary>
         /// Gets the required key size, in bits.
@@ -192,7 +192,7 @@ namespace JsonWebToken
         /// <param name="id"></param>
         /// <param name="name"></param>
         /// <param name="keyType"></param>
-        public KeyManagementAlgorithm(int id, string name, AlgorithmCategory keyType)
+        public KeyManagementAlgorithm(short id, string name, AlgorithmCategory keyType)
             : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm: null, produceEncryptedKey: true)
         {
         }
@@ -204,7 +204,7 @@ namespace JsonWebToken
         /// <param name="name"></param>
         /// <param name="keyType"></param>
         /// <param name="wrappedAlgorithm"></param>
-        public KeyManagementAlgorithm(int id, string name, AlgorithmCategory keyType, KeyManagementAlgorithm? wrappedAlgorithm)
+        public KeyManagementAlgorithm(short id, string name, AlgorithmCategory keyType, KeyManagementAlgorithm? wrappedAlgorithm)
                 : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm, produceEncryptedKey: true)
         {
         }
@@ -216,7 +216,7 @@ namespace JsonWebToken
         /// <param name="name"></param>
         /// <param name="keyType"></param>
         /// <param name="requiredKeySizeInBits"></param>
-        public KeyManagementAlgorithm(int id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits)
+        public KeyManagementAlgorithm(short id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits)
             : this(id, name, keyType, requiredKeySizeInBits, wrappedAlgorithm: null, produceEncryptedKey: true)
         {
         }
@@ -228,7 +228,7 @@ namespace JsonWebToken
         /// <param name="name"></param>
         /// <param name="keyType"></param>
         /// <param name="produceEncryptedKey"></param>
-        public KeyManagementAlgorithm(int id, string name, AlgorithmCategory keyType, bool produceEncryptedKey)
+        public KeyManagementAlgorithm(short id, string name, AlgorithmCategory keyType, bool produceEncryptedKey)
             : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm: null, produceEncryptedKey)
         {
         }
@@ -242,7 +242,7 @@ namespace JsonWebToken
         /// <param name="requiredKeySizeInBits"></param>
         /// <param name="wrappedAlgorithm"></param>
         /// <param name="produceEncryptedKey"></param>
-        public KeyManagementAlgorithm(int id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, KeyManagementAlgorithm? wrappedAlgorithm, bool produceEncryptedKey)
+        public KeyManagementAlgorithm(short id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, KeyManagementAlgorithm? wrappedAlgorithm, bool produceEncryptedKey)
         {
             _id = id;
             _utf8Name = Utf8.GetBytes(name);

@@ -29,7 +29,7 @@ namespace JsonWebToken
             if (!(_payload is null))
             {
                 _payload.Encode(ctx);
-                EncryptToken(bufferWriter.WrittenSpan, context.BufferWriter);
+                EncryptToken(bufferWriter.WrittenSpan, context);
             }
             else
             {

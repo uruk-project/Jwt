@@ -1,5 +1,4 @@
-﻿using JsonWebToken.Internal;
-using Xunit;
+﻿using Xunit;
 
 namespace JsonWebToken.Tests
 {

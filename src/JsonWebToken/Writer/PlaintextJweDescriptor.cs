@@ -32,7 +32,7 @@ namespace JsonWebToken
                 try
                 {
                     int bytesWritten = Utf8.GetBytes(Payload, encodedPayload);
-                    EncryptToken(encodedPayload.Slice(0, bytesWritten), context.BufferWriter);
+                    EncryptToken(encodedPayload.Slice(0, bytesWritten), context);
                 }
                 finally
                 {

@@ -1,6 +1,10 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+
 namespace JsonWebToken
 {
     internal static class Algorithms
@@ -92,92 +96,92 @@ namespace JsonWebToken
         /// 'dir'
         /// https://tools.ietf.org/html/rfc8152#section-12.1.1
         /// </summary>
-        public const int Direct = -6;
+        public const short Direct = -6;
 
         /// <summary>
         /// 'A128KW'
         /// https://tools.ietf.org/html/rfc8152#section-12.2.1
         /// </summary>
-        public const int Aes128KW = -3;
+        public const short Aes128KW = -3;
 
         /// <summary>
         /// 'A192KW'
         /// https://tools.ietf.org/html/rfc8152#section-12.2.1
         /// </summary>
-        public const int Aes192KW = -4;
+        public const short Aes192KW = -4;
 
         /// <summary>
         /// 'A256KW'
         /// https://tools.ietf.org/html/rfc8152#section-12.2.1
         /// </summary>
-        public const int Aes256KW = -5;
+        public const short Aes256KW = -5;
 
         /// <summary>
         /// 'A128GCMKW'
         /// </summary>
-        public const int Aes128GcmKW = 1;
+        public const short Aes128GcmKW = 1;
 
         /// <summary>
         /// 'A192GCMKW'
         /// </summary>
-        public const int Aes192GcmKW = 2;
+        public const short Aes192GcmKW = 2;
 
         /// <summary>
         /// 'A256GCMKW'
         /// </summary>
-        public const int Aes256GcmKW = 3;
+        public const short Aes256GcmKW = 3;
 
         /// <summary>
         /// 'RSA1_5'
         /// </summary>
-        public const int RsaPkcs1 = -65535;
+        public const short RsaPkcs1 = -44; // Undefined in CWT
 
         /// <summary>
         /// 'RSA-OAEP'
         /// https://tools.ietf.org/html/rfc8230#section-3
         /// </summary>
-        public const int RsaOaep = -40;
+        public const short RsaOaep = -40;
 
         /// <summary>
         /// 'RSA-OAEP-256'
         /// https://tools.ietf.org/html/rfc8230#section-3
         /// </summary>
-        public const int RsaOaep256 = -41;
+        public const short RsaOaep256 = -41;
 
         /// <summary>
         /// 'RSA-OAEP-256'
         /// https://tools.ietf.org/html/rfc8230#section-3
         /// </summary>
-        public const int RsaOaep384 = -65535 + 40;
+        public const short RsaOaep384 = -43;
 
         /// <summary>
         /// 'RSA-OAEP-512'
         /// https://tools.ietf.org/html/rfc8230#section-3
         /// </summary>
-        public const int RsaOaep512 = -42;
+        public const short RsaOaep512 = -42;
 
         /// <summary>
         /// 'ECDH-ES'
         /// </summary>
-        public const int EcdhEs = -65535 + 29; // Undefined in CWT
+        public const short EcdhEs = -32768 + 29; // Undefined in CWT
 
         /// <summary>
         /// 'ECDH-ES+A128KW'
         /// https://tools.ietf.org/html/rfc8152#section-12.5.1
         /// </summary>
-        public const int EcdhEsAes128KW = -29;
+        public const short EcdhEsAes128KW = -29;
 
         /// <summary>
         /// 'ECDH-ES+A192KW'
         /// https://tools.ietf.org/html/rfc8152#section-12.5.1
         /// </summary>
-        public const int EcdhEsAes192KW = -30;
+        public const short EcdhEsAes192KW = -30;
 
         /// <summary>
         /// 'ECDH-ES+A256KW'
         /// https://tools.ietf.org/html/rfc8152#section-12.5.1
         /// </summary>
-        public const int EcdhEsAes256KW = -31;
+        public const short EcdhEsAes256KW = -31;
 
         /// <summary>
         /// A128CBC-HS256
@@ -214,5 +218,14 @@ namespace JsonWebToken
         /// https://tools.ietf.org/html/rfc8152#section-10.1
         /// </summary>
         public const sbyte Aes256Gcm = 3;
+
+#if DEBUG
+        static Algorithms()
+        {
+            FieldInfo[] fieldInfos = typeof(Algorithms).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+            var values = fieldInfos.Where(fi => fi.IsLiteral && !fi.IsInitOnly).ToList();
+            Debug.Assert(true); 
+        }
+#endif
     }
 }

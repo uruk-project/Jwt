@@ -24,7 +24,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override void Encode(EncodingContext context)
         {
-            EncryptToken(Payload, context.BufferWriter);
+            EncryptToken(Payload, context);
         }
     }
 }

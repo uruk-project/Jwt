@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace JsonWebToken
@@ -13,48 +14,6 @@ namespace JsonWebToken
     {
         ///<summary>The maxium number of header in cache.</summary>
         public const int MaxSize = 16;
-   
-        private sealed class CacheEntry
-        {
-            public string? Typ;
-            public byte[] Data;
-
-            public CacheEntry(byte[] data, string? typ)
-            {
-                Data = data;
-                Typ = typ;
-            }
-        }
-
-        private sealed class Bucket
-        {
-            public readonly Dictionary<string, CacheEntry> Entries;
-            public readonly int AlgorithmId;
-
-            public KeyValuePair<string, CacheEntry> LatestEntry;
-            public Bucket? Next;
-            public Bucket? Previous;
-
-            public Bucket(int algorithmId, Dictionary<string, CacheEntry> entries)
-            {
-                AlgorithmId = algorithmId;
-                Entries = entries;
-                LatestEntry = default;
-            }
-
-            public bool TryGetEntry(string kid, [NotNullWhen(true)] out CacheEntry? entry)
-            {
-                // Fast path. Try to avoid the lookup to the dictionary 
-                // as we should only have 1 entry
-                if (LatestEntry.Key == kid)
-                {
-                    entry = LatestEntry.Value;
-                    return true;
-                }
-
-                return Entries.TryGetValue(kid, out entry);
-            }
-        }
 
         internal void Clear()
         {
@@ -88,7 +47,7 @@ namespace JsonWebToken
                 goto Found;
             }
 
-            if (kid != null && header.Count <= (typ is null ? 2 : 3))
+            if (IsEligibleHeaderForJws(header.Count, kid, typ))
             {
                 int algoritmId = alg.Id;
                 var node = _head;
@@ -96,7 +55,7 @@ namespace JsonWebToken
                 {
                     if (algoritmId == node.AlgorithmId)
                     {
-                        if (node.TryGetEntry(kid, out var entry))
+                        if (node.TryGetEntry(kid!, out var entry))
                         {
                             if (typ != entry.Typ)
                             {
@@ -134,8 +93,8 @@ namespace JsonWebToken
         public void AddHeader(JwtHeader header, SignatureAlgorithm alg, string? kid, string? typ, ReadOnlySpan<byte> base6UrlHeader)
         {
             _firstHeader = new WrappedHeader(header, base6UrlHeader.ToArray());
-            if (kid != null&& header.Count <= (typ is null ? 2 : 3))
-            { 
+            if (IsEligibleHeaderForJws(header.Count, kid, typ))
+            {
                 int algorithmId = alg.Id;
                 bool lockTaken = false;
                 try
@@ -163,17 +122,17 @@ namespace JsonWebToken
                     if (node is null)
                     {
                         _count++;
-                        node = new Bucket(algorithmId, new Dictionary<string, CacheEntry>(1) { { kid, new CacheEntry(base6UrlHeader.ToArray(), typ) } })
+                        node = new Bucket(algorithmId, new Dictionary<string, CacheEntry>(1) { { kid!, new CacheEntry(base6UrlHeader.ToArray(), typ) } })
                         {
                             Next = _head
                         };
                     }
                     else
                     {
-                        if (!node.Entries.ContainsKey(kid))
+                        if (!node.Entries.ContainsKey(kid!))
                         {
                             _count++;
-                            node.Entries[kid] = new CacheEntry(base6UrlHeader.ToArray(), typ);
+                            node.Entries[kid!] = new CacheEntry(base6UrlHeader.ToArray(), typ);
                         }
                     }
 
@@ -286,18 +245,157 @@ namespace JsonWebToken
             }
         }
 
-        private void RemoveLeastRecentlyUsed()
+        /// <inheritdoc/>
+        public void AddHeader(JwtHeader header, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, string? kid, string? typ, string? cty, ReadOnlySpan<byte> base6UrlHeader)
         {
-            var node = _tail;
-            if (node != null)
+            _firstHeader = new WrappedHeader(header, base6UrlHeader.ToArray());
+            if (IsEligibleHeaderForJwe(header.Count, kid, typ, cty))
             {
-                if (node.Previous != null)
+                int algorithmId = enc.ComputeKey(alg);
+                bool lockTaken = false;
+                try
                 {
-                    node.Previous.Next = null;
+                    _spinLock.Enter(ref lockTaken);
+                    if (_count >= MaxSize)
+                    {
+                        _head = null;
+                        _tail = null;
+                        _count = 0;
+                    }
+
+                    var node = _head;
+                    while (node != null)
+                    {
+                        if (algorithmId == node.AlgorithmId)
+                        {
+                            break;
+                        }
+
+                        node = node.Next;
+                    }
+
+                    var key = alg.Id;
+                    if (node is null)
+                    {
+                        _count++;
+                        node = new Bucket(algorithmId, new Dictionary<string, CacheEntry>(1) { { kid!, new CacheEntry(base6UrlHeader.ToArray(), typ) } })
+                        {
+                            Next = _head
+                        };
+                    }
+                    else
+                    {
+                        if (!node.Entries.ContainsKey(kid!))
+                        {
+                            _count++;
+                            node.Entries[kid!] = new CacheEntry(base6UrlHeader.ToArray(), typ);
+                        }
+                    }
+
+                    if (!ReferenceEquals(_head, node))
+                    {
+                        if (_head != null)
+                        {
+                            _head.Previous = node;
+                        }
+
+                        _head = node;
+                    }
+
+                    if (_tail is null)
+                    {
+                        _tail = node;
+                    }
+                }
+                finally
+                {
+                    if (lockTaken)
+                    {
+                        _spinLock.Exit();
+                    }
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public bool TryGetHeader(JwtHeader header, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, string? kid, string? typ, string? cty, [NotNullWhen(true)] out byte[]? base64UrlHeader)
+        {
+            if (ReferenceEquals(_firstHeader.Header, header))
+            {
+                base64UrlHeader = _firstHeader.BinaryHeader;
+                goto Found;
+            }
+
+            if (IsEligibleHeaderForJwe(header.Count, kid, typ, cty))
+            {
+                int algoritmId = enc.ComputeKey(alg);
+                var node = _head;
+                while (node != null)
+                {
+                    if (algoritmId == node.AlgorithmId)
+                    {
+                        if (node.TryGetEntry(kid!, out var entry))
+                        {
+                            if (cty != entry.Cty)
+                            {
+                                goto NotFound;
+                            }
+
+                            if (typ != entry.Typ)
+                            {
+                                goto NotFound;
+                            }
+
+                            base64UrlHeader = entry.Data;
+                            if (node != _head)
+                            {
+                                MoveToHead(node);
+                            }
+
+                            goto Found;
+                        }
+                    }
+
+                    node = node.Next;
+                }
+            }
+
+        NotFound:
+            base64UrlHeader = null;
+            return false;
+
+        Found:
+            return true;
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsEligibleHeaderForJws(int count, string? kid, string? typ)
+        {
+            return kid != null && count <= (typ is null ? 2 : 3);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsEligibleHeaderForJwe(int count, string? kid, string? typ, string? cty)
+        {
+            bool eligible = kid != null;
+            if (eligible)
+            {
+                int maxHeaderCount = 3; // alg + enc + kid
+                if (!(typ is null))
+                {
+                    maxHeaderCount++;
                 }
 
-                _tail = node.Previous;
+                if (!(cty is null))
+                {
+                    maxHeaderCount++;
+                }
+
+                eligible = count <= maxHeaderCount;
             }
+
+            return eligible;
         }
 
         private readonly struct WrappedHeader
@@ -309,6 +407,56 @@ namespace JsonWebToken
             {
                 Header = header;
                 BinaryHeader = binaryHeader;
+            }
+        }
+
+        private sealed class CacheEntry
+        {
+            public string? Typ;
+            public string? Cty;
+            public byte[] Data;
+
+            public CacheEntry(byte[] data, string? typ)
+            {
+                Data = data;
+                Typ = typ;
+            }
+
+            public CacheEntry(byte[] data, string? typ, string? cty)
+            {
+                Data = data;
+                Typ = typ;
+                Cty = cty;
+            }
+        }
+
+        private sealed class Bucket
+        {
+            public readonly Dictionary<string, CacheEntry> Entries;
+            public readonly int AlgorithmId;
+
+            public KeyValuePair<string, CacheEntry> LatestEntry;
+            public Bucket? Next;
+            public Bucket? Previous;
+
+            public Bucket(int algorithmId, Dictionary<string, CacheEntry> entries)
+            {
+                AlgorithmId = algorithmId;
+                Entries = entries;
+                LatestEntry = default;
+            }
+
+            public bool TryGetEntry(string kid, [NotNullWhen(true)] out CacheEntry? entry)
+            {
+                // Fast path. Try to avoid the lookup to the dictionary 
+                // as we should only have 1 entry
+                if (LatestEntry.Key == kid)
+                {
+                    entry = LatestEntry.Value;
+                    return true;
+                }
+
+                return Entries.TryGetValue(kid, out entry);
             }
         }
     }

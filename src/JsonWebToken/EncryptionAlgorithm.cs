@@ -64,7 +64,7 @@ namespace JsonWebToken
             Aes256Gcm
         };
 
-        private readonly sbyte _id;
+        private readonly short _id;
         private readonly EncryptionType _category;
         private readonly ushort _requiredKeySizeInBytes;
         private readonly ushort _keyWrappedSizeInBytes;
@@ -76,7 +76,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the algorithm identifier. 
         /// </summary>
-        public sbyte Id => _id;
+        public short Id => _id;
 
         /// <summary>
         /// Gets the algorithm category.
@@ -132,7 +132,7 @@ namespace JsonWebToken
         /// <param name="signatureAlgorithm"></param>
         /// <param name="requiredKeyWrappedSizeInBytes"></param>
         /// <param name="category"></param>
-        public EncryptionAlgorithm(sbyte id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm signatureAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionType category)
+        public EncryptionAlgorithm(short id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm signatureAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionType category)
         {
             _id = id;
             _utf8Name = Utf8.GetBytes(name);
@@ -493,7 +493,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public int ComputeKey(KeyManagementAlgorithm algorithm)
         {
-            return (_id << 8) | algorithm.Id;
+            return ((ushort)_id << 16) | (ushort)algorithm.Id;
         }
 
         internal static EncryptionAlgorithm Create(string name)

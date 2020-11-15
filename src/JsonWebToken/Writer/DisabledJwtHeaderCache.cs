@@ -12,7 +12,17 @@ namespace JsonWebToken
         {
         }
 
+        public void AddHeader(JwtHeader header, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, string? kid, string? typ, string? cty, ReadOnlySpan<byte> base6UrlHeader)
+        {
+        }
+
         public bool TryGetHeader(JwtHeader header, SignatureAlgorithm alg, string? kid, string? typ, [NotNullWhen(true)] out byte[]? base64UrlHeader)
+        {
+            base64UrlHeader = null;
+            return false;
+        }
+
+        public bool TryGetHeader(JwtHeader header, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, string? kid, string? typ, string? cty, [NotNullWhen(true)] out byte[]? base64UrlHeader)
         {
             base64UrlHeader = null;
             return false;

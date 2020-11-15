@@ -16,6 +16,9 @@ namespace JsonWebToken
         private readonly KeyManagementAlgorithm _alg;
         private readonly EncryptionAlgorithm _enc;
         private readonly CompressionAlgorithm _zip;
+        private readonly string? _kid;
+        private readonly string? _typ;
+        private readonly string? _cty;
 #if NETSTANDARD2_0 || NET461 || NET47
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 #endif
@@ -43,16 +46,19 @@ namespace JsonWebToken
 
             if (encryptionKey.Kid != null)
             {
+                _kid = encryptionKey.Kid;
                 Header.Add(HeaderParameters.Kid, encryptionKey.Kid);
             }
 
             if (typ != null)
             {
+                _typ = typ;
                 Header.Add(HeaderParameters.Typ, typ);
             }
 
             if (cty != null)
             {
+                _cty = cty;
                 Header.Add(HeaderParameters.Cty, cty);
             }
         }
@@ -70,9 +76,10 @@ namespace JsonWebToken
         public Jwk EncryptionKey => _encryptionKey;
 
         /// <summary>Encrypt the token.</summary>
-        protected void EncryptToken(ReadOnlySpan<byte> payload, IBufferWriter<byte> output)
+        protected void EncryptToken(ReadOnlySpan<byte> payload, EncodingContext context)
         {
-            EncryptionAlgorithm encryptionAlgorithm = _enc;
+            var output = context.BufferWriter;
+            EncryptionAlgorithm enc = _enc;
             var key = _encryptionKey;
             if (key is null)
             {
@@ -80,8 +87,8 @@ namespace JsonWebToken
                 return;
             }
 
-            KeyManagementAlgorithm contentEncryptionAlgorithm = _alg;
-            if (key.TryGetKeyWrapper(encryptionAlgorithm, contentEncryptionAlgorithm, out var keyWrapper))
+            KeyManagementAlgorithm alg = _alg;
+            if (key.TryGetKeyWrapper(enc, alg, out var keyWrapper))
             {
                 var header = Header;
                 byte[]? wrappedKeyToReturnToPool = null;
@@ -97,21 +104,44 @@ namespace JsonWebToken
                 {
                     using var bufferWriter = new PooledByteBufferWriter();
                     var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
-                    header.WriteTo(writer);
-                    writer.Flush();
-                    var headerJson = bufferWriter.WrittenSpan;
-                    int headerJsonLength = headerJson.Length;
-                    int base64EncodedHeaderLength = Base64Url.GetArraySizeRequiredToEncode(headerJsonLength);
+                    int base64EncodedHeaderLength = 0;
+                    ReadOnlySpan<byte> headerJson = default;
+                    var headerCache = context.HeaderCache;
+                    byte[]? cachedHeader = null;
+                    if (headerCache.TryGetHeader(Header, _alg, _enc, _kid, _typ, _cty, out cachedHeader))
+                    {
+                        writer.Flush();
+                        base64EncodedHeaderLength += cachedHeader.Length;
+                    }
+                    else
+                    {
+                        Header.WriteTo(writer);
+                        writer.Flush();
+                        headerJson = bufferWriter.WrittenSpan;
+                        base64EncodedHeaderLength += Base64Url.GetArraySizeRequiredToEncode(headerJson.Length);
+                    }
 
                     Span<byte> base64EncodedHeader = base64EncodedHeaderLength > Constants.MaxStackallocBytes
                            ? (buffer64HeaderToReturnToPool = ArrayPool<byte>.Shared.Rent(base64EncodedHeaderLength)).AsSpan(0, base64EncodedHeaderLength)
                              : stackalloc byte[base64EncodedHeaderLength];
 
+                    int offset;
+                    if (cachedHeader != null)
+                    {
+                        cachedHeader.CopyTo(base64EncodedHeader);
+                        offset = cachedHeader.Length;
+                    }
+                    else
+                    {
+                        offset = Base64Url.Encode(headerJson, base64EncodedHeader);
+                        headerCache.AddHeader(Header, alg, enc, _kid, _typ, _cty, base64EncodedHeader.Slice(0, offset));
+                    }
+
+                    int bytesWritten = offset;
+                    var compressionAlgorithm = _zip;
                     byte[]? compressedBuffer = null;
                     try
                     {
-                        int bytesWritten = Base64Url.Encode(headerJson, base64EncodedHeader);
-                        var compressionAlgorithm = _zip;
                         if (compressionAlgorithm.Enabled)
                         {
                             // Get a buffer a bit bigger in case of data that can't be compress 
@@ -122,7 +152,7 @@ namespace JsonWebToken
                             payload = new ReadOnlySpan<byte>(compressedBuffer, 0, payloadLength);
                         }
 
-                        var encryptor = encryptionAlgorithm!.Encryptor;
+                        var encryptor = enc.Encryptor;
                         int ciphertextSize = encryptor.GetCiphertextSize(payload.Length);
                         int tagSize = encryptor.GetTagSize();
                         int bufferSize = ciphertextSize + tagSize;
@@ -139,7 +169,7 @@ namespace JsonWebToken
                         Span<byte> nonce = stackalloc byte[encryptor.GetNonceSize()];
                         RandomNumberGenerator.Fill(nonce);
 #endif
-                        encryptor.Encrypt(cek.K, payload, nonce, base64EncodedHeader, ciphertext, tag, out int tagBytesWritten);
+                        encryptor.Encrypt(cek.K, payload, nonce, base64EncodedHeader.Slice(0, offset), ciphertext, tag, out int tagBytesWritten);
 
                         int encryptionLength =
                             base64EncodedHeaderLength
@@ -191,12 +221,12 @@ namespace JsonWebToken
                 }
                 catch (Exception ex)
                 {
-                    ThrowHelper.ThrowCryptographicException_EncryptionFailed(encryptionAlgorithm, key, ex);
+                    ThrowHelper.ThrowCryptographicException_EncryptionFailed(enc, key, ex);
                 }
             }
             else
             {
-                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(encryptionAlgorithm);
+                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(enc);
             }
         }
     }
