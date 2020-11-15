@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using System.Threading;
 
 namespace JsonWebToken
@@ -12,44 +11,63 @@ namespace JsonWebToken
     /// <summary>Represents a cache for JWT Header in JSON.</summary>
     public sealed class LruJwtHeaderCache : IJwtHeaderCache
     {
+        ///<summary>The maxium number of header in cache.</summary>
+        public const int MaxSize = 16;
+   
+        private sealed class CacheEntry
+        {
+            public string? Typ;
+            public byte[] Data;
+
+            public CacheEntry(byte[] data, string? typ)
+            {
+                Data = data;
+                Typ = typ;
+            }
+        }
+
         private sealed class Bucket
         {
-            public readonly Dictionary<int, byte[]> Entries;
+            public readonly Dictionary<string, CacheEntry> Entries;
+            public readonly int AlgorithmId;
 
-            public KeyValuePair<int, byte[]> LatestEntry;
-
+            public KeyValuePair<string, CacheEntry> LatestEntry;
             public Bucket? Next;
-
             public Bucket? Previous;
 
-            public string Kid;
-
-            public Bucket(string kid, Dictionary<int, byte[]> entries)
+            public Bucket(int algorithmId, Dictionary<string, CacheEntry> entries)
             {
-                Kid = kid;
+                AlgorithmId = algorithmId;
                 Entries = entries;
                 LatestEntry = default;
             }
 
-            public bool TryGetEntry(int key, [NotNullWhen(true)] out byte[]? entry)
+            public bool TryGetEntry(string kid, [NotNullWhen(true)] out CacheEntry? entry)
             {
                 // Fast path. Try to avoid the lookup to the dictionary 
                 // as we should only have 1 entry
-                if (LatestEntry.Key == key)
+                if (LatestEntry.Key == kid)
                 {
                     entry = LatestEntry.Value;
                     return true;
                 }
 
-                return Entries.TryGetValue(key, out entry);
+                return Entries.TryGetValue(kid, out entry);
             }
+        }
+
+        internal void Clear()
+        {
+            _head = null;
+            _tail = null;
+            _count = 0;
         }
 
         private SpinLock _spinLock = new SpinLock();
         private int _count = 0;
 
-        /// <summary>The maximum size of the cache.</summary>
-        public static int MaxSize { get; set; } = 10;
+        /// <summary>Gets the count of items in the cache.</summary>
+        public int Count => _count;
 
         private Bucket? _head = null;
         private Bucket? _tail = null;
@@ -58,9 +76,11 @@ namespace JsonWebToken
         /// <summary>Try to get the header.</summary>
         /// <param name="header"></param>
         /// <param name="alg"></param>
+        /// <param name="kid"></param>
+        /// <param name="typ"></param>
         /// <param name="base64UrlHeader"></param>
         /// <returns></returns>
-        public bool TryGetHeader(JwtHeader header, SignatureAlgorithm alg, [NotNullWhen(true)] out byte[]? base64UrlHeader)
+        public bool TryGetHeader(JwtHeader header, SignatureAlgorithm alg, string? kid, string? typ, [NotNullWhen(true)] out byte[]? base64UrlHeader)
         {
             if (ReferenceEquals(_firstHeader.Header, header))
             {
@@ -68,23 +88,22 @@ namespace JsonWebToken
                 goto Found;
             }
 
-            // TODO : Review the header parameters is usage => currently we should never be able to hit the cach
-
-            if (header.TryGetValue(HeaderParameters.Kid, out var kidProperty)
-                && kidProperty.Type == JwtValueKind.String
-                && !(kidProperty.Value is null)
-                && !(alg is null)
-                && header.Count == 2)
+            if (kid != null && header.Count <= (typ is null ? 2 : 3))
             {
-                var kid = (string)kidProperty.Value;
+                int algoritmId = alg.Id;
                 var node = _head;
                 while (node != null)
                 {
-                    if (kid == node.Kid)
+                    if (algoritmId == node.AlgorithmId)
                     {
-                        if (node.TryGetEntry(alg.Id, out var entry))
+                        if (node.TryGetEntry(kid, out var entry))
                         {
-                            base64UrlHeader = entry;
+                            if (typ != entry.Typ)
+                            {
+                                goto NotFound;
+                            }
+
+                            base64UrlHeader = entry.Data;
                             if (node != _head)
                             {
                                 MoveToHead(node);
@@ -92,8 +111,6 @@ namespace JsonWebToken
 
                             goto Found;
                         }
-
-                        goto NotFound;
                     }
 
                     node = node.Next;
@@ -111,83 +128,113 @@ namespace JsonWebToken
         /// <summary>Adds a base64-url encoded header to the cache.</summary>
         /// <param name="header"></param>
         /// <param name="alg"></param>
+        /// <param name="kid"></param>
+        /// <param name="typ"></param>
         /// <param name="base6UrlHeader"></param>
-        public void AddHeader(JwtHeader header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
+        public void AddHeader(JwtHeader header, SignatureAlgorithm alg, string? kid, string? typ, ReadOnlySpan<byte> base6UrlHeader)
         {
-            if (_firstHeader.Header is null)
-            {
-                // concurrency issue: the first cached header may not be the first, but it does not matter
-                _firstHeader = new WrappedHeader(header, base6UrlHeader.ToArray());
-                _count++;
-            }
-            else
-            {
-                if (header.TryGetValue(HeaderParameters.Kid, out var kidProperty)
-                    && kidProperty.Type == JwtValueKind.String
-                    && header.Count == 2)
+            _firstHeader = new WrappedHeader(header, base6UrlHeader.ToArray());
+            if (kid != null&& header.Count <= (typ is null ? 2 : 3))
+            { 
+                int algorithmId = alg.Id;
+                bool lockTaken = false;
+                try
                 {
-                    var kid = (string)kidProperty.Value!;
-                    bool lockTaken = false;
-                    try
+                    _spinLock.Enter(ref lockTaken);
+                    if (_count >= MaxSize)
                     {
-                        _spinLock.Enter(ref lockTaken);
+                        _head = null;
+                        _tail = null;
+                        _count = 0;
+                    }
 
-                        var node = _head;
-                        while (node != null)
+                    var node = _head;
+                    while (node != null)
+                    {
+                        if (algorithmId == node.AlgorithmId)
                         {
-                            if (string.Equals(node.Kid, kid, StringComparison.Ordinal))
-                            {
-                                break;
-                            }
-
-                            node = node.Next;
+                            break;
                         }
 
-                        var key = alg.Id;
-                        if (node is null)
-                        {
-                            node = new Bucket(kid, new Dictionary<int, byte[]>(1) { { key, base6UrlHeader.ToArray() } })
-                            {
-                                Next = _head
-                            };
-                        }
-                        else
-                        {
-                            if (node.Entries.ContainsKey(key))
-                            {
-                                node.Entries[key] = base6UrlHeader.ToArray();
-                            }
-                        }
+                        node = node.Next;
+                    }
 
-                        if (_count >= MaxSize)
+                    var key = alg.Id;
+                    if (node is null)
+                    {
+                        _count++;
+                        node = new Bucket(algorithmId, new Dictionary<string, CacheEntry>(1) { { kid, new CacheEntry(base6UrlHeader.ToArray(), typ) } })
                         {
-                            RemoveLeastRecentlyUsed();
-                        }
-                        else
+                            Next = _head
+                        };
+                    }
+                    else
+                    {
+                        if (!node.Entries.ContainsKey(kid))
                         {
                             _count++;
+                            node.Entries[kid] = new CacheEntry(base6UrlHeader.ToArray(), typ);
                         }
+                    }
 
+                    if (!ReferenceEquals(_head, node))
+                    {
                         if (_head != null)
                         {
                             _head.Previous = node;
                         }
 
                         _head = node;
-                        if (_tail is null)
-                        {
-                            _tail = node;
-                        }
                     }
-                    finally
+
+                    if (_tail is null)
                     {
-                        if (lockTaken)
-                        {
-                            _spinLock.Exit();
-                        }
+                        _tail = node;
+                    }
+                }
+                finally
+                {
+                    if (lockTaken)
+                    {
+                        _spinLock.Exit();
                     }
                 }
             }
+        }
+
+
+        /// <summary>
+        /// Validate the integrity of the cache.
+        /// </summary>
+        /// <returns></returns>
+        public bool Validate()
+        {
+            var head = _head;
+            while (head != null)
+            {
+                var previous = head;
+                head = head.Next;
+                if (head != null && !ReferenceEquals(head.Previous, previous))
+                {
+                    goto Invalid;
+                }
+            }
+
+            head = _tail;
+            while (head != null)
+            {
+                var next = head;
+                head = head.Previous;
+                if (head != null && head.Next != next)
+                {
+                    goto Invalid;
+                }
+            }
+
+            return true;
+
+        Invalid:
+            return false;
         }
 
         private void MoveToHead(Bucket node)

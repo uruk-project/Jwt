@@ -8,11 +8,11 @@ namespace JsonWebToken
 {
     internal class DisabledJwtHeaderCache : IJwtHeaderCache
     {
-        public void AddHeader(JwtHeader header, SignatureAlgorithm alg, ReadOnlySpan<byte> base6UrlHeader)
+        public void AddHeader(JwtHeader header, SignatureAlgorithm alg, string? kid, string? typ, ReadOnlySpan<byte> base6UrlHeader)
         {
         }
 
-        public bool TryGetHeader(JwtHeader header, SignatureAlgorithm alg, [NotNullWhen(true)] out byte[]? base64UrlHeader)
+        public bool TryGetHeader(JwtHeader header, SignatureAlgorithm alg, string? kid, string? typ, [NotNullWhen(true)] out byte[]? base64UrlHeader)
         {
             base64UrlHeader = null;
             return false;

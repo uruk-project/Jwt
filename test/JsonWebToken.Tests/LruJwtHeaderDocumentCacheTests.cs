@@ -5,7 +5,7 @@ using Xunit;
 
 namespace JsonWebToken.Tests
 {
-    public class HeaderCacheTests
+    public class LruJwtHeaderDocumentCacheTests
     {
         [Fact]
         public void AddHeader()

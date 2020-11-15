@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Text.Json;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -14,6 +13,8 @@ namespace JsonWebToken
     {
         private readonly SignatureAlgorithm _alg;
         private readonly Jwk _signingKey;
+        private readonly string? _kid;
+        private readonly string? _typ;
         private JwtPayload _payload;
 
         /// <summary>Initializes a new instance of <see cref="JwsDescriptor"/>.</summary>
@@ -29,11 +30,13 @@ namespace JsonWebToken
             Header.Add(HeaderParameters.Alg, alg.Name);
             if (signingKey.Kid != null)
             {
-                Header.Add(HeaderParameters.Kid, signingKey.Kid);
+                _kid = signingKey.Kid;
+                Header.Add(HeaderParameters.Kid, _kid);
             }
 
             if (typ != null)
             {
+                _typ = typ;
                 Header.Add(HeaderParameters.Typ, typ);
             }
 
@@ -96,7 +99,7 @@ namespace JsonWebToken
                 ReadOnlySpan<byte> headerJson = default;
                 var headerCache = context.HeaderCache;
                 byte[]? cachedHeader = null;
-                if (headerCache.TryGetHeader(Header, alg, out cachedHeader))
+                if (headerCache.TryGetHeader(Header, alg, _kid, _typ, out cachedHeader))
                 {
                     writer.Flush();
                     length += cachedHeader.Length;
@@ -119,7 +122,7 @@ namespace JsonWebToken
                 else
                 {
                     offset = Base64Url.Encode(headerJson, buffer);
-                    headerCache.AddHeader(Header, alg, buffer.Slice(0, offset));
+                    headerCache.AddHeader(Header, alg, _kid, _typ, buffer.Slice(0, offset));
                 }
 
                 buffer[offset++] = Constants.ByteDot;
