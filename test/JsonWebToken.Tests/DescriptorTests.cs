@@ -90,7 +90,7 @@ namespace JsonWebToken.Tests
             Assert.True(descriptor.Payload.Header.TryGetValue("alg", out var jwsHeaderParameter));
             Assert.Equal(JwtValueKind.JsonEncodedString, jwsHeaderParameter.Type);
             Assert.True(descriptor.Payload.Header.TryGetValue("kid", out jwsHeaderParameter));
-            Assert.Equal(JwtValueKind.String, jwsHeaderParameter.Type);
+            Assert.Equal(JwtValueKind.JsonEncodedString, jwsHeaderParameter.Type);
             Assert.True(descriptor.Payload.Header.TryGetValue("H1", out jwsHeaderParameter));
             Assert.Equal(JwtValueKind.String, jwsHeaderParameter.Type);
             Assert.True(descriptor.Payload.Header.TryGetValue("H2", out jwsHeaderParameter));

@@ -538,7 +538,7 @@ namespace JsonWebToken
                 Span<byte> buffer = requiredBufferSize > Constants.MaxStackallocBytes
                                     ? stackalloc byte[requiredBufferSize]
                                     : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
-                WriteBase64UrlProperty(writer, buffer, _k, JwkParameterNames.KUtf8);
+                WriteBase64UrlProperty(writer, buffer, _k, JwkParameterNames.K);
             }
             finally
             {

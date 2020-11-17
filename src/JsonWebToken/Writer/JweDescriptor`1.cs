@@ -16,7 +16,7 @@ namespace JsonWebToken
         private readonly KeyManagementAlgorithm _alg;
         private readonly EncryptionAlgorithm _enc;
         private readonly CompressionAlgorithm _zip;
-        private readonly string? _kid;
+        private readonly JsonEncodedText _kid;
         private readonly string? _typ;
         private readonly string? _cty;
 #if NETSTANDARD2_0 || NET461 || NET47
@@ -46,7 +46,7 @@ namespace JsonWebToken
 
             if (encryptionKey.Kid != null)
             {
-                _kid = encryptionKey.Kid;
+                _kid = JsonEncodedText.Encode(encryptionKey.Kid);
                 Header.Add(HeaderParameters.Kid, encryptionKey.Kid);
             }
 

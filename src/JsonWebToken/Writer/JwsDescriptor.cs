@@ -13,7 +13,7 @@ namespace JsonWebToken
     {
         private readonly SignatureAlgorithm _alg;
         private readonly Jwk _signingKey;
-        private readonly string? _kid;
+        private readonly JsonEncodedText _kid;
         private readonly string? _typ;
         private JwtPayload _payload;
 
@@ -22,7 +22,7 @@ namespace JsonWebToken
         /// <param name="alg">The signature algorithm.</param>
         /// <param name="typ">Optional. The media type.</param>
         /// <param name="cty">Optional. The content type.</param>
-        public JwsDescriptor(Jwk signingKey, SignatureAlgorithm alg, string? typ = null, string? cty = null)
+        public JwsDescriptor(Jwk signingKey, SignatureAlgorithm alg, string? typ=null, string? cty=null)
         {
             _alg = alg ?? throw new ArgumentNullException(nameof(alg));
             _signingKey = signingKey ?? throw new ArgumentNullException(nameof(signingKey));
@@ -30,7 +30,7 @@ namespace JsonWebToken
             Header.Add(HeaderParameters.Alg, alg.Name);
             if (signingKey.Kid != null)
             {
-                _kid = signingKey.Kid;
+                _kid = JsonEncodedText.Encode(signingKey.Kid);
                 Header.Add(HeaderParameters.Kid, _kid);
             }
 
@@ -45,7 +45,7 @@ namespace JsonWebToken
                 Header.Add(HeaderParameters.Cty, cty);
             }
         }
-
+        
         /// <inheritdoc/>
         public override JwtPayload? Payload
         {
@@ -187,7 +187,7 @@ namespace JsonWebToken
                     JwtValueKind.Double});
             }
         }
-           /// <summary>Validates the presence and the type of a required claim.</summary>
+        /// <summary>Validates the presence and the type of a required claim.</summary>
         /// <param name="utf8Name"></param>
         protected void CheckRequiredClaimAsInteger(JsonEncodedText utf8Name)
         {
@@ -265,7 +265,7 @@ namespace JsonWebToken
                 }
             }
         }
-    
+
         /// <summary>Validates the type of a optional claim.</summary>
         /// <param name="utf8Name"></param>
         protected void CheckOptionalClaimAsInteger(JsonEncodedText utf8Name)

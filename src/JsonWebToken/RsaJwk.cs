@@ -1117,15 +1117,15 @@ namespace JsonWebToken
                                     ? stackalloc byte[requiredBufferSize]
                                     : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
 
-                WriteBase64UrlProperty(writer, buffer, _parameters.Exponent!, JwkParameterNames.EUtf8);
-                WriteBase64UrlProperty(writer, buffer, _parameters.Modulus!, JwkParameterNames.NUtf8);
+                WriteBase64UrlProperty(writer, buffer, _parameters.Exponent!, JwkParameterNames.E);
+                WriteBase64UrlProperty(writer, buffer, _parameters.Modulus!, JwkParameterNames.N);
 
-                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.D, JwkParameterNames.DUtf8);
-                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.DP, JwkParameterNames.DPUtf8);
-                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.DQ, JwkParameterNames.DQUtf8);
-                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.P, JwkParameterNames.PUtf8);
-                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.Q, JwkParameterNames.QUtf8);
-                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.InverseQ, JwkParameterNames.QIUtf8);
+                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.D, JwkParameterNames.D);
+                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.DP, JwkParameterNames.DP);
+                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.DQ, JwkParameterNames.DQ);
+                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.P, JwkParameterNames.P);
+                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.Q, JwkParameterNames.Q);
+                WriteOptionalBase64UrlProperty(writer, buffer, _parameters.InverseQ, JwkParameterNames.QI);
             }
             finally
             {

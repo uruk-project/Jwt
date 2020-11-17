@@ -19,7 +19,7 @@ namespace JsonWebToken
     /// <summary>
     /// Represents a JSON Web Key as defined in http://tools.ietf.org/html/rfc7517.
     /// </summary>
-    [DebuggerDisplay("{DebuggerDisplay(),nq}")]
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public abstract class Jwk : IEquatable<Jwk>, IDisposable
     {
 #if SUPPORT_ELLIPTIC_CURVE
@@ -274,7 +274,7 @@ namespace JsonWebToken
             Utf8JsonReader restore = reader;
             if (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
-                if (reader.ValueTextEquals(JwkParameterNames.KtyUtf8))
+                if (reader.ValueTextEquals(JwkParameterNames.Kty.EncodedUtf8Bytes))
                 {
                     if (reader.Read() && reader.TokenType is JsonTokenType.String)
                     {
@@ -295,13 +295,12 @@ namespace JsonWebToken
                             reader.Skip();
                         }
 
-                        if (reader.TokenType == JsonTokenType.PropertyName && reader.ValueTextEquals(JwkParameterNames.KtyUtf8))
+                        if (reader.TokenType == JsonTokenType.PropertyName && reader.ValueTextEquals(JwkParameterNames.Kty.EncodedUtf8Bytes))
                         {
                             if (reader.Read() && reader.TokenType is JsonTokenType.String)
                             {
                                 var ktySpan = reader.ValueSpan;
                                 reader = restore;
-                                //reader.Read();
                                 return ReadJwkFromJsonReader(ref reader, ktySpan);
                             }
                         }
@@ -842,38 +841,6 @@ namespace JsonWebToken
             return PemParser.Read(pem);
         }
 
-        internal void Populate(ReadOnlySpan<byte> name, string value)
-        {
-            if (name.SequenceEqual(JwkParameterNames.KidUtf8))
-            {
-                Kid = value;
-            }
-            else if (name.SequenceEqual(JwkParameterNames.X5uUtf8))
-            {
-                X5u = value;
-            }
-        }
-
-        internal void Populate(ReadOnlySpan<byte> name, byte[] value)
-        {
-            if (name.SequenceEqual(JwkParameterNames.AlgUtf8))
-            {
-                _algorithm = new UnknownAlgorithm(value);
-            }
-            else if (name.SequenceEqual(JwkParameterNames.UseUtf8))
-            {
-                Use = value;
-            }
-            else if (name.SequenceEqual(JwkParameterNames.X5tS256Utf8))
-            {
-                X5tS256 = value;
-            }
-            else if (name.SequenceEqual(JwkParameterNames.X5tUtf8))
-            {
-                X5t = value;
-            }
-        }
-
         internal static void PopulateEight(ref Utf8JsonReader reader, ref byte pPropertyName, Jwk key)
         {
             if (IntegerMarshal.ReadUInt64(ref pPropertyName) == x5t_S256)
@@ -973,25 +940,25 @@ namespace JsonWebToken
         public virtual void WriteTo(Utf8JsonWriter writer)
         {
             // Write the 'kty' first as it easier to recognize the JWK
-            writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
+            writer.WriteString(JwkParameterNames.Kty, Kty);
             if (Kid != null)
             {
-                writer.WriteString(JwkParameterNames.KidUtf8, Kid);
+                writer.WriteString(JwkParameterNames.Kid, Kid);
             }
 
             if (_use != null)
             {
-                writer.WriteString(JwkParameterNames.UseUtf8, _use);
+                writer.WriteString(JwkParameterNames.Use, _use);
             }
 
             if (Alg != null)
             {
-                writer.WriteString(JwkParameterNames.AlgUtf8, Alg);
+                writer.WriteString(JwkParameterNames.Alg, Alg);
             }
 
             if (_keyOps?.Count > 0)
             {
-                writer.WriteStartArray(JwkParameterNames.KeyOpsUtf8);
+                writer.WriteStartArray(JwkParameterNames.KeyOps);
                 for (int i = 0; i < _keyOps.Count; i++)
                 {
                     writer.WriteStringValue(_keyOps[i]);
@@ -1004,24 +971,24 @@ namespace JsonWebToken
             {
                 Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(X5t.Length)];
                 Base64Url.Encode(X5t, buffer);
-                writer.WriteString(JwkParameterNames.X5tUtf8, buffer);
+                writer.WriteString(JwkParameterNames.X5t, buffer);
             }
 
             if (X5tS256 != null)
             {
                 Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(X5tS256.Length)];
                 int bytesWritten = Base64Url.Encode(X5tS256, buffer);
-                writer.WriteString(JwkParameterNames.X5tS256Utf8, buffer.Slice(0, bytesWritten));
+                writer.WriteString(JwkParameterNames.X5tS256, buffer.Slice(0, bytesWritten));
             }
 
             if (X5u != null)
             {
-                writer.WriteString(JwkParameterNames.X5uUtf8, X5u);
+                writer.WriteString(JwkParameterNames.X5u, X5u);
             }
 
             if (_x5c != null && _x5c.Count > 0)
             {
-                writer.WriteStartArray(JwkParameterNames.X5cUtf8);
+                writer.WriteStartArray(JwkParameterNames.X5c);
                 for (int i = 0; i < _x5c.Count; i++)
                 {
                     writer.WriteStringValue(Base64.Default.Encode(_x5c[i]));
@@ -1029,11 +996,6 @@ namespace JsonWebToken
 
                 writer.WriteEndArray();
             }
-        }
-
-        private string DebuggerDisplay()
-        {
-            return ToString();
         }
 
         /// <summary>
@@ -1114,7 +1076,7 @@ namespace JsonWebToken
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void WriteOptionalBase64UrlProperty(Utf8JsonWriter writer, Span<byte> buffer, byte[]? value, ReadOnlySpan<byte> propertyName)
+        internal static void WriteOptionalBase64UrlProperty(Utf8JsonWriter writer, Span<byte> buffer, byte[]? value, JsonEncodedText propertyName)
         {
             if (!(value is null))
             {
@@ -1123,10 +1085,15 @@ namespace JsonWebToken
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void WriteBase64UrlProperty(Utf8JsonWriter writer, Span<byte> buffer, byte[] value, ReadOnlySpan<byte> propertyName)
+        internal static void WriteBase64UrlProperty(Utf8JsonWriter writer, Span<byte> buffer, byte[] value, JsonEncodedText propertyName)
         {
             int bytesWritten = Base64Url.Encode(value, buffer);
             writer.WriteString(propertyName, buffer.Slice(0, bytesWritten));
+        }
+
+        private string GetDebuggerDisplay()
+        {
+            return ToString();
         }
 
         internal sealed class NullJwk : Jwk

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 
 namespace JsonWebToken
@@ -39,7 +40,7 @@ namespace JsonWebToken
         /// <param name="typ"></param>
         /// <param name="base64UrlHeader"></param>
         /// <returns></returns>
-        public bool TryGetHeader(JwtHeader header, SignatureAlgorithm alg, string? kid, string? typ, [NotNullWhen(true)] out byte[]? base64UrlHeader)
+        public bool TryGetHeader(JwtHeader header, SignatureAlgorithm alg, JsonEncodedText kid, string? typ, [NotNullWhen(true)] out byte[]? base64UrlHeader)
         {
             if (ReferenceEquals(_firstHeader.Header, header))
             {
@@ -55,7 +56,7 @@ namespace JsonWebToken
                 {
                     if (algoritmId == node.AlgorithmId)
                     {
-                        if (node.TryGetEntry(kid!, out var entry))
+                        if (node.TryGetEntry(kid, out var entry))
                         {
                             if (typ != entry.Typ)
                             {
@@ -90,7 +91,7 @@ namespace JsonWebToken
         /// <param name="kid"></param>
         /// <param name="typ"></param>
         /// <param name="base6UrlHeader"></param>
-        public void AddHeader(JwtHeader header, SignatureAlgorithm alg, string? kid, string? typ, ReadOnlySpan<byte> base6UrlHeader)
+        public void AddHeader(JwtHeader header, SignatureAlgorithm alg, JsonEncodedText kid, string? typ, ReadOnlySpan<byte> base6UrlHeader)
         {
             _firstHeader = new WrappedHeader(header, base6UrlHeader.ToArray());
             if (IsEligibleHeaderForJws(header.Count, kid, typ))
@@ -122,17 +123,17 @@ namespace JsonWebToken
                     if (node is null)
                     {
                         _count++;
-                        node = new Bucket(algorithmId, new Dictionary<string, CacheEntry>(1) { { kid!, new CacheEntry(base6UrlHeader.ToArray(), typ) } })
+                        node = new Bucket(algorithmId, new Dictionary<JsonEncodedText, CacheEntry>(1) { { kid, new CacheEntry(base6UrlHeader.ToArray(), typ) } })
                         {
                             Next = _head
                         };
                     }
                     else
                     {
-                        if (!node.Entries.ContainsKey(kid!))
+                        if (!node.Entries.ContainsKey(kid))
                         {
                             _count++;
-                            node.Entries[kid!] = new CacheEntry(base6UrlHeader.ToArray(), typ);
+                            node.Entries[kid] = new CacheEntry(base6UrlHeader.ToArray(), typ);
                         }
                     }
 
@@ -246,7 +247,7 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc/>
-        public void AddHeader(JwtHeader header, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, string? kid, string? typ, string? cty, ReadOnlySpan<byte> base6UrlHeader)
+        public void AddHeader(JwtHeader header, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, JsonEncodedText kid, string? typ, string? cty, ReadOnlySpan<byte> base6UrlHeader)
         {
             _firstHeader = new WrappedHeader(header, base6UrlHeader.ToArray());
             if (IsEligibleHeaderForJwe(header.Count, kid, typ, cty))
@@ -278,7 +279,7 @@ namespace JsonWebToken
                     if (node is null)
                     {
                         _count++;
-                        node = new Bucket(algorithmId, new Dictionary<string, CacheEntry>(1) { { kid!, new CacheEntry(base6UrlHeader.ToArray(), typ) } })
+                        node = new Bucket(algorithmId, new Dictionary<JsonEncodedText, CacheEntry>(1) { { kid, new CacheEntry(base6UrlHeader.ToArray(), typ) } })
                         {
                             Next = _head
                         };
@@ -288,7 +289,7 @@ namespace JsonWebToken
                         if (!node.Entries.ContainsKey(kid!))
                         {
                             _count++;
-                            node.Entries[kid!] = new CacheEntry(base6UrlHeader.ToArray(), typ);
+                            node.Entries[kid] = new CacheEntry(base6UrlHeader.ToArray(), typ);
                         }
                     }
 
@@ -318,7 +319,7 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc/>
-        public bool TryGetHeader(JwtHeader header, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, string? kid, string? typ, string? cty, [NotNullWhen(true)] out byte[]? base64UrlHeader)
+        public bool TryGetHeader(JwtHeader header, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, JsonEncodedText kid, string? typ, string? cty, [NotNullWhen(true)] out byte[]? base64UrlHeader)
         {
             if (ReferenceEquals(_firstHeader.Header, header))
             {
@@ -334,7 +335,7 @@ namespace JsonWebToken
                 {
                     if (algoritmId == node.AlgorithmId)
                     {
-                        if (node.TryGetEntry(kid!, out var entry))
+                        if (node.TryGetEntry(kid, out var entry))
                         {
                             if (cty != entry.Cty)
                             {
@@ -368,26 +369,25 @@ namespace JsonWebToken
             return true;
         }
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsEligibleHeaderForJws(int count, string? kid, string? typ)
+        private static bool IsEligibleHeaderForJws(int count, JsonEncodedText kid, string? typ)
         {
-            return kid != null && count <= (typ is null ? 2 : 3);
+            return kid.EncodedUtf8Bytes.Length != 0 && count <= (typ is null ? 2 : 3);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsEligibleHeaderForJwe(int count, string? kid, string? typ, string? cty)
+        private static bool IsEligibleHeaderForJwe(int count, JsonEncodedText kid, string? typ, string? cty)
         {
-            bool eligible = kid != null;
+            bool eligible = kid.EncodedUtf8Bytes.Length != 0;
             if (eligible)
             {
                 int maxHeaderCount = 3; // alg + enc + kid
-                if (!(typ is null))
+                if (typ != null)
                 {
                     maxHeaderCount++;
                 }
 
-                if (!(cty is null))
+                if (cty != null)
                 {
                     maxHeaderCount++;
                 }
@@ -432,25 +432,25 @@ namespace JsonWebToken
 
         private sealed class Bucket
         {
-            public readonly Dictionary<string, CacheEntry> Entries;
+            public readonly Dictionary<JsonEncodedText, CacheEntry> Entries;
             public readonly int AlgorithmId;
 
-            public KeyValuePair<string, CacheEntry> LatestEntry;
+            public KeyValuePair<JsonEncodedText, CacheEntry> LatestEntry;
             public Bucket? Next;
             public Bucket? Previous;
 
-            public Bucket(int algorithmId, Dictionary<string, CacheEntry> entries)
+            public Bucket(int algorithmId, Dictionary<JsonEncodedText, CacheEntry> entries)
             {
                 AlgorithmId = algorithmId;
                 Entries = entries;
                 LatestEntry = default;
             }
 
-            public bool TryGetEntry(string kid, [NotNullWhen(true)] out CacheEntry? entry)
+            public bool TryGetEntry(JsonEncodedText kid, [NotNullWhen(true)] out CacheEntry? entry)
             {
                 // Fast path. Try to avoid the lookup to the dictionary 
                 // as we should only have 1 entry
-                if (LatestEntry.Key == kid)
+                if (LatestEntry.Key.Equals(kid))
                 {
                     entry = LatestEntry.Value;
                     return true;

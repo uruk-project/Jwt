@@ -916,15 +916,15 @@ namespace JsonWebToken
         {
             writer.WriteStartObject();
             base.WriteTo(writer);
-            writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
+            writer.WriteString(JwkParameterNames.Crv, Crv.Name);
 
             // X & Y & D have the same length
             Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(_parameters.Q.X!.Length)];
 
-            WriteBase64UrlProperty(writer, buffer, _parameters.Q.X!, JwkParameterNames.XUtf8);
-            WriteBase64UrlProperty(writer, buffer, _parameters.Q.Y!, JwkParameterNames.YUtf8);
+            WriteBase64UrlProperty(writer, buffer, _parameters.Q.X!, JwkParameterNames.X);
+            WriteBase64UrlProperty(writer, buffer, _parameters.Q.Y!, JwkParameterNames.Y);
 
-            WriteOptionalBase64UrlProperty(writer, buffer, _parameters.D, JwkParameterNames.DUtf8);
+            WriteOptionalBase64UrlProperty(writer, buffer, _parameters.D, JwkParameterNames.D);
             writer.WriteEndObject();
         }
 
