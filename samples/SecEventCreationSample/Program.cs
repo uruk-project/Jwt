@@ -9,23 +9,25 @@ namespace SecEventCreationSample
         {
             // Creates a symmetric key defined for the 'HS256' algorithm
             var signingKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
-            
+
             // Creates a SecEvent descriptor with all its properties
             var descriptor = new SecEventDescriptor(signingKey, SignatureAlgorithm.HmacSha256)
             {
                 Payload = new JwtPayload
                 {
-                    { "iss", "https://idp.example.com/" },
-                    { "jti", "756E69717565206964656E746966696572" },
-                    { "iat", 1508184845 },
-                    { "aud", "636C69656E745F6964" },
-                    { "toe", EpochTime.UtcNow },
-                    { "events", new JsonObject
+                    { Claims.Iss, "https://idp.example.com/" },
+                    { Claims.Jti, "756E69717565206964656E746966696572" },
+                    { Claims.Iat, 1508184845 },
+                    { Claims.Aud, "636C69656E745F6964" },
+                    { SecEventClaims.Toe, EpochTime.UtcNow },
+                    { SecEventClaims.Txn, "6964656E74" },
+                    { SecEventClaims.Events, new JsonObject
                         {
                             new AccountDisabledSecEvent
                             {
-                                { "subject", new EmailSubjectIdentifier("hello@world.com") },
-                                { "reason", "hijacking" }
+                                { SecEvent.SubjectAttribute, new EmailSubjectIdentifier("hello@world.com") },
+                                { AccountDisabledSecEvent.ReasonAttribute, "hijacking" },
+                                { "custom_attribute", "hello world" }
                             }
                         }
                     }

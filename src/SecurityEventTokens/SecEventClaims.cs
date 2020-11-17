@@ -16,26 +16,12 @@ namespace JsonWebToken
         /// <summary>
         /// https://tools.ietf.org/html/rfc8417#section-2.2
         /// </summary>
-        public static ReadOnlySpan<byte> EventsUtf8 => new byte[] { (byte)'e', (byte)'v', (byte)'e', (byte)'n', (byte)'t', (byte)'s' };
-        /// <summary>
-        /// https://tools.ietf.org/html/rfc8417#section-2.2
-        /// </summary>
         public static readonly JsonEncodedText Events = JsonEncodedText.Encode("events");
 
         /// <summary>
         /// https://tools.ietf.org/html/rfc8417#section-2.2
         /// </summary>
-        public static ReadOnlySpan<byte> TxnUtf8 => new byte[] { (byte)'t', (byte)'x', (byte)'n' };
-
-        /// <summary>
-        /// https://tools.ietf.org/html/rfc8417#section-2.2
-        /// </summary>
         public static readonly string Txn = "txn";
-
-        /// <summary>
-        /// https://tools.ietf.org/html/rfc8417#section-2.2
-        /// </summary>
-        public static ReadOnlySpan<byte> ToeUtf8 => new byte[] { (byte)'t', (byte)'o', (byte)'e' };
 
         /// <summary>
         /// https://tools.ietf.org/html/rfc8417#section-2.2

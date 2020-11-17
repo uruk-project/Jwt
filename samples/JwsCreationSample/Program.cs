@@ -15,10 +15,14 @@ namespace JwsCreationSample
             {
                 Payload = new JwtPayload
                 {
-                    {"iat", EpochTime.UtcNow },
-                    {"exp", EpochTime.UtcNow + EpochTime.OneHour },
-                    {"iss", "https://idp.example.com/" },
-                    {"aud", "636C69656E745F6964" }
+                    // You can use predefined claims
+                    { Claims.Iat, EpochTime.UtcNow },
+                    { Claims.Exp, EpochTime.UtcNow + EpochTime.OneHour },
+                    { Claims.Iss, "https://idp.example.com/" },
+                    { Claims.Aud, "636C69656E745F6964" },
+
+                    // Or use custom claims 
+                    { "value", "ABCEDF" }
                 }
             };
 

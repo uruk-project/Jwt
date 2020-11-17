@@ -16,18 +16,8 @@ namespace JweCreationSample
             // Creates a JWE descriptor with all its properties
             var descriptor = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256)
             {  
-                // Adds additional headers parameters to the JWE
-                Header = new JwtHeader
-                {
-                    { HeaderParameters.Typ, "jwe example+jwt" }
-                },
                 Payload = new JwsDescriptor(signatureKey, SignatureAlgorithm.HmacSha256)
                 {
-                    // Adds additional headers parameters to the nested JWS
-                    Header = new JwtHeader
-                    {
-                        { HeaderParameters.Tag, "nested jws example+jwt" }
-                    },
                     Payload = new JwtPayload
                     {
                         // You can use predefined claims

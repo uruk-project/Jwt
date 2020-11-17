@@ -9,6 +9,8 @@ namespace JsonWebToken
     /// <summary>Represents an event within a Security Event Token (SECEVENT).</summary>
     public abstract class SecEvent : JsonObject
     {
+        public static readonly JsonEncodedText SubjectAttribute = JsonEncodedText.Encode("subject");
+
         [JsonIgnore]
         public abstract string Name { get; }
 

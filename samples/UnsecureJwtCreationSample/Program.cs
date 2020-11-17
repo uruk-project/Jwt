@@ -11,12 +11,12 @@ namespace UnsecureJwtCreationSample
             var descriptor = new JwsDescriptor(Jwk.None, SignatureAlgorithm.None)
             {
                 Payload = new JwtPayload
-                    {
-                        {"iat", EpochTime.UtcNow },
-                        {"exp", EpochTime.UtcNow + EpochTime.OneHour },
-                        {"iss", "https://idp.example.com/" },
-                        {"aud", "636C69656E745F6964" }
-                    }
+                {
+                    { Claims.Iat, EpochTime.UtcNow },
+                    { Claims.Exp, EpochTime.UtcNow + EpochTime.OneHour },
+                    { Claims.Iss, "https://idp.example.com/" },
+                    { Claims.Aud, "636C69656E745F6964" }
+                }
             };
 
             // Generates the UTF-8 string representation of the JWT
