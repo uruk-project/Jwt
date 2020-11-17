@@ -41,7 +41,7 @@ namespace JsonWebToken
         public string? Tag => _document.TryGetProperty(HeaderParameters.TagUtf8, out var tag) ? tag.GetString() : null;
 
         /// <inheritdoc/>
-        public string? Kid => _kid.GetString();//_root.TryGetProperty(HeaderParameters.KidUtf8, out var kid) ? kid.GetString() : null;
+        public string? Kid => _kid.GetString();
 
         private JwtHeaderDocument(JwtDocument document, int algPosition, int kidPosition)
         {

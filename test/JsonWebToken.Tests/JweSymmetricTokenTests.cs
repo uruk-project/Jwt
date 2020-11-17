@@ -45,7 +45,7 @@ namespace JsonWebToken.Tests
         public void Encode_Decode(EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
             var writer = new JwtWriter();
-            var encryptionKey = SelectKey(enc.Name, alg.Name);
+            var encryptionKey = SelectKey(enc.Name.ToString(), alg.Name.ToString());
 
             var descriptor = new JweDescriptor(encryptionKey, alg, enc)
             {

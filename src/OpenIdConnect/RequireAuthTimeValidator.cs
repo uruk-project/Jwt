@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
@@ -21,13 +20,13 @@ namespace JsonWebToken
                 return false;
             }
 
-            if (payload.ContainsClaim(OidcClaims.AuthTimeUtf8))
+            if (payload.ContainsClaim(OidcClaims.AuthTime.EncodedUtf8Bytes))
             {
                 error = null;
                 return true;
             }
 
-            error = TokenValidationError.MissingClaim(OidcClaims.AuthTimeUtf8);
+            error = TokenValidationError.MissingClaim(OidcClaims.AuthTime.ToString());
             return false;
         }
     }

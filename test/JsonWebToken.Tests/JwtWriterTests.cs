@@ -14,7 +14,7 @@ namespace JsonWebToken.Tests
                 {
                     { "iss", "http://server.example.com" },
                     { "sub", "248289761001" },
-                    { "aud" , "s6BhdRkqt3" },
+                    { "aud", "s6BhdRkqt3" },
                     { "exp", 1311281970 },
                     { "iat", 1311280970 }
                 }

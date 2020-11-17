@@ -38,55 +38,107 @@ namespace JsonWebToken
         /// <summary>Determines whether the <see cref="JsonObject"/> contains the specified key.</summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool ContainsKey(string key)
+        public bool ContainsKey(JsonEncodedText key)
             => _store.ContainsKey(key);
 
         /// <summary>Gets the value associated with the specified key.</summary>
-        public bool TryGetValue(string key, out JwtMember value)
+        public bool TryGetValue(JsonEncodedText key, out JwtMember value)
             => _store.TryGetValue(key, out value);
+        
+        /// <summary>Gets the value associated with the specified key.</summary>
+        public bool TryGetValue(string key, out JwtMember value)
+            => _store.TryGetValue(JsonEncodedText.Encode(key), out value);
 
         /// <summary>Adds the value of type <see cref="object"/> to the current <see cref="JsonObject"/>.</summary>
         public void Add(string name, object value)
-            => _store.Add(new JwtMember(name, value));
+            => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));
 
         /// <summary>Adds the value of type <see cref="object"/> to the current <see cref="JsonObject"/>.</summary>
         public void Add(string name, JsonObject jsonObject)
-            => _store.Add(new JwtMember(name, jsonObject));
+            => _store.Add(new JwtMember(JsonEncodedText.Encode(name), jsonObject));
 
         /// <summary>Adds the value of type <see cref="string"/> to the current <see cref="JsonObject"/>.</summary>
         public void Add(string name, string value)
-            => _store.Add(new JwtMember(name, value));
+            => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));
+      
+        /// <summary>Adds the value of type <see cref="string"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(string name, JsonEncodedText value)
+            => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));
 
         /// <summary>Adds the value of type <see cref="long"/> to the current <see cref="JsonObject"/>.</summary>
         public void Add(string name, long value)
-            => _store.Add(new JwtMember(name, value));
+            => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));
 
         /// <summary>Adds the value of type <see cref="int"/> to the current <see cref="JsonObject"/>.</summary>
         public void Add(string name, int value)
-            => _store.Add(new JwtMember(name, value));
+            => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));
 
         /// <summary>Adds the value of type <see cref="short"/> to the current <see cref="JsonObject"/>.</summary>
         public void Add(string name, short value)
-            => _store.Add(new JwtMember(name, value));
+            => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));
 
         /// <summary>Adds the value of type <see cref="float"/> to the current <see cref="JsonObject"/>.</summary>
         public void Add(string name, float value)
-            => _store.Add(new JwtMember(name, value));
+            => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));
 
         /// <summary>Adds the value of type <see cref="double"/> to the current <see cref="JsonObject"/>.</summary>
         public void Add(string name, double value)
-            => _store.Add(new JwtMember(name, value));
+            => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));
 
         /// <summary>Adds the value of type array of <see cref="object"/> to the current <see cref="JsonObject"/>.</summary>
         public void Add(string name, object[] value)
-            => _store.Add(new JwtMember(name, value));
+            => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));
 
         /// <summary>Adds the value of type array of <see cref="string"/> to the current <see cref="JsonObject"/>.</summary>
         public void Add(string name, string?[] values)
-            => _store.Add(new JwtMember(name, values));
+            => _store.Add(new JwtMember(JsonEncodedText.Encode(name), values));
 
         /// <summary>Adds the value of type <see cref="bool"/> to the current <see cref="JsonObject"/>.</summary>
         public void Add(string name, bool value)
+            => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));
+
+        /// <summary>Adds the value of type <see cref="object"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(JsonEncodedText name, object value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type <see cref="object"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(JsonEncodedText name, JsonObject jsonObject)
+            => _store.Add(new JwtMember(name, jsonObject));
+
+        /// <summary>Adds the value of type <see cref="string"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(JsonEncodedText name, string value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type <see cref="long"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(JsonEncodedText name, long value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type <see cref="int"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(JsonEncodedText name, int value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type <see cref="short"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(JsonEncodedText name, short value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type <see cref="float"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(JsonEncodedText name, float value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type <see cref="double"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(JsonEncodedText name, double value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type array of <see cref="object"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(JsonEncodedText name, object[] value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type array of <see cref="string"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(JsonEncodedText name, string?[] values)
+            => _store.Add(new JwtMember(name, values));
+
+        /// <summary>Adds the value of type <see cref="bool"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(JsonEncodedText name, bool value)
             => _store.Add(new JwtMember(name, value));
 
         /// <inheritdoc/>

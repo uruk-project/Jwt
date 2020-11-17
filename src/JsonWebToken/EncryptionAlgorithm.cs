@@ -71,7 +71,7 @@ namespace JsonWebToken
         private readonly SignatureAlgorithm _signatureAlgorithm;
         private readonly AuthenticatedEncryptor _encryptor;
         private readonly AuthenticatedDecryptor _decryptor;
-        private readonly byte[] _utf8Name;
+        private readonly JsonEncodedText _utf8Name;
 
         /// <summary>
         /// Gets the algorithm identifier. 
@@ -106,12 +106,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the encryption algorithm.
         /// </summary>
-        public string Name => Utf8.GetString(_utf8Name);
+        public JsonEncodedText Name => _utf8Name;
 
         /// <summary>
         /// Gets the name of the signature algorithm.
         /// </summary>
-        public ReadOnlySpan<byte> Utf8Name => _utf8Name;
+        public ReadOnlySpan<byte> Utf8Name => _utf8Name.EncodedUtf8Bytes;
 
         /// <summary>
         /// Gets the <see cref="AuthenticatedEncryptor"/>.
@@ -135,7 +135,7 @@ namespace JsonWebToken
         public EncryptionAlgorithm(short id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm signatureAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionType category)
         {
             _id = id;
-            _utf8Name = Utf8.GetBytes(name);
+            _utf8Name = JsonEncodedText.Encode(name);
             _requiredKeySizeInBytes = requiredKeySizeInBytes;
             _signatureAlgorithm = signatureAlgorithm;
             _keyWrappedSizeInBytes = requiredKeyWrappedSizeInBytes;
@@ -154,7 +154,7 @@ namespace JsonWebToken
             var algorithms = _algorithms;
             for (int i = 0; i < algorithms.Length; i++)
             {
-                if (reader.ValueTextEquals(algorithms[i]._utf8Name))
+                if (reader.ValueTextEquals(algorithms[i]._utf8Name.EncodedUtf8Bytes))
                 {
                     algorithm = algorithms[i];
                     return true;
@@ -253,32 +253,32 @@ namespace JsonWebToken
         public static bool TryParse(JwtElement value, [NotNullWhen(true)] out EncryptionAlgorithm? algorithm)
         {
             bool found;
-            if (value.ValueEquals(Aes128CbcHmacSha256._utf8Name))
+            if (value.ValueEquals(Aes128CbcHmacSha256._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes128CbcHmacSha256;
                 found = true;
             }
-            else if (value.ValueEquals(Aes192CbcHmacSha384._utf8Name))
+            else if (value.ValueEquals(Aes192CbcHmacSha384._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes192CbcHmacSha384;
                 found = true;
             }
-            else if (value.ValueEquals(Aes256CbcHmacSha512._utf8Name))
+            else if (value.ValueEquals(Aes256CbcHmacSha512._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes256CbcHmacSha512;
                 found = true;
             }
-            else if (value.ValueEquals(Aes128Gcm._utf8Name))
+            else if (value.ValueEquals(Aes128Gcm._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes128Gcm;
                 found = true;
             }
-            else if (value.ValueEquals(Aes192Gcm._utf8Name))
+            else if (value.ValueEquals(Aes192Gcm._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes192Gcm;
                 found = true;
             }
-            else if (value.ValueEquals(Aes256Gcm._utf8Name))
+            else if (value.ValueEquals(Aes256Gcm._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes256Gcm;
                 found = true;
@@ -300,32 +300,32 @@ namespace JsonWebToken
         public static bool TryParse(JsonElement value, [NotNullWhen(true)] out EncryptionAlgorithm? algorithm)
         {
             bool found;
-            if (value.ValueEquals(Aes128CbcHmacSha256._utf8Name))
+            if (value.ValueEquals(Aes128CbcHmacSha256._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes128CbcHmacSha256;
                 found = true;
             }
-            else if (value.ValueEquals(Aes192CbcHmacSha384._utf8Name))
+            else if (value.ValueEquals(Aes192CbcHmacSha384._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes192CbcHmacSha384;
                 found = true;
             }
-            else if (value.ValueEquals(Aes256CbcHmacSha512._utf8Name))
+            else if (value.ValueEquals(Aes256CbcHmacSha512._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes256CbcHmacSha512;
                 found = true;
             }
-            else if (value.ValueEquals(Aes128Gcm._utf8Name))
+            else if (value.ValueEquals(Aes128Gcm._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes128Gcm;
                 found = true;
             }
-            else if (value.ValueEquals(Aes192Gcm._utf8Name))
+            else if (value.ValueEquals(Aes192Gcm._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes192Gcm;
                 found = true;
             }
-            else if (value.ValueEquals(Aes256Gcm._utf8Name))
+            else if (value.ValueEquals(Aes256Gcm._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes256Gcm;
                 found = true;
@@ -425,7 +425,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public static explicit operator string?(EncryptionAlgorithm? value)
         {
-            return value?.Name;
+            return value?.Name.ToString();
         }
 
         /// <summary>
@@ -439,7 +439,7 @@ namespace JsonWebToken
                 return null;
             }
 
-            return value._utf8Name;
+            return value._utf8Name.EncodedUtf8Bytes.ToArray();
         }
 
         /// <summary>
@@ -483,7 +483,7 @@ namespace JsonWebToken
         /// <inheritsddoc />
         public override string ToString()
         {
-            return Name;
+            return Name.ToString();
         }
 
         /// <summary>

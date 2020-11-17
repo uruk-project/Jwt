@@ -169,13 +169,13 @@ namespace JsonWebToken
                 {
                     if (payload.MissingAudience)
                     {
-                        error = TokenValidationError.MissingClaim(Claims.AudUtf8);
+                        error = TokenValidationError.MissingClaim(Claims.Aud.ToString());
                         goto Error;
                     }
 
                     if (payload.InvalidAudience)
                     {
-                        error = TokenValidationError.InvalidClaim(Claims.AudUtf8);
+                        error = TokenValidationError.InvalidClaim(Claims.Aud.ToString());
                         goto Error;
                     }
                 }
@@ -184,13 +184,13 @@ namespace JsonWebToken
                 {
                     if (payload.MissingIssuer)
                     {
-                        error = TokenValidationError.MissingClaim(Claims.IssUtf8);
+                        error = TokenValidationError.MissingClaim(Claims.Iss.ToString());
                         goto Error;
                     }
 
                     if (payload.InvalidIssuer)
                     {
-                        error = TokenValidationError.InvalidClaim(Claims.IssUtf8);
+                        error = TokenValidationError.InvalidClaim(Claims.Iss.ToString());
                         goto Error;
                     }
                 }
@@ -199,7 +199,7 @@ namespace JsonWebToken
                 {
                     if (payload.MissingExpirationTime)
                     {
-                        error = TokenValidationError.MissingClaim(Claims.ExpUtf8);
+                        error = TokenValidationError.MissingClaim(Claims.Exp.ToString());
                         goto Error;
                     }
 
@@ -268,18 +268,6 @@ namespace JsonWebToken
             error = null;
             return true;
         }
-
-        ///// <summary>
-        ///// Try to validate the token signature.
-        ///// </summary>
-        ///// <param name="header"></param>
-        ///// <param name="contentBytes"></param>
-        ///// <param name="signatureSegment"></param>
-        ///// <returns></returns>
-        //public SignatureValidationResult TryValidateSignature(JwtHeader header, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
-        //{
-        //    return SignatureValidationPolicy.TryValidateSignature(header, contentBytes, signatureSegment);
-        //}
 
         /// <summary>
         /// Try to validate the token signature.

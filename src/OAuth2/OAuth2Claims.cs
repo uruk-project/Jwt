@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -53,7 +54,7 @@ namespace JsonWebToken
         /// https://tools.ietf.org/html/rfc7591#section-2
         /// </summary>
         public static ReadOnlySpan<byte> RfpUtf8 => new byte[] { (byte)'r', (byte)'f', (byte)'p' };
-        public static readonly string Rfp = "rfp";
+        public static readonly JsonEncodedText Rfp = JsonEncodedText.Encode("rfp");
 
         /// <summary>
         /// https://tools.ietf.org/html/rfc7591#section-2

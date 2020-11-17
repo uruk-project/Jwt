@@ -32,7 +32,7 @@ namespace JsonWebToken.Internal
         {
             if (key.Length << 3 < MinimumKeySizeInBits)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(key.Length << 3, algorithm.Name, MinimumKeySizeInBits);
+                ThrowHelper.ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(key.Length << 3, algorithm.Name.ToString(), MinimumKeySizeInBits);
             }
 
             if (algorithm.Category != AlgorithmCategory.Hmac)
@@ -126,7 +126,7 @@ namespace JsonWebToken.Internal
         {
             if (key.Length << 3 < MinimumKeySizeInBits)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(key.Length << 3, algorithm.Name, MinimumKeySizeInBits);
+                ThrowHelper.ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(key.Length << 3, algorithm.Name.ToString(), MinimumKeySizeInBits);
             }
 
             if (algorithm.Category != AlgorithmCategory.Hmac)

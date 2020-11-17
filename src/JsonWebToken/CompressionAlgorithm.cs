@@ -33,12 +33,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the compression algorithm.
         /// </summary>
-        public string Name => Utf8.GetString(_utf8Name);
+        public JsonEncodedText Name => _utf8Name;
 
         /// <summary>
         /// Gets the name of the signature algorithm.
         /// </summary>
-        public ReadOnlySpan<byte> Utf8Name => _utf8Name;
+        public ReadOnlySpan<byte> Utf8Name => _utf8Name.EncodedUtf8Bytes;
 
         /// <summary>
         /// Gets the <see cref="Compressor"/>.
@@ -56,7 +56,7 @@ namespace JsonWebToken
         public bool Enabled { get; }
 
         private readonly sbyte _id;
-        private readonly byte[] _utf8Name;
+        private readonly JsonEncodedText _utf8Name;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CompressionAlgorithm"/> class.
@@ -84,7 +84,7 @@ namespace JsonWebToken
             }
 
             _id = id;
-            _utf8Name = Utf8.GetBytes(name);
+            _utf8Name = JsonEncodedText.Encode(name);
             Compressor = compressor;
             Decompressor = decompressor;
             Enabled = enabled;
@@ -174,7 +174,7 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         public static bool TryParseSlow(ref Utf8JsonReader reader, [NotNullWhen(true)] out CompressionAlgorithm? algorithm)
         {
-            if (reader.ValueTextEquals(Deflate._utf8Name))
+            if (reader.ValueTextEquals(Deflate._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Deflate;
                 return true;
@@ -283,13 +283,13 @@ namespace JsonWebToken
                 return null;
             }
 
-            return value._utf8Name;
+            return value._utf8Name.EncodedUtf8Bytes.ToArray();
         }
 
         /// <inheritsddoc />
         public override string ToString()
         {
-            return Name;
+            return Name.ToString();
         }
 
         internal static CompressionAlgorithm Create(string name)

@@ -41,27 +41,27 @@ namespace JsonWebToken
                         switch (reader.TokenType)
                         {
                             case JsonTokenType.String:
-                                if (propertyName.SequenceEqual(OidcClaims.FormattedUtf8))
+                                if (propertyName.SequenceEqual(OidcClaims.Formatted.EncodedUtf8Bytes))
                                 {
                                     address.Formatted = reader.GetString();
                                 }
-                                else if (propertyName.SequenceEqual(OidcClaims.StreetAddressUtf8))
+                                else if (propertyName.SequenceEqual(OidcClaims.StreetAddress.EncodedUtf8Bytes))
                                 {
                                     address.StreetAddress = reader.GetString();
                                 }
-                                else if (propertyName.SequenceEqual(OidcClaims.LocalityUtf8))
+                                else if (propertyName.SequenceEqual(OidcClaims.Locality.EncodedUtf8Bytes))
                                 {
                                     address.Locality = reader.GetString();
                                 }
-                                else if (propertyName.SequenceEqual(OidcClaims.RegionUtf8))
+                                else if (propertyName.SequenceEqual(OidcClaims.Region.EncodedUtf8Bytes))
                                 {
                                     address.Region = reader.GetString();
                                 }
-                                else if (propertyName.SequenceEqual(OidcClaims.PostalCodeUtf8))
+                                else if (propertyName.SequenceEqual(OidcClaims.PostalCode.EncodedUtf8Bytes))
                                 {
                                     address.PostalCode = reader.GetString();
                                 }
-                                else if (propertyName.SequenceEqual(OidcClaims.CountryUtf8))
+                                else if (propertyName.SequenceEqual(OidcClaims.Country.EncodedUtf8Bytes))
                                 {
                                     address.Country = reader.GetString();
                                 }
@@ -86,12 +86,12 @@ namespace JsonWebToken
 
         public static Address FromJson(string json)
         {
-            return FromJson(Encoding.UTF8.GetBytes(json));
+            return FromJson(Utf8.GetBytes(json));
         }
 
         public override string ToString()
         {
-            return Encoding.UTF8.GetString(Serialize());
+            return Utf8.GetString(Serialize());
         }
 
         public byte[] Serialize()
@@ -112,32 +112,32 @@ namespace JsonWebToken
         {
             if (Formatted != null)
             {
-                writer.WriteString(OidcClaims.FormattedUtf8, Formatted);
+                writer.WriteString(OidcClaims.Formatted, Formatted);
             }
 
             if (StreetAddress != null)
             {
-                writer.WriteString(OidcClaims.StreetAddressUtf8, StreetAddress);
+                writer.WriteString(OidcClaims.StreetAddress, StreetAddress);
             }
 
             if (Locality != null)
             {
-                writer.WriteString(OidcClaims.LocalityUtf8, Locality);
+                writer.WriteString(OidcClaims.Locality, Locality);
             }
 
             if (Region != null)
             {
-                writer.WriteString(OidcClaims.RegionUtf8, Region);
+                writer.WriteString(OidcClaims.Region, Region);
             }
 
             if (PostalCode != null)
             {
-                writer.WriteString(OidcClaims.PostalCodeUtf8, PostalCode);
+                writer.WriteString(OidcClaims.PostalCode, PostalCode);
             }
 
             if (Country != null)
             {
-                writer.WriteString(OidcClaims.CountryUtf8, Country);
+                writer.WriteString(OidcClaims.Country, Country);
             }
         }
     }

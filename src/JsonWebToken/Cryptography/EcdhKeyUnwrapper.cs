@@ -55,7 +55,7 @@ namespace JsonWebToken.Internal
             var epk = header.Epk;
             if (epk is null)
             {
-                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.EpkUtf8);
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.Epk);
             }
 
             byte[] secretAppend = BuildSecretAppend(header.Apu, header.Apv);

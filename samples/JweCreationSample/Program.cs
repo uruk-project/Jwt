@@ -15,15 +15,29 @@ namespace JweCreationSample
 
             // Creates a JWE descriptor with all its properties
             var descriptor = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256)
-            {
+            {  
+                // Adds additional headers parameters to the JWE
+                Header = new JwtHeader
+                {
+                    { HeaderParameters.Typ, "jwe example+jwt" }
+                },
                 Payload = new JwsDescriptor(signatureKey, SignatureAlgorithm.HmacSha256)
                 {
+                    // Adds additional headers parameters to the nested JWS
+                    Header = new JwtHeader
+                    {
+                        { HeaderParameters.Tag, "nested jws example+jwt" }
+                    },
                     Payload = new JwtPayload
                     {
-                        {"iat", EpochTime.UtcNow },
-                        {"exp", EpochTime.UtcNow + EpochTime.OneHour },
-                        {"iss", "https://idp.example.com/" },
-                        {"aud", "636C69656E745F6964" }
+                        // You can use predefined claims
+                        { Claims.Iat, EpochTime.UtcNow },
+                        { Claims.Exp, EpochTime.UtcNow + EpochTime.OneHour },
+                        { Claims.Iss, "https://idp.example.com/" },
+                        { Claims.Aud, "636C69656E745F6964" },
+
+                        // Or use custom claims 
+                        { "value", "ABCEDF" }
                     }
                 }
             };

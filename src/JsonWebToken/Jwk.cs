@@ -972,6 +972,7 @@ namespace JsonWebToken
         /// <param name="writer"></param>
         public virtual void WriteTo(Utf8JsonWriter writer)
         {
+            // Write the 'kty' first as it easier to recognize the JWK
             writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
             if (Kid != null)
             {
@@ -1199,14 +1200,14 @@ namespace JsonWebToken
 
             public ReadOnlySpan<byte> Utf8Name => _alg;
 
-            public string Name => Utf8.GetString(_alg);
+            public JsonEncodedText Name => JsonEncodedText.Encode(_alg);
         }
 
         private sealed class EmptyAlgorithm : IAlgorithm
         {
             public ReadOnlySpan<byte> Utf8Name => default;
 
-            public string Name => string.Empty;
+            public JsonEncodedText Name => default;
         }
     }
 }

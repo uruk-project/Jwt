@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -142,7 +143,7 @@ namespace JsonWebToken
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7518#section-4.6.1
         /// </summary>
-        public static readonly string Epk = "epk";
+        public static readonly JsonEncodedText Epk = JsonEncodedText.Encode("epk");
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7518#section-4.6.1
@@ -152,7 +153,7 @@ namespace JsonWebToken
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7518#section-4.6.1
         /// </summary>
-        public static readonly string Apu = "apu";
+        public static readonly JsonEncodedText Apu = JsonEncodedText.Encode("apu");
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7518#section-4.6.1
@@ -162,7 +163,7 @@ namespace JsonWebToken
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7518#section-4.6.1
         /// </summary>
-        public static readonly string Apv = "apv";
+        public static readonly JsonEncodedText Apv = JsonEncodedText.Encode("apv");
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7518#section-4.7
@@ -172,7 +173,7 @@ namespace JsonWebToken
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7518#section-4.7
         /// </summary>
-        public static readonly string IV = "iv";
+        public static readonly JsonEncodedText IV = JsonEncodedText.Encode("iv");
 
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7518#section-4.7
@@ -182,6 +183,6 @@ namespace JsonWebToken
         /// <summary>
         /// see:https://tools.ietf.org/html/rfc7518#section-4.7
         /// </summary>
-        public static readonly string Tag = "tag";
+        public static readonly JsonEncodedText Tag = JsonEncodedText.Encode("tag");
     }
 }

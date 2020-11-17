@@ -38,12 +38,12 @@ namespace JsonWebToken.Internal
             var encodedTag = header.Tag;
             if (encodedIV is null)
             {
-                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.IVUtf8);
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.IV);
             }
 
             if (encodedTag is null)
             {
-                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.TagUtf8);
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.Tag);
             }
 
             Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(encodedIV.Length)];

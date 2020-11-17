@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -18,6 +19,6 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the algorithm.
         /// </summary>
-        public string Name { get; }
+        public JsonEncodedText Name { get; }
     }
 }

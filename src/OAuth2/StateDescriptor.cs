@@ -17,7 +17,7 @@ namespace JsonWebToken
         {
             base.Validate();
 
-            RequireClaim(OAuth2Claims.Rfp , JwtValueKind.String);
+            CheckRequiredClaimAsString(OAuth2Claims.Rfp);
         }
     }
 }

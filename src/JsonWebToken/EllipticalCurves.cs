@@ -65,7 +65,7 @@ namespace JsonWebToken
         /// <summary>
         /// The name of the curve.
         /// </summary>
-        public  readonly byte[] Name;
+        public readonly byte[] Name;
 
         /// <summary>
         /// The internal id of the curve.

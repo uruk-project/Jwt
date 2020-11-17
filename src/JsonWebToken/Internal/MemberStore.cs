@@ -81,7 +81,7 @@ namespace JsonWebToken
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryGetValue(string key, [NotNullWhen(true)] out JwtMember value)
+        public bool TryGetValue(JsonEncodedText key, [NotNullWhen(true)] out JwtMember value)
             => _map.TryGetValue(key, out value);
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool ContainsKey(string key)
+        public bool ContainsKey(JsonEncodedText key)
             => _map.ContainsKey(key);
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -103,9 +103,9 @@ namespace JsonWebToken
 
             public IMap Add(JwtMember value);
 
-            public bool TryGetValue(string key, [NotNullWhen(true)] out JwtMember value);
+            public bool TryGetValue(JsonEncodedText key, [NotNullWhen(true)] out JwtMember value);
 
-            public bool ContainsKey(string key);
+            public bool ContainsKey(JsonEncodedText key);
 
             void WriteTo(Utf8JsonWriter writer);
 
@@ -128,14 +128,14 @@ namespace JsonWebToken
                 return map;
             }
 
-            public bool TryGetValue(string key, [NotNullWhen(true)] out JwtMember value)
+            public bool TryGetValue(JsonEncodedText key, [NotNullWhen(true)] out JwtMember value)
             {
                 // Nothing here
                 value = default;
                 return false;
             }
 
-            public bool ContainsKey(string key)
+            public bool ContainsKey(JsonEncodedText key)
                 => false;
 
             public IEnumerator<JwtMember> GetEnumerator()
@@ -166,14 +166,14 @@ namespace JsonWebToken
             public IMap Add(JwtMember value)
                 => new OneElementMap(value);
 
-            public bool TryGetValue(string key, [NotNullWhen(true)] out JwtMember value)
+            public bool TryGetValue(JsonEncodedText key, [NotNullWhen(true)] out JwtMember value)
             {
                 // Nothing here
                 value = default;
                 return false;
             }
 
-            public bool ContainsKey(string key)
+            public bool ContainsKey(JsonEncodedText key)
                 => false;
 
             public IEnumerator<JwtMember> GetEnumerator()
@@ -235,9 +235,9 @@ namespace JsonWebToken
             public IMap Add(JwtMember value)
                 => new TwoElementMap(_value1, value);
 
-            public bool TryGetValue(string key, out JwtMember value)
+            public bool TryGetValue(JsonEncodedText key, out JwtMember value)
             {
-                if (key == _value1.Name)
+                if (key.Equals(_value1.Name))
                 {
                     value = _value1;
                     return true;
@@ -249,8 +249,8 @@ namespace JsonWebToken
                 }
             }
 
-            public bool ContainsKey(string key)
-                => key == _value1.Name;
+            public bool ContainsKey(JsonEncodedText key)
+                => key.Equals(_value1.Name);
 
             public IEnumerator<JwtMember> GetEnumerator()
                 => new ObjectEnumerator(this);
@@ -321,11 +321,11 @@ namespace JsonWebToken
             public IMap Add(JwtMember value)
             {
                 IMap map;
-                if (value.Name == _value1.Name)
+                if (value.Name.Equals(_value1.Name))
                 {
                     map = new TwoElementMap(value, _value2);
                 }
-                else if (value.Name == _value2.Name)
+                else if (value.Name.Equals(_value2.Name))
                 {
                     map = new TwoElementMap(_value1, value);
                 }
@@ -337,13 +337,13 @@ namespace JsonWebToken
                 return map;
             }
 
-            public bool TryGetValue(string key, out JwtMember value)
+            public bool TryGetValue(JsonEncodedText key, out JwtMember value)
             {
-                if (key == _value1.Name)
+                if (key.Equals(_value1.Name))
                 {
                     value = _value1;
                 }
-                else if (key == _value2.Name)
+                else if (key.Equals(_value2.Name))
                 {
                     value = _value2;
                 }
@@ -362,8 +362,8 @@ namespace JsonWebToken
                 _value2.WriteTo(writer);
             }
 
-            public bool ContainsKey(string key)
-                => key == _value1.Name || key == _value2.Name;
+            public bool ContainsKey(JsonEncodedText key)
+                => key.Equals(_value1.Name) || key.Equals(_value2.Name);
 
             public IEnumerator<JwtMember> GetEnumerator()
                 => new ObjectEnumerator(this);
@@ -432,15 +432,15 @@ namespace JsonWebToken
             public IMap Add(JwtMember value)
             {
                 IMap map;
-                if (value.Name == _value1.Name)
+                if (value.Name.Equals(_value1.Name))
                 {
                     map = new ThreeElementMap(value, _value2, _value3);
                 }
-                else if (value.Name == _value2.Name)
+                else if (value.Name.Equals(_value2.Name))
                 {
                     map = new ThreeElementMap(_value1, value, _value3);
                 }
-                else if (value.Name == _value3.Name)
+                else if (value.Name.Equals(_value3.Name))
                 {
                     map = new ThreeElementMap(_value1, _value2, value);
                 }
@@ -452,17 +452,17 @@ namespace JsonWebToken
                 return map;
             }
 
-            public bool TryGetValue(string key, out JwtMember value)
+            public bool TryGetValue(JsonEncodedText key, out JwtMember value)
             {
-                if (key == _value1.Name)
+                if (key.Equals(_value1.Name))
                 {
                     value = _value1;
                 }
-                else if (key == _value2.Name)
+                else if (key.Equals(_value2.Name))
                 {
                     value = _value2;
                 }
-                else if (key == _value3.Name)
+                else if (key.Equals(_value3.Name))
                 {
                     value = _value3;
                 }
@@ -482,8 +482,8 @@ namespace JsonWebToken
                 _value3.WriteTo(writer);
             }
 
-            public bool ContainsKey(string key)
-                => key == _value1.Name || key == _value2.Name || key == _value3.Name;
+            public bool ContainsKey(JsonEncodedText key)
+                => key.Equals(_value1.Name) || key.Equals(_value2.Name) || key.Equals(_value3.Name);
 
             public IEnumerator<JwtMember> GetEnumerator()
                 => new ObjectEnumerator(this);
@@ -559,19 +559,19 @@ namespace JsonWebToken
             public IMap Add(JwtMember value)
             {
                 IMap map;
-                if (value.Name == _value1.Name)
+                if (value.Name.Equals(_value1.Name))
                 {
                     map = new FourElementMap(value, _value2, _value3, _value4);
                 }
-                else if (value.Name == _value2.Name)
+                else if (value.Name.Equals(_value2.Name))
                 {
                     map = new FourElementMap(_value1, value, _value3, _value4);
                 }
-                else if (value.Name == _value3.Name)
+                else if (value.Name.Equals(_value3.Name))
                 {
                     map = new FourElementMap(_value1, _value2, value, _value4);
                 }
-                else if (value.Name == _value4.Name)
+                else if (value.Name.Equals(_value4.Name))
                 {
                     map = new FourElementMap(_value1, _value2, _value3, value);
                 }
@@ -589,21 +589,21 @@ namespace JsonWebToken
                 return map;
             }
 
-            public bool TryGetValue(string key, out JwtMember value)
+            public bool TryGetValue(JsonEncodedText key, out JwtMember value)
             {
-                if (key == _value1.Name)
+                if (key.Equals(_value1.Name))
                 {
                     value = _value1;
                 }
-                else if (key == _value2.Name)
+                else if (key.Equals(_value2.Name))
                 {
                     value = _value2;
                 }
-                else if (key == _value3.Name)
+                else if (key.Equals(_value3.Name))
                 {
                     value = _value3;
                 }
-                else if (key == _value4.Name)
+                else if (key.Equals(_value4.Name))
                 {
                     value = _value4;
                 }
@@ -624,8 +624,8 @@ namespace JsonWebToken
                 _value4.WriteTo(writer);
             }
 
-            public bool ContainsKey(string key)
-                => key == _value1.Name || key == _value2.Name || key == _value3.Name || key == _value4.Name;
+            public bool ContainsKey(JsonEncodedText key)
+                => key.Equals(_value1.Name) || key.Equals(_value2.Name) || key.Equals(_value3.Name) || key.Equals(_value4.Name);
 
             public IEnumerator<JwtMember> GetEnumerator()
                 => new ObjectEnumerator(this);
@@ -727,12 +727,12 @@ namespace JsonWebToken
                 return many;
             }
 
-            public bool TryGetValue(string key, out JwtMember value)
+            public bool TryGetValue(JsonEncodedText key, out JwtMember value)
             {
                 for (int i = 0; i < _count; i++)
                 {
                     JwtMember pair = _keyValues[i];
-                    if (key == pair.Name)
+                    if (key.Equals(pair.Name))
                     {
                         value = pair;
                         return true;
@@ -752,12 +752,12 @@ namespace JsonWebToken
                 }
             }
 
-            public bool ContainsKey(string key)
+            public bool ContainsKey(JsonEncodedText key)
             {
                 for (int i = 0; i < _count; i++)
                 {
                     JwtMember pair = _keyValues[i];
-                    if (key == pair.Name)
+                    if (key.Equals(pair.Name))
                     {
                         return true;
                     }
@@ -826,13 +826,13 @@ namespace JsonWebToken
 
         private sealed class ManyElementMap : IMap
         {
-            private readonly Dictionary<string, JwtMember> _dictionary;
+            private readonly Dictionary<JsonEncodedText, JwtMember> _dictionary;
 
             public int Count => _dictionary.Count;
 
             public ManyElementMap(int capacity)
             {
-                _dictionary = new Dictionary<string, JwtMember>(capacity);
+                _dictionary = new Dictionary<JsonEncodedText, JwtMember>(capacity);
             }
 
             public IMap Add(JwtMember value)
@@ -841,7 +841,7 @@ namespace JsonWebToken
                 return this;
             }
 
-            public bool TryGetValue(string key, out JwtMember value)
+            public bool TryGetValue(JsonEncodedText key, out JwtMember value)
             {
                 var result = _dictionary.TryGetValue(key, out var tmp);
                 value = tmp;
@@ -850,16 +850,16 @@ namespace JsonWebToken
 
             public void WriteTo(Utf8JsonWriter writer)
             {
-                foreach (KeyValuePair<string, JwtMember> pair in _dictionary)
+                foreach (KeyValuePair<JsonEncodedText, JwtMember> pair in _dictionary)
                 {
                     pair.Value.WriteTo(writer);
                 }
             }
 
-            public bool ContainsKey(string key)
+            public bool ContainsKey(JsonEncodedText key)
                 => _dictionary.ContainsKey(key);
 
-            public JwtMember this[string key]
+            public JwtMember this[JsonEncodedText key]
             {
                 get => _dictionary[key];
                 set => _dictionary[key] = value;

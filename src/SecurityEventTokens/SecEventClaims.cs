@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -19,7 +20,7 @@ namespace JsonWebToken
         /// <summary>
         /// https://tools.ietf.org/html/rfc8417#section-2.2
         /// </summary>
-        public static readonly string Events = "events";
+        public static readonly JsonEncodedText Events = JsonEncodedText.Encode("events");
 
         /// <summary>
         /// https://tools.ietf.org/html/rfc8417#section-2.2
@@ -35,7 +36,7 @@ namespace JsonWebToken
         /// https://tools.ietf.org/html/rfc8417#section-2.2
         /// </summary>
         public static ReadOnlySpan<byte> ToeUtf8 => new byte[] { (byte)'t', (byte)'o', (byte)'e' };
-   
+
         /// <summary>
         /// https://tools.ietf.org/html/rfc8417#section-2.2
         /// </summary>

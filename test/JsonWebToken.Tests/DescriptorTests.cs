@@ -88,7 +88,7 @@ namespace JsonWebToken.Tests
             Assert.Equal(JwtValueKind.False, claim.Type);
 
             Assert.True(descriptor.Payload.Header.TryGetValue("alg", out var jwsHeaderParameter));
-            Assert.Equal(JwtValueKind.String, jwsHeaderParameter.Type);
+            Assert.Equal(JwtValueKind.JsonEncodedString, jwsHeaderParameter.Type);
             Assert.True(descriptor.Payload.Header.TryGetValue("kid", out jwsHeaderParameter));
             Assert.Equal(JwtValueKind.String, jwsHeaderParameter.Type);
             Assert.True(descriptor.Payload.Header.TryGetValue("H1", out jwsHeaderParameter));
@@ -110,11 +110,11 @@ namespace JsonWebToken.Tests
 
             Assert.True(descriptor.Header.TryGetValue("kid", out var jweHeaderParameter));
             Assert.True(descriptor.Header.TryGetValue("alg", out jweHeaderParameter));
-            Assert.Equal(KeyManagementAlgorithm.Direct.Name, (string)jweHeaderParameter.Value);
+            Assert.Equal(KeyManagementAlgorithm.Direct.Name, ((JsonEncodedText)jweHeaderParameter.Value));
             Assert.True(descriptor.Header.TryGetValue("enc", out jweHeaderParameter));
-            Assert.Equal(EncryptionAlgorithm.Aes128CbcHmacSha256.Name, (string)jweHeaderParameter.Value);
+            Assert.Equal(EncryptionAlgorithm.Aes128CbcHmacSha256.Name, ((JsonEncodedText)jweHeaderParameter.Value));
             Assert.True(descriptor.Header.TryGetValue("zip", out jweHeaderParameter));
-            Assert.Equal(CompressionAlgorithm.Deflate.Name, (string)jweHeaderParameter.Value);
+            Assert.Equal(CompressionAlgorithm.Deflate.Name, (JsonEncodedText)jweHeaderParameter.Value);
 
             PooledByteBufferWriter writer = new PooledByteBufferWriter();
             var context = new EncodingContext(writer, null, 0, false);
@@ -143,7 +143,7 @@ namespace JsonWebToken.Tests
             {
                 descriptor.Payload.TryGetClaim(i.ToString(), out var member);
                 Assert.Equal(JwtValueKind.Int32, member.Type);
-                Assert.Equal(i.ToString(), member.Name);
+                Assert.Equal(i.ToString(), member.Name.ToString());
                 Assert.Equal(i, (int)member.Value);
             }
 

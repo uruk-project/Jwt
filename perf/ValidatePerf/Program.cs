@@ -1,6 +1,5 @@
 ﻿using System;
 using JsonWebToken;
-using JsonWebToken.Internal;
 
 namespace ValidatePerf
 {

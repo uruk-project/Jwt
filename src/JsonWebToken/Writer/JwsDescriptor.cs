@@ -98,8 +98,7 @@ namespace JsonWebToken
                            + (Constants.JwsSegmentCount - 1);
                 ReadOnlySpan<byte> headerJson = default;
                 var headerCache = context.HeaderCache;
-                byte[]? cachedHeader = null;
-                if (headerCache.TryGetHeader(Header, alg, _kid, _typ, out cachedHeader))
+                if (headerCache.TryGetHeader(Header, alg, _kid, _typ, out byte[]? cachedHeader))
                 {
                     writer.Flush();
                     length += cachedHeader.Length;
@@ -144,79 +143,168 @@ namespace JsonWebToken
             }
         }
 
-        internal bool TryGetClaim(string name, out JwtMember value)
+        internal bool TryGetClaim(JsonEncodedText name, out JwtMember value)
         {
             return _payload.TryGetValue(name, out value);
         }
 
+        internal bool TryGetClaim(string name, out JwtMember value)
+        {
+            return _payload.TryGetValue(JsonEncodedText.Encode(name), out value);
+        }
+
         /// <summary>Validates the presence and the type of a required claim.</summary>
         /// <param name="utf8Name"></param>
-        /// <param name="type"></param>
-        protected void RequireClaim(string utf8Name, JwtValueKind type)
+        protected void CheckRequiredClaimAsString(JsonEncodedText utf8Name)
         {
             if (!_payload.TryGetValue(utf8Name, out var claim))
             {
                 ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
             }
 
-            if (claim.Type != type)
+            if (!claim.Type.IsStringOrArray())
             {
-                ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, type);
+                ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] { JwtValueKind.String, JwtValueKind.JsonEncodedString });
             }
         }
 
         /// <summary>Validates the presence and the type of a required claim.</summary>
         /// <param name="utf8Name"></param>
-        /// <param name="type1"></param>
-        /// <param name="type2"></param>
-        protected void RequireClaim(string utf8Name, JwtValueKind type1, JwtValueKind type2 )
+        protected void CheckRequiredClaimAsNumber(JsonEncodedText utf8Name)
         {
             if (!_payload.TryGetValue(utf8Name, out var claim))
             {
                 ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
             }
 
-            if (claim.Type != type1 && claim.Type != type2)
+            if (!claim.Type.IsNumber())
             {
-                ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] { type1, type2 });
+                ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] {
+                    JwtValueKind.Int16,
+                    JwtValueKind.Int32,
+                    JwtValueKind.Int64,
+                    JwtValueKind.Float,
+                    JwtValueKind.Double});
+            }
+        }
+           /// <summary>Validates the presence and the type of a required claim.</summary>
+        /// <param name="utf8Name"></param>
+        protected void CheckRequiredClaimAsInteger(JsonEncodedText utf8Name)
+        {
+            if (!_payload.TryGetValue(utf8Name, out var claim))
+            {
+                ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
+            }
+
+            if (!claim.Type.IsInteger())
+            {
+                ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] {
+                    JwtValueKind.Int16,
+                    JwtValueKind.Int32,
+                    JwtValueKind.Int64});
             }
         }
 
         /// <summary>Validates the presence and the type of a required claim.</summary>
         /// <param name="utf8Name"></param>
-        /// <param name="types"></param>
-        protected void ValidateClaim(string utf8Name, JwtValueKind[] types)
+        protected void CheckRequiredClaimAsStringOrArray(JsonEncodedText utf8Name)
         {
-            if (!_payload.TryGetValue(utf8Name, out var claim) || claim.Type == JwtValueKind.Null)
+            if (!_payload.TryGetValue(utf8Name, out var claim))
             {
                 ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
             }
 
-            for (int i = 0; i < types.Length; i++)
+            if (!claim.Type.IsStringOrArray())
             {
-                if (claim.Type == types[i])
+                ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] { JwtValueKind.String, JwtValueKind.JsonEncodedString, JwtValueKind.Array });
+            }
+        }
+
+        /// <summary>Validates the presence and the type of a required claim.</summary>
+        /// <param name="utf8Name"></param>
+        protected void CheckRequiredClaimAsObject(JsonEncodedText utf8Name)
+        {
+            if (!_payload.TryGetValue(utf8Name, out var claim))
+            {
+                ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
+            }
+
+            if (claim.Type != JwtValueKind.Object)
+            {
+                ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, JwtValueKind.Object);
+            }
+        }
+
+        /// <summary>Validates the type of a optional claim.</summary>
+        /// <param name="utf8Name"></param>
+        protected void OptionalString(JsonEncodedText utf8Name)
+        {
+            if (_payload.TryGetValue(utf8Name, out var claim))
+            {
+                if (!claim.Type.IsStringOrArray())
                 {
-                    return;
+                    ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] { JwtValueKind.String, JwtValueKind.JsonEncodedString });
                 }
             }
-
-            ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, types);
         }
 
-        /// <summary>Validates the presence and the type of a required claim.</summary>
+        /// <summary>Validates the type of a optional claim.</summary>
         /// <param name="utf8Name"></param>
-        /// <param name="type1"></param>
-        /// <param name="type2"></param>
-        protected void ValidateClaim(string utf8Name, JwtValueKind type1, JwtValueKind type2)
+        protected void CheckOptionalClaimAsNumber(JsonEncodedText utf8Name)
         {
-            if (!_payload.TryGetValue(utf8Name, out var claim) || claim.Type == JwtValueKind.Null)
+            if (_payload.TryGetValue(utf8Name, out var claim))
             {
-                ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
+                if (!claim.Type.IsNumber())
+                {
+                    ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] {
+                    JwtValueKind.Int16,
+                    JwtValueKind.Int32,
+                    JwtValueKind.Int64,
+                    JwtValueKind.Float,
+                    JwtValueKind.Double});
+                }
             }
-
-            if (claim.Type != type1 && claim.Type != type2)
+        }
+    
+        /// <summary>Validates the type of a optional claim.</summary>
+        /// <param name="utf8Name"></param>
+        protected void CheckOptionalClaimAsInteger(JsonEncodedText utf8Name)
+        {
+            if (_payload.TryGetValue(utf8Name, out var claim))
             {
-                ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] { type1, type2 });
+                if (!claim.Type.IsInteger())
+                {
+                    ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] {
+                    JwtValueKind.Int16,
+                    JwtValueKind.Int32,
+                    JwtValueKind.Int64});
+                }
+            }
+        }
+
+        /// <summary>Validates the type of a optional claim.</summary>
+        /// <param name="utf8Name"></param>
+        protected void CheckOptionalClaimAsStringOrArray(JsonEncodedText utf8Name)
+        {
+            if (_payload.TryGetValue(utf8Name, out var claim))
+            {
+                if (!claim.Type.IsStringOrArray())
+                {
+                    ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] { JwtValueKind.String, JwtValueKind.JsonEncodedString, JwtValueKind.Array });
+                }
+            }
+        }
+
+        /// <summary>Validates the type of a optional claim.</summary>
+        /// <param name="utf8Name"></param>
+        protected void CheckOptionalClaimAsObject(JsonEncodedText utf8Name)
+        {
+            if (_payload.TryGetValue(utf8Name, out var claim))
+            {
+                if (claim.Type != JwtValueKind.Object)
+                {
+                    ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, JwtValueKind.Object);
+                }
             }
         }
     }

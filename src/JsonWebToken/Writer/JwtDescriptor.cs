@@ -7,7 +7,7 @@ using System.Text.Json;
 namespace JsonWebToken
 {
     /// <summary>Defines an abstract class for representing a JWT.</summary>
-    [DebuggerDisplay("{DebuggerDisplay(),nq}")]
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public abstract class JwtDescriptor
     {
         private JwtHeader _header;
@@ -43,58 +43,95 @@ namespace JsonWebToken
         {
         }
 
-        /// <summary>Validates the presence and the type of a required header.</summary>
+        /// <summary>Validates the presence and the type of a required claim.</summary>
         /// <param name="utf8Name"></param>
-        /// <param name="type"></param>
-        protected void CheckRequiredHeader(string utf8Name, JwtValueKind type)
+        protected void CheckRequiredHeaderParameterAsString(JsonEncodedText utf8Name)
         {
-            if (!Header.TryGetValue(utf8Name, out var tokenType))
+            if (!_header.TryGetValue(utf8Name, out var parameter))
+            {
+                ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(utf8Name);
+            }
+
+            if (!parameter.Type.IsStringOrArray())
+            {
+                ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(utf8Name, new[] {
+                    JwtValueKind.String,
+                    JwtValueKind.JsonEncodedString });
+            }
+        }
+
+        /// <summary>Validates the presence and the type of a required claim.</summary>
+        /// <param name="utf8Name"></param>
+        protected void CheckRequiredHeaderParameterAsNumber(JsonEncodedText utf8Name)
+        {
+            if (!_header.TryGetValue(utf8Name, out var parameter))
             {
                 ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(utf8Name);
             }
 
-            if (tokenType.Type != type)
+            if (!parameter.Type.IsNumber())
             {
-                ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(utf8Name, type);
+                ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(utf8Name, new[] {
+                    JwtValueKind.Int16,
+                    JwtValueKind.Int32,
+                    JwtValueKind.Int64,
+                    JwtValueKind.Float,
+                    JwtValueKind.Double});
             }
         }
 
-        /// <summary>Validates the presence and the type of a required header.</summary>
+        /// <summary>Validates the presence and the type of a required claim.</summary>
         /// <param name="utf8Name"></param>
-        /// <param name="types"></param>
-        protected void CheckRequiredHeader(string utf8Name, JwtValueKind[] types)
+        protected void CheckRequiredHeaderParameterAsInteger(JsonEncodedText utf8Name)
         {
-            if (!Header.TryGetValue(utf8Name, out var tokenType))
+            if (!_header.TryGetValue(utf8Name, out var parameter))
             {
                 ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(utf8Name);
             }
 
-            for (int i = 0; i < types.Length; i++)
+            if (!parameter.Type.IsInteger())
             {
-                if (tokenType.Type == types[i])
-                {
-                    return;
-                }
+                ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(utf8Name, new[] {
+                    JwtValueKind.Int16,
+                    JwtValueKind.Int32,
+                    JwtValueKind.Int64});
             }
-
-            ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(utf8Name, types);
         }
 
-        /// <summary>Validates the presence and the type of a required header.</summary>
+        /// <summary>Validates the presence and the type of a required claim.</summary>
         /// <param name="utf8Name"></param>
-        /// <param name="type1"></param>
-        /// <param name="type2"></param>
-        protected void CheckRequiredHeader(string utf8Name, JwtValueKind type1, JwtValueKind type2)
+        protected void CheckRequiredHeaderParameterAsStringOrArray(JsonEncodedText utf8Name)
         {
-            if (!Header.TryGetValue(utf8Name, out var tokenType))
+            if (!_header.TryGetValue(utf8Name, out var parameter))
             {
                 ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(utf8Name);
             }
 
-            if (tokenType.Type != type1 && tokenType.Type != type2)
+            if (!parameter.Type.IsStringOrArray())
             {
-                ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(utf8Name, new[] { type1, type2 });
+                ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(utf8Name, new[] {
+                    JwtValueKind.String,
+                    JwtValueKind.JsonEncodedString,
+                    JwtValueKind.Array });
             }
         }
+
+        /// <summary>Validates the presence and the type of a required claim.</summary>
+        /// <param name="utf8Name"></param>
+        protected void CheckRequiredHeaderParameterAsObject(JsonEncodedText utf8Name)
+        {
+            if (!_header.TryGetValue(utf8Name, out var parameter))
+            {
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(utf8Name);
+            }
+
+            if (parameter.Type != JwtValueKind.Object)
+            {
+                ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(utf8Name, JwtValueKind.Object);
+            }
+        }
+
+        private string GetDebuggerDisplay()
+            => Header.ToString();
     }
 }

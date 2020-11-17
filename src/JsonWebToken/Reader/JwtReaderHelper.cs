@@ -121,71 +121,77 @@ namespace JsonWebToken
             }
             else
             {
-                int decodedSize = Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length);
-
-                byte[]? encryptedKeyToReturnToPool = null;
-                byte[]? unwrappedKeyToReturnToPool = null;
-                Span<byte> encryptedKey = decodedSize <= Constants.MaxStackallocBytes ?
-                    stackalloc byte[decodedSize] :
-                    encryptedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(decodedSize);
-                
-                try
+                if (KeyManagementAlgorithm.TryParse(alg, out var algorithm))
                 {
-                    KeyManagementAlgorithm.TryParse(alg, out var algorithm);
+                    int decodedSize = Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length);
 
-                    var operationResult = Base64Url.Decode(rawEncryptedKey, encryptedKey, out _, out int bytesWritten);
-                    Debug.Assert(operationResult == OperationStatus.Done);
-                    encryptedKey = encryptedKey.Slice(0, bytesWritten);
+                    byte[]? encryptedKeyToReturnToPool = null;
+                    byte[]? unwrappedKeyToReturnToPool = null;
+                    Span<byte> encryptedKey = decodedSize <= Constants.MaxStackallocBytes ?
+                        stackalloc byte[decodedSize] :
+                        encryptedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(decodedSize);
 
-                    var keyUnwrappers = new List<(int, KeyUnwrapper)>(1);
-                    int maxKeyUnwrapSize = 0;
-                    for (int i = 0; i < encryptionKeyProviders.Length; i++)
+                    try
                     {
-                        var keySet = encryptionKeyProviders[i].GetKeys(header);
-                        for (int j = 0; j < keySet.Length; j++)
+                        var operationResult = Base64Url.Decode(rawEncryptedKey, encryptedKey, out _, out int bytesWritten);
+                        Debug.Assert(operationResult == OperationStatus.Done);
+                        encryptedKey = encryptedKey.Slice(0, bytesWritten);
+
+                        var keyUnwrappers = new List<(int, KeyUnwrapper)>(1);
+                        int maxKeyUnwrapSize = 0;
+                        for (int i = 0; i < encryptionKeyProviders.Length; i++)
                         {
-                            var key = keySet[j];
-                            if (key.CanUseForKeyWrapping(alg))
+                            var keySet = encryptionKeyProviders[i].GetKeys(header);
+                            for (int j = 0; j < keySet.Length; j++)
                             {
-                                if (key.TryGetKeyUnwrapper(enc, algorithm, out var keyUnwrapper))
+                                var key = keySet[j];
+                                if (key.CanUseForKeyWrapping(alg))
                                 {
-                                    int keyUnwrapSize = keyUnwrapper.GetKeyUnwrapSize(encryptedKey.Length);
-                                    keyUnwrappers.Add((keyUnwrapSize, keyUnwrapper));
-                                    if (maxKeyUnwrapSize < keyUnwrapSize)
+                                    if (key.TryGetKeyUnwrapper(enc, algorithm, out var keyUnwrapper))
                                     {
-                                        maxKeyUnwrapSize = keyUnwrapSize;
+                                        int keyUnwrapSize = keyUnwrapper.GetKeyUnwrapSize(encryptedKey.Length);
+                                        keyUnwrappers.Add((keyUnwrapSize, keyUnwrapper));
+                                        if (maxKeyUnwrapSize < keyUnwrapSize)
+                                        {
+                                            maxKeyUnwrapSize = keyUnwrapSize;
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    keys = new List<SymmetricJwk>(1);
-                    Span<byte> unwrappedKey = maxKeyUnwrapSize <= Constants.MaxStackallocBytes ?
-                        stackalloc byte[maxKeyUnwrapSize] :
-                        unwrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(maxKeyUnwrapSize);
-                    for (int i = 0; i < keyUnwrappers.Count; i++)
-                    {
-                        var kpv = keyUnwrappers[i];
-                        var temporaryUnwrappedKey = unwrappedKey.Length != kpv.Item1 ? unwrappedKey.Slice(0, kpv.Item1) : unwrappedKey;
-                        if (kpv.Item2.TryUnwrapKey(encryptedKey, temporaryUnwrappedKey, header, out int keyUnwrappedBytesWritten))
+                        keys = new List<SymmetricJwk>(1);
+                        Span<byte> unwrappedKey = maxKeyUnwrapSize <= Constants.MaxStackallocBytes ?
+                            stackalloc byte[maxKeyUnwrapSize] :
+                            unwrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(maxKeyUnwrapSize);
+                        for (int i = 0; i < keyUnwrappers.Count; i++)
                         {
-                            var jwk = SymmetricJwk.FromByteArray(unwrappedKey.Slice(0, keyUnwrappedBytesWritten).ToArray(), false);
-                            keys.Add(jwk);
+                            var kpv = keyUnwrappers[i];
+                            var temporaryUnwrappedKey = unwrappedKey.Length != kpv.Item1 ? unwrappedKey.Slice(0, kpv.Item1) : unwrappedKey;
+                            if (kpv.Item2.TryUnwrapKey(encryptedKey, temporaryUnwrappedKey, header, out int keyUnwrappedBytesWritten))
+                            {
+                                var jwk = SymmetricJwk.FromByteArray(unwrappedKey.Slice(0, keyUnwrappedBytesWritten).ToArray(), false);
+                                keys.Add(jwk);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        if (encryptedKeyToReturnToPool != null)
+                        {
+                            ArrayPool<byte>.Shared.Return(encryptedKeyToReturnToPool, true);
+                        }
+
+                        if (unwrappedKeyToReturnToPool != null)
+                        {
+                            ArrayPool<byte>.Shared.Return(unwrappedKeyToReturnToPool, true);
                         }
                     }
                 }
-                finally
+                else
                 {
-                    if (encryptedKeyToReturnToPool != null)
-                    {
-                        ArrayPool<byte>.Shared.Return(encryptedKeyToReturnToPool, true);
-                    }
-
-                    if (unwrappedKeyToReturnToPool != null)
-                    {
-                        ArrayPool<byte>.Shared.Return(unwrappedKeyToReturnToPool, true);
-                    }
+                    keys = null;
+                    return false;
                 }
             }
 

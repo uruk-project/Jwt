@@ -6,6 +6,7 @@ using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace JsonWebToken.Internal
 {
@@ -166,14 +167,21 @@ namespace JsonWebToken.Internal
             return HashAlgorithmName.SHA256;
         }
 
-        private static string? GetPartyInfo(JwtHeader header, string name)
+        private static JsonEncodedText GetPartyInfo(JwtHeader header, JsonEncodedText name)
         {
             if (header.TryGetValue(name, out var token))
             {
-                return (string?)token.Value;
+                if (token.Type == JwtValueKind.String)
+                {
+                    return JsonEncodedText.Encode((string)token.Value);
+                }
+                else
+                {
+                    return (JsonEncodedText)token.Value!;
+                }
             }
 
-            return null;
+            return default;
         }
 
         private static void WritePartyInfo(ReadOnlySpan<byte> partyInfo, int partyInfoLength, Span<byte> destination)
@@ -195,52 +203,9 @@ namespace JsonWebToken.Internal
             _algorithm.Utf8Name.CopyTo(destination.Slice(sizeof(int)));
         }
 
-        private byte[] BuildSecretAppend(string? apu, string? apv)
+        private byte[] BuildSecretAppend(JsonEncodedText apu, JsonEncodedText apv)
         {
-            byte[]? apuB = null;
-            byte[]? apvB = null;
-            try
-            {
-                int apuLength;
-                Span<byte> apuS = stackalloc byte[0];
-                if (apu != null)
-                {
-                    apuLength = Utf8.GetMaxByteCount(apu.Length);
-                    apuS = apuLength < Constants.MaxStackallocBytes
-                        ? stackalloc byte[apuLength]
-                        : (apuB = ArrayPool<byte>.Shared.Rent(apuLength));
-
-                    apuLength = Utf8.GetBytes(apu, apuS);
-                    apuS = apuS.Slice(0, apuLength);
-                }
-
-                int apvLength;
-                Span<byte> apvS = stackalloc byte[0];
-                if (apv != null)
-                {
-                    apvLength = Utf8.GetMaxByteCount(apv.Length);
-                    apvS = apvLength < Constants.MaxStackallocBytes
-                        ? stackalloc byte[apvLength]
-                        : (apvB = ArrayPool<byte>.Shared.Rent(apvLength));
-
-                    apvLength = Utf8.GetBytes(apv, apvS);
-                    apvS = apvS.Slice(0, apvLength);
-                }
-
-                return BuildSecretAppend(apuS, apvS);
-            }
-            finally
-            {
-                if (apuB != null)
-                {
-                    ArrayPool<byte>.Shared.Return(apuB);
-                }
-
-                if (apvB != null)
-                {
-                    ArrayPool<byte>.Shared.Return(apvB);
-                }
-            }
+            return BuildSecretAppend(apu.EncodedUtf8Bytes, apv.EncodedUtf8Bytes);
         }
 
         private byte[] BuildSecretAppend(ReadOnlySpan<byte> apu, ReadOnlySpan<byte> apv)

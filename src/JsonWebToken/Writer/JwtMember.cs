@@ -14,15 +14,25 @@ namespace JsonWebToken
         public readonly JwtValueKind Type;
 
         /// <summary>Gets the value of the <see cref="JwtMember"/>.</summary>
-        public readonly object? Value;
+        public readonly object Value;
 
         /// <summary>Gets the value of the <see cref="JwtMember"/>.</summary>
-        public readonly string Name;
-
+        public readonly JsonEncodedText Name;
+        
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
         /// <param name="memberName"></param>
         /// <param name="value"></param>
-        public JwtMember(string memberName, object[] value)
+        public JwtMember(JsonEncodedText memberName, string?[] value)
+        {
+            Type = JwtValueKind.Array;
+            Value = value;
+            Name = memberName;
+        }
+        
+        /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
+        /// <param name="memberName"></param>
+        /// <param name="value"></param>
+        public JwtMember(JsonEncodedText memberName, object?[] value)
         {
             Type = JwtValueKind.Array;
             Value = value;
@@ -32,23 +42,8 @@ namespace JsonWebToken
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
         /// <param name="memberName"></param>
         /// <param name="value"></param>
-        public JwtMember(string memberName, string?[] value)
+        public JwtMember(JsonEncodedText memberName, object value)
         {
-            Type = JwtValueKind.Array;
-            Value = value;
-            Name = memberName;
-        }
-
-        /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        public JwtMember(string name, object value)
-        {
-            if (name == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.name);
-            }
-
             if (value == null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
@@ -56,13 +51,23 @@ namespace JsonWebToken
 
             Type = JwtValueKind.Object;
             Value = value;
-            Name = name;
+            Name = memberName;
         }
 
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
         /// <param name="memberName"></param>
         /// <param name="value"></param>
-        public JwtMember(string memberName, string value)
+        public JwtMember(JsonEncodedText memberName, JsonEncodedText value)
+        {
+            Type = JwtValueKind.JsonEncodedString;
+            Value = value;
+            Name = memberName;
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
+        /// <param name="memberName"></param>
+        /// <param name="value"></param>
+        public JwtMember(JsonEncodedText memberName, string value)
         {
             if (value == null)
             {
@@ -77,7 +82,7 @@ namespace JsonWebToken
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
         /// <param name="memberName"></param>
         /// <param name="value"></param>
-        public JwtMember(string memberName, long value)
+        public JwtMember(JsonEncodedText memberName, long value)
         {
             Type = JwtValueKind.Int64;
             Value = value;
@@ -87,7 +92,7 @@ namespace JsonWebToken
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
         /// <param name="memberName"></param>
         /// <param name="value"></param>
-        public JwtMember(string memberName, int value)
+        public JwtMember(JsonEncodedText memberName, int value)
         {
             Type = JwtValueKind.Int32;
             Value = value;
@@ -99,7 +104,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="memberName"></param>
         /// <param name="value"></param>
-        public JwtMember(string memberName, short value)
+        public JwtMember(JsonEncodedText memberName, short value)
         {
             Type = JwtValueKind.Int16;
             Value = value;
@@ -109,7 +114,7 @@ namespace JsonWebToken
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
         /// <param name="memberName"></param>
         /// <param name="value"></param>
-        public JwtMember(string memberName, double value)
+        public JwtMember(JsonEncodedText memberName, double value)
         {
             Type = JwtValueKind.Double;
             Value = value;
@@ -119,7 +124,7 @@ namespace JsonWebToken
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
         /// <param name="memberName"></param>
         /// <param name="value"></param>
-        public JwtMember(string memberName, float value)
+        public JwtMember(JsonEncodedText memberName, float value)
         {
             Type = JwtValueKind.Float;
             Value = value;
@@ -129,7 +134,7 @@ namespace JsonWebToken
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
         /// <param name="memberName"></param>
         /// <param name="value"></param>
-        public JwtMember(string memberName, bool value)
+        public JwtMember(JsonEncodedText memberName, bool value)
         {
             Type = value ? JwtValueKind.True : JwtValueKind.False;
             Value = value;
@@ -141,22 +146,25 @@ namespace JsonWebToken
             switch (Type)
             {
                 case JwtValueKind.String:
-                    writer.WriteString(Name, (string)Value!);
+                    writer.WriteString(Name, (string)Value);
+                    break;            
+                case JwtValueKind.JsonEncodedString:
+                    writer.WriteString(Name, (JsonEncodedText)Value);
                     break;
                 case JwtValueKind.Int16:
-                    writer.WriteNumber(Name, (short)Value!);
+                    writer.WriteNumber(Name, (short)Value);
                     break;
                 case JwtValueKind.Int32:
-                    writer.WriteNumber(Name, (int)Value!);
+                    writer.WriteNumber(Name, (int)Value);
                     break;
                 case JwtValueKind.Int64:
-                    writer.WriteNumber(Name, (long)Value!);
+                    writer.WriteNumber(Name, (long)Value);
                     break;
                 case JwtValueKind.Float:
-                    writer.WriteNumber(Name, (float)Value!);
+                    writer.WriteNumber(Name, (float)Value);
                     break;
                 case JwtValueKind.Double:
-                    writer.WriteNumber(Name, (double)Value!);
+                    writer.WriteNumber(Name, (double)Value);
                     break;
                 case JwtValueKind.Object:
                     if (Value is IJwtSerializable serializable)
@@ -172,7 +180,7 @@ namespace JsonWebToken
                     break;
                 case JwtValueKind.Array:
                     writer.WritePropertyName(Name);
-                    JsonSerializer.Serialize(writer, Value);
+                    JsonSerializer.Serialize(writer, Value, Constants.DefaultSerializerOptions);
                     break;
                 case JwtValueKind.True:
                     writer.WriteBoolean(Name, true);

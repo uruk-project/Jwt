@@ -275,7 +275,7 @@ namespace JsonWebToken
             return _parsedData.GetJsonTokenType(index);
         }
 
-        private void CheckExpectedType(JsonTokenType expected, JsonTokenType actual)
+        private static void CheckExpectedType(JsonTokenType expected, JsonTokenType actual)
         {
             if (expected != actual)
             {

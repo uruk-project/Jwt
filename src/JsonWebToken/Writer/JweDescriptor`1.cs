@@ -107,15 +107,14 @@ namespace JsonWebToken
                     int base64EncodedHeaderLength = 0;
                     ReadOnlySpan<byte> headerJson = default;
                     var headerCache = context.HeaderCache;
-                    byte[]? cachedHeader = null;
-                    if (headerCache.TryGetHeader(Header, _alg, _enc, _kid, _typ, _cty, out cachedHeader))
+                    if (headerCache.TryGetHeader(header, _alg, _enc, _kid, _typ, _cty, out byte[]? cachedHeader))
                     {
                         writer.Flush();
                         base64EncodedHeaderLength += cachedHeader.Length;
                     }
                     else
                     {
-                        Header.WriteTo(writer);
+                        header.WriteTo(writer);
                         writer.Flush();
                         headerJson = bufferWriter.WrittenSpan;
                         base64EncodedHeaderLength += Base64Url.GetArraySizeRequiredToEncode(headerJson.Length);
@@ -134,7 +133,7 @@ namespace JsonWebToken
                     else
                     {
                         offset = Base64Url.Encode(headerJson, base64EncodedHeader);
-                        headerCache.AddHeader(Header, alg, enc, _kid, _typ, _cty, base64EncodedHeader.Slice(0, offset));
+                        headerCache.AddHeader(header, alg, enc, _kid, _typ, _cty, base64EncodedHeader.Slice(0, offset));
                     }
 
                     int bytesWritten = offset;

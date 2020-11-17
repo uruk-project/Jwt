@@ -91,8 +91,7 @@ namespace JsonWebToken
         public static readonly SignatureAlgorithm RsaSsaPssSha512 = new SignatureAlgorithm(id: Algorithms.RsaSsaPssSha512, "PS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA512);
 
         private readonly int _id;
-        private readonly byte[] _utf8Name;
-        private readonly string _name;
+        private readonly JsonEncodedText _name;
         private readonly AlgorithmCategory _category;
         private readonly ushort _requiredKeySizeInBits;
         private readonly HashAlgorithmName _hashAlgorithm;
@@ -125,12 +124,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the signature algorithm.
         /// </summary>
-        public string Name => _name;
+        public JsonEncodedText Name => _name;
 
         /// <summary>
         /// Gets the name of the signature algorithm.
         /// </summary>
-        public ReadOnlySpan<byte> Utf8Name => _utf8Name;
+        public ReadOnlySpan<byte> Utf8Name => _name.EncodedUtf8Bytes;
 
         /// <summary>
         /// Gets the algorithm category.
@@ -163,8 +162,7 @@ namespace JsonWebToken
         public SignatureAlgorithm(int id, string name, AlgorithmCategory category, ushort requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
         {
             _id = id;
-            _utf8Name = Utf8.GetBytes(name);
-            _name = name;
+            _name = JsonEncodedText.Encode(name);
             _category = category;
             _requiredKeySizeInBits = requiredKeySizeInBits;
             _hashAlgorithm = hashAlgorithm;
@@ -260,7 +258,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public static explicit operator string?(SignatureAlgorithm? value)
         {
-            return value?.Name;
+            return value?.Name.ToString(); ;
         }
 
         /// <summary>
@@ -310,7 +308,7 @@ namespace JsonWebToken
         {
             for (int i = 0; i < _algorithms.Length; i++)
             {
-                if (reader.ValueTextEquals(_algorithms[i]._utf8Name))
+                if (reader.ValueTextEquals(_algorithms[i]._name.EncodedUtf8Bytes))
                 {
                     algorithm = _algorithms[i];
                     return true;
@@ -454,72 +452,72 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         public static bool TryParse(JsonElement value, [NotNullWhen(true)] out SignatureAlgorithm? algorithm)
         {
-            if (value.ValueEquals(HmacSha256._utf8Name))
+            if (value.ValueEquals(HmacSha256._name.EncodedUtf8Bytes))
             {
                 algorithm = HmacSha256;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaSha256._utf8Name))
+            else if (value.ValueEquals(RsaSha256._name.EncodedUtf8Bytes))
             {
                 algorithm = RsaSha256;
                 goto Found;
             }
-            else if (value.ValueEquals(EcdsaSha256._utf8Name))
+            else if (value.ValueEquals(EcdsaSha256._name.EncodedUtf8Bytes))
             {
                 algorithm = EcdsaSha256;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaSsaPssSha256._utf8Name))
+            else if (value.ValueEquals(RsaSsaPssSha256._name.EncodedUtf8Bytes))
             {
                 algorithm = RsaSsaPssSha256;
                 goto Found;
             }
-            else if (value.ValueEquals(HmacSha512._utf8Name))
+            else if (value.ValueEquals(HmacSha512._name.EncodedUtf8Bytes))
             {
                 algorithm = HmacSha512;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaSha512._utf8Name))
+            else if (value.ValueEquals(RsaSha512._name.EncodedUtf8Bytes))
             {
                 algorithm = RsaSha512;
                 goto Found;
             }
-            else if (value.ValueEquals(EcdsaSha512._utf8Name))
+            else if (value.ValueEquals(EcdsaSha512._name.EncodedUtf8Bytes))
             {
                 algorithm = EcdsaSha512;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaSsaPssSha512._utf8Name))
+            else if (value.ValueEquals(RsaSsaPssSha512._name.EncodedUtf8Bytes))
             {
                 algorithm = RsaSsaPssSha512;
                 goto Found;
             }
-            else if (value.ValueEquals(HmacSha384._utf8Name))
+            else if (value.ValueEquals(HmacSha384._name.EncodedUtf8Bytes))
             {
                 algorithm = HmacSha384;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaSha384._utf8Name))
+            else if (value.ValueEquals(RsaSha384._name.EncodedUtf8Bytes))
             {
                 algorithm = RsaSha384;
                 goto Found;
             }
-            else if (value.ValueEquals(EcdsaSha384._utf8Name))
+            else if (value.ValueEquals(EcdsaSha384._name.EncodedUtf8Bytes))
             {
                 algorithm = EcdsaSha384;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaSsaPssSha384._utf8Name))
+            else if (value.ValueEquals(RsaSsaPssSha384._name.EncodedUtf8Bytes))
             {
                 algorithm = RsaSsaPssSha384;
                 goto Found;
             }
-            else if (value.ValueEquals(EcdsaSha256X._utf8Name))
+            else if (value.ValueEquals(EcdsaSha256X._name.EncodedUtf8Bytes))
             {
                 algorithm = EcdsaSha256X;
                 goto Found;
             }
-            else if (value.ValueEquals(None._utf8Name))
+            else if (value.ValueEquals(None._name.EncodedUtf8Bytes))
             {
                 algorithm = None;
                 goto Found;
@@ -563,7 +561,7 @@ namespace JsonWebToken
 
         /// <inheritsddoc />
         public override string ToString()
-            => Name;
+            => Name.ToString();
 
         internal static SignatureAlgorithm Create(string name)
             => new SignatureAlgorithm(127, name, AlgorithmCategory.None, 0, new HashAlgorithmName());

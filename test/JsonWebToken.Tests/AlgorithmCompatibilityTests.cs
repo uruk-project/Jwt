@@ -19,7 +19,7 @@ namespace JsonWebToken.Tests
         public void Compatible(EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
             var writer = new JwtWriter();
-            foreach (var encryptionKey in SelectEncryptionKey(enc.Name, alg.Name))
+            foreach (var encryptionKey in SelectEncryptionKey(enc.Name.ToString(), alg.Name.ToString()))
             {
                 var descriptor = new JweDescriptor(encryptionKey, alg, enc)
                 {

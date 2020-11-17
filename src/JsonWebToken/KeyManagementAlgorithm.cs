@@ -38,6 +38,7 @@ namespace JsonWebToken
         private const uint _92KW = 1464545849u;
         private const ulong u002bA25 = 3833198122850332789u;
         private const uint _56KW = 1464546869u;
+        private const ulong u002bUpperMask = 137438953504u;
 
         /// <summary>
         /// Empty
@@ -126,9 +127,9 @@ namespace JsonWebToken
 
         private readonly short _id;
         private readonly ushort _requiredKeySizeInBits;
-        private readonly AlgorithmCategory _category;
         private readonly KeyManagementAlgorithm? _wrappedAlgorithm;
-        private readonly byte[] _utf8Name;
+        private readonly JsonEncodedText _utf8Name;
+        private readonly AlgorithmCategory _category;
         private readonly bool _produceEncryptionKey;
 
         /// <summary>
@@ -154,12 +155,12 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the name of the key management algorithm.
         /// </summary>
-        public string Name => Utf8.GetString(_utf8Name);
+        public JsonEncodedText Name => _utf8Name;
 
         /// <summary>
         /// Gets the name of the key management algorithm.
         /// </summary>
-        public ReadOnlySpan<byte> Utf8Name => _utf8Name;
+        public ReadOnlySpan<byte> Utf8Name => _utf8Name.EncodedUtf8Bytes;
 
         /// <summary>
         /// Gets whether the algorithm produce an encryption key.
@@ -245,7 +246,7 @@ namespace JsonWebToken
         public KeyManagementAlgorithm(short id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, KeyManagementAlgorithm? wrappedAlgorithm, bool produceEncryptedKey)
         {
             _id = id;
-            _utf8Name = Utf8.GetBytes(name);
+            _utf8Name = JsonEncodedText.Encode(name, Constants.JsonEncoder);
             _category = keyType;
             _requiredKeySizeInBits = requiredKeySizeInBits;
             _wrappedAlgorithm = wrappedAlgorithm;
@@ -335,7 +336,7 @@ namespace JsonWebToken
         /// <param name="value"></param>
         public static explicit operator string?(KeyManagementAlgorithm? value)
         {
-            return value?.Name;
+            return value?.Name.ToString();
         }
 
         /// <summary>
@@ -387,13 +388,13 @@ namespace JsonWebToken
                 return null;
             }
 
-            return value._utf8Name;
+            return value._utf8Name.EncodedUtf8Bytes.ToArray();
         }
 
         /// <inheritsddoc />
         public override string ToString()
         {
-            return Name;
+            return Name.ToString();
         }
 
         /// <summary>
@@ -406,7 +407,7 @@ namespace JsonWebToken
             var algorithms = _algorithms;
             for (int i = 0; i < algorithms.Length; i++)
             {
-                if (reader.ValueTextEquals(algorithms[i]._utf8Name))
+                if (reader.ValueTextEquals(algorithms[i]._utf8Name.EncodedUtf8Bytes))
                 {
                     algorithm = algorithms[i];
                     return true;
@@ -497,15 +498,15 @@ namespace JsonWebToken
 
                 // Special case for escaped 'ECDH-ES\u002bAxxxKW' 
                 case 19 when IntegerMarshal.ReadUInt64(value) == ECDH_ES_UTF8 /* ECDH-ES\ */ :
-                    switch (IntegerMarshal.ReadUInt64(value, 8))
+                    switch (IntegerMarshal.ReadUInt64(value, 8) | u002bUpperMask)
                     {
                         case u002bA12 when IntegerMarshal.ReadUInt32(value, 15) == _28KW:
                             algorithm = EcdhEsAes128KW;
                             goto Found;
-                        case u002bA19 when IntegerMarshal.ReadUInt32(value, 15) == _92KW:
+                        case u002bA19 when IntegerMarshal.ReadUInt32(value, 15)== _92KW:
                             algorithm = EcdhEsAes192KW;
                             goto Found;
-                        case u002bA25 when IntegerMarshal.ReadUInt32(value, 15) == _56KW:
+                        case u002bA25 when IntegerMarshal.ReadUInt32(value, 15)== _56KW:
                             algorithm = EcdhEsAes256KW;
                             goto Found;
                     }
@@ -590,82 +591,82 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         public static bool TryParse(JwtElement value, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
         {
-            if (value.ValueEquals(Direct._utf8Name))
+            if (value.ValueEquals(Direct._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Direct;
                 goto Found;
             }
-            else if (value.ValueEquals(Aes128KW._utf8Name))
+            else if (value.ValueEquals(Aes128KW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes128KW;
                 goto Found;
             }
-            else if (value.ValueEquals(Aes192KW._utf8Name))
+            else if (value.ValueEquals(Aes192KW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes192KW;
                 goto Found;
             }
-            else if (value.ValueEquals(Aes256KW._utf8Name))
+            else if (value.ValueEquals(Aes256KW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes256KW;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaPkcs1._utf8Name))
+            else if (value.ValueEquals(RsaPkcs1._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = RsaPkcs1;
                 goto Found;
             }
-            else if (value.ValueEquals(EcdhEs._utf8Name))
+            else if (value.ValueEquals(EcdhEs._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = EcdhEs;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaOaep._utf8Name))
+            else if (value.ValueEquals(RsaOaep._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = RsaOaep;
                 goto Found;
             }
-            else if (value.ValueEquals(Aes128GcmKW._utf8Name))
+            else if (value.ValueEquals(Aes128GcmKW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes128GcmKW;
                 goto Found;
             }
-            else if (value.ValueEquals(Aes192GcmKW._utf8Name))
+            else if (value.ValueEquals(Aes192GcmKW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes192GcmKW;
                 goto Found;
             }
-            else if (value.ValueEquals(Aes256GcmKW._utf8Name))
+            else if (value.ValueEquals(Aes256GcmKW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes256GcmKW;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaOaep256._utf8Name))
+            else if (value.ValueEquals(RsaOaep256._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = RsaOaep256;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaOaep384._utf8Name))
+            else if (value.ValueEquals(RsaOaep384._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = RsaOaep384;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaOaep512._utf8Name))
+            else if (value.ValueEquals(RsaOaep512._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = RsaOaep512;
                 goto Found;
             }
-            else if (value.ValueEquals(EcdhEsAes128KW._utf8Name))
+            else if (value.ValueEquals(EcdhEsAes128KW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = EcdhEsAes128KW;
                 goto Found;
             }
-            else if (value.ValueEquals(EcdhEsAes192KW._utf8Name))
+            else if (value.ValueEquals(EcdhEsAes192KW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = EcdhEsAes192KW;
                 goto Found;
             }
-            else if (value.ValueEquals(EcdhEsAes256KW._utf8Name))
+            else if (value.ValueEquals(EcdhEsAes256KW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = EcdhEsAes256KW;
                 goto Found;
@@ -684,82 +685,82 @@ namespace JsonWebToken
         /// <param name="algorithm"></param>
         public static bool TryParse(JsonElement value, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
         {
-            if (value.ValueEquals(Direct._utf8Name))
+            if (value.ValueEquals(Direct._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Direct;
                 goto Found;
             }
-            else if (value.ValueEquals(Aes128KW._utf8Name))
+            else if (value.ValueEquals(Aes128KW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes128KW;
                 goto Found;
             }
-            else if (value.ValueEquals(Aes192KW._utf8Name))
+            else if (value.ValueEquals(Aes192KW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes192KW;
                 goto Found;
             }
-            else if (value.ValueEquals(Aes256KW._utf8Name))
+            else if (value.ValueEquals(Aes256KW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes256KW;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaPkcs1._utf8Name))
+            else if (value.ValueEquals(RsaPkcs1._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = RsaPkcs1;
                 goto Found;
             }
-            else if (value.ValueEquals(EcdhEs._utf8Name))
+            else if (value.ValueEquals(EcdhEs._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = EcdhEs;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaOaep._utf8Name))
+            else if (value.ValueEquals(RsaOaep._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = RsaOaep;
                 goto Found;
             }
-            else if (value.ValueEquals(Aes128GcmKW._utf8Name))
+            else if (value.ValueEquals(Aes128GcmKW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes128GcmKW;
                 goto Found;
             }
-            else if (value.ValueEquals(Aes192GcmKW._utf8Name))
+            else if (value.ValueEquals(Aes192GcmKW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes192GcmKW;
                 goto Found;
             }
-            else if (value.ValueEquals(Aes256GcmKW._utf8Name))
+            else if (value.ValueEquals(Aes256GcmKW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = Aes256GcmKW;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaOaep256._utf8Name))
+            else if (value.ValueEquals(RsaOaep256._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = RsaOaep256;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaOaep384._utf8Name))
+            else if (value.ValueEquals(RsaOaep384._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = RsaOaep384;
                 goto Found;
             }
-            else if (value.ValueEquals(RsaOaep512._utf8Name))
+            else if (value.ValueEquals(RsaOaep512._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = RsaOaep512;
                 goto Found;
             }
-            else if (value.ValueEquals(EcdhEsAes128KW._utf8Name))
+            else if (value.ValueEquals(EcdhEsAes128KW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = EcdhEsAes128KW;
                 goto Found;
             }
-            else if (value.ValueEquals(EcdhEsAes192KW._utf8Name))
+            else if (value.ValueEquals(EcdhEsAes192KW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = EcdhEsAes192KW;
                 goto Found;
             }
-            else if (value.ValueEquals(EcdhEsAes256KW._utf8Name))
+            else if (value.ValueEquals(EcdhEsAes256KW._utf8Name.EncodedUtf8Bytes))
             {
                 algorithm = EcdhEsAes256KW;
                 goto Found;

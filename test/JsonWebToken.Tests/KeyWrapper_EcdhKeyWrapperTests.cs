@@ -15,7 +15,7 @@ namespace JsonWebToken.Tests
             var cek = WrapKey(wrapper, keyToWrap, out var header);
 
             Assert.Equal(1, header.Count);
-            Assert.True(header.ContainsKey("epk"));
+            Assert.True(header.ContainsKey(HeaderParameters.Epk));
 
             return cek;
         }

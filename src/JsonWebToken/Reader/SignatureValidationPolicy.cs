@@ -89,7 +89,7 @@ namespace JsonWebToken
 
             public override SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
-                if (payload.TryGetClaim(Claims.Iss, out var aud))
+                if (payload.TryGetClaim(Claims.Iss.ToString(), out var aud))
                 {
                     var value = aud.GetString()!;
                     if (_policies.TryGetValue(value, out var policy))
@@ -117,7 +117,7 @@ namespace JsonWebToken
 
             public override SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
-                if (payload.TryGetClaim(Claims.Iss, out var aud))
+                if (payload.TryGetClaim(Claims.Iss.ToString(), out var aud))
                 {
                     if (aud.ValueEquals(_issuer))
                     {

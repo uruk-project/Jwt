@@ -408,9 +408,8 @@ namespace JsonWebToken
             JsonTokenType type = TokenType;
 
             return
-                type == JsonTokenType.True ? true :
-                type == JsonTokenType.False ? false :
-                throw ThrowHelper.CreateInvalidOperationException_NotSupportedJsonType(/*nameof(Boolean), type*/type);
+                type == JsonTokenType.True || (type == JsonTokenType.False ? false :
+                throw ThrowHelper.CreateInvalidOperationException_NotSupportedJsonType(/*nameof(Boolean), type*/type));
         }
 
         /// <summary>
@@ -467,7 +466,7 @@ namespace JsonWebToken
         {
             CheckValidInstance();
 
-            return _parent.Deserialize<TValue>(_idx);
+            return _parent.Deserialize<TValue>(_idx, options);
         }
 
         /// <summary>
@@ -1085,7 +1084,7 @@ namespace JsonWebToken
         public struct ObjectEnumerator : IEnumerable<JwtMemberElement>, IEnumerator<JwtMemberElement>
         {
             private int _curIdx;
-            private JwtDocument _document;
+            private readonly JwtDocument _document;
             private readonly int _endIdxOrVersion;
 
             internal ObjectEnumerator(JwtElement target)
@@ -1273,7 +1272,7 @@ namespace JsonWebToken
         public ref struct ArrayEnumerator
         {
             private int _curIdx;
-            private JwtDocument _document;
+            private readonly JwtDocument _document;
             private readonly int _endIdxOrVersion;
 
             internal ArrayEnumerator(JwtElement target)
@@ -1434,7 +1433,7 @@ namespace JsonWebToken
         public struct ArrayEnumerator<T>
         {
             private int _curIdx;
-            private JwtDocument _document;
+            private readonly JwtDocument _document;
             private readonly int _endIdxOrVersion;
 
             internal ArrayEnumerator(JwtElement target)

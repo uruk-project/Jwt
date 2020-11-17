@@ -1,7 +1,7 @@
 // Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using System;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -16,146 +16,143 @@ namespace JsonWebToken
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#IDToken
         /// </summary>
-        public static ReadOnlySpan<byte> AcrUtf8 => new[] { (byte)'a', (byte)'c', (byte)'r' };
+        public static readonly JsonEncodedText Acr = JsonEncodedText.Encode("acr");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#IDToken
         /// </summary>
-        public static ReadOnlySpan<byte> AmrUtf8 => new[] { (byte)'a', (byte)'m', (byte)'r' };
+        public static readonly JsonEncodedText Amr = JsonEncodedText.Encode("amr");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#IDToken
         /// </summary>
-        public static ReadOnlySpan<byte> AuthTimeUtf8 => new[] { (byte)'a', (byte)'u', (byte)'t', (byte)'h', (byte)'_', (byte)'t', (byte)'i', (byte)'m', (byte)'e' };
+        public static readonly JsonEncodedText AuthTime = JsonEncodedText.Encode("auth_time");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#IDToken
         /// </summary>
-        public static ReadOnlySpan<byte> AzpUtf8 => new[] { (byte)'z', (byte)'z', (byte)'p' };
+        public static readonly JsonEncodedText Azp = JsonEncodedText.Encode("azp");
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
-        public static ReadOnlySpan<byte> BirthdateUtf8 => new[] { (byte)'b', (byte)'i', (byte)'r', (byte)'t', (byte)'h', (byte)'d', (byte)'a', (byte)'t', (byte)'e' };
+        public static readonly JsonEncodedText Birthdate = JsonEncodedText.Encode("birthdate");
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
-        public static ReadOnlySpan<byte> CHashUtf8 => new[] { (byte)'c', (byte)'_', (byte)'h', (byte)'a', (byte)'s', (byte)'h' };
-        public static readonly string CHash = "c_hash";
+        public static readonly JsonEncodedText CHash = JsonEncodedText.Encode("c_hash");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
         /// </summary>
-        public static ReadOnlySpan<byte> AtHashUtf8 => new[] { (byte)'a', (byte)'t', (byte)'_', (byte)'h', (byte)'a', (byte)'s', (byte)'h' };
-        public static readonly string AtHash = "at_hash";
-        
-        /// <summary>
-        /// http://tools.ietf.org/html/rfc7519#section-4
-        /// </summary>
-        public static ReadOnlySpan<byte> EmailUtf8 => new[] { (byte)'e', (byte)'m', (byte)'a', (byte)'i', (byte)'l' };
+        public static readonly JsonEncodedText AtHash = JsonEncodedText.Encode("at_hash");
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
-        public static ReadOnlySpan<byte> GenderUtf8 => new[] { (byte)'g', (byte)'e', (byte)'n', (byte)'d', (byte)'e', (byte)'r' };
+        public static readonly JsonEncodedText Email = JsonEncodedText.Encode("email");
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
-        public static ReadOnlySpan<byte> FamilyNameUtf8 => new[] { (byte)'f', (byte)'a', (byte)'m', (byte)'i', (byte)'l', (byte)'y', (byte)'_', (byte)'n', (byte)'a', (byte)'m', (byte)'e' };
+        public static readonly JsonEncodedText Gender = JsonEncodedText.Encode("gender");
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
-        public static ReadOnlySpan<byte> GivenNameUtf8 => new[] { (byte)'g', (byte)'i', (byte)'v', (byte)'e', (byte)'n', (byte)'_', (byte)'n', (byte)'a', (byte)'m', (byte)'e' };
+        public static readonly JsonEncodedText FamilyName = JsonEncodedText.Encode("family_name");
 
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
-        public static ReadOnlySpan<byte> NonceUtf8 => new[] { (byte)'n', (byte)'o', (byte)'n', (byte)'c', (byte)'e' };
-        public static readonly string Nonce = "nonce";
+        public static readonly JsonEncodedText GivenName = JsonEncodedText.Encode("given_name");
+
+        /// <summary>
+        /// http://tools.ietf.org/html/rfc7519#section-4
+        /// </summary>
+        public static readonly JsonEncodedText Nonce = JsonEncodedText.Encode("nonce");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-frontchannel-1_0.html#OPLogout
         /// </summary>
-        public static ReadOnlySpan<byte> SidUtf8 => new[] { (byte)'s', (byte)'i', (byte)'d' };
+        public static readonly JsonEncodedText Sid = JsonEncodedText.Encode("sid");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         /// </summary>
-        public static ReadOnlySpan<byte> MiddleNameUtf8 => new[] { (byte)'m', (byte)'i', (byte)'d', (byte)'d', (byte)'l', (byte)'e', (byte)'_', (byte)'n', (byte)'a', (byte)'m', (byte)'e' };
+        public static readonly JsonEncodedText MiddleName = JsonEncodedText.Encode("middle_name");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         /// </summary>
-        public static ReadOnlySpan<byte> NicknameUtf8 => new[] { (byte)'n', (byte)'i', (byte)'c', (byte)'k', (byte)'n', (byte)'a', (byte)'m', (byte)'e' };
+        public static readonly JsonEncodedText Nickname = JsonEncodedText.Encode("nickname");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         /// </summary>
-        public static ReadOnlySpan<byte> PreferredUsernameUtf8 => new[] { (byte)'p', (byte)'r', (byte)'e', (byte)'f', (byte)'e', (byte)'r', (byte)'r', (byte)'e', (byte)'d', (byte)'_', (byte)'u', (byte)'s', (byte)'e', (byte)'r', (byte)'n', (byte)'a', (byte)'m', (byte)'e' };
+        public static readonly JsonEncodedText PreferredUsername = JsonEncodedText.Encode("preferred_username");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         /// </summary>
-        public static ReadOnlySpan<byte> ProfileUtf8 => new[] { (byte)'p', (byte)'r', (byte)'o', (byte)'f', (byte)'i', (byte)'l', (byte)'e' };
+        public static readonly JsonEncodedText Profile = JsonEncodedText.Encode("profile");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         /// </summary>
-        public static ReadOnlySpan<byte> PictureUtf8 => new[] { (byte)'p', (byte)'i', (byte)'c', (byte)'t', (byte)'u', (byte)'r', (byte)'e' };
+        public static readonly JsonEncodedText Picture = JsonEncodedText.Encode("picture");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         /// </summary>
-        public static ReadOnlySpan<byte> WebsiteUtf8 => new[] { (byte)'w', (byte)'e', (byte)'b', (byte)'s', (byte)'i', (byte)'t', (byte)'e' };
+        public static readonly JsonEncodedText Website = JsonEncodedText.Encode("website");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         /// </summary>
-        public static ReadOnlySpan<byte> EmailVerifiedUtf8 => new[] { (byte)'e', (byte)'m', (byte)'a', (byte)'i', (byte)'l', (byte)'_', (byte)'v', (byte)'e', (byte)'r', (byte)'i', (byte)'f', (byte)'i', (byte)'e', (byte)'d' };
+        public static readonly JsonEncodedText EmailVerified = JsonEncodedText.Encode("email_verified");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         /// </summary>
-        public static ReadOnlySpan<byte> ZoneinfoUtf8 => new[] { (byte)'z', (byte)'o', (byte)'n', (byte)'e', (byte)'i', (byte)'n', (byte)'f', (byte)'o' };
+        public static readonly JsonEncodedText Zoneinfo = JsonEncodedText.Encode("zoneinfo");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         /// </summary>
-        public static ReadOnlySpan<byte> LocaleUtf8 => new[] { (byte)'l', (byte)'o', (byte)'c', (byte)'a', (byte)'l', (byte)'e' };
+        public static readonly JsonEncodedText Locale = JsonEncodedText.Encode("locale");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         /// </summary>
-        public static ReadOnlySpan<byte> PhoneNumberUtf8 => new[] { (byte)'p', (byte)'h', (byte)'o', (byte)'n', (byte)'e', (byte)'_', (byte)'n', (byte)'u', (byte)'m', (byte)'b', (byte)'e', (byte)'r' };
+        public static readonly JsonEncodedText PhoneNumber = JsonEncodedText.Encode("phone_number");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         /// </summary>
-        public static ReadOnlySpan<byte> PhoneNumberVerifiedUtf8 => new[] { (byte)'p', (byte)'h', (byte)'o', (byte)'n', (byte)'e', (byte)'_', (byte)'n', (byte)'u', (byte)'m', (byte)'b', (byte)'e', (byte)'r', (byte)'_', (byte)'v', (byte)'e', (byte)'r', (byte)'i', (byte)'f', (byte)'i', (byte)'e', (byte)'d' };
+        public static readonly JsonEncodedText PhoneNumberVerified = JsonEncodedText.Encode("phone_number_verified");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         /// </summary>
-        public static ReadOnlySpan<byte> AddressUtf8 => new[] { (byte)'a', (byte)'d', (byte)'d', (byte)'r', (byte)'e', (byte)'s', (byte)'s' };
+        public static readonly JsonEncodedText Address = JsonEncodedText.Encode("address");
 
         /// <summary>
         /// http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         /// </summary>
-        public static ReadOnlySpan<byte> UpdatedAtUtf8 => new byte[] { (byte)'u', (byte)'p', (byte)'d', (byte)'a', (byte)'t', (byte)'e', (byte)'d', (byte)'_', (byte)'a', (byte)'t' };
+        public static readonly JsonEncodedText UpdatedAt = JsonEncodedText.Encode("updated_at");
 
-        public static ReadOnlySpan<byte> FormattedUtf8 => new byte[] { (byte)'f', (byte)'o', (byte)'r', (byte)'m', (byte)'a', (byte)'t', (byte)'t', (byte)'e', (byte)'d' };
+        public static readonly JsonEncodedText Formatted = JsonEncodedText.Encode("formatted");
 
-        public static ReadOnlySpan<byte> StreetAddressUtf8 => new byte[] { (byte)'s', (byte)'t', (byte)'r', (byte)'e', (byte)'e', (byte)'t', (byte)'_', (byte)'a', (byte)'d', (byte)'d', (byte)'r', (byte)'e', (byte)'s', (byte)'s' };
+        public static readonly JsonEncodedText StreetAddress = JsonEncodedText.Encode("street_address");
 
-        public static ReadOnlySpan<byte> LocalityUtf8 => new byte[] { (byte)'l', (byte)'o', (byte)'c', (byte)'a', (byte)'l', (byte)'i', (byte)'t', (byte)'y' };
+        public static readonly JsonEncodedText Locality = JsonEncodedText.Encode("locality");
 
-        public static ReadOnlySpan<byte> RegionUtf8 => new byte[] { (byte)'r', (byte)'e', (byte)'g', (byte)'i', (byte)'o', (byte)'n' };
+        public static readonly JsonEncodedText Region = JsonEncodedText.Encode("region");
 
-        public static ReadOnlySpan<byte> PostalCodeUtf8 => new byte[] { (byte)'p', (byte)'o', (byte)'s', (byte)'t', (byte)'a', (byte)'l', (byte)'_', (byte)'c', (byte)'o', (byte)'d', (byte)'e' };
+        public static readonly JsonEncodedText PostalCode = JsonEncodedText.Encode("postal_code");
 
-        public static ReadOnlySpan<byte> CountryUtf8 => new byte[] { (byte)'c', (byte)'o', (byte)'u', (byte)'n', (byte)'t', (byte)'r', (byte)'y' };
+        public static readonly JsonEncodedText Country = JsonEncodedText.Encode("country");
     }
 }

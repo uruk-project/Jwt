@@ -187,39 +187,11 @@ namespace JsonWebToken
         /// <param name="claim"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationError InvalidClaim(ReadOnlySpan<byte> claim)
-        {
-            return new TokenValidationError(TokenValidationStatus.InvalidClaim)
-            {
-                ErrorClaim = Utf8.GetString(claim)
-            };
-        }
-
-        /// <summary>
-        /// The token has an invalid claim.
-        /// </summary>
-        /// <param name="claim"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationError InvalidClaim(string claim)
         {
             return new TokenValidationError(TokenValidationStatus.InvalidClaim)
             {
                 ErrorClaim = claim
-            };
-        }
-
-        /// <summary>
-        /// The token has a missing claim.
-        /// </summary>
-        /// <param name="claim"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationError MissingClaim(ReadOnlySpan<byte> claim)
-        {
-            return new TokenValidationError(TokenValidationStatus.MissingClaim)
-            {
-                ErrorClaim = Utf8.GetString(claim)
             };
         }
 

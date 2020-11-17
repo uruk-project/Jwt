@@ -8,6 +8,7 @@ using System.Text.Json;
 using System;
 using System.Globalization;
 using System.Text;
+using System.Text.Encodings.Web;
 
 namespace JsonWebToken
 {
@@ -24,6 +25,8 @@ namespace JsonWebToken
         internal const byte ByteDot = (byte)'.';
 
 #if SUPPORT_JAVASCRIPT_ENCODER
+        public static readonly JavaScriptEncoder JsonEncoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+#else
         public static readonly JavaScriptEncoder JsonEncoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
 #endif
 

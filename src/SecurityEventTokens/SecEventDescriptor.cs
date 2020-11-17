@@ -1,8 +1,6 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
-
 namespace JsonWebToken
 {
     /// <summary>Defines a signed Security Event Token. <seealso cref="EncryptedSecEventDescriptor"/> for encrypted Security Event Token.</summary>
@@ -16,10 +14,9 @@ namespace JsonWebToken
         public override void Validate()
         {
             base.Validate();
-            RequireClaim(Claims.Iss, JwtValueKind.String);
-            RequireClaim(Claims.Iat, JwtValueKind.Int64, JwtValueKind.Int32);
-            RequireClaim(Claims.Jti, JwtValueKind.String);
-            RequireClaim(SecEventClaims.Events, JwtValueKind.Object);
+            CheckRequiredClaimAsString(Claims.Iss);
+            CheckRequiredClaimAsInteger(Claims.Iat);
+            CheckRequiredClaimAsString(Claims.Jti);
             if (TryGetClaim(SecEventClaims.Events, out var events))
             {
                 if (events.Type == JwtValueKind.Object)
