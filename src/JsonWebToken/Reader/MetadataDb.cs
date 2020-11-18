@@ -271,8 +271,8 @@ namespace JsonWebToken
         internal MetadataDb CopySegment(int startIndex, int endIndex)
         {
             Debug.Assert(
-                //endIndex > startIndex,
-                //$"endIndex={endIndex} was at or before startIndex={startIndex}");
+                endIndex > startIndex,
+                $"endIndex={endIndex} was at or before startIndex={startIndex}");
 
             AssertValidIndex(startIndex);
             Debug.Assert(endIndex <= Length);
