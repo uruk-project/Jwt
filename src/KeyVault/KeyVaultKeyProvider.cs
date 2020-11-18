@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.WebKey;
@@ -67,12 +68,12 @@ namespace JsonWebToken.KeyVault
 
                 if (!(key is null))
                 {
-                    key.Kid = kvKey.Key.Kid;
+                    key.Kid = JsonEncodedText.Encode(kvKey.Key.Kid);
                     if (kvKey.Key.KeyOps != null)
                     {
                         for (int i = 0; i < kvKey.Key.KeyOps.Count; i++)
                         {
-                            key.KeyOps.Add(kvKey.Key.KeyOps[i]);
+                            key.KeyOps.Add(JsonEncodedText.Encode(kvKey.Key.KeyOps[i]));
                         }
                     }
 

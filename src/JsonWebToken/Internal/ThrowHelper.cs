@@ -187,7 +187,7 @@ namespace JsonWebToken
             var value = (utf8Name);
             return new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
         }
-        
+
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType type) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, type);
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -264,7 +264,7 @@ namespace JsonWebToken
             var value = (utf8Name);
             return new JwtDescriptorException($"The header parameter '{value}' must be of type {type}.");
         }
-        
+
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(JsonEncodedText utf8Name, JwtValueKind type) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, type);
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -311,17 +311,17 @@ namespace JsonWebToken
         internal static void ThrowInvalidOperationException_NotSupportedJsonType(JwtTokenType type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Exception CreateInvalidOperationException_NotSupportedJsonType(JwtTokenType type) => new InvalidOperationException($"The type {type} is not supported.");
-       
+
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_NotSupportedJsonType(JwtValueKind type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Exception CreateInvalidOperationException_NotSupportedJsonType(JwtValueKind type) => new InvalidOperationException($"The type {type} is not supported.");
-       
+
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_NotSupportedJsonType(JsonTokenType type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Exception CreateInvalidOperationException_NotSupportedJsonType(JsonTokenType type) => new InvalidOperationException($"The type {type} is not supported.");
-        
+
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_NotSupportedJsonType(JsonValueKind type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -395,17 +395,17 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_SigningKeyTooSmall(Jwk key, int minimalValue) => throw CreateArgumentOutOfRangeException_SigningKeyTooSmall(key, minimalValue);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_SigningKeyTooSmall(Jwk key, int minimalValue) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), key.Kid is null ? $"The signing key cannot be smaller than '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'." : $"The signing key '{key.Kid}' cannot be smaller than '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'.");
+        private static Exception CreateArgumentOutOfRangeException_SigningKeyTooSmall(Jwk key, int minimalValue) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), key.Kid.EncodedUtf8Bytes.IsEmpty ? $"The signing key cannot be smaller than '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'." : $"The signing key '{key.Kid}' cannot be smaller than '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_InvalidSigningKeySize(Jwk key, int minimalValue) => throw CreateArgumentOutOfRangeException_InvalidSigningKeySize(key, minimalValue);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_InvalidSigningKeySize(Jwk key, int minimalValue) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), key.Kid is null ? $"The signing key must be of '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'." : $"The signing key '{key.Kid}' must be of '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'.");
+        private static Exception CreateArgumentOutOfRangeException_InvalidSigningKeySize(Jwk key, int minimalValue) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), key.Kid.EncodedUtf8Bytes.IsEmpty ? $"The signing key must be of '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'." : $"The signing key '{key.Kid}' must be of '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(Jwk key, EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => throw CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(key, algorithm, minimalValue, currentKeySize);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(Jwk key, EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), key.Kid is null ? $"The key encryption with algorithm '{algorithm}' cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'." : $"The key encryption '{key.Kid}' with algorithm '{algorithm}' cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'.");
+        private static Exception CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(Jwk key, EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), key.Kid.EncodedUtf8Bytes.IsEmpty ? $"The key encryption with algorithm '{algorithm}' cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'." : $"The key encryption '{key.Kid}' with algorithm '{algorithm}' cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => throw CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(algorithm, minimalValue, currentKeySize);
@@ -492,13 +492,13 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_UnexpectedKeyType(Jwk key, string expectedType) => throw CreateInvalidOperationException_UnexpectedKeyType(key, expectedType);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateInvalidOperationException_UnexpectedKeyType(Jwk key, string expectedType) => new InvalidOperationException($"Unexpected key type: '{Utf8.GetString(key.Kty)}'. Expected a key of type '{expectedType}'.");
+        private static Exception CreateInvalidOperationException_UnexpectedKeyType(Jwk key, string expectedType) => new InvalidOperationException($"Unexpected key type: '{key.Kty}'. Expected a key of type '{expectedType}'.");
 
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_UndefinedPayload() => throw CreateInvalidOperationExceptionUndefinedPayload();
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateInvalidOperationExceptionUndefinedPayload() => new InvalidOperationException("The 'Payload' property is not defined.");
-       
+
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_DuplicateJsonMember(string name) => throw CreateInvalidOperationException_DuplicateJsonMember(name);
         [MethodImpl(MethodImplOptions.NoInlining)]

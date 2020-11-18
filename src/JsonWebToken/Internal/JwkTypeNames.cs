@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using System;
+using System.Text.Json;
 
 namespace JsonWebToken.Internal
 {
@@ -14,16 +14,16 @@ namespace JsonWebToken.Internal
         /// <summary>
         /// Elliptic curve 'EC'.
         /// </summary>
-        public static ReadOnlySpan<byte> EllipticCurve => new byte[] { (byte)'E', (byte)'C' };
+        public static readonly JsonEncodedText EllipticCurve = JsonEncodedText.Encode("EC");
 
         /// <summary>
         /// RSA 'RSA'.
         /// </summary>
-        public static ReadOnlySpan<byte> Rsa => new byte[] { (byte)'R', (byte)'S', (byte)'A' };
+        public static readonly JsonEncodedText Rsa = JsonEncodedText.Encode("RSA");
 
         /// <summary>
         /// Octet 'oct';
         /// </summary>
-        public static ReadOnlySpan<byte> Octet => new byte[] { (byte)'o', (byte)'c', (byte)'t' };
+        public static readonly JsonEncodedText Octet = JsonEncodedText.Encode("oct");
     }
 }

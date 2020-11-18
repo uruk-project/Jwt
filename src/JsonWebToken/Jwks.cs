@@ -78,7 +78,28 @@ namespace JsonWebToken
                 for (int i = 0; i < keys.Count; i++)
                 {
                     var key = keys[i];
-                    if (string.Equals(kid, key.Kid, StringComparison.Ordinal))
+                    if (kid == key.Kid.ToString())
+                    {
+                        return key;
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the first <see cref="Jwk"/> with its 'kid'.
+        /// </summary>
+        public Jwk? this[JsonEncodedText kid]
+        {
+            get
+            {
+                var keys = _keys;
+                for (int i = 0; i < keys.Count; i++)
+                {
+                    var key = keys[i];
+                    if (kid.EncodedUtf8Bytes.SequenceEqual(key.Kid.EncodedUtf8Bytes))
                     {
                         return key;
                     }
@@ -168,7 +189,7 @@ namespace JsonWebToken
                 if (_unidentifiedKeys is null)
                 {
                     _unidentifiedKeys = _keys
-                                        .Where(jwk => jwk.Kid is null)
+                                        .Where(jwk => jwk.Kid.EncodedUtf8Bytes.IsEmpty)
                                         .ToArray();
                 }
 
@@ -183,8 +204,8 @@ namespace JsonWebToken
                 if (_identifiedKeys is null)
                 {
                     _identifiedKeys = _keys
-                                        .Where(jwk => !(jwk.Kid is null))
-                                        .GroupBy(k => k.Kid!)
+                                        .Where(jwk => !jwk.Kid.EncodedUtf8Bytes.IsEmpty)
+                                        .GroupBy(k => k.Kid.ToString())
                                         .ToDictionary(k => k.Key, k => k.Concat(UnidentifiedKeys).ToArray());
                 }
 

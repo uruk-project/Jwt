@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -222,7 +223,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override ReadOnlySpan<byte> Kty => JwkTypeNames.Octet;
+        public override JsonEncodedText Kty => JwkTypeNames.Octet;
 
         /// <summary>
         /// Gets or sets the 'k' (Key Value).
@@ -313,7 +314,7 @@ namespace JsonWebToken
             {
                 Span<byte> thumbprint = stackalloc byte[43];
                 key.ComputeThumbprint(thumbprint);
-                key.Kid = Utf8.GetString(thumbprint);
+                key.Kid = JsonEncodedText.Encode(thumbprint, Constants.JsonEncoder);
             }
 
             return key;
@@ -397,7 +398,7 @@ namespace JsonWebToken
             {
                 Span<byte> thumbprint = stackalloc byte[43];
                 key.ComputeThumbprint(thumbprint);
-                key.Kid = Utf8.GetString(thumbprint);
+                key.Kid = JsonEncodedText.Encode(thumbprint, Constants.JsonEncoder);
             }
 
             return key;
@@ -422,7 +423,7 @@ namespace JsonWebToken
             {
                 Span<byte> thumbprint = stackalloc byte[43];
                 key.ComputeThumbprint(thumbprint);
-                key.Kid = Utf8.GetString(thumbprint);
+                key.Kid = JsonEncodedText.Encode(thumbprint, Constants.JsonEncoder);
             }
 
             return key;
@@ -447,7 +448,7 @@ namespace JsonWebToken
             {
                 Span<byte> thumbprint = stackalloc byte[43];
                 key.ComputeThumbprint(thumbprint);
-                key.Kid = Utf8.GetString(thumbprint);
+                key.Kid = JsonEncodedText.Encode(thumbprint, Constants.JsonEncoder);
             }
 
             return key;
@@ -517,6 +518,7 @@ namespace JsonWebToken
         protected override int GetCanonicalizeSize()
         {
             // 20 = StartCanonicalizeValue.Length + EndCanonicalizeValue.Length
+            Debug.Assert(20 == StartCanonicalizeValue.Length + EndCanonicalizeValue.Length);
             return 20 + Base64Url.GetArraySizeRequiredToEncode(_k.Length);
         }
 

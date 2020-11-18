@@ -44,9 +44,9 @@ namespace JsonWebToken
                 Header.Add(HeaderParameters.Zip, zip.Name);
             }
 
-            if (encryptionKey.Kid != null)
+            if (!encryptionKey.Kid.EncodedUtf8Bytes.IsEmpty)
             {
-                _kid = JsonEncodedText.Encode(encryptionKey.Kid);
+                _kid = encryptionKey.Kid;
                 Header.Add(HeaderParameters.Kid, encryptionKey.Kid);
             }
 

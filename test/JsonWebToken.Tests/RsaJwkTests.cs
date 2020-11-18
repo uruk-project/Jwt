@@ -103,8 +103,8 @@ namespace JsonWebToken.Tests
             Assert.NotNull(key);
             var jwk = Assert.IsType<RsaJwk>(key);
 
-            Assert.Equal("juliet@capulet.lit", jwk.Kid);
-            Assert.True(JwkUseNames.Enc.SequenceEqual(jwk.Use));
+            Assert.Equal("juliet@capulet.lit", jwk.Kid.ToString());
+            Assert.True(JwkUseNames.Enc.Equals(jwk.Use));
 
             Assert.Equal(jwk.N.ToArray(), Base64Url.Decode("t6Q8PWSi1dkJj9hTP8hNYFlvadM7DflW9mWepOJhJ66w7nyoK1gPNqFMSQRyO125Gp-TEkodhWr0iujjHVx7BcV0llS4w5ACGgPrcAd6ZcSR0-Iqom-QFcNP8Sjg086MwoqQU_LYywlAGZ21WSdS_PERyGFiNnj3QQlO8Yns5jCtLCRwLHL0Pb1fEv45AuRIuUfVcPySBWYnDyGxvjYGDSM-AqWS9zIQ2ZilgT-GqUmipg0XOC0Cc20rgLe2ymLHjpHciCKVAbY5-L32-lSeZO-Os6U15_aXrk9Gw8cPUaX1_I8sLGuSiVdt3C_Fn2PZ3Z8i744FPFGGcG1qs2Wz-Q"));
             Assert.Equal(jwk.E.ToArray(), Base64Url.Decode("AQAB"));
@@ -132,7 +132,7 @@ namespace JsonWebToken.Tests
 
             Assert.Equal(Base64Url.Decode("dGhpcyBpcyBhIFNIQTEgdGVzdCE"), jwk.X5t);
             Assert.Equal(Base64Url.Decode("dGhpcyBpcyBhIFNIQTI1NiB0ZXN0ISAgICAgICAgICAgIA"), jwk.X5tS256);
-            Assert.Equal("sign", jwk.KeyOps[0]);
+            Assert.Equal(JwkKeyOps.Sign, jwk.KeyOps[0]);
             Assert.Equal("https://example.com", jwk.X5u);
         }
 
@@ -393,8 +393,8 @@ y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
         public override void WriteTo()
         {
             var key = RsaJwk.GenerateKey(2048, SignatureAlgorithm.RsaSha256, true);
-            key.Kid = "kid-rsa";
-            key.KeyOps.Add("sign");
+            key.Kid = JsonEncodedText.Encode("kid-rsa");
+            key.KeyOps.Add(JwkKeyOps.Sign);
             key.Use = JwkUseNames.Sig;
             key.X5t = Base64Url.Decode("dGhpcyBpcyBhIFNIQTEgdGVzdCE");
             key.X5tS256 = Base64Url.Decode("dGhpcyBpcyBhIFNIQTI1NiB0ZXN0ISAgICAgICAgICAgIA");

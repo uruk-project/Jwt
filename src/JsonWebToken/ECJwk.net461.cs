@@ -4,6 +4,7 @@
 #if !SUPPORT_ELLIPTIC_CURVE
 using System;
 using System.Buffers;
+using System.Text.Json;
 
 namespace JsonWebToken
 {
@@ -16,7 +17,7 @@ namespace JsonWebToken
         public override bool HasPrivateKey => throw new NotImplementedException();
 
         /// <inheritsdoc />
-        public override ReadOnlySpan<byte> Kty => throw new NotImplementedException();
+        public override JsonEncodedText Kty => throw new NotImplementedException();
 
         /// <inheritsdoc />
         public override int KeySizeInBits => throw new NotImplementedException();

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Text;
+using System.Text.Json;
 using JsonWebToken.Internal;
 using Xunit;
 
@@ -44,7 +45,7 @@ namespace JsonWebToken.Tests
                 e: "AQAB",
                 alg: SignatureAlgorithm.RsaSha256
             );
-            key.Kid = "1e9gdk7";
+            key.Kid = JsonEncodedText.Encode("1e9gdk7");
 
             var policy = new TokenValidationPolicyBuilder()
                                 .DefaultSignature(key)

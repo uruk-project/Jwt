@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -75,7 +74,7 @@ namespace JsonWebToken
         {
             if (_disposed)
             {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
+                ThrowHelper.ThrowObjectDisposedException(typeof(HttpKeyProvider));
             }
 
             var kid = header.TryGetHeaderParameter(HeaderParameters.KidUtf8, out var kidHeader) ? kidHeader.GetString() : null;

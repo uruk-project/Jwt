@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using JsonWebToken;
 
 namespace JwkSample
@@ -52,7 +53,7 @@ namespace JwkSample
             // The Jwk.FromJson method accept a JSON-encoded string as input
             string json = File.ReadAllText(@".\public_ec_key.json");
             var keyFromJson = Jwk.FromJson(json);
-            keyFromJson.Kid = "JSON";
+            keyFromJson.Kid = JsonEncodedText.Encode("JSON");
             Console.WriteLine("JWK read from a JSON string:");
             Console.WriteLine(keyFromJson);
             Console.WriteLine();
@@ -64,7 +65,7 @@ namespace JwkSample
             // The SymmetricJwk.FromBase64Url method accept a Base64-URL encoded string as input
             var binaryKey = new byte[32] { 71, 211, 50, 89, 161, 40, 202, 35, 24, 86, 37, 86, 163, 193, 100, 225, 53, 6, 90, 36, 168, 105, 110, 148, 214, 115, 170, 94, 184, 188, 253, 117 };
             var binarySymmetricKey = SymmetricJwk.FromByteArray(binaryKey);
-            binarySymmetricKey.Kid = "binary";
+            binarySymmetricKey.Kid = JsonEncodedText.Encode("binary");
             Console.WriteLine("JWK from byte array:");
             Console.WriteLine(binarySymmetricKey);
             Console.WriteLine();
@@ -76,7 +77,7 @@ namespace JwkSample
             // The Jwk.FromPem method accept a PEM-encoded string as input
             string pem = File.ReadAllText(@".\private_rsa_key.pem");
             var keyFromPem = Jwk.FromPem(pem);
-            keyFromPem.Kid = "PEM";
+            keyFromPem.Kid = JsonEncodedText.Encode("PEM");
             Console.WriteLine("JWK read from a PEM file:");
             Console.WriteLine(keyFromPem);
             Console.WriteLine();
@@ -87,7 +88,7 @@ namespace JwkSample
             // The Jwk.FromPem method accept a PEM-encoded string as input
             X509Certificate2 certificate = new X509Certificate2(@".\ValidbasicConstraintsNotCriticalTest4EE.crt");
             var keyFromCertificate = Jwk.FromX509Certificate(certificate, false);
-            keyFromCertificate.Kid = "X509";
+            keyFromCertificate.Kid = JsonEncodedText.Encode("X509");
             Console.WriteLine("JWK read from a X509 certificate:");
             Console.WriteLine(keyFromCertificate);
             Console.WriteLine();
@@ -97,7 +98,7 @@ namespace JwkSample
         {
             // The SymmetricJwk.FromBase64Url method accept a Base64-URL encoded string as input
             var b64SymmetricKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
-            b64SymmetricKey.Kid = "B64";
+            b64SymmetricKey.Kid = JsonEncodedText.Encode("B64");
             Console.WriteLine("JWK from Base64-URL:");
             Console.WriteLine(b64SymmetricKey);
             Console.WriteLine();

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -10,14 +11,14 @@ namespace JsonWebToken.Tests
     {
         [Theory]
         [MemberData(nameof(GetJsonKeys))]
-        public void CreateFromJson(string json, string kid, string alg)
+        public void CreateFromJson(string json, JsonEncodedText kid, JsonEncodedText alg)
         {
             var jwk = Jwk.FromJson(json);
 
             Assert.Equal(jwk.Kid, kid);
-            if (!(jwk.Alg.IsEmpty))
+            if (!(jwk.Alg.EncodedUtf8Bytes.IsEmpty))
             {
-                Assert.Equal(Encoding.UTF8.GetString(jwk.Alg), alg);
+                Assert.Equal(jwk.Alg, alg);
             }
         }
 
@@ -36,7 +37,7 @@ namespace JsonWebToken.Tests
             var fixture = new KeyFixture();
             foreach (var key in fixture.Jwks.GetKeys(null))
             {
-                yield return new object[] { key.ToString(), key.Kid, Encoding.UTF8.GetString(key.Alg.ToArray() ?? new byte[0]) };
+                yield return new object[] { key.ToString(), key.Kid, key.Alg };
             }
         }
 
@@ -55,8 +56,8 @@ namespace JsonWebToken.Tests
                 n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
                 alg: SignatureAlgorithm.RsaSha256
             );
-            Assert.Equal("NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs", key.Kid);
-            key.Kid = "2011-04-29";
+            Assert.Equal("NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs", key.Kid.ToString());
+            key.Kid = JsonEncodedText.Encode("2011-04-29");
 
             var thumbprint = key.ComputeThumbprint();
 

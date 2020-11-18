@@ -410,7 +410,7 @@ namespace JsonWebToken
         public override bool HasPrivateKey => !(_parameters.D is null);
 
         /// <inheritsdoc />
-        public override ReadOnlySpan<byte> Kty => JwkTypeNames.Rsa;
+        public override JsonEncodedText Kty => JwkTypeNames.Rsa;
 
         /// <summary>
         /// Exports the RSA parameters from the <see cref="RsaJwk"/>.
@@ -968,7 +968,7 @@ namespace JsonWebToken
             if (!(jwk is RsaJwk rsaJwk))
             {
                 jwk.Dispose();
-                ThrowHelper.ThrowInvalidOperationException_UnexpectedKeyType(jwk, Utf8.GetString(JwkTypeNames.Rsa));
+                ThrowHelper.ThrowInvalidOperationException_UnexpectedKeyType(jwk, JwkTypeNames.Rsa.ToString());
                 return null;
             }
 

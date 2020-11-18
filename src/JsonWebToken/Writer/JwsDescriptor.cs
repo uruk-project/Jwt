@@ -28,9 +28,9 @@ namespace JsonWebToken
             _signingKey = signingKey ?? throw new ArgumentNullException(nameof(signingKey));
             _payload = new JwtPayload();
             Header.Add(HeaderParameters.Alg, alg.Name);
-            if (signingKey.Kid != null)
+            if (!signingKey.Kid.EncodedUtf8Bytes.IsEmpty)
             {
-                _kid = JsonEncodedText.Encode(signingKey.Kid);
+                _kid = signingKey.Kid;
                 Header.Add(HeaderParameters.Kid, _kid);
             }
 

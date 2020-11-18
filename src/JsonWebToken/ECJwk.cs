@@ -320,7 +320,7 @@ namespace JsonWebToken
         public override bool HasPrivateKey => !(_parameters.D is null);
 
         /// <inheritsdoc />
-        public override ReadOnlySpan<byte> Kty => JwkTypeNames.EllipticCurve;
+        public override JsonEncodedText Kty => JwkTypeNames.EllipticCurve;
 
         /// <summary>
         /// Gets the 'd' (Private Key).
@@ -455,7 +455,7 @@ namespace JsonWebToken
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
         public static ECJwk GeneratePrivateKey(in EllipticalCurve curve, bool computeThumbprint = true)
-            => GenerateKey(curve, true, computeThumbprint: computeThumbprint);
+            => GenerateKey(curve, withPrivateKey: true, computeThumbprint: computeThumbprint);
         
         /// <summary>
         /// Generates a private <see cref="ECJwk"/>.
@@ -465,7 +465,7 @@ namespace JsonWebToken
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
         public static ECJwk GeneratePrivateKey(in EllipticalCurve curve, SignatureAlgorithm algorithm, bool computeThumbprint = true)
-            => GenerateKey(curve, algorithm, true, computeThumbprint: computeThumbprint);
+            => GenerateKey(curve, algorithm, withPrivateKey: true, computeThumbprint: computeThumbprint);
         
         /// <summary>
         /// Generates a private <see cref="ECJwk"/>.
@@ -475,7 +475,7 @@ namespace JsonWebToken
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
         public static ECJwk GeneratePrivateKey(in EllipticalCurve curve, KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
-            => GenerateKey(curve, algorithm, true, computeThumbprint: computeThumbprint);
+            => GenerateKey(curve, algorithm, withPrivateKey: true, computeThumbprint: computeThumbprint);
 
         /// <summary>
         /// Generates a public <see cref="ECJwk"/>.
@@ -484,7 +484,7 @@ namespace JsonWebToken
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
         public static ECJwk GeneratePublicKey(in EllipticalCurve curve, bool computeThumbprint = true)
-            => GenerateKey(curve, false, computeThumbprint: computeThumbprint);
+            => GenerateKey(curve, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
         /// <summary>
         /// Generates a public <see cref="ECJwk"/>.
@@ -494,7 +494,7 @@ namespace JsonWebToken
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
         public static ECJwk GeneratePublicKey(in EllipticalCurve curve, SignatureAlgorithm algorithm, bool computeThumbprint = true)
-            => GenerateKey(curve, algorithm, false, computeThumbprint: computeThumbprint);
+            => GenerateKey(curve, algorithm, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
         /// <summary>
         /// Generates a public <see cref="ECJwk"/>.
@@ -504,7 +504,7 @@ namespace JsonWebToken
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
         public static ECJwk GeneratePublicKey(in EllipticalCurve curve, KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
-            => GenerateKey(curve, algorithm, false, computeThumbprint: computeThumbprint);
+            => GenerateKey(curve, algorithm, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
         /// <summary>
         /// Generates a <see cref="ECJwk"/>.
@@ -847,7 +847,7 @@ namespace JsonWebToken
             if (!(jwk is ECJwk ecJwk))
             {
                 jwk.Dispose();
-                ThrowHelper.ThrowInvalidOperationException_UnexpectedKeyType(jwk, Utf8.GetString(JwkTypeNames.EllipticCurve));
+                ThrowHelper.ThrowInvalidOperationException_UnexpectedKeyType(jwk, JwkTypeNames.EllipticCurve.ToString());
                 return null;
             }
 
