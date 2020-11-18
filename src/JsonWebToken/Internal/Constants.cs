@@ -1,14 +1,8 @@
 // Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-#if SUPPORT_JAVASCRIPT_ENCODER
 using System.Text.Encodings.Web;
-#endif
 using System.Text.Json;
-using System;
-using System.Globalization;
-using System.Text;
-using System.Text.Encodings.Web;
 
 namespace JsonWebToken
 {
@@ -24,17 +18,11 @@ namespace JsonWebToken
 
         internal const byte ByteDot = (byte)'.';
 
-#if SUPPORT_JAVASCRIPT_ENCODER
         public static readonly JavaScriptEncoder JsonEncoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
-#else
-        public static readonly JavaScriptEncoder JsonEncoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
-#endif
 
         internal static readonly JsonWriterOptions NoJsonValidation = new JsonWriterOptions
         {
-#if SUPPORT_JAVASCRIPT_ENCODER
             Encoder = JsonEncoder,
-#endif
             SkipValidation = true
         };
 
