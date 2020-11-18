@@ -579,7 +579,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         protected override int GetCanonicalizeSize()
         {
-            Debug.Assert(35 == 
+            // TEST Debug.Assert(35 == 
                 StartCanonicalizeValue.Length 
                 + Middle1CanonicalizeValue.Length 
                 + Middle2CanonicalizeValue.Length

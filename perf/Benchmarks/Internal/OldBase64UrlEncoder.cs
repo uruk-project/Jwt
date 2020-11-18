@@ -30,7 +30,7 @@ namespace JsonWebToken.Performance
                 goto InvalidData;
             }
 
-            Debug.Assert(base64Len % 4 == 0, "Invariant: Array length must be a multiple of 4.");
+            // TEST Debug.Assert(base64Len % 4 == 0, "Invariant: Array length must be a multiple of 4.");
 
             return ((base64Len >> 2) * 3) - numPaddingChars;
 
@@ -55,7 +55,7 @@ namespace JsonWebToken.Performance
                 goto InvalidData;
             }
 
-            Debug.Assert(base64Len % 4 == 0, "Invariant: Array length must be a multiple of 4.");
+            // TEST Debug.Assert(base64Len % 4 == 0, "Invariant: Array length must be a multiple of 4.");
 
             dataLength = ((base64Len >> 2) * 3) - numPaddingChars;
             return true;
@@ -940,7 +940,7 @@ namespace JsonWebToken.Performance
                 high = (uint)(((((ulong)(uint)lowBits * 3) >> 32) + ((lowBits >> 32) * 3)) >> 32);
             }
 
-            Debug.Assert(high == value % 3);
+            // TEST Debug.Assert(high == value % 3);
             return high;
         }
 

@@ -17,8 +17,8 @@ namespace JsonWebToken.Internal
 
         public AesGcmEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
-            Debug.Assert(encryptionAlgorithm != null);
-            Debug.Assert(encryptionAlgorithm.Category == EncryptionType.AesGcm);
+            // TEST Debug.Assert(encryptionAlgorithm != null);
+            // TEST Debug.Assert(encryptionAlgorithm.Category == EncryptionType.AesGcm);
             _encryptionAlgorithm = encryptionAlgorithm;
         }
 

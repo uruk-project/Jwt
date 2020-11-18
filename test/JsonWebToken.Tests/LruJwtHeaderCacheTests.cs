@@ -65,7 +65,7 @@ namespace JsonWebToken.Tests
             public void AddHeader_BeyondCapacity()
             {
                 const int Count = 20;
-                Debug.Assert(Count > LruJwtHeaderCache.MaxSize);
+                // TEST Debug.Assert(Count > LruJwtHeaderCache.MaxSize);
                 var cache = new LruJwtHeaderCache();
                 byte[] binaryHeader;
                 JwtHeader header = new JwtHeader
@@ -181,7 +181,7 @@ namespace JsonWebToken.Tests
             public void AddHeader_BeyondCapacity()
             {
                 const int Count = 20;
-                Debug.Assert(Count > LruJwtHeaderCache.MaxSize);
+                // TEST Debug.Assert(Count > LruJwtHeaderCache.MaxSize);
                 var cache = new LruJwtHeaderCache();
                 byte[] binaryHeader;
                 JwtHeader header = new JwtHeader

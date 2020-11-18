@@ -613,7 +613,7 @@
 
 //                public void UnsafeStore(int index, JwtMember value)
 //                {
-//                    Debug.Assert(index < _keyValues.Length);
+//                    // TEST Debug.Assert(index < _keyValues.Length);
 //                    _keyValues[index] = value;
 //                }
 
@@ -1288,7 +1288,7 @@
 
 //                public void UnsafeStore(int index, JwtMember value)
 //                {
-//                    Debug.Assert(index < _keyValues.Length);
+//                    // TEST Debug.Assert(index < _keyValues.Length);
 //                    _keyValues[index] = value;
 //                }
 
@@ -1963,7 +1963,7 @@
 
 //                public void UnsafeStore(int index, JwtMember value)
 //                {
-//                    Debug.Assert(index < _keyValues.Length);
+//                    // TEST Debug.Assert(index < _keyValues.Length);
 //                    _keyValues[index] = value;
 //                }
 
@@ -2647,7 +2647,7 @@
 
 //                public void UnsafeStore(int index, JwtMember value)
 //                {
-//                    Debug.Assert(index < _keyValues.Length);
+//                    // TEST Debug.Assert(index < _keyValues.Length);
 //                    _keyValues[index] = value;
 //                }
 
@@ -3339,7 +3339,7 @@
 
 //                public void UnsafeStore(int index, JwtMember value)
 //                {
-//                    Debug.Assert(index < _keyValues.Length);
+//                    // TEST Debug.Assert(index < _keyValues.Length);
 //                    _keyValues[index] = value;
 //                }
 
@@ -4020,7 +4020,7 @@
 
 //                public void UnsafeStore(int index, JwtMember value)
 //                {
-//                    Debug.Assert(index < _keyValues.Length);
+//                    // TEST Debug.Assert(index < _keyValues.Length);
 //                    _keyValues[index] = value;
 //                }
 

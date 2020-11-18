@@ -167,7 +167,7 @@ namespace JsonWebToken
                         return SignatureValidationResult.MalformedSignature();
                     }
 
-                    Debug.Assert(bytesWritten == signatureBytes.Length);
+                    // TEST Debug.Assert(bytesWritten == signatureBytes.Length);
                     bool keysTried = false;
 
                     var keySet = _keyProvider.GetKeys(header);

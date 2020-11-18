@@ -89,14 +89,14 @@ namespace JsonWebToken.Cryptography
 
             if (source.Length == 1)
             {
-                Debug.Assert(unusedBitCount == 0);
+                // TEST Debug.Assert(unusedBitCount == 0);
                 return ReadOnlySpan<byte>.Empty;
             }
 
             int mask = -1 << unusedBitCount;
             byte lastByte = source[source.Length - 1];
             byte maskedByte = (byte)(lastByte & mask);
-            Debug.Assert(maskedByte == lastByte);
+            // TEST Debug.Assert(maskedByte == lastByte);
 
             return source.Slice(1);
         }

@@ -49,10 +49,10 @@ namespace JsonWebToken
 
         internal DbRow(JsonTokenType jsonTokenType, int location, int sizeOrLength)
         {
-            Debug.Assert(jsonTokenType > JsonTokenType.None && jsonTokenType <= JsonTokenType.Null);
-            Debug.Assert((byte)jsonTokenType < 1 << 4);
-            Debug.Assert(location >= 0);
-            Debug.Assert(sizeOrLength >= UnknownSize);
+            // TEST Debug.Assert(jsonTokenType > JsonTokenType.None && jsonTokenType <= JsonTokenType.Null);
+            // TEST Debug.Assert((byte)jsonTokenType < 1 << 4);
+            // TEST Debug.Assert(location >= 0);
+            // TEST Debug.Assert(sizeOrLength >= UnknownSize);
 
             _location = location;
             _lengthUnion = sizeOrLength;
