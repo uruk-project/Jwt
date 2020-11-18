@@ -39,7 +39,7 @@ namespace JsonWebToken
             try
             {
                 Base64Url.Decode(rawCiphertext, ciphertext, out int _, out int ciphertextBytesWritten);
-                // TEST Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
+                Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
 
                 char[]? headerArrayToReturn = null;
                 try
@@ -61,10 +61,10 @@ namespace JsonWebToken
                 }
 
                 Base64Url.Decode(rawInitializationVector, initializationVector, out int _, out int ivBytesWritten);
-                // TEST Debug.Assert(initializationVector.Length == ivBytesWritten);
+                Debug.Assert(initializationVector.Length == ivBytesWritten);
 
                 Base64Url.Decode(rawAuthenticationTag, authenticationTag, out int _, out int authenticationTagBytesWritten);
-                // TEST Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
+                Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
 
                 bytesWritten = 0;
                 var decryptor = encryptionAlgorithm.Decryptor;
@@ -134,7 +134,7 @@ namespace JsonWebToken
                     try
                     {
                         var operationResult = Base64Url.Decode(rawEncryptedKey, encryptedKey, out _, out int bytesWritten);
-                        // TEST Debug.Assert(operationResult == OperationStatus.Done);
+                        Debug.Assert(operationResult == OperationStatus.Done);
                         encryptedKey = encryptedKey.Slice(0, bytesWritten);
 
                         var keyUnwrappers = new List<(int, KeyUnwrapper)>(1);

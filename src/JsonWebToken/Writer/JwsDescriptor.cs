@@ -129,12 +129,12 @@ namespace JsonWebToken
                 buffer[offset] = Constants.ByteDot;
                 Span<byte> signature = stackalloc byte[signer.HashSizeInBytes];
                 bool success = signer.TrySign(buffer.Slice(0, offset++), signature, out int signatureBytesWritten);
-                // TEST Debug.Assert(success);
-                // TEST Debug.Assert(signature.Length == signatureBytesWritten);
+                Debug.Assert(success);
+                Debug.Assert(signature.Length == signatureBytesWritten);
 
                 int bytesWritten = Base64Url.Encode(signature, buffer.Slice(offset));
 
-                // TEST Debug.Assert(length == offset + bytesWritten);
+                Debug.Assert(length == offset + bytesWritten);
                 context.BufferWriter.Advance(length);
             }
             else

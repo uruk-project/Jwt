@@ -23,10 +23,10 @@ namespace JsonWebToken.Internal
         /// <param name="decryptor"></param>
         public AesCbcHmacDecryptor(EncryptionAlgorithm encryptionAlgorithm, AesDecryptor decryptor)
         {
-            // TEST Debug.Assert(encryptionAlgorithm != null);
-            // TEST Debug.Assert(encryptionAlgorithm!.Category == EncryptionType.AesHmac);
-            // TEST Debug.Assert(encryptionAlgorithm!.SignatureAlgorithm != null);
-            // TEST Debug.Assert(decryptor != null);
+            Debug.Assert(encryptionAlgorithm != null);
+            Debug.Assert(encryptionAlgorithm!.Category == EncryptionType.AesHmac);
+            Debug.Assert(encryptionAlgorithm!.SignatureAlgorithm != null);
+            Debug.Assert(decryptor != null);
 
             _encryptionAlgorithm = encryptionAlgorithm;
             _decryptor = decryptor!;

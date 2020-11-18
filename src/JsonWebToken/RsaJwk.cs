@@ -995,7 +995,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         protected override int GetCanonicalizeSize()
         {
-            // TEST Debug.Assert(27 == StartCanonicalizeValue.Length + MiddleCanonicalizeValue.Length + EndCanonicalizeValue.Length);
+            Debug.Assert(27 == StartCanonicalizeValue.Length + MiddleCanonicalizeValue.Length + EndCanonicalizeValue.Length);
             return 27
                 + Base64Url.GetArraySizeRequiredToEncode(_parameters.Exponent!.Length)
                 + Base64Url.GetArraySizeRequiredToEncode(_parameters.Modulus!.Length);

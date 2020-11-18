@@ -140,7 +140,7 @@ namespace JsonWebToken.Performance
 #if DEBUG
             static CircularJwtHeaderDocumentCache()
             {
-                // TEST Debug.Assert(MaxItems % 2 == 0);
+                Debug.Assert(MaxItems % 2 == 0);
             }
 #endif
             private readonly struct Node

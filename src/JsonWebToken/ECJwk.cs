@@ -579,11 +579,11 @@ namespace JsonWebToken
         /// <inheritdoc />
         protected override int GetCanonicalizeSize()
         {
-            // TEST Debug.Assert(35 == 
-                //StartCanonicalizeValue.Length 
-                //+ Middle1CanonicalizeValue.Length 
-                //+ Middle2CanonicalizeValue.Length
-                //+ EndCanonicalizeValue.Length); 
+            Debug.Assert(35 == 
+                StartCanonicalizeValue.Length 
+                + Middle1CanonicalizeValue.Length 
+                + Middle2CanonicalizeValue.Length
+                + EndCanonicalizeValue.Length); 
             return 35
                 + Base64Url.GetArraySizeRequiredToEncode(Crv.Name.Length) 
                 + Base64Url.GetArraySizeRequiredToEncode(X!.Length)

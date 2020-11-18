@@ -115,7 +115,7 @@ namespace JsonWebToken.Performance
                 high = (uint)((((ulong)(uint)lowbits * divisor >> 32) + (lowbits >> 32) * divisor) >> 32);
             }
 
-            // TEST Debug.Assert(high == value % divisor);
+            Debug.Assert(high == value % divisor);
             return high;
         }
     }

@@ -232,7 +232,7 @@ namespace JsonWebToken
                     if (!policy.HeaderCache.TryGetHeader(rawHeader, out header))
                     {
                         int decodedHeaderLength = Base64Url.Decode(rawHeader, new Span<byte>(jsonHeaderBuffer, 0, jsonHeaderBuffer.Length));
-                        // TEST Debug.Assert(headerJsonDecodedLength == decodedHeaderLength);
+                        Debug.Assert(headerJsonDecodedLength == decodedHeaderLength);
                         if (!JwtHeaderDocument.TryParseHeader(new ReadOnlyMemory<byte>(jsonHeaderBuffer, 0, headerJsonDecodedLength), jsonHeaderBuffer, policy, out header, out error))
                         {
                             goto TokenError;
@@ -254,7 +254,7 @@ namespace JsonWebToken
                 else
                 {
                     int decodedHeaderLength = Base64Url.Decode(rawHeader, new Span<byte>(jsonHeaderBuffer, 0, jsonHeaderBuffer.Length));
-                    // TEST Debug.Assert(headerJsonDecodedLength == decodedHeaderLength);
+                    Debug.Assert(headerJsonDecodedLength == decodedHeaderLength);
                     if (!JwtHeaderDocument.TryParseHeader(new ReadOnlyMemory<byte>(jsonHeaderBuffer, 0, headerJsonDecodedLength), jsonHeaderBuffer, policy, out header, out error))
                     {
                         goto TokenError;
@@ -266,7 +266,7 @@ namespace JsonWebToken
                     }
                 }
 
-                // TEST Debug.Assert(header != null);
+                Debug.Assert(header != null);
                 wellFormedJwt = segmentCount switch
                 {
                     Constants.JwsSegmentCount => TryParseJws(utf8Token, policy, ref segmentsRef, header!, out jwt),
@@ -296,7 +296,7 @@ namespace JsonWebToken
             ArrayPool<byte>.Shared.Return(jsonHeaderBuffer);
 
         TokenError:
-            // TEST Debug.Assert(error != null);
+            Debug.Assert(error != null);
             return InvalidDocument(error!, out jwt);
 
             static bool InvalidDocument(TokenValidationError error, out Jwt document)

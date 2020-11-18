@@ -180,7 +180,7 @@ namespace JsonWebToken
         internal void Append(JsonTokenType tokenType, int startLocation, int length)
         {
             // StartArray or StartObject should have length -1, otherwise the length should not be -1.
-            //// TEST Debug.Assert(
+            //Debug.Assert(
             //    (tokenType == JsonTokenType.StartArray || tokenType == JsonTokenType.StartObject) ==
             //    (length == DbRow.UnknownSize));
 
@@ -209,15 +209,15 @@ namespace JsonWebToken
         [Conditional("DEBUG")]
         private void AssertValidIndex(int index)
         {
-            // TEST Debug.Assert(index >= 0);
-            // TEST Debug.Assert(index <= Length - DbRow.Size, $"index {index} is out of bounds");
-            // TEST Debug.Assert(index % DbRow.Size == 0, $"index {index} is not at a record start position");
+            Debug.Assert(index >= 0);
+            Debug.Assert(index <= Length - DbRow.Size, $"index {index} is out of bounds");
+            Debug.Assert(index % DbRow.Size == 0, $"index {index} is not at a record start position");
         }
 
         internal void SetLength(int index, int length)
         {
             AssertValidIndex(index);
-            // TEST Debug.Assert(length >= 0);
+            Debug.Assert(length >= 0);
             Span<byte> destination = _data.AsSpan(index + SizeOrLengthOffset);
             MemoryMarshal.Write(destination, ref length);
         }
@@ -225,7 +225,7 @@ namespace JsonWebToken
         internal void SetNumberOfRows(int index, int numberOfRows)
         {
             AssertValidIndex(index);
-            // TEST Debug.Assert(numberOfRows >= 0 && numberOfRows <= 0x0FFFFFFF);
+            Debug.Assert(numberOfRows >= 0 && numberOfRows <= 0x0FFFFFFF);
 
             Span<byte> dataPos = _data.AsSpan(index + NumberOfRowsOffset);
             int current = MemoryMarshal.Read<int>(dataPos);
@@ -270,12 +270,12 @@ namespace JsonWebToken
 
         internal MetadataDb CopySegment(int startIndex, int endIndex)
         {
-            // TEST Debug.Assert(
+            Debug.Assert(
                 //endIndex > startIndex,
                 //$"endIndex={endIndex} was at or before startIndex={startIndex}");
 
             AssertValidIndex(startIndex);
-            // TEST Debug.Assert(endIndex <= Length);
+            Debug.Assert(endIndex <= Length);
 
             DbRow start = Get(startIndex);
             int length = endIndex - startIndex;
@@ -294,7 +294,7 @@ namespace JsonWebToken
 
             for (int i = (length - DbRow.Size) / sizeof(int); i >= 0; i -= DbRow.Size / sizeof(int))
             {
-                // TEST Debug.Assert(newDbInts[i] >= locationOffset);
+                Debug.Assert(newDbInts[i] >= locationOffset);
                 newDbInts[i] -= locationOffset;
             }
 

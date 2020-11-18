@@ -37,8 +37,8 @@ namespace JsonWebToken
         /// <param name="hmacKey"></param>
         public Hmac(Sha2 sha2, ReadOnlySpan<byte> key, Span<byte> hmacKey)
         {
-            // TEST Debug.Assert(sha2 != null);
-            // TEST Debug.Assert(hmacKey.Length == sha2!.BlockSize * 2);
+            Debug.Assert(sha2 != null);
+            Debug.Assert(hmacKey.Length == sha2!.BlockSize * 2);
 
             Sha2 = sha2;
             _keys = hmacKey;

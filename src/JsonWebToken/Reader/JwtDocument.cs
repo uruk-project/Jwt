@@ -43,7 +43,7 @@ namespace JsonWebToken
 
         internal JwtDocument(ReadOnlyMemory<byte> utf8Json, MetadataDb parsedData, byte[]? extraRentedBytes, bool isDisposable = true)
         {
-            // TEST Debug.Assert(!utf8Json.IsEmpty);
+            Debug.Assert(!utf8Json.IsEmpty);
 
             _utf8Json = utf8Json;
             _parsedData = parsedData;
@@ -53,7 +53,7 @@ namespace JsonWebToken
             _disposableRegistry = new List<IDisposable>();
 
             // extraRentedBytes better be null if we're not disposable.
-            // TEST Debug.Assert(isDisposable || extraRentedBytes == null);
+            Debug.Assert(isDisposable || extraRentedBytes == null);
         }
 
         internal JwtDocument()
@@ -126,7 +126,7 @@ namespace JsonWebToken
             for (int candidateIndex = 0; candidateIndex <= endIndex; candidateIndex += DbRow.Size * 2)
             {
                 row = _parsedData.Get(candidateIndex);
-                // TEST Debug.Assert(row.TokenType == JsonTokenType.PropertyName);
+                Debug.Assert(row.TokenType == JsonTokenType.PropertyName);
 
                 if (row.Length >= minBytes)
                 {
@@ -181,7 +181,7 @@ namespace JsonWebToken
             while (index < endIndex)
             {
                 DbRow row = _parsedData.Get(index);
-                // TEST Debug.Assert(row.TokenType == JsonTokenType.PropertyName);
+                Debug.Assert(row.TokenType == JsonTokenType.PropertyName);
 
                 ReadOnlySpan<byte> currentPropertyName = documentSpan.Slice(row.Location, row.Length);
 
@@ -192,7 +192,7 @@ namespace JsonWebToken
                     if (currentPropertyName.Length > propertyName.Length)
                     {
                         int idx = currentPropertyName.IndexOf(JsonConstants.BackSlash);
-                        // TEST Debug.Assert(idx >= 0);
+                        Debug.Assert(idx >= 0);
 
                         // If everything up to where the property name has a backslash matches, keep going.
                         if (propertyName.Length > idx &&
@@ -340,7 +340,7 @@ namespace JsonWebToken
 
             // The property name is stored one row before the value
             DbRow row = _parsedData.Get(valueIndex - DbRow.Size);
-            // TEST Debug.Assert(row.TokenType == JsonTokenType.PropertyName);
+            Debug.Assert(row.TokenType == JsonTokenType.PropertyName);
 
             // Subtract one for the open quote.
             int start = row.Location - 1;
@@ -395,7 +395,7 @@ namespace JsonWebToken
                 value = JsonReaderHelper.GetUnescapedString(segment, backslash);
             }
 
-            // TEST Debug.Assert(value != null);
+            Debug.Assert(value != null);
             return value;
         }
 
@@ -457,7 +457,7 @@ namespace JsonWebToken
 
             ReadOnlySpan<byte> utf16Text = MemoryMarshal.AsBytes(otherText);
             OperationStatus status = JsonReaderHelper.ToUtf8(utf16Text, otherUtf8Text, out int consumed, out int written);
-            // TEST Debug.Assert(status != OperationStatus.DestinationTooSmall);
+            Debug.Assert(status != OperationStatus.DestinationTooSmall);
             bool result;
             if (status > OperationStatus.DestinationTooSmall)   // Equivalent to: (status == NeedMoreData || status == InvalidData)
             {
@@ -465,8 +465,8 @@ namespace JsonWebToken
             }
             else
             {
-                // TEST Debug.Assert(status == OperationStatus.Done);
-                // TEST Debug.Assert(consumed == utf16Text.Length);
+                Debug.Assert(status == OperationStatus.Done);
+                Debug.Assert(consumed == utf16Text.Length);
 
                 result = TextEquals(index, otherUtf8Text.Slice(0, written), isPropertyName, shouldUnescape: true);
             }
@@ -508,7 +508,7 @@ namespace JsonWebToken
                 }
 
                 int idx = segment.IndexOf(JsonConstants.BackSlash);
-                // TEST Debug.Assert(idx != -1);
+                Debug.Assert(idx != -1);
 
                 if (!otherUtf8Text.StartsWith(segment.Slice(0, idx)))
                 {

@@ -275,13 +275,13 @@ namespace JsonWebToken.Internal
 
             public MultiElementMap(int count)
             {
-                // TEST Debug.Assert(count <= MaxMultiElements);
+                Debug.Assert(count <= MaxMultiElements);
                 _keyValues = new KeyValuePair<int, TMapValue>[count];
             }
 
             public void UnsafeStore(int index, int key, TMapValue value)
             {
-                // TEST Debug.Assert(index < _keyValues.Length);
+                Debug.Assert(index < _keyValues.Length);
                 _keyValues[index] = new KeyValuePair<int, TMapValue>(key, value);
             }
 

@@ -26,7 +26,7 @@ namespace JsonWebToken
         /// <param name="initialCapacity "></param>
         public PooledByteBufferWriter(int initialCapacity = MinimumBufferSize)
         {
-            // TEST Debug.Assert(initialCapacity > 0);
+            Debug.Assert(initialCapacity > 0);
 
             _rentedBuffer = ArrayPool<byte>.Shared.Rent(initialCapacity);
             _index = 0;
@@ -50,8 +50,8 @@ namespace JsonWebToken
         {
             get
             {
-                // TEST Debug.Assert(_rentedBuffer != null);
-                // TEST Debug.Assert(_index <= _rentedBuffer.Length);
+                Debug.Assert(_rentedBuffer != null);
+                Debug.Assert(_index <= _rentedBuffer.Length);
                 return _rentedBuffer.AsMemory(0, _index);
             }
         }
@@ -63,8 +63,8 @@ namespace JsonWebToken
         {
             get
             {
-                // TEST Debug.Assert(_rentedBuffer != null);
-                // TEST Debug.Assert(_index <= _rentedBuffer.Length);
+                Debug.Assert(_rentedBuffer != null);
+                Debug.Assert(_index <= _rentedBuffer.Length);
                 return _rentedBuffer.AsSpan(0, _index);
             }
         }
@@ -76,7 +76,7 @@ namespace JsonWebToken
         {
             get
             {
-                // TEST Debug.Assert(_rentedBuffer != null);
+                Debug.Assert(_rentedBuffer != null);
                 return _index;
             }
         }
@@ -88,7 +88,7 @@ namespace JsonWebToken
         {
             get
             {
-                // TEST Debug.Assert(_rentedBuffer != null);
+                Debug.Assert(_rentedBuffer != null);
                 return _rentedBuffer.Length;
             }
         }
@@ -104,8 +104,8 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ClearHelper()
         {
-            // TEST Debug.Assert(_rentedBuffer != null);
-            // TEST Debug.Assert(_index <= _rentedBuffer.Length);
+            Debug.Assert(_rentedBuffer != null);
+            Debug.Assert(_index <= _rentedBuffer.Length);
             _rentedBuffer.AsSpan(0, _index).Clear();
             _index = 0;
         }
@@ -117,9 +117,9 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance(int count)
         {
-            // TEST Debug.Assert(_rentedBuffer != null);
-            // TEST Debug.Assert(count >= 0);
-            // TEST Debug.Assert(_index <= _rentedBuffer.Length - count);
+            Debug.Assert(_rentedBuffer != null);
+            Debug.Assert(count >= 0);
+            Debug.Assert(_index <= _rentedBuffer.Length - count);
             _index += count;
         }
 
@@ -148,8 +148,8 @@ namespace JsonWebToken
 
         private void CheckAndResizeBuffer(int sizeHint)
         {
-            // TEST Debug.Assert(_rentedBuffer != null);
-            // TEST Debug.Assert(sizeHint >= 0);
+            Debug.Assert(_rentedBuffer != null);
+            Debug.Assert(sizeHint >= 0);
 
             if (sizeHint == 0)
             {
@@ -167,16 +167,16 @@ namespace JsonWebToken
 
                 _rentedBuffer = ArrayPool<byte>.Shared.Rent(newSize);
 
-                // TEST Debug.Assert(oldBuffer.Length >= _index);
-                // TEST Debug.Assert(_rentedBuffer.Length >= _index);
+                Debug.Assert(oldBuffer.Length >= _index);
+                Debug.Assert(_rentedBuffer.Length >= _index);
 
                 Span<byte> previousBuffer = oldBuffer.AsSpan(0, _index);
                 previousBuffer.CopyTo(_rentedBuffer);
                 ArrayPool<byte>.Shared.Return(oldBuffer, true);
             }
 
-            // TEST Debug.Assert(_rentedBuffer.Length - _index > 0);
-            // TEST Debug.Assert(_rentedBuffer.Length - _index >= sizeHint);
+            Debug.Assert(_rentedBuffer.Length - _index > 0);
+            Debug.Assert(_rentedBuffer.Length - _index >= sizeHint);
         }
     }
 }

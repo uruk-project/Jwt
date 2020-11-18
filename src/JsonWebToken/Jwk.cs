@@ -704,7 +704,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public void ComputeThumbprint(Span<byte> destination)
         {
-            // TEST Debug.Assert(destination.Length == 43); // 43 => Base64Url.GetArraySizeRequiredToEncode(32)
+            Debug.Assert(destination.Length == 43); // 43 => Base64Url.GetArraySizeRequiredToEncode(32)
             Span<byte> hash = stackalloc byte[32];
             int size = GetCanonicalizeSize();
             byte[]? arrayToReturn = null;

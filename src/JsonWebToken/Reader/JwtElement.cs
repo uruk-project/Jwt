@@ -20,7 +20,7 @@ namespace JsonWebToken
             // parent is usually not null, but the Current property
             // on the enumerators (when initialized as `default`) can
             // get here with a null.
-            // TEST Debug.Assert(idx >= 0);
+            Debug.Assert(idx >= 0);
 
             _parent = parent;
             _idx = idx;
@@ -1098,7 +1098,7 @@ namespace JsonWebToken
                     ThrowHelper.ThrowFormatException_MalformedJson();
                 }
 
-                // TEST Debug.Assert(target.TokenType == JsonTokenType.StartObject);
+                Debug.Assert(target.TokenType == JsonTokenType.StartObject);
                 _endIdxOrVersion = count * DbRow.Size * 2;
             }
 
@@ -1206,7 +1206,7 @@ namespace JsonWebToken
                             }
 
                             // Adding 1 to skip the start quote will never overflow
-                            // TEST Debug.Assert(tokenStart < int.MaxValue);
+                            Debug.Assert(tokenStart < int.MaxValue);
 
                             database.Append(JsonTokenType.PropertyName, tokenStart + 1, reader.ValueSpan.Length);
 
@@ -1216,11 +1216,11 @@ namespace JsonWebToken
 
                             // Since the input payload is contained within a Span,
                             // token start index can never be larger than int.MaxValue (i.e. utf8JsonSpan.Length).
-                            // TEST Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
+                            Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
                             if (tokenType == JsonTokenType.String)
                             {
                                 // Adding 1 to skip the start quote will never overflow
-                                // TEST Debug.Assert(tokenStart < int.MaxValue);
+                                Debug.Assert(tokenStart < int.MaxValue);
                                 database.Append(JsonTokenType.String, tokenStart + 1, reader.ValueSpan.Length);
                             }
                             else if (tokenType == JsonTokenType.Number)
@@ -1246,14 +1246,14 @@ namespace JsonWebToken
                             }
                             else
                             {
-                                // TEST Debug.Assert(tokenType >= JsonTokenType.True && tokenType <= JsonTokenType.Null);
+                                Debug.Assert(tokenType >= JsonTokenType.True && tokenType <= JsonTokenType.Null);
                                 database.Append(tokenType, tokenStart, reader.ValueSpan.Length);
                             }
                         }
                     }
                 }
 
-                // TEST Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
+                Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
                 database.TrimExcess();
 
                 document = new JwtDocument(utf8Array, database, null);
@@ -1285,7 +1285,7 @@ namespace JsonWebToken
                     ThrowHelper.ThrowFormatException_MalformedJson();
                 }
 
-                // TEST Debug.Assert(target.TokenType == JsonTokenType.StartArray);
+                Debug.Assert(target.TokenType == JsonTokenType.StartArray);
                 _endIdxOrVersion = value.Length;
             }
 
@@ -1377,11 +1377,11 @@ namespace JsonWebToken
 
                             // Since the input payload is contained within a Span,
                             // token start index can never be larger than int.MaxValue (i.e. utf8JsonSpan.Length).
-                            // TEST Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
+                            Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
                             if (tokenType == JsonTokenType.String)
                             {
                                 // Adding 1 to skip the start quote will never overflow
-                                // TEST Debug.Assert(tokenStart < int.MaxValue);
+                                Debug.Assert(tokenStart < int.MaxValue);
                                 database.Append(JsonTokenType.String, tokenStart + 1, reader.ValueSpan.Length);
                             }
                             else if (tokenType == JsonTokenType.Number)
@@ -1407,14 +1407,14 @@ namespace JsonWebToken
                             }
                             else
                             {
-                                // TEST Debug.Assert(tokenType >= JsonTokenType.True && tokenType <= JsonTokenType.Null);
+                                Debug.Assert(tokenType >= JsonTokenType.True && tokenType <= JsonTokenType.Null);
                                 database.Append(tokenType, tokenStart, reader.ValueSpan.Length);
                             }
                         }
                     }
                 }
 
-                // TEST Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
+                Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
                 database.TrimExcess();
 
                 document = new JwtDocument(utf8Array, database, null);
@@ -1451,7 +1451,7 @@ namespace JsonWebToken
                     ThrowHelper.ThrowFormatException_MalformedJson();
                 }
 
-                // TEST Debug.Assert(target.TokenType == JsonTokenType.StartArray);
+                Debug.Assert(target.TokenType == JsonTokenType.StartArray);
                 _endIdxOrVersion = value.Length;
             }
 
@@ -1537,12 +1537,12 @@ namespace JsonWebToken
                                 break;
                             }
 
-                            // TEST Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
+                            Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
                             if (typeof(T) == typeof(string))
                             {
                                 if (tokenType == JsonTokenType.String)
                                 {
-                                    // TEST Debug.Assert(tokenStart < int.MaxValue);
+                                    Debug.Assert(tokenStart < int.MaxValue);
                                     database.Append(JsonTokenType.String, tokenStart + 1, reader.ValueSpan.Length);
                                 }
                                 else
@@ -1554,7 +1554,7 @@ namespace JsonWebToken
                             {
                                 if (tokenType == JsonTokenType.Number)
                                 {
-                                    // TEST Debug.Assert(tokenStart < int.MaxValue);
+                                    Debug.Assert(tokenStart < int.MaxValue);
                                     database.Append(JsonTokenType.Number, tokenStart + 1, reader.ValueSpan.Length);
                                 }
                                 else
@@ -1570,7 +1570,7 @@ namespace JsonWebToken
                     }
                 }
 
-                // TEST Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
+                Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
                 database.TrimExcess();
 
                 document = new JwtDocument(utf8Array, database, null);

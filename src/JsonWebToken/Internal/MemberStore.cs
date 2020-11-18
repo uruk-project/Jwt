@@ -702,7 +702,7 @@ namespace JsonWebToken
 
             public void UnsafeStore(int index, JwtMember value)
             {
-                // TEST Debug.Assert(index < _keyValues.Length);
+                Debug.Assert(index < _keyValues.Length);
                 _keyValues[index] = value;
             }
 

@@ -192,7 +192,7 @@ namespace JsonWebToken
                         encryptedToken[bytesWritten++] = Constants.ByteDot;
                         bytesWritten += Base64Url.Encode(tag.Slice(0, tagBytesWritten), encryptedToken.Slice(bytesWritten));
 
-                        // TEST Debug.Assert(encryptionLength == bytesWritten);
+                        Debug.Assert(encryptionLength == bytesWritten);
                         output.Advance(encryptionLength);
                     }
                     finally

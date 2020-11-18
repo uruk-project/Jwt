@@ -49,9 +49,9 @@ namespace JsonWebToken
 
         internal static void Unescape(ReadOnlySpan<byte> source, Span<byte> destination, int idx, out int written)
         {
-            // TEST Debug.Assert(idx >= 0 && idx < source.Length);
-            // TEST Debug.Assert(source[idx] == JsonConstants.BackSlash);
-            // TEST Debug.Assert(destination.Length >= source.Length);
+            Debug.Assert(idx >= 0 && idx < source.Length);
+            Debug.Assert(source[idx] == JsonConstants.BackSlash);
+            Debug.Assert(destination.Length >= source.Length);
 
             source.Slice(0, idx).CopyTo(destination);
             written = idx;
@@ -100,11 +100,11 @@ namespace JsonWebToken
                     {
                         // The source is known to be valid JSON, and hence if we see a \u, it is guaranteed to have 4 hex digits following it
                         // Otherwise, the Utf8JsonReader would have alreayd thrown an exception.
-                        // TEST Debug.Assert(source.Length >= idx + 5);
+                        Debug.Assert(source.Length >= idx + 5);
 
                         bool result = Utf8Parser.TryParse(source.Slice(idx + 1, 4), out int scalar, out int bytesConsumed, 'x');
-                        // TEST Debug.Assert(result);
-                        // TEST Debug.Assert(bytesConsumed == 4);
+                        Debug.Assert(result);
+                        Debug.Assert(bytesConsumed == 4);
                         idx += bytesConsumed;     // The loop iteration will increment idx past the last hex digit
 
                         if (IsInRangeInclusive((uint)scalar, JsonConstants.HighSurrogateStartValue, JsonConstants.LowSurrogateEndValue))
@@ -116,7 +116,7 @@ namespace JsonWebToken
                                 throw new InvalidOperationException("Invalid UTF16");
                             }
 
-                            // TEST Debug.Assert(IsInRangeInclusive((uint)scalar, JsonConstants.HighSurrogateStartValue, JsonConstants.HighSurrogateEndValue));
+                            Debug.Assert(IsInRangeInclusive((uint)scalar, JsonConstants.HighSurrogateStartValue, JsonConstants.HighSurrogateEndValue));
 
                             idx += 3;   // Skip the last hex digit and the next \u
 
@@ -130,8 +130,8 @@ namespace JsonWebToken
                             // The source is known to be valid JSON, and hence if we see a \u, it is guaranteed to have 4 hex digits following it
                             // Otherwise, the Utf8JsonReader would have alreayd thrown an exception.
                             result = Utf8Parser.TryParse(source.Slice(idx, 4), out int lowSurrogate, out bytesConsumed, 'x');
-                            // TEST Debug.Assert(result);
-                            // TEST Debug.Assert(bytesConsumed == 4);
+                            Debug.Assert(result);
+                            Debug.Assert(bytesConsumed == 4);
 
                             // If the first hex value is a high surrogate, the next one must be a low surrogate.
                             if (!IsInRangeInclusive((uint)lowSurrogate, JsonConstants.LowSurrogateStartValue, JsonConstants.LowSurrogateEndValue))
@@ -155,7 +155,7 @@ namespace JsonWebToken
 #else
                         EncodeToUtf8Bytes((uint)scalar, destination.Slice(written), out int bytesWritten);
 #endif
-                        // TEST Debug.Assert(bytesWritten <= 4);
+                        Debug.Assert(bytesWritten <= 4);
                         written += bytesWritten;
                     }
                 }
@@ -200,7 +200,7 @@ namespace JsonWebToken
 
         public static bool UnescapeAndCompare(ReadOnlySpan<byte> utf8Source, ReadOnlySpan<byte> other)
         {
-            // TEST Debug.Assert(utf8Source.Length >= other.Length && utf8Source.Length / JsonConstants.MaxExpansionFactorWhileEscaping <= other.Length);
+            Debug.Assert(utf8Source.Length >= other.Length && utf8Source.Length / JsonConstants.MaxExpansionFactorWhileEscaping <= other.Length);
 
             byte[]? unescapedArray = null;
 
@@ -209,10 +209,10 @@ namespace JsonWebToken
                 (unescapedArray = ArrayPool<byte>.Shared.Rent(utf8Source.Length));
 
             Unescape(utf8Source, utf8Unescaped, 0, out int written);
-            // TEST Debug.Assert(written > 0);
+            Debug.Assert(written > 0);
 
             utf8Unescaped = utf8Unescaped.Slice(0, written);
-            // TEST Debug.Assert(!utf8Unescaped.IsEmpty);
+            Debug.Assert(!utf8Unescaped.IsEmpty);
 
             bool result = other.SequenceEqual(utf8Unescaped);
 
@@ -237,10 +237,10 @@ namespace JsonWebToken
                 (pooledName = ArrayPool<byte>.Shared.Rent(length));
 
             Unescape(utf8Source, utf8Unescaped, idx, out int written);
-            // TEST Debug.Assert(written > 0);
+            Debug.Assert(written > 0);
 
             utf8Unescaped = utf8Unescaped.Slice(0, written);
-            // TEST Debug.Assert(!utf8Unescaped.IsEmpty);
+            Debug.Assert(!utf8Unescaped.IsEmpty);
 
             string utf8String = TranscodeHelper(utf8Unescaped);
 
@@ -260,8 +260,8 @@ namespace JsonWebToken
         /// </summary>
         private static void EncodeToUtf8Bytes(uint scalar, Span<byte> utf8Destination, out int bytesWritten)
         {
-            // TEST Debug.Assert(IsValidUnicodeScalar(scalar));
-            // TEST Debug.Assert(utf8Destination.Length >= 4);
+            Debug.Assert(IsValidUnicodeScalar(scalar));
+            Debug.Assert(utf8Destination.Length >= 4);
             
             if (scalar < 0x80U)
             {
@@ -512,7 +512,7 @@ namespace JsonWebToken
                     }
                     while (pSrc < pStop);
 
-                    // TEST Debug.Assert(pTarget <= pAllocatedBufferEnd, "[UTF8Encoding.GetBytes]pTarget <= pAllocatedBufferEnd");
+                    Debug.Assert(pTarget <= pAllocatedBufferEnd, "[UTF8Encoding.GetBytes]pTarget <= pAllocatedBufferEnd");
                 }
 
                 while (pSrc < pEnd)

@@ -74,7 +74,7 @@ namespace JsonWebToken
                         }
 
                         // Adding 1 to skip the start quote will never overflow
-                        // TEST Debug.Assert(tokenStart < int.MaxValue);
+                        Debug.Assert(tokenStart < int.MaxValue);
 
                         database.Append(JsonTokenType.PropertyName, tokenStart + 1, reader.ValueSpan.Length);
                         ReadOnlySpan<byte> memberName = reader.ValueSpan;
@@ -85,7 +85,7 @@ namespace JsonWebToken
 
                         // Since the input payload is contained within a Span,
                         // token start index can never be larger than int.MaxValue (i.e. utf8JsonSpan.Length).
-                        // TEST Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
+                        Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
                         if (tokenType == JsonTokenType.String)
                         {
                             if (memberName.Length == 3)
@@ -103,7 +103,7 @@ namespace JsonWebToken
                             }
 
                             // Adding 1 to skip the start quote will never overflow
-                            // TEST Debug.Assert(tokenStart < int.MaxValue);
+                            Debug.Assert(tokenStart < int.MaxValue);
                             database.Append(JsonTokenType.String, tokenStart + 1, reader.ValueSpan.Length);
                         }
                         else if (tokenType == JsonTokenType.Number)
@@ -159,14 +159,14 @@ namespace JsonWebToken
                         }
                         else
                         {
-                            // TEST Debug.Assert(tokenType >= JsonTokenType.True && tokenType <= JsonTokenType.Null);
+                            Debug.Assert(tokenType >= JsonTokenType.True && tokenType <= JsonTokenType.Null);
                             database.Append(tokenType, tokenStart, reader.ValueSpan.Length);
                         }
                     }
                 }
             }
 
-            // TEST Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
+            Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
             database.TrimExcess();
 
             payload = new JwtPayloadDocument(new JwtDocument(utf8Payload, database, buffer), control);

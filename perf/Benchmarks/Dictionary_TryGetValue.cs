@@ -118,7 +118,7 @@ namespace JsonWebToken.Performance
             {
                 int collisionCount = 0;
 
-                // TEST Debug.Assert(entries != null, "expected entries to be != null");
+                Debug.Assert(entries != null, "expected entries to be != null");
                 uint hashCode = (uint)key;
                 // Value in _buckets is 1-based
                 i = buckets[hashCode % (uint)buckets.Length] - 1;
@@ -169,10 +169,10 @@ namespace JsonWebToken.Performance
                 _entries = new Entry[size];
             }
 
-            // TEST Debug.Assert(_buckets != null);
+            Debug.Assert(_buckets != null);
 
             Entry[] entries = _entries!;
-            // TEST Debug.Assert(entries != null, "expected entries to be non-null");
+            Debug.Assert(entries != null, "expected entries to be non-null");
 
             uint hashCode = (uint)key;
 
@@ -230,7 +230,7 @@ namespace JsonWebToken.Performance
             ref Entry entry = ref entries[index];
             if (updateFreeList)
             {
-                // TEST Debug.Assert((StartOfFreeList - entries[_freeList].next) >= -1, "shouldn't overflow because `next` cannot underflow");
+                Debug.Assert((StartOfFreeList - entries[_freeList].next) >= -1, "shouldn't overflow because `next` cannot underflow");
                 _freeList = StartOfFreeList - entries[_freeList].next;
             }
 
@@ -263,7 +263,7 @@ namespace JsonWebToken.Performance
                 Entry[] entries = _entries!;
                 int collisionCount = 0;
 
-                // TEST Debug.Assert(entries != null, "entries should be non-null");
+                Debug.Assert(entries != null, "entries should be non-null");
                 uint hashCode = (uint)key; // TODO-NULLABLE: Remove ! when [DoesNotReturn] respected
                 uint bucket = hashCode % (uint)buckets.Length;
                 int last = -1;
@@ -285,7 +285,7 @@ namespace JsonWebToken.Performance
                             entries[last].next = entry.next;
                         }
 
-                        // TEST Debug.Assert((StartOfFreeList - _freeList) < 0, "shouldn't underflow because max hashtable length is MaxPrimeArrayLength = 0x7FEFFFFD(2146435069) _freelist underflow threshold 2147483646");
+                        Debug.Assert((StartOfFreeList - _freeList) < 0, "shouldn't underflow because max hashtable length is MaxPrimeArrayLength = 0x7FEFFFFD(2146435069) _freelist underflow threshold 2147483646");
 
                         entry.next = StartOfFreeList - _freeList;
                         entry.value = null;
@@ -312,8 +312,8 @@ namespace JsonWebToken.Performance
 
         private void Resize(int newSize)
         {
-            // TEST Debug.Assert(_entries != null, "_entries should be non-null");
-            // TEST Debug.Assert(newSize >= _entries.Length);
+            Debug.Assert(_entries != null, "_entries should be non-null");
+            Debug.Assert(newSize >= _entries.Length);
 
             int[] buckets = new int[newSize];
             Entry[] entries = new Entry[newSize];
@@ -391,7 +391,7 @@ namespace JsonWebToken.Performance
             // Note that this check works even when _items.Length overflowed thanks to the (uint) cast
             if ((uint)newSize > MaxPrimeArrayLength && MaxPrimeArrayLength > oldSize)
             {
-                // TEST Debug.Assert(MaxPrimeArrayLength == GetPrime(MaxPrimeArrayLength), "Invalid MaxPrimeArrayLength");
+                Debug.Assert(MaxPrimeArrayLength == GetPrime(MaxPrimeArrayLength), "Invalid MaxPrimeArrayLength");
                 return MaxPrimeArrayLength;
             }
 
