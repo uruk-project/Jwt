@@ -21,7 +21,7 @@ namespace JsonWebToken
     ///   various parts of the framework.
     /// </remarks>
     // Inspired from https://github.com/dotnet/runtime/tree/master/src/libraries/System.Text.Json/src/System/Text/Json/Document
-    public class Jwt : IDisposable
+    public sealed class Jwt : IDisposable
     {
         private ReadOnlyMemory<byte> _rawValue;
         private byte[]? _rented;
@@ -511,7 +511,7 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
-        public virtual void Dispose()
+        public void Dispose()
         {
             _rawValue = ReadOnlyMemory<byte>.Empty;
             _payload?.Dispose();

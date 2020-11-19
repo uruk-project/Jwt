@@ -7,9 +7,7 @@ using System.Threading;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents a cache for <see cref="JwtHeaderDocument"/>.
-    /// </summary>
+    /// <summary>Represents a cache for <see cref="JwtHeaderDocument"/>.</summary>
     public sealed class LruJwtHeaderDocumentCache : IJwtHeaderDocumentCache
     {
         private const int MaxSize = 16;
@@ -39,14 +37,10 @@ namespace JsonWebToken
         private Node? _head = null;
         private Node? _tail = null;
 
-        /// <summary>
-        /// The heade of the cache.
-        /// </summary>
+        /// <summary>The heade of the cache.</summary>
         public JwtHeaderDocument? Head => _head?.Header;
 
-        /// <summary>
-        /// The tail of the cache.
-        /// </summary>
+        /// <summary>The tail of the cache.</summary>
         public JwtHeaderDocument? Tail => _tail?.Header;
 
         /// <inheritdoc/>
@@ -173,9 +167,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Validate the integrity of the cache.
-        /// </summary>
+        /// <summary>Validate the integrity of the cache.</summary>
         /// <returns></returns>
         public bool Validate()
         {
@@ -207,9 +199,7 @@ namespace JsonWebToken
             return false;
         }
 
-        /// <summary>
-        /// Clear the cache.
-        /// </summary>
+        /// <summary>Clear the cache.</summary>
         public void Clear()
         {
             _head = null;

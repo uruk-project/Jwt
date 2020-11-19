@@ -10,9 +10,7 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents the payload of a JWT, in a lightweight, read-only form. 
-    /// </summary>
+    /// <summary>Represents the payload of a JWT, in a lightweight, read-only form. </summary>
     /// <remarks>
     /// This class utilizes resources from pooled memory to minimize the garbage collector (GC)
     /// impact in high-usage scenarios. Failure to properly Dispose this object will result in
@@ -25,9 +23,7 @@ namespace JsonWebToken
         private readonly JwtDocument _document;
         private readonly byte _control;
 
-        /// <summary>
-        /// Gets the validation control bits.
-        /// </summary>
+        /// <summary>Gets the validation control bits.</summary>
         public byte Control => _control;
         internal bool InvalidAudience => (_control & TokenValidationPolicy.InvalidAudienceFlag) == TokenValidationPolicy.InvalidAudienceFlag;
         internal bool MissingAudience => (_control & TokenValidationPolicy.MissingAudienceFlag) == TokenValidationPolicy.MissingAudienceFlag;
@@ -37,9 +33,7 @@ namespace JsonWebToken
         internal bool Expired => (_control & TokenValidationPolicy.ExpirationTimeFlag) == TokenValidationPolicy.ExpirationTimeFlag;
         internal bool NotYetValid => (_control & TokenValidationPolicy.NotBeforeFlag) == TokenValidationPolicy.NotBeforeFlag;
 
-        /// <summary>
-        /// Gets the raw binary value of the current <see cref="JwtPayloadDocument"/>.
-        /// </summary>
+        /// <summary>Gets the raw binary value of the current <see cref="JwtPayloadDocument"/>.</summary>
         public ReadOnlyMemory<byte> RawValue => _document.RawValue;
 
         private JwtPayloadDocument(JwtDocument document, byte control)
@@ -299,29 +293,19 @@ namespace JsonWebToken
 
         /// <inheritdoc />
         public void Dispose()
-        {
-            _document.Dispose();
-        }
+            => _document.Dispose();
 
-        /// <summary>
-        /// Determines whether the <see cref="JwtPayloadDocument"/> contains the specified claim.
-        /// </summary>
+        /// <summary>Determines whether the <see cref="JwtPayloadDocument"/> contains the specified claim.</summary>
         /// <param name="claimName"></param>
         /// <returns></returns>
         public bool ContainsClaim(string claimName)
-        {
-            return _document.ContainsKey(claimName);
-        }
+            => _document.ContainsKey(claimName);
 
-        /// <summary>
-        /// Determines whether the <see cref="JwtPayloadDocument"/> contains the specified claim.
-        /// </summary>
+        /// <summary>Determines whether the <see cref="JwtPayloadDocument"/> contains the specified claim.</summary>
         /// <param name="claimName"></param>
         /// <returns></returns>
         public bool ContainsClaim(ReadOnlySpan<byte> claimName)
-        {
-            return _document.ContainsKey(claimName);
-        }
+            => _document.ContainsKey(claimName);
 
         /// <summary>
         ///   Looks for a claim named <paramref name="claimName"/> in the current JWT, returning
@@ -340,9 +324,7 @@ namespace JsonWebToken
         ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         public bool TryGetClaim(string claimName, out JwtElement value)
-        {
-            return _document.TryGetProperty(claimName, out value);
-        }
+            => _document.TryGetProperty(claimName, out value);
 
         /// <summary>
         ///   Looks for a claim named <paramref name="claimName"/> in the current JWT, returning
@@ -361,9 +343,7 @@ namespace JsonWebToken
         ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         public bool TryGetClaim(ReadOnlySpan<byte> claimName, out JwtElement value)
-        {
-            return _document.TryGetProperty(claimName, out value);
-        }
+            => _document.TryGetProperty(claimName, out value);
 
         /// <summary>
         ///   Looks for a claim named <paramref name="claimName"/> in the current JWT, returning
@@ -427,8 +407,6 @@ namespace JsonWebToken
 
         /// <inheritdoc/>
         public override string ToString()
-        {
-            return _document.ToString();
-        }
+            => _document.ToString();
     }
 }

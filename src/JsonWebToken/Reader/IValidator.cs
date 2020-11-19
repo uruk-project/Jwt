@@ -5,14 +5,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents a validation to apply to a <see cref="Jwt"/>.
-    /// </summary>
+    /// <summary>Represents a validation to apply to a <see cref="Jwt"/>.</summary>
     public interface IValidator
     {
-        /// <summary>
-        /// Tries to validate a token.
-        /// </summary>
+        /// <summary>Tries to validate a token.</summary>
         bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error);
     }
 }

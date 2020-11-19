@@ -217,7 +217,7 @@ namespace JsonWebToken.Tests
                     .AddCriticalHeaderHandler("invalid", new TestCriticalHeaderHandler(false));
             if (!headerCacheEnabled)
             {
-                policy.DisabledHeaderCache();
+                policy.DisableHeaderCache();
             }
 
             var result = Jwt.TryParse(token, policy, out var jwt);
@@ -237,7 +237,7 @@ namespace JsonWebToken.Tests
                     .AddCriticalHeaderHandler("invalid", new TestCriticalHeaderHandler(false));
             if (!headerCacheEnabled)
             {
-                policy.DisabledHeaderCache();
+                policy.DisableHeaderCache();
             }
 
             var result = Jwt.TryParse(token, policy.Build(), out var jwt);

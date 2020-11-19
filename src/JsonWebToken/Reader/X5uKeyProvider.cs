@@ -3,19 +3,13 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents a <see cref="IKeyProvider"/> that retrieve key set with the 'x5u' header parameter.
-    /// </summary>
+    /// <summary>Represents a <see cref="IKeyProvider"/> that retrieve key set with the 'x5u' header parameter.</summary>
     public sealed class X5uKeyProvider : HttpKeyProvider
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="X5uKeyProvider"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="X5uKeyProvider"/>.</summary>
         /// <param name="documentRetriever"></param>
         public X5uKeyProvider(HttpDocumentRetriever documentRetriever)
             : base(documentRetriever)

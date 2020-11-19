@@ -348,6 +348,11 @@ namespace JsonWebToken
         private static Exception CreateCryptographicException_EncryptionFailed(EncryptionAlgorithm? algorithm, Jwk key, Exception innerException) => new CryptographicException($"Encryption failed for: Algorithm: '{algorithm}', key: '{key.Kid}'. See inner exception.", innerException);
 
         [DoesNotReturn]
+        internal static void ThrowJsonElementWrongType_InvalidOperationException(JsonTokenType expectedTokenType, JsonTokenType tokenType) => throw CreateJsonElementWrongType_InvalidOperationException(expectedTokenType, tokenType);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateJsonElementWrongType_InvalidOperationException(JsonTokenType expectedTokenType, JsonTokenType tokenType) => new InvalidOperationException($"The requested operation requires an element of type '{expectedTokenType}', but the target element has type '{tokenType}'.");
+
+        [DoesNotReturn]
         internal static void ThrowNotSupportedException_AlgorithmForKeyWrap(EncryptionAlgorithm? algorithm) => throw CreateNotSupportedException_AlgorithmForKeyWrap(algorithm);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateNotSupportedException_AlgorithmForKeyWrap(EncryptionAlgorithm? algorithm) => new NotSupportedException($"Key wrap is not supported for algorithm: '{algorithm}'.");

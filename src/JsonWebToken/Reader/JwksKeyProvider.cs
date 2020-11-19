@@ -8,18 +8,14 @@ using System.Threading;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents a <see cref="IKeyProvider"/> that retrieve the key set with the 'jwk' header parameter.
-    /// </summary>
+    /// <summary>Represents a <see cref="IKeyProvider"/> that retrieve the key set with the 'jwk' header parameter.</summary>
     public sealed class JwksKeyProvider : HttpKeyProvider
     {
         private readonly string? _metadataAddress;
         private readonly string _jwksAddress;
         private readonly MetadataRetrievalBehavior _behavior;
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwksKeyProvider"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="JwksKeyProvider"/>.y</summary>
         /// <param name="jwksAddress"></param>
         /// <param name="documentRetriever"></param>
         /// <param name="behavior">Defines the behavior for retrieving the JWKS document.</param>
@@ -103,9 +99,7 @@ namespace JsonWebToken
             return jwksUri;
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="JwksKeyProvider"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="JwksKeyProvider"/>.</summary>
         /// <param name="metadataAddress"></param>
         /// <param name="behavior">Defines the behavior for retrieving the JWKS document.</param>
         public JwksKeyProvider(string metadataAddress, MetadataRetrievalBehavior behavior = MetadataRetrievalBehavior.FromJwksUrl)
@@ -127,7 +121,7 @@ namespace JsonWebToken
     }
 
     /// <summary>
-    /// Represents the 
+    /// Represents the behavior for retrieving data.
     /// </summary>
     public enum MetadataRetrievalBehavior
     {

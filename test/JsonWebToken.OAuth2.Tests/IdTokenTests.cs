@@ -54,20 +54,19 @@ namespace JsonWebToken.Tests
             var result = Jwt.TryParse("eyJraWQiOiIxZTlnZGs3IiwiYWxnIjoiUlMyNTYifQ.ewogImlzcyI6ICJodHRwOi8vc2VydmVyLmV4YW1wbGUuY29tIiwKICJzdWIiOiAiMjQ4Mjg5NzYxMDAxIiwKICJhdWQiOiAiczZCaGRSa3F0MyIsCiAibm9uY2UiOiAibi0wUzZfV3pBMk1qIiwKICJleHAiOiAxMzExMjgxOTcwLAogImlhdCI6IDEzMTEyODA5NzAsCiAibmFtZSI6ICJKYW5lIERvZSIsCiAiZ2l2ZW5fbmFtZSI6ICJKYW5lIiwKICJmYW1pbHlfbmFtZSI6ICJEb2UiLAogImdlbmRlciI6ICJmZW1hbGUiLAogImJpcnRoZGF0ZSI6ICIwMDAwLTEwLTMxIiwKICJlbWFpbCI6ICJqYW5lZG9lQGV4YW1wbGUuY29tIiwKICJwaWN0dXJlIjogImh0dHA6Ly9leGFtcGxlLmNvbS9qYW5lZG9lL21lLmpwZyIKfQ.rHQjEmBqn9Jre0OLykYNnspA10Qql2rvx4FsD00jwlB0Sym4NzpgvPKsDjn_wMkHxcp6CilPcoKrWHcipR2iAjzLvDNAReF97zoJqq880ZD1bwY82JDauCXELVR9O6_B0w3K-E7yM2macAAgNCUwtik6SjoSUZRcf-O5lygIyLENx882p6MtmwaL1hd6qn5RZOQ0TLrOYu0532g9Exxcm-ChymrB4xLykpDj3lUivJt63eEGGN6DH5K6o33TcxkIjNrCD4XB1CKKumZvCedgHHF3IAK4dVEDSUoGlH9z4pP_eWYNXvqQOjGs-rDaQzUHl6cQQWNiDpWOl_lxXjQEvQ", policy, out var jwt);
             Assert.True(result);
 
-            var token = jwt.AsIdToken();
-            Assert.Equal("http://server.example.com", token.Payload["iss"].GetString());
-            Assert.Equal("248289761001", token.Payload["sub"].GetString());
-            Assert.Equal("s6BhdRkqt3", token.Payload["aud"].GetString());
-            Assert.Equal("n-0S6_WzA2Mj", token.Payload["nonce"].GetString());
-            Assert.Equal(1311281970, token.Payload["exp"].GetInt64());
-            Assert.Equal(1311280970, token.Payload["iat"].GetInt64());
-            Assert.Equal("Jane Doe", token.Payload["name"].GetString());
-            Assert.Equal("Jane", token.GivenName);
-            Assert.Equal("Doe", token.FamilyName);
-            Assert.Equal("female", token.Gender);
-            Assert.Equal("0000-10-31", token.Birthdate);
-            Assert.Equal("janedoe@example.com", token.Email);
-            Assert.Equal("http://example.com/janedoe/me.jpg", token.Picture);
+            Assert.Equal("http://server.example.com", jwt.Payload["iss"].GetString());
+            Assert.Equal("248289761001", jwt.Payload["sub"].GetString());
+            Assert.Equal("s6BhdRkqt3", jwt.Payload["aud"].GetString());
+            Assert.Equal("n-0S6_WzA2Mj", jwt.Payload["nonce"].GetString());
+            Assert.Equal(1311281970, jwt.Payload["exp"].GetInt64());
+            Assert.Equal(1311280970, jwt.Payload["iat"].GetInt64());
+            Assert.Equal("Jane Doe", jwt.Payload["name"].GetString());
+            Assert.Equal("Jane", jwt.Payload["given_name"].GetString());
+            Assert.Equal("Doe", jwt.Payload["family_name"].GetString());
+            Assert.Equal("female", jwt.Payload["gender"].GetString());
+            Assert.Equal("0000-10-31", jwt.Payload["birthdate"].GetString());
+            Assert.Equal("janedoe@example.com", jwt.Payload["email"].GetString());
+            Assert.Equal("http://example.com/janedoe/me.jpg", jwt.Payload["picture"].GetString());
         }
     }
 }

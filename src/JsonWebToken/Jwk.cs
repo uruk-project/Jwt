@@ -265,7 +265,7 @@ namespace JsonWebToken
         /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
         public abstract bool SupportSignature(SignatureAlgorithm algorithm);
 
-        internal static Jwk FromJsonReader(ref Utf8JsonReader reader, ReadOnlySpan<byte> json)
+        internal static Jwk FromJsonReader(ref Utf8JsonReader reader)
         {
             Utf8JsonReader restore = reader;
             if (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
@@ -765,7 +765,7 @@ namespace JsonWebToken
                 var reader = new Utf8JsonReader(jsonSpan, true, default);
                 if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
                 {
-                    return FromJsonReader(ref reader, jsonSpan);
+                    return FromJsonReader(ref reader);
                 }
 
                 ThrowHelper.ThrowArgumentException_MalformedKey();
@@ -818,7 +818,6 @@ namespace JsonWebToken
                 key._keyOps = new List<JsonEncodedText>();
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                 {
-                    var value = reader.GetString();
                     if (reader.TokenType != JsonTokenType.StartArray)
                     {
                         key._keyOps.Add(JsonEncodedText.Encode(reader.ValueSpan, Constants.JsonEncoder));
@@ -1013,6 +1012,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public virtual void Dispose()
         {
+            GC.SuppressFinalize(this);
             if (_signers != null)
             {
                 _signers.Dispose();

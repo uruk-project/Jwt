@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -14,26 +13,18 @@ namespace JsonWebToken
     /// </summary>
     public abstract class SignatureValidationPolicy
     {
-        /// <summary>
-        /// Allows to support the unsecure 'none' algorithm that require no signature.
-        /// </summary>
+        /// <summary>Allows to support the unsecure 'none' algorithm that require no signature.</summary>
         public static readonly SignatureValidationPolicy NoSignature = new NoSignatureValidationContext();
 
-        /// <summary>
-        /// Allows to ignore the signature, whatever ther is an algorithm defined or not.
-        /// </summary>
+        /// <summary>Allows to ignore the signature, whatever ther is an algorithm defined or not.</summary>
         public static readonly SignatureValidationPolicy IgnoreSignature = new IgnoreSignatureValidationPolicy();
 
         internal static readonly SignatureValidationPolicy InvalidSignature = new InvalidSignatureValidationPolicy();
 
-        /// <summary>
-        /// Gets whether the signature validation is enabled.
-        /// </summary>
+        /// <summary>Gets whether the signature validation is enabled.</summary>
         public abstract bool IsEnabled { get; }
 
-        /// <summary>
-        /// Try to validate the token signature.
-        /// </summary>
+        /// <summary>Try to validate the token signature.</summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
         /// <param name="contentBytes"></param>
@@ -41,9 +32,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public abstract SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment);
 
-        /// <summary>
-        /// Creates a new <see cref="SignatureValidationPolicy"/> instance.
-        /// </summary>
+        /// <summary>Creates a new <see cref="SignatureValidationPolicy"/> instance.</summary>
         /// <param name="keyProvider"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
@@ -52,9 +41,7 @@ namespace JsonWebToken
             return new DefaultSignatureValidationPolicy(keyProvider, algorithm);
         }
 
-        /// <summary>
-        /// Creates a new <see cref="SignatureValidationPolicy"/> instance.
-        /// </summary>
+        /// <summary>Creates a new <see cref="SignatureValidationPolicy"/> instance.</summary>
         /// <param name="issuer"></param>
         /// <param name="policy"></param>
         /// <returns></returns>
@@ -63,9 +50,7 @@ namespace JsonWebToken
             return new SingleIssuerSignatureValidationPolicy(issuer, policy);
         }
 
-        /// <summary>
-        /// Creates a new <see cref="SignatureValidationPolicy"/> instance.
-        /// </summary>
+        /// <summary>Creates a new <see cref="SignatureValidationPolicy"/> instance.</summary>
         /// <param name="policies"></param>
         /// <param name="defaultPolicy"></param>
         /// <returns></returns>
@@ -134,21 +119,14 @@ namespace JsonWebToken
             private readonly IKeyProvider _keyProvider;
             private readonly SignatureAlgorithm? _algorithm;
 
-            /// <summary>
-            /// Initializes a new instance of the <see cref="SignatureValidationPolicy"/> class.
-            /// </summary>
-            /// <param name="keyProvider"></param>
-            /// <param name="algorithm"></param>
             public DefaultSignatureValidationPolicy(IKeyProvider keyProvider, SignatureAlgorithm? algorithm)
             {
                 _keyProvider = keyProvider ?? throw new ArgumentNullException(nameof(keyProvider));
                 _algorithm = algorithm;
             }
 
-            /// <inheritdoc />
             public override bool IsEnabled => true;
 
-            /// <inheritdoc />
             public override SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
                 if (signatureSegment.IsEmpty)
@@ -210,10 +188,8 @@ namespace JsonWebToken
 
         private sealed class NoSignatureValidationContext : SignatureValidationPolicy
         {
-            /// <inheritdoc />
             public override bool IsEnabled => true;
 
-            /// <inheritdoc />
             public override SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
                 return (contentBytes.Length == 0 && signatureSegment.Length == 0)
@@ -226,10 +202,8 @@ namespace JsonWebToken
 
         private sealed class IgnoreSignatureValidationPolicy : SignatureValidationPolicy
         {
-            /// <inheritdoc />
             public override bool IsEnabled => false;
 
-            /// <inheritdoc />
             public override SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
                 return SignatureValidationResult.Success();
@@ -238,10 +212,8 @@ namespace JsonWebToken
 
         private sealed class InvalidSignatureValidationPolicy : SignatureValidationPolicy
         {
-            /// <inheritdoc />
             public override bool IsEnabled => false;
 
-            /// <inheritdoc />
             public override SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
                 return SignatureValidationResult.InvalidSignature();

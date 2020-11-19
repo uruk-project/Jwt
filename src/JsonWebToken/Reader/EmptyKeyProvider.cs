@@ -5,21 +5,15 @@ using System;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents a static provider of keys.
-    /// </summary>
+    /// <summary>Represents a static provider of keys.</summary>
     public sealed class EmptyKeyProvider : IKeyProvider
     {
         private static readonly Jwk[] _empty = Array.Empty<Jwk>();
 
-        /// <summary>
-        /// Gets the list of <see cref="Jwk"/>.
-        /// </summary>
+        /// <summary>Gets the list of <see cref="Jwk"/>.</summary>
         /// <param name="header"></param>
         /// <returns></returns>
         public Jwk[] GetKeys(JwtHeaderDocument header)
-        {
-            return _empty;
-        }
+            => _empty;
     }
 }

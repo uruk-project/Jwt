@@ -291,7 +291,7 @@ namespace JsonWebToken
             {
                 while (reader.TokenType is JsonTokenType.PropertyName)
                 {
-                    var propertyName = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
+                    var propertyName = reader.ValueSpan;
                     if (propertyName.Length == 4)
                     {
                         ref byte propertyNameRef = ref MemoryMarshal.GetReference(propertyName);
@@ -301,7 +301,7 @@ namespace JsonWebToken
                             {
                                 while (reader.Read() && reader.TokenType is JsonTokenType.StartObject)
                                 {
-                                    Jwk jwk = Jwk.FromJsonReader(ref reader, json);
+                                    Jwk jwk = Jwk.FromJsonReader(ref reader);
                                     jwks.Add(jwk);
                                 }
 

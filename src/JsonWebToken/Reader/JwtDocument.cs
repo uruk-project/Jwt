@@ -30,11 +30,6 @@ namespace JsonWebToken
         private readonly List<IDisposable> _disposableRegistry;
 
         /// <summary>
-        /// The <see cref="JwtElement"/> representing the value of the document.
-        /// </summary>
-        public JwtElement RootElement => _root;
-
-        /// <summary>
         /// Gets the raw binary value of the <see cref="JwtDocument"/>.
         /// </summary>
         public ReadOnlyMemory<byte> RawValue => _utf8Json;
@@ -64,41 +59,8 @@ namespace JsonWebToken
             _root = new JwtElement(this, 0);
         }
 
-        ///// <summary>
-        ///// Gets 
-        ///// </summary>
-        ///// <param name="propertyName"></param>
-        ///// <returns></returns>
-        //public JwtElement this[string propertyName]
-        //{
-        //    get
-        //    {
-        //        if (TryGetProperty(propertyName, out var value))
-        //        {
-        //            return value;
-        //        }
-
-        //        throw new KeyNotFoundException();
-        //    }
-        //}
-
-        //public JwtElement this[ReadOnlySpan<byte> propertyName]
-        //{
-        //    get
-        //    {
-        //        if (TryGetProperty(propertyName, out var value))
-        //        {
-        //            return value;
-        //        }
-
-        //        throw new KeyNotFoundException();
-        //    }
-        //}
-
         internal bool TryGetNamedPropertyValue(ReadOnlySpan<char> propertyName, out JwtElement value)
         {
-            CheckNotDisposed();
-
             DbRow row;
 
             int maxBytes = Utf8.GetMaxByteCount(propertyName.Length);
@@ -157,9 +119,7 @@ namespace JsonWebToken
 
         internal bool TryGetNamedPropertyValue(ReadOnlySpan<byte> propertyName, out JwtElement value)
         {
-            CheckNotDisposed();
-
-            int endIndex = _parsedData.Length;// checked(row.NumberOfRows * DbRow.Size + index);
+            int endIndex = _parsedData.Length;
 
             return TryGetNamedPropertyValue(
                 endIndex,
@@ -269,11 +229,7 @@ namespace JsonWebToken
         }
 
         internal JsonTokenType GetJsonTokenType(int index)
-        {
-            CheckNotDisposed();
-
-            return _parsedData.GetJsonTokenType(index);
-        }
+            => _parsedData.GetJsonTokenType(index);
 
         private static void CheckExpectedType(JsonTokenType expected, JsonTokenType actual)
         {
@@ -284,18 +240,8 @@ namespace JsonWebToken
             }
         }
 
-        private void CheckNotDisposed()
-        {
-            if (_utf8Json.IsEmpty)
-            {
-                ThrowHelper.ThrowObjectDisposedException(typeof(JwtDocument));
-            }
-        }
-
         internal int GetEndIndex(int index, bool includeEndElement)
         {
-            CheckNotDisposed();
-
             DbRow row = _parsedData.Get(index);
 
             if (row.IsSimpleValue)
@@ -315,8 +261,6 @@ namespace JsonWebToken
 
         private ReadOnlyMemory<byte> GetRawValue(int index, bool includeQuotes)
         {
-            CheckNotDisposed();
-
             DbRow row = _parsedData.Get(index);
 
             if (row.IsSimpleValue)
@@ -336,8 +280,6 @@ namespace JsonWebToken
 
         private ReadOnlyMemory<byte> GetPropertyRawValue(int valueIndex)
         {
-            CheckNotDisposed();
-
             // The property name is stored one row before the value
             DbRow row = _parsedData.Get(valueIndex - DbRow.Size);
             Debug.Assert(row.TokenType == JsonTokenType.PropertyName);
@@ -369,8 +311,6 @@ namespace JsonWebToken
 
         internal string? GetString(int index, JsonTokenType expectedType)
         {
-            CheckNotDisposed();
-
             DbRow row = _parsedData.Get(index);
 
             JsonTokenType tokenType = row.TokenType;
@@ -402,7 +342,6 @@ namespace JsonWebToken
         internal TValue? Deserialize<TValue>(int index, JsonSerializerOptions? options = null)
             where TValue : class
         {
-            CheckNotDisposed();
             DbRow row = _parsedData.Get(index);
 
             ReadOnlySpan<byte> data = _utf8Json.Span;
@@ -412,8 +351,6 @@ namespace JsonWebToken
 
         internal string?[]? GetStringArray(int index)
         {
-            CheckNotDisposed();
-
             DbRow row = _parsedData.Get(index);
 
             JsonTokenType tokenType = row.TokenType;
@@ -444,8 +381,6 @@ namespace JsonWebToken
 
         internal bool TextEquals(int index, ReadOnlySpan<char> otherText, bool isPropertyName)
         {
-            CheckNotDisposed();
-
             int matchIndex = isPropertyName ? index - DbRow.Size : index;
 
             byte[]? otherUtf8TextArray = null;
@@ -482,8 +417,6 @@ namespace JsonWebToken
 
         internal bool TextEquals(int index, ReadOnlySpan<byte> otherUtf8Text, bool isPropertyName, bool shouldUnescape)
         {
-            CheckNotDisposed();
-
             int matchIndex = isPropertyName ? index - DbRow.Size : index;
 
             DbRow row = _parsedData.Get(matchIndex);
@@ -522,15 +455,10 @@ namespace JsonWebToken
         }
 
         internal string GetNameOfPropertyValue(int index)
-        {
-            // The property name is one row before the property value
-            return GetString(index - DbRow.Size, JsonTokenType.PropertyName)!;
-        }
+            => GetString(index - DbRow.Size, JsonTokenType.PropertyName)!;
 
         internal bool TryGetValue(int index, out long value)
         {
-            CheckNotDisposed();
-
             DbRow row = _parsedData.Get(index);
 
             CheckExpectedType(JsonTokenType.Number, row.TokenType);
@@ -551,8 +479,6 @@ namespace JsonWebToken
 
         internal bool TryGetValue(int index, out double value)
         {
-            CheckNotDisposed();
-
             DbRow row = _parsedData.Get(index);
 
             CheckExpectedType(JsonTokenType.Number, row.TokenType);
@@ -573,11 +499,7 @@ namespace JsonWebToken
 
         internal bool TryGetValue(int index, [NotNullWhen(true)] out JsonDocument? value)
         {
-            CheckNotDisposed();
-
             DbRow row = _parsedData.Get(index);
-
-            //   CheckExpectedType(JsonTokenType.StartObject, row.TokenType);
 
             ReadOnlySpan<byte> data = _utf8Json.Span;
             ReadOnlySpan<byte> segment = data.Slice(row.Location, row.Length);
@@ -633,20 +555,15 @@ namespace JsonWebToken
 
         internal int GetArrayLength(int index)
         {
-            CheckNotDisposed();
-
             DbRow row = _parsedData.Get(index);
 
             CheckExpectedType(JsonTokenType.StartArray, row.TokenType);
 
             return row.Length;
         }
-
-
+        
         internal int GetMemberCount(int index)
         {
-            CheckNotDisposed();
-
             DbRow row = _parsedData.Get(index);
 
             CheckExpectedType(JsonTokenType.StartObject, row.TokenType);
@@ -656,8 +573,6 @@ namespace JsonWebToken
 
         internal JwtElement GetArrayIndexElement(int currentIndex, int arrayIndex)
         {
-            CheckNotDisposed();
-
             DbRow row = _parsedData.Get(currentIndex);
 
             CheckExpectedType(JsonTokenType.StartArray, row.TokenType);

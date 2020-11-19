@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -26,9 +25,7 @@ namespace JsonWebToken
 
         private static readonly IJwtHeaderDocumentCache _disabledJwtHeaderCache = new DisabledJwtHeaderDocumentCache();
 
-        /// <summary>
-        /// Represents an policy without any validation. Do not use it without consideration.
-        /// </summary>
+        /// <summary>Represents an policy without any validation. Do not use it without consideration.</summary>
         public static readonly TokenValidationPolicy NoValidation = new TokenValidationPolicyBuilder()
                                                             .IgnoreSignatureByDefault()
                                                             .IgnoreCriticalHeader()
@@ -69,89 +66,55 @@ namespace JsonWebToken
             HeaderCache = headerCacheDisabled ? _disabledJwtHeaderCache : new LruJwtHeaderDocumentCache();
         }
 
-        /// <summary>
-        /// Gets the maximum token size in bytes.
-        /// </summary>
+        /// <summary>Gets the maximum token size in bytes.</summary>
         public int MaximumTokenSizeInBytes { get; }
 
-        /// <summary>
-        /// Gets the signature validation parameters.
-        /// </summary>
+        /// <summary>Gets the signature validation parameters.</summary>
         public SignatureValidationPolicy SignatureValidationPolicy { get; }
 
-        /// <summary>
-        /// Gets whether the <see cref="TokenValidationPolicy"/> has validation.
-        /// </summary>
+        /// <summary>Gets whether the <see cref="TokenValidationPolicy"/> has validation.</summary>
         public bool HasValidation => _control != 0 || _validators.Length != 0 || SignatureValidationPolicy.IsEnabled;
 
-        /// <summary>
-        /// Gets whether the issuer 'iss' is required.
-        /// </summary>
+        /// <summary>Gets whether the issuer 'iss' is required.</summary>
         public bool RequireIssuer => (Control & IssuerFlag) == IssuerFlag;
 
-        /// <summary>
-        /// Gets the required issuers, in UTF8 binary format. At least one issuer of this list is required.
-        /// </summary>
+        /// <summary>Gets the required issuers, in UTF8 binary format. At least one issuer of this list is required.</summary>
         public byte[][] RequiredIssuersBinary { get; }
 
-        /// <summary>
-        /// Gets the required issuers.
-        /// </summary>
+        /// <summary>Gets the required issuers.</summary>
         public string[] RequiredIssuers { get; }
 
-        /// <summary>
-        /// Gets whether the audience 'aud' is required.
-        /// </summary>
+        /// <summary>Gets whether the audience 'aud' is required.</summary>
         public bool RequireAudience => (Control & AudienceFlag) == AudienceFlag;
 
-        /// <summary>
-        /// Gets the required audience array, in UTF8 binary format. At least one audience of this list is required.
-        /// </summary>
+        /// <summary>Gets the required audience array, in UTF8 binary format. At least one audience of this list is required.</summary>
         internal byte[][] RequiredAudiencesBinary { get; }
 
-        /// <summary>
-        /// Gets the required issuer.
-        /// </summary>
+        /// <summary>Gets the required issuer.</summary>
         public string[] RequiredAudiences { get; }
 
-        /// <summary>
-        /// Gets the validation control bits.
-        /// </summary>
+        /// <summary>Gets the validation control bits.</summary>
         public byte Control => _control;
 
-        /// <summary>
-        /// Gets whether the expiration time 'exp' is required.
-        /// </summary>
+        /// <summary>Gets whether the expiration time 'exp' is required.</summary>
         public bool RequireExpirationTime => (Control & ExpirationTimeRequiredFlag) == ExpirationTimeRequiredFlag;
 
-        /// <summary>
-        /// Defines the clock skrew used for the token lifetime validation.
-        /// </summary>
+        /// <summary>Defines the clock skrew used for the token lifetime validation.</summary>
         public int ClockSkew { get; }
 
-        /// <summary>
-        /// Gets the extension points used to handle the critical headers.
-        /// </summary>
+        /// <summary>Gets the extension points used to handle the critical headers.</summary>
         public Dictionary<string, ICriticalHeaderHandler> CriticalHandlers => _criticalHandlers;
 
-        /// <summary>
-        /// Ignores the nested token reading and validation. 
-        /// </summary>
+        /// <summary>Ignores the nested token reading and validation. </summary>
         public bool IgnoreNestedToken { get; }
 
-        /// <summary>
-        /// Gets whether the critical headers should be ignored.
-        /// </summary>
+        /// <summary>Gets whether the critical headers should be ignored.</summary>
         public bool IgnoreCriticalHeader => _ignoreCriticalHeader;
 
-        /// <summary>
-        /// Gets the <see cref="IJwtHeaderDocumentCache"/>.
-        /// </summary>
+        /// <summary>Gets the <see cref="IJwtHeaderDocumentCache"/>.</summary>
         public IJwtHeaderDocumentCache HeaderCache { get; }
 
-        /// <summary>
-        /// Gets the array of <see cref="IKeyProvider"/> used for decryption.
-        /// </summary>
+        /// <summary>Gets the array of <see cref="IKeyProvider"/> used for decryption.</summary>
         public IKeyProvider[] DecryptionKeyProviders { get; }
 
         /// <summary>
@@ -160,7 +123,6 @@ namespace JsonWebToken
         /// <param name="header"></param>
         /// <param name="payload"></param>
         /// <param name="error"></param>
-        /// <returns></returns>
         public bool TryValidateJwt(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
             if (payload.Control != 0)
@@ -233,12 +195,10 @@ namespace JsonWebToken
             return false;
         }
 
-        /// <summary>
-        /// Try to validate the token header, according to the <paramref name="header"/>.
-        /// </summary>
+        /// <summary>Try to validate the token header, according to the <paramref name="header"/>.</summary>
         /// <param name="header"></param>
         /// <param name="error"></param>
-        /// <returns></returns>
+        /// <returns><c>true</c> if the <paramref name="header"/> is valid. <c>false</c> otherwise.</returns>
         public bool TryValidateHeader(JwtHeaderDocument header, [NotNullWhen(false)] out TokenValidationError? error)
         {
             if (!IgnoreCriticalHeader)
@@ -269,9 +229,7 @@ namespace JsonWebToken
             return true;
         }
 
-        /// <summary>
-        /// Try to validate the token signature.
-        /// </summary>
+        /// <summary>Try to validate the token signature.</summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
         /// <param name="contentBytes"></param>

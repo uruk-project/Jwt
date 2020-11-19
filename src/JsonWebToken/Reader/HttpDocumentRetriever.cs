@@ -7,17 +7,13 @@ using System.Threading;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Retrieves metadata information using <see cref="HttpClient"/>.
-    /// </summary>
+    /// <summary>Retrieves metadata information using <see cref="HttpClient"/>.</summary>
     public sealed class HttpDocumentRetriever : IDisposable
     {
         private readonly HttpClient _httpClient;
         private bool _disposed;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HttpDocumentRetriever"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="HttpDocumentRetriever"/> class.</summary>
         public HttpDocumentRetriever()
             : this(null)
         {
@@ -32,14 +28,10 @@ namespace JsonWebToken
             _httpClient = new HttpClient(handler ?? new HttpClientHandler());
         }
 
-        /// <summary>
-        /// Requires Https secure channel for sending requests.. This is turned ON by default for security reasons. It is RECOMMENDED that you do not allow retrieval from http addresses by default.
-        /// </summary>
+        /// <summary>Requires Https secure channel for sending requests. This is turned ON by default for security reasons. It is RECOMMENDED that you do not allow retrieval from http addresses by default.</summary>
         public bool RequireHttps { get; set; } = true;
 
-        /// <summary>
-        /// Returns a task which contains a string converted from remote document when completed, by using the provided address.
-        /// </summary>
+        /// <summary>Returns a task which contains a string converted from remote document when completed, by using the provided address.</summary>
         /// <param name="address">Location of document</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation. <see cref="CancellationToken"/></param>
         /// <returns>Document as a string</returns>
@@ -64,9 +56,7 @@ namespace JsonWebToken
             return response.Content.ReadAsByteArrayAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        /// <summary>
-        /// Release managed resources.
-        /// </summary>
+        /// <summary>Release managed resources.</summary>
         public void Dispose()
         {
             if (!_disposed)

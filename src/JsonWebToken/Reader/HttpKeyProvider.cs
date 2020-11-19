@@ -6,9 +6,7 @@ using System.Threading;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Defines a <see cref="IKeyProvider"/> that gets the keys from and HTTP endpoint.
-    /// </summary>
+    /// <summary>Defines a <see cref="IKeyProvider"/> that gets the keys from and HTTP endpoint.</summary>
     public abstract class HttpKeyProvider : IKeyProvider, IDisposable
     {
         private readonly SemaphoreSlim _refreshLock = new SemaphoreSlim(1);
@@ -17,43 +15,29 @@ namespace JsonWebToken
         private Jwks? _currentKeys;
         private bool _disposed;
 
-        /// <summary>
-        /// 1 day is the default time interval that afterwards, <see cref="GetKeys(JwtHeaderDocument, string)"/> will obtain new configuration.
-        /// </summary>
+        /// <summary>1 day is the default time interval that afterwards, <see cref="GetKeys(JwtHeaderDocument, string)"/> will obtain new configuration.</summary>
         public static readonly long DefaultAutomaticRefreshInterval = 60 * 60 * 24;
 
-        /// <summary>
-        /// 30 seconds is the default time interval to obtain a new key set.
-        /// </summary>
+        /// <summary>30 seconds is the default time interval to obtain a new key set.</summary>
         public static readonly long DefaultRefreshInterval = 30;
 
-        /// <summary>
-        /// Time interval to obtain a new key set.
-        /// </summary>  
+        /// <summary>Time interval to obtain a new key set.</summary>  
         public long RefreshInterval { get; set; } = DefaultRefreshInterval;
 
-        /// <summary>
-        /// Time interval that afterwards, <see cref="GetKeys(JwtHeaderDocument, string)"/> will obtain new configuration.
-        /// </summary>
+        /// <summary>Time interval that afterwards, <see cref="GetKeys(JwtHeaderDocument, string)"/> will obtain new configuration.</summary>
         public long AutomaticRefreshInterval { get; set; } = DefaultAutomaticRefreshInterval;
 
-        /// <summary>
-        /// Gets the http document retriever.
-        /// </summary>
+        /// <summary>Gets the http document retriever.</summary>
         protected HttpDocumentRetriever DocumentRetriever => _documentRetriever;
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="HttpKeyProvider"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="HttpKeyProvider"/>.</summary>
         /// <param name="documentRetriever"></param>
         protected HttpKeyProvider(HttpDocumentRetriever documentRetriever)
         {
             _documentRetriever = documentRetriever ?? throw new ArgumentNullException(nameof(documentRetriever));
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="HttpKeyProvider"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="HttpKeyProvider"/>.</summary>
         protected HttpKeyProvider()
             : this(new HttpDocumentRetriever())
         {
@@ -62,9 +46,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public abstract Jwk[] GetKeys(JwtHeaderDocument header);
 
-        /// <summary>
-        /// Deserializes a JSON string representing a JWKS.
-        /// </summary>
+        /// <summary>Deserializes a JSON string representing a JWKS.</summary>
         /// <param name="value"></param>
         /// <returns></returns>
         protected abstract Jwks DeserializeKeySet(string value);
@@ -113,9 +95,7 @@ namespace JsonWebToken
             return Array.Empty<Jwk>();
         }
 
-        /// <summary>
-        /// Disposes the managed resources.
-        /// </summary>
+        /// <summary>Disposes the managed resources.</summary>
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
@@ -132,9 +112,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Disposes the managed resources.
-        /// </summary>
+        /// <summary>Disposes the managed resources.</summary>
         public void Dispose()
         {
             GC.SuppressFinalize(this);

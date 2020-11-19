@@ -7,14 +7,10 @@ using System.IO;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Provides decompression services, based on <typeparamref name="TStream"/>.
-    /// </summary>
+    /// <summary>Provides decompression services, based on <typeparamref name="TStream"/>.</summary>
     public abstract class Decompressor<TStream> : Decompressor where TStream : Stream
     {
-        /// <summary>
-        /// Creates a decompression <see cref="Stream"/>.
-        /// </summary>
+        /// <summary>Creates a decompression <see cref="Stream"/>.</summary>
         public abstract TStream CreateDecompressionStream(Stream inputStream);
 
         /// <inheritsdoc/>

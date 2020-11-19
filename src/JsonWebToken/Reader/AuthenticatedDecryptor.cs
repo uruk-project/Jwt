@@ -5,14 +5,10 @@ using System;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Provides authenticated decryption.
-    /// </summary>
+    /// <summary>Provides authenticated decryption.</summary>
     public abstract class AuthenticatedDecryptor
     {
-        /// <summary>
-        /// Try to decrypt the <paramref name="ciphertext"/>. 
-        /// </summary>
+        /// <summary>Try to decrypt the <paramref name="ciphertext"/>.</summary>
         /// <param name="key">The encyrption key.</param>
         /// <param name="ciphertext">The ciphertext to decrypt.</param>
         /// <param name="associatedData">The associated data used to encrypt.</param>

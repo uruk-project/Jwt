@@ -6,16 +6,12 @@ using System.Buffers;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Provides decompression services.
-    /// </summary>
+    /// <summary>Provides decompression services.</summary>
     public abstract class Decompressor
     {
         internal static Decompressor Null = new NullDecompressor();
 
-        /// <summary>
-        /// Decompresses the compressed data.
-        /// </summary>
+        /// <summary>Decompresses the compressed data.</summary>
         /// <param name="compressedData">The compressed data.</param>
         /// <param name="bufferWritter">The destination <see cref="IBufferWriter{T}"/>.</param>
         /// <returns></returns>

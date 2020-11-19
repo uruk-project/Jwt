@@ -6,9 +6,7 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents the header of a JWT, in a lightweight, read-only form. 
-    /// </summary>
+    /// <summary>Represents the header of a JWT, in a lightweight, read-only form. </summary>
     /// <remarks>
     /// This class utilizes resources from pooled memory to minimize the garbage collector (GC)
     /// impact in high-usage scenarios. Failure to properly Dispose this object will result in
@@ -178,13 +176,8 @@ namespace JsonWebToken
         /// <exception cref="InvalidOperationException">
         ///   This value is not <see cref="JsonValueKind.Object"/>.
         /// </exception>
-        /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JwtDocument"/> has been disposed.
-        /// </exception>
         public bool TryGetHeaderParameter(string headerParameterName, out JwtElement value)
-        {
-            return _document.TryGetProperty(headerParameterName, out value);
-        }
+            => _document.TryGetProperty(headerParameterName, out value);
 
         /// <summary>
         ///   Looks for a header parameter named <paramref name="headerParameterName"/> in the current JWT, returning
@@ -199,13 +192,8 @@ namespace JsonWebToken
         /// <exception cref="InvalidOperationException">
         ///   This value is not <see cref="JsonValueKind.Object"/>.
         /// </exception>
-        /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JwtDocument"/> has been disposed.
-        /// </exception>
         public bool TryGetHeaderParameter(ReadOnlySpan<byte> headerParameterName, out JwtElement value)
-        {
-            return _document.TryGetProperty(headerParameterName, out value);
-        }
+            => _document.TryGetProperty(headerParameterName, out value);
 
         private static bool TryCheckCrit(ref Utf8JsonReader reader, out int count)
         {
@@ -227,42 +215,27 @@ namespace JsonWebToken
 
         /// <inheritdoc />
         public void Dispose()
-        {
-            _document.Dispose();
-        }
+            => _document.Dispose();
 
-        /// <summary>
-        /// Gets a <see cref="JwtHeaderDocument"/> which can be safely stored beyond the lifetime of the original object.
-        /// </summary>
+        /// <summary>Gets a <see cref="JwtHeaderDocument"/> which can be safely stored beyond the lifetime of the original object.</summary>
         /// <returns></returns>
         public JwtHeaderDocument Clone()
-        {
-            return new JwtHeaderDocument(
+            => new JwtHeaderDocument(
                 _document.Clone(),
                 _alg.ValueKind == JsonValueKind.Undefined ? -1 : _alg.Idx,
                 _kid.ValueKind == JsonValueKind.Undefined ? -1 : _kid.Idx);
-        }
 
-
-        /// <summary>
-        /// Determines whether the <see cref="JwtHeaderDocument"/> contains the specified header parameter.
-        /// </summary>
+        /// <summary>Determines whether the <see cref="JwtHeaderDocument"/> contains the specified header parameter.</summary>
         /// <param name="headerParameterName"></param>
         /// <returns></returns>
         public bool ContainsHeaderParameter(string headerParameterName)
-        {
-            return _document.ContainsKey(headerParameterName);
-        }
+            =>  _document.ContainsKey(headerParameterName);
 
-        /// <summary>
-        /// Determines whether the <see cref="JwtHeaderDocument"/> contains the specified header parameter.
-        /// </summary>
+        /// <summary>Determines whether the <see cref="JwtHeaderDocument"/> contains the specified header parameter.</summary>
         /// <param name="headerParameterName"></param>
         /// <returns></returns>
         public bool ContainsHeaderParameter(ReadOnlySpan<byte> headerParameterName)
-        {
-            return _document.ContainsKey(headerParameterName);
-        }
+            => _document.ContainsKey(headerParameterName);
 
         /// <summary>
         ///   Looks for a header parameter named <paramref name="name"/> in the current JWT header, returning
@@ -274,9 +247,6 @@ namespace JsonWebToken
         /// </returns>
         /// <exception cref="InvalidOperationException">
         ///   This value is not <see cref="JsonValueKind.Object"/>.
-        /// </exception>
-        /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JwtDocument"/> has been disposed.
         /// </exception>
         /// <exception cref="KeyNotFoundException">
         ///   The <paramref name="name"/> is not found.
@@ -305,9 +275,6 @@ namespace JsonWebToken
         /// <exception cref="InvalidOperationException">
         ///   This value is not <see cref="JsonValueKind.Object"/>.
         /// </exception>
-        /// <exception cref="ObjectDisposedException">
-        ///   The parent <see cref="JwtDocument"/> has been disposed.
-        /// </exception>
         /// <exception cref="KeyNotFoundException">
         ///   The <paramref name="name"/> is not found.
         /// </exception>
@@ -326,8 +293,6 @@ namespace JsonWebToken
 
         /// <inheritdoc/>
         public override string ToString()
-        {
-            return _document.ToString();
-        }
+            => _document.ToString();
     }
 }

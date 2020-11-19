@@ -2,18 +2,13 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents a <see cref="IKeyProvider"/> that retrieve the key set with the 'jku' header parameter.
-    /// </summary>
+    /// <summary>Represents a <see cref="IKeyProvider"/> that retrieve the key set with the 'jku' header parameter.</summary>
     public sealed class JkuKeyProvider : HttpKeyProvider
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="JkuKeyProvider"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="JkuKeyProvider"/>.</summary>
         /// <param name="documentRetriever"></param>
         public JkuKeyProvider(HttpDocumentRetriever documentRetriever)
             : base(documentRetriever)

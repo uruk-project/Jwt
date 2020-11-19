@@ -28,7 +28,7 @@ namespace JsonWebToken
         {
             if ((vector.Length + 1) % 3 != 0)
             {
-                throw new ArgumentException(nameof(vector), "Invalid vector value. The length is incorrect.");
+                throw new ArgumentException("Invalid vector value. The length is incorrect.", nameof(vector));
             }
 
             for (int i = 0; i < vector.Length; i++)
@@ -37,24 +37,24 @@ namespace JsonWebToken
                 var value = vector[i++];
                 if (!char.IsUpper(dimension))
                 {
-                    throw new ArgumentException(nameof(vector), ErrorMessages.VotIncorrectDimension(dimension));
+                    throw new ArgumentException(ErrorMessages.VotIncorrectDimension(dimension), nameof(vector));
                 }
 
                 if (!char.IsLower(value) && !char.IsDigit(value))
                 {
-                    throw new ArgumentException(nameof(vector), ErrorMessages.VotIncorrectValue(value, dimension));
+                    throw new ArgumentException(ErrorMessages.VotIncorrectValue(value, dimension), nameof(vector));
                 }
 
                 if (i != vector.Length && vector[i] != '.')
                 {
-                    throw new ArgumentException(nameof(vector), ErrorMessages.VotIncorrectSeparator(vector[i]));
+                    throw new ArgumentException(ErrorMessages.VotIncorrectSeparator(vector[i]), nameof(vector));
                 }
 
                 if (_vector.TryGetValue(dimension, out var values))
                 {
                     if (values.Contains(value))
                     {
-                        throw new ArgumentException(nameof(vector), ErrorMessages.VotTooManyValues(dimension, value));
+                        throw new ArgumentException(ErrorMessages.VotTooManyValues(dimension, value), nameof(vector));
                     }
 
                     values.Add(value);

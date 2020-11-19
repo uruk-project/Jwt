@@ -22,23 +22,16 @@ namespace JsonWebToken
         // exceed that range.
         private readonly int _numberOfRowsAndTypeUnion;
 
-        /// <summary>
-        /// Index into the payload
-        /// </summary>
         internal int Location => _location;
 
-        /// <summary>
-        /// length of text in JSON payload (or number of elements if its a JSON array)
-        /// </summary>
+        // length of text in JSON payload (or number of elements if its a JSON array)
         internal int Length => _lengthUnion & int.MaxValue;
 
         internal bool IsUnknownSize => _lengthUnion == UnknownSize;
 
-        /// <summary>
-        /// String/PropertyName: Unescaping is required.
-        /// Array: At least one element is an object/array.
-        /// Otherwise; false
-        /// </summary>
+        // String/PropertyName: Unescaping is required.
+        // Array: At least one element is an object/array.
+        // Otherwise; false
         internal bool HasComplexChildren => _lengthUnion < 0;
 
         internal int NumberOfRows =>
