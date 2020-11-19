@@ -12,7 +12,7 @@ namespace JsonWebToken
         public static readonly JsonEncodedText SubjectAttribute = JsonEncodedText.Encode("subject");
 
         [JsonIgnore]
-        public abstract string Name { get; }
+        public abstract JsonEncodedText Name { get; }
 
         /// <summary>Validates the current SECEVENT by checking the required members.</summary>
         public virtual void Validate() { }

@@ -23,6 +23,7 @@ namespace JwsValidationSample
                 Console.WriteLine("Failed to read the token. Reason: " + Environment.NewLine + jwt.Error.Status);
             }
 
+            // Do not forget to dispose the Jwt, or you may suffer of GC impacts
             jwt.Dispose();
         }
     }

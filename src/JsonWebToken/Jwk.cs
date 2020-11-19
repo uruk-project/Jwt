@@ -742,7 +742,7 @@ namespace JsonWebToken
             key.X5t = certificate.GetCertHash();
             Span<byte> thumbprint = stackalloc byte[43];
             key.ComputeThumbprint(thumbprint);
-            key.Kid = JsonEncodedText.Encode(thumbprint);
+            key.Kid = JsonEncodedText.Encode(thumbprint, Constants.JsonEncoder);
             return key;
         }
 
@@ -821,7 +821,7 @@ namespace JsonWebToken
                     var value = reader.GetString();
                     if (reader.TokenType != JsonTokenType.StartArray)
                     {
-                        key._keyOps.Add(JsonEncodedText.Encode(reader.ValueSpan));
+                        key._keyOps.Add(JsonEncodedText.Encode(reader.ValueSpan, Constants.JsonEncoder));
                     }
                 }
             }
@@ -865,15 +865,15 @@ namespace JsonWebToken
                     }
                     else
                     {
-                        key._algorithm = JsonEncodedText.Encode(reader.ValueSpan);
+                        key._algorithm = JsonEncodedText.Encode(reader.ValueSpan, Constants.JsonEncoder);
                     }
 
                     break;
                 case kid:
-                    key.Kid = JsonEncodedText.Encode(reader.ValueSpan);
+                    key.Kid = JsonEncodedText.Encode(reader.ValueSpan, Constants.JsonEncoder);
                     break;
                 case use:
-                    key.Use = JsonEncodedText.Encode(reader.ValueSpan);
+                    key.Use = JsonEncodedText.Encode(reader.ValueSpan, Constants.JsonEncoder);
                     break;
                 case x5t:
                     key.X5t = Base64Url.Decode(reader.ValueSpan);

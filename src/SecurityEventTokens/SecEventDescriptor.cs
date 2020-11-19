@@ -21,7 +21,7 @@ namespace JsonWebToken
             {
                 if (events.Type == JwtValueKind.Object)
                 {
-                    var evts = (JsonObject)events.Value!;
+                    JsonObject evts = (JsonObject)events.Value;
                     foreach (JwtMember evt in evts)
                     {
                         if (evt.Value is SecEvent evcts)

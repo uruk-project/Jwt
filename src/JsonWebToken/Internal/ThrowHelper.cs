@@ -54,7 +54,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_PolicyBuilderRequireSignature() => throw CreateInvalidOperationException_PolicyBuilderRequireSignature();
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateInvalidOperationException_PolicyBuilderRequireSignature() => new InvalidOperationException($"Signature validation must be either defined by calling the method '{nameof(TokenValidationPolicyBuilder.RequireSignature)}' or explicitly ignored by calling the '{nameof(TokenValidationPolicyBuilder.AcceptUnsecureToken)}' method.");
+        private static Exception CreateInvalidOperationException_PolicyBuilderRequireSignature() => new InvalidOperationException($"Signature validation must be either defined by calling the method '{nameof(TokenValidationPolicyBuilder.DefaultSignature)}' or explicitly ignored by calling the '{nameof(TokenValidationPolicyBuilder.AcceptUnsecureToken)}' method.");
 
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_ClaimIsRequired(ReadOnlySpan<byte> claim) => throw CreateJwtDescriptorException_ClaimIsRequired(claim);

@@ -8,6 +8,6 @@
         /// <summary>
         /// https://tools.ietf.org/html/rfc8417#section-2.3
         /// </summary>
-        public const string SecurityEventToken = "secevent+jwt";
+        public const string AccessToken = "ac+jwt";
     }  
 }

@@ -35,38 +35,41 @@ var token = writer.WriteTokenString(descriptor);
 ```
 var key = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
 var policy = new TokenValidationPolicyBuilder()
-                     .RequireSignature(key, SignatureAlgorithm.HmacSha256)
-                     .RequireAudience("636C69656E745F6964")
-                     .RequireIssuer("https://idp.example.com/")
-                     .Build();
+                .RequireIssuer("https://idp.example.com/", key, SignatureAlgorithm.HmacSha256)
+                .RequireAudience("636C69656E745F6964")
+                .Build();
 
-var reader = new JwtReader();
-var result = reader.TryReadToken("eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MDAwMDcyMDAsImlhdCI6MjAwMDAwNzIwMCwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiYXVkIjoiNjM2QzY5NjU2RTc0NUY2OTY0In0.YrrT1Ddp1ampsDd2GwYZoTz_bUnLt_h--f16wsWBedk", policy);
-
-if (result.Success)
+var result = Jwt.TryParse("eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MDAwMDcyMDAsImlhdCI6MjAwMDAwNzIwMCwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiYXVkIjoiNjM2QzY5NjU2RTc0NUY2OTY0In0.YrrT1Ddp1ampsDd2GwYZoTz_bUnLt_h--f16wsWBedk", policy, out Jwt jwt);
+if (result)
 {
-    Console.WriteLine("The token is " + result.Token);
+    Console.WriteLine("The token is " + jwt);
 }
 else
-{      
-    Console.WriteLine("Failed to read the token. Reason: " + result.Status);
+{
+    Console.WriteLine("Failed to read the token. Reason: " + Environment.NewLine + jwt.Error.Status);
 }
+
+// Do not forget to dispose the Jwt, or you may suffer of GC impacts
+jwt.Dispose();
 ````
 
 ### JWT creation
 ````
 // Creates a symmetric key defined for the 'HS256' algorithm
-var key = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU", SignatureAlgorithm.HmacSha256);
+var signingKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
 
 // Creates a JWS descriptor with all its properties
-var descriptor = new JwsDescriptor()
+var descriptor = new JwsDescriptor(signingKey, SignatureAlgorithm.HmacSha256)
 {
-    SigningKey = key,
-    IssuedAt = DateTime.UtcNow,
-    ExpirationTime = DateTime.UtcNow.AddHours(1),
-    Issuer = "https://idp.example.com/",
-    Audience = "636C69656E745F6964"
-};        
+    Payload = new JwtPayload
+    {
+        { Claims.Iat, EpochTime.UtcNow },
+        { Claims.Exp, EpochTime.UtcNow + EpochTime.OneHour },
+        { Claims.Iss, "https://idp.example.com/" },
+        { Claims.Aud, "636C69656E745F6964" }
+    }
+};
+   
 
 // Generates the UTF-8 string representation of the JWT
 var writer = new JwtWriter();

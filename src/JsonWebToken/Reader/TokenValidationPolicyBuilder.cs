@@ -330,7 +330,7 @@ namespace JsonWebToken
         {
             if (key.SignatureAlgorithm == null)
             {
-                throw new InvalidOperationException($"The key does not define an 'alg' parameter. Use the method {nameof(RequireSignature)} with a {nameof(Jwk)} and a {nameof(SignatureAlgorithm)}.");
+                throw new InvalidOperationException($"The key does not define an 'alg' parameter. Use the method {nameof(DefaultSignature)} with a {nameof(Jwk)} and a {nameof(SignatureAlgorithm)}.");
             }
 
             return DefaultSignature(key, (SignatureAlgorithm?)null);
@@ -375,7 +375,7 @@ namespace JsonWebToken
         /// <param name="keys"></param>
         /// <returns></returns>
         public TokenValidationPolicyBuilder DefaultSignature(IList<Jwk> keys)
-            => RequireSignature(keys, null);
+            => DefaultSignature(keys, null);
 
         /// <summary>
         /// Defines the default signature validation when there is no issuer configuration.
@@ -384,7 +384,7 @@ namespace JsonWebToken
         /// <param name="keys"></param>
         /// <param name="algorithm"></param>
         /// <returns></returns>
-        public TokenValidationPolicyBuilder RequireSignature(IList<Jwk> keys, SignatureAlgorithm? algorithm)
+        public TokenValidationPolicyBuilder DefaultSignature(IList<Jwk> keys, SignatureAlgorithm? algorithm)
             => DefaultSignature(new Jwks(keys), algorithm);
 
         /// <summary>

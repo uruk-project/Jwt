@@ -20,6 +20,7 @@ namespace JsonWebToken
     ///   the memory not being returned to the pool, which will cause an increase in GC impact across
     ///   various parts of the framework.
     /// </remarks>
+    // Inspired from https://github.com/dotnet/runtime/tree/master/src/libraries/System.Text.Json/src/System/Text/Json/Document
     public class Jwt : IDisposable
     {
         private ReadOnlyMemory<byte> _rawValue;

@@ -23,15 +23,15 @@ namespace JsonWebToken
                 return false;
             }
 
-            if (!payload.TryGetClaim(OidcClaims.Acr.EncodedUtf8Bytes, out var property))
+            if (!payload.TryGetClaim(OAuth2Claims.Acr.EncodedUtf8Bytes, out var property))
             {
-                error = TokenValidationError.MissingClaim(OidcClaims.Acr.ToString());
+                error = TokenValidationError.MissingClaim(OAuth2Claims.Acr.ToString());
                 return false;
             }
 
             if (!property.ValueEquals(_requiredAcr))
             {
-                error = TokenValidationError.InvalidClaim(OidcClaims.Acr.ToString());
+                error = TokenValidationError.InvalidClaim(OAuth2Claims.Acr.ToString());
                 return false;
             }
 

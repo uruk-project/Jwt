@@ -4,6 +4,7 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
+    // inspired from https://github.com/dotnet/runtime/blob/master/src/libraries/System.Text.Json/src/System/Text/Json/Document/JsonDocument.DbRow.cs
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct DbRow
     {

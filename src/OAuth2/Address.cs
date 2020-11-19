@@ -41,27 +41,27 @@ namespace JsonWebToken
                         switch (reader.TokenType)
                         {
                             case JsonTokenType.String:
-                                if (propertyName.SequenceEqual(OidcClaims.Formatted.EncodedUtf8Bytes))
+                                if (propertyName.SequenceEqual(OAuth2Claims.Formatted.EncodedUtf8Bytes))
                                 {
                                     address.Formatted = reader.GetString();
                                 }
-                                else if (propertyName.SequenceEqual(OidcClaims.StreetAddress.EncodedUtf8Bytes))
+                                else if (propertyName.SequenceEqual(OAuth2Claims.StreetAddress.EncodedUtf8Bytes))
                                 {
                                     address.StreetAddress = reader.GetString();
                                 }
-                                else if (propertyName.SequenceEqual(OidcClaims.Locality.EncodedUtf8Bytes))
+                                else if (propertyName.SequenceEqual(OAuth2Claims.Locality.EncodedUtf8Bytes))
                                 {
                                     address.Locality = reader.GetString();
                                 }
-                                else if (propertyName.SequenceEqual(OidcClaims.Region.EncodedUtf8Bytes))
+                                else if (propertyName.SequenceEqual(OAuth2Claims.Region.EncodedUtf8Bytes))
                                 {
                                     address.Region = reader.GetString();
                                 }
-                                else if (propertyName.SequenceEqual(OidcClaims.PostalCode.EncodedUtf8Bytes))
+                                else if (propertyName.SequenceEqual(OAuth2Claims.PostalCode.EncodedUtf8Bytes))
                                 {
                                     address.PostalCode = reader.GetString();
                                 }
-                                else if (propertyName.SequenceEqual(OidcClaims.Country.EncodedUtf8Bytes))
+                                else if (propertyName.SequenceEqual(OAuth2Claims.Country.EncodedUtf8Bytes))
                                 {
                                     address.Country = reader.GetString();
                                 }
@@ -112,32 +112,32 @@ namespace JsonWebToken
         {
             if (Formatted != null)
             {
-                writer.WriteString(OidcClaims.Formatted, Formatted);
+                writer.WriteString(OAuth2Claims.Formatted, Formatted);
             }
 
             if (StreetAddress != null)
             {
-                writer.WriteString(OidcClaims.StreetAddress, StreetAddress);
+                writer.WriteString(OAuth2Claims.StreetAddress, StreetAddress);
             }
 
             if (Locality != null)
             {
-                writer.WriteString(OidcClaims.Locality, Locality);
+                writer.WriteString(OAuth2Claims.Locality, Locality);
             }
 
             if (Region != null)
             {
-                writer.WriteString(OidcClaims.Region, Region);
+                writer.WriteString(OAuth2Claims.Region, Region);
             }
 
             if (PostalCode != null)
             {
-                writer.WriteString(OidcClaims.PostalCode, PostalCode);
+                writer.WriteString(OAuth2Claims.PostalCode, PostalCode);
             }
 
             if (Country != null)
             {
-                writer.WriteString(OidcClaims.Country, Country);
+                writer.WriteString(OAuth2Claims.Country, Country);
             }
         }
     }

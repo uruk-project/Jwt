@@ -22,7 +22,7 @@ namespace JsonWebToken
         /// <param name="alg">The signature algorithm.</param>
         /// <param name="typ">Optional. The media type.</param>
         /// <param name="cty">Optional. The content type.</param>
-        public JwsDescriptor(Jwk signingKey, SignatureAlgorithm alg, string? typ=null, string? cty=null)
+        public JwsDescriptor(Jwk signingKey, SignatureAlgorithm alg, string? typ = null, string? cty = null)
         {
             _alg = alg ?? throw new ArgumentNullException(nameof(alg));
             _signingKey = signingKey ?? throw new ArgumentNullException(nameof(signingKey));
@@ -45,7 +45,7 @@ namespace JsonWebToken
                 Header.Add(HeaderParameters.Cty, cty);
             }
         }
-        
+
         /// <inheritdoc/>
         public override JwtPayload? Payload
         {

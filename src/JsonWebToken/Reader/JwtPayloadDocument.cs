@@ -20,6 +20,8 @@ namespace JsonWebToken
     /// </remarks>
     public sealed class JwtPayloadDocument : IDisposable
     {
+        internal static readonly JwtPayloadDocument Empty = new JwtPayloadDocument(new JwtDocument(), 0);
+
         private readonly JwtDocument _document;
         private readonly byte _control;
 

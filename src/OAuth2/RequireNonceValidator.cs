@@ -21,13 +21,13 @@ namespace JsonWebToken
                 return false;
             }
 
-            if (payload.ContainsClaim(OidcClaims.Nonce.EncodedUtf8Bytes))
+            if (payload.ContainsClaim(OAuth2Claims.Nonce.EncodedUtf8Bytes))
             {
                 error = null;
                 return true;
             }
 
-            error = TokenValidationError.MissingClaim(OidcClaims.Nonce.ToString());
+            error = TokenValidationError.MissingClaim(OAuth2Claims.Nonce.ToString());
             return false;
         }
     }
