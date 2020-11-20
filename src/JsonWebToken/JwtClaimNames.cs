@@ -13,7 +13,8 @@ namespace JsonWebToken
     /// http://openid.net/specs/openid-connect-frontchannel-1_0.html#OPLogout
     /// https://tools.ietf.org/html/draft-ietf-secevent-token-13#section-2.2
     /// </summary>
-    public static class Claims
+    public static class JwtClaimNames
+
     {
         /// <summary>
         /// http://tools.ietf.org/html/rfc7519#section-4

@@ -24,7 +24,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
-            if (!header.TryGetHeaderParameter(HeaderParameters.X5cUtf8, out var x5u))
+            if (!header.TryGetHeaderParameter(JwtHeaderParameterNames.X5cUtf8, out var x5u))
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }

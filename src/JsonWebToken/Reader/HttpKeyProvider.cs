@@ -59,7 +59,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowObjectDisposedException(typeof(HttpKeyProvider));
             }
 
-            var kid = header.TryGetHeaderParameter(HeaderParameters.KidUtf8, out var kidHeader) ? kidHeader.GetString() : null;
+            var kid = header.Kid;
             var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             if (_currentKeys != null && _syncAfter > now)
             {

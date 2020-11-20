@@ -129,13 +129,13 @@ namespace JsonWebToken
                 {
                     if (payload.MissingAudience)
                     {
-                        error = TokenValidationError.MissingClaim(Claims.Aud.ToString());
+                        error = TokenValidationError.MissingClaim(JwtClaimNames.Aud.ToString());
                         goto Error;
                     }
 
                     if (payload.InvalidAudience)
                     {
-                        error = TokenValidationError.InvalidClaim(Claims.Aud.ToString());
+                        error = TokenValidationError.InvalidClaim(JwtClaimNames.Aud.ToString());
                         goto Error;
                     }
                 }
@@ -144,13 +144,13 @@ namespace JsonWebToken
                 {
                     if (payload.MissingIssuer)
                     {
-                        error = TokenValidationError.MissingClaim(Claims.Iss.ToString());
+                        error = TokenValidationError.MissingClaim(JwtClaimNames.Iss.ToString());
                         goto Error;
                     }
 
                     if (payload.InvalidIssuer)
                     {
-                        error = TokenValidationError.InvalidClaim(Claims.Iss.ToString());
+                        error = TokenValidationError.InvalidClaim(JwtClaimNames.Iss.ToString());
                         goto Error;
                     }
                 }
@@ -159,7 +159,7 @@ namespace JsonWebToken
                 {
                     if (payload.MissingExpirationTime)
                     {
-                        error = TokenValidationError.MissingClaim(Claims.Exp.ToString());
+                        error = TokenValidationError.MissingClaim(JwtClaimNames.Exp.ToString());
                         goto Error;
                     }
 
@@ -201,7 +201,7 @@ namespace JsonWebToken
         {
             if (!IgnoreCriticalHeader)
             {
-                if (header.TryGetHeaderParameter(HeaderParameters.CritUtf8, out var crit))
+                if (header.TryGetHeaderParameter(JwtHeaderParameterNames.CritUtf8, out var crit))
                 {
                     var handlers = CriticalHandlers;
                     foreach (var critHeader in crit.EnumerateArray<string>())

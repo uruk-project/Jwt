@@ -25,12 +25,12 @@ namespace ValidatePerf
                 {
                     Payload = new JwtPayload
                     {
-                        { Claims.Iat, 1500000000L },
-                        { Claims.Exp, 2000000000L },
-                        { Claims.Iss, "https://idp.example.com/" },
-                        { Claims.Aud, "636C69656E745F6964" },
-                        { Claims.Sub, "admin@example.com" },
-                        { Claims.Jti, "12345667890" }
+                        { JwtClaimNames.Iat, 1500000000L },
+                        { JwtClaimNames.Exp, 2000000000L },
+                        { JwtClaimNames.Iss, "https://idp.example.com/" },
+                        { JwtClaimNames.Aud, "636C69656E745F6964" },
+                        { JwtClaimNames.Sub, "admin@example.com" },
+                        { JwtClaimNames.Jti, "12345667890" }
                     }
                 }
             };

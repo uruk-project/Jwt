@@ -407,13 +407,14 @@ namespace JsonWebToken
         {
             if (!(algorithm is null))
             {
+                int algorithmId = (int)algorithm.Id;
                 var signers = _signers;
                 if (signers is null)
                 {
                     signers = new CryptographicStore<Signer>();
                     _signers = signers;
                 }
-                else if (signers.TryGetValue(algorithm.Id, out signer))
+                else if (signers.TryGetValue(algorithmId, out signer))
                 {
                     goto Found;
                 }
@@ -421,13 +422,13 @@ namespace JsonWebToken
                 if (SupportSignature(algorithm))
                 {
                     signer = CreateSigner(algorithm);
-                    if (signers.TryAdd(algorithm.Id, signer))
+                    if (signers.TryAdd(algorithmId, signer))
                     {
                         goto Found;
                     }
 
                     signer.Dispose();
-                    if (signers.TryGetValue(algorithm.Id, out signer))
+                    if (signers.TryGetValue(algorithmId, out signer))
                     {
                         goto Found;
                     }
@@ -453,13 +454,14 @@ namespace JsonWebToken
         {
             if (!(algorithm is null))
             {
+                int algorithmId = (int)algorithm.Id;
                 var signatureVerifiers = _signatureVerifiers;
                 if (signatureVerifiers is null)
                 {
                     signatureVerifiers = new CryptographicStore<SignatureVerifier>();
                     _signatureVerifiers = signatureVerifiers;
                 }
-                else if (signatureVerifiers.TryGetValue(algorithm.Id, out signatureVerifier))
+                else if (signatureVerifiers.TryGetValue(algorithmId, out signatureVerifier))
                 {
                     goto Found;
                 }
@@ -467,13 +469,13 @@ namespace JsonWebToken
                 if (SupportSignature(algorithm))
                 {
                     signatureVerifier = CreateSignatureVerifier(algorithm);
-                    if (signatureVerifiers.TryAdd(algorithm.Id, signatureVerifier))
+                    if (signatureVerifiers.TryAdd(algorithmId, signatureVerifier))
                     {
                         goto Found;
                     }
 
                     signatureVerifier.Dispose();
-                    if (signatureVerifiers.TryGetValue(algorithm.Id, out signatureVerifier))
+                    if (signatureVerifiers.TryGetValue(algorithmId, out signatureVerifier))
                     {
                         goto Found;
                     }

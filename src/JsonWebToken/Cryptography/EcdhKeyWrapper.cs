@@ -95,8 +95,8 @@ namespace JsonWebToken
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            var partyUInfo = GetPartyInfo(header, HeaderParameters.Apu);
-            var partyVInfo = GetPartyInfo(header, HeaderParameters.Apv);
+            var partyUInfo = GetPartyInfo(header, JwtHeaderParameterNames.Apu);
+            var partyVInfo = GetPartyInfo(header, JwtHeaderParameterNames.Apv);
             var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
             byte[] exchangeHash;
             var keyParameters = ((ECJwk)Key).ExportParameters();
@@ -105,7 +105,7 @@ namespace JsonWebToken
             {
                 exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
                 var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
-                header.Add(HeaderParameters.Epk, epk);
+                header.Add(JwtHeaderParameterNames.Epk, epk);
             }
 
             SymmetricJwk? kek = null;

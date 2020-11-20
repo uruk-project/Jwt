@@ -94,6 +94,10 @@ namespace JsonWebToken
         public void Add(string name, bool value)
             => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));
 
+        /// <summary>Adds the value of type <see cref="JsonEncodedText"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(JsonEncodedText name, JsonEncodedText value)
+            => _store.Add(new JwtMember(name, value));
+
         /// <summary>Adds the value of type <see cref="object"/> to the current <see cref="JsonObject"/>.</summary>
         public void Add(JsonEncodedText name, object value)
             => _store.Add(new JwtMember(name, value));

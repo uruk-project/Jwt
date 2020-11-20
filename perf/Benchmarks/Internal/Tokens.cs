@@ -357,10 +357,10 @@ namespace JsonWebToken.Performance
             switch (status)
             {
                 case TokenValidationStatus.SignatureKeyNotFound:
-                    descriptor.Header.Add(HeaderParameters.Kid, "x");
+                    descriptor.Header.Add(JwtHeaderParameterNames.Kid, "x");
                     break;
                 case TokenValidationStatus.MissingEncryptionAlgorithm:
-                    descriptor.Header.Add(HeaderParameters.Enc, (object)null!);
+                    descriptor.Header.Add(JwtHeaderParameterNames.Enc, (object)null!);
                     break;
             }
 

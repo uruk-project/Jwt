@@ -14,10 +14,10 @@ namespace JsonWebToken
         public override void Validate()
         {
             base.Validate();
-            CheckRequiredClaimAsString(Claims.Iss);
-            CheckRequiredClaimAsInteger(Claims.Iat);
-            CheckRequiredClaimAsString(Claims.Jti);
-            if (TryGetClaim(SecEventClaims.Events, out var events))
+            CheckRequiredClaimAsString(JwtClaimNames.Iss);
+            CheckRequiredClaimAsInteger(JwtClaimNames.Iat);
+            CheckRequiredClaimAsString(JwtClaimNames.Jti);
+            if (TryGetClaim(SecEventClaimNames.Events, out var events))
             {
                 if (events.Type == JwtValueKind.Object)
                 {
@@ -32,12 +32,12 @@ namespace JsonWebToken
                 }
                 else
                 {
-                    ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(SecEventClaims.Events, JwtValueKind.Object);
+                    ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(SecEventClaimNames.Events, JwtValueKind.Object);
                 }
             }
             else
             {
-                ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(SecEventClaims.Events);
+                ThrowHelper.ThrowJwtDescriptorException_ClaimIsRequired(SecEventClaimNames.Events);
             }
         }
     }

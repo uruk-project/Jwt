@@ -26,32 +26,32 @@ namespace JsonWebToken
         /// <summary>
         /// 'A128CBC-HS256'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: Algorithms.AesCbc128HS256, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesHmac);
+        public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: AlgorithmId.AesCbc128HS256, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesHmac);
 
         /// <summary>
         /// 'A192CBC-HS384'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes192CbcHmacSha384 = new EncryptionAlgorithm(id: Algorithms.AesCbc192HS384 /* Undefined in CWT */, "A192CBC-HS384", requiredKeySizeInBytes: 48, SignatureAlgorithm.HmacSha384, requiredKeyWrappedSizeInBytes: 56, EncryptionType.AesHmac);
+        public static readonly EncryptionAlgorithm Aes192CbcHmacSha384 = new EncryptionAlgorithm(id: AlgorithmId.AesCbc192HS384 /* Undefined in CWT */, "A192CBC-HS384", requiredKeySizeInBytes: 48, SignatureAlgorithm.HmacSha384, requiredKeyWrappedSizeInBytes: 56, EncryptionType.AesHmac);
 
         /// <summary>
         /// 'A256CBC-HS512'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(id: Algorithms.AesCbc256HS512, "A256CBC-HS512", requiredKeySizeInBytes: 64, SignatureAlgorithm.HmacSha512, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesHmac);
+        public static readonly EncryptionAlgorithm Aes256CbcHmacSha512 = new EncryptionAlgorithm(id: AlgorithmId.AesCbc256HS512, "A256CBC-HS512", requiredKeySizeInBytes: 64, SignatureAlgorithm.HmacSha512, requiredKeyWrappedSizeInBytes: 72, EncryptionType.AesHmac);
 
         /// <summary>
         /// 'A128GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: 1, "A128GCM", requiredKeySizeInBytes: 16, signatureAlgorithm: SignatureAlgorithm.None, requiredKeyWrappedSizeInBytes: 24, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes128Gcm = new EncryptionAlgorithm(id: AlgorithmId.Aes128Gcm, "A128GCM", requiredKeySizeInBytes: 16, signatureAlgorithm: SignatureAlgorithm.None, requiredKeyWrappedSizeInBytes: 24, EncryptionType.AesGcm);
 
         /// <summary>
         /// 'A192GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: 2, "A192GCM", requiredKeySizeInBytes: 24, signatureAlgorithm: SignatureAlgorithm.None, requiredKeyWrappedSizeInBytes: 32, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes192Gcm = new EncryptionAlgorithm(id: AlgorithmId.Aes192Gcm, "A192GCM", requiredKeySizeInBytes: 24, signatureAlgorithm: SignatureAlgorithm.None, requiredKeyWrappedSizeInBytes: 32, EncryptionType.AesGcm);
 
         /// <summary>
         /// 'A256GCM'
         /// </summary>
-        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: 3, "A256GCM", requiredKeySizeInBytes: 32, signatureAlgorithm: SignatureAlgorithm.None, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
+        public static readonly EncryptionAlgorithm Aes256Gcm = new EncryptionAlgorithm(id: AlgorithmId.Aes256Gcm, "A256GCM", requiredKeySizeInBytes: 32, signatureAlgorithm: SignatureAlgorithm.None, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
 
         private static readonly EncryptionAlgorithm[] _algorithms = new[]
         {
@@ -63,7 +63,7 @@ namespace JsonWebToken
             Aes256Gcm
         };
 
-        private readonly short _id;
+        private readonly AlgorithmId _id;
         private readonly EncryptionType _category;
         private readonly ushort _requiredKeySizeInBytes;
         private readonly ushort _keyWrappedSizeInBytes;
@@ -75,7 +75,7 @@ namespace JsonWebToken
         /// <summary>
         /// Gets the algorithm identifier. 
         /// </summary>
-        public short Id => _id;
+        public AlgorithmId Id => _id;
 
         /// <summary>
         /// Gets the algorithm category.
@@ -131,7 +131,7 @@ namespace JsonWebToken
         /// <param name="signatureAlgorithm"></param>
         /// <param name="requiredKeyWrappedSizeInBytes"></param>
         /// <param name="category"></param>
-        public EncryptionAlgorithm(short id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm signatureAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionType category)
+        public EncryptionAlgorithm(AlgorithmId id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm signatureAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionType category)
         {
             _id = id;
             _utf8Name = JsonEncodedText.Encode(name);
@@ -496,7 +496,7 @@ namespace JsonWebToken
         }
 
         internal static EncryptionAlgorithm Create(string name)
-            => new EncryptionAlgorithm(127, name, 0, SignatureAlgorithm.None, 0, EncryptionType.NotSupported);
+            => new EncryptionAlgorithm(AlgorithmId.Undefined, name, 0, SignatureAlgorithm.None, 0, EncryptionType.NotSupported);
 
         internal static AuthenticatedDecryptor CreateAuthenticatedDecryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
@@ -505,15 +505,15 @@ namespace JsonWebToken
 #if SUPPORT_SIMD
                 if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
                 {
-                    if (encryptionAlgorithm.Id == Algorithms.AesCbc128HS256)
+                    if (encryptionAlgorithm.Id == AlgorithmId.AesCbc128HS256)
                     {
                         return new AesCbcHmacDecryptor(encryptionAlgorithm, new Aes128CbcDecryptor());
                     }
-                    else if (encryptionAlgorithm.Id == Algorithms.AesCbc256HS512)
+                    else if (encryptionAlgorithm.Id == AlgorithmId.AesCbc256HS512)
                     {
                         return new AesCbcHmacDecryptor(encryptionAlgorithm, new Aes256CbcDecryptor());
                     }
-                    else if (encryptionAlgorithm.Id == Algorithms.AesCbc192HS384)
+                    else if (encryptionAlgorithm.Id == AlgorithmId.AesCbc192HS384)
                     {
                         return new AesCbcHmacDecryptor(encryptionAlgorithm, new Aes192CbcDecryptor());
                     }
@@ -544,11 +544,11 @@ namespace JsonWebToken
                 {
                     switch (encryptionAlgorithm.Id)
                     {
-                        case Algorithms.AesCbc128HS256:
+                        case AlgorithmId.AesCbc128HS256:
                             return new AesCbcHmacEncryptor(encryptionAlgorithm, new Aes128CbcEncryptor());
-                        case Algorithms.AesCbc256HS512:
+                        case AlgorithmId.AesCbc256HS512:
                             return new AesCbcHmacEncryptor(encryptionAlgorithm, new Aes256CbcEncryptor());
-                        case Algorithms.AesCbc192HS384:
+                        case AlgorithmId.AesCbc192HS384:
                             return new AesCbcHmacEncryptor(encryptionAlgorithm, new Aes192CbcEncryptor());
                     }
                 }

@@ -517,7 +517,7 @@ namespace JsonWebToken
 
         internal ReadOnlyMemory<byte> GetRawValue(int index)
         {
-            return GetRawValue(index, includeQuotes: true);
+            return GetRawValue(index, includeQuotes: false);
         }
 
         internal string GetRawValueAsString(int index)

@@ -396,7 +396,7 @@ namespace JsonWebToken
             TokenSegment ivSegment = Unsafe.Add(ref segments, 2);
             TokenSegment ciphertextSegment = Unsafe.Add(ref segments, 3);
             TokenSegment authenticationTagSegment = Unsafe.Add(ref segments, 4);
-            if (!header.TryGetHeaderParameter(HeaderParameters.EncUtf8, out var enc))
+            if (!header.TryGetHeaderParameter(JwtHeaderParameterNames.Enc.EncodedUtf8Bytes, out var enc))
             {
                 error = TokenValidationError.MissingEncryptionAlgorithm();
                 goto Error;
@@ -433,11 +433,11 @@ namespace JsonWebToken
             }
 
             PooledByteBufferWriter? decompressionsBufferWriter = null;
-            if (header.TryGetHeaderParameter(HeaderParameters.ZipUtf8, out var zip))
+            if (header.TryGetHeaderParameter(JwtHeaderParameterNames.Zip.EncodedUtf8Bytes, out var zip))
             {
                 if (!CompressionAlgorithm.TryParse(zip, out var compressionAlgorithm))
                 {
-                    error = TokenValidationError.InvalidHeader(HeaderParameters.ZipUtf8);
+                    error = TokenValidationError.InvalidHeader(JwtHeaderParameterNames.Zip.ToString());
                     goto Error;
                 }
 

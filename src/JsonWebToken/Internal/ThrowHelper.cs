@@ -378,11 +378,6 @@ namespace JsonWebToken
         private static Exception CreateArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(int keySizeInBits, string algorithm, int validKeySize) => new ArgumentOutOfRangeException(nameof(keySizeInBits), $"The algorithm '{algorithm}' requires the a key size to be greater than '{validKeySize}' bits. Key size is '{keySizeInBits}'.");
 
         [DoesNotReturn]
-        internal static ReadOnlySpan<byte> ThrowArgumentOutOfRangeException_WellKnowProperty(WellKnownProperty wellKnownName) => throw CreateArgumentOutOfRangeException_WellKnowProperty(wellKnownName);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_WellKnowProperty(WellKnownProperty wellKnownName) => new ArgumentOutOfRangeException(nameof(wellKnownName), $"The property value '{wellKnownName}' is unknwon.");
-
-        [DoesNotReturn]
         internal static void ThrowKeyNotFoundException() => throw CreateKeyNotFoundException();
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateKeyNotFoundException() => new KeyNotFoundException();

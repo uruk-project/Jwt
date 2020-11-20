@@ -137,15 +137,6 @@ namespace JsonWebToken
         /// <summary>The token has an invalid header. </summary>
         /// <param name="header"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationError InvalidHeader(ReadOnlySpan<byte> header)
-            => new TokenValidationError(TokenValidationStatus.InvalidHeader)
-            {
-                ErrorHeader = Utf8.GetString(header)
-            };
-
-        /// <summary>The token has an invalid header. </summary>
-        /// <param name="header"></param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TokenValidationError InvalidHeader(string header)
             => new TokenValidationError(TokenValidationStatus.InvalidHeader)
             {
@@ -155,10 +146,10 @@ namespace JsonWebToken
         /// <summary>The token has a missing header.</summary>
         /// <param name="header"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TokenValidationError MissingHeader(ReadOnlySpan<byte> header)
+        public static TokenValidationError MissingHeader(string header)
             => new TokenValidationError(TokenValidationStatus.MissingHeader)
             {
-                ErrorHeader = Utf8.GetString(header)
+                ErrorHeader = header
             };
 
         /// <summary>The token decompression has failed.</summary>

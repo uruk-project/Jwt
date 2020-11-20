@@ -10,7 +10,7 @@ namespace JsonWebToken
     /// List of registered claims from different sources
     /// https://tools.ietf.org/html/draft-ietf-secevent-token-13#section-2.2
     /// </summary>
-    public static class SecEventClaims
+    public static class SecEventClaimNames
 
     {
         /// <summary>

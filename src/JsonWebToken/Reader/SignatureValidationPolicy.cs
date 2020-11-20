@@ -74,7 +74,7 @@ namespace JsonWebToken
 
             public override SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
-                if (payload.TryGetClaim(Claims.Iss.ToString(), out var aud))
+                if (payload.TryGetClaim(JwtClaimNames.Iss.ToString(), out var aud))
                 {
                     var value = aud.GetString()!;
                     if (_policies.TryGetValue(value, out var policy))
@@ -102,7 +102,7 @@ namespace JsonWebToken
 
             public override SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
-                if (payload.TryGetClaim(Claims.Iss.ToString(), out var aud))
+                if (payload.TryGetClaim(JwtClaimNames.Iss.ToString(), out var aud))
                 {
                     if (aud.ValueEquals(_issuer))
                     {
@@ -149,7 +149,7 @@ namespace JsonWebToken
                     bool keysTried = false;
 
                     var keySet = _keyProvider.GetKeys(header);
-                    var algElement = header.Algorithm;
+                    var algElement = header.Alg;
                     if (keySet != null)
                     {
                         var algorithm = _algorithm;
@@ -193,8 +193,7 @@ namespace JsonWebToken
             public override SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
             {
                 return (contentBytes.Length == 0 && signatureSegment.Length == 0)
-                    || (signatureSegment.IsEmpty && header.TryGetHeaderParameter(HeaderParameters.AlgUtf8, out var alg)
-                        && alg.ValueEquals(SignatureAlgorithm.None.Utf8Name))
+                    || (signatureSegment.IsEmpty && !header.Alg.IsEmpty && header.Alg.ValueEquals(SignatureAlgorithm.None.Utf8Name))
                     ? SignatureValidationResult.Success()
                     : SignatureValidationResult.InvalidSignature();
             }

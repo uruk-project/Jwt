@@ -20,26 +20,10 @@ namespace JsonWebToken
         private readonly JwtElement _alg;
         private readonly JwtElement _kid;
 
-#if SUPPORT_ELLIPTIC_CURVE
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        public ECJwk? Epk => _document.TryGetProperty(HeaderParameters.EpkUtf8, out var epk) ? ECJwk.FromJwtElement(epk) : null;
-
-        /// <inheritdoc/>
-        public string? Apu => _document.TryGetProperty(HeaderParameters.ApuUtf8, out var apu) ? apu.GetString() : null;
-
-        /// <inheritdoc/>
-        public string? Apv => _document.TryGetProperty(HeaderParameters.ApvUtf8, out var apv) ? apv.GetString() : null;
-#endif
-        /// <inheritdoc/>
-        public string? IV => _document.TryGetProperty(HeaderParameters.IVUtf8, out var iv) ? iv.GetString() : null;
-
-        /// <inheritdoc/>
-        public string? Tag => _document.TryGetProperty(HeaderParameters.TagUtf8, out var tag) ? tag.GetString() : null;
-
         /// <inheritdoc/>
         public string? Kid => _kid.GetString();
+
+        internal JwtElement Alg => _alg;
 
         private JwtHeaderDocument(JwtDocument document, int algPosition, int kidPosition)
         {
@@ -47,8 +31,6 @@ namespace JsonWebToken
             _alg = algPosition < 0 ? default : new JwtElement(_document, algPosition);
             _kid = kidPosition < 0 ? default : new JwtElement(_document, kidPosition);
         }
-
-        internal JwtElement Algorithm => _alg;
 
         internal static bool TryParseHeader(ReadOnlyMemory<byte> utf8Payload, byte[]? buffer, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtHeaderDocument? header, [NotNullWhen(false)] out TokenValidationError? error)
         {
@@ -179,6 +161,22 @@ namespace JsonWebToken
         public bool TryGetHeaderParameter(string headerParameterName, out JwtElement value)
             => _document.TryGetProperty(headerParameterName, out value);
 
+        /// <summary>
+        ///   Looks for a header parameter named <paramref name="headerParameterName"/> in the current JWT, returning
+        ///   whether or not such a parameter existed. When the parameter exists <paramref name="value"/>
+        ///   is assigned to the value of that parameter.
+        /// </summary>
+        /// <param name="headerParameterName">Name of the parameter to find.</param>
+        /// <param name="value">Receives the value of the located parameter.</param>
+        /// <returns>
+        ///   <see langword="true"/> if the parameter was found, <see langword="false"/> otherwise.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        ///   This value is not <see cref="JsonValueKind.Object"/>.
+        /// </exception>
+        public bool TryGetHeaderParameter(JsonEncodedText headerParameterName, out JwtElement value)
+            => _document.TryGetProperty(headerParameterName.EncodedUtf8Bytes, out value);
+        
         /// <summary>
         ///   Looks for a header parameter named <paramref name="headerParameterName"/> in the current JWT, returning
         ///   whether or not such a parameter existed. When the parameter exists <paramref name="value"/>

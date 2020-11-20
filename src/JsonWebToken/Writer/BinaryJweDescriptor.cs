@@ -13,7 +13,7 @@ namespace JsonWebToken
         /// <param name="zip"></param>
         /// <param name="typ"></param>
         /// <param name="cty"></param>
-        public BinaryJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = MediaTypes.OctetStream, string? cty = null)
+        public BinaryJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = JwtMediaTypeValues.OctetStream, string? cty = null)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
         }

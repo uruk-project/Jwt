@@ -221,12 +221,12 @@ namespace JsonWebToken
         {
             return algorithm.Id switch
             {
-                Algorithms.RsaSha256 => RSASignaturePadding.Pkcs1,
-                Algorithms.RsaSha384 => RSASignaturePadding.Pkcs1,
-                Algorithms.RsaSha512 => RSASignaturePadding.Pkcs1,
-                Algorithms.RsaSsaPssSha256 => RSASignaturePadding.Pss,
-                Algorithms.RsaSsaPssSha384 => RSASignaturePadding.Pss,
-                Algorithms.RsaSsaPssSha512 => RSASignaturePadding.Pss,
+                AlgorithmId.RsaSha256 => RSASignaturePadding.Pkcs1,
+                AlgorithmId.RsaSha384 => RSASignaturePadding.Pkcs1,
+                AlgorithmId.RsaSha512 => RSASignaturePadding.Pkcs1,
+                AlgorithmId.RsaSsaPssSha256 => RSASignaturePadding.Pss,
+                AlgorithmId.RsaSsaPssSha384 => RSASignaturePadding.Pss,
+                AlgorithmId.RsaSsaPssSha512 => RSASignaturePadding.Pss,
                 _ => throw ThrowHelper.CreateNotSupportedException_Algorithm(algorithm)
             };
         }

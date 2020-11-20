@@ -26,6 +26,9 @@ namespace JsonWebToken
             _idx = idx;
         }
 
+        /// <summary>Defines whether the current <see cref="JwtElement"/> is empty</summary>
+        public bool IsEmpty => _parent is null;
+
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private JsonTokenType TokenType
         {

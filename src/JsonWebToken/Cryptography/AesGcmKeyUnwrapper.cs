@@ -34,24 +34,24 @@ namespace JsonWebToken
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            var encodedIV = header.IV;
-            var encodedTag = header.Tag;
-            if (encodedIV is null)
+            if (!header.TryGetHeaderParameter(JwtHeaderParameterNames.IV.EncodedUtf8Bytes,out var encodedIV))
             {
-                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.IV);
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(JwtHeaderParameterNames.IV);
             }
 
-            if (encodedTag is null)
+            if (!header.TryGetHeaderParameter(JwtHeaderParameterNames.Tag.EncodedUtf8Bytes, out var encodedTag))
             {
-                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.Tag);
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(JwtHeaderParameterNames.Tag);
             }
 
-            Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(encodedIV.Length)];
-            Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(encodedTag.Length)];
+            var rawIV = encodedIV.GetRawValue();
+            Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawIV.Length)];
+            var rawTag = encodedTag.GetRawValue();
+            Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawTag.Length)];
             try
             {
-                Base64Url.Decode(encodedIV, nonce);
-                Base64Url.Decode(encodedTag, tag);
+                Base64Url.Decode(rawIV.Span, nonce);
+                Base64Url.Decode(rawTag.Span, tag);
                 using var aesGcm = new AesGcm(Key.AsSpan());
                 if (destination.Length > keyBytes.Length)
                 {

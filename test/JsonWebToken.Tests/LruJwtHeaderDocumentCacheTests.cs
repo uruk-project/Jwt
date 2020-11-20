@@ -43,7 +43,7 @@ namespace JsonWebToken.Tests
                 JwtHeaderDocument.TryParseHeader(Encoding.UTF8.GetBytes($"{{\"kid\":\"{i}\"}}"), null, TokenValidationPolicy.NoValidation, out JwtHeaderDocument header, out var error);
                 cache.AddHeader(rawHeaders[i], header);
                 Assert.NotNull(cache.Head);
-                Assert.Equal(header.Algorithm, cache.Head.Algorithm);
+                Assert.Equal(header.Alg, cache.Head.Alg);
                 Assert.Equal(header.Kid, cache.Head.Kid);
             }
 

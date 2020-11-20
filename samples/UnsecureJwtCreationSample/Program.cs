@@ -12,10 +12,10 @@ namespace UnsecureJwtCreationSample
             {
                 Payload = new JwtPayload
                 {
-                    { Claims.Iat, EpochTime.UtcNow },
-                    { Claims.Exp, EpochTime.UtcNow + EpochTime.OneHour },
-                    { Claims.Iss, "https://idp.example.com/" },
-                    { Claims.Aud, "636C69656E745F6964" }
+                    { JwtClaimNames.Iat, EpochTime.UtcNow },
+                    { JwtClaimNames.Exp, EpochTime.UtcNow + EpochTime.OneHour },
+                    { JwtClaimNames.Iss, "https://idp.example.com/" },
+                    { JwtClaimNames.Aud, "636C69656E745F6964" }
                 }
             };
 

@@ -97,7 +97,8 @@ namespace JsonWebToken
 
         public static bool TryGetContentEncryptionKeys(JwtHeaderDocument header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc, IKeyProvider[] encryptionKeyProviders, [NotNullWhen(true)] out List<SymmetricJwk>? keys)
         {
-            if (!header.TryGetHeaderParameter(HeaderParameters.AlgUtf8, out var alg))
+            var alg = header.Alg;
+            if (alg.IsEmpty)
             {
                 keys = null;
                 return false;

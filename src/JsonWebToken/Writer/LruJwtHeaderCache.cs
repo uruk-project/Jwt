@@ -50,7 +50,7 @@ namespace JsonWebToken
 
             if (IsEligibleHeaderForJws(header.Count, kid, typ))
             {
-                int algoritmId = alg.Id;
+                int algoritmId = (int)alg.Id;
                 var node = _head;
                 while (node != null)
                 {
@@ -96,7 +96,7 @@ namespace JsonWebToken
             _firstHeader = new WrappedHeader(header, base6UrlHeader.ToArray());
             if (IsEligibleHeaderForJws(header.Count, kid, typ))
             {
-                int algorithmId = alg.Id;
+                int algorithmId = (int)alg.Id;
                 bool lockTaken = false;
                 try
                 {

@@ -14,8 +14,8 @@ namespace JsonWebToken.Tests
             var cek = WrapKey(wrapper, keyToWrap, out var header);
 
             Assert.Equal(2, header.Count);
-            Assert.True(header.ContainsKey(HeaderParameters.IV));
-            Assert.True(header.ContainsKey(HeaderParameters.Tag));
+            Assert.True(header.ContainsKey(JwtHeaderParameterNames.IV));
+            Assert.True(header.ContainsKey(JwtHeaderParameterNames.Tag));
             return cek;
         }
 

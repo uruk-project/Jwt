@@ -15,13 +15,13 @@ namespace SecEventCreationSample
             {
                 Payload = new JwtPayload
                 {
-                    { Claims.Iss, "https://idp.example.com/" },
-                    { Claims.Jti, "756E69717565206964656E746966696572" },
-                    { Claims.Iat, 1508184845 },
-                    { Claims.Aud, "636C69656E745F6964" },
-                    { SecEventClaims.Toe, EpochTime.UtcNow },
-                    { SecEventClaims.Txn, "6964656E74" },
-                    { SecEventClaims.Events, new JsonObject
+                    { JwtClaimNames.Iss, "https://idp.example.com/" },
+                    { JwtClaimNames.Jti, "756E69717565206964656E746966696572" },
+                    { JwtClaimNames.Iat, 1508184845 },
+                    { JwtClaimNames.Aud, "636C69656E745F6964" },
+                    { SecEventClaimNames.Toe, EpochTime.UtcNow },
+                    { SecEventClaimNames.Txn, "6964656E74" },
+                    { SecEventClaimNames.Events, new JsonObject
                         {
                             new AccountDisabledSecEvent
                             {

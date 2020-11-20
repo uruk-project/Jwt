@@ -36,30 +36,30 @@ namespace JsonWebToken
             _alg = alg ?? throw new ArgumentNullException(nameof(alg));
             _enc = enc ?? throw new ArgumentNullException(nameof(enc));
             _zip = zip ?? CompressionAlgorithm.NoCompression;
-            Header.Add(HeaderParameters.Alg, alg.Name);
-            Header.Add(HeaderParameters.Enc, enc.Name);
+            Header.Add(JwtHeaderParameterNames.Alg, alg.Name);
+            Header.Add(JwtHeaderParameterNames.Enc, enc.Name);
 
             if (zip != null)
             {
-                Header.Add(HeaderParameters.Zip, zip.Name);
+                Header.Add(JwtHeaderParameterNames.Zip, zip.Name);
             }
 
             if (!encryptionKey.Kid.EncodedUtf8Bytes.IsEmpty)
             {
                 _kid = encryptionKey.Kid;
-                Header.Add(HeaderParameters.Kid, encryptionKey.Kid);
+                Header.Add(JwtHeaderParameterNames.Kid, encryptionKey.Kid);
             }
 
             if (typ != null)
             {
                 _typ = typ;
-                Header.Add(HeaderParameters.Typ, typ);
+                Header.Add(JwtHeaderParameterNames.Typ, typ);
             }
 
             if (cty != null)
             {
                 _cty = cty;
-                Header.Add(HeaderParameters.Cty, cty);
+                Header.Add(JwtHeaderParameterNames.Cty, cty);
             }
         }
 

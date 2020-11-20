@@ -17,15 +17,15 @@ namespace JsonWebToken
 
         public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
-            if (!payload.TryGetClaim(Claims.Exp.EncodedUtf8Bytes, out var expires))
+            if (!payload.TryGetClaim(JwtClaimNames.Exp.EncodedUtf8Bytes, out var expires))
             {
-                error = TokenValidationError.MissingClaim(Claims.Exp.ToString());
+                error = TokenValidationError.MissingClaim(JwtClaimNames.Exp.ToString());
                 return false;
             }
 
-            if (!payload.TryGetClaim(Claims.Jti.EncodedUtf8Bytes, out var jti))
+            if (!payload.TryGetClaim(JwtClaimNames.Jti.EncodedUtf8Bytes, out var jti))
             {
-                error = TokenValidationError.MissingClaim(Claims.Jti.ToString());
+                error = TokenValidationError.MissingClaim(JwtClaimNames.Jti.ToString());
                 return false;
             }
 

@@ -344,6 +344,26 @@ namespace JsonWebToken
         /// </exception>
         public bool TryGetClaim(ReadOnlySpan<byte> claimName, out JwtElement value)
             => _document.TryGetProperty(claimName, out value);
+        
+
+        /// <summary>
+        ///   Looks for a claim named <paramref name="claimName"/> in the current JWT, returning
+        ///   whether or not such a claim existed. When the claim exists <paramref name="value"/>
+        ///   is assigned to the value of that claim.
+        /// </summary>
+        /// <param name="claimName">Name of the claim to find.</param>
+        /// <param name="value">Receives the value of the located claim.</param>
+        /// <returns>
+        ///   <see langword="true"/> if the claim was found, <see langword="false"/> otherwise.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        ///   This value is not <see cref="JsonValueKind.Object"/>.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
+        /// </exception>
+        public bool TryGetClaim(JsonEncodedText claimName, out JwtElement value)
+            => _document.TryGetProperty(claimName.EncodedUtf8Bytes, out value);
 
         /// <summary>
         ///   Looks for a claim named <paramref name="claimName"/> in the current JWT, returning

@@ -17,13 +17,13 @@ namespace JsonWebToken
         {
             base.Validate();
 
-            CheckRequiredClaimAsString(Claims.Iss);
-            CheckRequiredClaimAsInteger(Claims.Exp);
-            CheckRequiredClaimAsStringOrArray(Claims.Aud);
-            CheckRequiredClaimAsString(Claims.Sub);
+            CheckRequiredClaimAsString(JwtClaimNames.Iss);
+            CheckRequiredClaimAsInteger(JwtClaimNames.Exp);
+            CheckRequiredClaimAsStringOrArray(JwtClaimNames.Aud);
+            CheckRequiredClaimAsString(JwtClaimNames.Sub);
             CheckRequiredClaimAsString(OAuth2Claims.ClientId);
-            CheckRequiredClaimAsInteger(Claims.Iat);
-            CheckRequiredClaimAsString(Claims.Jti);
+            CheckRequiredClaimAsInteger(JwtClaimNames.Iat);
+            CheckRequiredClaimAsString(JwtClaimNames.Jti);
         }
     }
 }

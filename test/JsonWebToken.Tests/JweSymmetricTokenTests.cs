@@ -23,7 +23,7 @@ namespace JsonWebToken.Tests
         {
             var writer = new JwtWriter();
 
-            var descriptor = new JweDescriptor(Jwk.None, KeyManagementAlgorithm.Direct, new EncryptionAlgorithm(-99, "unsupported", 0, SignatureAlgorithm.None, 0, EncryptionType.NotSupported))
+            var descriptor = new JweDescriptor(Jwk.None, KeyManagementAlgorithm.Direct, new EncryptionAlgorithm(AlgorithmId.Undefined, "unsupported", 0, SignatureAlgorithm.None, 0, EncryptionType.NotSupported))
             {
                 Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256)
                 {

@@ -22,15 +22,15 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
-            if (!header.TryGetHeaderParameter(HeaderParameters.AlgUtf8, out var property))
+            if (header.Alg.IsEmpty)
             {
-                error = TokenValidationError.MissingHeader(HeaderParameters.AlgUtf8);
+                error = TokenValidationError.MissingHeader(JwtHeaderParameterNames.Alg.ToString());
                 return false;
             }
 
-            if (!property.ValueEquals(_algorithm))
+            if (!header.Alg.ValueEquals(_algorithm))
             {
-                error = TokenValidationError.InvalidHeader(HeaderParameters.AlgUtf8);
+                error = TokenValidationError.InvalidHeader(JwtHeaderParameterNames.Alg.ToString());
                 return false;
             }
 

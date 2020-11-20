@@ -9,7 +9,7 @@ namespace JsonWebToken
         private TDescriptor? _payload;
 
         /// <summary>Initializes a new instance of <see cref="JweDescriptor"/>.</summary>
-        public JweDescriptorBase(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = ContentTypes.Jwt)
+        public JweDescriptorBase(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = JwtContentTypeValues.Jwt)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
         }

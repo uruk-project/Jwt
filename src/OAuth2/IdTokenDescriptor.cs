@@ -14,11 +14,11 @@ namespace JsonWebToken
         /// <inheritdoc/>
         public override void Validate()
         {
-            CheckRequiredClaimAsString(Claims.Iss);
-            CheckRequiredClaimAsString(Claims.Sub);
-            CheckRequiredClaimAsStringOrArray(Claims.Aud);
-            CheckRequiredClaimAsInteger(Claims.Exp);
-            CheckRequiredClaimAsInteger(Claims.Iat);
+            CheckRequiredClaimAsString(JwtClaimNames.Iss);
+            CheckRequiredClaimAsString(JwtClaimNames.Sub);
+            CheckRequiredClaimAsStringOrArray(JwtClaimNames.Aud);
+            CheckRequiredClaimAsInteger(JwtClaimNames.Exp);
+            CheckRequiredClaimAsInteger(JwtClaimNames.Iat);
         }
     }
 }

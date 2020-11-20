@@ -53,8 +53,8 @@ namespace JsonWebToken
                 aesGcm.Encrypt(nonce, keyBytes, destination, tag);
 
                 // TODO : Avoid string allocation
-                header.Add(HeaderParameters.IV, Utf8.GetString( Base64Url.Encode(nonce)));
-                header.Add(HeaderParameters.Tag, Utf8.GetString(Base64Url.Encode(tag)));
+                header.Add(JwtHeaderParameterNames.IV, Utf8.GetString( Base64Url.Encode(nonce)));
+                header.Add(JwtHeaderParameterNames.Tag, Utf8.GetString(Base64Url.Encode(tag)));
             }
 
             return cek;

@@ -27,22 +27,22 @@ namespace JsonWebToken
             _alg = alg ?? throw new ArgumentNullException(nameof(alg));
             _signingKey = signingKey ?? throw new ArgumentNullException(nameof(signingKey));
             _payload = new JwtPayload();
-            Header.Add(HeaderParameters.Alg, alg.Name);
+            Header.Add(JwtHeaderParameterNames.Alg, alg.Name);
             if (!signingKey.Kid.EncodedUtf8Bytes.IsEmpty)
             {
                 _kid = signingKey.Kid;
-                Header.Add(HeaderParameters.Kid, _kid);
+                Header.Add(JwtHeaderParameterNames.Kid, _kid);
             }
 
             if (typ != null)
             {
                 _typ = typ;
-                Header.Add(HeaderParameters.Typ, typ);
+                Header.Add(JwtHeaderParameterNames.Typ, typ);
             }
 
             if (cty != null)
             {
-                Header.Add(HeaderParameters.Cty, cty);
+                Header.Add(JwtHeaderParameterNames.Cty, cty);
             }
         }
 
@@ -78,14 +78,14 @@ namespace JsonWebToken
                 if (context.TokenLifetimeInSeconds != 0 || context.GenerateIssuedTime)
                 {
                     long now = EpochTime.UtcNow;
-                    if (context.GenerateIssuedTime && !_payload.ContainsKey(Claims.Iat))
+                    if (context.GenerateIssuedTime && !_payload.ContainsKey(JwtClaimNames.Iat))
                     {
-                        _payload.Add(Claims.Iat, now);
+                        _payload.Add(JwtClaimNames.Iat, now);
                     }
 
-                    if (context.TokenLifetimeInSeconds != 0 && !_payload.ContainsKey(Claims.Exp))
+                    if (context.TokenLifetimeInSeconds != 0 && !_payload.ContainsKey(JwtClaimNames.Exp))
                     {
-                        _payload.Add(Claims.Exp, now + context.TokenLifetimeInSeconds);
+                        _payload.Add(JwtClaimNames.Exp, now + context.TokenLifetimeInSeconds);
                     }
                 }
 

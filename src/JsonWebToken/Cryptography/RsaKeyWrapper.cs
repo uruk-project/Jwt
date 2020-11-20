@@ -30,11 +30,11 @@ namespace JsonWebToken
 #endif
             _padding = contentEncryptionAlgorithm.Id switch
             {
-                Algorithms.RsaOaep => RSAEncryptionPadding.OaepSHA1,
-                Algorithms.RsaPkcs1 => RSAEncryptionPadding.Pkcs1,
-                Algorithms.RsaOaep256 => RSAEncryptionPadding.OaepSHA256,
-                Algorithms.RsaOaep384 => RSAEncryptionPadding.OaepSHA384,
-                Algorithms.RsaOaep512 => RSAEncryptionPadding.OaepSHA512,
+                AlgorithmId.RsaOaep => RSAEncryptionPadding.OaepSHA1,
+                AlgorithmId.RsaPkcs1 => RSAEncryptionPadding.Pkcs1,
+                AlgorithmId.RsaOaep256 => RSAEncryptionPadding.OaepSHA256,
+                AlgorithmId.RsaOaep384 => RSAEncryptionPadding.OaepSHA384,
+                AlgorithmId.RsaOaep512 => RSAEncryptionPadding.OaepSHA512,
                 _ => throw ThrowHelper.CreateNotSupportedException_AlgorithmForKeyWrap(contentEncryptionAlgorithm)
             };
         }

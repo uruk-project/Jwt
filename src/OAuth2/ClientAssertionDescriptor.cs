@@ -17,10 +17,10 @@ namespace JsonWebToken
         {
             base.Validate();
 
-            CheckRequiredClaimAsString(Claims.Iss);
-            CheckRequiredClaimAsString(Claims.Sub);
-            CheckRequiredClaimAsStringOrArray(Claims.Aud);
-            CheckRequiredClaimAsInteger(Claims.Exp);
+            CheckRequiredClaimAsString(JwtClaimNames.Iss);
+            CheckRequiredClaimAsString(JwtClaimNames.Sub);
+            CheckRequiredClaimAsStringOrArray(JwtClaimNames.Aud);
+            CheckRequiredClaimAsInteger(JwtClaimNames.Exp);
         }
     }
 }
