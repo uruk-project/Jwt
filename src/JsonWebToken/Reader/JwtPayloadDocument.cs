@@ -25,13 +25,13 @@ namespace JsonWebToken
 
         /// <summary>Gets the validation control bits.</summary>
         public byte Control => _control;
-        internal bool InvalidAudience => (_control & TokenValidationPolicy.InvalidAudienceFlag) == TokenValidationPolicy.InvalidAudienceFlag;
-        internal bool MissingAudience => (_control & TokenValidationPolicy.MissingAudienceFlag) == TokenValidationPolicy.MissingAudienceFlag;
-        internal bool InvalidIssuer => (_control & TokenValidationPolicy.InvalidIssuerFlag) == TokenValidationPolicy.InvalidIssuerFlag;
-        internal bool MissingIssuer => (_control & TokenValidationPolicy.MissingIssuerFlag) == TokenValidationPolicy.MissingIssuerFlag;
-        internal bool MissingExpirationTime => (_control & TokenValidationPolicy.ExpirationTimeRequiredFlag) == TokenValidationPolicy.ExpirationTimeRequiredFlag;
-        internal bool Expired => (_control & TokenValidationPolicy.ExpirationTimeFlag) == TokenValidationPolicy.ExpirationTimeFlag;
-        internal bool NotYetValid => (_control & TokenValidationPolicy.NotBeforeFlag) == TokenValidationPolicy.NotBeforeFlag;
+        internal bool InvalidAudience => (_control & TokenValidationPolicy.InvalidAudienceMask) == TokenValidationPolicy.InvalidAudienceMask;
+        internal bool MissingAudience => (_control & TokenValidationPolicy.MissingAudienceMask) == TokenValidationPolicy.MissingAudienceMask;
+        internal bool InvalidIssuer => (_control & TokenValidationPolicy.InvalidIssuerMask) == TokenValidationPolicy.InvalidIssuerMask;
+        internal bool MissingIssuer => (_control & TokenValidationPolicy.MissingIssuerMask) == TokenValidationPolicy.MissingIssuerMask;
+        internal bool MissingExpirationTime => (_control & TokenValidationPolicy.ExpirationTimeRequiredMask) == TokenValidationPolicy.ExpirationTimeRequiredMask;
+        internal bool Expired => (_control & TokenValidationPolicy.ExpirationTimeMask) == TokenValidationPolicy.ExpirationTimeMask;
+        internal bool NotYetValid => (_control & TokenValidationPolicy.NotBeforeMask) == TokenValidationPolicy.NotBeforeMask;
 
         /// <summary>Gets the raw binary value of the current <see cref="JwtPayloadDocument"/>.</summary>
         public ReadOnlyMemory<byte> RawValue => _document.RawValue;
@@ -179,13 +179,13 @@ namespace JsonWebToken
         {
             if (policy.RequireIssuer)
             {
-                validationControl &= unchecked((byte)~TokenValidationPolicy.MissingIssuerFlag);
+                validationControl &= unchecked((byte)~TokenValidationPolicy.MissingIssuerMask);
                 var issuerBinary = policy.RequiredIssuersBinary;
                 for (int i = 0; i < issuerBinary.Length; i++)
                 {
                     if (reader.ValueTextEquals(issuerBinary[i]))
                     {
-                        validationControl &= unchecked((byte)~TokenValidationPolicy.IssuerFlag);
+                        validationControl &= unchecked((byte)~TokenValidationPolicy.IssuerMask);
                         break;
                     }
                 }
@@ -202,10 +202,10 @@ namespace JsonWebToken
                     return false;
                 }
 
-                validationControl &= unchecked((byte)~TokenValidationPolicy.ExpirationTimeRequiredFlag);
+                validationControl &= unchecked((byte)~TokenValidationPolicy.ExpirationTimeRequiredMask);
                 if (exp + policy.ClockSkew >= EpochTime.UtcNow)
                 {
-                    validationControl &= unchecked((byte)~TokenValidationPolicy.ExpirationTimeFlag);
+                    validationControl &= unchecked((byte)~TokenValidationPolicy.ExpirationTimeMask);
                 }
             }
 
@@ -221,9 +221,9 @@ namespace JsonWebToken
 
             // the 'nbf' claim is not common. A 2nd call to EpochTime.UtcNow should be rare.
             if (nbf > EpochTime.UtcNow + policy.ClockSkew
-                && (policy.Control & TokenValidationPolicy.ExpirationTimeFlag) == TokenValidationPolicy.ExpirationTimeFlag)
+                && (policy.Control & TokenValidationPolicy.ExpirationTimeMask) == TokenValidationPolicy.ExpirationTimeMask)
             {
-                validationControl |= TokenValidationPolicy.NotBeforeFlag;
+                validationControl |= TokenValidationPolicy.NotBeforeMask;
             }
 
             return true;
@@ -234,13 +234,13 @@ namespace JsonWebToken
         {
             if (policy.RequireAudience)
             {
-                validationControl &= unchecked((byte)~TokenValidationPolicy.MissingAudienceFlag);
+                validationControl &= unchecked((byte)~TokenValidationPolicy.MissingAudienceMask);
                 var audiencesBinary = policy.RequiredAudiencesBinary;
                 for (int i = 0; i < audiencesBinary.Length; i++)
                 {
                     if (reader.ValueTextEquals(audiencesBinary[i]))
                     {
-                        validationControl &= unchecked((byte)~TokenValidationPolicy.AudienceFlag);
+                        validationControl &= unchecked((byte)~TokenValidationPolicy.AudienceMask);
                         break;
                     }
                 }
@@ -252,7 +252,7 @@ namespace JsonWebToken
             int count = 0;
             if (policy.RequireAudience)
             {
-                validationControl &= unchecked((byte)~TokenValidationPolicy.MissingAudienceFlag);
+                validationControl &= unchecked((byte)~TokenValidationPolicy.MissingAudienceMask);
                 while (reader.Read() && reader.TokenType == JsonTokenType.String)
                 {
                     count++;
@@ -261,7 +261,7 @@ namespace JsonWebToken
                     {
                         if (reader.ValueTextEquals(requiredAudiences[i]))
                         {
-                            validationControl &= unchecked((byte)~TokenValidationPolicy.AudienceFlag);
+                            validationControl &= unchecked((byte)~TokenValidationPolicy.AudienceMask);
                             while (reader.Read() && reader.TokenType == JsonTokenType.String)
                             {
                                 // Just read...

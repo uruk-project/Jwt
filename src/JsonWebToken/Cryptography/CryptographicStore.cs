@@ -2,13 +2,11 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     /// <summary>
     /// Represent a store of cryptographics elements. 
@@ -16,7 +14,7 @@ namespace JsonWebToken.Internal
     /// </summary>
     /// <remarks>Inspired from https://github.com/dotnet/coreclr/pull/8216. </remarks>
     /// <typeparam name="TValue"></typeparam>
-    public sealed class CryptographicStore<TValue> : IDisposable where TValue : class, IDisposable
+    internal sealed class CryptographicStore<TValue> : IDisposable where TValue : class, IDisposable
     {
         private IMap<TValue> _map = EmptyMap<TValue>.Empty;
 

@@ -21,13 +21,10 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of the <see cref="JsonObject"/> class.</summary>
-        protected JsonObject(MemberStore store)
+        private protected JsonObject(MemberStore store)
         {
             _store = store;
         }
-
-        /// <summary>Gets the member store used to keep track of JSON key-values.</summary>
-        protected MemberStore Store => _store;
 
         /// <summary>Gets the number of items in the current <see cref="JsonObject"/>.</summary>
         public int Count => _store.Count;
@@ -44,7 +41,7 @@ namespace JsonWebToken
         /// <summary>Gets the value associated with the specified key.</summary>
         public bool TryGetValue(JsonEncodedText key, out JwtMember value)
             => _store.TryGetValue(key, out value);
-        
+
         /// <summary>Gets the value associated with the specified key.</summary>
         public bool TryGetValue(string key, out JwtMember value)
             => _store.TryGetValue(JsonEncodedText.Encode(key), out value);
@@ -60,7 +57,7 @@ namespace JsonWebToken
         /// <summary>Adds the value of type <see cref="string"/> to the current <see cref="JsonObject"/>.</summary>
         public void Add(string name, string value)
             => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));
-      
+
         /// <summary>Adds the value of type <see cref="string"/> to the current <see cref="JsonObject"/>.</summary>
         public void Add(string name, JsonEncodedText value)
             => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));

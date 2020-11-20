@@ -3,7 +3,6 @@
 
 using System;
 using System.Security.Cryptography;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -113,9 +112,9 @@ namespace JsonWebToken
 #if SUPPORT_SPAN_CRYPTO
             return RSA.Create(_parameters);
 #else
-                var rsa = new RSACng();
-                rsa.ImportParameters(_parameters);
-                return rsa;
+            var rsa = new RSACng();
+            rsa.ImportParameters(_parameters);
+            return rsa;
 #endif
         }
     }
@@ -182,9 +181,13 @@ namespace JsonWebToken
             try
             {
 #if SUPPORT_SPAN_CRYPTO
-                return rsa.VerifyData(data, signature, _hashAlgorithm, _signaturePadding);
+                Span<byte> hash = stackalloc byte[_sha.HashSize];
+                _sha.ComputeHash(data, hash);
+                return rsa.VerifyHash(hash, signature, _hashAlgorithm, _signaturePadding);
 #else
-                return rsa.VerifyData(data.ToArray(), signature.ToArray(), _hashAlgorithm, _signaturePadding);
+                byte[] hash = new byte[_sha.HashSize];
+                _sha.ComputeHash(data, hash);
+                return rsa.VerifyHash(hash, signature.ToArray(), _hashAlgorithm, _signaturePadding);
 #endif
             }
             finally
@@ -216,7 +219,7 @@ namespace JsonWebToken
     {
         public static RSASignaturePadding GetPadding(SignatureAlgorithm algorithm)
         {
-           return algorithm.Id switch
+            return algorithm.Id switch
             {
                 Algorithms.RsaSha256 => RSASignaturePadding.Pkcs1,
                 Algorithms.RsaSha384 => RSASignaturePadding.Pkcs1,
@@ -227,5 +230,5 @@ namespace JsonWebToken
                 _ => throw ThrowHelper.CreateNotSupportedException_Algorithm(algorithm)
             };
         }
-    }    
+    }
 }

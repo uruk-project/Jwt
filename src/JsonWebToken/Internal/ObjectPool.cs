@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     // based on https://github.com/aspnet/Common/tree/master/src/Microsoft.Extensions.ObjectPool
     /// <summary>
@@ -14,7 +14,7 @@ namespace JsonWebToken.Internal
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public sealed class ObjectPool<T> : IDisposable
+    internal sealed class ObjectPool<T> : IDisposable
         where T : class, IDisposable
     {
         private volatile bool _isDisposed;

@@ -11,7 +11,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using gfoidl.Base64;
 using JsonWebToken.Cryptography;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -130,8 +129,8 @@ namespace JsonWebToken
             set
             {
                 _use = value;
-                _isSigningKey = value.EncodedUtf8Bytes.IsEmpty || JwkUseNames.Sig.Equals(value);
-                _isEncryptionKey = value.EncodedUtf8Bytes.IsEmpty || JwkUseNames.Enc.Equals(value);
+                _isSigningKey = value.EncodedUtf8Bytes.IsEmpty || JwkUseValues.Sig.Equals(value);
+                _isEncryptionKey = value.EncodedUtf8Bytes.IsEmpty || JwkUseValues.Enc.Equals(value);
             }
         }
 
@@ -203,7 +202,7 @@ namespace JsonWebToken
                 if (!_isSigningKey.HasValue)
                 {
                     var use = Use;
-                    _isSigningKey = use.EncodedUtf8Bytes.IsEmpty || JwkUseNames.Sig.Equals(use);
+                    _isSigningKey = use.EncodedUtf8Bytes.IsEmpty || JwkUseValues.Sig.Equals(use);
                 }
 
                 return _isSigningKey.Value;
@@ -234,7 +233,7 @@ namespace JsonWebToken
                 if (!_isEncryptionKey.HasValue)
                 {
                     var use = Use;
-                    _isEncryptionKey = use.EncodedUtf8Bytes.IsEmpty || JwkUseNames.Enc.Equals(use);
+                    _isEncryptionKey = use.EncodedUtf8Bytes.IsEmpty || JwkUseValues.Enc.Equals(use);
                 }
 
                 return _isEncryptionKey.Value;

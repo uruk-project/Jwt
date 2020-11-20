@@ -23,27 +23,4 @@ namespace JsonWebToken
             CheckRequiredClaimAsInteger(Claims.Exp);
         }
     }
-    /// <summary>
-    /// https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-10
-    /// </summary>
-    public sealed class AccessTokenDescriptor : JwsDescriptor
-    {
-        public AccessTokenDescriptor(SignatureAlgorithm alg, Jwk signingKey)
-            : base(signingKey, alg)
-        {
-        }
-
-        public override void Validate()
-        {
-            base.Validate();
-
-            CheckRequiredClaimAsString(Claims.Iss);
-            CheckRequiredClaimAsInteger(Claims.Exp);
-            CheckRequiredClaimAsStringOrArray(Claims.Aud);
-            CheckRequiredClaimAsString(Claims.Sub);
-            CheckRequiredClaimAsString(OAuth2Claims.ClientId);
-            CheckRequiredClaimAsInteger(Claims.Iat);
-            CheckRequiredClaimAsString(Claims.Jti);
-        }
-    }
 }

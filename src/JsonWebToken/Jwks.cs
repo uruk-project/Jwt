@@ -9,7 +9,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -159,7 +158,7 @@ namespace JsonWebToken
         internal void WriteTo(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
-            writer.WriteStartArray(JwksParameterNames.KeysUtf8);
+            writer.WriteStartArray(JwksParameterNames.Keys);
             var keys = _keys;
             for (int i = 0; i < keys.Count; i++)
             {

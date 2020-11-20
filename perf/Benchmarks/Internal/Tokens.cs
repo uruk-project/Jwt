@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using JsonWebToken.Internal;
+using JsonWebToken;
 using Newtonsoft.Json.Linq;
 
 namespace JsonWebToken.Performance

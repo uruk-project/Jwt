@@ -3,7 +3,7 @@
 
 using System;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     /// <summary>
     /// Provides signing operations using a <see cref="SymmetricJwk"/> and specifying an algorithm.

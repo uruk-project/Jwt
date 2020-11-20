@@ -3,13 +3,13 @@
 
 using System.Text.Json;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     /// <summary>
     /// Constants for the 'use' parameter (sec 4.2)
     /// http://tools.ietf.org/html/rfc7517#section-4
     /// </summary>
-    public static class JwkUseNames
+    public static class JwkUseValues
     {
         /// <summary>
         /// Gets the 'sig' (signature) value for the 'use' parameter.

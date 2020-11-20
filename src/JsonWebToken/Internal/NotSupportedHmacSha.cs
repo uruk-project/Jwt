@@ -3,7 +3,7 @@
 
 using System;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     internal sealed class ShaNull : Sha2
     {

@@ -3,9 +3,9 @@
 
 namespace JsonWebToken
 {
-    public sealed class EncryptedStatedDescriptor : JweDescriptorBase<StateDescriptor>
+    public sealed class EncryptedAccesTokenDescriptor : JweDescriptorBase<AccessTokenDescriptor>
     {
-        public EncryptedStatedDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
+        public EncryptedAccesTokenDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
             : base(encryptionKey, alg, enc, zip)
         {
         }

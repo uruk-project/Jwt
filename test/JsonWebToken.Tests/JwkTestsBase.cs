@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
-using JsonWebToken.Internal;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -52,7 +51,7 @@ namespace JsonWebToken.Tests
         public Jwk CanonicalizeKey(Jwk key)
         {
             key.Kid = JsonEncodedText.Encode( "kid");
-            key.Use = JwkUseNames.Sig;
+            key.Use = JwkUseValues.Sig;
             key.X5c.Add(new byte[0]);
             key.X5t = Encoding.UTF8.GetBytes("x5t");
             key.X5tS256 = Encoding.UTF8.GetBytes("x5t#256");

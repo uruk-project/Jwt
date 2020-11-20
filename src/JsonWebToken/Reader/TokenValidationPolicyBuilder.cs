@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -368,10 +367,10 @@ namespace JsonWebToken
             }
 
             _clockSkew = clockSkew;
-            _control |= TokenValidationPolicy.ExpirationTimeFlag;
+            _control |= TokenValidationPolicy.ExpirationTimeMask;
             if (requireExpirationTime)
             {
-                _control |= TokenValidationPolicy.ExpirationTimeRequiredFlag;
+                _control |= TokenValidationPolicy.ExpirationTimeRequiredMask;
             }
 
             return this;
@@ -387,7 +386,7 @@ namespace JsonWebToken
             }
 
             _audiences.Add(Utf8.GetBytes(audience));
-            _control |= TokenValidationPolicy.AudienceFlag;
+            _control |= TokenValidationPolicy.AudienceMask;
             return this;
         }
 
@@ -405,7 +404,7 @@ namespace JsonWebToken
                 if (audience != null)
                 {
                     _audiences.Add(Utf8.GetBytes(audience));
-                    _control |= TokenValidationPolicy.AudienceFlag;
+                    _control |= TokenValidationPolicy.AudienceMask;
                 }
             }
 
@@ -422,7 +421,7 @@ namespace JsonWebToken
             }
 
             _issuers.Add(Utf8.GetBytes(issuer));
-            _control |= TokenValidationPolicy.IssuerFlag;
+            _control |= TokenValidationPolicy.IssuerMask;
             return this;
         }
 

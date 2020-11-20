@@ -1,7 +1,6 @@
 ﻿#if SUPPORT_ELLIPTIC_CURVE
 using System.Collections.Generic;
 using System.Text;
-using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 using Xunit;
 

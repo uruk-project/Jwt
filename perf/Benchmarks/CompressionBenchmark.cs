@@ -3,7 +3,6 @@ using System.Buffers;
 using System.Security.Cryptography;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken.Performance
 {

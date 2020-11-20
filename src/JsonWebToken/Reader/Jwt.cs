@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {

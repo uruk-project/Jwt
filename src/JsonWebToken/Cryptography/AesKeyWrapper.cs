@@ -4,9 +4,11 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+#if !SUPPORT_SIMD
 using System.Security.Cryptography;
+#endif 
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     /// <summary>
     /// Provides AES key wrapping services.

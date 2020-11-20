@@ -8,7 +8,7 @@ namespace JsonWebToken
     /// <summary>
     /// Provides encryption.
     /// </summary>
-    public abstract class AesBlockEncryptor : IDisposable
+    internal abstract class AesBlockEncryptor : IDisposable
     {
         /// <summary>
         /// The size of the AES block.

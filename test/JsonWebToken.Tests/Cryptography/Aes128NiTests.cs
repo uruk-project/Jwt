@@ -1,16 +1,14 @@
-﻿using System;
-using JsonWebToken.Internal;
-using Xunit;
+﻿using Xunit;
 
 namespace JsonWebToken.Tests.Cryptography
 {
 #if SUPPORT_SIMD
     public class Aes128NiTests : Aes128Tests
     {
-        protected override AesDecryptor CreateDecryptor()
+        private protected override AesDecryptor CreateDecryptor()
           => new Aes128CbcDecryptor();
 
-        protected override AesEncryptor CreateEncryptor()
+        private protected override AesEncryptor CreateEncryptor()
             => new Aes128CbcEncryptor();
     }
 #endif
@@ -197,10 +195,10 @@ namespace JsonWebToken.Tests.Cryptography
             VerifyEmptySpan("00000000000000000000000000000000".HexToByteArray(), "00000000000000000000000000000000".HexToByteArray());
         }
 
-        protected override AesDecryptor CreateDecryptor()
+        private protected override AesDecryptor CreateDecryptor()
             => new AesCbcDecryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
 
-        protected override AesEncryptor CreateEncryptor()
+        private protected override AesEncryptor CreateEncryptor()
             => new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
     }
 }

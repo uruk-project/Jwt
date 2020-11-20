@@ -3,8 +3,6 @@
 
 using System;
 using System.Security.Cryptography;
-#if SUPPORT_SIMD
-#endif
 
 namespace JsonWebToken
 {

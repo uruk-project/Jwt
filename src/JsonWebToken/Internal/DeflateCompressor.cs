@@ -4,7 +4,7 @@
 using System.IO;
 using System.IO.Compression;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     internal sealed class DeflateCompressor : Compressor<DeflateStream>
     {

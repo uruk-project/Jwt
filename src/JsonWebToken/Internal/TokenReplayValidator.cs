@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     internal sealed class TokenReplayValidator : IValidator
     {

@@ -1,15 +1,15 @@
 // Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using System;
+using System.Text.Json;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     /// <summary>
-    /// Names for Json Web Key Set Values
+    /// Names for Json Web Key Set parameters
     /// </summary>
     internal static class JwksParameterNames
     {
-        public static ReadOnlySpan<byte> KeysUtf8 => new byte[] { (byte)'k', (byte)'e', (byte)'y', (byte)'s' };
+        public static readonly JsonEncodedText Keys = JsonEncodedText.Encode("keys");
     }
 }

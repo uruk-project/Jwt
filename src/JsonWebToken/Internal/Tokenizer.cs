@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     internal static class Tokenizer
     {

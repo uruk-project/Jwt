@@ -6,7 +6,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using JsonWebToken.Cryptography;
-using JsonWebToken.Internal;
 using JsonWebToken.Tests.Cryptography;
 using Xunit;
 
@@ -133,7 +132,7 @@ namespace JsonWebToken.Tests
             var jwk = Assert.IsType<ECJwk>(key);
 
             Assert.Equal("1", jwk.Kid.ToString());
-            Assert.True(JwkUseNames.Enc.Equals(jwk.Use));
+            Assert.True(JwkUseValues.Enc.Equals(jwk.Use));
 
             Assert.Equal(Encoding.UTF8.GetBytes(crvName), jwk.Crv.Name);
             Assert.Equal(jwk.X.ToArray(), Base64Url.Decode("MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4"));
@@ -155,7 +154,7 @@ namespace JsonWebToken.Tests
 
             Assert.Equal(Base64Url.Decode("dGhpcyBpcyBhIFNIQTEgdGVzdCE"), jwk.X5t);
             Assert.Equal(Base64Url.Decode("dGhpcyBpcyBhIFNIQTI1NiB0ZXN0ISAgICAgICAgICAgIA"), jwk.X5tS256);
-            Assert.Equal(JwkKeyOps.Sign, jwk.KeyOps[0]);
+            Assert.Equal(JwkKeyOpsValues.Sign, jwk.KeyOps[0]);
             Assert.Equal("https://example.com", jwk.X5u);
         }
 
@@ -164,8 +163,8 @@ namespace JsonWebToken.Tests
         {
             var key = ECJwk.GenerateKey(EllipticalCurve.P256, SignatureAlgorithm.EcdsaSha256, true);
             key.Kid = JsonEncodedText.Encode("kid-ec");
-            key.KeyOps.Add(JwkKeyOps.Sign);
-            key.Use = JwkUseNames.Sig;
+            key.KeyOps.Add(JwkKeyOpsValues.Sign);
+            key.Use = JwkUseValues.Sig;
             key.X5t = Base64Url.Decode("dGhpcyBpcyBhIFNIQTEgdGVzdCE");
             key.X5tS256 = Base64Url.Decode("dGhpcyBpcyBhIFNIQTI1NiB0ZXN0ISAgICAgICAgICAgIA");
             key.X5u = "https://example.com";

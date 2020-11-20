@@ -11,8 +11,8 @@ using System.Text.Json;
 namespace JsonWebToken
 {
     /// <summary>Represents a store for JSON memebers.</summary>
-    /// <remarks>Designed for progressive </remarks>
-    public sealed class MemberStore : IEnumerable<JwtMember>
+    /// <remarks>Designed for progressive appending.</remarks>
+    internal sealed class MemberStore : IEnumerable<JwtMember>
     {
         /// <summary>
         /// Creates a store that will grow its capacity from 0 item to a <see cref="Array"/> of 16 items.

@@ -13,15 +13,15 @@ namespace JsonWebToken
     /// </summary>
     public sealed class TokenValidationPolicy
     {
-        internal const int MissingAudienceFlag = 0x01;
-        internal const int InvalidAudienceFlag = 0x02;
-        internal const int AudienceFlag = MissingAudienceFlag | InvalidAudienceFlag;
-        internal const int MissingIssuerFlag = 0x04;
-        internal const int InvalidIssuerFlag = 0x08;
-        internal const int IssuerFlag = MissingIssuerFlag | InvalidIssuerFlag;
-        internal const int ExpirationTimeFlag = 0x10;
-        internal const int ExpirationTimeRequiredFlag = 0x20;
-        internal const int NotBeforeFlag = 0x40;
+        internal const byte MissingAudienceMask = 0x01;
+        internal const byte InvalidAudienceMask = 0x02;
+        internal const byte AudienceMask = MissingAudienceMask | InvalidAudienceMask;
+        internal const byte MissingIssuerMask = 0x04;
+        internal const byte InvalidIssuerMask = 0x08;
+        internal const byte IssuerMask = MissingIssuerMask | InvalidIssuerMask;
+        internal const byte ExpirationTimeMask = 0x10;
+        internal const byte ExpirationTimeRequiredMask = 0x20;
+        internal const byte NotBeforeMask = 0x40;
 
         private static readonly IJwtHeaderDocumentCache _disabledJwtHeaderCache = new DisabledJwtHeaderDocumentCache();
 
@@ -76,7 +76,7 @@ namespace JsonWebToken
         public bool HasValidation => _control != 0 || _validators.Length != 0 || SignatureValidationPolicy.IsEnabled;
 
         /// <summary>Gets whether the issuer 'iss' is required.</summary>
-        public bool RequireIssuer => (Control & IssuerFlag) == IssuerFlag;
+        public bool RequireIssuer => (_control & IssuerMask) == IssuerMask;
 
         /// <summary>Gets the required issuers, in UTF8 binary format. At least one issuer of this list is required.</summary>
         public byte[][] RequiredIssuersBinary { get; }
@@ -85,7 +85,7 @@ namespace JsonWebToken
         public string[] RequiredIssuers { get; }
 
         /// <summary>Gets whether the audience 'aud' is required.</summary>
-        public bool RequireAudience => (Control & AudienceFlag) == AudienceFlag;
+        public bool RequireAudience => (_control & AudienceMask) == AudienceMask;
 
         /// <summary>Gets the required audience array, in UTF8 binary format. At least one audience of this list is required.</summary>
         internal byte[][] RequiredAudiencesBinary { get; }
@@ -97,7 +97,7 @@ namespace JsonWebToken
         public byte Control => _control;
 
         /// <summary>Gets whether the expiration time 'exp' is required.</summary>
-        public bool RequireExpirationTime => (Control & ExpirationTimeRequiredFlag) == ExpirationTimeRequiredFlag;
+        public bool RequireExpirationTime => (_control & ExpirationTimeRequiredMask) == ExpirationTimeRequiredMask;
 
         /// <summary>Defines the clock skrew used for the token lifetime validation.</summary>
         public int ClockSkew { get; }
@@ -117,9 +117,7 @@ namespace JsonWebToken
         /// <summary>Gets the array of <see cref="IKeyProvider"/> used for decryption.</summary>
         public IKeyProvider[] DecryptionKeyProviders { get; }
 
-        /// <summary>
-        /// Try to validate the token, according to the <paramref name="header"/> and the <paramref name="payload"/>.
-        /// </summary>
+        /// <summary>Try to validate the token, according to the <paramref name="header"/> and the <paramref name="payload"/>.</summary>
         /// <param name="header"></param>
         /// <param name="payload"></param>
         /// <param name="error"></param>
@@ -212,14 +210,14 @@ namespace JsonWebToken
                         if (!handlers.TryGetValue(critHeaderName, out var handler))
                         {
                             error = TokenValidationError.CriticalHeaderUnsupported(critHeaderName);
-                            return false;
+                            goto Error;
                         }
 
 
                         if (!handler.TryHandle(header, critHeaderName))
                         {
                             error = TokenValidationError.InvalidHeader(critHeaderName);
-                            return false;
+                            goto Error;
                         }
                     }
                 }
@@ -227,6 +225,9 @@ namespace JsonWebToken
 
             error = null;
             return true;
+
+        Error:
+            return false;
         }
 
         /// <summary>Try to validate the token signature.</summary>

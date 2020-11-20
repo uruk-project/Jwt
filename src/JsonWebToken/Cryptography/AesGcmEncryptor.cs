@@ -6,7 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Security.Cryptography;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     /// <summary>
     /// Provides authenticated encryption for AES GCM algorithm.

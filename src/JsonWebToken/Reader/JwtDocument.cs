@@ -8,7 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {

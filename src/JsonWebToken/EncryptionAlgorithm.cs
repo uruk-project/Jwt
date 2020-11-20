@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
@@ -291,7 +290,7 @@ namespace JsonWebToken
 
             return found;
         }
-        
+
         /// <summary>
         /// Cast the <see cref="JsonElement"/> into its <see cref="EncryptionAlgorithm"/> representation.
         /// </summary>

@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Text;
 using System.Text.Json;
-using JsonWebToken.Internal;
 using Xunit;
 
 namespace JsonWebToken.Tests

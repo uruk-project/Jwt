@@ -5,7 +5,7 @@ using System;
 using System.Buffers;
 using System.Security.Cryptography;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     internal static class AesCbcHelper
     {

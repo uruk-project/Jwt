@@ -4,7 +4,7 @@
 using System;
 using System.Security.Cryptography;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     /// <summary>
     /// Provides RSA key wrapping and key unwrapping services.

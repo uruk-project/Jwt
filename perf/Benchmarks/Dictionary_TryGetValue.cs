@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken.Performance
 {

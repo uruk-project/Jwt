@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
-using JsonWebToken.Internal;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -121,7 +120,7 @@ namespace JsonWebToken.Tests
             Assert.Equal(KeyManagementAlgorithm.Aes128KW, jwk.KeyManagementAlgorithm);
             Assert.Equal("kid1", jwk.Kid.ToString());
             Assert.True(jwk.K.SequenceEqual(Base64Url.Decode("GawgguFyGrWKav7AX4VKUg")));
-            Assert.True(JwkUseNames.Sig.Equals(jwk.Use));
+            Assert.True(JwkUseValues.Sig.Equals(jwk.Use));
         }
 
         [Theory]
@@ -140,7 +139,7 @@ namespace JsonWebToken.Tests
 
             Assert.Equal(Base64Url.Decode("dGhpcyBpcyBhIFNIQTEgdGVzdCE"), jwk.X5t);
             Assert.Equal(Base64Url.Decode("dGhpcyBpcyBhIFNIQTI1NiB0ZXN0ISAgICAgICAgICAgIA"), jwk.X5tS256);
-            Assert.Equal(JwkKeyOps.Sign, jwk.KeyOps[0]);
+            Assert.Equal(JwkKeyOpsValues.Sign, jwk.KeyOps[0]);
             Assert.Equal("https://example.com", jwk.X5u);
         }
 
@@ -149,8 +148,8 @@ namespace JsonWebToken.Tests
         {
             var key = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
             key.Kid = JsonEncodedText.Encode("kid1");
-            key.KeyOps.Add(JwkKeyOps.Sign);
-            key.Use = JwkUseNames.Sig;
+            key.KeyOps.Add(JwkKeyOpsValues.Sign);
+            key.Use = JwkUseValues.Sig;
             key.X5t = Base64Url.Decode("dGhpcyBpcyBhIFNIQTEgdGVzdCE");
             key.X5tS256 = Base64Url.Decode("dGhpcyBpcyBhIFNIQTI1NiB0ZXN0ISAgICAgICAgICAgIA");
             key.X5u = "https://example.com";
