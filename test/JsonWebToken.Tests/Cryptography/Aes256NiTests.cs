@@ -1,4 +1,5 @@
 ﻿using System;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken.Tests.Cryptography
 {

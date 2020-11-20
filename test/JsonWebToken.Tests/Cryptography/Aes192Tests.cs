@@ -1,4 +1,4 @@
-﻿using System;
+﻿using JsonWebToken.Cryptography;
 using Xunit;
 
 namespace JsonWebToken.Tests.Cryptography

@@ -4,7 +4,7 @@
 using System;
 using System.Security.Cryptography;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     internal sealed class AesCbcDecryptor : AesDecryptor
     {

@@ -5,7 +5,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     internal readonly ref struct Hmac
     {

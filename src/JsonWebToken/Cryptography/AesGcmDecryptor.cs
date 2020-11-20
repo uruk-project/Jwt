@@ -5,7 +5,7 @@
 using System;
 using System.Security.Cryptography;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Provides authenticated decryption for AES GCM algorithm.

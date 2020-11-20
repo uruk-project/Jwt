@@ -35,10 +35,9 @@ namespace ValidatePerf
                 }
             };
 
-            var bufferWriter2 = new PooledByteBufferWriter();
+            var bufferWriter2 = new System.Buffers.ArrayBufferWriter<byte>();
             var context2 = new EncodingContext(bufferWriter2, null, 0, false);
             descriptor.Encode(context2);
-            bufferWriter2.Dispose();
         }
     }
 }

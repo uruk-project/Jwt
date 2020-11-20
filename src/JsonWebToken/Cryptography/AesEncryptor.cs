@@ -5,7 +5,7 @@ using System;
 #if SUPPORT_SIMD
 #endif
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Provides encryption.

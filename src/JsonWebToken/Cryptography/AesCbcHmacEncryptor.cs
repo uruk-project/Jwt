@@ -6,7 +6,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Provides authenticated encryption and decryption for AES CBC HMAC algorithm.

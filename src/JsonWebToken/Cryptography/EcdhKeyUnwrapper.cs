@@ -8,7 +8,7 @@ using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     internal sealed class EcdhKeyUnwrapper : KeyUnwrapper
     {

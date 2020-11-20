@@ -1,4 +1,6 @@
-﻿namespace JsonWebToken.Tests.Cryptography
+﻿using JsonWebToken.Cryptography;
+
+namespace JsonWebToken.Tests.Cryptography
 {
 #if SUPPORT_SIMD
     public class Aes192NiTests : Aes192Tests

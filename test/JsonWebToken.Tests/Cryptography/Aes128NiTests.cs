@@ -1,4 +1,5 @@
 ﻿using Xunit;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken.Tests.Cryptography
 {

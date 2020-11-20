@@ -3,7 +3,7 @@
 
 using System;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     internal sealed class DirectKeyUnwrapper : KeyUnwrapper
     {

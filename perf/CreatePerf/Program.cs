@@ -30,12 +30,10 @@ namespace CreatePerf
             Console.WriteLine("Starting...");
             writer.EnableHeaderCaching = false;
             writer.IgnoreTokenValidation = false;
-            using (var buffer = new PooledByteBufferWriter())
+            var buffer = new System.Buffers.ArrayBufferWriter<byte>();
+            while (true)
             {
-                while (true)
-                {
-                    writer.WriteToken(jweDescriptor, buffer);
-                }
+                writer.WriteToken(jweDescriptor, buffer);
             }
         }
     }

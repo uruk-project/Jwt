@@ -7,6 +7,7 @@ using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken.Performance
 {

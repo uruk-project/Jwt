@@ -6,7 +6,7 @@ using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Provides RSA key key unwrapping services.

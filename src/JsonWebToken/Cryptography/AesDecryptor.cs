@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 #endif
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
 
     /// <summary>

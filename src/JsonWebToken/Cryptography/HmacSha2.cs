@@ -4,7 +4,7 @@
 using System;
 using System.Buffers;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Computes a Hash-based Message Authentication Code (HMAC) using a SHA2 hash function.

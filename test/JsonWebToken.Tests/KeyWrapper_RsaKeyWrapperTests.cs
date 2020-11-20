@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using Xunit;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken.Tests
 {

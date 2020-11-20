@@ -3,7 +3,7 @@
 
 using System;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     internal sealed class ShaNull : Sha2
     {
@@ -18,8 +18,6 @@ namespace JsonWebToken
         }
 
         public override int GetWorkingSetSize(int sourceLength)
-        {
-            return 0;
-        }
+            => 0;
     }
 }

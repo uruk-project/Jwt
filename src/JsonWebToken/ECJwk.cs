@@ -9,6 +9,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
+using JsonWebToken.Cryptography;
+using CryptographicOperations = JsonWebToken.Cryptography.CryptographicOperations;
 
 namespace JsonWebToken
 {

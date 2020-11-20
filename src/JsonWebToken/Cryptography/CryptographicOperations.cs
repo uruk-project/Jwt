@@ -9,7 +9,7 @@ using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 #endif
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     internal static class CryptographicOperations
     {

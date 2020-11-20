@@ -11,6 +11,7 @@ using System.Runtime.Intrinsics.X86;
 using System.Security.Cryptography;
 using System.Text;
 using BenchmarkDotNet.Attributes;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken.Performance
 {

@@ -3,9 +3,7 @@
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Defines the algorithms identifiers.
-    /// </summary>
+    /// <summary>Defines the algorithms identifiers.</summary>
     public enum AlgorithmId : short
     {
         /// <summary>undefined</summary>

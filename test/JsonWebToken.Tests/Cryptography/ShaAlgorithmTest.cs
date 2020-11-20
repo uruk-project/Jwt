@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Xunit;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken.Tests.Cryptography
 {
