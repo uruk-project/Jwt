@@ -167,7 +167,7 @@ namespace JsonWebToken
         /// <param name="utf8Token">The JWT encoded as JWE or JWS.</param>
         /// <param name="policy">The validation policy.</param>
         /// <param name="jwt">The resulting <see cref="Jwt"/>.</param>
-        public static bool TryParse(in ReadOnlySequence<byte> utf8Token, TokenValidationPolicy policy, out Jwt jwt)
+        public static bool TryParse(ReadOnlySequence<byte> utf8Token, TokenValidationPolicy policy, out Jwt jwt)
         {
             if (utf8Token.IsSingleSegment)
             {
