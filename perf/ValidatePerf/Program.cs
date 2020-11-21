@@ -1,5 +1,6 @@
 ﻿using System;
 using JsonWebToken;
+using JsonWebToken.Cryptography;
 
 namespace ValidatePerf
 {

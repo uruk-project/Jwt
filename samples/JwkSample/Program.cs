@@ -3,6 +3,7 @@ using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using JsonWebToken;
+using JsonWebToken.Cryptography;
 
 namespace JwkSample
 {

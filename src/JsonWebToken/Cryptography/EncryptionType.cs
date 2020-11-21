@@ -3,7 +3,7 @@
 
 using System;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Defines the algorithm encryption types.

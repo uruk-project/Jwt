@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using JsonWebToken.Cryptography;
 using JsonWebToken.Tests.Cryptography;
 using Xunit;
 
@@ -35,7 +36,7 @@ namespace JsonWebToken.Tests
             Assert.Equal("F8F61435DBCB5D59DCF32250C3B89091294D9806F6D3664EFAB7C2CAB01CD4BA", decryptedData.ByteArrayToHex());
 
 #if !NETFRAMEWORK
-            CryptographicOperations.ZeroMemory(decryptedData);
+            JsonWebToken.Cryptography.CryptographicOperations.ZeroMemory(decryptedData);
             var decrypted = rsa.TryDecrypt(encryptedData, decryptedData, RSAEncryptionPadding.Pkcs1, out int bytesWritten);
 
             Assert.Equal("F8F61435DBCB5D59DCF32250C3B89091294D9806F6D3664EFAB7C2CAB01CD4BA", decryptedData.ByteArrayToHex());

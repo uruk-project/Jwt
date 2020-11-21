@@ -136,7 +136,7 @@ namespace JsonWebToken.Performance
             return Tokenize_Unroll_ByRef_V2(Token, ref MemoryMarshal.GetReference(segments));
         }
 
-        public static int Tokenize(ReadOnlySpan<byte> token, Span<TokenSegment> segments)
+        internal static int Tokenize(ReadOnlySpan<byte> token, Span<TokenSegment> segments)
         {
             int count = 0;
             int start = 0;
@@ -186,7 +186,7 @@ namespace JsonWebToken.Performance
         //}
 
 
-        public static int Tokenize_AvoidLastSlice(ReadOnlySpan<byte> token, Span<TokenSegment> segments)
+        internal static int Tokenize_AvoidLastSlice(ReadOnlySpan<byte> token, Span<TokenSegment> segments)
         {
             int count = 0;
             int start = 0;
@@ -209,7 +209,7 @@ namespace JsonWebToken.Performance
             return 0;
         }
 
-        public static int Tokenize_AvoidLastSliceV3(ReadOnlySpan<byte> token, Span<TokenSegment> segments)
+        internal static int Tokenize_AvoidLastSliceV3(ReadOnlySpan<byte> token, Span<TokenSegment> segments)
         {
             int count = 0;
             int start = 0;
@@ -234,7 +234,7 @@ namespace JsonWebToken.Performance
             return count;
         }
 
-        public static int Tokenize_AvoidLastSlice_ByRef(ReadOnlySpan<byte> token, ref TokenSegment segments)
+        internal static int Tokenize_AvoidLastSlice_ByRef(ReadOnlySpan<byte> token, ref TokenSegment segments)
         {
             int count = 0;
             int start = 0;
@@ -257,7 +257,7 @@ namespace JsonWebToken.Performance
             return 0;
         }
 
-        public static unsafe int Tokenize_AvoidLastSlice_Unsafe(ReadOnlySpan<byte> token, TokenSegment* pSegments)
+        internal static unsafe int Tokenize_AvoidLastSlice_Unsafe(ReadOnlySpan<byte> token, TokenSegment* pSegments)
         {
             int count = 0;
             int start = 0;
@@ -280,7 +280,7 @@ namespace JsonWebToken.Performance
             return count;
         }
 
-        public unsafe static int Tokenize_Unsafe(ReadOnlySpan<byte> token, TokenSegment* pSegments)
+        internal unsafe static int Tokenize_Unsafe(ReadOnlySpan<byte> token, TokenSegment* pSegments)
         {
             int count = 0;
             int start = 0;
@@ -302,7 +302,7 @@ namespace JsonWebToken.Performance
             return count;
         }
 
-        public unsafe static int Tokenize_ByRef(ReadOnlySpan<byte> token, ref TokenSegment segments)
+        internal unsafe static int Tokenize_ByRef(ReadOnlySpan<byte> token, ref TokenSegment segments)
         {
             int count = 0;
             int start = 0;
@@ -324,7 +324,7 @@ namespace JsonWebToken.Performance
             return count;
         }
 
-        public static int Tokenize_Unroll(ReadOnlySpan<byte> token, Span<TokenSegment> segments)
+        internal static int Tokenize_Unroll(ReadOnlySpan<byte> token, Span<TokenSegment> segments)
         {
             int start;
             var span = token;
@@ -380,7 +380,7 @@ namespace JsonWebToken.Performance
             return 0;
         }
 
-        public static int Tokenize_Unroll_Goto(ReadOnlySpan<byte> token, Span<TokenSegment> segments)
+        internal static int Tokenize_Unroll_Goto(ReadOnlySpan<byte> token, Span<TokenSegment> segments)
         {
             int start;
             var span = token;
@@ -441,7 +441,7 @@ namespace JsonWebToken.Performance
             return 5;
         }
 
-        public unsafe static int Tokenize_Unroll_Unsafe(ReadOnlySpan<byte> token, TokenSegment* pSegments)
+        internal unsafe static int Tokenize_Unroll_Unsafe(ReadOnlySpan<byte> token, TokenSegment* pSegments)
         {
             int start;
             var span = token;
@@ -497,7 +497,7 @@ namespace JsonWebToken.Performance
             return 0;
         }
 
-        public unsafe static int Tokenize_Unroll_ByRef(ReadOnlySpan<byte> token, ref TokenSegment segments)
+        internal unsafe static int Tokenize_Unroll_ByRef(ReadOnlySpan<byte> token, ref TokenSegment segments)
         {
             int start;
             var span = token;
@@ -553,7 +553,7 @@ namespace JsonWebToken.Performance
             return 0;
         }
 
-        public unsafe static int Tokenize_Unroll_ByRef_V2(ReadOnlySpan<byte> token, ref TokenSegment segments)
+        internal unsafe static int Tokenize_Unroll_ByRef_V2(ReadOnlySpan<byte> token, ref TokenSegment segments)
         {
             int start;
             var span = token;
@@ -606,8 +606,7 @@ namespace JsonWebToken.Performance
             return 0;
         }
 
-
-        public unsafe static int Tokenize_Unroll_Unsafe_Goto(ReadOnlySpan<byte> token, TokenSegment* pSegments)
+        internal unsafe static int Tokenize_Unroll_Unsafe_Goto(ReadOnlySpan<byte> token, TokenSegment* pSegments)
         {
             int start;
             var span = token;

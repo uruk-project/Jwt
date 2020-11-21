@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     /// <summary>Provides key wrapping services.</summary>
     public abstract class KeyWrapper : IDisposable

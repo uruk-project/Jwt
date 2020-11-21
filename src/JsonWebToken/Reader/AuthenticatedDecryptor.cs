@@ -3,7 +3,7 @@
 
 using System;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     /// <summary>Provides authenticated decryption.</summary>
     public abstract class AuthenticatedDecryptor

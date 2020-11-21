@@ -5,6 +5,7 @@
 using System;
 using System.Buffers;
 using System.Text.Json;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {

@@ -5,7 +5,7 @@ using System;
 using System.Buffers;
 using System.IO;
 
-namespace JsonWebToken
+namespace JsonWebToken.Compression
 {
     /// <summary>Provides decompression services, based on <typeparamref name="TStream"/>.</summary>
     public abstract class Decompressor<TStream> : Decompressor where TStream : Stream

@@ -6,11 +6,11 @@ using System.IO.Compression;
 
 namespace JsonWebToken.Compression
 {
-    internal sealed class DeflateCompressor : Compressor<DeflateStream>
+    internal sealed class DeflateDecompressor : Decompressor<DeflateStream>
     {
-        public override DeflateStream CreateCompressionStream(Stream outputStream)
+        public override DeflateStream CreateDecompressionStream(Stream inputStream)
         {
-            return new DeflateStream(outputStream, CompressionLevel.Optimal, false);
+            return new DeflateStream(inputStream, CompressionMode.Decompress);
         }
     }
 }

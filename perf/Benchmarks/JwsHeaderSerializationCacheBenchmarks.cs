@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken.Performance
 {

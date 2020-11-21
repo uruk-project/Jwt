@@ -4,7 +4,7 @@
 using System;
 using System.Text.Json;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Represents a cyrptographic algorithm.

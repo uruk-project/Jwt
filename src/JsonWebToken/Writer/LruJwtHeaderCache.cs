@@ -11,7 +11,7 @@ using System.Threading;
 namespace JsonWebToken
 {
     /// <summary>Represents a cache for JWT Header in JSON.</summary>
-    public sealed class LruJwtHeaderCache : IJwtHeaderCache
+    internal sealed class LruJwtHeaderCache : IJwtHeaderCache
     {
         ///<summary>The maxium number of header in cache.</summary>
         public const int MaxSize = 16;

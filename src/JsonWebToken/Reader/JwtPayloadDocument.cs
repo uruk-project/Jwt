@@ -25,13 +25,13 @@ namespace JsonWebToken
 
         /// <summary>Gets the validation control bits.</summary>
         public byte Control => _control;
-        internal bool InvalidAudience => (_control & TokenValidationPolicy.InvalidAudienceMask) == TokenValidationPolicy.InvalidAudienceMask;
-        internal bool MissingAudience => (_control & TokenValidationPolicy.MissingAudienceMask) == TokenValidationPolicy.MissingAudienceMask;
-        internal bool InvalidIssuer => (_control & TokenValidationPolicy.InvalidIssuerMask) == TokenValidationPolicy.InvalidIssuerMask;
-        internal bool MissingIssuer => (_control & TokenValidationPolicy.MissingIssuerMask) == TokenValidationPolicy.MissingIssuerMask;
-        internal bool MissingExpirationTime => (_control & TokenValidationPolicy.ExpirationTimeRequiredMask) == TokenValidationPolicy.ExpirationTimeRequiredMask;
-        internal bool Expired => (_control & TokenValidationPolicy.ExpirationTimeMask) == TokenValidationPolicy.ExpirationTimeMask;
-        internal bool NotYetValid => (_control & TokenValidationPolicy.NotBeforeMask) == TokenValidationPolicy.NotBeforeMask;
+        internal bool InvalidAudience => (_control & TokenValidationPolicy.InvalidAudienceMask) != 0;
+        internal bool MissingAudience => (_control & TokenValidationPolicy.MissingAudienceMask) != 0;
+        internal bool InvalidIssuer => (_control & TokenValidationPolicy.InvalidIssuerMask) != 0;
+        internal bool MissingIssuer => (_control & TokenValidationPolicy.MissingIssuerMask) != 0;
+        internal bool MissingExpirationTime => (_control & TokenValidationPolicy.ExpirationTimeRequiredMask) != 0;
+        internal bool Expired => (_control & TokenValidationPolicy.ExpirationTimeMask) != 0;
+        internal bool NotYetValid => (_control & TokenValidationPolicy.NotBeforeMask) != 0;
 
         /// <summary>Gets the raw binary value of the current <see cref="JwtPayloadDocument"/>.</summary>
         public ReadOnlyMemory<byte> RawValue => _document.RawValue;

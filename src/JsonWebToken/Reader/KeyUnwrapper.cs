@@ -3,7 +3,7 @@
 
 using System;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     /// <summary>Provides key unwrapping services.</summary>
     public abstract class KeyUnwrapper : IDisposable

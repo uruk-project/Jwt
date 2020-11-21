@@ -1,4 +1,6 @@
-﻿namespace JsonWebToken.Tests
+﻿using JsonWebToken.Cryptography;
+
+namespace JsonWebToken.Tests
 {
     public abstract class KeyWrapperTestsBase
     {

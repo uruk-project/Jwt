@@ -158,7 +158,7 @@ namespace JsonWebToken
         public static TokenValidationError DecompressionFailed(Exception exception)
             => new TokenValidationError(TokenValidationStatus.DecompressionFailed, exception);
 
-        internal static TokenValidationError SignatureValidationFailed(SignatureValidationResult result)
+        internal static TokenValidationError SignatureValidationFailed(SignatureValidationError result)
             => new TokenValidationError(result.Status, result.Exception);
     }
 }

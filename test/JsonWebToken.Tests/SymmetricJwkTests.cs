@@ -2,19 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using JsonWebToken.Cryptography;
 using Xunit;
 
 namespace JsonWebToken.Tests
 {
     public class SymmetricJwkTests : JwkTestsBase
     {
-        //[Theory]
-        //[MemberData(nameof(GetEncryptionKeys))]
-        //public override AuthenticatedEncryptor CreateAuthenticatedEncryptor_Succeed(Jwk key, EncryptionAlgorithm enc)
-        //{
-        //    return base.CreateAuthenticatedEncryptor_Succeed(key, enc);
-        //}
-
         [Theory]
         [MemberData(nameof(GetWrappingKeys))]
         public override KeyWrapper CreateKeyWrapper_Succeed(Jwk key, EncryptionAlgorithm enc, KeyManagementAlgorithm alg)

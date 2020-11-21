@@ -156,12 +156,12 @@ namespace JsonWebToken
                 sizeHint = MinimumBufferSize;
             }
 
-            int bufferLength = _rentedBuffer.Length;
-            int availableSpace = bufferLength - _index;
+            int currentLength = _rentedBuffer.Length;
+            int availableSpace = currentLength - _index;
             if (sizeHint > availableSpace)
             {
-                int growBy = Math.Max(sizeHint, bufferLength);
-                int newSize = checked(bufferLength + growBy);
+                int growBy = Math.Max(sizeHint, currentLength);
+                int newSize = currentLength + growBy;
 
                 byte[] oldBuffer = _rentedBuffer;
 
@@ -172,7 +172,8 @@ namespace JsonWebToken
 
                 Span<byte> previousBuffer = oldBuffer.AsSpan(0, _index);
                 previousBuffer.CopyTo(_rentedBuffer);
-                ArrayPool<byte>.Shared.Return(oldBuffer, true);
+                previousBuffer.Clear();
+                ArrayPool<byte>.Shared.Return(oldBuffer);
             }
 
             Debug.Assert(_rentedBuffer.Length - _index > 0);

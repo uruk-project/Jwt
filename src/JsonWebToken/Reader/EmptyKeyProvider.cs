@@ -6,7 +6,7 @@ using System;
 namespace JsonWebToken
 {
     /// <summary>Represents a static provider of keys.</summary>
-    public sealed class EmptyKeyProvider : IKeyProvider
+    internal sealed class EmptyKeyProvider : IKeyProvider
     {
         private static readonly Jwk[] _empty = Array.Empty<Jwk>();
 

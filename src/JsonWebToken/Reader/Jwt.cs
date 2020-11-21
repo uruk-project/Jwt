@@ -335,15 +335,13 @@ namespace JsonWebToken
                     goto ExitFalseClearBuffer;
                 }
 
-                var signatureResult = policy.TryValidateSignature(
+                if (!policy.TryValidateSignature(
                     header,
                     payload,
                     utf8Token.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1),
-                    utf8Token.Slice(signatureSegment.Start, signatureSegment.Length));
-
-                if (!signatureResult.Succedeed)
+                    utf8Token.Slice(signatureSegment.Start, signatureSegment.Length), out var signatureError))
                 {
-                    jwt = new Jwt(TokenValidationError.SignatureValidationFailed(signatureResult));
+                    jwt = new Jwt(TokenValidationError.SignatureValidationFailed(signatureError));
                     goto ExitFalse;
                 }
 

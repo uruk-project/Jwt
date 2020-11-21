@@ -7,7 +7,7 @@ using System.Text.Json;
 namespace JsonWebToken
 {
     /// <summary>Provides methods for parsing JSON data into a <see cref="Dictionary{TKey, TValue}"/></summary>
-    public static partial class JsonParser
+    internal static partial class JsonParser
     {
         internal static void ConsumeJsonObject(ref Utf8JsonReader reader)
         {

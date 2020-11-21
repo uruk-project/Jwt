@@ -4,7 +4,7 @@
 using System;
 using System.Buffers;
 
-namespace JsonWebToken
+namespace JsonWebToken.Compression
 {
     /// <summary>Provides decompression services.</summary>
     public abstract class Decompressor

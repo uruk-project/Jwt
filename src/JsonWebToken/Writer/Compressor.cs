@@ -3,7 +3,7 @@
 
 using System;
 
-namespace JsonWebToken
+namespace JsonWebToken.Compression
 {
     /// <summary>Provides compression services.</summary>
     public abstract class Compressor

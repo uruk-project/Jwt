@@ -230,11 +230,7 @@ namespace JsonWebToken
         /// </exception>
         public bool GetBoolean()
         {
-            // CheckValidInstance is redundant.  Asking for the type will
-            // return None, which then throws the same exception in the return statement.
-
             JsonTokenType type = TokenType;
-
             return
                 type == JsonTokenType.True || (type == JsonTokenType.False ? false :
                 throw ThrowHelper.CreateInvalidOperationException_NotSupportedJsonType(type));

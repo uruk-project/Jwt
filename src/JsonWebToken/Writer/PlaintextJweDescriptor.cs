@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {

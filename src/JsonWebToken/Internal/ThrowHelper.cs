@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text.Json;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
@@ -37,16 +38,6 @@ namespace JsonWebToken
         private static Exception CreateArgumentException_RequireHttpsException(string address) => new ArgumentException($"The address specified '{address}' is not valid as per HTTPS scheme.", nameof(address));
 
         [DoesNotReturn]
-        internal static void ThrowArgumentException_MustNotContainNull(ExceptionArgument argument) => throw CreateArgumentException_MustNotContainNull(argument);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentException_MustNotContainNull(ExceptionArgument argument) => new ArgumentException($"The collection must not contains a 'null' value.", GetArgumentName(argument));
-
-        [DoesNotReturn]
-        internal static void ThrowArgumentOutOfRangeException_NeedNonNegNum(ExceptionArgument argument) => throw CreateArgumentOutOfRangeException_NeedNonNegNum(argument);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_NeedNonNegNum(ExceptionArgument argument) => new ArgumentOutOfRangeException(GetArgumentName(argument), "Non-negative number required.");
-
-        [DoesNotReturn]
         internal static void ThrowArgumentNullException(ExceptionArgument argument) => throw CreateArgumentNullException(argument);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentNullException(ExceptionArgument argument) => new ArgumentNullException(GetArgumentName(argument));
@@ -55,15 +46,6 @@ namespace JsonWebToken
         internal static void ThrowInvalidOperationException_PolicyBuilderRequireSignature() => throw CreateInvalidOperationException_PolicyBuilderRequireSignature();
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateInvalidOperationException_PolicyBuilderRequireSignature() => new InvalidOperationException($"Signature validation must be either defined by calling the method '{nameof(TokenValidationPolicyBuilder.DefaultSignature)}' or explicitly ignored by calling the '{nameof(TokenValidationPolicyBuilder.AcceptUnsecureToken)}' method.");
-
-        [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_ClaimIsRequired(ReadOnlySpan<byte> claim) => throw CreateJwtDescriptorException_ClaimIsRequired(claim);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_ClaimIsRequired(ReadOnlySpan<byte> claim)
-        {
-            var value = Utf8.GetString(claim);
-            return new JwtDescriptorException($"The claim '{value}' is required.");
-        }
 
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_SecEventAttributeIsRequired(JsonEncodedText claim) => throw CreateJwtDescriptorException_SecEventAttributeIsRequired(claim);
@@ -103,29 +85,9 @@ namespace JsonWebToken
         }
 
         [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, types);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType[] types)
-        {
-            var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-            var value = Utf8.GetString(utf8Name);
-            return new JwtDescriptorException($"The claim '{value}' must be of type [{claimTypes}].");
-        }
-
-        [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(JsonEncodedText utf8Name, JwtValueKind[] types) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, types);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(JsonEncodedText utf8Name, JwtValueKind[] types)
-        {
-            var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-            var value = (utf8Name);
-            return new JwtDescriptorException($"The claim '{value}' must be of type [{claimTypes}].");
-        }
-
-        [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonValueKind[] types) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, types);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonValueKind[] types)
         {
             var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
             var value = (utf8Name);
@@ -143,68 +105,12 @@ namespace JsonWebToken
         }
 
         [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType[] types) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, types);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType[] types)
-        {
-            var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-            var value = Utf8.GetString(utf8Name);
-            return new JwtDescriptorException($"The claim '{value}' must be of type [{claimTypes}].");
-        }
-
-        [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType type) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, type);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
-        {
-            var value = Utf8.GetString(utf8Name);
-            return new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
-        }
-
-        [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonValueKind type) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, type);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonValueKind type)
-        {
-            var value = (utf8Name);
-            return new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
-        }
-
-        [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(JsonEncodedText utf8Name, JwtValueKind type) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, type);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(JsonEncodedText utf8Name, JwtValueKind type)
         {
             var value = (utf8Name);
             return new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
-        }
-
-        [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonTokenType type) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, type);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonTokenType type)
-        {
-            var value = (utf8Name);
-            return new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
-        }
-
-        [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType type) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, type);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType type)
-        {
-            var value = Utf8.GetString(utf8Name);
-            return new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
-        }
-
-        [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(JsonEncodedText header, JwtTokenType[] types) => throw CreateJwtDescriptorException_HeaderMustBeOfType(header, types);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(JsonEncodedText header, JwtTokenType[] types)
-        {
-            var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-            var value = (header);
-            return new JwtDescriptorException($"The header parameter '{value}' must be of type [{claimTypes}].");
         }
 
         [DoesNotReturn]
@@ -218,68 +124,11 @@ namespace JsonWebToken
         }
 
         [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(string utf8Name, JwtTokenType[] types) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, types);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(string utf8Name, JwtTokenType[] types)
-        {
-            var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-            var value = (utf8Name);
-            return new JwtDescriptorException($"The header parameter '{value}' must be of type [{claimTypes}].");
-        }
-
-        [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(string utf8Name, JsonValueKind[] types) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, types);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(string utf8Name, JsonValueKind[] types)
-        {
-            var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-            var value = (utf8Name);
-            return new JwtDescriptorException($"The header parameter '{value}' must be of type [{claimTypes}].");
-        }
-
-        [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType[] types) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, types);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType[] types)
-        {
-            var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-            var value = Utf8.GetString(utf8Name);
-            return new JwtDescriptorException($"The header parameter '{value}' must be of type [{claimTypes}].");
-        }
-
-        [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType type) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, type);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JsonTokenType type)
-        {
-            var value = Utf8.GetString(utf8Name);
-            return new JwtDescriptorException($"The header parameter '{value}' must be of type {type}.");
-        }
-
-        [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(string utf8Name, JsonValueKind type) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, type);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(string utf8Name, JsonValueKind type)
-        {
-            var value = (utf8Name);
-            return new JwtDescriptorException($"The header parameter '{value}' must be of type {type}.");
-        }
-
-        [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(JsonEncodedText utf8Name, JwtValueKind type) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, type);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(JsonEncodedText utf8Name, JwtValueKind type)
         {
             var value = (utf8Name);
-            return new JwtDescriptorException($"The header parameter '{value}' must be of type {type}.");
-        }
-
-        [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType type) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, type);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(ReadOnlySpan<byte> utf8Name, JwtTokenType type)
-        {
-            var value = Utf8.GetString(utf8Name);
             return new JwtDescriptorException($"The header parameter '{value}' must be of type {type}.");
         }
 
@@ -293,11 +142,6 @@ namespace JsonWebToken
         }
 
         [DoesNotReturn]
-        internal static void ThrowInvalidOperationException_NoSigningKeyDefined() => throw CreateInvalidOperationException_NoSigningKeyDefined();
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateInvalidOperationException_NoSigningKeyDefined() => new InvalidOperationException("No signing key is defined.");
-
-        [DoesNotReturn]
         internal static void ThrowInvalidOperationException_ConcurrentOperationsNotSupported() => throw CreateInvalidOperationException_ConcurrentOperationsNotSupported();
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateInvalidOperationException_ConcurrentOperationsNotSupported() => new InvalidOperationException("Operations that change non-concurrent collections must have exclusive access. A concurrent update was performed on this collection and corrupted its state. The collection's state is no longer correct.");
@@ -308,24 +152,10 @@ namespace JsonWebToken
         private static Exception CreateArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(ExceptionArgument argument, int value) => new ArgumentOutOfRangeException(GetArgumentName(argument), $"{GetArgumentName(argument)} must be greater equal or zero. value: '{value}'.");
 
         [DoesNotReturn]
-        internal static void ThrowInvalidOperationException_NotSupportedJsonType(JwtTokenType type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static Exception CreateInvalidOperationException_NotSupportedJsonType(JwtTokenType type) => new InvalidOperationException($"The type {type} is not supported.");
-
-        [DoesNotReturn]
         internal static void ThrowInvalidOperationException_NotSupportedJsonType(JwtValueKind type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Exception CreateInvalidOperationException_NotSupportedJsonType(JwtValueKind type) => new InvalidOperationException($"The type {type} is not supported.");
-
-        [DoesNotReturn]
-        internal static void ThrowInvalidOperationException_NotSupportedJsonType(JsonTokenType type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
-        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Exception CreateInvalidOperationException_NotSupportedJsonType(JsonTokenType type) => new InvalidOperationException($"The type {type} is not supported.");
-
-        [DoesNotReturn]
-        internal static void ThrowInvalidOperationException_NotSupportedJsonType(JsonValueKind type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static Exception CreateInvalidOperationException_NotSupportedJsonType(JsonValueKind type) => new InvalidOperationException($"The type {type} is not supported.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_MustBeGreaterThanZero(ExceptionArgument argument, int value) => throw CreateArgumentOutOfRangeException_MustBeGreaterThanZero(argument, value);
@@ -363,11 +193,6 @@ namespace JsonWebToken
         internal static Exception CreateNotSupportedException_AlgorithmForKeyWrap(KeyManagementAlgorithm? algorithm) => new NotSupportedException($"Key wrap is not supported for algorithm: '{algorithm}'.");
 
         [DoesNotReturn]
-        internal static void ThrowNotSupportedException_CompressionAlgorithm(CompressionAlgorithm compressionAlgorithm) => throw CreateNotSupportedException_CompressionAlgorithm(compressionAlgorithm);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateNotSupportedException_CompressionAlgorithm(CompressionAlgorithm compressionAlgorithm) => new NotSupportedException($"Compression algorithm: '{compressionAlgorithm.Name}' is not supported.");
-
-        [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_InvalidEcdsaKeySize(Jwk key, SignatureAlgorithm algorithm, int validKeySize, int keySize) => throw CreateArgumentOutOfRangeException_InvalidEcdsaKeySize(key, algorithm, validKeySize, keySize);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentOutOfRangeException_InvalidEcdsaKeySize(Jwk key, SignatureAlgorithm algorithm, int validKeySize, int keySize) => new ArgumentOutOfRangeException(nameof(algorithm), $"Invalid key size for '{key.Kid}'. Valid key size must be '{validKeySize}' bits for the algorithm {algorithm}. Key size: '{keySize}'.");
@@ -401,11 +226,6 @@ namespace JsonWebToken
         internal static void ThrowArgumentOutOfRangeException_InvalidSigningKeySize(Jwk key, int minimalValue) => throw CreateArgumentOutOfRangeException_InvalidSigningKeySize(key, minimalValue);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentOutOfRangeException_InvalidSigningKeySize(Jwk key, int minimalValue) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), key.Kid.EncodedUtf8Bytes.IsEmpty ? $"The signing key must be of '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'." : $"The signing key '{key.Kid}' must be of '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'.");
-
-        [DoesNotReturn]
-        internal static void ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(Jwk key, EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => throw CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(key, algorithm, minimalValue, currentKeySize);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(Jwk key, EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), key.Kid.EncodedUtf8Bytes.IsEmpty ? $"The key encryption with algorithm '{algorithm}' cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'." : $"The key encryption '{key.Kid}' with algorithm '{algorithm}' cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => throw CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(algorithm, minimalValue, currentKeySize);
@@ -480,16 +300,6 @@ namespace JsonWebToken
         private static Exception CreateArgumentException_KeySizeMustBeMultipleOf64(ReadOnlySpan<byte> keyBytes) => new ArgumentException($"The length of the key to unwrap must be a multiple of 64 bits. The size is: '{keyBytes.Length << 3}' bits.", nameof(keyBytes));
 
         [DoesNotReturn]
-        internal static void ThrowNotSupportedException_KeyedHashAlgorithm(SignatureAlgorithm algorithm) => throw CreateNotSupportedException_KeyedHashAlgorithm(algorithm);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateNotSupportedException_KeyedHashAlgorithm(SignatureAlgorithm algorithm) => new NotSupportedException($"Unable to create hash algorithm for algorithm '{algorithm}'.");
-
-        [DoesNotReturn]
-        internal static void ThrowArgumentException_InvalidRsaKey(Jwk key) => throw CreateArgumentException_InvalidRsaKey(key);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentException_InvalidRsaKey(Jwk key) => new ArgumentException($"Invalid RSA key: '{key.Kid}'. Both modulus (N) and exponent (E) must be present.", nameof(key));
-
-        [DoesNotReturn]
         internal static void ThrowInvalidOperationException_UnexpectedKeyType(Jwk key, string expectedType) => throw CreateInvalidOperationException_UnexpectedKeyType(key, expectedType);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateInvalidOperationException_UnexpectedKeyType(Jwk key, string expectedType) => new InvalidOperationException($"Unexpected key type: '{key.Kty}'. Expected a key of type '{expectedType}'.");
@@ -498,16 +308,6 @@ namespace JsonWebToken
         internal static void ThrowInvalidOperationException_UndefinedPayload() => throw CreateInvalidOperationExceptionUndefinedPayload();
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateInvalidOperationExceptionUndefinedPayload() => new InvalidOperationException("The 'Payload' property is not defined.");
-
-        [DoesNotReturn]
-        internal static void ThrowInvalidOperationException_DuplicateJsonMember(string name) => throw CreateInvalidOperationException_DuplicateJsonMember(name);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateInvalidOperationException_DuplicateJsonMember(string name) => new InvalidOperationException($"The JSON member '{name}' is duplicated.");
-
-        [DoesNotReturn]
-        internal static void ThrowInvalidOperationException_RequirePrivateKey() => throw CreateInvalidOperationException_RequirePrivateKey();
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateInvalidOperationException_RequirePrivateKey() => new InvalidOperationException("The operation require a private key.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentException_DestinationTooSmall(int size, int requiredSize) => throw CreateArgumentException_DestinationTooSmall(size, requiredSize);
@@ -553,11 +353,6 @@ namespace JsonWebToken
         }
 
         [DoesNotReturn]
-        internal static void ThrowFormatException_NotSupportedNumberValue(ReadOnlySpan<byte> name) => throw CreateFormatException_NotSUpportedNumberValue(name);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateFormatException_NotSUpportedNumberValue(ReadOnlySpan<byte> name) => new FormatException($"The claim '{Utf8.GetString(name)}' is not a supported Number value.");
-
-        [DoesNotReturn]
         internal static string ThrowFormatException_MalformedJson() => throw CreateFormatException_MalformedJson();
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Exception CreateFormatException_MalformedJson() => new FormatException("The JSON is malformed.");
@@ -568,26 +363,14 @@ namespace JsonWebToken
         private static Exception CreateFormatException_MalformedJson(string message) => new FormatException("The JSON is malformed. " + message);
 
         [DoesNotReturn]
-        internal static string ThrowNotSupportedException_RequireAesNi() => throw CreateNotSupportedException_RequireAesNi();
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateNotSupportedException_RequireAesNi() => new NotSupportedException("The AES New Instructions set is not supported on the executing CPU.");
-
-        [DoesNotReturn]
         internal static void ThrowArgumentException_PrependMustBeLessOrEqualToBlockSize(ReadOnlySpan<byte> prepend, int blockSize) => throw CreateArgumentException_PrependMustBeLessOrEqualToBlockSize(prepend, blockSize);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentException_PrependMustBeLessOrEqualToBlockSize(ReadOnlySpan<byte> prepend, int blockSize) => new ArgumentException($"The length of the prepend must be of the same size than the block size, or less. Prepend length is: '{prepend.Length}' bytes, block size is: {blockSize}.", nameof(prepend));
 
         [DoesNotReturn]
-        internal static void ThrowArgumentException_EncryptedPem(string name) => throw CreateArgumentException_EncryptedPem(name);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentException_EncryptedPem(string name) => new ArgumentException("An encrypted key was found, but no password was provided. Use ImportFromEncryptedPem to import this key.", name);
-
-
-        [DoesNotReturn]
         internal static void ThrowInvalidOperationException_InvalidPem() => throw CreateInvalidOperationException_InvalidPem();
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateInvalidOperationException_InvalidPem() => new InvalidOperationException("The PEM-encoded key is invalid.");
-
 
         private static string GetArgumentName(ExceptionArgument argument)
         {

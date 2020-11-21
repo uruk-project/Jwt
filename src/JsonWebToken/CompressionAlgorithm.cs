@@ -4,6 +4,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using JsonWebToken.Compression;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {

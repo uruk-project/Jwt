@@ -365,7 +365,7 @@ namespace JsonWebToken
             _parameters.Exponent = Base64Url.Decode(e);
         }
 
-        private void Verify(RSAParameters rsaParameters)
+        private static void Verify(RSAParameters rsaParameters)
         {
             if (rsaParameters.Modulus is null) throw new ArgumentNullException(nameof(rsaParameters.Modulus));
             if (rsaParameters.Exponent is null) throw new ArgumentNullException(nameof(rsaParameters.Exponent));

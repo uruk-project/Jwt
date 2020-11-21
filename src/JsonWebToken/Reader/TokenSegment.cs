@@ -4,7 +4,7 @@
 namespace JsonWebToken
 {
     /// <summary>Represents a segment of token.</summary>
-    public readonly struct TokenSegment
+    internal readonly struct TokenSegment
     {
         /// <summary>The start of the segment.</summary>
         public readonly int Start;

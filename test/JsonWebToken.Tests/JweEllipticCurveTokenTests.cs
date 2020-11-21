@@ -1,5 +1,6 @@
 ﻿#if NETCOREAPP
 using System.Collections.Generic;
+using JsonWebToken.Cryptography;
 using Xunit;
 
 namespace JsonWebToken.Tests

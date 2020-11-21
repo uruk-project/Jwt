@@ -76,16 +76,16 @@ namespace JsonWebToken
         public bool HasValidation => _control != 0 || _validators.Length != 0 || SignatureValidationPolicy.IsEnabled;
 
         /// <summary>Gets whether the issuer 'iss' is required.</summary>
-        public bool RequireIssuer => (_control & IssuerMask) == IssuerMask;
+        public bool RequireIssuer => (_control & IssuerMask) != 0;
 
         /// <summary>Gets the required issuers, in UTF8 binary format. At least one issuer of this list is required.</summary>
-        public byte[][] RequiredIssuersBinary { get; }
+        internal byte[][] RequiredIssuersBinary { get; }
 
         /// <summary>Gets the required issuers.</summary>
         public string[] RequiredIssuers { get; }
 
         /// <summary>Gets whether the audience 'aud' is required.</summary>
-        public bool RequireAudience => (_control & AudienceMask) == AudienceMask;
+        public bool RequireAudience => (_control & AudienceMask) != 0;
 
         /// <summary>Gets the required audience array, in UTF8 binary format. At least one audience of this list is required.</summary>
         internal byte[][] RequiredAudiencesBinary { get; }
@@ -97,7 +97,7 @@ namespace JsonWebToken
         public byte Control => _control;
 
         /// <summary>Gets whether the expiration time 'exp' is required.</summary>
-        public bool RequireExpirationTime => (_control & ExpirationTimeRequiredMask) == ExpirationTimeRequiredMask;
+        public bool RequireExpirationTime => (_control & ExpirationTimeRequiredMask) != 0;
 
         /// <summary>Defines the clock skrew used for the token lifetime validation.</summary>
         public int ClockSkew { get; }
@@ -235,10 +235,11 @@ namespace JsonWebToken
         /// <param name="payload"></param>
         /// <param name="contentBytes"></param>
         /// <param name="signatureSegment"></param>
+        /// <param name="error"></param>
         /// <returns></returns>
-        public SignatureValidationResult TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment)
+        public bool TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment, [NotNullWhen(false)] out SignatureValidationError? error)
         {
-            return SignatureValidationPolicy.TryValidateSignature(header, payload, contentBytes, signatureSegment);
+            return SignatureValidationPolicy.TryValidateSignature(header, payload, contentBytes, signatureSegment, out error);
         }
 
         private class DisabledJwtHeaderDocumentCache : IJwtHeaderDocumentCache

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     /// <summary>Defines the algorithms identifiers.</summary>
     public enum AlgorithmId : short
