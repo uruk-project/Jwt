@@ -21,8 +21,8 @@ namespace JsonWebToken.Tests
                 cache.AddHeader(rawHeaders[i], header);
             }
 
-            Assert.Equal("9", cache.Head.Kid);
-            Assert.Equal("0", cache.Tail.Kid);
+            Assert.Equal("9", cache.Head.Kid.ToString());
+            Assert.Equal("0", cache.Tail.Kid.ToString());
 
             for (int i = 0; i < Count; i++)
             {
@@ -43,12 +43,12 @@ namespace JsonWebToken.Tests
                 JwtHeaderDocument.TryParseHeader(Encoding.UTF8.GetBytes($"{{\"kid\":\"{i}\"}}"), null, TokenValidationPolicy.NoValidation, out JwtHeaderDocument header, out var error);
                 cache.AddHeader(rawHeaders[i], header);
                 Assert.NotNull(cache.Head);
-                Assert.Equal(header.Alg, cache.Head.Alg);
-                Assert.Equal(header.Kid, cache.Head.Kid);
+                Assert.Equal(header.Alg.ToString(), cache.Head.Alg.ToString());
+                Assert.Equal(header.Kid.ToString(), cache.Head.Kid.ToString());
             }
 
-            Assert.Equal("19", cache.Head.Kid);
-            Assert.Equal("4", cache.Tail.Kid);
+            Assert.Equal("19", cache.Head.Kid.ToString());
+            Assert.Equal("4", cache.Tail.Kid.ToString());
             for (int i = 0; i < 4; i++)
             {
                 Assert.False(cache.TryGetHeader(rawHeaders[i], out var header));

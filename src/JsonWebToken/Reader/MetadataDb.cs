@@ -86,7 +86,7 @@ namespace JsonWebToken
             // amount of usage (particularly if Enlarge ever got called); and there's
             // the small copy-cost associated with trimming anyways. "Is half-empty" is
             // just a rough metric for "is trimming worth it?".
-            if (Length <= _data.Length / 2)
+            if (Length > 128 && Length <= _data.Length / 2)
             {
                 byte[] newRent = ArrayPool<byte>.Shared.Rent(Length);
                 byte[] returnBuf = newRent;

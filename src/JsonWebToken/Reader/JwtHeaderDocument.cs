@@ -21,7 +21,7 @@ namespace JsonWebToken
         private readonly JwtElement _kid;
 
         /// <inheritdoc/>
-        public string? Kid => _kid.GetString();
+        internal JwtElement Kid => _kid;
 
         internal JwtElement Alg => _alg;
 

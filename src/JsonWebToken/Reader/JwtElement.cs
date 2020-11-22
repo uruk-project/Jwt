@@ -478,7 +478,7 @@ namespace JsonWebToken
         /// </remarks>
         public bool ValueEquals(ReadOnlySpan<byte> utf8Text)
         {
-            if (TokenType == JsonTokenType.Null)
+            if (TokenType == JsonTokenType.Null | _parent is null)
             {
                 // This is different than Length == 0, in that it tests true for null, but false for ""
                 return utf8Text == default;

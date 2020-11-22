@@ -21,9 +21,7 @@ namespace JsonWebToken
         private const uint keys = 1937335659u;
         private readonly List<Jwk> _keys = new List<Jwk>();
 
-        private Jwk[]? _keyArray;
-        private Jwk[]? _unidentifiedKeys;
-        private Dictionary<string, Jwk[]>? _identifiedKeys;
+        private KeyValuePair<JsonEncodedText, Jwk[]>[]? _identifiedKeys;
 
         /// <summary>
         /// Initializes an new instance of <see cref="Jwks"/>.
@@ -120,8 +118,6 @@ namespace JsonWebToken
             }
 
             _identifiedKeys = null;
-            _unidentifiedKeys = null;
-            _keyArray = null;
             _keys.Add(key);
         }
 
@@ -137,8 +133,6 @@ namespace JsonWebToken
             }
 
             _identifiedKeys = null;
-            _unidentifiedKeys = null;
-            _keyArray = null;
             _keys.Remove(key);
         }
 
@@ -181,273 +175,226 @@ namespace JsonWebToken
             return Utf8.GetString(input);
         }
 
-        private Jwk[] UnidentifiedKeys
+        internal KeyValuePair<JsonEncodedText, Jwk[]>[] GetIdentifiedKeys()
         {
-            get
+            if (_identifiedKeys is null)
             {
-                if (_unidentifiedKeys is null)
+                if (_keys.Count == 1)
                 {
-                    _unidentifiedKeys = _keys
-                                        .Where(jwk => jwk.Kid.EncodedUtf8Bytes.IsEmpty)
-                                        .ToArray();
-                }
-
-                return _unidentifiedKeys;
-            }
-        }
-
-        internal Dictionary<string, Jwk[]> IdentifiedKeys
-        {
-            get
-            {
-                if (_identifiedKeys is null)
-                {
-                    if (_keys.Count == 1)
+                    var key1 = _keys[0];
+                    if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
                     {
-                        var key = _keys[0];
-                        _identifiedKeys = new Dictionary<string, Jwk[]>(1)
+                        _identifiedKeys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
+                    }
+                    else
+                    {
+                        _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
                         {
-                            { key.Kid.ToString(), new[] { key } }
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 })
                         };
                     }
-                    else if (_keys.Count == 2)
+                }
+                else if (_keys.Count == 2)
+                {
+                    var key2 = _keys[1];
+                    var key1 = _keys[0];
+                    if (key1.Kid.Equals(key2.Kid))
                     {
-                        var key2 = _keys[1];
-                        var key1 = _keys[0];
-                        if (key1.Kid.Equals(key2.Kid))
+                        if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
                         {
-                            if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
-                            {
-                                _identifiedKeys = new Dictionary<string, Jwk[]>(1)
-                                {
-                                    { key1.Kid.ToString(), new[] { key1, key2 } }
-                                };
-                            }
-                            else
-                            {
-                                _identifiedKeys = new Dictionary<string, Jwk[]>(1)
-                                {
-                                    { key1.Kid.ToString(), new[] { key1, key2 } }
-                                };
-                            }
+                            _identifiedKeys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
                         }
                         else
                         {
-                            if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                            _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
                             {
-                                _identifiedKeys = new Dictionary<string, Jwk[]>(2)
-                                {
-                                    { key2.Kid.ToString(), new[] { key2, key1 } },
-                                    { key1.Kid.ToString(), new[] { key1 } }
-                                };
-                            }
-                            else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
-                            {
-                                _identifiedKeys = new Dictionary<string, Jwk[]>(2)
-                                {
-                                    { key1.Kid.ToString(), new[] { key1, key2 } },
-                                    { key2.Kid.ToString(), new[] { key2 } }
-                                };
-                            }
-                            else
-                            {
-                                _identifiedKeys = new Dictionary<string, Jwk[]>(2)
-                                {
-                                    { key1.Kid.ToString(), new[] { key1 } },
-                                    { key2.Kid.ToString(), new[] { key2 } }
-                                };
-                            }
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 })
+                            };
                         }
                     }
-                    else if (_keys.Count == 3)
+                    else
                     {
-                        var key3 = _keys[2];
-                        var key2 = _keys[1];
-                        var key1 = _keys[0];
-                        if (key1.Kid.Equals(key2.Kid))
+                        if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
                         {
-                            if (key1.Kid.Equals(key3.Kid))
+                            _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
                             {
-                                _identifiedKeys = new Dictionary<string, Jwk[]>(1) { { key1.Kid.ToString(), new[] { key1, key2, key3 } } };
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key1 })
+                            };
+                        }
+                        else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
+                        {
+                            _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                            {
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 })
+                            };
+                        }
+                        else
+                        {
+                            _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                            {
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 }),
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2 })
+                            };
+                        }
+                    }
+                }
+                else if (_keys.Count == 3)
+                {
+                    var key3 = _keys[2];
+                    var key2 = _keys[1];
+                    var key1 = _keys[0];
+                    if (key1.Kid.Equals(key2.Kid))
+                    {
+                        if (key1.Kid.Equals(key3.Kid))
+                        {
+                            if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                            {
+                                _identifiedKeys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
                             }
                             else
                             {
-                                if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
+                                _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
                                 {
-                                    _identifiedKeys = new Dictionary<string, Jwk[]>(2)
-                                    {
-                                        { key3.Kid.ToString(), new[] { key3, key1, key2 } },
-                                        { key1.Kid.ToString(), new[] { key1, key2 } }
-                                    };
-                                }
-                                else if (key3.Kid.EncodedUtf8Bytes.IsEmpty)
-                                {
-                                    _identifiedKeys = new Dictionary<string, Jwk[]>(2)
-                                    {
-                                        { key1.Kid.ToString(), new[] { key1, key2, key3 } },
-                                        { key3.Kid.ToString(), new[] { key3 } }
-                                    };
-                                }
-                                else
-                                {
-                                    _identifiedKeys = new Dictionary<string, Jwk[]>(2)
-                                    {
-                                        { key1.Kid.ToString(), new[] { key1, key2 } },
-                                        { key3.Kid.ToString(), new[] { key3 } }
-                                    };
-                                }
+                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2, key3 })
+                                };
                             }
                         }
                         else
                         {
-                            if (key2.Kid.Equals(key3.Kid))
+                            if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
                             {
-                                if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                                _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
                                 {
-                                    _identifiedKeys = new Dictionary<string, Jwk[]>(2)
-                                    {
-                                        { key2.Kid.ToString(), new[] { key2, key3, key1 } },
-                                        { key1.Kid.ToString(), new[] { key1 } }
-                                    };
-                                }
-                                else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
+                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3, key1, key2 })
+                                };
+                            }
+                            else if (key3.Kid.EncodedUtf8Bytes.IsEmpty)
+                            {
+                                _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
                                 {
-                                    _identifiedKeys = new Dictionary<string, Jwk[]>(2)
-                                    {
-                                        { key1.Kid.ToString(), new[] { key1, key2, key3 } },
-                                        { key2.Kid.ToString(), new[] { key2, key3 } }
-                                    };
-                                }
-                                else
-                                {
-                                    _identifiedKeys = new Dictionary<string, Jwk[]>(2)
-                                    {
-                                        { key1.Kid.ToString(), new[] { key1 } },
-                                        { key2.Kid.ToString(), new[] { key2, key3 } }
-                                    };
-                                }
+                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2, key3 })
+                                };
                             }
                             else
                             {
-                                if (key1.Kid.Equals(key3.Kid))
+                                _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
                                 {
-                                    if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
-                                    {
-                                        _identifiedKeys = new Dictionary<string, Jwk[]>(3)
-                                        {
-                                            { key2.Kid.ToString(), new[] { key2, key1, key3 } },
-                                            { key1.Kid.ToString(), new[] { key1, key3 } },
-                                        };
-                                    }
-                                    else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
-                                    {
-                                        _identifiedKeys = new Dictionary<string, Jwk[]>(3)
-                                        {
-                                            { key1.Kid.ToString(), new[] { key1, key2 } },
-                                            { key3.Kid.ToString(), new[] { key3, key2 } },
-                                            { key2.Kid.ToString(), new[] { key2 } }
-                                        };
-                                    }
-                                    else
-                                    {
-                                        _identifiedKeys = new Dictionary<string, Jwk[]>(3)
-                                        {
-                                            { key1.Kid.ToString(), new[] { key1, key3 } },
-                                            { key2.Kid.ToString(), new[] { key2 } }
-                                        };
-                                    }
-                                }
-                                else
-                                {
-                                    if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
-                                    {
-                                        _identifiedKeys = new Dictionary<string, Jwk[]>(3)
-                                    {
-                                        { key2.Kid.ToString(), new[] { key2, key1 } },
-                                        { key3.Kid.ToString(), new[] { key3, key1 } },
-                                        { key1.Kid.ToString(), new[] { key1 } }
-                                    };
-                                    }
-                                    else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
-                                    {
-                                        _identifiedKeys = new Dictionary<string, Jwk[]>(3)
-                                    {
-                                        { key1.Kid.ToString(), new[] { key1, key2 } },
-                                        { key3.Kid.ToString(), new[] { key3, key2 } },
-                                        { key2.Kid.ToString(), new[] { key2 } }
-                                    };
-                                    }
-                                    else if (key3.Kid.EncodedUtf8Bytes.IsEmpty)
-                                    {
-                                        _identifiedKeys = new Dictionary<string, Jwk[]>(3)
-                                    {
-                                        { key1.Kid.ToString(), new[] { key1, key3 } },
-                                        { key2.Kid.ToString(), new[] { key2, key3 } },
-                                        { key3.Kid.ToString(), new[] { key3 } }
-                                    };
-                                    }
-                                    else
-                                    {
-                                        _identifiedKeys = new Dictionary<string, Jwk[]>(3)
-                                    {
-                                        { key1.Kid.ToString(), new[] { key1 } },
-                                        { key2.Kid.ToString(), new[] { key2 } },
-                                        { key3.Kid.ToString(), new[] { key3 } }
-                                    };
-                                    }
-                                }
+                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 }),
+                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3 })
+                                };
                             }
                         }
                     }
                     else
                     {
-                        //var keys = new Dictionary<JsonEncodedText, List<Jwk>>();
-                        //JsonEncodedText currentKey = default;
-                        //List<Jwk>? currentValue = new List<Jwk>(1);
-                        //List<Jwk>? unidentifiedKeys = new List<Jwk>();
-                        //for (int i = 0; i < _keys.Count; i++)
-                        //{
-                        //    Jwk? key = _keys[i];
-                        //    var kid = key.Kid;
-                        //    if (!kid.EncodedUtf8Bytes.IsEmpty)
-                        //    {
-                        //        if (currentKey.Equals(kid))
-                        //        {
-                        //            currentValue.Add(key);
-                        //        }
-                        //        else
-                        //        {
-                        //            if (!keys.TryGetValue(kid, out currentValue))
-                        //            {
-                        //                currentValue = new List<Jwk>(1);
-                        //                keys[currentKey] = currentValue;
-                        //            }
-                        //        }
-                        //    }
-                        //    else
-                        //    {
-                        //        unidentifiedKeys.Add(key);
-                        //    }
-                        //}
-
-                        //if (unidentifiedKeys.Count != 0)
-                        //{
-                        //    foreach (var item in keys)
-                        //    {
-                        //        item.Value.AddRange(unidentifiedKeys);
-                        //    }
-                        //}
-
-                        //_identifiedKeys = keys.ToDictionary(k => k.Key.ToString(), v => v.Value.ToArray());
-                        _identifiedKeys = _keys
-                                            .Where(jwk => !jwk.Kid.EncodedUtf8Bytes.IsEmpty)
-                                            .GroupBy(k => k.Kid.ToString())
-                                            .ToDictionary(k => k.Key, k => k.Concat(UnidentifiedKeys).ToArray());
+                        if (key2.Kid.Equals(key3.Kid))
+                        {
+                            if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                            {
+                                _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                                {
+                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key3, key1 })
+                                };
+                            }
+                            else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
+                            {
+                                _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                                {
+                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2, key3 })
+                                };
+                            }
+                            else
+                            {
+                                _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                                {
+                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 }),
+                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key3 })
+                                };
+                            }
+                        }
+                        else
+                        {
+                            if (key1.Kid.Equals(key3.Kid))
+                            {
+                                if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                                {
+                                    _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                                    {
+                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key1, key3 })
+                                    };
+                                }
+                                else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
+                                {
+                                    _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                                    {
+                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key3, key2 })
+                                    };
+                                }
+                                else
+                                {
+                                    _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                                    {
+                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key3 }),
+                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2 })
+                                    };
+                                }
+                            }
+                            else
+                            {
+                                if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                                {
+                                    _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                                    {
+                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key1 }),
+                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3, key1 })
+                                    };
+                                }
+                                else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
+                                {
+                                    _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                                    {
+                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 }),
+                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3, key2 })
+                                    };
+                                }
+                                else if (key3.Kid.EncodedUtf8Bytes.IsEmpty)
+                                {
+                                    _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                                    {
+                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key3 }),
+                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key3 })
+                                    };
+                                }
+                                else
+                                {
+                                    _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[3]
+                                    {
+                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 }),
+                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2 }),
+                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3 })
+                                    };
+                                }
+                            }
+                        }
                     }
                 }
-
-                return _identifiedKeys;
+                else if (_keys.Count == 0)
+                {
+                    _identifiedKeys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
+                }
+                else
+                {
+                    var unidentified = _keys.Where(jwk => jwk.Kid.EncodedUtf8Bytes.IsEmpty);
+                    _identifiedKeys = _keys
+                                        .GroupBy(k => k.Kid)
+                                        .Where(k => !k.Key.EncodedUtf8Bytes.IsEmpty)
+                                        .ToDictionary(k => k.Key, k => k.Concat(unidentified).ToArray())
+                                        .ToArray();
+                    
+                }
             }
+
+            return _identifiedKeys;
         }
 
         /// <summary>
@@ -460,19 +407,24 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="kid"></param>
         /// <returns></returns>
-        public Jwk[] GetKeys(string? kid)
+        public Jwk[] GetKeys(JwtElement kid)
         {
-            if (kid is null)
+            if (kid.IsEmpty)
             {
-                return _keyArray ??= _keys.ToArray();
+                return _keys.ToArray();
             }
 
-            if (IdentifiedKeys.TryGetValue(kid, out var jwks))
+            var keys = GetIdentifiedKeys();
+            for (int i = 0; i < keys.Length; i++)
             {
-                return jwks;
+                var key = keys[i];
+                if (kid.ValueEquals(key.Key.EncodedUtf8Bytes))
+                {
+                    return key.Value;
+                }
             }
 
-            return UnidentifiedKeys;
+            return Array.Empty<Jwk>();
         }
 
         /// <summary>

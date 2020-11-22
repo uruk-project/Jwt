@@ -40,20 +40,16 @@ namespace JsonWebToken.Tests
             var unidentifiedKeys = jwks.Where(k => k.Kid.EncodedUtf8Bytes.IsEmpty);
 
             var identifiedKeys = jwks
-                                .Where(jwk => !jwk.Kid.EncodedUtf8Bytes.IsEmpty)
-                                .GroupBy(k => k.Kid.ToString())
-                                .ToDictionary(k => k.Key, k => k.Concat(unidentifiedKeys).ToArray());
-            if (unidentifiedKeys.Any())
-            {
-                identifiedKeys.Add("", unidentifiedKeys.ToArray());
-            }
-
-            Assert.Equal(identifiedKeys.Count, jwks.IdentifiedKeys.Count);
+                                .GroupBy(k => k.Kid)
+                                .Where(k => !k.Key.EncodedUtf8Bytes.IsEmpty)
+                                .ToDictionary(k => k.Key, k => k.Concat(unidentifiedKeys).ToArray()).ToArray();
+           
+            Assert.Equal(identifiedKeys.Length, jwks.GetIdentifiedKeys().Length);
             foreach (var item in identifiedKeys)
             {
-                Assert.True(jwks.IdentifiedKeys.ContainsKey(item.Key));
-                var item1 = jwks.IdentifiedKeys[item.Key];
-                var item2 = identifiedKeys[item.Key];
+                Assert.Contains(jwks.GetIdentifiedKeys(), k => k.Key.Equals(item.Key));
+                var item1 = jwks.GetIdentifiedKeys().First(k => k.Key.Equals(item.Key)).Value;
+                var item2 = item.Value;
                 Assert.Equal(item1.Length, item2.Length);
                 for (int i = 0; i < item1.Length; i++)
                 {

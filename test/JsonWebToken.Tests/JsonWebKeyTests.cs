@@ -9,6 +9,30 @@ namespace JsonWebToken.Tests
 {
     public class JsonWebKeyTests
     {
+        [Fact]
+        public void GetKeys_Empty_Default()
+        {
+            var jwks = new Jwks();
+            var noKeys = jwks.GetKeys(default);
+
+            Assert.Empty(noKeys);
+        }
+        
+        [Fact]
+        public void GetKeys_Full_Default()
+        {
+            var jwks = new Jwks
+            { 
+                SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256, computeThumbprint: false),
+                SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256, computeThumbprint: false),
+                SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256, computeThumbprint: false),
+                SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256, computeThumbprint: true),
+            };
+            var allKeys = jwks.GetKeys(default);
+
+            Assert.Equal(4, allKeys.Length);
+        }
+
         [Theory]
         [MemberData(nameof(GetJsonKeys))]
         public void CreateFromJson(string json, JsonEncodedText kid, JsonEncodedText alg)
@@ -35,7 +59,7 @@ namespace JsonWebToken.Tests
         public static IEnumerable<object[]> GetJsonKeys()
         {
             var fixture = new KeyFixture();
-            foreach (var key in fixture.Jwks.GetKeys(null))
+            foreach (var key in fixture.Jwks)
             {
                 yield return new object[] { key.ToString(), key.Kid, key.Alg };
             }

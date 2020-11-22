@@ -51,7 +51,9 @@ namespace JsonWebToken
         ///   <see cref="Name" />, but can avoid creating the string instance.
         /// </remarks>
         public bool NameEquals(ReadOnlySpan<byte> utf8Text)
-            => Value.TextEqualsHelper(utf8Text, isPropertyName: true, shouldUnescape: true);
+        {
+            return Value.TextEqualsHelper(utf8Text, isPropertyName: true, shouldUnescape: true);
+        }
 
         /// <summary>Compares <paramref name="text" /> to the name of this property.</summary>
         /// <param name="text">The text to compare against.</param>
