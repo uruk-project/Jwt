@@ -18,10 +18,11 @@ namespace JsonWebToken
     /// </remarks>
     public sealed class JwtPayloadDocument : IDisposable
     {
-        internal static readonly JwtPayloadDocument Empty = new JwtPayloadDocument(new JwtDocument(), 0);
+        internal static readonly JwtPayloadDocument Empty = new JwtPayloadDocument(new JwtDocument(), 0, -1);
 
         private readonly JwtDocument _document;
         private readonly byte _control;
+        internal JwtElement _iss;
 
         /// <summary>Gets the validation control bits.</summary>
         public byte Control => _control;
@@ -36,10 +37,13 @@ namespace JsonWebToken
         /// <summary>Gets the raw binary value of the current <see cref="JwtPayloadDocument"/>.</summary>
         public ReadOnlyMemory<byte> RawValue => _document.RawValue;
 
-        private JwtPayloadDocument(JwtDocument document, byte control)
+        internal JwtElement Iss => _iss;
+
+        private JwtPayloadDocument(JwtDocument document, byte control, int issIdx)
         {
             _document = document;
             _control = control;
+            _iss = issIdx < 0 ? default : new JwtElement(_document, issIdx);
         }
 
         internal static bool TryParsePayload(ReadOnlyMemory<byte> utf8Payload, byte[]? buffer, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtPayloadDocument? payload, [NotNullWhen(false)] out TokenValidationError? error)
@@ -47,6 +51,7 @@ namespace JsonWebToken
             ReadOnlySpan<byte> utf8JsonSpan = utf8Payload.Span;
             var database = new MetadataDb(utf8Payload.Length);
             byte control = policy.Control;
+            int issIdx = -1;
 
             var reader = new Utf8JsonReader(utf8JsonSpan);
             if (reader.Read())
@@ -93,6 +98,7 @@ namespace JsonWebToken
                                         break;
 
                                     case JwtClaims.Iss:
+                                        issIdx = database.Length;
                                         CheckIssuer(ref reader, ref control, policy);
                                         break;
                                 }
@@ -165,7 +171,7 @@ namespace JsonWebToken
             Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
             database.TrimExcess();
 
-            payload = new JwtPayloadDocument(new JwtDocument(utf8Payload, database, buffer), control);
+            payload = new JwtPayloadDocument(new JwtDocument(utf8Payload, database, buffer), control, issIdx);
             error = null;
             return true;
 

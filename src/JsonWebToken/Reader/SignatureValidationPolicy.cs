@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace JsonWebToken
 {
@@ -63,12 +64,12 @@ namespace JsonWebToken
 
         private sealed class MultiIssuersSignatureValidationPolicy : SignatureValidationPolicy
         {
-            private readonly Dictionary<string, SignatureValidationPolicy> _policies;
+            private readonly KeyValuePair<byte[], SignatureValidationPolicy>[] _policies;
             private readonly SignatureValidationPolicy _defaultPolicy;
 
             public MultiIssuersSignatureValidationPolicy(Dictionary<string, SignatureValidationPolicy> policies, SignatureValidationPolicy defaultPolicy)
             {
-                _policies = policies;
+                _policies = policies.ToDictionary(issuer => Utf8.GetBytes(issuer.Key), v => v.Value).ToArray();
                 _defaultPolicy = defaultPolicy;
             }
 
@@ -76,10 +77,10 @@ namespace JsonWebToken
 
             public override bool TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment, [NotNullWhen(false)] out SignatureValidationError? error)
             {
-                if (payload.TryGetClaim(JwtClaimNames.Iss.ToString(), out var aud))
+                new Dictionary<string, SignatureValidationPolicy>();
+                if (!payload.Iss.IsEmpty)
                 {
-                    var value = aud.GetString()!;
-                    if (_policies.TryGetValue(value, out var policy))
+                    if (TryGetPolicy(payload.Iss, out var policy))
                     {
                         return policy.TryValidateSignature(header, payload, contentBytes, signatureSegment, out error);
                     }
@@ -87,16 +88,32 @@ namespace JsonWebToken
 
                 return _defaultPolicy.TryValidateSignature(header, payload, contentBytes, signatureSegment, out error);
             }
+
+            private bool TryGetPolicy(JwtElement issuer, [NotNullWhen(true)] out SignatureValidationPolicy? policy)
+            {
+                for (int i = 0; i < _policies.Length; i++)
+                {
+                    var current = _policies[i];
+                    if (issuer.ValueEquals(current.Key))
+                    {
+                        policy = current.Value;
+                        return true;
+                    }
+                }
+
+                policy = null;
+                return false;
+            }
         }
 
         private sealed class SingleIssuerSignatureValidationPolicy : SignatureValidationPolicy
         {
-            private readonly string _issuer;
+            private readonly byte[] _issuer;
             private readonly SignatureValidationPolicy _policy;
 
             public SingleIssuerSignatureValidationPolicy(string issuer, SignatureValidationPolicy policy)
             {
-                _issuer = issuer;
+                _issuer = Utf8.GetBytes(issuer);
                 _policy = policy;
             }
 
@@ -104,12 +121,9 @@ namespace JsonWebToken
 
             public override bool TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment, [NotNullWhen(false)] out SignatureValidationError? error)
             {
-                if (payload.TryGetClaim(JwtClaimNames.Iss.ToString(), out var aud))
+                if (!payload.Iss.IsEmpty && payload.Iss.ValueEquals(_issuer))
                 {
-                    if (aud.ValueEquals(_issuer))
-                    {
-                        return _policy.TryValidateSignature(header, payload, contentBytes, signatureSegment, out error);
-                    }
+                    return _policy.TryValidateSignature(header, payload, contentBytes, signatureSegment, out error);
                 }
 
                 error = SignatureValidationError.InvalidSignature();

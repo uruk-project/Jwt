@@ -25,19 +25,19 @@ namespace JsonWebToken
 
         internal JwtElement Alg => _alg;
 
-        private JwtHeaderDocument(JwtDocument document, int algPosition, int kidPosition)
+        private JwtHeaderDocument(JwtDocument document, int algIdx, int kidIdx)
         {
             _document = document;
-            _alg = algPosition < 0 ? default : new JwtElement(_document, algPosition);
-            _kid = kidPosition < 0 ? default : new JwtElement(_document, kidPosition);
+            _alg = algIdx < 0 ? default : new JwtElement(_document, algIdx);
+            _kid = kidIdx < 0 ? default : new JwtElement(_document, kidIdx);
         }
 
         internal static bool TryParseHeader(ReadOnlyMemory<byte> utf8Payload, byte[]? buffer, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtHeaderDocument? header, [NotNullWhen(false)] out TokenValidationError? error)
         {
             ReadOnlySpan<byte> utf8JsonSpan = utf8Payload.Span;
             var database = new MetadataDb(utf8Payload.Length);
-            int algPosition = -1;
-            int kidPosition = -1;
+            int algIdx = -1;
+            int kidIdx = -1;
 
             var reader = new Utf8JsonReader(utf8JsonSpan);
 
@@ -81,10 +81,10 @@ namespace JsonWebToken
                                 switch ((JwtHeaderParameters)IntegerMarshal.ReadUInt24(memberName))
                                 {
                                     case JwtHeaderParameters.Alg:
-                                        algPosition = database.Length;
+                                        algIdx = database.Length;
                                         break;
                                     case JwtHeaderParameters.Kid:
-                                        kidPosition = database.Length;
+                                        kidIdx = database.Length;
                                         break;
                                 }
                             }
@@ -136,7 +136,7 @@ namespace JsonWebToken
             Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
             database.TrimExcess();
 
-            header = new JwtHeaderDocument(new JwtDocument(utf8Payload, database, buffer), algPosition, kidPosition);
+            header = new JwtHeaderDocument(new JwtDocument(utf8Payload, database, buffer), algIdx, kidIdx);
             error = null;
             return true;
 

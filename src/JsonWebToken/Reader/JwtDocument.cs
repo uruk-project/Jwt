@@ -233,8 +233,7 @@ namespace JsonWebToken
         {
             if (expected != actual)
             {
-                //throw ThrowHelper.GetJsonElementWrongTypeException(expected, actual);
-                throw new InvalidOperationException();
+                ThrowHelper.ThrowJsonElementWrongType_InvalidOperationException(expected, actual);
             }
         }
 
