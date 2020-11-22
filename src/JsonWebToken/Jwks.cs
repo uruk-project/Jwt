@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
@@ -390,7 +391,7 @@ namespace JsonWebToken
                                         .Where(k => !k.Key.EncodedUtf8Bytes.IsEmpty)
                                         .ToDictionary(k => k.Key, k => k.Concat(unidentified).ToArray())
                                         .ToArray();
-                    
+
                 }
             }
 
@@ -407,6 +408,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="kid"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Jwk[] GetKeys(JwtElement kid)
         {
             if (kid.IsEmpty)

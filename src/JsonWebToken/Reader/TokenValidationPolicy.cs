@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace JsonWebToken
 {
@@ -237,6 +238,7 @@ namespace JsonWebToken
         /// <param name="signatureSegment"></param>
         /// <param name="error"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment, [NotNullWhen(false)] out SignatureValidationError? error)
         {
             return SignatureValidationPolicy.TryValidateSignature(header, payload, contentBytes, signatureSegment, out error);
