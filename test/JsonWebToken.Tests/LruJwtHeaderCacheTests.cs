@@ -134,10 +134,10 @@ namespace JsonWebToken.Tests
                     binaryHeader = new byte[10] { (byte)i, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
                     headers[i] = header = new JwtHeader
-                {
-                    { "alg", "whatever" },
-                    { "end", "whatever" }
-                };
+                    {
+                        { "alg", "whatever" },
+                        { "end", "whatever" }
+                    };
                     cache.AddHeader(header, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, kid, default, default, binaryHeader);
                 }
 
@@ -167,13 +167,13 @@ namespace JsonWebToken.Tests
 
                 // Assert for header with too much parameters
                 header = new JwtHeader
-            {
-                {  "alg", "whatever" },
-                {  "kid", "whatever" },
-                {  "other", "whatever" },
-                {  "other", "whatever" },
-                {  "other", "whatever" }
-            };
+                {
+                    {  "alg", "whatever" },
+                    {  "kid", "whatever" },
+                    {  "other1", "whatever" },
+                    {  "other2", "whatever" },
+                    {  "other3", "whatever" }
+                };
                 Assert.False(cache.TryGetHeader(header, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, JsonEncodedText.Encode("1"), default, default, out _));
             }
 

@@ -159,7 +159,7 @@ namespace JsonWebToken
         // Instance without any key/value pairs. Used as a singleton.
         private sealed class SlowGrowingEmptyMap : IMap
         {
-            public static readonly FastGrowingEmptyMap Empty = new FastGrowingEmptyMap();
+            public static readonly SlowGrowingEmptyMap Empty = new SlowGrowingEmptyMap();
 
             public int Count => 0;
 
@@ -710,8 +710,18 @@ namespace JsonWebToken
             {
                 if (_count < MaxMultiElements)
                 {
+                    for (int i = 0; i < _count; i++)
+                    {
+                        if (value.Name.Equals(_keyValues[i].Name))
+                        {
+                            _keyValues[i] = value;
+                            goto Added;
+                        }
+                    }
+
                     UnsafeStore(_count, value);
                     _count++;
+                Added:
                     return this;
                 }
 

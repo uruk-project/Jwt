@@ -160,11 +160,7 @@ namespace JsonWebToken.Performance
 
                 var jwe = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256)
                 {
-                    Payload = descriptor,
-                    Header = new JwtHeader
-                    {
-                        { "cty", "JWT" }
-                    }
+                    Payload = descriptor
                 };
 
                 descriptors.Add("JWE " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwe);
@@ -191,11 +187,7 @@ namespace JsonWebToken.Performance
 
                 var jwe = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, CompressionAlgorithm.Deflate)
                 {
-                    Payload = descriptor,
-                    Header = new JwtHeader
-                    {
-                        { "cty", "JWT" }
-                    }
+                    Payload = descriptor
                 };
 
                 descriptors.Add("JWE DEF " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwe);
