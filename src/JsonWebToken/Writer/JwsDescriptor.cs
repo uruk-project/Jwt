@@ -180,9 +180,10 @@ namespace JsonWebToken
             if (!claim.Type.IsNumber())
             {
                 ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] {
-                    JwtValueKind.Int16,
                     JwtValueKind.Int32,
+                    JwtValueKind.UInt32,
                     JwtValueKind.Int64,
+                    JwtValueKind.UInt64,
                     JwtValueKind.Float,
                     JwtValueKind.Double});
             }
@@ -199,9 +200,10 @@ namespace JsonWebToken
             if (!claim.Type.IsInteger())
             {
                 ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] {
-                    JwtValueKind.Int16,
                     JwtValueKind.Int32,
-                    JwtValueKind.Int64});
+                    JwtValueKind.Int64,
+                    JwtValueKind.UInt32,
+                    JwtValueKind.UInt64});
             }
         }
 
@@ -257,9 +259,10 @@ namespace JsonWebToken
                 if (!claim.Type.IsNumber())
                 {
                     ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] {
-                    JwtValueKind.Int16,
                     JwtValueKind.Int32,
                     JwtValueKind.Int64,
+                    JwtValueKind.UInt32,
+                    JwtValueKind.UInt64,
                     JwtValueKind.Float,
                     JwtValueKind.Double});
                 }
