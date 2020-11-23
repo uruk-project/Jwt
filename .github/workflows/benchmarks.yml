@@ -36,5 +36,7 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --configuration Release --no-restore
-      - name: Benchmark
-        run: dotnet run -c Release -f net5 -p ./perf/Benchmarks
+      - name: Validate Benchmark
+        run: dotnet run -c Release -f net5 -p ./perf/Benchmarks -- --filter Validate*
+      - name: Write Benchmark
+        run: dotnet run -c Release -f net5 -p ./perf/Benchmarks -- --filter Write*
