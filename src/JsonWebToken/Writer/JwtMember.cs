@@ -104,9 +104,21 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="memberName"></param>
         /// <param name="value"></param>
-        public JwtMember(JsonEncodedText memberName, short value)
+        public JwtMember(JsonEncodedText memberName, uint value)
         {
-            Type = JwtValueKind.Int16;
+            Type = JwtValueKind.UInt32;
+            Value = value;
+            Name = memberName;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtMember"/> class.
+        /// </summary>
+        /// <param name="memberName"></param>
+        /// <param name="value"></param>
+        public JwtMember(JsonEncodedText memberName, ulong value)
+        {
+            Type = JwtValueKind.UInt64;
             Value = value;
             Name = memberName;
         }
@@ -151,14 +163,17 @@ namespace JsonWebToken
                 case JwtValueKind.JsonEncodedString:
                     writer.WriteString(Name, (JsonEncodedText)Value);
                     break;
-                case JwtValueKind.Int16:
-                    writer.WriteNumber(Name, (short)Value);
-                    break;
                 case JwtValueKind.Int32:
                     writer.WriteNumber(Name, (int)Value);
                     break;
                 case JwtValueKind.Int64:
                     writer.WriteNumber(Name, (long)Value);
+                    break;
+                case JwtValueKind.UInt32:
+                    writer.WriteNumber(Name, (uint)Value);
+                    break;
+                case JwtValueKind.UInt64:
+                    writer.WriteNumber(Name, (ulong)Value);
                     break;
                 case JwtValueKind.Float:
                     writer.WriteNumber(Name, (float)Value);

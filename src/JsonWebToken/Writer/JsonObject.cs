@@ -70,8 +70,12 @@ namespace JsonWebToken
         public void Add(string name, int value)
             => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));
 
-        /// <summary>Adds the value of type <see cref="short"/> to the current <see cref="JsonObject"/>.</summary>
-        public void Add(string name, short value)
+        /// <summary>Adds the value of type <see cref="ulong"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(string name, ulong value)
+            => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));
+
+        /// <summary>Adds the value of type <see cref="uint"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(string name, uint value)
             => _store.Add(new JwtMember(JsonEncodedText.Encode(name), value));
 
         /// <summary>Adds the value of type <see cref="float"/> to the current <see cref="JsonObject"/>.</summary>
@@ -118,8 +122,12 @@ namespace JsonWebToken
         public void Add(JsonEncodedText name, int value)
             => _store.Add(new JwtMember(name, value));
 
-        /// <summary>Adds the value of type <see cref="short"/> to the current <see cref="JsonObject"/>.</summary>
-        public void Add(JsonEncodedText name, short value)
+        /// <summary>Adds the value of type <see cref="ulong"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(JsonEncodedText name, ulong value)
+            => _store.Add(new JwtMember(name, value));
+
+        /// <summary>Adds the value of type <see cref="uint"/> to the current <see cref="JsonObject"/>.</summary>
+        public void Add(JsonEncodedText name, uint value)
             => _store.Add(new JwtMember(name, value));
 
         /// <summary>Adds the value of type <see cref="float"/> to the current <see cref="JsonObject"/>.</summary>

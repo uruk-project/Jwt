@@ -275,9 +275,10 @@ namespace JsonWebToken
                 if (!claim.Type.IsInteger())
                 {
                     ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, new[] {
-                    JwtValueKind.Int16,
                     JwtValueKind.Int32,
-                    JwtValueKind.Int64});
+                    JwtValueKind.Int64,
+                    JwtValueKind.UInt32,
+                    JwtValueKind.UInt64});
                 }
             }
         }

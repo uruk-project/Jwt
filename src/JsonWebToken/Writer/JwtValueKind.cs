@@ -21,14 +21,17 @@ namespace JsonWebToken
         /// <summary>A JSON encoded string.</summary>
         JsonEncodedString = 0x09,
 
-        /// <summary>A 16 bits integer JSON number.</summary>
-        Int16 = 0x81,
+        /// <summary>A 32 bits signed integer JSON number.</summary>
+        Int32 = 0x81,
 
-        /// <summary>A 32 bits integer JSON number.</summary>
-        Int32 = 0x82,
+        /// <summary>A 64 bits signed integer JSON number.</summary>
+        Int64 = 0x82,
 
-        /// <summary>A 64 bits integer JSON number.</summary>
-        Int64 = 0x83,
+        /// <summary>A 32 bits unsigned integer JSON number.</summary>
+        UInt32 = 0x83,
+
+        /// <summary>A 64 bits unsigned integer JSON number.</summary>
+        UInt64 = 0x84,
 
         /// <summary>A 32 bits floating point JSON number.</summary>
         Float = 0x41,
