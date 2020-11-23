@@ -34,9 +34,7 @@ jobs:
           dotnet-version: '5.0.100'
       - name: Install dependencies
         run: dotnet restore
-      - name: Install Benchmark dotnet tool
-        run: dotnet tool install -g BenchmarkDotNet.Tool
       - name: Build
         run: dotnet build --configuration Release --no-restore
       - name: Benchmark
-        run: dotnet benchmark Benchmarks.dll --filter *
+        run: dotnet run -c Release -f net5 -p perf\Benchmarks
