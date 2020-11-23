@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\JsonWebToken\JsonWebToken.csproj" />
+    <ProjectReference Include="..\Benchmarks\Benchmarks.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="resources\payloads.json">

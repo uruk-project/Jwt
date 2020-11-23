@@ -77,7 +77,6 @@ namespace JsonWebToken
 
             public override bool TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment, [NotNullWhen(false)] out SignatureValidationError? error)
             {
-                new Dictionary<string, SignatureValidationPolicy>();
                 if (!payload.Iss.IsEmpty)
                 {
                     if (TryGetPolicy(payload.Iss, out var policy))

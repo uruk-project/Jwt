@@ -59,10 +59,8 @@ namespace JsonWebToken.Cryptography
             }
 
             byte[] secretAppend;
-            JwtElement apu;
-            JwtElement apv;
-            if (header.TryGetHeaderParameter(JwtHeaderParameterNames.Apu.EncodedUtf8Bytes, out apu)
-                | header.TryGetHeaderParameter(JwtHeaderParameterNames.Apv.EncodedUtf8Bytes, out apv))
+            if (header.TryGetHeaderParameter(JwtHeaderParameterNames.Apu.EncodedUtf8Bytes, out JwtElement apu)
+                | header.TryGetHeaderParameter(JwtHeaderParameterNames.Apv.EncodedUtf8Bytes, out JwtElement apv))
             {
                 secretAppend = BuildSecretAppend(apu, apv);
             }
