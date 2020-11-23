@@ -71,6 +71,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwkSample", "samples\JwkSam
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecEventCreationSample", "samples\SecEventCreationSample\SecEventCreationSample.csproj", "{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sandbox", "perf\Sandbox\Sandbox.csproj", "{8670CD4F-CA00-44BB-9867-A327891AB832}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -165,6 +167,10 @@ Global
 		{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8670CD4F-CA00-44BB-9867-A327891AB832}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8670CD4F-CA00-44BB-9867-A327891AB832}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8670CD4F-CA00-44BB-9867-A327891AB832}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8670CD4F-CA00-44BB-9867-A327891AB832}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -192,6 +198,7 @@ Global
 		{36269BC7-CFC5-42F4-A63B-A7F6614B9820} = {F682D324-E173-48DF-819B-D3811CFAA68D}
 		{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE} = {F682D324-E173-48DF-819B-D3811CFAA68D}
 		{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01} = {F682D324-E173-48DF-819B-D3811CFAA68D}
+		{8670CD4F-CA00-44BB-9867-A327891AB832} = {40741FC5-7061-45D8-B484-2EE2D647258F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2F681326-7ED4-45F6-BD1D-1119EA388F42}
