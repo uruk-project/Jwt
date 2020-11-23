@@ -37,4 +37,5 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
       - name: Benchmark
-        run: dotnet run -c Release -f net5 -p Jwt/perf/Benchmarks
+        run: ls ./
+        #dotnet run -c Release -f net5 -p Jwt/perf/Benchmarks
