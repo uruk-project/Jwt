@@ -31,7 +31,8 @@ namespace JsonWebToken
 
         private Bucket? _head = null;
         private Bucket? _tail = null;
-        private WrappedHeader _firstHeader;
+        private WrappedHeader _firstJwsHeader;
+        private WrappedHeader _firstJweHeader;
 
         /// <summary>Try to get the header.</summary>
         /// <param name="header"></param>
@@ -42,9 +43,9 @@ namespace JsonWebToken
         /// <returns></returns>
         public bool TryGetHeader(JwtHeader header, SignatureAlgorithm alg, JsonEncodedText kid, string? typ, [NotNullWhen(true)] out byte[]? base64UrlHeader)
         {
-            if (ReferenceEquals(_firstHeader.Header, header))
+            if (ReferenceEquals(_firstJwsHeader.Header, header))
             {
-                base64UrlHeader = _firstHeader.BinaryHeader;
+                base64UrlHeader = _firstJwsHeader.BinaryHeader;
                 goto Found;
             }
 
@@ -93,7 +94,7 @@ namespace JsonWebToken
         /// <param name="base6UrlHeader"></param>
         public void AddHeader(JwtHeader header, SignatureAlgorithm alg, JsonEncodedText kid, string? typ, ReadOnlySpan<byte> base6UrlHeader)
         {
-            _firstHeader = new WrappedHeader(header, base6UrlHeader.ToArray());
+            _firstJwsHeader = new WrappedHeader(header, base6UrlHeader.ToArray());
             if (IsEligibleHeaderForJws(header.Count, kid, typ))
             {
                 int algorithmId = (int)alg.Id;
@@ -249,7 +250,7 @@ namespace JsonWebToken
         /// <inheritdoc/>
         public void AddHeader(JwtHeader header, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, JsonEncodedText kid, string? typ, string? cty, ReadOnlySpan<byte> base6UrlHeader)
         {
-            _firstHeader = new WrappedHeader(header, base6UrlHeader.ToArray());
+            _firstJweHeader = new WrappedHeader(header, base6UrlHeader.ToArray());
             if (IsEligibleHeaderForJwe(header.Count, kid, typ, cty))
             {
                 int algorithmId = enc.ComputeKey(alg);
@@ -279,7 +280,7 @@ namespace JsonWebToken
                     if (node is null)
                     {
                         _count++;
-                        node = new Bucket(algorithmId, new Dictionary<JsonEncodedText, CacheEntry>(1) { { kid, new CacheEntry(base6UrlHeader.ToArray(), typ) } })
+                        node = new Bucket(algorithmId, new Dictionary<JsonEncodedText, CacheEntry>(1) { { kid, new CacheEntry(base6UrlHeader.ToArray(), typ, cty) } })
                         {
                             Next = _head
                         };
@@ -321,19 +322,19 @@ namespace JsonWebToken
         /// <inheritdoc/>
         public bool TryGetHeader(JwtHeader header, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, JsonEncodedText kid, string? typ, string? cty, [NotNullWhen(true)] out byte[]? base64UrlHeader)
         {
-            if (ReferenceEquals(_firstHeader.Header, header))
+            if (ReferenceEquals(_firstJweHeader.Header, header))
             {
-                base64UrlHeader = _firstHeader.BinaryHeader;
+                base64UrlHeader = _firstJweHeader.BinaryHeader;
                 goto Found;
             }
 
             if (IsEligibleHeaderForJwe(header.Count, kid, typ, cty))
             {
-                int algoritmId = enc.ComputeKey(alg);
+                int algorithmId = enc.ComputeKey(alg);
                 var node = _head;
                 while (node != null)
                 {
-                    if (algoritmId == node.AlgorithmId)
+                    if (algorithmId == node.AlgorithmId)
                     {
                         if (node.TryGetEntry(kid, out var entry))
                         {

@@ -108,7 +108,7 @@ namespace JsonWebToken
                     int base64EncodedHeaderLength = 0;
                     ReadOnlySpan<byte> headerJson = default;
                     var headerCache = context.HeaderCache;
-                    if (headerCache.TryGetHeader(header, _alg, _enc, _kid, _typ, _cty, out byte[]? cachedHeader))
+                    if (headerCache.TryGetHeader(header, alg, enc, _kid, _typ, _cty, out byte[]? cachedHeader))
                     {
                         writer.Flush();
                         base64EncodedHeaderLength += cachedHeader.Length;

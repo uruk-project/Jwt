@@ -18,18 +18,20 @@ namespace ValidatePerf
         {
             Console.WriteLine("Starting...");
             var span = _jws.Span;
+            var writer = new JwtWriter();
             while (true)
             {
+                //Encode6(writer);
                 bool success = Jwt.TryParse(span, _policy, out var jwt);
                 jwt.Dispose();
             }
         }
 
-        private static void Encode6()
+        private static byte[] Encode6(JwtWriter writer)
         {
             JweDescriptor descriptor = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128CbcHmacSha256)
             {
-                Payload = new JwsDescriptor(Jwk.None, SignatureAlgorithm.None)
+                Payload = new JwsDescriptor(signingKey, SignatureAlgorithm.HmacSha256)
                 {
                     Payload = new JwtPayload
                     {
@@ -43,9 +45,7 @@ namespace ValidatePerf
                 }
             };
 
-            var bufferWriter2 = new System.Buffers.ArrayBufferWriter<byte>();
-            var context2 = new EncodingContext(bufferWriter2, null, 0, false);
-            descriptor.Encode(context2);
+            return writer.WriteToken(descriptor);
         }
 
         private static ReadOnlyMemory<byte> CreateJws()

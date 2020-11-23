@@ -242,6 +242,8 @@ namespace JsonWebToken
                         {
                             goto TokenError;
                         }
+                        
+                        policy.HeaderCache.AddHeader(rawHeader, header);
                     }
                     else
                     {
