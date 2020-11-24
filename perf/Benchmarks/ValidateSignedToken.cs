@@ -62,7 +62,7 @@ namespace JsonWebToken.Performance
         {
             for (int i = 0; i < 10; i++)
             {
-                yield return "JWS " + (i == 0 ? "" : i.ToString()) + "6 claims";
+                yield return "JWS " + i + "6 claims";
             }
         }
     }
