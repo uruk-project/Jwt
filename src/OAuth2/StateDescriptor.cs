@@ -6,7 +6,7 @@ namespace JsonWebToken
     /// <summary>
     /// https://tools.ietf.org/html/draft-bradley-oauth-jwt-encoded-state-09
     /// </summary>
-    public class StateDescriptor : JwsDescriptor
+    public sealed class StateDescriptor : JwsDescriptor
     {
         public StateDescriptor(SignatureAlgorithm alg, Jwk signingKey)
             : base(signingKey, alg)

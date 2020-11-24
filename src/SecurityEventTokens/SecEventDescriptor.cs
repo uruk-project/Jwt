@@ -4,7 +4,7 @@
 namespace JsonWebToken
 {
     /// <summary>Defines a signed Security Event Token. <seealso cref="EncryptedSecEventDescriptor"/> for encrypted Security Event Token.</summary>
-    public class SecEventDescriptor : JwsDescriptor
+    public sealed class SecEventDescriptor : JwsDescriptor
     {
         public SecEventDescriptor(Jwk signingKey, SignatureAlgorithm alg, string? typ = SecEventsMediaTypes.SecEvent, string? cty = null)
             : base(signingKey, alg, typ, cty)

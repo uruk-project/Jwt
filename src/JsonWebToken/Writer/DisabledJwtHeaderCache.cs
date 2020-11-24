@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
-    internal class DisabledJwtHeaderCache : IJwtHeaderCache
+    internal sealed class DisabledJwtHeaderCache : IJwtHeaderCache
     {
         public void AddHeader(JwtHeader header, SignatureAlgorithm alg, JsonEncodedText kid, string? typ, ReadOnlySpan<byte> base6UrlHeader)
         {

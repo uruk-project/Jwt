@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
-    public class AccountEnabledSecEvent : SecEvent
+    public sealed class AccountEnabledSecEvent : SecEvent
     {
         private static readonly JsonEncodedText _name = JsonEncodedText.Encode("https://schemas.openid.net/secevent/risc/event-type/account-enabled", Constants.JsonEncoder);
         public override JsonEncodedText Name => _name;

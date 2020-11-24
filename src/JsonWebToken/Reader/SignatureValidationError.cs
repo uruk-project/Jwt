@@ -6,7 +6,7 @@ using System;
 namespace JsonWebToken
 {
     /// <summary>Represents the result of a signature validation.</summary>
-    public class SignatureValidationError
+    public sealed class SignatureValidationError
     {
         private static readonly SignatureValidationError _invalidSignature = new SignatureValidationError(TokenValidationStatus.InvalidSignature);
         private static readonly SignatureValidationError _missingSignature = new SignatureValidationError(TokenValidationStatus.MissingSignature);

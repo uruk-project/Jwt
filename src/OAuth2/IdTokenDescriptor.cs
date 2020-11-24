@@ -4,7 +4,7 @@
 namespace JsonWebToken
 {
     /// <summary>Defines a signed ID token. <seealso cref="EncryptedIdTokenDescriptor"/> for encrypted ID token.</summary>
-    public class IdTokenDescriptor : JwsDescriptor
+    public sealed class IdTokenDescriptor : JwsDescriptor
     {
         public IdTokenDescriptor(SignatureAlgorithm alg, Jwk signingKey, string? typ = null, string? cty = null)
             : base(signingKey, alg, typ, cty)
