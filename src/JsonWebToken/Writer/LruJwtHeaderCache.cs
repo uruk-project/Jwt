@@ -51,11 +51,11 @@ namespace JsonWebToken
 
             if (IsEligibleHeaderForJws(header.Count, kid, typ))
             {
-                int algoritmId = (int)alg.Id;
+                int algorithmId = (int)alg.Id;
                 var node = _head;
                 while (node != null)
                 {
-                    if (algoritmId == node.AlgorithmId)
+                    if (algorithmId == node.AlgorithmId)
                     {
                         if (node.TryGetEntry(kid, out var entry))
                         {
@@ -104,9 +104,7 @@ namespace JsonWebToken
                     _spinLock.Enter(ref lockTaken);
                     if (_count >= MaxSize)
                     {
-                        _head = null;
-                        _tail = null;
-                        _count = 0;
+                        Clear();
                     }
 
                     var node = _head;
@@ -124,7 +122,7 @@ namespace JsonWebToken
                     if (node is null)
                     {
                         _count++;
-                        node = new Bucket(algorithmId, new Dictionary<JsonEncodedText, CacheEntry>(1) { { kid, new CacheEntry(base6UrlHeader.ToArray(), typ) } })
+                        node = new Bucket(algorithmId, kid, new CacheEntry(base6UrlHeader.ToArray(), typ))
                         {
                             Next = _head
                         };
@@ -279,7 +277,7 @@ namespace JsonWebToken
                     if (node is null)
                     {
                         _count++;
-                        node = new Bucket(algorithmId, new Dictionary<JsonEncodedText, CacheEntry>(1) { { kid, new CacheEntry(base6UrlHeader.ToArray(), typ, cty) } })
+                        node = new Bucket(algorithmId, kid, new CacheEntry(base6UrlHeader.ToArray(), typ, cty))
                         {
                             Next = _head
                         };
@@ -439,11 +437,11 @@ namespace JsonWebToken
             public Bucket? Next;
             public Bucket? Previous;
 
-            public Bucket(int algorithmId, Dictionary<JsonEncodedText, CacheEntry> entries)
+            public Bucket(int algorithmId, JsonEncodedText kid, CacheEntry entry)
             {
                 AlgorithmId = algorithmId;
-                Entries = entries;
-                LatestEntry = default;
+                Entries = new Dictionary<JsonEncodedText, CacheEntry>(1) { { kid, entry } };
+                LatestEntry = new KeyValuePair<JsonEncodedText, CacheEntry>(kid, entry);
             }
 
             public bool TryGetEntry(JsonEncodedText kid, [NotNullWhen(true)] out CacheEntry? entry)
@@ -453,10 +451,18 @@ namespace JsonWebToken
                 if (LatestEntry.Key.Equals(kid))
                 {
                     entry = LatestEntry.Value;
-                    return true;
+                    goto Found;
                 }
 
-                return Entries.TryGetValue(kid, out entry);
+                if (Entries.TryGetValue(kid, out entry))
+                {
+                    LatestEntry = new KeyValuePair<JsonEncodedText, CacheEntry>(kid, entry);
+                    goto Found;
+                }
+
+                return false;
+            Found:
+                return true;
             }
         }
     }
