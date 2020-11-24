@@ -46,7 +46,7 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokenValues))]
         public override Dictionary<string, object> jose_jwt(BenchmarkToken token)
         {
-            return JoseDotNetCore(token.TokenString, Jose.JwsAlgorithm.none, signingKey);
+            return JoseDotNetCore(token.TokenString, Jose.JwsAlgorithm.none, null);
         }
 
         public override IDictionary<string, object> Jwt_Net(BenchmarkToken token)
@@ -58,7 +58,7 @@ namespace JsonWebToken.Performance
         {
             for (int i = 0; i < 10; i++)
             {
-                yield return "JWT " + (i == 0 ? "" : i.ToString()) + "6 claims";
+                yield return "JWT " + i + "6 claims";
             }
         }
     }

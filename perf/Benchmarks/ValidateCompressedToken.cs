@@ -56,7 +56,7 @@ namespace JsonWebToken.Performance
         {
             for (int i = 0; i < 10; i++)
             {
-                yield return "JWE DEF " + (i == 0 ? "" : i.ToString()) + "6 claims";
+                yield return "JWE DEF " + i + "6 claims";
             }
         }
     }

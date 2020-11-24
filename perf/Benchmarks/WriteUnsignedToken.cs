@@ -15,7 +15,6 @@ namespace JsonWebToken.Performance
             JsonWebToken(payload);
             Wilson(payload);
             WilsonJwt(payload);
-            Jwt_Net(payload);
         }
 
         [Benchmark(Baseline = true)]
@@ -53,7 +52,7 @@ namespace JsonWebToken.Performance
         {
             for (int i = 0; i < 10; i++)
             {
-                yield return "JWT " + (i == 0 ? "" : i.ToString()) + "6 claims";
+                yield return "JWT " + i + "6 claims";
             }
         }
     }

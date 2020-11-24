@@ -104,11 +104,11 @@ namespace JsonWebToken.Performance
         }
 
         public abstract Dictionary<string, object> jose_jwt(BenchmarkToken token);
-
-        protected Dictionary<string, object> JoseDotNetCore(string token, JweEncryption enc, JweAlgorithm alg, byte[] key)
-        {
-            return Jose.JWT.Decode<Dictionary<string, object>>(token, key: key, enc: enc/*JweEncryption.A128CBC_HS256*/, alg: alg/*JweAlgorithm.A128KW*/);
-        }
+    
+        //protected Dictionary<string, object> JoseDotNetCore(string token, JweEncryption enc, JweAlgorithm alg, byte[] key)
+        //{
+        //    return Jose.JWT.Decode<Dictionary<string, object>>(token, key: key, enc: enc/*JweEncryption.A128CBC_HS256*/, alg: alg/*JweAlgorithm.A128KW*/);
+        //}
 
         protected Dictionary<string, object> JoseDotNetCore(string token, JwsAlgorithm alg, byte[] key)
         {
