@@ -163,7 +163,6 @@ namespace JsonWebToken
             }
         }
 
-
         /// <summary>
         /// Validate the integrity of the cache.
         /// </summary>
