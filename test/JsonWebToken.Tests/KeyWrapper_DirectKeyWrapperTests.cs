@@ -14,7 +14,7 @@ namespace JsonWebToken.Tests
             var cek = WrapKey(wrapper, keyToWrap, out var header);
 
             Assert.Equal(0, header.Count);
-            Assert.Equal(keyEncryptionKey, cek);
+            Assert.True(keyEncryptionKey.K.SequenceEqual(((SymmetricJwk)cek).K));
             return cek;
         }
 

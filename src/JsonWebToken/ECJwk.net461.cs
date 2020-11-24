@@ -27,7 +27,6 @@ namespace JsonWebToken
         public override ReadOnlySpan<byte> AsSpan() => throw new NotImplementedException();
 
         /// <inheritsdoc />
-        public override bool Equals(Jwk? other) => throw new NotImplementedException();
 
         /// <inheritsdoc />
         public override bool SupportSignature(SignatureAlgorithm algorithm) => throw new NotImplementedException();

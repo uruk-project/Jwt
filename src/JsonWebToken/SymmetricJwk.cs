@@ -553,46 +553,7 @@ namespace JsonWebToken
 
             writer.WriteEndObject();
         }
-
-        /// <inheritsdoc />
-        public override bool Equals(Jwk? other)
-        {
-            if (!(other is SymmetricJwk key))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return _k.AsSpan().SequenceEqual(key._k);
-        }
-
-        /// <inheritsdoc />
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var k = _k;
-                if (k.Length >= sizeof(int))
-                {
-                    return Unsafe.ReadUnaligned<int>(ref k[0]);
-                }
-                else
-                {
-                    int hash = (int)2166136261;
-                    for (int i = 0; i < k.Length; i++)
-                    {
-                        hash = (hash ^ k[i]) * 16777619;
-                    }
-
-                    return hash;
-                }
-            }
-        }
-
+        
         /// <inheritsdoc />
         public override void Dispose()
         {

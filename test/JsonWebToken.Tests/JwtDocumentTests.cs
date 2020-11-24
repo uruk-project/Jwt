@@ -124,7 +124,7 @@ namespace JsonWebToken.Tests
         }
 
         [Theory]
-        [InlineData("eyJhbGciOiJub25lIiwidHlwIjoiSldUIiwib2JqZWN0Ijp7ImhlbGxvIjoid29ybGQifSwiYXJyYXkiOlsiYSIsImIiLDEsMl0sIm51bWJlciI6MTIzLCJudWxsIjpudWxsLCJ0cnVlIjp0cnVlLCJmYWxzZSI6ZmFsc2V9.eyJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJpc3MiOiJodHRwczovL2lkcC5leGFtcGxlLmNvbS8iLCJleHAiOjI2MTYyMzkwMjIsIm5iZCI6MTUxNjIzOTAyMiwib2JqZWN0Ijp7ImhlbGxvIjoid29ybGQifSwiYXJyYXkiOlsiYSIsImIiLDEsMl0sIm51bWJlciI6MTIzLCJudWxsIjpudWxsLCJ0cnVlIjp0cnVlLCJmYWxzZSI6ZmFsc2V9.")]
+        [InlineData("eyJhbGciOiJub25lIiwidHlwIjoiSldUIiwib2JqZWN0Ijp7ImhlbGxvIjoid29ybGQifSwiYXJyYXkiOlsiYSIsImIiLDEsMl0sIm51bWJlciI6MTIzLCJudWxsIjpudWxsLCJ0cnVlIjp0cnVlLCJmYWxzZSI6ZmFsc2V9.eyJhdWQiOiI2MzZDNjk2NTZFNzQ1RjY5NjQiLCJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJpc3MiOiJodHRwczovL2lkcC5leGFtcGxlLmNvbS8iLCJleHAiOjI2MTYyMzkwMjIsIm5iZCI6MTUxNjIzOTAyMiwib2JqZWN0Ijp7ImhlbGxvIjoid29ybGQifSwiYXJyYXkiOlsiYSIsImIiLDEsMl0sIm51bWJlciI6MTIzLCJudWxsIjpudWxsLCJ0cnVlIjp0cnVlLCJmYWxzZSI6ZmFsc2UsImVzY2FwZWRcdTAwNUMiOiB0cnVlfQ.")]
         public void ReadJwt_Valid2(string token)
         {
             var builder = new TokenValidationPolicyBuilder()
@@ -137,10 +137,13 @@ namespace JsonWebToken.Tests
             var result = Jwt.TryParse(token, builder, out var jwt);
 
             Assert.True(result);
-            jwt.Payload.TryGetClaim("aud", out var aud);
+            Assert.True(jwt.Payload.TryGetClaim("aud", out var aud));
             Assert.Equal("636C69656E745F6964", aud.GetString());
-            jwt.Payload.TryGetClaim("iss", out var iss);
+            Assert.True(jwt.Payload.TryGetClaim("iss", out var iss));
             Assert.Equal("https://idp.example.com/", iss.GetString());
+            Assert.True(jwt.Payload.TryGetClaim("escaped\\", out var escaped));
+            Assert.True(escaped.GetBoolean());
+
             jwt.Dispose();
         }
 

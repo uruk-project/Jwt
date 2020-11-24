@@ -27,21 +27,11 @@ namespace JsonWebToken
             Status = status;
         }
 
-        /// <summary>Initializes a new instance of the <see cref="SignatureValidationError"/> class.</summary>
-        public SignatureValidationError(TokenValidationStatus status, Jwk signingKey)
-        {
-            Status = status;
-            SigningKey = signingKey;
-        }
-
         /// <summary>Gets the status of the validation.</summary>
         public TokenValidationStatus Status { get; }
 
         /// <summary>Gets the <see cref="Exception"/> that caused the error.</summary>
         public Exception? Exception { get; }
-
-        /// <summary>Gets the <see cref="Jwk"/> used for the signature.</summary>
-        public Jwk? SigningKey { get; }
 
         /// <summary>The signature is invalid.</summary>
         public static SignatureValidationError InvalidSignature()

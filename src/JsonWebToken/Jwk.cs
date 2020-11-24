@@ -18,7 +18,7 @@ namespace JsonWebToken
     /// Represents a JSON Web Key as defined in http://tools.ietf.org/html/rfc7517.
     /// </summary>
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
-    public abstract class Jwk : IEquatable<Jwk>, IDisposable
+    public abstract class Jwk : IDisposable
     {
 #if SUPPORT_ELLIPTIC_CURVE
         private const uint EC = 17221u;
@@ -1008,9 +1008,6 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public abstract bool Equals(Jwk? other);
-
-        /// <inheritsdoc />
         public virtual void Dispose()
         {
             GC.SuppressFinalize(this);
@@ -1068,9 +1065,6 @@ namespace JsonWebToken
 
             protected override int GetCanonicalizeSize()
                 => 0;
-
-            public override bool Equals(Jwk? other)
-                => ReferenceEquals(this, other);
 
             public override bool SupportSignature(SignatureAlgorithm algorithm)
                 => algorithm == SignatureAlgorithm.None;

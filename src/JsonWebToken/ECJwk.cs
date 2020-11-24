@@ -930,63 +930,6 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override bool Equals(Jwk? other)
-        {
-            if (!(other is ECJwk key))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return Crv.Id == key.Crv.Id &&
-                X.SequenceEqual(key.X) &&
-                Y.SequenceEqual(key.Y);
-        }
-
-        /// <inheritsdoc />
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                const int p = 16777619;
-
-                int hash = ((int)2166136261 ^ Crv.Id) * p;
-
-                var x = _parameters.Q.X!;
-                if (x.Length >= sizeof(int))
-                {
-                    hash = (hash ^ Unsafe.ReadUnaligned<int>(ref x[0])) * p;
-                }
-                else
-                {
-                    for (int i = 0; i < x.Length; i++)
-                    {
-                        hash = (hash ^ x[i]) * p;
-                    }
-                }
-
-                var y = _parameters.Q.Y!;
-                if (y.Length >= sizeof(int))
-                {
-                    hash = (hash ^ Unsafe.ReadUnaligned<int>(ref y[0])) * p;
-                }
-                else
-                {
-                    for (int i = 0; i < y.Length; i++)
-                    {
-                        hash = (hash ^ y[i]) * p;
-                    }
-                }
-
-                return hash;
-            }
-        }
-
-        /// <inheritsdoc />
         public override void Dispose()
         {
             base.Dispose();

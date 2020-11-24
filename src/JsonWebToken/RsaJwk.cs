@@ -1139,63 +1139,6 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override bool Equals(Jwk? other)
-        {
-            if (!(other is RsaJwk key))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return
-                E.SequenceEqual(key.E) &&
-                N.SequenceEqual(key.N);
-        }
-
-        /// <inheritsdoc />
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                const int p = 16777619;
-
-                int hash = (int)2166136261;
-
-                var e = _parameters.Exponent!;
-                if (e.Length >= sizeof(int))
-                {
-                    hash = (hash ^ Unsafe.ReadUnaligned<int>(ref e[0])) * p;
-                }
-                else
-                {
-                    for (int i = 0; i < e.Length; i++)
-                    {
-                        hash = (hash ^ e[i]) * p;
-                    }
-                }
-
-                var n = _parameters.Modulus!;
-                if (n.Length >= sizeof(int))
-                {
-                    hash = (hash ^ Unsafe.ReadUnaligned<int>(ref n[0])) * p;
-                }
-                else
-                {
-                    for (int i = 0; i < n.Length; i++)
-                    {
-                        hash = (hash ^ n[i]) * p;
-                    }
-                }
-
-                return hash;
-            }
-        }
-
-        /// <inheritsdoc />
         public override void Dispose()
         {
             base.Dispose();
