@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using JsonWebToken;
 using Newtonsoft.Json.Linq;
 
 namespace JsonWebToken.Performance
@@ -114,7 +113,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWT " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                descriptors.Add("JWT " + payload.Key + "6 claims", descriptor);
             }
 
             foreach (var payload in payloads)
@@ -136,7 +135,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWS " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                descriptors.Add("JWS " + payload.Key + "6 claims", descriptor);
             }
 
             foreach (var payload in payloads)
@@ -163,7 +162,7 @@ namespace JsonWebToken.Performance
                     Payload = descriptor
                 };
 
-                descriptors.Add("JWE " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwe);
+                descriptors.Add("JWE " + payload.Key + "6 claims", jwe);
             }
 
             foreach (var payload in payloads)
@@ -190,7 +189,7 @@ namespace JsonWebToken.Performance
                     Payload = descriptor
                 };
 
-                descriptors.Add("JWE DEF " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwe);
+                descriptors.Add("JWE DEF " + payload.Key + "6 claims", jwe);
             }
 
             return descriptors;
@@ -384,82 +383,6 @@ namespace JsonWebToken.Performance
 
             return new TokenState(jwt, status);
         }
-
-        //public static JwtObject ToJwtObject(JObject json)
-        //{
-        //    var jwtObject = new JwtObject();
-        //    foreach (var property in json.Properties())
-        //    {
-        //        JwtProperty jwtProperty;
-        //        switch (property.Value.Type)
-        //        {
-        //            case JTokenType.Object:
-        //                jwtProperty = new JwtProperty(property.Name, ToJwtObject(property.Value.Value<JObject>()));
-        //                break;
-        //            case JTokenType.Array:
-        //                jwtProperty = new JwtProperty(property.Name, ToJwtArray(property.Value.Value<JArray>()));
-        //                break;
-        //            case JTokenType.Integer:
-        //                jwtProperty = new JwtProperty(property.Name, property.Value.Value<long>());
-        //                break;
-        //            case JTokenType.Float:
-        //                jwtProperty = new JwtProperty(property.Name, property.Value.Value<double>());
-        //                break;
-        //            case JTokenType.String:
-        //                jwtProperty = new JwtProperty(property.Name, property.Value.Value<string>());
-        //                break;
-        //            case JTokenType.Boolean:
-        //                jwtProperty = new JwtProperty(property.Name, property.Value.Value<bool>());
-        //                break;
-        //            case JTokenType.Null:
-        //                jwtProperty = new JwtProperty(property.Name);
-        //                break;
-        //            default:
-        //                throw new NotSupportedException();
-        //        }
-
-        //        jwtObject.Add(jwtProperty);
-        //    }
-
-        //    return jwtObject;
-        //}
-
-        //private static JwtArray ToJwtArray(JArray array)
-        //{
-        //    var list = new List<JwtValue>(array.Count);
-        //    for (int i = 0; i < array.Count; i++)
-        //    {
-        //        var value = array[i];
-        //        switch (value.Type)
-        //        {
-        //            case JTokenType.Object:
-        //                list.Add(new JwtValue(ToJwtObject((JObject)value)));
-        //                break;
-        //            case JTokenType.Array:
-        //                list.Add(new JwtValue(ToJwtArray((JArray)value)));
-        //                break;
-        //            case JTokenType.Integer:
-        //                list.Add(new JwtValue((long)value));
-        //                break;
-        //            case JTokenType.Float:
-        //                list.Add(new JwtValue((double)value));
-        //                break;
-        //            case JTokenType.String:
-        //                list.Add(new JwtValue((string)value));
-        //                break;
-        //            case JTokenType.Boolean:
-        //                list.Add(new JwtValue((bool)value));
-        //                break;
-        //            case JTokenType.Null:
-        //                list.Add(new JwtValue());
-        //                break;
-        //            default:
-        //                throw new NotSupportedException();
-        //        }
-        //    }
-
-        //    return new JwtArray(list);
-        //}
     }
 
     public class TokenState

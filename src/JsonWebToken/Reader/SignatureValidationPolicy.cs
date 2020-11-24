@@ -189,7 +189,6 @@ namespace JsonWebToken
                                     {
                                         if (signatureVerifier.Verify(contentBytes, signatureBytes))
                                         {
-                                            error = null;
 											goto Success;
                                         }
                                     }
