@@ -206,7 +206,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWT " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                descriptors.Add("JWT " + payload.Key + "6 claims", descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
@@ -231,7 +231,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWS " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                descriptors.Add("JWS " + payload.Key + "6 claims", descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
@@ -263,7 +263,7 @@ namespace JsonWebToken.Performance
                     EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256
                 };
 
-                descriptors.Add("JWE " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwe);
+                descriptors.Add("JWE " + payload.Key + "6 claims", jwe);
 
                 var jwc = new JweDescriptor
                 {
@@ -272,7 +272,7 @@ namespace JsonWebToken.Performance
                     EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
                     CompressionAlgorithm = CompressionAlgorithm.Deflate
                 };
-                descriptors.Add("JWE DEF " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwc);
+                descriptors.Add("JWE DEF " + payload.Key + "6 claims", jwc);
             }
 
             return descriptors;
@@ -305,7 +305,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWT " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                descriptors.Add("JWT " + payload.Key + "6 claims", descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
@@ -332,7 +332,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWS " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                descriptors.Add("JWS " + payload.Key + "6 claims", descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
@@ -360,7 +360,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWE " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                descriptors.Add("JWE " + payload.Key + "6 claims", descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
@@ -389,7 +389,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWE DEF " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                descriptors.Add("JWE DEF " + payload.Key + "6 claims", descriptor);
             }
 
             return descriptors;
@@ -420,7 +420,7 @@ namespace JsonWebToken.Performance
                         }
                     }
 
-                    descriptors.Add(type + " " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                    descriptors.Add(type + " " + payload.Key + "6 claims", descriptor);
                 }
             }
 
