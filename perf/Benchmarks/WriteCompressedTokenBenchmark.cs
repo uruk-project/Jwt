@@ -9,7 +9,7 @@ namespace JsonWebToken.Performance
     {
         public override IEnumerable<string> GetPayloads()
         {
-            yield return "JWE DEF 6 claims";
+            yield return "JWE DEF 06 claims";
         }
     }
 }
