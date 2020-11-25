@@ -6,7 +6,7 @@ namespace JsonWebToken
 {
     // inspired from https://github.com/dotnet/runtime/blob/master/src/libraries/System.Text.Json/src/System/Text/Json/Document/JsonDocument.DbRow.cs
     [StructLayout(LayoutKind.Sequential)]
-    internal readonly struct DbRow
+    internal readonly struct JsonRow
     {
         internal const int Size = 12;
 
@@ -41,7 +41,7 @@ namespace JsonWebToken
 
         internal const int UnknownSize = -1;
 
-        internal DbRow(JsonTokenType jsonTokenType, int location, int sizeOrLength)
+        internal JsonRow(JsonTokenType jsonTokenType, int location, int sizeOrLength)
         {
             Debug.Assert(jsonTokenType > JsonTokenType.None && jsonTokenType <= JsonTokenType.Null);
             Debug.Assert((byte)jsonTokenType < 1 << 4);

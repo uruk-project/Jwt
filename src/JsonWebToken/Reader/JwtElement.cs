@@ -809,7 +809,7 @@ namespace JsonWebToken
                 }
 
                 Debug.Assert(target.TokenType == JsonTokenType.StartObject);
-                _endIdxOrVersion = count * DbRow.Size * 2;
+                _endIdxOrVersion = count * JsonRow.Size * 2;
             }
 
             /// <inheritdoc />
@@ -881,11 +881,11 @@ namespace JsonWebToken
                 }
                 else
                 {
-                    _curIdx += DbRow.Size;
+                    _curIdx += JsonRow.Size;
                 }
 
                 // _curIdx is now pointing at a property name, move one more to get the value
-                _curIdx += DbRow.Size;
+                _curIdx += JsonRow.Size;
 
                 return _curIdx < _endIdxOrVersion;
             }
@@ -893,7 +893,7 @@ namespace JsonWebToken
             private static bool TryParse(ReadOnlyMemory<byte> utf8Array, int count, out JwtDocument? document)
             {
                 ReadOnlySpan<byte> utf8JsonSpan = utf8Array.Span;
-                var database = new MetadataDb(count * DbRow.Size);
+                var database = new JsonMetadata(count * JsonRow.Size);
 
                 var reader = new Utf8JsonReader(utf8JsonSpan);
                 if (reader.Read())
@@ -964,7 +964,7 @@ namespace JsonWebToken
                 }
 
                 Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
-                database.TrimExcess();
+                database.CompleteAllocations();
 
                 document = new JwtDocument(utf8Array, database, null);
                 return true;
@@ -1054,7 +1054,7 @@ namespace JsonWebToken
                 }
                 else
                 {
-                    _curIdx += DbRow.Size;
+                    _curIdx += JsonRow.Size;
                 }
 
                 return _curIdx < _endIdxOrVersion;
@@ -1063,7 +1063,7 @@ namespace JsonWebToken
             private static bool TryParse(ReadOnlyMemory<byte> utf8Array, int count, out JwtDocument? document)
             {
                 ReadOnlySpan<byte> utf8JsonSpan = utf8Array.Span;
-                var database = new MetadataDb(count * DbRow.Size);
+                var database = new JsonMetadata(count * JsonRow.Size);
 
                 var reader = new Utf8JsonReader(utf8JsonSpan);
                 if (reader.Read())
@@ -1125,7 +1125,7 @@ namespace JsonWebToken
                 }
 
                 Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
-                database.TrimExcess();
+                database.CompleteAllocations();
 
                 document = new JwtDocument(utf8Array, database, null);
                 return true;
@@ -1220,7 +1220,7 @@ namespace JsonWebToken
                 }
                 else
                 {
-                    _curIdx += DbRow.Size;
+                    _curIdx += JsonRow.Size;
                 }
 
                 return _curIdx < _endIdxOrVersion;
@@ -1229,7 +1229,7 @@ namespace JsonWebToken
             private static bool TryParse(ReadOnlyMemory<byte> utf8Array, int count, out JwtDocument? document)
             {
                 ReadOnlySpan<byte> utf8JsonSpan = utf8Array.Span;
-                var database = new MetadataDb(count * DbRow.Size);
+                var database = new JsonMetadata(count * JsonRow.Size);
 
                 var reader = new Utf8JsonReader(utf8JsonSpan);
                 if (reader.Read())
@@ -1281,7 +1281,7 @@ namespace JsonWebToken
                 }
 
                 Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
-                database.TrimExcess();
+                database.CompleteAllocations();
 
                 document = new JwtDocument(utf8Array, database, null);
                 return true;

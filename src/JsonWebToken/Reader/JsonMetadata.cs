@@ -7,7 +7,8 @@ using System.Threading;
 
 namespace JsonWebToken
 {
-    internal struct MetadataDb : IDisposable
+    // taken from https://github.com/dotnet/runtime/blob/master/src/libraries/System.Text.Json/src/System/Text/Json/Document/JsonDocument.MetadataDb.cs
+    internal struct JsonMetadata : IDisposable
     {
         private const int SizeOrLengthOffset = 4;
         private const int NumberOfRowsOffset = 8;
@@ -17,14 +18,14 @@ namespace JsonWebToken
 
         private byte[] _data;
 
-        internal MetadataDb(byte[] completeDb)
+        internal JsonMetadata(byte[] completeDb)
         {
             _data = completeDb;
             Length = completeDb.Length;
-            Count = completeDb.Length / DbRow.Size;
+            Count = Length / JsonRow.Size;
         }
 
-        internal MetadataDb(int payloadLength)
+        internal JsonMetadata(int payloadLength)
         {
             // Assume that a token happens approximately every 12 bytes.
             // int estimatedTokens = payloadLength / 12
@@ -32,7 +33,7 @@ namespace JsonWebToken
             // So that's just the payload length.
             //
             // Add one token's worth of data just because.
-            int initialSize = DbRow.Size + payloadLength;
+            int initialSize = JsonRow.Size + payloadLength;
 
             // Stick with ArrayPool's rent/return range if it looks feasible.
             // If it's wrong, we'll just grow and copy as we would if the tokens
@@ -49,22 +50,6 @@ namespace JsonWebToken
             Count = 0;
         }
 
-        internal MetadataDb(MetadataDb source, bool useArrayPools)
-        {
-            Length = source.Length;
-            Count = source.Count;
-
-            if (useArrayPools)
-            {
-                _data = ArrayPool<byte>.Shared.Rent(Length);
-                source._data.AsSpan(0, Length).CopyTo(_data);
-            }
-            else
-            {
-                _data = source._data.AsSpan(0, Length).ToArray();
-            }
-        }
-
         public void Dispose()
         {
             byte[]? data = Interlocked.Exchange(ref _data, null!);
@@ -73,19 +58,12 @@ namespace JsonWebToken
                 return;
             }
 
-            // The data in this rented buffer only conveys the positions and
-            // lengths of tokens in a document, but no content; so it does not
-            // need to be cleared.
             ArrayPool<byte>.Shared.Return(data);
             Length = 0;
         }
 
-        internal void TrimExcess()
+        internal void CompleteAllocations()
         {
-            // There's a chance that the size we have is the size we'd get for this
-            // amount of usage (particularly if Enlarge ever got called); and there's
-            // the small copy-cost associated with trimming anyways. "Is half-empty" is
-            // just a rough metric for "is trimming worth it?".
             if (Length > 128 && Length <= _data.Length / 2)
             {
                 byte[] newRent = ArrayPool<byte>.Shared.Rent(Length);
@@ -98,30 +76,22 @@ namespace JsonWebToken
                     _data = newRent;
                 }
 
-                // The data in this rented buffer only conveys the positions and
-                // lengths of tokens in a document, but no content; so it does not
-                // need to be cleared.
                 ArrayPool<byte>.Shared.Return(returnBuf);
             }
 
-            Count = Length / DbRow.Size;
+            Count = Length / JsonRow.Size;
         }
 
         internal void Append(JsonTokenType tokenType, int startLocation, int length)
         {
-            // StartArray or StartObject should have length -1, otherwise the length should not be -1.
-            //Debug.Assert(
-            //    (tokenType == JsonTokenType.StartArray || tokenType == JsonTokenType.StartObject) ==
-            //    (length == DbRow.UnknownSize));
-
-            if (Length >= _data.Length - DbRow.Size)
+            if (Length >= _data.Length - JsonRow.Size)
             {
                 Enlarge();
             }
 
-            DbRow row = new DbRow(tokenType, startLocation, length);
+            JsonRow row = new JsonRow(tokenType, startLocation, length);
             MemoryMarshal.Write(_data.AsSpan(Length), ref row);
-            Length += DbRow.Size;
+            Length += JsonRow.Size;
         }
 
         private void Enlarge()
@@ -130,9 +100,6 @@ namespace JsonWebToken
             _data = ArrayPool<byte>.Shared.Rent(toReturn.Length * 2);
             Buffer.BlockCopy(toReturn, 0, _data, 0, toReturn.Length);
 
-            // The data in this rented buffer only conveys the positions and
-            // lengths of tokens in a document, but no content; so it does not
-            // need to be cleared.
             ArrayPool<byte>.Shared.Return(toReturn);
         }
 
@@ -140,8 +107,8 @@ namespace JsonWebToken
         private void AssertValidIndex(int index)
         {
             Debug.Assert(index >= 0);
-            Debug.Assert(index <= Length - DbRow.Size, $"index {index} is out of bounds");
-            Debug.Assert(index % DbRow.Size == 0, $"index {index} is not at a record start position");
+            Debug.Assert(index <= Length - JsonRow.Size, $"index {index} is out of bounds");
+            Debug.Assert(index % JsonRow.Size == 0, $"index {index} is not at a record start position");
         }
 
         internal void SetLength(int index, int length)
@@ -177,10 +144,10 @@ namespace JsonWebToken
             MemoryMarshal.Write(dataPos, ref value);
         }
 
-        internal DbRow Get(int index)
+        internal JsonRow Get(int index)
         {
             AssertValidIndex(index);
-            return MemoryMarshal.Read<DbRow>(_data.AsSpan(index));
+            return MemoryMarshal.Read<JsonRow>(_data.AsSpan(index));
         }
 
         internal JsonTokenType GetJsonTokenType(int index)
@@ -191,14 +158,14 @@ namespace JsonWebToken
             return (JsonTokenType)(union >> 28);
         }
 
-        internal MetadataDb Clone()
+        internal JsonMetadata Clone()
         {
             byte[] newDatabase = new byte[Length];
             _data.AsSpan(0, Length).CopyTo(newDatabase);
-            return new MetadataDb(newDatabase);
+            return new JsonMetadata(newDatabase);
         }
 
-        internal MetadataDb CopySegment(int startIndex, int endIndex)
+        internal JsonMetadata CopySegment(int startIndex, int endIndex)
         {
             Debug.Assert(
                 endIndex > startIndex,
@@ -207,7 +174,7 @@ namespace JsonWebToken
             AssertValidIndex(startIndex);
             Debug.Assert(endIndex <= Length);
 
-            DbRow start = Get(startIndex);
+            JsonRow start = Get(startIndex);
             int length = endIndex - startIndex;
 
             byte[] newDatabase = new byte[length];
@@ -222,13 +189,13 @@ namespace JsonWebToken
                 locationOffset--;
             }
 
-            for (int i = (length - DbRow.Size) / sizeof(int); i >= 0; i -= DbRow.Size / sizeof(int))
+            for (int i = (length - JsonRow.Size) / sizeof(int); i >= 0; i -= JsonRow.Size / sizeof(int))
             {
                 Debug.Assert(newDbInts[i] >= locationOffset);
                 newDbInts[i] -= locationOffset;
             }
 
-            return new MetadataDb(newDatabase);
+            return new JsonMetadata(newDatabase);
         }
     }
 }

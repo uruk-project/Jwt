@@ -49,7 +49,7 @@ namespace JsonWebToken
         internal static bool TryParsePayload(ReadOnlyMemory<byte> utf8Payload, byte[]? buffer, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtPayloadDocument? payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
             ReadOnlySpan<byte> utf8JsonSpan = utf8Payload.Span;
-            var database = new MetadataDb(utf8Payload.Length);
+            var database = new JsonMetadata(utf8Payload.Length);
             byte control = policy.Control;
             int issIdx = -1;
 
@@ -81,7 +81,7 @@ namespace JsonWebToken
                         ReadOnlySpan<byte> memberName = reader.ValueSpan;
                         if (memberName.IndexOf((byte)'\\') != -1)
                         {
-                            database.SetHasComplexChildren(database.Length - DbRow.Size);
+                            database.SetHasComplexChildren(database.Length - JsonRow.Size);
                         }
 
                         reader.Read();
@@ -173,7 +173,7 @@ namespace JsonWebToken
             }
 
             Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
-            database.TrimExcess();
+            database.CompleteAllocations();
 
             payload = new JwtPayloadDocument(new JwtDocument(utf8Payload, database, buffer), control, issIdx);
             error = null;

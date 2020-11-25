@@ -40,6 +40,7 @@ namespace JsonWebToken
                 }
                 while (reader.Read() && depth < reader.CurrentDepth);
             }
+
             return count;
         }
     }

@@ -35,7 +35,7 @@ namespace JsonWebToken
         internal static bool TryParseHeader(ReadOnlyMemory<byte> utf8Payload, byte[]? buffer, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtHeaderDocument? header, [NotNullWhen(false)] out TokenValidationError? error)
         {
             ReadOnlySpan<byte> utf8JsonSpan = utf8Payload.Span;
-            var database = new MetadataDb(utf8Payload.Length);
+            var database = new JsonMetadata(utf8Payload.Length);
             int algIdx = -1;
             int kidIdx = -1;
 
@@ -67,7 +67,7 @@ namespace JsonWebToken
                         database.Append(JsonTokenType.PropertyName, tokenStart + 1, reader.ValueSpan.Length);
                         if (reader.ValueSpan.IndexOf((byte)'\\') != -1)
                         {
-                            database.SetHasComplexChildren(database.Length - DbRow.Size);
+                            database.SetHasComplexChildren(database.Length - JsonRow.Size);
                         }
 
                         ReadOnlySpan<byte> memberName = reader.ValueSpan;
@@ -139,7 +139,7 @@ namespace JsonWebToken
             }
 
             Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
-            database.TrimExcess();
+            database.CompleteAllocations();
 
             header = new JwtHeaderDocument(new JwtDocument(utf8Payload, database, buffer), algIdx, kidIdx);
             error = null;
