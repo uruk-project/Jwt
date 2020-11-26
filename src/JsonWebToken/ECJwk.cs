@@ -15,58 +15,44 @@ using CryptographicOperations = JsonWebToken.Cryptography.CryptographicOperation
 namespace JsonWebToken
 {
 #nullable disable
-    /// <summary>
-    /// Represents an Elliptic Curve JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
-    /// </summary>
+    /// <summary>Represents an Elliptic Curve JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.</summary>
     public sealed class ECJwk : AsymmetricJwk, IJwtSerializable
     {
         private const uint crv = 7762531u;
         private ECParameters _parameters;
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>
         /// <param name="parameters"></param>
         private ECJwk(ECParameters parameters)
         {
             Initialize(parameters);
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>
         private ECJwk(in EllipticalCurve crv, byte[] d, byte[] x, byte[] y)
         {
             Initialize(crv, d, x, y);
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>
         private ECJwk(in EllipticalCurve crv, string d, string x, string y)
         {
             Initialize(crv, d, x, y);
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.</summary>
         private ECJwk(in EllipticalCurve crv, byte[] x, byte[] y)
         {
             Initialize(crv, x, y);
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.</summary>
         private ECJwk(in EllipticalCurve crv, string x, string y)
         {
             Initialize(crv, x, y);
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>
         /// <param name="parameters"></param>
         /// <param name="alg"></param>
         private ECJwk(ECParameters parameters, SignatureAlgorithm alg)
@@ -79,9 +65,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>
         private ECJwk(in EllipticalCurve crv, byte[] d, byte[] x, byte[] y, SignatureAlgorithm alg)
             : base(alg)
         {
@@ -92,9 +76,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>
         private ECJwk(in EllipticalCurve crv, string d, string x, string y, SignatureAlgorithm alg)
             : base(alg)
         {
@@ -105,9 +87,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.</summary>
         private ECJwk(in EllipticalCurve crv, byte[] x, byte[] y, SignatureAlgorithm alg)
             : base(alg)
         {
@@ -118,9 +98,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.</summary>
         private ECJwk(in EllipticalCurve crv, string x, string y, SignatureAlgorithm alg)
             : base(alg)
         {
@@ -131,9 +109,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>
         /// <param name="parameters"></param>
         /// <param name="alg"></param>
         private ECJwk(ECParameters parameters, KeyManagementAlgorithm alg)
@@ -146,9 +122,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>
         private ECJwk(in EllipticalCurve crv, byte[] d, byte[] x, byte[] y, KeyManagementAlgorithm alg)
             : base(alg)
         {
@@ -159,9 +133,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>
         private ECJwk(in EllipticalCurve crv, string d, string x, string y, KeyManagementAlgorithm alg)
             : base(alg)
         {
@@ -172,9 +144,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.</summary>
         private ECJwk(in EllipticalCurve crv, byte[] x, byte[] y, KeyManagementAlgorithm alg)
             : base(alg)
         {
@@ -185,9 +155,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>. No private key is provided.</summary>
         private ECJwk(in EllipticalCurve crv, string x, string y, KeyManagementAlgorithm alg)
             : base(alg)
         {
@@ -198,9 +166,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>
         private ECJwk()
         {
         }
@@ -323,32 +289,22 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override JsonEncodedText Kty => JwkTypeNames.EllipticCurve;
 
-        /// <summary>
-        /// Gets the 'd' (Private Key).
-        /// </summary>
+        /// <summary>Gets the 'd' (Private Key).</summary>
         public ReadOnlySpan<byte> D => _parameters.D;
 
-        /// <summary>
-        /// Gets or sets the 'crv' (Curve).
-        /// </summary>
+        /// <summary>Gets or sets the 'crv' (Curve).</summary>
         public EllipticalCurve Crv { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the 'x' (X Coordinate).
-        /// </summary>
+        /// <summary>Gets or sets the 'x' (X Coordinate).</summary>
         public ReadOnlySpan<byte> X => _parameters.Q.X;
 
-        /// <summary>
-        /// Gets or sets the 'y' (Y Coordinate).
-        /// </summary>
+        /// <summary>Gets or sets the 'y' (Y Coordinate).</summary>
         public ReadOnlySpan<byte> Y => _parameters.Q.Y;
 
         /// <inheritdoc />
         public override int KeySizeInBits => Crv.KeySizeInBits;
 
-        /// <summary>
-        /// Creates an <see cref="ECDsa"/> algorithm.
-        /// </summary>
+        /// <summary>Creates an <see cref="ECDsa"/> algorithm.</summary>
         public ECDsa CreateECDsa(SignatureAlgorithm algorithm, bool usePrivateKey)
         {
             int validKeySize = ValidKeySize(algorithm);
@@ -361,79 +317,63 @@ namespace JsonWebToken
         }
 
         private static int ValidKeySize(SignatureAlgorithm algorithm)
-        {
-            return algorithm.RequiredKeySizeInBits;
-        }
+            => algorithm.RequiredKeySizeInBits;
 
         /// <inheritdoc />
         public override bool SupportSignature(SignatureAlgorithm algorithm)
-        {
 #if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
-            return Crv.SupportedSignatureAlgorithm == algorithm;
+            =>  Crv.SupportedSignatureAlgorithm == algorithm;
 #else
-            return false;
+            => false;
 #endif
-        }
+
 
         /// <inheritdoc />
         public override bool SupportKeyManagement(KeyManagementAlgorithm algorithm)
-        {
 #if SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
-            return (algorithm.Category & AlgorithmCategory.EllipticCurve) != 0;
+            =>  (algorithm.Category & AlgorithmCategory.EllipticCurve) != 0;
 #else
-            return false;
+            => false;
 #endif
-        }
+
 
         /// <inheritdoc />
         public override bool SupportEncryption(EncryptionAlgorithm algorithm)
-        {
-            return false;
-        }
+            =>  false;
 
         /// <inheritdoc />
         protected override Signer CreateSigner(SignatureAlgorithm algorithm)
-        {
 #if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
-            return new EcdsaSigner(this, algorithm);
+            => new EcdsaSigner(this, algorithm);
 #else
-            throw new NotImplementedException();
+            => throw new NotImplementedException();
 #endif
-        }
 
         /// <inheritdoc />
         protected override SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm)
-        {
 #if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
-            return new EcdsaSignatureVerifier(this, algorithm);
+            => new EcdsaSignatureVerifier(this, algorithm);
 #else
-            throw new NotImplementedException();
+            => throw new NotImplementedException();
 #endif
-        }
 
         /// <inheritdoc />
         protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
-        {
 #if SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
-            return new EcdhKeyWrapper(this, encryptionAlgorithm, algorithm);
+            => new EcdhKeyWrapper(this, encryptionAlgorithm, algorithm);
 #else
-            throw new NotImplementedException();
+            => throw new NotImplementedException();
 #endif
-        }
 
         /// <inheritdoc />
         protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
-        {
 #if SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
-            return new EcdhKeyUnwrapper(this, encryptionAlgorithm, algorithm);
+            => new EcdhKeyUnwrapper(this, encryptionAlgorithm, algorithm);
 #else
-            throw new NotImplementedException();
+            => throw new NotImplementedException();
 #endif
-        }
 
-        /// <summary>
-        /// Exports the key parameters.
-        /// </summary>
+        /// <summary>Exports the key parameters.</summary>
         public ECParameters ExportParameters(bool includePrivateParameters = false)
         {
             var parameters = new ECParameters
@@ -449,27 +389,21 @@ namespace JsonWebToken
             return parameters;
         }
 
-        /// <summary>
-        /// Generates a private <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Generates a private <see cref="ECJwk"/>.</summary>
         /// <param name="curve"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
         public static ECJwk GeneratePrivateKey( EllipticalCurve curve, bool computeThumbprint = true)
             => GenerateKey(curve, withPrivateKey: true, computeThumbprint: computeThumbprint);
 
-        /// <summary>
-        /// Generates a private <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Generates a private <see cref="ECJwk"/>.</summary>
         /// <param name="algorithm"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
         public static ECJwk GeneratePrivateKey(SignatureAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(algorithm, withPrivateKey: true, computeThumbprint: computeThumbprint);
 
-        /// <summary>
-        /// Generates a private <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Generates a private <see cref="ECJwk"/>.</summary>
         /// <param name="curve"></param>
         /// <param name="algorithm"></param>
         /// <param name="computeThumbprint"></param>
@@ -477,27 +411,21 @@ namespace JsonWebToken
         public static ECJwk GeneratePrivateKey(in EllipticalCurve curve, KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(curve, algorithm, withPrivateKey: true, computeThumbprint: computeThumbprint);
 
-        /// <summary>
-        /// Generates a public <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Generates a public <see cref="ECJwk"/>.</summary>
         /// <param name="curve"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
         public static ECJwk GeneratePublicKey(in EllipticalCurve curve, bool computeThumbprint = true)
             => GenerateKey(curve, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
-        /// <summary>
-        /// Generates a public <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Generates a public <see cref="ECJwk"/>.</summary>
         /// <param name="algorithm"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
         public static ECJwk GeneratePublicKey(SignatureAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(algorithm, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
-        /// <summary>
-        /// Generates a public <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Generates a public <see cref="ECJwk"/>.</summary>
         /// <param name="curve"></param>
         /// <param name="algorithm"></param>
         /// <param name="computeThumbprint"></param>
@@ -505,9 +433,7 @@ namespace JsonWebToken
         public static ECJwk GeneratePublicKey(in EllipticalCurve curve, KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(curve, algorithm, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
-        /// <summary>
-        /// Generates a <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Generates a <see cref="ECJwk"/>.</summary>
         /// <param name="curve"></param>
         /// <param name="withPrivateKey"></param>
         /// <param name="computeThumbprint"></param>
@@ -518,9 +444,7 @@ namespace JsonWebToken
             return FromParameters(parameters, computeThumbprint: computeThumbprint);
         }
 
-        /// <summary>
-        /// Generates a <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Generates a <see cref="ECJwk"/>.</summary>
         /// <param name="algorithm"></param>
         /// <param name="withPrivateKey"></param>
         /// <param name="computeThumbprint"></param>
@@ -554,9 +478,7 @@ namespace JsonWebToken
             return FromParameters(parameters, algorithm, computeThumbprint: computeThumbprint);
         }
 
-        /// <summary>
-        /// Generates a <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Generates a <see cref="ECJwk"/>.</summary>
         /// <param name="curve"></param>
         /// <param name="algorithm"></param>
         /// <param name="withPrivateKey"></param>
@@ -575,9 +497,7 @@ namespace JsonWebToken
             return ecdsa.ExportParameters(withPrivateKey);
         }
 
-        /// <summary>
-        /// Converts the current <see cref="RsaJwk"/> key to the public representation. This converted key can be exposed.
-        /// </summary>
+        /// <summary>Converts the current <see cref="RsaJwk"/> key to the public representation. This converted key can be exposed.</summary>
         /// <returns></returns>
         public ECJwk AsPublicKey()
         {
@@ -640,15 +560,11 @@ namespace JsonWebToken
                 + Base64Url.GetArraySizeRequiredToEncode(Y!.Length);
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromParameters(ECParameters parameters, KeyManagementAlgorithm algorithm)
             => FromParameters(parameters, algorithm, computeThumbprint: false);
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromParameters(ECParameters parameters, KeyManagementAlgorithm algorithm, bool computeThumbprint)
         {
             var key = new ECJwk(parameters, algorithm);
@@ -660,15 +576,11 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromParameters(ECParameters parameters, SignatureAlgorithm algorithm)
             => FromParameters(parameters, algorithm, computeThumbprint: false);
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromParameters(ECParameters parameters, SignatureAlgorithm algorithm, bool computeThumbprint)
         {
             var key = new ECJwk(parameters, algorithm);
@@ -680,9 +592,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromBase64Url(in EllipticalCurve crv, string x, string y, string d, bool computeThumbprint = true)
         {
             var key = new ECJwk(crv, d: d, x: x, y: y);
@@ -694,9 +604,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromBase64Url(in EllipticalCurve crv, string x, string y, string d, SignatureAlgorithm alg, bool computeThumbprint = true)
         {
             var key = new ECJwk(crv, d: d, x: x, y: y, alg: alg);
@@ -708,9 +616,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromBase64Url(in EllipticalCurve crv, string x, string y, string d, KeyManagementAlgorithm alg, bool computeThumbprint = true)
         {
             var key = new ECJwk(crv, d: d, x: x, y: y, alg: alg);
@@ -722,9 +628,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromByteArray(in EllipticalCurve crv, byte[] x, byte[] y, byte[] d, bool computeThumbprint = true)
         {
             var key = new ECJwk(crv, d: d, x: x, y: y);
@@ -736,9 +640,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromBase64Url(in EllipticalCurve crv, string x, string y, bool computeThumbprint = true)
         {
             var key = new ECJwk(crv, x: x, y: y);
@@ -750,9 +652,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromByteArray(in EllipticalCurve crv, byte[] x, byte[] y, bool computeThumbprint = true)
         {
             var key = new ECJwk(crv, x: x, y: y);
@@ -764,9 +664,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromByteArray(in EllipticalCurve crv, byte[] x, byte[] y, byte[] d, SignatureAlgorithm algorithm, bool computeThumbprint = true)
         {
             var key = new ECJwk(crv, d: d, x: x, y: y, algorithm);
@@ -778,9 +676,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromBase64Url(in EllipticalCurve crv, string x, string y, SignatureAlgorithm algorithm, bool computeThumbprint = true)
         {
             var key = new ECJwk(crv, x: x, y: y, algorithm);
@@ -792,9 +688,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromByteArray(in EllipticalCurve crv, byte[] x, byte[] y, SignatureAlgorithm algorithm, bool computeThumbprint = true)
         {
             var key = new ECJwk(crv, x: x, y: y, algorithm);
@@ -806,9 +700,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromByteArray(in EllipticalCurve crv, byte[] x, byte[] y, byte[] d, KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
         {
             var key = new ECJwk(crv, d: d, x: x, y: y, algorithm);
@@ -820,9 +712,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromBase64Url(in EllipticalCurve crv, string x, string y, KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
         {
             var key = new ECJwk(crv, x: x, y: y, algorithm);
@@ -834,9 +724,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromByteArray(in EllipticalCurve crv, byte[] x, byte[] y, KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
         {
             var key = new ECJwk(crv, x: x, y: y, algorithm);
@@ -848,15 +736,11 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromParameters(ECParameters parameters)
             => FromParameters(parameters, computeThumbprint: false);
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         public static ECJwk FromParameters(ECParameters parameters, bool computeThumbprint = true)
         {
             var key = new ECJwk(parameters);
@@ -870,13 +754,9 @@ namespace JsonWebToken
 
         /// <inheritdoc />
         public override ReadOnlySpan<byte> AsSpan()
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         internal static ECJwk FromJwtElement(JwtElement json)
         {
             var reader = new Utf8JsonReader(json.GetRawValue().Span);
@@ -884,9 +764,7 @@ namespace JsonWebToken
             return FromJsonReaderFast(ref reader);
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="ECJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
         /// <param name="pem">A PEM-encoded key in PKCS1 (BEGIN EC PRIVATE KEY) or PKCS8 (BEGIN PUBLIC/PRIVATE KEY) format.</param>
         /// Support unencrypted PKCS#1 private EC key, unencrypted PKCS#8 public EC key and unencrypted PKCS#8 private EC key. 
         /// Unencrypted PKCS#1 public EC key is not supported.

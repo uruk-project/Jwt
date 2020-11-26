@@ -11,14 +11,10 @@ namespace JsonWebToken
     /// </summary>
     public static class JwkUseValues
     {
-        /// <summary>
-        /// Gets the 'sig' (signature) value for the 'use' parameter.
-        /// </summary>
+        /// <summary>Gets the 'sig' (signature) value for the 'use' parameter.</summary>
         public static readonly JsonEncodedText Sig = JsonEncodedText.Encode("sig");
 
-        /// <summary>
-        /// Gets the 'enc' (encryption) value for the 'use' parameter.
-        /// </summary>
+        /// <summary>Gets the 'enc' (encryption) value for the 'use' parameter.</summary>
         public static readonly JsonEncodedText Enc = JsonEncodedText.Encode("enc");
     }
 }

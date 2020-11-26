@@ -14,9 +14,7 @@ using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents a JSON Web Key as defined in http://tools.ietf.org/html/rfc7517.
-    /// </summary>
+    /// <summary>Represents a JSON Web Key as defined in http://tools.ietf.org/html/rfc7517.</summary>
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public abstract class Jwk : IDisposable
     {
@@ -34,9 +32,7 @@ namespace JsonWebToken
         private const uint x5u = 7681400u;
         private const ulong key_ops = 32493245967197547u;
 
-        /// <summary>
-        /// An empty <see cref="Jwk"/>.
-        /// </summary>
+        /// <summary>An empty <see cref="Jwk"/>.</summary>
         public static readonly Jwk None = new NullJwk();
 
         private CryptographicStore<Signer>? _signers;
@@ -53,16 +49,12 @@ namespace JsonWebToken
         private IList<JsonEncodedText>? _keyOps;
         private List<byte[]>? _x5c;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Jwk"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="Jwk"/> class.</summary>
         protected Jwk()
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Jwk"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="Jwk"/> class.</summary>
         /// <param name="alg"></param>
         protected Jwk(SignatureAlgorithm alg)
         {
@@ -75,9 +67,7 @@ namespace JsonWebToken
             _signatureAlgorithm = alg;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Jwk"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="Jwk"/> class.</summary>
         /// <param name="alg"></param>
         protected Jwk(KeyManagementAlgorithm alg)
         {
@@ -90,14 +80,10 @@ namespace JsonWebToken
             _keyManagementAlgorithm = alg;
         }
 
-        /// <summary>
-        /// Gets or sets the 'alg' (KeyType).
-        /// </summary>
+        /// <summary>Gets or sets the 'alg' (KeyType).</summary>
         public JsonEncodedText Alg => _algorithm;
 
-        /// <summary>
-        /// Gets the 'key_ops' (Key Operations).
-        /// </summary>
+        /// <summary>Gets the 'key_ops' (Key Operations).</summary>
         public IList<JsonEncodedText> KeyOps
         {
             get
@@ -110,19 +96,14 @@ namespace JsonWebToken
                 return _keyOps;
             }
         }
-        /// <summary>
-        /// Gets or sets the 'kid' (Key ID).
-        /// </summary>
+
+        /// <summary>Gets or sets the 'kid' (Key ID).</summary>
         public JsonEncodedText Kid { get; set; }
 
-        /// <summary>
-        /// Gets or sets the 'kty' (Key Type).
-        /// </summary>
+        /// <summary>Gets or sets the 'kty' (Key Type).</summary>
         public abstract JsonEncodedText Kty { get; }
 
-        /// <summary>
-        /// Gets or sets the 'use' (Public Key Use).
-        /// </summary>
+        /// <summary>Gets or sets the 'use' (Public Key Use).</summary>
         public JsonEncodedText Use
         {
             get => _use;
@@ -134,9 +115,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Gets the 'x5c' collection (X.509 Certificate Chain).
-        /// </summary>
+        /// <summary>Gets the 'x5c' collection (X.509 Certificate Chain).</summary>
         public List<byte[]>? X5c
         {
             get
@@ -150,29 +129,19 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Gets or sets the 'x5t' (X.509 Certificate SHA-1 thumbprint).
-        /// </summary>
+        /// <summary>Gets or sets the 'x5t' (X.509 Certificate SHA-1 thumbprint).</summary>
         public byte[]? X5t { get; set; }
 
-        /// <summary>
-        /// Gets or sets the 'x5t#S256' (X.509 Certificate SHA-256 thumbprint).
-        /// </summary>
+        /// <summary>Gets or sets the 'x5t#S256' (X.509 Certificate SHA-256 thumbprint).</summary>
         public byte[]? X5tS256 { get; set; }
 
-        /// <summary>
-        /// Gets or sets the 'x5u' (X.509 URL).
-        /// </summary>
+        /// <summary>Gets or sets the 'x5u' (X.509 URL).</summary>
         public string? X5u { get; set; }
 
-        /// <summary>
-        /// Gets the key size of <see cref="Jwk"/>.
-        /// </summary>
+        /// <summary>Gets the key size of <see cref="Jwk"/>.</summary>
         public abstract int KeySizeInBits { get; }
 
-        /// <summary>
-        /// Gets the X.509 certificate chain.
-        /// </summary>
+        /// <summary>Gets the X.509 certificate chain.</summary>
         public IList<Jwk>? X509CertificateChain
         {
             get
@@ -257,9 +226,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.
-        /// </summary>
+        /// <summary>Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.</summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> to verify.</param>
         /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
         public abstract bool SupportSignature(SignatureAlgorithm algorithm);
@@ -340,23 +307,17 @@ namespace JsonWebToken
             return None;
         }
 
-        /// <summary>
-        /// Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.
-        /// </summary>
+        /// <summary>Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.</summary>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> to verify.</param>
         /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
         public abstract bool SupportKeyManagement(KeyManagementAlgorithm algorithm);
 
-        /// <summary>
-        /// Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.
-        /// </summary>
+        /// <summary>Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.</summary>
         /// <param name="algorithm">The <see cref="EncryptionAlgorithm"/> to verify.</param>
         /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
         public abstract bool SupportEncryption(EncryptionAlgorithm algorithm);
 
-        /// <summary>
-        /// Returns a string that represents the <see cref="Jwk"/> in JSON.
-        /// </summary>
+        /// <summary>Returns a string that represents the <see cref="Jwk"/> in JSON.</summary>
         public override string ToString()
         {
             using var bufferWriter = new PooledByteBufferWriter();
@@ -369,9 +330,7 @@ namespace JsonWebToken
             return Utf8.GetString(input);
         }
 
-        /// <summary>
-        /// Serializes the <see cref="Jwk"/> into its JSON representation.
-        /// </summary>
+        /// <summary>Serializes the <see cref="Jwk"/> into its JSON representation.</summary>
         /// <param name="bufferWriter"></param>
         public void Serialize(IBufferWriter<byte> bufferWriter)
         {
@@ -380,26 +339,18 @@ namespace JsonWebToken
             writer.Flush();
         }
 
-        /// <summary>
-        /// Provides the binary representation of the key.
-        /// </summary>
+        /// <summary>Provides the binary representation of the key.</summary>
         public abstract ReadOnlySpan<byte> AsSpan();
 
-        /// <summary>
-        /// Creates a fresh new <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
+        /// <summary>Creates a fresh new <see cref="Signer"/> with the current <see cref="Jwk"/> as key.</summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
         protected abstract Signer CreateSigner(SignatureAlgorithm algorithm);
 
-        /// <summary>
-        /// Creates a fresh new <see cref="SignatureVerifier"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
+        /// <summary>Creates a fresh new <see cref="SignatureVerifier"/> with the current <see cref="Jwk"/> as key.</summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
         protected abstract SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm);
 
-        /// <summary>
-        /// Tries to provide a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
+        /// <summary>Tries to provide a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.</summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
         /// <param name="signer">The created <see cref="Signer"/>.</param>
         /// <returns><c>true</c> if the <paramref name="signer"/> is available for the requested <paramref name="algorithm"/>; <c>false</c> otherwise.</returns>
@@ -444,9 +395,7 @@ namespace JsonWebToken
             return true;
         }
 
-        /// <summary>
-        /// Tries to provide a <see cref="SignatureVerifier"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
+        /// <summary>Tries to provide a <see cref="SignatureVerifier"/> with the current <see cref="Jwk"/> as key.</summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
         /// <param name="signatureVerifier">The created <see cref="SignatureVerifier"/>.</param>
         /// <returns><c>true</c> if the <paramref name="signatureVerifier"/> is available for the requested <paramref name="algorithm"/>; <c>false</c> otherwise.</returns>
@@ -491,9 +440,7 @@ namespace JsonWebToken
             return true;
         }
 
-        /// <summary>
-        /// Tries to provide a <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
+        /// <summary>Tries to provide a <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.</summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
         /// <param name="keyWrapper">The provided <see cref="KeyWrapper"/>. <c>null</c> if return <c>false</c></param>
@@ -541,9 +488,7 @@ namespace JsonWebToken
             return true;
         }
 
-        /// <summary>
-        /// Tries to provide a <see cref="KeyUnwrapper"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
+        /// <summary>Tries to provide a <see cref="KeyUnwrapper"/> with the current <see cref="Jwk"/> as key.</summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
         /// <param name="keyUnwrapper">The provided <see cref="KeyUnwrapper"/>. <c>null</c> if return <c>false</c></param>
@@ -591,23 +536,17 @@ namespace JsonWebToken
             return true;
         }
 
-        /// <summary>
-        /// Creates a fresh new <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
+        /// <summary>Creates a fresh new <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.</summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
         protected abstract KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
 
-        /// <summary>
-        /// Creates a fresh new <see cref="KeyUnwrapper"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
+        /// <summary>Creates a fresh new <see cref="KeyUnwrapper"/> with the current <see cref="Jwk"/> as key.</summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key unwrapping.</param>
         protected abstract KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
 
-        /// <summary>
-        /// Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
-        /// </summary>
+        /// <summary>Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2</summary>
         /// <returns></returns>
         public byte[] Canonicalize()
         {
@@ -630,21 +569,15 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Compute the normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2, and writes it to the <paramref name="buffer"/>.
-        /// </summary>
+        /// <summary>Compute the normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2, and writes it to the <paramref name="buffer"/>.</summary>
         /// <returns></returns>
         protected abstract void Canonicalize(Span<byte> buffer);
 
-        /// <summary>
-        /// Returns the required size for representing a canonicalized key.
-        /// </summary>
+        /// <summary>Returns the required size for representing a canonicalized key.</summary>
         /// <returns></returns>
         protected abstract int GetCanonicalizeSize();
 
-        /// <summary>
-        /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
-        /// </summary>
+        /// <summary>Compute a hash as defined by https://tools.ietf.org/html/rfc7638.</summary>
         /// <returns></returns>
         public byte[] ComputeThumbprint()
         {
@@ -653,9 +586,7 @@ namespace JsonWebToken
             return thumbprint;
         }
 
-        /// <summary>
-        /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
-        /// </summary>
+        /// <summary>Compute a hash as defined by https://tools.ietf.org/html/rfc7638.</summary>
         /// <returns></returns>
         public void ComputeThumbprint(Span<byte> destination)
         {
@@ -681,9 +612,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="AsymmetricJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="AsymmetricJwk"/>.</summary>
         /// <param name="certificate">A <see cref="X509Certificate2"/> that contains JSON Web Key parameters.</param>
         /// <param name="withPrivateKey">Determines if the private key must be extracted from the certificate.</param>
         public static AsymmetricJwk FromX509Certificate(X509Certificate2 certificate, bool withPrivateKey)
@@ -747,9 +676,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="Jwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="Jwk"/>.</summary>
         /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
         /// <returns><see cref="Jwk"/></returns>
         public static Jwk FromJson(string json)
@@ -781,9 +708,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         /// <param name="pem">A PEM-encoded key in PKCS1 or PKCS8 format.</param>
         /// <remarks>
         /// Support unencrypted PKCS#1 public RSA key, unencrypted PKCS#1 private RSA key, unencrypted PKCS#1 private EC key, 
@@ -792,9 +717,7 @@ namespace JsonWebToken
         /// Password-protected key is not supported.
         /// </remarks>
         public static AsymmetricJwk FromPem(string pem)
-        {
-            return PemParser.Read(pem);
-        }
+            => PemParser.Read(pem);
 
         internal static void PopulateEight(ref Utf8JsonReader reader, ref byte pPropertyName, Jwk key)
         {
@@ -845,9 +768,7 @@ namespace JsonWebToken
         }
 
         internal static void PopulateObject(ref Utf8JsonReader reader)
-        {
-            JsonParser.ConsumeJsonObject(ref reader);
-        }
+            => JsonParser.ConsumeJsonObject(ref reader);
 
         internal static void PopulateThree(ref Utf8JsonReader reader, ref byte propertyNameRef, Jwk key)
         {
@@ -887,9 +808,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Writes the current <see cref="Jwk"/> into the <paramref name="writer"/>.
-        /// </summary>
+        /// <summary>Writes the current <see cref="Jwk"/> into the <paramref name="writer"/>.</summary>
         /// <param name="writer"></param>
         public virtual void WriteTo(Utf8JsonWriter writer)
         {
@@ -952,9 +871,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Compute the 'kid' header parameter based on the JWK thumbprint.
-        /// </summary>
+        /// <summary>Compute the 'kid' header parameter based on the JWK thumbprint.</summary>
         /// <param name="key"></param>
         protected static void ComputeKid(Jwk key)
         {
@@ -1044,9 +961,7 @@ namespace JsonWebToken
         }
 
         private string GetDebuggerDisplay()
-        {
-            return ToString();
-        }
+            => ToString();
 
         internal sealed class NullJwk : Jwk
         {

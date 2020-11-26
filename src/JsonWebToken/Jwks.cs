@@ -13,9 +13,7 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Contains a collection of <see cref="Jwk"/>.
-    /// </summary>
+    /// <summary>Contains a collection of <see cref="Jwk"/>.</summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public sealed class Jwks : IDisposable, IEnumerable<Jwk>
     {
@@ -24,16 +22,12 @@ namespace JsonWebToken
 
         private KeyValuePair<JsonEncodedText, Jwk[]>[]? _identifiedKeys;
 
-        /// <summary>
-        /// Initializes an new instance of <see cref="Jwks"/>.
-        /// </summary>
+        /// <summary>Initializes an new instance of <see cref="Jwks"/>.</summary>
         public Jwks()
         {
         }
 
-        /// <summary>
-        /// Initializes an new instance of <see cref="Jwks"/>.
-        /// </summary>
+        /// <summary>Initializes an new instance of <see cref="Jwks"/>.</summary>
         /// <param name="key"></param>
         public Jwks(Jwk key)
         {
@@ -45,9 +39,7 @@ namespace JsonWebToken
             _keys.Add(key);
         }
 
-        /// <summary>
-        /// Initializes an new instance of <see cref="Jwks"/>.
-        /// </summary>
+        /// <summary>Initializes an new instance of <see cref="Jwks"/>.</summary>
         public Jwks(IList<Jwk> keys)
         {
             if (keys is null)
@@ -65,9 +57,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Gets or sets the first <see cref="Jwk"/> with its 'kid'.
-        /// </summary>
+        /// <summary>Gets or sets the first <see cref="Jwk"/> with its 'kid'.</summary>
         public Jwk? this[string kid]
         {
             get
@@ -86,9 +76,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Gets or sets the first <see cref="Jwk"/> with its 'kid'.
-        /// </summary>
+        /// <summary>Gets or sets the first <see cref="Jwk"/> with its 'kid'.</summary>
         public Jwk? this[JsonEncodedText kid]
         {
             get
@@ -107,9 +95,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Adds the <paramref name="key"/> to the JWKS.
-        /// </summary>
+        /// <summary>Adds the <paramref name="key"/> to the JWKS.</summary>
         /// <param name="key"></param>
         public void Add(Jwk key)
         {
@@ -122,9 +108,7 @@ namespace JsonWebToken
             _keys.Add(key);
         }
 
-        /// <summary>
-        /// Removes the <paramref name="key"/> from the JWKS.
-        /// </summary>
+        /// <summary>Removes the <paramref name="key"/> from the JWKS.</summary>
         /// <param name="key"></param>
         public void Remove(Jwk key)
         {
@@ -398,14 +382,10 @@ namespace JsonWebToken
             return _identifiedKeys;
         }
 
-        /// <summary>
-        /// Gets the number of keys contained in the <see cref="Jwks"/>.
-        /// </summary>
+        /// <summary>Gets the number of keys contained in the <see cref="Jwks"/>.</summary>
         public int Count => _keys.Count;
 
-        /// <summary>
-        /// Gets the list of <see cref="Jwk"/> identified by the 'kid'.
-        /// </summary>
+        /// <summary>Gets the list of <see cref="Jwk"/> identified by the 'kid'.</summary>
         /// <param name="kid"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -429,9 +409,7 @@ namespace JsonWebToken
             return Array.Empty<Jwk>();
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="Jwks"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="Jwks"/>.</summary>
         /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
         /// <returns><see cref="Jwks"/></returns>
         public static Jwks FromJson(string json)
@@ -460,9 +438,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="Jwks"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="Jwks"/>.</summary>
         /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
         /// <returns><see cref="Jwks"/></returns>
         public static Jwks FromJson(ReadOnlySpan<byte> json)

@@ -6,9 +6,7 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// List of header parameter names see: http://tools.ietf.org/html/rfc7519#section-5.
-    /// </summary>
+    /// <summary>List of header parameter names see: http://tools.ietf.org/html/rfc7519#section-5.</summary>
     public static class JwtHeaderParameterNames
     {
         /// <summary>see:https://tools.ietf.org/html/rfc7515#section-4.1.1</summary>
@@ -56,9 +54,7 @@ namespace JsonWebToken
         /// <summary>see:https://tools.ietf.org/html/rfc7515#section-4.1.5</summary>
         public static readonly string X5u = "x5u";
 
-        /// <summary>
-        /// see:https://tools.ietf.org/html/rfc7515#section-4.1.5
-        /// </summary>
+        /// <summary>see:https://tools.ietf.org/html/rfc7515#section-4.1.5</summary>
         public static ReadOnlySpan<byte> CritUtf8 => new byte[] { (byte)'c', (byte)'r', (byte)'i', (byte)'t' };
 
         /// <summary>see:https://tools.ietf.org/html/rfc7515#section-4.1.5</summary>

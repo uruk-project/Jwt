@@ -9,9 +9,7 @@ using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Defines signature algorithm.
-    /// </summary>
+    /// <summary>Defines signature algorithm.</summary>
     public sealed partial class SignatureAlgorithm : IEquatable<SignatureAlgorithm>, IAlgorithm
     {
         private const uint _S256 = 909455955u;

@@ -6,9 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Provides helper methods for UNIX-like time.
-    /// </summary>
+    /// <summary>Provides helper methods for UNIX-like time.</summary>
     public static class EpochTime
     {
         private const ulong UnixEpochTicks = 621355968000000000;
@@ -29,10 +27,7 @@ namespace JsonWebToken
         /// <summary>Represents the number of seconds in one day</summary>
         public const long OneDay = 86400;
 
-        /// <summary>
-        /// Per JWT spec:
-        /// Gets the number of seconds from 1970-01-01T0:0:0Z as measured in UTC until the desired date/time.
-        /// </summary>
+        /// <summary>Gets the number of seconds from 1970-01-01T0:0:0Z as measured in UTC until the desired date/time.</summary>
         /// <param name="datetime">The DateTime to convert to seconds.</param>
         /// <remarks>if dateTimeUtc less than UnixEpoch, return 0</remarks>
         /// <returns>the number of seconds since Unix Epoch.</returns>
@@ -52,9 +47,7 @@ namespace JsonWebToken
             return (long)((ticks - UnixEpochTicks) / 10000000);
         }
 
-        /// <summary>
-        /// Creates a DateTime from epoch time.
-        /// </summary>
+        /// <summary>Creates a DateTime from epoch time.</summary>
         /// <param name="secondsSinceUnixEpoch">Number of seconds.</param>
         /// <returns>The DateTime in UTC.</returns>
         public static DateTime ToDateTime(long secondsSinceUnixEpoch)
@@ -72,24 +65,13 @@ namespace JsonWebToken
             return UnixEpoch.AddSeconds(secondsSinceUnixEpoch);
         }
 
-        /// <summary>
-        /// Creates a DateTime from epoch time.
-        /// </summary>
+        /// <summary>Creates a DateTime from epoch time.</summary>
         /// <param name="secondsSinceUnixEpoch">Number of seconds.</param>
         /// <returns>The DateTime in UTC.</returns>
         public static DateTime? ToDateTime(long? secondsSinceUnixEpoch)
-        {
-            if (!secondsSinceUnixEpoch.HasValue)
-            {
-                return null;
-            }
+            => !secondsSinceUnixEpoch.HasValue ? null : (DateTime?)ToDateTime(secondsSinceUnixEpoch.Value);
 
-            return ToDateTime(secondsSinceUnixEpoch.Value);
-        }
-
-        /// <summary>
-        /// Gets the current date and time on this computer expressed as the UTC time, in the Unix epoch time format (total of seconds since the 01/01/1970). 
-        /// </summary>
+        /// <summary>Gets the current date and time on this computer expressed as the UTC time, in the Unix epoch time format (total of seconds since the 01/01/1970). </summary>
         public static long UtcNow
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

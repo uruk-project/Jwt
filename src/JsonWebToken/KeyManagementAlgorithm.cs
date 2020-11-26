@@ -8,9 +8,7 @@ using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Defines key management algorithm.
-    /// </summary>
+    /// <summary>Defines key management algorithm.</summary>
     public sealed partial class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>, IAlgorithm
     {
         private const uint _dir = 7498084u;

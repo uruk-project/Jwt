@@ -11,19 +11,13 @@ namespace JsonWebToken
     /// </summary>
     public static class JwkTypeNames
     {
-        /// <summary>
-        /// Elliptic curve 'EC'.
-        /// </summary>
+        /// <summary>Elliptic curve 'EC'.</summary>
         public static readonly JsonEncodedText EllipticCurve = JsonEncodedText.Encode("EC");
 
-        /// <summary>
-        /// RSA 'RSA'.
-        /// </summary>
+        /// <summary>RSA 'RSA'.</summary>
         public static readonly JsonEncodedText Rsa = JsonEncodedText.Encode("RSA");
 
-        /// <summary>
-        /// Octet 'oct';
-        /// </summary>
+        /// <summary>Octet 'oct'.</summary>
         public static readonly JsonEncodedText Octet = JsonEncodedText.Encode("oct");
     }
 }

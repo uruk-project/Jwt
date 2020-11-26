@@ -5,9 +5,7 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Names for Json Web Key Set parameters
-    /// </summary>
+    /// <summary>Names for Json Web Key Set parameters</summary>
     internal static class JwksParameterNames
     {
         public static readonly JsonEncodedText Keys = JsonEncodedText.Encode("keys");

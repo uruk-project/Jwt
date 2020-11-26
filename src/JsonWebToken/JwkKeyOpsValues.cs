@@ -12,44 +12,28 @@ namespace JsonWebToken
     public static class JwkKeyOpsValues
 
     {
-        /// <summary>
-        /// Gets the 'sign' (compute digital signature or MAC) value for the 'key_ops' parameter.
-        /// </summary>
+        /// <summary>Gets the 'sign' (compute digital signature or MAC) value for the 'key_ops' parameter.</summary>
         public static readonly JsonEncodedText Sign = JsonEncodedText.Encode("sign");
      
-        /// <summary>
-        /// Gets the 'verify' (verify digital signature or MAC) value for the 'key_ops' parameter.
-        /// </summary>
+        /// <summary>Gets the 'verify' (verify digital signature or MAC) value for the 'key_ops' parameter.</summary>
         public static readonly JsonEncodedText Verify = JsonEncodedText.Encode("verify");
         
-        /// <summary>
-        /// Gets the 'encrypt' (encrypt content) value for the 'key_ops' parameter.
-        /// </summary>
+        /// <summary>Gets the 'encrypt' (encrypt content) value for the 'key_ops' parameter.</summary>
         public static readonly JsonEncodedText Encrypt = JsonEncodedText.Encode("encrypt");
         
-        /// <summary>
-        /// Gets the 'encrypt' (decrypt content and validate decryption, if applicable) value for the 'key_ops' parameter.
-        /// </summary>
+        /// <summary>Gets the 'encrypt' (decrypt content and validate decryption, if applicable) value for the 'key_ops' parameter.</summary>
         public static readonly JsonEncodedText Decrypt = JsonEncodedText.Encode("encrypt");
         
-        /// <summary>
-        /// Gets the 'wrapKey' (encrypt key) value for the 'key_ops' parameter.
-        /// </summary>
+        /// <summary>Gets the 'wrapKey' (encrypt key) value for the 'key_ops' parameter.</summary>
         public static readonly JsonEncodedText WrapKey = JsonEncodedText.Encode("wrapKey");
         
-        /// <summary>
-        /// Gets the 'unwrapKey' (decrypt key and validate decryption, if applicable) value for the 'key_ops' parameter.
-        /// </summary>
+        /// <summary>Gets the 'unwrapKey' (decrypt key and validate decryption, if applicable) value for the 'key_ops' parameter.</summary>
         public static readonly JsonEncodedText UnwrapKey = JsonEncodedText.Encode("unwrapKey");
         
-        /// <summary>
-        /// Gets the 'deriveKey' (derive key) value for the 'key_ops' parameter.
-        /// </summary>
+        /// <summary>Gets the 'deriveKey' (derive key) value for the 'key_ops' parameter.</summary>
         public static readonly JsonEncodedText DeriveKey = JsonEncodedText.Encode("deriveKey");
         
-        /// <summary>
-        /// Gets the 'deriveBits' (derive bits not to be used as a key) value for the 'key_ops' parameter.
-        /// </summary>
+        /// <summary>Gets the 'deriveBits' (derive bits not to be used as a key) value for the 'key_ops' parameter.</summary>
         public static readonly JsonEncodedText DeriveBits = JsonEncodedText.Encode("deriveBits");
     }
 }

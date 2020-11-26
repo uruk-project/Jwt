@@ -6,13 +6,8 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-#nullable disable
-
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents an implementation of <see cref="IBufferWriter{T}" /> where the memory owner is a <see cref="ArrayPool{T}" /> of bytes.
-    /// </summary>
     internal sealed class PooledByteBufferWriter : IBufferWriter<byte>, IDisposable
     {
         private byte[] _rentedBuffer;
@@ -20,10 +15,6 @@ namespace JsonWebToken
 
         private const int MinimumBufferSize = 256;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PooledByteBufferWriter"/> class.
-        /// </summary>
-        /// <param name="initialCapacity "></param>
         public PooledByteBufferWriter(int initialCapacity = MinimumBufferSize)
         {
             Debug.Assert(initialCapacity > 0);
@@ -32,9 +23,6 @@ namespace JsonWebToken
             _index = 0;
         }
 
-        /// <summary>
-        /// Gets the output as a <see cref="byte" /> array.
-        /// </summary>
         public byte[] Buffer
         {
             get
@@ -43,9 +31,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Gets the output as a <see cref="Memory{T}"/>.
-        /// </summary>
         public ReadOnlyMemory<byte> WrittenMemory
         {
             get
@@ -56,9 +41,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Gets the output as a <see cref="ReadOnlySpan{T}"/>.
-        /// </summary>
         public ReadOnlySpan<byte> WrittenSpan
         {
             get
@@ -69,9 +51,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Gets the bytes written.
-        /// </summary>
         public int WrittenCount
         {
             get
@@ -81,9 +60,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Gets the capacity.
-        /// </summary>
         public int Capacity
         {
             get
@@ -93,9 +69,6 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Clear the <see cref="PooledByteBufferWriter"/>. 
-        /// </summary>
         public void Clear()
         {
             ClearHelper();
@@ -110,10 +83,6 @@ namespace JsonWebToken
             _index = 0;
         }
 
-        /// <summary>
-        /// Advances the <see cref="PooledByteBufferWriter"/> of the <paramref name="count"/> indicated.
-        /// </summary>
-        /// <param name="count"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance(int count)
         {
@@ -123,23 +92,18 @@ namespace JsonWebToken
             _index += count;
         }
 
-        /// <summary>
-        /// Returns the rented buffer back to the pool.
-        /// </summary>
         public void Dispose()
         {
             ClearHelper();
             ArrayPool<byte>.Shared.Return(_rentedBuffer);
         }
 
-        /// <inheritsdoc />
         public Span<byte> GetSpan(int sizeHint = 0)
         {
             CheckAndResizeBuffer(sizeHint);
             return _rentedBuffer.AsSpan(_index);
         }
 
-        /// <inheritsdoc />
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
             CheckAndResizeBuffer(sizeHint);

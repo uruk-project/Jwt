@@ -8,16 +8,12 @@ using gfoidl.Base64;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Encodes and Decodes strings as Base64Url.
-    /// </summary>
+    /// <summary>Encodes and Decodes strings as Base64Url.</summary>
     /// <remarks>Issued from https://github.com/aspnet/.
     /// </remarks>
     public static class Base64Url
     {
-        /// <summary>
-        /// Decodes a string of UTF-8 base64url-encoded text.
-        /// </summary>
+        /// <summary>Decodes a string of UTF-8 base64url-encoded text.</summary>
         public static byte[] Decode(string data)
         {
             if (data is null)
@@ -28,9 +24,7 @@ namespace JsonWebToken
             return Decode(Utf8.GetBytes(data));
         }
 
-        /// <summary>
-        /// Decodes a span of UTF-8 base64url-encoded text.
-        /// </summary>
+        /// <summary>Decodes a span of UTF-8 base64url-encoded text.</summary>
         public static byte[] Decode(ReadOnlySpan<byte> base64Url)
         {
             var dataLength = GetArraySizeRequiredToDecode(base64Url.Length);
@@ -40,9 +34,7 @@ namespace JsonWebToken
         }
 
 #if NETSTANDARD2_0
-        /// <summary>
-        /// Decodes a string of UTF-8 base64url-encoded text into a span of bytes.
-        /// </summary>
+        /// <summary>Decodes a string of UTF-8 base64url-encoded text into a span of bytes.</summary>
         /// <returns>The number of the bytes written to <paramref name="data"/>.</returns>
         public static int Decode(string base64Url, Span<byte> data)
         {
@@ -55,9 +47,7 @@ namespace JsonWebToken
         }
 #endif
 
-        /// <summary>
-        /// Decodes a span of UTF-8 base64url-encoded text into a span of bytes.
-        /// </summary>
+        /// <summary>Decodes a span of UTF-8 base64url-encoded text into a span of bytes.</summary>
         /// <returns>The number of the bytes written to <paramref name="data"/>.</returns>
         public static int Decode(ReadOnlySpan<char> base64Url, Span<byte> data)
         {
@@ -79,9 +69,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Decodes the span of UTF-8 base64url-encoded text into a span of bytes.
-        /// </summary>
+        /// <summary>Decodes the span of UTF-8 base64url-encoded text into a span of bytes.</summary>
         /// <returns>The number of the bytes written to <paramref name="data"/>.</returns>
         public static int Decode(ReadOnlySpan<byte> base64Url, Span<byte> data)
         {
@@ -94,17 +82,13 @@ namespace JsonWebToken
             return bytesWritten;
         }
 
-        /// <summary>
-        /// Decodes the span of UTF-8 base64url-encoded text into binary data.
-        /// </summary>
+        /// <summary>Decodes the span of UTF-8 base64url-encoded text into binary data.</summary>
         public static OperationStatus Decode(ReadOnlySpan<byte> base64Url, Span<byte> data, out int bytesConsumed, out int bytesWritten)
         {
             return Base64.Url.Decode(base64Url, data, out bytesConsumed, out bytesWritten);
         }
 
-        /// <summary>
-        /// Encodes a span of UTF-8 text into a span of bytes.
-        /// </summary>
+        /// <summary>Encodes a span of UTF-8 text into a span of bytes.</summary>
         /// <returns>The number of the bytes written to <paramref name="base64Url"/>.</returns>
         public static int Encode(ReadOnlySpan<byte> utf8Data, Span<byte> base64Url)
         {
@@ -117,9 +101,7 @@ namespace JsonWebToken
             return bytesWritten;
         }
 
-        /// <summary>
-        /// Encodes a span of UTF-8 text.
-        /// </summary>
+        /// <summary>Encodes a span of UTF-8 text.</summary>
         /// <returns>The base64-url encoded string.</returns>
         public static byte[] Encode(ReadOnlySpan<byte> utf8Data)
         {
@@ -130,9 +112,7 @@ namespace JsonWebToken
         }
 
 #if NETSTANDARD2_0 || NET47
-        /// <summary>
-        /// Encodes a string of UTF-8 text.
-        /// </summary>
+        /// <summary>Encodes a string of UTF-8 text.</summary>
         /// <returns>The base64-url encoded string.</returns>
         public static byte[] Encode(string data)
         {
@@ -145,9 +125,7 @@ namespace JsonWebToken
         }
 #endif
 
-        /// <summary>
-        /// Encodes a string of UTF-8 text.
-        /// </summary>
+        /// <summary>Encodes a string of UTF-8 text.</summary>
         /// <returns>The base64-url encoded string.</returns>
         public static byte[] Encode(ReadOnlySpan<char> data)
         {
@@ -170,35 +148,25 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Gets the minimum buffer size required for decoding of <paramref name="count"/> characters.
-        /// </summary>
+        /// <summaryGets the minimum buffer size required for decoding of <paramref name="count"/> characters.</summary>
         /// <param name="count">The number of characters to decode.</param>
         /// <returns>
         /// The minimum buffer size required for decoding  of <paramref name="count"/> characters.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetArraySizeRequiredToDecode(int count)
-        {
-            return Base64.Url.GetMaxDecodedLength(count);
-        }
+            => Base64.Url.GetMaxDecodedLength(count);
 
-        /// <summary>
-        /// Gets the minimum output buffer size required for encoding <paramref name="count"/> bytes.
-        /// </summary>
+        /// <summary>Gets the minimum output buffer size required for encoding <paramref name="count"/> bytes.</summary>
         /// <param name="count">The number of characters to encode.</param>
         /// <returns>
         /// The minimum output buffer size required for encoding <paramref name="count"/> <see cref="byte"/>s.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetArraySizeRequiredToEncode(int count)
-        {
-            return Base64.Url.GetEncodedLength(count);
-        }
+            => Base64.Url.GetEncodedLength(count);
 
         internal static int GetArraySizeRequiredToEncode(object length)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
     }
 }
