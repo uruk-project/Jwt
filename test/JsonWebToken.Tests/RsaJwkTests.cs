@@ -63,7 +63,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public override void Canonicalize()
         {
-            var jwk = RsaJwk.GenerateKey(2048, SignatureAlgorithm.RsaSha256, true);
+            var jwk = RsaJwk.GeneratePrivateKey(2048, SignatureAlgorithm.RsaSha256);
             var canonicalizedKey = (RsaJwk)CanonicalizeKey(jwk);
             Assert.False(canonicalizedKey.E.IsEmpty);
             Assert.False(canonicalizedKey.N.IsEmpty);
@@ -392,7 +392,7 @@ y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
         [Fact]
         public override void WriteTo()
         {
-            var key = RsaJwk.GenerateKey(2048, SignatureAlgorithm.RsaSha256, true);
+            var key = RsaJwk.GeneratePrivateKey(2048, SignatureAlgorithm.RsaSha256);
             key.Kid = JsonEncodedText.Encode("kid-rsa");
             key.KeyOps.Add(JwkKeyOpsValues.Sign);
             key.Use = JwkUseValues.Sig;

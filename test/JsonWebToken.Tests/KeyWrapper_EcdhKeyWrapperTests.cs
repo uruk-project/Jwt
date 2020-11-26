@@ -60,7 +60,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void WrapKey_Failure()
         {
-            var keyEncryptionKey = ECJwk.GenerateKey(EllipticalCurve.P256, true);
+            var keyEncryptionKey = ECJwk.GeneratePrivateKey(EllipticalCurve.P256);
             var wrapper = new EcdhKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs);
             var destination = new byte[0];
             var header = new JwtHeader();

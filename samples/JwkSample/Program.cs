@@ -24,7 +24,7 @@ namespace JwkSample
         private static void GenerateKeys()
         {
             // The GenerateKey method creates a new crypto-random asymmetric key for elliptic curve algorithms
-            var ecKey = ECJwk.GenerateKey(SignatureAlgorithm.EcdsaSha512, withPrivateKey: true);
+            var ecKey = ECJwk.GeneratePrivateKey(SignatureAlgorithm.EcdsaSha512);
             Console.WriteLine("Asymmetric generated JWK for elliptic curve P-521, for ES512 signature algorithm:");
             Console.WriteLine(ecKey);
             Console.WriteLine();

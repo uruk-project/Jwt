@@ -27,8 +27,8 @@ namespace JsonWebToken.Performance
         public void Setup()
         {
             var key = SymmetricJwk.GenerateKey(256);
-            var rsaKey = RsaJwk.GenerateKey(2048, true);
-            var ecKey = ECJwk.GenerateKey(EllipticalCurve.P256, true);
+            var rsaKey = RsaJwk.GeneratePrivateKey(2048);
+            var ecKey = ECJwk.GeneratePrivateKey(EllipticalCurve.P256);
             for (int i = 0; i < Count; i++)
             {
                 key.TryGetSigner(SignatureAlgorithm.HmacSha256, out var signer);

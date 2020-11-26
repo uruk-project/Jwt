@@ -37,7 +37,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public override void Canonicalize()
         {
-            var jwk = ECJwk.GenerateKey(SignatureAlgorithm.EcdsaSha256, true);
+            var jwk = ECJwk.GeneratePrivateKey(SignatureAlgorithm.EcdsaSha256);
             var canonicalizedKey = (ECJwk)CanonicalizeKey(jwk);
 
             Assert.True(canonicalizedKey.D.IsEmpty);
@@ -161,7 +161,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public override void WriteTo()
         {
-            var key = ECJwk.GenerateKey(SignatureAlgorithm.EcdsaSha256, true);
+            var key = ECJwk.GeneratePrivateKey(SignatureAlgorithm.EcdsaSha256);
             key.Kid = JsonEncodedText.Encode("kid-ec");
             key.KeyOps.Add(JwkKeyOpsValues.Sign);
             key.Use = JwkUseValues.Sig;

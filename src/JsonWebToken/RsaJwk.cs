@@ -607,7 +607,7 @@ namespace JsonWebToken
         /// <param name="withPrivateKey"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, bool computeThumbprint = true)
+        private static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, bool computeThumbprint = true)
         {
 #if SUPPORT_SPAN_CRYPTO
             using RSA rsa = RSA.Create(sizeInBits);
@@ -627,7 +627,7 @@ namespace JsonWebToken
         /// <param name="withPrivateKey"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static RsaJwk GenerateKey(int sizeInBits, SignatureAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
+        private static RsaJwk GenerateKey(int sizeInBits, SignatureAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
         {
 #if SUPPORT_SPAN_CRYPTO
             using RSA rsa = RSA.Create(sizeInBits);
@@ -647,7 +647,7 @@ namespace JsonWebToken
         /// <param name="withPrivateKey"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static RsaJwk GenerateKey(int sizeInBits, KeyManagementAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
+        private static RsaJwk GenerateKey(int sizeInBits, KeyManagementAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
         {
 #if SUPPORT_SPAN_CRYPTO
             using RSA rsa = RSA.Create(sizeInBits);

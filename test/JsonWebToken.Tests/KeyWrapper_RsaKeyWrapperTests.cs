@@ -59,7 +59,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void WrapKey_Failure()
         {
-            var keyEncryptionKey = RsaJwk.GenerateKey(2048, true);
+            var keyEncryptionKey = RsaJwk.GeneratePrivateKey(2048);
             var wrapper = new RsaKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.RsaOaep);
             var destination = new byte[0];
             var header = new JwtHeader();

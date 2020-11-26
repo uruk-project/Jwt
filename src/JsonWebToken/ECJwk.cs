@@ -455,7 +455,7 @@ namespace JsonWebToken
         /// <param name="curve"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static ECJwk GeneratePrivateKey(in EllipticalCurve curve, bool computeThumbprint = true)
+        public static ECJwk GeneratePrivateKey( EllipticalCurve curve, bool computeThumbprint = true)
             => GenerateKey(curve, withPrivateKey: true, computeThumbprint: computeThumbprint);
 
         /// <summary>
@@ -512,7 +512,7 @@ namespace JsonWebToken
         /// <param name="withPrivateKey"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, bool computeThumbprint = true)
+        private static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, bool computeThumbprint = true)
         {
             ECParameters parameters = GenerateParameters(curve, withPrivateKey);
             return FromParameters(parameters, computeThumbprint: computeThumbprint);
@@ -525,7 +525,7 @@ namespace JsonWebToken
         /// <param name="withPrivateKey"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static ECJwk GenerateKey(SignatureAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
+        private static ECJwk GenerateKey(SignatureAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
         {
             EllipticalCurve curve;
             if (algorithm == SignatureAlgorithm.EcdsaSha256)
@@ -562,7 +562,7 @@ namespace JsonWebToken
         /// <param name="withPrivateKey"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static ECJwk GenerateKey(in EllipticalCurve curve, KeyManagementAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
+        private static ECJwk GenerateKey(in EllipticalCurve curve, KeyManagementAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
         {
             ECParameters parameters = GenerateParameters(curve, withPrivateKey);
             return FromParameters(parameters, algorithm, computeThumbprint: computeThumbprint);
