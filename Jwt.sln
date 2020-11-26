@@ -76,8 +76,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{45F5CD67-CF18-4474-88A1-EDA948AC88FF}"
 	ProjectSection(SolutionItems) = preProject
 		docs\Create_JWE_AES.md = docs\Create_JWE_AES.md
+		docs\Create_JWE_Binary.md = docs\Create_JWE_Binary.md
 		docs\Create_JWE_Direct.md = docs\Create_JWE_Direct.md
 		docs\Create_JWE_ECDH.md = docs\Create_JWE_ECDH.md
+		docs\Create_JWE_Plain.md = docs\Create_JWE_Plain.md
 		docs\Create_JWE_RSA.md = docs\Create_JWE_RSA.md
 		docs\Create_JWS_ECDSA.md = docs\Create_JWS_ECDSA.md
 		docs\Create_JWS_HS.md = docs\Create_JWS_HS.md
