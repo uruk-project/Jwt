@@ -28,16 +28,16 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetAesWrappingAlgorithms()
         {
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes128KW };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes128KW };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes128KW };
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes192KW };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes192KW };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes192KW };
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes256KW };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes256KW };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes256KW };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes256KW };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.A128KW };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.A128KW };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.A128KW };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.A192KW };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.A192KW };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.A192KW };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.A256KW };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.A256KW };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.A256KW };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.A256KW };
         }
 
         [Theory]
@@ -52,7 +52,7 @@ namespace JsonWebToken.Tests
         public void WrapKey_Failure()
         {
             var keyEncryptionKey = SymmetricJwk.GenerateKey(128);
-            var wrapper = new AesKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes128KW);
+            var wrapper = new AesKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.A128KW);
             var destination = new byte[0];
             var header = new JwtHeader();
             Assert.Throws<ArgumentException>(() => wrapper.WrapKey(null, header, destination));

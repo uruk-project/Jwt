@@ -63,7 +63,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public override void Canonicalize()
         {
-            var jwk = RsaJwk.GeneratePrivateKey(2048, SignatureAlgorithm.RsaSha256);
+            var jwk = RsaJwk.GeneratePrivateKey(2048, SignatureAlgorithm.RS256);
             var canonicalizedKey = (RsaJwk)CanonicalizeKey(jwk);
             Assert.False(canonicalizedKey.E.IsEmpty);
             Assert.False(canonicalizedKey.N.IsEmpty);
@@ -360,39 +360,39 @@ y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
 
         public static IEnumerable<object[]> GetWrappingKeys()
         {
-            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaPkcs1 };
-            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep };
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.Rsa1_5 };
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep };
 #if !NET461 && !NET47
-            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep256 };
-            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep384 };
-            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep512 };
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep256 };
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep384 };
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep512 };
 #endif
         }
 
         public static IEnumerable<object[]> GetSignatureValidationKeys()
         {
-            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSha256 };
-            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSha384 };
-            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSha512 };
-            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSsaPssSha256 };
-            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSsaPssSha384 };
-            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSsaPssSha512 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RS256 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RS384 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RS512 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.PS256 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.PS384 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.PS512 };
         }
 
         public static IEnumerable<object[]> GetSignatureCreationKeys()
         {
-            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSha256 };
-            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSha384 };
-            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSha512 };
-            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSsaPssSha256 };
-            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSsaPssSha384 };
-            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSsaPssSha512 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RS256 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RS384 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RS512 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.PS256 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.PS384 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.PS512 };
         }
 
         [Fact]
         public override void WriteTo()
         {
-            var key = RsaJwk.GeneratePrivateKey(2048, SignatureAlgorithm.RsaSha256);
+            var key = RsaJwk.GeneratePrivateKey(2048, SignatureAlgorithm.RS256);
             key.Kid = JsonEncodedText.Encode("kid-rsa");
             key.KeyOps.Add(JwkKeyOpsValues.Sign);
             key.Use = JwkUseValues.Sig;

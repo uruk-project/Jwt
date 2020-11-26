@@ -11,7 +11,7 @@ namespace SecEventCreationSample
             var signingKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
 
             // Creates a SecEvent descriptor with all its properties
-            var descriptor = new SecEventDescriptor(signingKey, SignatureAlgorithm.HmacSha256)
+            var descriptor = new SecEventDescriptor(signingKey, SignatureAlgorithm.HS256)
             {
                 Payload = new JwtPayload
                 {

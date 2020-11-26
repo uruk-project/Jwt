@@ -42,9 +42,9 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Descriptor_AllKindOfObject()
         {
-            var descriptor = new JweDescriptor(SymmetricJwk.GenerateKey(256), KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128CbcHmacSha256, CompressionAlgorithm.Deflate)
+            var descriptor = new JweDescriptor(SymmetricJwk.GenerateKey(256), KeyManagementAlgorithm.Dir, EncryptionAlgorithm.A128CbcHS256, CompressionAlgorithm.Def)
             {
-                Payload = new JwsDescriptor(SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256), SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256), SignatureAlgorithm.HS256)
                 {
                     Header = new JwtHeader
                     {
@@ -111,11 +111,11 @@ namespace JsonWebToken.Tests
 
             Assert.True(descriptor.Header.TryGetValue("kid", out var jweHeaderParameter));
             Assert.True(descriptor.Header.TryGetValue("alg", out jweHeaderParameter));
-            Assert.Equal(KeyManagementAlgorithm.Direct.Name, ((JsonEncodedText)jweHeaderParameter.Value));
+            Assert.Equal(KeyManagementAlgorithm.Dir.Name, ((JsonEncodedText)jweHeaderParameter.Value));
             Assert.True(descriptor.Header.TryGetValue("enc", out jweHeaderParameter));
-            Assert.Equal(EncryptionAlgorithm.Aes128CbcHmacSha256.Name, ((JsonEncodedText)jweHeaderParameter.Value));
+            Assert.Equal(EncryptionAlgorithm.A128CbcHS256.Name, ((JsonEncodedText)jweHeaderParameter.Value));
             Assert.True(descriptor.Header.TryGetValue("zip", out jweHeaderParameter));
-            Assert.Equal(CompressionAlgorithm.Deflate.Name, (JsonEncodedText)jweHeaderParameter.Value);
+            Assert.Equal(CompressionAlgorithm.Def.Name, (JsonEncodedText)jweHeaderParameter.Value);
 
             PooledByteBufferWriter writer = new PooledByteBufferWriter();
             var context = new EncodingContext(writer, null, 0, false);
@@ -132,9 +132,9 @@ namespace JsonWebToken.Tests
             }
 
             // TODO : SymmetricJwk.GenerateKey(EncryptionAlgorithm.Aes128CbcHmacSha256)
-            var descriptor = new JweDescriptor(SymmetricJwk.GenerateKey(256), KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128CbcHmacSha256, CompressionAlgorithm.Deflate)
+            var descriptor = new JweDescriptor(SymmetricJwk.GenerateKey(256), KeyManagementAlgorithm.Dir, EncryptionAlgorithm.A128CbcHS256, CompressionAlgorithm.Def)
             {
-                Payload = new JwsDescriptor(SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256), SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256), SignatureAlgorithm.HS256)
                 {
                     Payload = payload
                 }

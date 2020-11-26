@@ -14,7 +14,7 @@ namespace JweValidationSample
             var decryptionKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4T");
 
             var policy = new TokenValidationPolicyBuilder()
-                           .RequireIssuer("https://idp.example.com/", signatureKey, SignatureAlgorithm.HmacSha256)
+                           .RequireIssuer("https://idp.example.com/", signatureKey, SignatureAlgorithm.HS256)
                            .RequireAudience("636C69656E745F6964")
                            .WithDecryptionKey(decryptionKey)
                            .Build();

@@ -8,7 +8,7 @@ namespace JsonWebToken.Performance
     [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
     public class JwsHeaderSerializationCacheBenchmarks
     {
-        private static readonly Jwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
+        private static readonly Jwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
         private static readonly DisabledJwtHeaderCache _disabledCache = new DisabledJwtHeaderCache();
         private static readonly LruJwtHeaderCache _enabledCache = new LruJwtHeaderCache();
         private static readonly FixedSizedBufferWriter _output = new FixedSizedBufferWriter(8192);
@@ -18,7 +18,7 @@ namespace JsonWebToken.Performance
         public void WithoutCache_2parameters()
         {
             _output.Clear();
-            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256);
+            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256);
             descriptor.Encode(new EncodingContext(_output, _disabledCache, 0, false));
         }
 
@@ -28,7 +28,7 @@ namespace JsonWebToken.Performance
         {
             _output.Clear();
             _enabledCache.Clear();
-            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256);
+            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256);
             descriptor.Encode(new EncodingContext(_output, _enabledCache, 0, false));
         }
         [Benchmark]
@@ -36,7 +36,7 @@ namespace JsonWebToken.Performance
         public void WithCacheHit_2parameters()
         {
             _output.Clear();
-            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256);
+            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256);
             descriptor.Encode(new EncodingContext(_output, _enabledCache, 0, false));
         }
 
@@ -45,7 +45,7 @@ namespace JsonWebToken.Performance
         public void WithoutCache_4parameters()
         {
             _output.Clear();
-            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256, "typ", "cty");
+            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256, "typ", "cty");
             descriptor.Encode(new EncodingContext(_output, _disabledCache, 0, false));
         }
 
@@ -55,7 +55,7 @@ namespace JsonWebToken.Performance
         {
             _output.Clear();
             _enabledCache.Clear();
-            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256, "typ", "cty");
+            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256, "typ", "cty");
             descriptor.Encode(new EncodingContext(_output, _enabledCache, 0, false));
         }
 
@@ -64,7 +64,7 @@ namespace JsonWebToken.Performance
         public void WithCacheHit_4parameters()
         {
             _output.Clear();
-            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256, "typ", "cty");
+            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256, "typ", "cty");
             descriptor.Encode(new EncodingContext(_output, _enabledCache, 0, false));
         }
 
@@ -73,7 +73,7 @@ namespace JsonWebToken.Performance
         public void WithoutCache_8parameters()
         {
             _output.Clear();
-            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256, "typ", "cty")
+            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256, "typ", "cty")
             {
                 Payload = new JwtPayload
                 {
@@ -92,7 +92,7 @@ namespace JsonWebToken.Performance
         {
             _output.Clear();
             _enabledCache.Clear();
-            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256, "typ", "cty")
+            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256, "typ", "cty")
             {
                 Payload = new JwtPayload
                 {
@@ -110,7 +110,7 @@ namespace JsonWebToken.Performance
         public void WithCacheHit_8parameters()
         {
             _output.Clear();
-            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256, "typ", "cty")
+            JwsDescriptor descriptor = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256, "typ", "cty")
             {
                 Payload = new JwtPayload
                 {
@@ -127,8 +127,8 @@ namespace JsonWebToken.Performance
     [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
     public class JweHeaderSerializationCacheBenchmarks
     {
-        private static readonly Jwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
-        private static readonly Jwk _encryptionKey = SymmetricJwk.GenerateKey(EncryptionAlgorithm.Aes128Gcm);
+        private static readonly Jwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
+        private static readonly Jwk _encryptionKey = SymmetricJwk.GenerateKey(EncryptionAlgorithm.A128Gcm);
         private static readonly DisabledJwtHeaderCache _disabledCache = new DisabledJwtHeaderCache();
         private static readonly LruJwtHeaderCache _enabledCache = new LruJwtHeaderCache();
         private static readonly FixedSizedBufferWriter _output = new FixedSizedBufferWriter(8192);
@@ -138,9 +138,9 @@ namespace JsonWebToken.Performance
         public void WithoutCache_4parameters()
         {
             _output.Clear();
-            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128Gcm)
+            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Dir, EncryptionAlgorithm.A128Gcm)
             {
-                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256)
             };
 
             descriptor.Encode(new EncodingContext(_output, _disabledCache, 0, false));
@@ -152,9 +152,9 @@ namespace JsonWebToken.Performance
         {
             _output.Clear();
             _enabledCache.Clear();
-            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128Gcm)
+            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Dir, EncryptionAlgorithm.A128Gcm)
             {
-                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256)
             };
             descriptor.Encode(new EncodingContext(_output, _enabledCache, 0, false));
         }
@@ -163,9 +163,9 @@ namespace JsonWebToken.Performance
         public void WithCacheHit_4parameters()
         {
             _output.Clear();
-            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128Gcm)
+            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Dir, EncryptionAlgorithm.A128Gcm)
             {
-                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256)
             };
             descriptor.Encode(new EncodingContext(_output, _enabledCache, 0, false));
         }
@@ -175,9 +175,9 @@ namespace JsonWebToken.Performance
         public void WithoutCache_5parameters()
         {
             _output.Clear();
-            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128Gcm, typ: "typ", cty: "cty")
+            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Dir, EncryptionAlgorithm.A128Gcm, typ: "typ", cty: "cty")
             {
-                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256)
             };
             descriptor.Encode(new EncodingContext(_output, _disabledCache, 0, false));
         }
@@ -188,9 +188,9 @@ namespace JsonWebToken.Performance
         {
             _output.Clear();
             _enabledCache.Clear();
-            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128Gcm, typ: "typ", cty: "cty")
+            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Dir, EncryptionAlgorithm.A128Gcm, typ: "typ", cty: "cty")
             {
-                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256)
             };
             descriptor.Encode(new EncodingContext(_output, _enabledCache, 0, false));
         }
@@ -200,9 +200,9 @@ namespace JsonWebToken.Performance
         public void WithCacheHit_5parameters()
         {
             _output.Clear();
-            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128Gcm, typ: "typ", cty: "cty")
+            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Dir, EncryptionAlgorithm.A128Gcm, typ: "typ", cty: "cty")
             {
-                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256)
             };
             descriptor.Encode(new EncodingContext(_output, _enabledCache, 0, false));
         }
@@ -212,7 +212,7 @@ namespace JsonWebToken.Performance
         public void WithoutCache_9parameters()
         {
             _output.Clear();
-            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128Gcm, typ: "typ", cty: "cty")
+            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Dir, EncryptionAlgorithm.A128Gcm, typ: "typ", cty: "cty")
             {
                 Header = new JwtHeader
                 {
@@ -221,7 +221,7 @@ namespace JsonWebToken.Performance
                     { "header7", "value 7" },
                     { "header8", "value 8" }
                 },
-                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256)
                 {
                 }
             };
@@ -234,7 +234,7 @@ namespace JsonWebToken.Performance
         {
             _output.Clear();
             _enabledCache.Clear();
-            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128Gcm, typ: "typ", cty: "cty")
+            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Dir, EncryptionAlgorithm.A128Gcm, typ: "typ", cty: "cty")
             {
                 Header = new JwtHeader
                 {
@@ -243,7 +243,7 @@ namespace JsonWebToken.Performance
                     { "header7", "value 7" },
                     { "header8", "value 8" }
                 },
-                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256)
                 {
                 }
             };
@@ -255,7 +255,7 @@ namespace JsonWebToken.Performance
         public void WithCacheHit_9parameters()
         {
             _output.Clear();
-            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128Gcm, typ: "typ", cty: "cty")
+            JweDescriptor descriptor = new JweDescriptor(_encryptionKey, KeyManagementAlgorithm.Dir, EncryptionAlgorithm.A128Gcm, typ: "typ", cty: "cty")
             {
                 Header = new JwtHeader
                     {
@@ -264,7 +264,7 @@ namespace JsonWebToken.Performance
                         { "header7", "value 7" },
                         { "header8", "value 8" }
                     },
-                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256)
                 {
                 }
             };

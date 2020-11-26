@@ -528,19 +528,19 @@ namespace JsonWebToken
         private static ECJwk GenerateKey(SignatureAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
         {
             EllipticalCurve curve;
-            if (algorithm == SignatureAlgorithm.EcdsaSha256)
+            if (algorithm == SignatureAlgorithm.ES256)
             {
                 curve = EllipticalCurve.P256;
             }
-            else if (algorithm == SignatureAlgorithm.EcdsaSha384)
+            else if (algorithm == SignatureAlgorithm.ES384)
             {
                 curve = EllipticalCurve.P384;
             }
-            else if (algorithm == SignatureAlgorithm.EcdsaSha512)
+            else if (algorithm == SignatureAlgorithm.ES512)
             {
                 curve = EllipticalCurve.P521;
             }
-            else if (algorithm == SignatureAlgorithm.EcdsaSha256X)
+            else if (algorithm == SignatureAlgorithm.ES256X)
             {
                 curve = EllipticalCurve.Secp256k1;
             }

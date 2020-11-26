@@ -17,16 +17,16 @@ namespace JsonWebToken.Tests
 
         private readonly SymmetricJwk _symmetric512Key = SymmetricJwk.FromBase64Url("98TDxdDvd5mKZNFitgMCwH_z7nzKS6sk_vykNTowymsJ4e8eGviJnVWI9i-YLreuBfhHDhis3CY2aKoK1RT6sg");
 
-        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
+        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
 
         [Fact]
         public void Encode_Decode_NotSupported()
         {
             var writer = new JwtWriter();
 
-            var descriptor = new JweDescriptor(Jwk.None, KeyManagementAlgorithm.Direct, new EncryptionAlgorithm(AlgorithmId.Undefined, "unsupported", 0, SignatureAlgorithm.None, 0, EncryptionType.NotSupported))
+            var descriptor = new JweDescriptor(Jwk.None, KeyManagementAlgorithm.Dir, new EncryptionAlgorithm(AlgorithmId.Undefined, "unsupported", 0, SignatureAlgorithm.None, 0, EncryptionType.NotSupported))
             {
-                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256)
                 {
                     Payload = new JwtPayload
                     {
@@ -50,7 +50,7 @@ namespace JsonWebToken.Tests
 
             var descriptor = new JweDescriptor(encryptionKey, alg, enc)
             {
-                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256)
                 {
                     Payload = new JwtPayload
                     {
@@ -112,26 +112,26 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetSupportedAlgorithms()
         {
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes128KW };
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes192KW };
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes256KW };
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Direct };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes128KW };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes192KW };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes256KW };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Direct };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes128KW };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes192KW };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes256KW };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Direct };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.A128KW };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.A192KW };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.A256KW };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.A128KW };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.A192KW };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.A256KW };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.A128KW };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.A192KW };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.A256KW };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.Dir };
 
 #if SUPPORT_AESGCM
-            yield return new object[] { EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.Aes128GcmKW };
-            yield return new object[] { EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.Aes192GcmKW };
-            yield return new object[] { EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Aes256GcmKW };
-            yield return new object[] { EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.Direct };
-            yield return new object[] { EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.Direct };
-            yield return new object[] { EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Direct };
+            yield return new object[] { EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.A128GcmKW };
+            yield return new object[] { EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.A192GcmKW };
+            yield return new object[] { EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.A256GcmKW };
+            yield return new object[] { EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.Dir };
 #endif
         }
     }

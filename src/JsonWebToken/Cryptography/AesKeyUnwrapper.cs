@@ -32,15 +32,15 @@ namespace JsonWebToken.Cryptography
 #if SUPPORT_SIMD
             if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
             {
-                if (algorithm == KeyManagementAlgorithm.Aes128KW)
+                if (algorithm == KeyManagementAlgorithm.A128KW)
                 {
                     _decryptor = new Aes128BlockDecryptor(key.K);
                 }
-                else if (algorithm == KeyManagementAlgorithm.Aes256KW)
+                else if (algorithm == KeyManagementAlgorithm.A256KW)
                 {
                     _decryptor = new Aes256BlockDecryptor(key.K);
                 }
-                else if (algorithm == KeyManagementAlgorithm.Aes192KW)
+                else if (algorithm == KeyManagementAlgorithm.A192KW)
                 {
                     _decryptor = new Aes192BlockDecryptor(key.K);
                 }

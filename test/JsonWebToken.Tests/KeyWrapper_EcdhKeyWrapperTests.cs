@@ -44,9 +44,9 @@ namespace JsonWebToken.Tests
             //    yield return new object[] { enc, KeyManagementAlgorithm.EcdhEsAes256KW };
             //}
 
-            yield return new object[] { EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.EcdhEsAes128KW };
-            yield return new object[] { EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.EcdhEsAes192KW };
-            yield return new object[] { EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.EcdhEsAes256KW };
+            yield return new object[] { EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.EcdhEsA128KW };
+            yield return new object[] { EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.EcdhEsA192KW };
+            yield return new object[] { EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.EcdhEsA256KW };
         }
 
         [Theory]
@@ -61,7 +61,7 @@ namespace JsonWebToken.Tests
         public void WrapKey_Failure()
         {
             var keyEncryptionKey = ECJwk.GeneratePrivateKey(EllipticalCurve.P256);
-            var wrapper = new EcdhKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs);
+            var wrapper = new EcdhKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.EcdhEs);
             var destination = new byte[0];
             var header = new JwtHeader();
             Jwk cek = null;

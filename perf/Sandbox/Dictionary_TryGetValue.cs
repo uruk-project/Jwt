@@ -31,7 +31,7 @@ namespace JsonWebToken.Performance
             var ecKey = ECJwk.GeneratePrivateKey(EllipticalCurve.P256);
             for (int i = 0; i < Count; i++)
             {
-                key.TryGetSigner(SignatureAlgorithm.HmacSha256, out var signer);
+                key.TryGetSigner(SignatureAlgorithm.HS256, out var signer);
                 id = i;
                 _dictionary.Add(id, signer);
                 _concurrentDictionary.TryAdd(id, signer);

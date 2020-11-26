@@ -157,7 +157,7 @@ namespace JsonWebToken.Tests
 
                 FillPayload(payload, descriptor);
 
-                var jwe = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256)
+                var jwe = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256)
                 {
                     Payload = descriptor,
                     Header = new JwtHeader
@@ -175,7 +175,7 @@ namespace JsonWebToken.Tests
 
                 FillPayload(payload, descriptor);
 
-                var jwe = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, CompressionAlgorithm.Deflate)
+                var jwe = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, CompressionAlgorithm.Def)
                 {
                     Payload = descriptor,
                     Header = new JwtHeader

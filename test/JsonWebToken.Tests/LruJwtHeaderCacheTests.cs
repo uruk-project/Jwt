@@ -28,7 +28,7 @@ namespace JsonWebToken.Tests
                 {
                     { "alg", "whatever" }
                 };
-                    cache.AddHeader(header, SignatureAlgorithm.HmacSha256, JsonEncodedText.Encode(kid), default, binaryHeader);
+                    cache.AddHeader(header, SignatureAlgorithm.HS256, JsonEncodedText.Encode(kid), default, binaryHeader);
                 }
 
                 Assert.Equal(10, cache.Count);
@@ -44,13 +44,13 @@ namespace JsonWebToken.Tests
                 for (int i = 0; i < Count; i++)
                 {
                     var kid = JsonEncodedText.Encode(i.ToString());
-                    Assert.True(cache.TryGetHeader(new JwtHeader(), SignatureAlgorithm.HmacSha256, kid, default, out binaryHeader));
+                    Assert.True(cache.TryGetHeader(new JwtHeader(), SignatureAlgorithm.HS256, kid, default, out binaryHeader));
                     Assert.Equal(binaryHeader, new byte[10] { (byte)i, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
                 }
 
-                Assert.False(cache.TryGetHeader(new JwtHeader(), SignatureAlgorithm.HmacSha256, JsonEncodedText.Encode("X"), default, out _));
-                Assert.False(cache.TryGetHeader(new JwtHeader(), SignatureAlgorithm.HmacSha384, JsonEncodedText.Encode("1"), default, out _));
-                Assert.False(cache.TryGetHeader(new JwtHeader(), SignatureAlgorithm.HmacSha256, JsonEncodedText.Encode("1"), "typ", out _));
+                Assert.False(cache.TryGetHeader(new JwtHeader(), SignatureAlgorithm.HS256, JsonEncodedText.Encode("X"), default, out _));
+                Assert.False(cache.TryGetHeader(new JwtHeader(), SignatureAlgorithm.HS384, JsonEncodedText.Encode("1"), default, out _));
+                Assert.False(cache.TryGetHeader(new JwtHeader(), SignatureAlgorithm.HS256, JsonEncodedText.Encode("1"), "typ", out _));
 
                 header = new JwtHeader
             {
@@ -58,7 +58,7 @@ namespace JsonWebToken.Tests
                 {  "kid", "whatever" },
                 {  "other", "whatever" }
             };
-                Assert.False(cache.TryGetHeader(header, SignatureAlgorithm.HmacSha256, JsonEncodedText.Encode("1"), default, out _));
+                Assert.False(cache.TryGetHeader(header, SignatureAlgorithm.HS256, JsonEncodedText.Encode("1"), default, out _));
             }
 
             [Fact]
@@ -77,7 +77,7 @@ namespace JsonWebToken.Tests
                     var kid = JsonEncodedText.Encode(i.ToString());
                     binaryHeader = new byte[10] { (byte)i, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-                    cache.AddHeader(header, SignatureAlgorithm.HmacSha256, kid, default, binaryHeader);
+                    cache.AddHeader(header, SignatureAlgorithm.HS256, kid, default, binaryHeader);
                 }
 
                 Assert.Equal(Count - LruJwtHeaderCache.MaxSize, cache.Count);
@@ -85,13 +85,13 @@ namespace JsonWebToken.Tests
                 for (int i = 0; i < LruJwtHeaderCache.MaxSize; i++)
                 {
                     var kid = JsonEncodedText.Encode(i.ToString());
-                    Assert.False(cache.TryGetHeader(new JwtHeader(), SignatureAlgorithm.HmacSha256, kid, default, out _));
+                    Assert.False(cache.TryGetHeader(new JwtHeader(), SignatureAlgorithm.HS256, kid, default, out _));
                 }
 
                 for (int i = LruJwtHeaderCache.MaxSize; i < Count; i++)
                 {
                     var kid = JsonEncodedText.Encode(i.ToString());
-                    Assert.True(cache.TryGetHeader(new JwtHeader(), SignatureAlgorithm.HmacSha256, kid, default, out binaryHeader));
+                    Assert.True(cache.TryGetHeader(new JwtHeader(), SignatureAlgorithm.HS256, kid, default, out binaryHeader));
                     Assert.Equal(binaryHeader, new byte[10] { (byte)i, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
                 }
             }
@@ -109,7 +109,7 @@ namespace JsonWebToken.Tests
                         {
                             { "alg", "whatever" }
                         };
-                        cache.AddHeader(header, SignatureAlgorithm.HmacSha256, JsonEncodedText.Encode(i.ToString()), default, ReadOnlySpan<byte>.Empty);
+                        cache.AddHeader(header, SignatureAlgorithm.HS256, JsonEncodedText.Encode(i.ToString()), default, ReadOnlySpan<byte>.Empty);
                     }
                 });
 
@@ -138,32 +138,32 @@ namespace JsonWebToken.Tests
                         { "alg", "whatever" },
                         { "end", "whatever" }
                     };
-                    cache.AddHeader(header, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, kid, default, default, binaryHeader);
+                    cache.AddHeader(header, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, kid, default, default, binaryHeader);
                 }
 
                 Assert.Equal(10, cache.Count);
 
                 for (int i = 0; i < Count - 1; i++)
                 {
-                    Assert.False(cache.TryGetHeader(headers[i], KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, default, default, default, out _));
+                    Assert.False(cache.TryGetHeader(headers[i], KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, default, default, default, out _));
                 }
 
-                Assert.True(cache.TryGetHeader(headers[9], KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, default, default, default, out binaryHeader));
+                Assert.True(cache.TryGetHeader(headers[9], KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, default, default, default, out binaryHeader));
                 Assert.Equal(binaryHeader, new byte[10] { 9, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
 
                 for (int i = 0; i < Count; i++)
                 {
                     var kid = JsonEncodedText.Encode(i.ToString());
-                    Assert.True(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, kid, default, default, out binaryHeader));
+                    Assert.True(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, kid, default, default, out binaryHeader));
                     Assert.Equal(binaryHeader, new byte[10] { (byte)i, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
                 }
 
                 // Assert for parameters not in cache
-                Assert.False(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.Aes192GcmKW, EncryptionAlgorithm.Aes128CbcHmacSha256, JsonEncodedText.Encode("1"), default, default, out _));
-                Assert.False(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes256Gcm, JsonEncodedText.Encode("1"), default, default, out _));
-                Assert.False(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, JsonEncodedText.Encode("X"), default, default, out _));
-                Assert.False(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, JsonEncodedText.Encode("1"), "Y", default, out _));
-                Assert.False(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, JsonEncodedText.Encode("1"), default, "Z", out _));
+                Assert.False(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.A192GcmKW, EncryptionAlgorithm.A128CbcHS256, JsonEncodedText.Encode("1"), default, default, out _));
+                Assert.False(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A256Gcm, JsonEncodedText.Encode("1"), default, default, out _));
+                Assert.False(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, JsonEncodedText.Encode("X"), default, default, out _));
+                Assert.False(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, JsonEncodedText.Encode("1"), "Y", default, out _));
+                Assert.False(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, JsonEncodedText.Encode("1"), default, "Z", out _));
 
                 // Assert for header with too much parameters
                 header = new JwtHeader
@@ -174,7 +174,7 @@ namespace JsonWebToken.Tests
                     {  "other2", "whatever" },
                     {  "other3", "whatever" }
                 };
-                Assert.False(cache.TryGetHeader(header, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, JsonEncodedText.Encode("1"), default, default, out _));
+                Assert.False(cache.TryGetHeader(header, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, JsonEncodedText.Encode("1"), default, default, out _));
             }
 
             [Fact]
@@ -193,7 +193,7 @@ namespace JsonWebToken.Tests
                     var kid = JsonEncodedText.Encode(i.ToString());
                     binaryHeader = new byte[10] { (byte)i, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-                    cache.AddHeader(header, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, kid, default, default, binaryHeader);
+                    cache.AddHeader(header, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, kid, default, default, binaryHeader);
                 }
 
                 Assert.Equal(Count - LruJwtHeaderCache.MaxSize, cache.Count);
@@ -201,13 +201,13 @@ namespace JsonWebToken.Tests
                 for (int i = 0; i < LruJwtHeaderCache.MaxSize; i++)
                 {
                     var kid = JsonEncodedText.Encode(i.ToString());
-                    Assert.False(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, kid, default, default, out _));
+                    Assert.False(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, kid, default, default, out _));
                 }
 
                 for (int i = LruJwtHeaderCache.MaxSize; i < Count; i++)
                 {
                     var kid = JsonEncodedText.Encode(i.ToString());
-                    Assert.True(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, kid, default, default, out binaryHeader));
+                    Assert.True(cache.TryGetHeader(new JwtHeader(), KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, kid, default, default, out binaryHeader));
                     Assert.Equal(binaryHeader, new byte[10] { (byte)i, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
                 }
             }
@@ -225,7 +225,7 @@ namespace JsonWebToken.Tests
                         {
                         { "alg", "whatever" }
                         };
-                        cache.AddHeader(header, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, JsonEncodedText.Encode(i.ToString()), default, default, ReadOnlySpan<byte>.Empty);
+                        cache.AddHeader(header, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, JsonEncodedText.Encode(i.ToString()), default, default, ReadOnlySpan<byte>.Empty);
                     }
                 });
 

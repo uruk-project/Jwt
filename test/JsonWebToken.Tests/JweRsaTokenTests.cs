@@ -23,7 +23,7 @@ namespace JsonWebToken.Tests
             e: "AQAB"
         );
 
-        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
+        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
 
         [Theory]
         [MemberData(nameof(GetSupportedAlgorithm))]
@@ -33,7 +33,7 @@ namespace JsonWebToken.Tests
 
             var descriptor = new JweDescriptor(_publicRsa2048Key, alg, enc)
             {
-                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256)
                 {
                     Payload = new JwtPayload
                     {
@@ -58,18 +58,18 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetSupportedAlgorithm()
         {
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaPkcs1 };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.RsaPkcs1 };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.RsaPkcs1 };
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.RsaOaep };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.RsaOaep };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.Rsa1_5 };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.Rsa1_5 };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.Rsa1_5 };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.RsaOaep };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.RsaOaep };
 #if !NETFRAMEWORK
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep256 };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.RsaOaep256 };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.RsaOaep256 };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.RsaOaep384 };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.RsaOaep512 };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep256 };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.RsaOaep256 };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.RsaOaep256 };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.RsaOaep384 };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.RsaOaep512 };
 #endif
         }
     }

@@ -11,7 +11,7 @@ namespace JwsCreationSample
             var signingKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
 
             // Creates a JWS descriptor with all its properties
-            var descriptor = new JwsDescriptor(signingKey, SignatureAlgorithm.HmacSha256)
+            var descriptor = new JwsDescriptor(signingKey, SignatureAlgorithm.HS256)
             {
                 Payload = new JwtPayload
                 {

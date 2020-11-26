@@ -13,11 +13,11 @@ namespace JsonWebToken.Tests
         [Fact]
         public void WrapUnwrap()
         {
-            var kwp = new AesKeyWrapper(_key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes128KW);
+            var kwp = new AesKeyWrapper(_key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.A128KW);
             byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
             var cek = kwp.WrapKey(_keyToWrap, (JwtHeader)null, wrappedKey);
 
-            var kuwp = new AesKeyUnwrapper(_key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes128KW);
+            var kuwp = new AesKeyUnwrapper(_key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.A128KW);
             var unwrappedKey = new byte[kuwp.GetKeyUnwrapSize(wrappedKey.Length)];
             var unwrapped = kuwp.TryUnwrapKey(wrappedKey, unwrappedKey, null, out int keyWrappedBytesWritten);
             Assert.True(unwrapped);
@@ -26,7 +26,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void EmptyWrappedKey_ThrowsException()
         {
-            var kuwp = new AesKeyUnwrapper(_key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes128KW);
+            var kuwp = new AesKeyUnwrapper(_key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.A128KW);
             var unwrappedKey = new byte[0];
             Assert.Throws<ArgumentNullException>(() => kuwp.TryUnwrapKey(ReadOnlySpan<byte>.Empty, unwrappedKey, null, out int keyWrappedBytesWritten));
             Assert.Throws<ArgumentNullException>(() => kuwp.TryUnwrapKey(Array.Empty<byte>(), unwrappedKey, null, out int keyWrappedBytesWritten));

@@ -193,7 +193,7 @@ namespace JsonWebToken.Performance
 
         public IEnumerable<byte[]> GetData()
         {
-            yield return Encoding.UTF8.GetBytes("{\"alg\":\"" + SignatureAlgorithm.HmacSha256.Name + "\"");
+            yield return Encoding.UTF8.GetBytes("{\"alg\":\"" + SignatureAlgorithm.HS256.Name + "\"");
             //yield return Encoding.UTF8.GetBytes("{\"alg\":\"" + SignatureAlgorithm.EcdsaSha256.Name + "\"");
             //yield return Encoding.UTF8.GetBytes("{\"alg\":\"" + SignatureAlgorithm.RsaSha256.Name + "\"");
             //yield return Encoding.UTF8.GetBytes("{\"alg\":\"" + SignatureAlgorithm.RsaSsaPssSha256.Name + "\"");

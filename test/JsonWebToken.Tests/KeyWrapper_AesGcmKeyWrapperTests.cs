@@ -22,9 +22,9 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetAesWrappingAlgorithms()
         {
-            yield return new object[] { EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.Aes128GcmKW };
-            yield return new object[] { EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.Aes192GcmKW };
-            yield return new object[] { EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Aes256GcmKW };
+            yield return new object[] { EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.A128GcmKW };
+            yield return new object[] { EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.A192GcmKW };
+            yield return new object[] { EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.A256GcmKW };
         }
 
         [Theory]
@@ -49,7 +49,7 @@ namespace JsonWebToken.Tests
         {
             var keyEncryptionKey = SymmetricJwk.GenerateKey(256);
             var contentEncryptionKey = SymmetricJwk.GenerateKey(256);
-            var wrapper = new AesGcmKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Aes256GcmKW);
+            var wrapper = new AesGcmKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.A256GcmKW);
             var destination = Array.Empty<byte>();
             var header = new JwtHeader();
             Assert.Throws<ArgumentException>(() => wrapper.WrapKey(contentEncryptionKey, header, destination));

@@ -25,8 +25,8 @@ namespace JsonWebToken.Performance
             plaintext = new byte[2048 * 16 + 16];
             key = SymmetricJwk.GenerateKey(128).AsSpan().ToArray();
             nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
-            _encryptor = new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
-            _decryptor = new AesCbcDecryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
+            _encryptor = new AesCbcEncryptor(EncryptionAlgorithm.A128CbcHS256);
+            _decryptor = new AesCbcDecryptor(EncryptionAlgorithm.A128CbcHS256);
 #if SUPPORT_SIMD
             _decryptorNi = new Aes128CbcDecryptor();
 #endif

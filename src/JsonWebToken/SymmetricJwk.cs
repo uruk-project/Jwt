@@ -324,7 +324,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override bool SupportKeyManagement(KeyManagementAlgorithm algorithm)
         {
-            return ((algorithm.Category & AlgorithmCategory.Aes) != 0 && algorithm.RequiredKeySizeInBits == KeySizeInBits) || (algorithm == KeyManagementAlgorithm.Direct);
+            return ((algorithm.Category & AlgorithmCategory.Aes) != 0 && algorithm.RequiredKeySizeInBits == KeySizeInBits) || (algorithm == KeyManagementAlgorithm.Dir);
         }
 
         /// <inheritsdoc />

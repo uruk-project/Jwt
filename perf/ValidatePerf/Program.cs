@@ -6,12 +6,12 @@ namespace ValidatePerf
 {
     class Program
     {
-        private static readonly Jwk signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
-        private static readonly Jwk encryptionKey = SymmetricJwk.GenerateKey(EncryptionAlgorithm.Aes128CbcHmacSha256);
+        private static readonly Jwk signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
+        private static readonly Jwk encryptionKey = SymmetricJwk.GenerateKey(EncryptionAlgorithm.A128CbcHS256);
         private static readonly ReadOnlyMemory<byte> _jws = CreateJws();
         private static readonly TokenValidationPolicy _policy =
             new TokenValidationPolicyBuilder()
-            .RequireIssuer("https://idp.example.com/", signingKey, SignatureAlgorithm.HmacSha256)
+            .RequireIssuer("https://idp.example.com/", signingKey, SignatureAlgorithm.HS256)
             .Build();
 
         private static void Main()
@@ -29,9 +29,9 @@ namespace ValidatePerf
 
         private static byte[] Encode6(JwtWriter writer)
         {
-            JweDescriptor descriptor = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128CbcHmacSha256)
+            JweDescriptor descriptor = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.Dir, EncryptionAlgorithm.A128CbcHS256)
             {
-                Payload = new JwsDescriptor(signingKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(signingKey, SignatureAlgorithm.HS256)
                 {
                     Payload = new JwtPayload
                     {
@@ -50,7 +50,7 @@ namespace ValidatePerf
 
         private static ReadOnlyMemory<byte> CreateJws()
         {
-            var descriptor = new JwsDescriptor(signingKey, SignatureAlgorithm.HmacSha256)
+            var descriptor = new JwsDescriptor(signingKey, SignatureAlgorithm.HS256)
             {
                 Payload = new JwtPayload
                 {

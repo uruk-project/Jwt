@@ -40,12 +40,12 @@ namespace JsonWebToken.Tests
 
         public SymmetricJwk CreateSigningKey()
         {
-            return SymmetricJwk.FromBase64Url("1ZwTfcBMuxcCltXX5b7rVw", SignatureAlgorithm.HmacSha256);
+            return SymmetricJwk.FromBase64Url("1ZwTfcBMuxcCltXX5b7rVw", SignatureAlgorithm.HS256);
         }
 
         public SymmetricJwk CreateEncryptionKey()
         {
-            return SymmetricJwk.FromBase64Url("vXOB3TzeAzoTy2gaiiraLA", KeyManagementAlgorithm.Aes128KW);
+            return SymmetricJwk.FromBase64Url("vXOB3TzeAzoTy2gaiiraLA", KeyManagementAlgorithm.A128KW);
         }
 
         public Jwks Jwks { get; }

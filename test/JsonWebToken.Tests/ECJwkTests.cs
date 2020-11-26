@@ -37,7 +37,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public override void Canonicalize()
         {
-            var jwk = ECJwk.GeneratePrivateKey(SignatureAlgorithm.EcdsaSha256);
+            var jwk = ECJwk.GeneratePrivateKey(SignatureAlgorithm.ES256);
             var canonicalizedKey = (ECJwk)CanonicalizeKey(jwk);
 
             Assert.True(canonicalizedKey.D.IsEmpty);
@@ -64,58 +64,58 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetWrappingKeys()
         {
-            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW };
-            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.EcdhEsAes192KW };
-            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEsAes256KW };
-            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs };
+            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.EcdhEsA128KW };
+            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.EcdhEsA192KW };
+            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.EcdhEsA256KW };
+            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.EcdhEs };
 
-            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW };
-            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.EcdhEsAes192KW };
-            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEsAes256KW };
-            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs };
+            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.EcdhEsA128KW };
+            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.EcdhEsA192KW };
+            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.EcdhEsA256KW };
+            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.EcdhEs };
 
-            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW };
-            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.EcdhEsAes192KW };
-            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEsAes256KW };
-            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs };
+            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.EcdhEsA128KW };
+            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.EcdhEsA192KW };
+            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.EcdhEsA256KW };
+            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.EcdhEs };
         }
 
         public static IEnumerable<object[]> GetValidSignatureKeys()
         {
-            yield return new object[] { PublicEcc256Key, SignatureAlgorithm.EcdsaSha256 };
+            yield return new object[] { PublicEcc256Key, SignatureAlgorithm.ES256 };
 
-            yield return new object[] { PublicEcc384Key, SignatureAlgorithm.EcdsaSha384 };
+            yield return new object[] { PublicEcc384Key, SignatureAlgorithm.ES384 };
 
-            yield return new object[] { PublicEcc521Key, SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { PublicEcc521Key, SignatureAlgorithm.ES512 };
             
-            yield return new object[] { PublicEcc256XKey, SignatureAlgorithm.EcdsaSha256X };
+            yield return new object[] { PublicEcc256XKey, SignatureAlgorithm.ES256X };
 
-            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha256 };
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.ES256 };
 
-            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha384 };
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.ES384 };
 
-            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.ES512 };
             
-            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha256X };
+            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.ES256X };
         }
 
         public static IEnumerable<object[]> GetInvalidKeys()
         {
-            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha512 };
-            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha256X };
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.ES384 };
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.ES512 };
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.ES256X };
 
-            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha512 };
-            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha256X };
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.ES256 };
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.ES512 };
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.ES256X };
 
-            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha256X };
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.ES256 };
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.ES384 };
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.ES256X };
 
-            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.ES256 };
+            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.ES384 };
+            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.ES512 };
         }
 
         [Theory]
@@ -161,7 +161,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public override void WriteTo()
         {
-            var key = ECJwk.GeneratePrivateKey(SignatureAlgorithm.EcdsaSha256);
+            var key = ECJwk.GeneratePrivateKey(SignatureAlgorithm.ES256);
             key.Kid = JsonEncodedText.Encode("kid-ec");
             key.KeyOps.Add(JwkKeyOpsValues.Sign);
             key.Use = JwkUseValues.Sig;

@@ -5,11 +5,11 @@ namespace CreatePerf
 {
     class Program
     {
-        private static readonly Jwk signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha512);
-        private static readonly Jwk encryptionKey = SymmetricJwk.GenerateKey(KeyManagementAlgorithm.Aes256KW);
+        private static readonly Jwk signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS512);
+        private static readonly Jwk encryptionKey = SymmetricJwk.GenerateKey(KeyManagementAlgorithm.A256KW);
         private static readonly JwtWriter writer = new JwtWriter();
 
-        private static readonly JwsDescriptor jwsDescriptor = new JwsDescriptor(signingKey, SignatureAlgorithm.HmacSha512)
+        private static readonly JwsDescriptor jwsDescriptor = new JwsDescriptor(signingKey, SignatureAlgorithm.HS512)
         {
             Payload = new JwtPayload
             {
@@ -20,7 +20,7 @@ namespace CreatePerf
             },
         };
 
-        private static readonly JweDescriptor jweDescriptor = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.Aes256KW, EncryptionAlgorithm.Aes256CbcHmacSha512)
+        private static readonly JweDescriptor jweDescriptor = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.A256KW, EncryptionAlgorithm.A256CbcHS512)
         {
             Payload = jwsDescriptor,
         };

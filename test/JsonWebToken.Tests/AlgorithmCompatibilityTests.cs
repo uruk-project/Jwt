@@ -11,7 +11,7 @@ namespace JsonWebToken.Tests
             _keys = keys;
         }
 
-        private static readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
+        private static readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
         private readonly KeyFixture _keys;
 
         [Theory]
@@ -23,7 +23,7 @@ namespace JsonWebToken.Tests
             {
                 var descriptor = new JweDescriptor(encryptionKey, alg, enc)
                 {
-                    Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HmacSha256)
+                    Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256)
                     {
                         Payload = new JwtPayload
                         {
@@ -132,7 +132,7 @@ namespace JsonWebToken.Tests
             //            yield return KeyManagementAlgorithm.Aes128KW;
             //            yield return KeyManagementAlgorithm.Aes192KW;
             //            yield return KeyManagementAlgorithm.Aes256KW;
-            yield return KeyManagementAlgorithm.Direct;
+            yield return KeyManagementAlgorithm.Dir;
 
             //#if NETCOREAPP3_0
             //            yield return KeyManagementAlgorithm.Aes128GcmKW;
@@ -154,7 +154,7 @@ namespace JsonWebToken.Tests
 
         private static IEnumerable<EncryptionAlgorithm> GetEncryptionAlgorithms()
         {
-            yield return EncryptionAlgorithm.Aes128CbcHmacSha256;
+            yield return EncryptionAlgorithm.A128CbcHS256;
             //            yield return EncryptionAlgorithm.Aes192CbcHmacSha384;
             //            yield return EncryptionAlgorithm.Aes256CbcHmacSha512;
             //#if NETCOREAPP3_0

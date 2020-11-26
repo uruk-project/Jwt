@@ -26,22 +26,22 @@ namespace JsonWebToken
         /// <summary>
         /// 'P-256'.
         /// </summary>
-        public static readonly EllipticalCurve P256 = new EllipticalCurve(1, ECCurve.NamedCurves.nistP256, P256Name, 256, 64, SignatureAlgorithm.EcdsaSha256);
+        public static readonly EllipticalCurve P256 = new EllipticalCurve(1, ECCurve.NamedCurves.nistP256, P256Name, 256, 64, SignatureAlgorithm.ES256);
 
         /// <summary>
         /// 'P-384'.
         /// </summary>
-        public static readonly EllipticalCurve P384 = new EllipticalCurve(2, ECCurve.NamedCurves.nistP384, P384Name, 384, 96, SignatureAlgorithm.EcdsaSha384);
+        public static readonly EllipticalCurve P384 = new EllipticalCurve(2, ECCurve.NamedCurves.nistP384, P384Name, 384, 96, SignatureAlgorithm.ES384);
 
         /// <summary>
         /// 'P-521'.
         /// </summary>    
-        public static readonly EllipticalCurve P521 = new EllipticalCurve(3, ECCurve.NamedCurves.nistP521, P521Name, 521, 132, SignatureAlgorithm.EcdsaSha512);
+        public static readonly EllipticalCurve P521 = new EllipticalCurve(3, ECCurve.NamedCurves.nistP521, P521Name, 521, 132, SignatureAlgorithm.ES512);
 
         /// <summary>
         /// 'secp256k1'.
         /// </summary>    
-        public static readonly EllipticalCurve Secp256k1 = new EllipticalCurve(8, ECCurve.CreateFromValue("1.3.132.0.10"), Secp256k1Name, 256, 64, SignatureAlgorithm.EcdsaSha256X);
+        public static readonly EllipticalCurve Secp256k1 = new EllipticalCurve(8, ECCurve.CreateFromValue("1.3.132.0.10"), Secp256k1Name, 256, 64, SignatureAlgorithm.ES256X);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EllipticalCurve"/> struct.

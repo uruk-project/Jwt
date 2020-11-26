@@ -104,7 +104,7 @@ namespace JsonWebToken
                 keys = null;
                 return false;
             }
-            else if (alg.ValueEquals(KeyManagementAlgorithm.Direct.Utf8Name))
+            else if (alg.ValueEquals(KeyManagementAlgorithm.Dir.Utf8Name))
             {
                 keys = new List<SymmetricJwk>(1);
                 for (int i = 0; i < encryptionKeyProviders.Length; i++)

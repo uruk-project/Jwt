@@ -48,12 +48,12 @@ namespace JsonWebToken.Performance
 
         private static SymmetricJwk CreateSigningKey()
         {
-            return SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
+            return SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
         }
 
         private static SymmetricJwk CreateEncryptionKey()
         {
-            return SymmetricJwk.GenerateKey(KeyManagementAlgorithm.Aes128KW);
+            return SymmetricJwk.GenerateKey(KeyManagementAlgorithm.A128KW);
         }
 
         private static IDictionary<string, JObject> CreatePayloads()
@@ -118,7 +118,7 @@ namespace JsonWebToken.Performance
 
             foreach (var payload in payloads)
             {
-                var descriptor = new JwsDescriptor(signingKey, SignatureAlgorithm.HmacSha256);
+                var descriptor = new JwsDescriptor(signingKey, SignatureAlgorithm.HS256);
 
                 foreach (var property in payload.Value.Properties())
                 {
@@ -140,7 +140,7 @@ namespace JsonWebToken.Performance
 
             foreach (var payload in payloads)
             {
-                var descriptor = new JwsDescriptor(signingKey, SignatureAlgorithm.HmacSha256);
+                var descriptor = new JwsDescriptor(signingKey, SignatureAlgorithm.HS256);
 
                 foreach (var property in payload.Value.Properties())
                 {
@@ -157,7 +157,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                var jwe = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256)
+                var jwe = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256)
                 {
                     Payload = descriptor
                 };
@@ -167,7 +167,7 @@ namespace JsonWebToken.Performance
 
             foreach (var payload in payloads)
             {
-                var descriptor = new JwsDescriptor(signingKey, SignatureAlgorithm.HmacSha256);
+                var descriptor = new JwsDescriptor(signingKey, SignatureAlgorithm.HS256);
 
                 foreach (var property in payload.Value.Properties())
                 {
@@ -184,7 +184,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                var jwe = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, CompressionAlgorithm.Deflate)
+                var jwe = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, CompressionAlgorithm.Def)
                 {
                     Payload = descriptor
                 };
@@ -338,7 +338,7 @@ namespace JsonWebToken.Performance
                 }
             }
 
-            var d = new JwsDescriptor(signingKey, SignatureAlgorithm.HmacSha256);
+            var d = new JwsDescriptor(signingKey, SignatureAlgorithm.HS256);
             d.Payload = payload;
             return d;
         }

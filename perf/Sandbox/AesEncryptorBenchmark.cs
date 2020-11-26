@@ -23,7 +23,7 @@ namespace JsonWebToken.Performance
             ciphertext = new byte[(2048 * 16 + 16) & ~15];
             key = SymmetricJwk.GenerateKey(128).AsSpan().ToArray();
             nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
-            _encryptor = new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
+            _encryptor = new AesCbcEncryptor(EncryptionAlgorithm.A128CbcHS256);
 #if NETCOREAPP3_0
             _encryptorNi = new Aes128CbcEncryptor();
 #endif  

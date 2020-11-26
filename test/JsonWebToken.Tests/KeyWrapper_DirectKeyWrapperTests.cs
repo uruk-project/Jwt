@@ -28,12 +28,12 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetAesWrappingAlgorithms()
         {
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Direct };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Direct };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Direct };
-            yield return new object[] { EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.Direct };
-            yield return new object[] { EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.Direct };
-            yield return new object[] { EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Direct };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.Dir };
         }
 
         [Theory]

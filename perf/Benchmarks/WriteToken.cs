@@ -186,7 +186,7 @@ namespace JsonWebToken.Performance
             var descriptors = new Dictionary<string, JwtDescriptor>();
             foreach (var payload in Tokens.Payloads)
             {
-                var descriptor = new JwsDescriptor(SigningKey, SignatureAlgorithm.HmacSha256);
+                var descriptor = new JwsDescriptor(SigningKey, SignatureAlgorithm.HS256);
 
                 foreach (var property in payload.Value.Properties())
                 {
@@ -208,7 +208,7 @@ namespace JsonWebToken.Performance
 
             foreach (var payload in Tokens.Payloads)
             {
-                var descriptor = new JwsDescriptor(SigningKey, SignatureAlgorithm.HmacSha256);
+                var descriptor = new JwsDescriptor(SigningKey, SignatureAlgorithm.HS256);
 
                 foreach (var property in payload.Value.Properties())
                 {
@@ -230,7 +230,7 @@ namespace JsonWebToken.Performance
 
             foreach (var payload in Tokens.Payloads)
             {
-                var descriptor = new JwsDescriptor(SigningKey, SignatureAlgorithm.HmacSha256);
+                var descriptor = new JwsDescriptor(SigningKey, SignatureAlgorithm.HS256);
 
                 foreach (var property in payload.Value.Properties())
                 {
@@ -247,14 +247,14 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                var jwe = new JweDescriptor(EncryptionKey, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256)
+                var jwe = new JweDescriptor(EncryptionKey, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256)
                 {
                     Payload = descriptor,
                 };
 
                 descriptors.Add("JWE " + payload.Key + "6 claims", jwe);
 
-                var jwec = new JweDescriptor(EncryptionKey, KeyManagementAlgorithm.Aes128KW, EncryptionAlgorithm.Aes128CbcHmacSha256, CompressionAlgorithm.Deflate)
+                var jwec = new JweDescriptor(EncryptionKey, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, CompressionAlgorithm.Def)
                 {
                     Payload = descriptor
                 };
@@ -325,7 +325,7 @@ namespace JsonWebToken.Performance
                 var descriptor = new SecurityTokenDescriptor()
                 {
                     SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.SignatureAlgorithm!.Name.ToString()),
-                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.Aes128KW.Name.ToString(), EncryptionAlgorithm.Aes128CbcHmacSha256.Name.ToString()),
+                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.A128KW.Name.ToString(), EncryptionAlgorithm.A128CbcHS256.Name.ToString()),
                     Subject = new ClaimsIdentity(),
                     Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.ToDateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
                     IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.ToDateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
@@ -353,7 +353,7 @@ namespace JsonWebToken.Performance
                 var descriptor = new SecurityTokenDescriptor()
                 {
                     SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.SignatureAlgorithm!.Name.ToString()),
-                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.Aes128KW.Name.ToString(), EncryptionAlgorithm.Aes128CbcHmacSha256.Name.ToString()),
+                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.A128KW.Name.ToString(), EncryptionAlgorithm.A128CbcHS256.Name.ToString()),
                     Subject = new ClaimsIdentity(),
                     Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.ToDateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
                     IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.ToDateTime(payload.Value.Value<long>("iat")) : default(DateTime?),

@@ -179,9 +179,9 @@ namespace JsonWebToken.Tests.Cryptography
         }
 
         private protected override AesDecryptor CreateDecryptor()
-            => new AesCbcDecryptor(EncryptionAlgorithm.Aes256CbcHmacSha512);
+            => new AesCbcDecryptor(EncryptionAlgorithm.A256CbcHS512);
 
         private protected override AesEncryptor CreateEncryptor()
-            => new AesCbcEncryptor(EncryptionAlgorithm.Aes256CbcHmacSha512);
+            => new AesCbcEncryptor(EncryptionAlgorithm.A256CbcHS512);
     }
 }

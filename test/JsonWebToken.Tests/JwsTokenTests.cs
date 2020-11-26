@@ -103,19 +103,19 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetSupportedAlgorithm()
         {
-            yield return new object[] { (string)SignatureAlgorithm.HmacSha256 };
-            yield return new object[] { (string)SignatureAlgorithm.HmacSha384 };
-            yield return new object[] { (string)SignatureAlgorithm.HmacSha512 };
-            yield return new object[] { (string)SignatureAlgorithm.RsaSha256 };
-            yield return new object[] { (string)SignatureAlgorithm.RsaSha384 };
-            yield return new object[] { (string)SignatureAlgorithm.RsaSha512 };
-            yield return new object[] { (string)SignatureAlgorithm.RsaSsaPssSha256 };
-            yield return new object[] { (string)SignatureAlgorithm.RsaSsaPssSha384 };
-            yield return new object[] { (string)SignatureAlgorithm.RsaSsaPssSha512 };
+            yield return new object[] { (string)SignatureAlgorithm.HS256 };
+            yield return new object[] { (string)SignatureAlgorithm.HS384 };
+            yield return new object[] { (string)SignatureAlgorithm.HS512 };
+            yield return new object[] { (string)SignatureAlgorithm.RS256 };
+            yield return new object[] { (string)SignatureAlgorithm.RS384 };
+            yield return new object[] { (string)SignatureAlgorithm.RS512 };
+            yield return new object[] { (string)SignatureAlgorithm.PS256 };
+            yield return new object[] { (string)SignatureAlgorithm.PS384 };
+            yield return new object[] { (string)SignatureAlgorithm.PS512 };
 #if !NET461
-            yield return new object[] { (string)SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { (string)SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { (string)SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { (string)SignatureAlgorithm.ES256 };
+            yield return new object[] { (string)SignatureAlgorithm.ES384 };
+            yield return new object[] { (string)SignatureAlgorithm.ES512 };
 #endif
         }
 

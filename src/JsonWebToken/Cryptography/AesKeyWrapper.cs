@@ -32,15 +32,15 @@ namespace JsonWebToken.Cryptography
             : base(key, encryptionAlgorithm, algorithm)
         {
 #if SUPPORT_SIMD
-            if (algorithm == KeyManagementAlgorithm.Aes128KW)
+            if (algorithm == KeyManagementAlgorithm.A128KW)
             {
                 _encryptor = new Aes128BlockEncryptor(key.K);
             }
-            else if (algorithm == KeyManagementAlgorithm.Aes256KW)
+            else if (algorithm == KeyManagementAlgorithm.A256KW)
             {
                 _encryptor = new Aes256BlockEncryptor(key.K);
             }
-            else if (algorithm == KeyManagementAlgorithm.Aes192KW)
+            else if (algorithm == KeyManagementAlgorithm.A192KW)
             {
                 _encryptor = new Aes192BlockEncryptor(key.K);
             }

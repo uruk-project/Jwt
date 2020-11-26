@@ -13,9 +13,9 @@ namespace MultiIssuersValidationSample
             var keyIssuer2 = SymmetricJwk.FromBase64Url("9dobXhxMWH9PoLsKRdv1qp0bEqJm4YNd8JRaTxes8i4R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
             var keyIssuer3 = SymmetricJwk.FromBase64Url("lh2TJcMdPyNLhfNp0nYLAFM_R0UEXVoZ9N7ife4ZT-A");
             var policyMultiIssuer = new TokenValidationPolicyBuilder()
-                            .RequireIssuer("https://idp1.example.com/", keyIssuer1, SignatureAlgorithm.HmacSha256)
-                            .RequireIssuer("https://idp2.example.com/", keyIssuer2, SignatureAlgorithm.HmacSha512)
-                            .RequireIssuer("https://idp3.example.com/", keyIssuer3, SignatureAlgorithm.HmacSha256)
+                            .RequireIssuer("https://idp1.example.com/", keyIssuer1, SignatureAlgorithm.HS256)
+                            .RequireIssuer("https://idp2.example.com/", keyIssuer2, SignatureAlgorithm.HS512)
+                            .RequireIssuer("https://idp3.example.com/", keyIssuer3, SignatureAlgorithm.HS256)
                             .RequireAudience("F6964636C69656E745");
 
             var token = "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MDAwMDcyMDAsImlhdCI6MjAwMDAwNzIwMCwiaXNzIjoiaHR0cHM6Ly9pZHAzLmV4YW1wbGUuY29tLyIsImF1ZCI6IkY2OTY0NjM2QzY5NjU2RTc0NSJ9.a6RiTht8kyTDL9SZVX9kUye7dJL9YSZxJPbAyaaw3QE";

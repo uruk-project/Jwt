@@ -24,20 +24,20 @@ namespace JwkSample
         private static void GenerateKeys()
         {
             // The GenerateKey method creates a new crypto-random asymmetric key for elliptic curve algorithms
-            var ecKey = ECJwk.GeneratePrivateKey(SignatureAlgorithm.EcdsaSha512);
+            var ecKey = ECJwk.GeneratePrivateKey(SignatureAlgorithm.ES512);
             Console.WriteLine("Asymmetric generated JWK for elliptic curve P-521, for ES512 signature algorithm:");
             Console.WriteLine(ecKey);
             Console.WriteLine();
 
             // The GenerateKey method creates a new crypto-random asymmetric key for RSA algorithms
             // You may specify a bigger key size. The default is the minimum size (2048 bits for RSA)
-            var rsaKey = RsaJwk.GeneratePrivateKey(SignatureAlgorithm.RsaSsaPssSha384);
+            var rsaKey = RsaJwk.GeneratePrivateKey(SignatureAlgorithm.PS384);
             Console.WriteLine("Asymmetric generated JWK of 2048 bits for RSA, for PS384 signature algorithm:");
             Console.WriteLine(rsaKey);
             Console.WriteLine();
 
             // The GenerateKey method creates a new crypto-random symmetric key for symmetric algorithms
-            var symmetricKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
+            var symmetricKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
             Console.WriteLine("Symmetric generated JWK of 128 bits, for HS256 signature algorithm:");
             Console.WriteLine(symmetricKey);
             Console.WriteLine();
