@@ -6,7 +6,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
-namespace JsonWebToken.Cryptography
+namespace JsonWebToken
 {
     /// <summary>
     /// Constants for JsonWebKey Elliptical Curve Types

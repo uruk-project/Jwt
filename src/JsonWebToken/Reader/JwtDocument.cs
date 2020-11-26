@@ -558,7 +558,7 @@ namespace JsonWebToken
 
             return row.Length;
         }
-        
+
         internal int GetMemberCount(int index)
         {
             JsonRow row = _parsedData.Get(index);

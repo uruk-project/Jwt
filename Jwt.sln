@@ -73,6 +73,35 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecEventCreationSample", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sandbox", "perf\Sandbox\Sandbox.csproj", "{8670CD4F-CA00-44BB-9867-A327891AB832}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{45F5CD67-CF18-4474-88A1-EDA948AC88FF}"
+	ProjectSection(SolutionItems) = preProject
+		docs\Create_JWE_AES.md = docs\Create_JWE_AES.md
+		docs\Create_JWE_Direct.md = docs\Create_JWE_Direct.md
+		docs\Create_JWE_ECDH.md = docs\Create_JWE_ECDH.md
+		docs\Create_JWE_RSA.md = docs\Create_JWE_RSA.md
+		docs\Create_JWS_ECDSA.md = docs\Create_JWS_ECDSA.md
+		docs\Create_JWS_HS.md = docs\Create_JWS_HS.md
+		docs\Create_JWS_RSA.md = docs\Create_JWS_RSA.md
+		docs\Validate_JWE.md = docs\Validate_JWE.md
+		docs\validate_jwe_allocated.png = docs\validate_jwe_allocated.png
+		docs\validate_jwe_ops.png = docs\validate_jwe_ops.png
+		docs\validate_jwec_allocated.png = docs\validate_jwec_allocated.png
+		docs\validate_jwec_ops.png = docs\validate_jwec_ops.png
+		docs\validate_jws_allocated.png = docs\validate_jws_allocated.png
+		docs\Validate_JWS_EC.md = docs\Validate_JWS_EC.md
+		docs\Validate_JWS_HMAC.md = docs\Validate_JWS_HMAC.md
+		docs\validate_jws_ops.png = docs\validate_jws_ops.png
+		docs\Validate_JWS_RSA.md = docs\Validate_JWS_RSA.md
+		docs\validate_jwsi_allocated.png = docs\validate_jwsi_allocated.png
+		docs\validate_jwsi_ops.png = docs\validate_jwsi_ops.png
+		docs\write_jwe_allocated.png = docs\write_jwe_allocated.png
+		docs\write_jwe_ops.png = docs\write_jwe_ops.png
+		docs\write_jwec_allocated.png = docs\write_jwec_allocated.png
+		docs\write_jwec_ops.png = docs\write_jwec_ops.png
+		docs\write_jws_allocated.png = docs\write_jws_allocated.png
+		docs\write_jws_ops.png = docs\write_jws_ops.png
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

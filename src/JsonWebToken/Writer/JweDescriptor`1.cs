@@ -226,7 +226,7 @@ namespace JsonWebToken
             }
             else
             {
-                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(enc);
+                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(enc, key);
             }
         }
     }

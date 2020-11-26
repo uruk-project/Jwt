@@ -660,6 +660,36 @@ namespace JsonWebToken
         }
 
         /// <summary>
+        /// Converts the current <see cref="RsaJwk"/> key to the public representation. This converted key can be exposed.
+        /// </summary>
+        /// <returns></returns>
+        public RsaJwk AsPublicKey()
+        {
+            var publicParameters = new RSAParameters
+            {
+                Exponent = _parameters.Exponent,
+                Modulus = _parameters.Modulus
+            };
+
+            RsaJwk publicKey;
+            if (!(KeyManagementAlgorithm is null))
+            {
+                publicKey = FromParameters(publicParameters, KeyManagementAlgorithm, computeThumbprint: false);
+            }
+            else if (!(SignatureAlgorithm is null))
+            {
+                publicKey = FromParameters(publicParameters, SignatureAlgorithm, computeThumbprint: false);
+            }
+            else
+            {
+                publicKey = FromParameters(publicParameters, computeThumbprint: false);
+            }
+
+            publicKey.Kid = Kid;
+            return publicKey;
+        }
+
+        /// <summary>
         /// Returns a new instance of <see cref="RsaJwk"/>.
         /// </summary>
         public static RsaJwk FromByteArray(

@@ -457,17 +457,16 @@ namespace JsonWebToken
         /// <returns></returns>
         public static ECJwk GeneratePrivateKey(in EllipticalCurve curve, bool computeThumbprint = true)
             => GenerateKey(curve, withPrivateKey: true, computeThumbprint: computeThumbprint);
-        
+
         /// <summary>
         /// Generates a private <see cref="ECJwk"/>.
         /// </summary>
-        /// <param name="curve"></param>
         /// <param name="algorithm"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static ECJwk GeneratePrivateKey(in EllipticalCurve curve, SignatureAlgorithm algorithm, bool computeThumbprint = true)
-            => GenerateKey(curve, algorithm, withPrivateKey: true, computeThumbprint: computeThumbprint);
-        
+        public static ECJwk GeneratePrivateKey(SignatureAlgorithm algorithm, bool computeThumbprint = true)
+            => GenerateKey(algorithm, withPrivateKey: true, computeThumbprint: computeThumbprint);
+
         /// <summary>
         /// Generates a private <see cref="ECJwk"/>.
         /// </summary>
@@ -490,12 +489,11 @@ namespace JsonWebToken
         /// <summary>
         /// Generates a public <see cref="ECJwk"/>.
         /// </summary>
-        /// <param name="curve"></param>
         /// <param name="algorithm"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static ECJwk GeneratePublicKey(in EllipticalCurve curve, SignatureAlgorithm algorithm, bool computeThumbprint = true)
-            => GenerateKey(curve, algorithm, withPrivateKey: false, computeThumbprint: computeThumbprint);
+        public static ECJwk GeneratePublicKey(SignatureAlgorithm algorithm, bool computeThumbprint = true)
+            => GenerateKey(algorithm, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
         /// <summary>
         /// Generates a public <see cref="ECJwk"/>.
@@ -523,13 +521,35 @@ namespace JsonWebToken
         /// <summary>
         /// Generates a <see cref="ECJwk"/>.
         /// </summary>
-        /// <param name="curve"></param>
         /// <param name="algorithm"></param>
         /// <param name="withPrivateKey"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static ECJwk GenerateKey(in EllipticalCurve curve, SignatureAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
+        public static ECJwk GenerateKey(SignatureAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
         {
+            EllipticalCurve curve;
+            if (algorithm == SignatureAlgorithm.EcdsaSha256)
+            {
+                curve = EllipticalCurve.P256;
+            }
+            else if (algorithm == SignatureAlgorithm.EcdsaSha384)
+            {
+                curve = EllipticalCurve.P384;
+            }
+            else if (algorithm == SignatureAlgorithm.EcdsaSha512)
+            {
+                curve = EllipticalCurve.P521;
+            }
+            else if (algorithm == SignatureAlgorithm.EcdsaSha256X)
+            {
+                curve = EllipticalCurve.Secp256k1;
+            }
+            else
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm);
+                curve = default;
+            }
+
             ECParameters parameters = GenerateParameters(curve, withPrivateKey);
             return FromParameters(parameters, algorithm, computeThumbprint: computeThumbprint);
         }
@@ -555,9 +575,38 @@ namespace JsonWebToken
             return ecdsa.ExportParameters(withPrivateKey);
         }
 
+        /// <summary>
+        /// Converts the current <see cref="RsaJwk"/> key to the public representation. This converted key can be exposed.
+        /// </summary>
+        /// <returns></returns>
+        public ECJwk AsPublicKey()
+        {
+            var publicParameters = new ECParameters
+            {
+                Curve = _parameters.Curve,
+                Q = _parameters.Q
+            };
+            ECJwk publicKey;
+            if (!(KeyManagementAlgorithm is null))
+            {
+                publicKey = FromParameters(publicParameters, KeyManagementAlgorithm, computeThumbprint: false);
+            }
+            else if (!(SignatureAlgorithm is null))
+            {
+                publicKey = FromParameters(publicParameters, SignatureAlgorithm, computeThumbprint: false);
+            }
+            else
+            {
+                publicKey = FromParameters(publicParameters, computeThumbprint: false);
+            }
+
+            publicKey.Kid = Kid;
+            return publicKey;
+        }
+
         private static ReadOnlySpan<byte> StartCanonicalizeValue => new byte[] { (byte)'{', (byte)'"', (byte)'c', (byte)'r', (byte)'v', (byte)'"', (byte)':', (byte)'"' };
         private static ReadOnlySpan<byte> Middle1CanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'k', (byte)'t', (byte)'y', (byte)'"', (byte)':', (byte)'"', (byte)'E', (byte)'C', (byte)'"', (byte)',', (byte)'"', (byte)'x', (byte)'"', (byte)':', (byte)'"' };
-        private static ReadOnlySpan<byte> Middle2CanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'y' ,(byte)'"', (byte)':', (byte)'"' };
+        private static ReadOnlySpan<byte> Middle2CanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'y', (byte)'"', (byte)':', (byte)'"' };
         private static ReadOnlySpan<byte> EndCanonicalizeValue => new byte[] { (byte)'"', (byte)'}' };
 
         /// <inheritdoc />
@@ -580,13 +629,13 @@ namespace JsonWebToken
         /// <inheritdoc />
         protected override int GetCanonicalizeSize()
         {
-            Debug.Assert(35 == 
-                StartCanonicalizeValue.Length 
-                + Middle1CanonicalizeValue.Length 
+            Debug.Assert(35 ==
+                StartCanonicalizeValue.Length
+                + Middle1CanonicalizeValue.Length
                 + Middle2CanonicalizeValue.Length
-                + EndCanonicalizeValue.Length); 
+                + EndCanonicalizeValue.Length);
             return 35
-                + Base64Url.GetArraySizeRequiredToEncode(Crv.Name.Length) 
+                + Base64Url.GetArraySizeRequiredToEncode(Crv.Name.Length)
                 + Base64Url.GetArraySizeRequiredToEncode(X!.Length)
                 + Base64Url.GetArraySizeRequiredToEncode(Y!.Length);
         }
