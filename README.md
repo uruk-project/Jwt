@@ -4,14 +4,14 @@ JSON Web Token  for .Net
 Provides support for JWT. 
 This library aims to propose performant JWT primitives. 
 
-[![Build Status](https://yanncrumeyrolle.visualstudio.com/ycrumeyrolle/_apis/build/status/JWT?branchName=master)](https://yanncrumeyrolle.visualstudio.com/ycrumeyrolle/_build/latest?definitionId=12?branchName=master) [![CodeFactor](https://www.codefactor.io/repository/github/ycrumeyrolle/jwt/badge)](https://www.codefactor.io/repository/github/ycrumeyrolle/jwt) [![NuGet](https://img.shields.io/nuget/v/JsonWebToken.svg?style=flat)](https://www.nuget.org/packages/JsonWebToken/)
+![.NET Core CI/CD](https://github.com/uruk-project/Jwt/workflows/.NET%20Core%20CI/CD/badge.svg) [![NuGet](https://img.shields.io/nuget/v/JsonWebToken.svg?style=flat)](https://www.nuget.org/packages/JsonWebToken/)
 
 ## Installation
 Install the [JsonWebToken NuGet Package](https://www.nuget.org/packages/JsonWebToken/).
 
 ### Package Manager Console
 ```
-Install-Package JsonWebToken -Version 1.9
+Install-Package JsonWebToken -Version 1.9.1
 ```
 ### .NET CLI
 ```

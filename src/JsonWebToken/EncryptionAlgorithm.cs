@@ -22,9 +22,7 @@ namespace JsonWebToken
         private const ulong _A192GCM = 21747546271068481u;
         private const ulong _A256GCM = 21747546337915457u;
         
-        /// <summary>
-        /// Defines whether the AES isntruction set is enabled. 
-        /// </summary>
+        /// <summary>Defines whether the AES instruction set is enabled. </summary>
         public static bool EnabledAesInstructionSet { get; set; } = true;
 
         /// <summary>'A128CBC-HS256'</summary>
