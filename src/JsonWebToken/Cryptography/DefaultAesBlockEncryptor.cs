@@ -6,12 +6,12 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken
 {
-    internal sealed class DefaultAesBlockDecryptor : AesBlockDecryptor
+    internal sealed class DefaultAesBlockEncryptor : AesBlockEncryptor
     {
         private readonly Aes _aes;
-        private readonly ICryptoTransform _decryptor;
+        private readonly ICryptoTransform _encryptor;
 
-        public DefaultAesBlockDecryptor(ReadOnlySpan<byte> key)
+        public DefaultAesBlockEncryptor(ReadOnlySpan<byte> key)
         {
             byte[] keyBytes = key.ToArray();
             _aes = Aes.Create();
@@ -24,20 +24,19 @@ namespace JsonWebToken
             var iv = new byte[_aes.BlockSize >> 3];
             Array.Clear(iv, 0, iv.Length);
             _aes.IV = iv;
-            _decryptor = _aes.CreateDecryptor();
+            _encryptor = _aes.CreateEncryptor();
         }
 
-        public override void DecryptBlock(ReadOnlySpan<byte> ciphertext, Span<byte> plaintext)
+        public override void EncryptBlock(ReadOnlySpan<byte> plaintext, Span<byte> ciphertext)
         {
-            var block = _decryptor.TransformFinalBlock(ciphertext.ToArray(), 0, 16);
-            block.CopyTo(plaintext);
-
+            var block = _encryptor.TransformFinalBlock(plaintext.ToArray(), 0, 16);
+            block.CopyTo(ciphertext);
         }
 
         public override void Dispose()
         {
             _aes.Dispose();
-            _decryptor.Dispose();
+            _encryptor.Dispose();
         }
     }
 }

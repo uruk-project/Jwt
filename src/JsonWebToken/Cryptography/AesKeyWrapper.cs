@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
 {
@@ -18,43 +18,40 @@ namespace JsonWebToken.Internal
         // The default initialization vector from RFC3394
         private const ulong _defaultIV = 0XA6A6A6A6A6A6A6A6;
 
-#if SUPPORT_SIMD
         private readonly AesBlockEncryptor _encryptor;
-#else
-        private readonly Aes _aes;
-        private readonly ObjectPool<ICryptoTransform> _encryptorPool;
-#endif
         private bool _disposed;
 
         public AesKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
+            Debug.Assert(algorithm.Category == AlgorithmCategory.Aes);
 #if SUPPORT_SIMD
-            if (algorithm == KeyManagementAlgorithm.Aes128KW)
+            if (System.Runtime.Intrinsics.X86.Aes.IsSupported && EncryptionAlgorithm.EnabledAesInstructionSet)
             {
-                _encryptor = new Aes128BlockEncryptor(key.K);
-            }
-            else if (algorithm == KeyManagementAlgorithm.Aes256KW)
-            {
-                _encryptor = new Aes256BlockEncryptor(key.K);
-            }
-            else if (algorithm == KeyManagementAlgorithm.Aes192KW)
-            {
-                _encryptor = new Aes192BlockEncryptor(key.K);
+                if (algorithm == KeyManagementAlgorithm.Aes128KW)
+                {
+                    _encryptor = new Aes128BlockEncryptor(key.K);
+                }
+                else if (algorithm == KeyManagementAlgorithm.Aes256KW)
+                {
+                    _encryptor = new Aes256BlockEncryptor(key.K);
+                }
+                else if (algorithm == KeyManagementAlgorithm.Aes192KW)
+                {
+                    _encryptor = new Aes192BlockEncryptor(key.K);
+                }
+                else
+                {
+                    ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
+                    _encryptor = new Aes128BlockEncryptor(default);
+                }
             }
             else
             {
-                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-                _encryptor = new Aes128BlockEncryptor(default);
+                _encryptor= new DefaultAesBlockEncryptor(key.K);
             }
 #else
-            if (algorithm.Category != AlgorithmCategory.Aes)
-            {
-                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-            }
-
-            _aes = GetSymmetricAlgorithm(key, algorithm);
-            _encryptorPool = new ObjectPool<ICryptoTransform>(new PooledEncryptorPolicy(_aes));
+            _encryptor = new DefaultAesBlockEncryptor(key.K);
 #endif
         }
 
@@ -64,12 +61,7 @@ namespace JsonWebToken.Internal
             {
                 if (disposing)
                 {
-#if SUPPORT_SIMD
                     _encryptor.Dispose();
-#else
-                    _encryptorPool.Dispose();
-                    _aes.Dispose();
-#endif
                 }
 
                 _disposed = true;
@@ -115,7 +107,6 @@ namespace JsonWebToken.Internal
             return contentEncryptionKey;
         }
 
-#if SUPPORT_SIMD
         private ulong TryWrapKey(ref ulong a, int n, ref byte rRef)
         {
             Span<byte> block = stackalloc byte[16];
@@ -134,110 +125,21 @@ namespace JsonWebToken.Internal
                 {
                     Unsafe.WriteUnaligned(ref blockRef, a);
                     Unsafe.WriteUnaligned(ref block2Ref, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3))));
-                    _encryptor.EncryptBlock(ref blockRef, ref bRef);
+                    _encryptor!.EncryptBlock(block, b);
                     a = Unsafe.ReadUnaligned<ulong>(ref bRef);
                     Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i + 1));
                     a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
                     Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3)), Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
                 }
             }
+
             return a;
         }
-#else
-        private ulong TryWrapKey(ref ulong a, int n, ref byte rRef)
-        {
-            byte[] block = new byte[16];
-            ref byte blockRef = ref block[0];
-            ref byte block2Ref = ref Unsafe.AddByteOffset(ref blockRef, (IntPtr)8);
-            Span<byte> t = stackalloc byte[8];
-            ref byte tRef = ref MemoryMarshal.GetReference(t);
-            ref byte tRef7 = ref Unsafe.AddByteOffset(ref tRef, (IntPtr)7);
-            Unsafe.WriteUnaligned<ulong>(ref tRef, 0L);
-            int n3 = n >> 3;
-            var encryptor = _encryptorPool.Get();
-            try
-            {
-                for (var j = 0; j < 6; j++)
-                {
-                    for (var i = 0; i < n3; i++)
-                    {
-                        Unsafe.WriteUnaligned(ref blockRef, a);
-                        Unsafe.WriteUnaligned(ref block2Ref, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3))));
-                        Span<byte> b = encryptor.TransformFinalBlock(block, 0, 16);
-                        ref byte bRef = ref MemoryMarshal.GetReference(b);
-                        a = Unsafe.ReadUnaligned<ulong>(ref bRef);
-                        Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i + 1));
-                        a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
-                        Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref rRef, (IntPtr)(i << 3)), Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
-                    }
-                }
-            }
-            finally
-            {
-                _encryptorPool.Return(encryptor);
-            }
-            return a;
-        }
-#endif
 
         public override int GetKeyWrapSize()
             => GetKeyWrappedSize(EncryptionAlgorithm);
 
-        public static int GetKeyUnwrappedSize(int wrappedKeySize)
-            => wrappedKeySize - BlockSizeInBytes;
-
         public static int GetKeyWrappedSize(EncryptionAlgorithm encryptionAlgorithm)
             => encryptionAlgorithm.KeyWrappedSizeInBytes;
-
-#if !SUPPORT_SIMD
-        private static Aes GetSymmetricAlgorithm(SymmetricJwk key, KeyManagementAlgorithm algorithm)
-        {
-            if (algorithm.RequiredKeySizeInBits != key.KeySizeInBits)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_KeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, key, key.KeySizeInBits);
-            }
-
-            byte[] keyBytes = key.ToArray();
-            Aes? aes = null;
-            try
-            {
-                aes = Aes.Create();
-                aes.Mode = CipherMode.ECB; // lgtm [cs/ecb-encryption]
-                aes.Padding = PaddingMode.None;
-                aes.KeySize = keyBytes.Length << 3;
-                aes.Key = keyBytes;
-
-                // Set the AES IV to Zeroes
-                var iv = new byte[aes.BlockSize >> 3];
-                Array.Clear(iv, 0, iv.Length);
-                aes.IV = iv;
-
-                return aes;
-            }
-            catch (Exception ex)
-            {
-                if (aes != null)
-                {
-                    aes.Dispose();
-                }
-
-                ThrowHelper.ThrowCryptographicException_CreateSymmetricAlgorithmFailed(key, algorithm, ex);
-                throw;
-            }
-        }
-
-        private sealed class PooledEncryptorPolicy : PooledObjectFactory<ICryptoTransform>
-        {
-            private readonly Aes _aes;
-
-            public PooledEncryptorPolicy(Aes aes)
-            {
-                _aes = aes;
-            }
-
-            public override ICryptoTransform Create()
-                => _aes.CreateEncryptor();
-        }
-#endif
     }
 }

@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 
 namespace JsonWebToken.Internal
 {
@@ -24,13 +24,9 @@ namespace JsonWebToken.Internal
         public AesKeyUnwrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
-            if (algorithm.Category != AlgorithmCategory.Aes)
-            {
-                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-            }
-
+            Debug.Assert(algorithm.Category == AlgorithmCategory.Aes);
 #if SUPPORT_SIMD
-            if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
+            if (System.Runtime.Intrinsics.X86.Aes.IsSupported && EncryptionAlgorithm.EnabledAesInstructionSet)
             {
                 if (algorithm == KeyManagementAlgorithm.Aes128KW)
                 {
@@ -115,7 +111,6 @@ namespace JsonWebToken.Internal
             return ThrowHelper.TryWriteError(out bytesWritten);
         }
 
-//#if SUPPORT_SIMD
         private ulong TryUnwrapKey(ulong a, int n, ref byte rRef)
         {
             Span<byte> block = stackalloc byte[16];
@@ -147,81 +142,11 @@ namespace JsonWebToken.Internal
 
             return a;
         }
-//#else
-//        private ulong TryUnwrapKey(ulong a, int n, ref byte rRef)
-//        {
-//            byte[] block = new byte[16];
-//            ref byte blockRef = ref block[0];
-//            Span<byte> t = stackalloc byte[8];
-//            ref byte tRef = ref MemoryMarshal.GetReference(t);
-//            Unsafe.WriteUnaligned(ref tRef, 0);
-//            int n3 = n >> 3;
-//            ref byte blockEndRef = ref Unsafe.AddByteOffset(ref blockRef, (IntPtr)8);
-//            ref byte tRef7 = ref Unsafe.AddByteOffset(ref tRef, (IntPtr)7);
-//            var decryptor = _decryptor;
-
-//            for (var j = 5; j >= 0; j--)
-//            {
-//                for (var i = n3; i > 0; i--)
-//                {
-//                    Unsafe.WriteUnaligned(ref tRef7, (byte)((n3 * j) + i));
-//                    a ^= Unsafe.ReadUnaligned<ulong>(ref tRef);
-//                    Unsafe.WriteUnaligned(ref blockRef, a);
-//                    ref byte rCurrent = ref Unsafe.AddByteOffset(ref rRef, (IntPtr)((i - 1) << 3));
-//                    Unsafe.WriteUnaligned(ref blockEndRef, Unsafe.ReadUnaligned<ulong>(ref rCurrent));
-//                    Span<byte> b = decryptor.TransformFinalBlock(block, 0, 16);
-//                    ref byte bRef = ref MemoryMarshal.GetReference(b);
-//                    a = Unsafe.ReadUnaligned<ulong>(ref bRef);
-//                    Unsafe.WriteUnaligned(ref rCurrent, Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref bRef, (IntPtr)8)));
-//                }
-//            }
-
-//            return a;
-//        }
-//#endif
 
         public override int GetKeyUnwrapSize(int wrappedKeySize)
             => GetKeyUnwrappedSize(wrappedKeySize);
 
         public static int GetKeyUnwrappedSize(int wrappedKeySize)
             => wrappedKeySize - BlockSizeInBytes;
-
-#if !SUPPORT_SIMD
-        private static Aes GetSymmetricAlgorithm(SymmetricJwk key, KeyManagementAlgorithm algorithm)
-        {
-            if (algorithm.RequiredKeySizeInBits != key.KeySizeInBits)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_KeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, key, key.KeySizeInBits);
-            }
-
-            byte[] keyBytes = key.ToArray();
-            Aes? aes = null;
-            try
-            {
-                aes = Aes.Create();
-                aes.Mode = CipherMode.ECB; // lgtm [cs/ecb-encryption]
-                aes.Padding = PaddingMode.None;
-                aes.KeySize = keyBytes.Length << 3;
-                aes.Key = keyBytes;
-
-                // Set the AES IV to Zeroes
-                var iv = new byte[aes.BlockSize >> 3];
-                Array.Clear(iv, 0, iv.Length);
-                aes.IV = iv;
-
-                return aes;
-            }
-            catch (Exception ex)
-            {
-                if (aes != null)
-                {
-                    aes.Dispose();
-                }
-
-                ThrowHelper.ThrowCryptographicException_CreateSymmetricAlgorithmFailed(key, algorithm, ex);
-                throw;
-            }
-        }
-#endif
     }
 }
