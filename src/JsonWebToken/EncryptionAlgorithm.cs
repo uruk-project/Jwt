@@ -27,10 +27,8 @@ namespace JsonWebToken
         /// </summary>
         public static bool EnabledAesInstructionSet { get; set; } = true;
 
-        /// <summary>
-        /// 'A128CBC-HS256'
-        /// </summary>
-        public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: Algorithms.AesCbc128HS256, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesHmac);
+        /// <summary>'A128CBC-HS256'</summary>
+        public static readonly EncryptionAlgorithm A128CbcHS256 = new EncryptionAlgorithm(id: AlgorithmId.AesCbc128HS256, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HS256, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesHmac);
 
         /// <summary>'A192CBC-HS384'</summary>
         public static readonly EncryptionAlgorithm A192CbcHS384 = new EncryptionAlgorithm(id: AlgorithmId.AesCbc192HS384 /* Undefined in CWT */, "A192CBC-HS384", requiredKeySizeInBytes: 48, SignatureAlgorithm.HS384, requiredKeyWrappedSizeInBytes: 56, EncryptionType.AesHmac);
@@ -313,7 +311,7 @@ namespace JsonWebToken
         /// <param name="other"></param>
         /// <returns></returns>
         public bool Equals(EncryptionAlgorithm? other)
-            => other is null ? false : _id == other._id;
+            => !(other is null) && _id == other._id;
 
         /// <summary>Returns the hash code for this <see cref="EncryptionAlgorithm"/>.</summary>
         /// <returns></returns>
@@ -370,7 +368,7 @@ namespace JsonWebToken
         /// <summary>Cast the <see cref="EncryptionAlgorithm"/> into its <see cref="byte"/> array representation.</summary>
         /// <param name="value"></param>
         public static explicit operator byte[]?(EncryptionAlgorithm? value)
-            => value is null ? null : value._utf8Name.EncodedUtf8Bytes.ToArray();
+            => value?._utf8Name.EncodedUtf8Bytes.ToArray();
 
         /// <summary>Cast the array of <see cref="byte"/>s into its <see cref="EncryptionAlgorithm"/> representation.</summary>
         /// <param name="value"></param>

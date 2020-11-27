@@ -148,7 +148,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summaryGets the minimum buffer size required for decoding of <paramref name="count"/> characters.</summary>
+        /// <summary>Gets the minimum buffer size required for decoding of <paramref name="count"/> characters.</summary>
         /// <param name="count">The number of characters to decode.</param>
         /// <returns>
         /// The minimum buffer size required for decoding  of <paramref name="count"/> characters.
@@ -165,8 +165,5 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetArraySizeRequiredToEncode(int count)
             => Base64.Url.GetEncodedLength(count);
-
-        internal static int GetArraySizeRequiredToEncode(object length)
-            => throw new NotImplementedException();
     }
 }

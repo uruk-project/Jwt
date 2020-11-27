@@ -3,21 +3,15 @@
 
 using System;
 
-namespace JsonWebToken.Cryptography
+namespace JsonWebToken
 {
-    /// <summary>
-    /// Provides encryption.
-    /// </summary>
+    /// <summary>Provides encryption.</summary>
     internal abstract class AesBlockEncryptor : IDisposable
     {
-        /// <summary>
-        /// The size of the AES block.
-        /// </summary>
+        /// <summary>The size of the AES block.</summary>
         protected const int BlockSize = 16;
 
-        /// <summary>
-        /// Encrypt a <paramref name="plaintext"/>.
-        /// </summary>
+        /// <summary>Encrypt a <paramref name="plaintext"/>.</summary>
         /// <param name="plaintext"></param>
         /// <param name="ciphertext"></param>
         public abstract void EncryptBlock(ReadOnlySpan<byte> plaintext, Span<byte> ciphertext);
@@ -25,9 +19,7 @@ namespace JsonWebToken.Cryptography
         /// <inheritdoc />
         public abstract void Dispose();
 
-        /// <summary>
-        /// Returns the required ciphertext length.
-        /// </summary>
+        /// <summary>Returns the required ciphertext length.</summary>
         /// <param name="plaintextLength"></param>
         protected static int GetCiphertextLength(int plaintextLength)
             => (plaintextLength + BlockSize) & ~(BlockSize - 1);

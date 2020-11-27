@@ -28,15 +28,15 @@ namespace JsonWebToken.Cryptography
 #if SUPPORT_SIMD
             if (System.Runtime.Intrinsics.X86.Aes.IsSupported && EncryptionAlgorithm.EnabledAesInstructionSet)
             {
-                if (algorithm == KeyManagementAlgorithm.Aes128KW)
+                if (algorithm == KeyManagementAlgorithm.A128KW)
                 {
                     _encryptor = new Aes128BlockEncryptor(key.K);
                 }
-                else if (algorithm == KeyManagementAlgorithm.Aes256KW)
+                else if (algorithm == KeyManagementAlgorithm.A256KW)
                 {
                     _encryptor = new Aes256BlockEncryptor(key.K);
                 }
-                else if (algorithm == KeyManagementAlgorithm.Aes192KW)
+                else if (algorithm == KeyManagementAlgorithm.A192KW)
                 {
                     _encryptor = new Aes192BlockEncryptor(key.K);
                 }
@@ -47,27 +47,8 @@ namespace JsonWebToken.Cryptography
                 }
             }
             else
-            if (algorithm == KeyManagementAlgorithm.A128KW)
             {
-                _encryptor = new Aes128BlockEncryptor(key.K);
-            }
-            else if (algorithm == KeyManagementAlgorithm.A256KW)
-            {
-                _encryptor = new Aes256BlockEncryptor(key.K);
-            }
-            else if (algorithm == KeyManagementAlgorithm.A192KW)
-            {
-                _encryptor = new Aes192BlockEncryptor(key.K);
-            }
-            else
-            {
-                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-                _encryptor = new Aes128BlockEncryptor(default);
-            }
-#else
-            if (algorithm.Category != AlgorithmCategory.Aes)
-            {
-                _encryptor= new DefaultAesBlockEncryptor(key.K);
+                _encryptor = new DefaultAesBlockEncryptor(key.K);
             }
 #else
             _encryptor = new DefaultAesBlockEncryptor(key.K);
