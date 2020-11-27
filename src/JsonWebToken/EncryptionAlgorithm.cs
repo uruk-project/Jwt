@@ -25,6 +25,11 @@ namespace JsonWebToken
         private const ulong A256GCM = 21747546337915457u;
 
         /// <summary>
+        /// Defines whether the AES isntruction set is enabled. 
+        /// </summary>
+        public static bool EnabledAesInstructionSet { get; set; } = true;
+
+        /// <summary>
         /// 'A128CBC-HS256'
         /// </summary>
         public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: Algorithms.AesCbc128HS256, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesHmac);
@@ -374,7 +379,7 @@ namespace JsonWebToken
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
 #if SUPPORT_SIMD
-                if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
+                if (System.Runtime.Intrinsics.X86.Aes.IsSupported && EnabledAesInstructionSet)
                 {
                     if (encryptionAlgorithm.Id == Algorithms.AesCbc128HS256)
                     {
@@ -411,7 +416,7 @@ namespace JsonWebToken
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
 #if SUPPORT_SIMD
-                if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
+                if (System.Runtime.Intrinsics.X86.Aes.IsSupported && EnabledAesInstructionSet)
                 {
                     switch (encryptionAlgorithm.Id)
                     {

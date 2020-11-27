@@ -20,7 +20,7 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="plaintext"></param>
         /// <param name="ciphertext"></param>
-        public abstract void EncryptBlock(ref byte plaintext, ref byte ciphertext);
+        public abstract void EncryptBlock(ReadOnlySpan<byte> plaintext, Span<byte> ciphertext);
 
         /// <inheritdoc />
         public abstract void Dispose();
