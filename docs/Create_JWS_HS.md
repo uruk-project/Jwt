@@ -21,18 +21,18 @@ HS512      | HMAC using SHA-512 | 256 bits
 using System;
 using JsonWebToken;
 
-namespace JweCreationSample
+namespace JwsCreationSample
 {
     class Program
     {
         static void Main()
         {
             // Creates the symmetric key defined for the 'HS256' signature algorithm
-            var signatureKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
+            var signatureKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
 
             // Creates the JWE descriptor 
             // The descriptor sets the 'alg' with value 'HS256'
-            Payload = new JwsDescriptor(signatureKey, SignatureAlgorithm.HmacSha256)
+            Payload = new JwsDescriptor(signatureKey, SignatureAlgorithm.HS256)
             {
                 Payload = new JwtPayload
                 {

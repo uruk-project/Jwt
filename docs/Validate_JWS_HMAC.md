@@ -28,7 +28,7 @@ namespace JwsValidationSample
             // - Require the issuer "https://idp.example.com/", with the predefined key, with the signature algorithm HS256
             // - Require the audience "636C69656E745F6964"
             var policy = new TokenValidationPolicyBuilder()
-                           .RequireIssuer("https://idp.example.com/", key, SignatureAlgorithm.HmacSha256)
+                           .RequireIssuer("https://idp.example.com/", key, SignatureAlgorithm.HS256)
                            .RequireAudience("636C69656E745F6964")
                            .Build();
 

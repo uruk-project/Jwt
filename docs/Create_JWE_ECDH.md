@@ -27,20 +27,20 @@ namespace JweCreationSample
         static void Main()
         {
             // Generates the EC key for EC encryption with the algorithm 'ECDH-ES+A192KW'
-            var privateEncryptionKey = ECJwk.GeneratePrivateKey(EllipticalCurve.P256, KeyManagementAlgorithm.EcdhEsAes192KW);
+            var privateEncryptionKey = ECJwk.GeneratePrivateKey(EllipticalCurve.P256, KeyManagementAlgorithm.EcdhEsA192KW);
 
             // Extracts the EC public key
             var publicEncryptionKey = privateEncryptionKey.AsPublicKey();
 
             // Creates the symmetric key defined for the 'HS256' signature algorithm
-            var signatureKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
+            var signatureKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
 
             // Creates the JWE descriptor 
             // The descriptor sets the 'alg' with value 'ECDH-ES+A192KW' and 'enc' with value 'A128CBC-HS256'
-            var descriptor = new JweDescriptor(publicEncryptionKey, KeyManagementAlgorithm.EcdhEsAes192KW, EncryptionAlgorithm.Aes128CbcHmacSha256)
+            var descriptor = new JweDescriptor(publicEncryptionKey, KeyManagementAlgorithm.EcdhEsA192KW, EncryptionAlgorithm.A128CbcHS256)
             {
                 // Creates the JWS payload
-                Payload = new JwsDescriptor(signatureKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(signatureKey, SignatureAlgorithm.HS256)
                 {
                     Payload = new JwtPayload
                     {

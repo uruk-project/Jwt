@@ -17,7 +17,7 @@ ES512      | ECDSA using P-521 and SHA-512
 using System;
 using JsonWebToken;
 
-namespace JweCreationSample
+namespace JwsCreationSample
 {
     class Program
     {

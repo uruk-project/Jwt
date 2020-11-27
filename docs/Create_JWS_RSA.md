@@ -23,18 +23,18 @@ PS512      | RSASSA-PSS using SHA-512 and MGF1 with SHA-512 | 2048+ bits
 using System;
 using JsonWebToken;
 
-namespace JweCreationSample
+namespace JwsCreationSample
 {
     class Program
     {
         static void Main()
         {
             // Creates the RSA key defined for the 'PS256' signature algorithm
-            var privateKey = RsaJwk.GeneratePrivateKey(SignatureAlgorithm.RsaSsaPssSha256);
+            var privateKey = RsaJwk.GeneratePrivateKey(SignatureAlgorithm.PS256);
 
             // Creates the JWS descriptor 
             // The descriptor sets the 'alg' with value 'PS256'
-            var descriptor = new JwsDescriptor(privateKey, SignatureAlgorithm.RsaSsaPssSha256)
+            var descriptor = new JwsDescriptor(privateKey, SignatureAlgorithm.PS256)
             {
                 Payload = new JwtPayload
                 {

@@ -32,17 +32,17 @@ namespace JweCreationSample
         static void Main()
         {
             // Generates the symmetric key for direct encryption with the algorithm 'A128CBC-HS256'
-            var encryptionKey = SymmetricJwk.GenerateKey(EncryptionAlgorithm.Aes128CbcHmacSha256);
+            var encryptionKey = SymmetricJwk.GenerateKey(EncryptionAlgorithm.A128CbcHS256);
 
             // Creates the symmetric key defined for the 'HS256' signature algorithm
-            var signatureKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
+            var signatureKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
 
             // Creates the JWE descriptor 
             // The descriptor sets the 'alg' with value 'dir' and 'enc' with value 'A128CBC-HS256'
-            var descriptor = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128CbcHmacSha256)
+            var descriptor = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.Direct, EncryptionAlgorithm.A128CbcHS256)
             {  
                 // Creates the JWS payload
-                Payload = new JwsDescriptor(signatureKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(signatureKey, SignatureAlgorithm.HS256)
                 {
                     Payload = new JwtPayload
                     {

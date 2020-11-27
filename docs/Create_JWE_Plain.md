@@ -16,11 +16,11 @@ namespace JweCreationSample
         static void Main()
         {
             // Creates a symmetric key for encryption
-            var encryptionKey = SymmetricJwk.GenerateKey(EncryptionAlgorithm.Aes128CbcHmacSha256);
+            var encryptionKey = SymmetricJwk.GenerateKey(EncryptionAlgorithm.A128CbcHS256);
 
             // Creates the JWE descriptor 
             // The descriptor sets the 'alg' with value 'dir' and 'enc' with value 'A128CBC-HS256'
-            var descriptor = new PlaintextJweDescriptor(encryptionKey, KeyManagementAlgorithm.Direct, EncryptionAlgorithm.Aes128CbcHmacSha256)
+            var descriptor = new PlaintextJweDescriptor(encryptionKey, KeyManagementAlgorithm.Direct, EncryptionAlgorithm.A128CbcHS256)
             {
                 // Creates the plain text payload
                 Payload = "Live long and prosper."

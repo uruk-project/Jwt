@@ -1,7 +1,6 @@
-# Direct JSON Web Encryption (JWE) using AES
-This example illustrates how to verify a JWE encoded object using AES encryption    . 
-The issuer use a RSA private key for signing the token. 
-The recipient use a RSA public key for validating the token. 
+# Validate a JWE 
+This example illustrates how to verify a JWE encoded object    . 
+The recipient require a public key for validating the token. 
 
 ## Recommandation: 
 The minimal key size is at least 2048 bits.
@@ -22,8 +21,19 @@ namespace JwsValidationSample
     {
         static void Main()
         {
-            // Initializes the public elliptical curve key with the curve P-256
-            var key = ECJwk.FromBase64Url
+            // Initializes the private key used for the decryption
+            // This is an illustration
+            // Do not hardcode a key in the source code
+            var signaturekey = RsaJwk.FromBase64Url
+            (
+                x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
+                y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck"
+            );
+
+            // Initializes the public key used for the signature verification
+            // This is an illustration
+            // Do not hardcode a key in the source code
+            var signaturekey = ECJwk.FromBase64Url
             (
                 crv: EllipticalCurve.P256,
                 x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
@@ -31,7 +41,7 @@ namespace JwsValidationSample
             );
 
             // Defines the validation policy: 
-            // - Require the issuer "https://idp.example.com/", with the predefined RSA key, with the signature algorithm ES256
+            // - Require the issuer "https://idp.example.com/", with the predefined EC key, with the signature algorithm ES256
             // - Require the audience "636C69656E745F6964"
             var policy = new TokenValidationPolicyBuilder()
                            .RequireIssuer("https://idp.example.com/", key, SignatureAlgorithm.EcdsaSha256)

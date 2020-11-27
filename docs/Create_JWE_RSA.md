@@ -37,14 +37,14 @@ namespace JweCreationSample
             var publicEncryptionKey = privateEncryptionKey.AsPublicKey();
 
             // Creates the symmetric key defined for the 'HS256' signature algorithm
-            var signatureKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSh   a256);
+            var signatureKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
 
             // Creates the JWE descriptor 
             // The descriptor sets the 'alg' with value 'RSA-OAEP-256' and 'enc' with value 'A128CBC-HS256'
-            var descriptor = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.RsaOaep256, EncryptionAlgorithm.Aes128CbcHmacSha256)
+            var descriptor = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.RsaOaep256, EncryptionAlgorithm.A128CbcHS256)
             {  
                 // Creates the JWS payload
-                Payload = new JwsDescriptor(signatureKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(signatureKey, SignatureAlgorithm.HS256)
                 {
                     Payload = new JwtPayload
                     {

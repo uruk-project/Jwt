@@ -34,17 +34,17 @@ namespace JweCreationSample
         static void Main()
         {
             // Generates the symmetric key for AES encryption with the algorithm 'A256GCMKW'
-            var sharedEncryptionKey = SymmetricJwk.GenerateKey(KeyManagementAlgorithm.Aes256GcmKW);
+            var sharedEncryptionKey = SymmetricJwk.GenerateKey(KeyManagementAlgorithm.A256GcmKW);
 
             // Creates the symmetric key defined for the 'HS256' signature algorithm
-            var signatureKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HmacSha256);
+            var signatureKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
 
             // Creates the JWE descriptor 
             // The descriptor sets the 'alg' with value 'A256GCMKW' and 'enc' with value 'A128CBC-HS256'
-            var descriptor = new JweDescriptor(sharedEncryptionKey, KeyManagementAlgorithm.Aes256GcmKW, EncryptionAlgorithm.Aes256CbcHmacSha512)
+            var descriptor = new JweDescriptor(sharedEncryptionKey, KeyManagementAlgorithm.A256GcmKW, EncryptionAlgorithm.A256CbcHS512)
             {
                 // Creates the JWS payload
-                Payload = new JwsDescriptor(signatureKey, SignatureAlgorithm.HmacSha256)
+                Payload = new JwsDescriptor(signatureKey, SignatureAlgorithm.HS256)
                 {
                     Payload = new JwtPayload
                     {

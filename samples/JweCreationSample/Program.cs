@@ -11,7 +11,7 @@ namespace JweCreationSample
             var signatureKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
 
             // Creates a symmetric key for encryption
-            var encryptionKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4T");
+            var encryptionKey = .FromBase64Url("R9MyWaEoyiMYViVWo8Fk4T");
 
             // Creates a JWE descriptor with all its properties
             var descriptor = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256)
