@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -24,13 +25,9 @@ namespace JsonWebToken.Cryptography
         public AesKeyUnwrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
-            if (algorithm.Category != AlgorithmCategory.Aes)
-            {
-                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-            }
-
+            Debug.Assert(algorithm.Category == AlgorithmCategory.Aes);
 #if SUPPORT_SIMD
-            if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
+            if (System.Runtime.Intrinsics.X86.Aes.IsSupported && EncryptionAlgorithm.EnabledAesInstructionSet)
             {
                 if (algorithm == KeyManagementAlgorithm.A128KW)
                 {

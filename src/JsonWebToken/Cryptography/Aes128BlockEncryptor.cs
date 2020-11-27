@@ -4,6 +4,7 @@
 #if SUPPORT_SIMD
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
@@ -25,9 +26,9 @@ namespace JsonWebToken.Cryptography
             _keys.Clear();
         }
 
-        public override void EncryptBlock(ref byte plaintext, ref byte ciphertext)
+        public override void EncryptBlock(ReadOnlySpan<byte> plaintext, Span<byte> ciphertext)
         {
-            var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref plaintext);
+            var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref MemoryMarshal.GetReference(plaintext));
 
             block = Sse2.Xor(block, _keys.Key0);
             block = Aes.Encrypt(block, _keys.Key1);
@@ -40,7 +41,7 @@ namespace JsonWebToken.Cryptography
             block = Aes.Encrypt(block, _keys.Key8);
             block = Aes.Encrypt(block, _keys.Key9);
             block = Aes.EncryptLast(block, _keys.Key10);
-            Unsafe.WriteUnaligned(ref ciphertext, block);
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(ciphertext), block);
         }
     }
 }

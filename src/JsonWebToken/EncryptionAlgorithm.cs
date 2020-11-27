@@ -21,9 +21,16 @@ namespace JsonWebToken
         private const ulong _A128GCM = 21747546371273025u;
         private const ulong _A192GCM = 21747546271068481u;
         private const ulong _A256GCM = 21747546337915457u;
+        
+        /// <summary>
+        /// Defines whether the AES isntruction set is enabled. 
+        /// </summary>
+        public static bool EnabledAesInstructionSet { get; set; } = true;
 
-        /// <summary>'A128CBC-HS256'</summary>
-        public static readonly EncryptionAlgorithm A128CbcHS256 = new EncryptionAlgorithm(id: AlgorithmId.AesCbc128HS256, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HS256, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesHmac);
+        /// <summary>
+        /// 'A128CBC-HS256'
+        /// </summary>
+        public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: Algorithms.AesCbc128HS256, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesHmac);
 
         /// <summary>'A192CBC-HS384'</summary>
         public static readonly EncryptionAlgorithm A192CbcHS384 = new EncryptionAlgorithm(id: AlgorithmId.AesCbc192HS384 /* Undefined in CWT */, "A192CBC-HS384", requiredKeySizeInBytes: 48, SignatureAlgorithm.HS384, requiredKeyWrappedSizeInBytes: 56, EncryptionType.AesHmac);
@@ -417,7 +424,7 @@ namespace JsonWebToken
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
 #if SUPPORT_SIMD
-                if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
+                if (System.Runtime.Intrinsics.X86.Aes.IsSupported && EnabledAesInstructionSet)
                 {
                     if (encryptionAlgorithm.Id == AlgorithmId.AesCbc128HS256)
                     {
@@ -454,7 +461,7 @@ namespace JsonWebToken
             if (encryptionAlgorithm.Category == EncryptionType.AesHmac)
             {
 #if SUPPORT_SIMD
-                if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
+                if (System.Runtime.Intrinsics.X86.Aes.IsSupported && EnabledAesInstructionSet)
                 {
                     switch (encryptionAlgorithm.Id)
                     {
