@@ -28,6 +28,11 @@ namespace JsonWebToken
         public static bool EnabledAesInstructionSet { get; set; } = true;
 
         /// <summary>
+        /// Defines whether the AES isntruction set is enabled. 
+        /// </summary>
+        public static bool EnabledAesInstructionSet { get; set; } = true;
+
+        /// <summary>
         /// 'A128CBC-HS256'
         /// </summary>
         public static readonly EncryptionAlgorithm Aes128CbcHmacSha256 = new EncryptionAlgorithm(id: Algorithms.AesCbc128HS256, "A128CBC-HS256", requiredKeySizeInBytes: 32, SignatureAlgorithm.HmacSha256, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesHmac);

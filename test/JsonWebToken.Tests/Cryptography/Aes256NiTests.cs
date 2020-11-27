@@ -7,10 +7,10 @@ namespace JsonWebToken.Tests.Cryptography
     public class Aes256NiTests : Aes256Tests
     {
         private protected override AesDecryptor CreateDecryptor()
-          => new Aes256CbcDecryptor();
+             => System.Runtime.Intrinsics.X86.Aes.IsSupported? (AesDecryptor) new Aes256CbcDecryptor() : new AesCbcDecryptor(EncryptionAlgorithm.Aes256CbcHmacSha512);
 
         private protected override AesEncryptor CreateEncryptor()
-            => new Aes256CbcEncryptor();
+            => System.Runtime.Intrinsics.X86.Aes.IsSupported ? (AesEncryptor)new Aes256CbcEncryptor() : new AesCbcEncryptor(EncryptionAlgorithm.Aes256CbcHmacSha512);
     }
 #endif
 }

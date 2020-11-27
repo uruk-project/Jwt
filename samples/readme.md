@@ -1,20 +1,20 @@
-### [JwsCreationSample](samples/BinaryJwtCreationSample/Program.cs)
+### [JwsCreationSample](BinaryJwtCreationSample/Program.cs)
 Demonstrates the creation of a signed JWT containing a JSON payload. 
 
-### [JwsValidationSample](samples/JwsValidationSample/Program.cs)
+### [JwsValidationSample](JwsValidationSample/Program.cs)
 Demonstrates the validation of signed JWT. 
 
-### [JweCreationSample](samples/JweCreationSample/Program.cs)
+### [JweCreationSample](JweCreationSample/Program.cs)
 Demonstrates the creation of a encrypted JWT containing a signed JWT payload. 
 
-### [JweValidationSample](samples/JweValidationSample/Program.cs)
+### [JweValidationSample](JweValidationSample/Program.cs)
 Demonstrates the validation of encrypted JWT. 
 
-### [BinaryJwtCreationSample](samples/BinaryJwtCreationSample/Program.cs)	
+### [BinaryJwtCreationSample](BinaryJwtCreationSample/Program.cs)	
 Demonstrates the creation of a encrypted JWT containing a binary payload. 
 
-### [PlaintextJwtCreationSample](samples/PlaintextJwtCreationSample/Program.cs)
+### [PlaintextJwtCreationSample](PlaintextJwtCreationSample/Program.cs)
 Demonstrates the creation of a encrypted JWT containing a plaintext payload. 
 
-### [UnsecureJwtCreationSample](samples/UnsecureJwtCreationSample/Program.cs)
+### [UnsecureJwtCreationSample](UnsecureJwtCreationSample/Program.cs)
 Demonstrates the JWT encoding of a JSON payload without any signature. You should never follow this sample.

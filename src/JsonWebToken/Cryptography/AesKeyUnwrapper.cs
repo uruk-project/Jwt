@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 
 namespace JsonWebToken.Cryptography
 {
@@ -150,43 +149,5 @@ namespace JsonWebToken.Cryptography
 
         public static int GetKeyUnwrappedSize(int wrappedKeySize)
             => wrappedKeySize - BlockSizeInBytes;
-
-#if !SUPPORT_SIMD
-        private static Aes GetSymmetricAlgorithm(SymmetricJwk key, KeyManagementAlgorithm algorithm)
-        {
-            if (algorithm.RequiredKeySizeInBits != key.KeySizeInBits)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_KeyWrapKeySizeIncorrect(algorithm, algorithm.RequiredKeySizeInBits >> 3, key, key.KeySizeInBits);
-            }
-
-            byte[] keyBytes = key.ToArray();
-            Aes? aes = null;
-            try
-            {
-                aes = Aes.Create();
-                aes.Mode = CipherMode.ECB; // lgtm [cs/ecb-encryption]
-                aes.Padding = PaddingMode.None;
-                aes.KeySize = keyBytes.Length << 3;
-                aes.Key = keyBytes;
-
-                // Set the AES IV to Zeroes
-                var iv = new byte[aes.BlockSize >> 3];
-                Array.Clear(iv, 0, iv.Length);
-                aes.IV = iv;
-
-                return aes;
-            }
-            catch (Exception ex)
-            {
-                if (aes != null)
-                {
-                    aes.Dispose();
-                }
-
-                ThrowHelper.ThrowCryptographicException_CreateSymmetricAlgorithmFailed(key, algorithm, ex);
-                throw;
-            }
-        }
-#endif
     }
 }
