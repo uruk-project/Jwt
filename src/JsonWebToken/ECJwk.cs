@@ -20,6 +20,9 @@ namespace JsonWebToken
     {
         private const uint crv = 7762531u;
         private ECParameters _parameters;
+#if !NETSTANDARD2_0
+        private ECDiffieHellman? _ecdhKey;
+#endif
 
         /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>
         /// <param name="parameters"></param>
@@ -185,6 +188,7 @@ namespace JsonWebToken
                 "ECDSA_P384" => EllipticalCurve.P384,
                 "nistP521" => EllipticalCurve.P521,
                 "ECDSA_P521" => EllipticalCurve.P521,
+                "secP256k1" => EllipticalCurve.Secp256k1,
                 _ => throw ThrowHelper.CreateNotSupportedException_Curve(parameters.Curve.Oid.FriendlyName)
             };
         }
@@ -839,6 +843,18 @@ namespace JsonWebToken
             return key;
         }
 
+#if !NETSTANDARD2_0
+        internal ECDiffieHellman CreateEcdhKey()
+        {
+            if (_ecdhKey is null)
+            {
+                _ecdhKey = ECDiffieHellman.Create(_parameters);
+            }
+
+            return _ecdhKey;
+        }
+#endif
+
         /// <inheritsdoc />
         public override void WriteTo(Utf8JsonWriter writer)
         {
@@ -862,6 +878,12 @@ namespace JsonWebToken
             base.Dispose();
             CryptographicOperations.ZeroMemory(_parameters.Q.X);
             CryptographicOperations.ZeroMemory(_parameters.Q.Y);
+#if !NETSTANDARD2_0
+            if (!(_ecdhKey is null))
+            {
+                _ecdhKey.Dispose();
+            }
+#endif
         }
     }
 }

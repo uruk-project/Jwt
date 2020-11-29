@@ -118,7 +118,7 @@ namespace JsonWebToken
         /// <summary>Gets whether the algorithm produce an encryption key.</summary>
         public bool ProduceEncryptionKey => _produceEncryptionKey;
 
-        private static readonly KeyManagementAlgorithm[] _algorithms = new[]
+        internal static readonly KeyManagementAlgorithm[] _algorithms = new[]
         {
             EcdhEsA128KW,
             EcdhEsA192KW,

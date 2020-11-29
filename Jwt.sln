@@ -84,6 +84,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{45F5CD67-C
 		docs\Create_JWS_ECDSA.md = docs\Create_JWS_ECDSA.md
 		docs\Create_JWS_HS.md = docs\Create_JWS_HS.md
 		docs\Create_JWS_RSA.md = docs\Create_JWS_RSA.md
+		docs\Performance_considerations.md = docs\Performance_considerations.md
 		docs\Validate_JWE.md = docs\Validate_JWE.md
 		docs\validate_jwe_allocated.png = docs\validate_jwe_allocated.png
 		docs\validate_jwe_ops.png = docs\validate_jwe_ops.png

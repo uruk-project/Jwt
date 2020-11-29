@@ -99,9 +99,9 @@ namespace JsonWebToken.Cryptography
             var partyVInfo = GetPartyInfo(header, JwtHeaderParameterNames.Apv);
             var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
             byte[] exchangeHash;
-            var keyParameters = ((ECJwk)Key).ExportParameters();
-            using (var otherPartyKey = ECDiffieHellman.Create(keyParameters))
-            using (var ephemeralKey = (staticKey is null) ? ECDiffieHellman.Create(keyParameters.Curve) : ECDiffieHellman.Create(((ECJwk)staticKey).ExportParameters(true)))
+            var ecKey = ((ECJwk)Key);
+            var otherPartyKey = ecKey.CreateEcdhKey();
+            using (var ephemeralKey = (staticKey is null) ? ECDiffieHellman.Create(ecKey.Crv.CurveParameters) : ((ECJwk)staticKey).CreateEcdhKey())
             {
                 exchangeHash = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
                 var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));

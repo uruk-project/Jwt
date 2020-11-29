@@ -58,21 +58,14 @@ namespace JsonWebToken.Cryptography
                 ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(JwtHeaderParameterNames.Epk);
             }
 
-            byte[] secretAppend;
-            if (header.TryGetHeaderParameter(JwtHeaderParameterNames.Apu.EncodedUtf8Bytes, out JwtElement apu)
-                | header.TryGetHeaderParameter(JwtHeaderParameterNames.Apv.EncodedUtf8Bytes, out JwtElement apv))
-            {
-                secretAppend = BuildSecretAppend(apu, apv);
-            }
-            else
-            {
-                secretAppend = BuildSecretAppend(apu, apv);
-            }
+            header.TryGetHeaderParameter(JwtHeaderParameterNames.Apu.EncodedUtf8Bytes, out JwtElement apu);
+            header.TryGetHeaderParameter(JwtHeaderParameterNames.Apv.EncodedUtf8Bytes, out JwtElement apv);
+            byte[] secretAppend = BuildSecretAppend(apu, apv);
 
             byte[] exchangeHash;
             using (var ephemeralKey = ECDiffieHellman.Create(ECJwk.FromJwtElement(epk).ExportParameters()))
-            using (var privateKey = ECDiffieHellman.Create(((ECJwk)Key).ExportParameters(true)))
             {
+                var privateKey = ((ECJwk)Key).CreateEcdhKey();
                 if (ephemeralKey.KeySize != privateKey.KeySize)
                 {
                     return ThrowHelper.TryWriteError(out bytesWritten);
@@ -146,38 +139,26 @@ namespace JsonWebToken.Cryptography
 
         private byte[] BuildSecretAppend(JwtElement apuS, JwtElement apvS)
         {
-            byte[]? arrayToReturn = null;
-            byte[] secretAppend;
-            try
-            {
-                var apu = apuS.IsEmpty ? default : apuS.GetRawValue();
-                var apv = apvS.IsEmpty ? default : apvS.GetRawValue();
-                int apuLength = Base64Url.GetArraySizeRequiredToDecode(apu.Length);
-                int apvLength = Base64Url.GetArraySizeRequiredToDecode(apv.Length);
+            var apu = apuS.IsEmpty ? default : apuS.GetRawValue();
+            var apv = apvS.IsEmpty ? default : apvS.GetRawValue();
+            int apuLength = Base64Url.GetArraySizeRequiredToDecode(apu.Length);
+            int apvLength = Base64Url.GetArraySizeRequiredToDecode(apv.Length);
 
-                int algorithmLength = sizeof(int) + _algorithmNameLength;
-                int partyUInfoLength = sizeof(int) + apuLength;
-                int partyVInfoLength = sizeof(int) + apvLength;
-                const int suppPubInfoLength = sizeof(int);
+            int algorithmLength = sizeof(int) + _algorithmNameLength;
+            int partyUInfoLength = sizeof(int) + apuLength;
+            int partyVInfoLength = sizeof(int) + apvLength;
+            const int suppPubInfoLength = sizeof(int);
 
-                int secretAppendLength = algorithmLength + partyUInfoLength + partyVInfoLength + suppPubInfoLength;
-                secretAppend = new byte[secretAppendLength];
-                var secretAppendSpan = secretAppend.AsSpan();
-                WriteAlgorithmId(secretAppendSpan);
-                secretAppendSpan = secretAppendSpan.Slice(algorithmLength);
-                WritePartyInfo(apu.Span, apuLength, secretAppendSpan);
-                secretAppendSpan = secretAppendSpan.Slice(partyUInfoLength);
-                WritePartyInfo(apv.Span, apvLength, secretAppendSpan);
-                secretAppendSpan = secretAppendSpan.Slice(partyVInfoLength);
-                BinaryPrimitives.WriteInt32BigEndian(secretAppendSpan, _keySizeInBytes << 3);
-            }
-            finally
-            {
-                if (arrayToReturn != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturn);
-                }
-            }
+            int secretAppendLength = algorithmLength + partyUInfoLength + partyVInfoLength + suppPubInfoLength;
+            var secretAppend = new byte[secretAppendLength];
+            var secretAppendSpan = secretAppend.AsSpan(0, secretAppendLength);
+            WriteAlgorithmId(secretAppendSpan);
+            secretAppendSpan = secretAppendSpan.Slice(algorithmLength);
+            WritePartyInfo(apu.Span, apuLength, secretAppendSpan);
+            secretAppendSpan = secretAppendSpan.Slice(partyUInfoLength);
+            WritePartyInfo(apv.Span, apvLength, secretAppendSpan);
+            secretAppendSpan = secretAppendSpan.Slice(partyVInfoLength);
+            BinaryPrimitives.WriteInt32BigEndian(secretAppendSpan, _keySizeInBytes << 3);
 
             return secretAppend;
         }

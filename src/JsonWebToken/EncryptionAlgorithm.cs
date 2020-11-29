@@ -43,7 +43,7 @@ namespace JsonWebToken
         /// <summary>'A256GCM'</summary>
         public static readonly EncryptionAlgorithm A256Gcm = new EncryptionAlgorithm(id: AlgorithmId.Aes256Gcm, "A256GCM", requiredKeySizeInBytes: 32, signatureAlgorithm: SignatureAlgorithm.None, requiredKeyWrappedSizeInBytes: 40, EncryptionType.AesGcm);
 
-        private static readonly EncryptionAlgorithm[] _algorithms = new[]
+        internal static readonly EncryptionAlgorithm[] _algorithms = new[]
         {
             A128CbcHS256,
             A192CbcHS384,
