@@ -621,7 +621,8 @@ namespace JsonWebToken
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static bool IsEligibleHeaderForJws(int count, JsonEncodedText kid, string? typ)
             {
-                return kid.EncodedUtf8Bytes.Length != 0 && count <= (typ is null ? 2 : 3);
+                // count==1 means alg: 'none'
+                return (kid.EncodedUtf8Bytes.Length != 0 && count <= (typ is null ? 2 : 3)) || count == 1;
             }
 
             private readonly struct WrappedHeader
