@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken.Cryptography
 {
-    internal sealed class EcdsaSigner : Signer
+    internal sealed class EcdsaSignatureVerifier : SignatureVerifier
     {
         private readonly ObjectPool<ECDsa> _ecdsaPool;
         private readonly int _hashSize;
@@ -15,7 +15,7 @@ namespace JsonWebToken.Cryptography
         private readonly int _base64HashSize;
         private bool _disposed;
 
-        public EcdsaSigner(ECJwk key, SignatureAlgorithm algorithm)
+        public EcdsaSignatureVerifier(ECJwk key, SignatureAlgorithm algorithm)
             : base(algorithm)
         {
             if (key is null)
@@ -41,11 +41,16 @@ namespace JsonWebToken.Cryptography
         public override int Base64HashSizeInBytes => _base64HashSize;
 
         /// <inheritsdoc />
-        public override bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
+        public override bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
         {
             if (data.IsEmpty)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
+            }
+
+            if (signature.IsEmpty)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.signature);
             }
 
             if (_disposed)
@@ -57,15 +62,17 @@ namespace JsonWebToken.Cryptography
 #if SUPPORT_SPAN_CRYPTO
             Span<byte> hash = stackalloc byte[_sha.HashSize];
             _sha.ComputeHash(data, hash);
-            return ecdsa.TrySignHash(hash, destination, out bytesWritten);
+            return ecdsa.VerifyHash(hash, signature);
 #else
             byte[] hash = new byte[_sha.HashSize];
             _sha.ComputeHash(data, hash);
-            var result = ecdsa.SignHash(hash);
-            bytesWritten = result.Length;
-            result.CopyTo(destination);
-            return true;
+            return ecdsa.VerifyHash(hash, signature.ToArray());
 #endif
+        }
+
+        public override bool VerifyHalf(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
+        {
+            throw new NotImplementedException();
         }
 
         /// <inheritsdoc />
@@ -81,7 +88,6 @@ namespace JsonWebToken.Cryptography
                 _disposed = true;
             }
         }
-
-    }   
+    }
 }
 #endif

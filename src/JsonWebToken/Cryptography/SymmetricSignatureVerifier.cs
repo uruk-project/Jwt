@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
+﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
@@ -6,9 +6,9 @@ using System;
 namespace JsonWebToken.Cryptography
 {
     /// <summary>
-    /// Provides signing operations using a <see cref="SymmetricJwk"/> and specifying an algorithm.
+    /// Provides signature verifying operations using a <see cref="SymmetricJwk"/> and specifying an algorithm.
     /// </summary>
-    internal sealed class SymmetricSigner : Signer
+    internal sealed class SymmetricSignatureVerifier : SignatureVerifier
     {
         private readonly HmacSha2 _hashAlgorithm;
         private bool _disposed;
@@ -22,12 +22,12 @@ namespace JsonWebToken.Cryptography
         private readonly int _base64HashSizeInBytes;
         private int _minimumKeySizeInBits = DefaultMinimumSymmetricKeySizeInBits;
 
-        public SymmetricSigner(SymmetricJwk key, SignatureAlgorithm algorithm)
+        public SymmetricSignatureVerifier(SymmetricJwk key, SignatureAlgorithm algorithm)
             : this(key.AsSpan(), algorithm)
         {
         }
 
-        public SymmetricSigner(ReadOnlySpan<byte> key, SignatureAlgorithm algorithm)
+        public SymmetricSignatureVerifier(ReadOnlySpan<byte> key, SignatureAlgorithm algorithm)
             : base(algorithm)
         {
             if (key.Length << 3 < MinimumKeySizeInBits)
@@ -72,16 +72,29 @@ namespace JsonWebToken.Cryptography
         }
 
         /// <inheritsdoc />
-        public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
+        public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
         {
             if (_disposed)
             {
                 ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
-            _hashAlgorithm.ComputeHash(input, destination);
-            bytesWritten = destination.Length;
-            return true;
+            Span<byte> hash = stackalloc byte[_hashSizeInBytes];
+            _hashAlgorithm.ComputeHash(input, hash);
+            return CryptographicOperations.FixedTimeEquals(signature, hash);
+        }
+
+        /// <inheritsdoc />
+        public override bool VerifyHalf(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
+        {
+            if (_disposed)
+            {
+                ThrowHelper.ThrowObjectDisposedException(GetType());
+            }
+
+            Span<byte> hash = stackalloc byte[_hashSizeInBytes];
+            _hashAlgorithm.ComputeHash(input, hash);
+            return CryptographicOperations.FixedTimeEquals(signature, hash.Slice(0, _hashSizeInBytes / 2));
         }
 
         /// <inheritsdoc />

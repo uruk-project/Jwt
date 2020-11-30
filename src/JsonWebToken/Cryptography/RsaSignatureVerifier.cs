@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken.Cryptography
 {
-    internal sealed class RsaSigner : Signer
+    internal sealed class RsaSignatureVerifier : SignatureVerifier
     {
         private readonly ObjectPool<RSA> _rsaPool;
         private readonly HashAlgorithmName _hashAlgorithm;
@@ -16,7 +16,7 @@ namespace JsonWebToken.Cryptography
         private readonly int _base64HashSizeInBytes;
         private bool _disposed;
 
-        public RsaSigner(RsaJwk key, SignatureAlgorithm algorithm)
+        public RsaSignatureVerifier(RsaJwk key, SignatureAlgorithm algorithm)
             : base(algorithm)
         {
             if (key is null)
@@ -29,12 +29,9 @@ namespace JsonWebToken.Cryptography
                 ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(algorithm, key);
             }
 
-            if (key.HasPrivateKey)
+            if (key.KeySizeInBits < 1024)
             {
-                if (key.KeySizeInBits < 2048)
-                {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_SigningKeyTooSmall(key, 2048);
-                }
+                ThrowHelper.ThrowArgumentOutOfRangeException_SigningKeyTooSmall(key, 1024);
             }
 
             _hashAlgorithm = algorithm.HashAlgorithm;
@@ -50,11 +47,16 @@ namespace JsonWebToken.Cryptography
 
         public override int Base64HashSizeInBytes => _base64HashSizeInBytes;
 
-        public override bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
+        public override bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
         {
             if (data.IsEmpty)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
+            }
+
+            if (signature.IsEmpty)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.signature);
             }
 
             if (_disposed)
@@ -68,20 +70,22 @@ namespace JsonWebToken.Cryptography
 #if SUPPORT_SPAN_CRYPTO
                 Span<byte> hash = stackalloc byte[_sha.HashSize];
                 _sha.ComputeHash(data, hash);
-                return rsa.TrySignHash(hash, destination, _hashAlgorithm, _signaturePadding, out bytesWritten);
+                return rsa.VerifyHash(hash, signature, _hashAlgorithm, _signaturePadding);
 #else
                 byte[] hash = new byte[_sha.HashSize];
                 _sha.ComputeHash(data, hash);
-                var result = rsa.SignHash(hash, _hashAlgorithm, _signaturePadding);
-                bytesWritten = result.Length;
-                result.CopyTo(destination);
-                return true;
+                return rsa.VerifyHash(hash, signature.ToArray(), _hashAlgorithm, _signaturePadding);
 #endif
             }
             finally
             {
                 _rsaPool.Return(rsa);
             }
+        }
+
+        public override bool VerifyHalf(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
+        {
+            throw new NotImplementedException();
         }
 
         protected override void Dispose(bool disposing)
