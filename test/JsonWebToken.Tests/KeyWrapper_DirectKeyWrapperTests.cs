@@ -18,14 +18,6 @@ namespace JsonWebToken.Tests
             return cek;
         }
 
-        [Theory]
-        [MemberData(nameof(GetAesWrappingAlgorithms))]
-        public void TryWrapKey_WithStaticKey_Throws(EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
-        {
-            var contentEncryptionKey = SymmetricJwk.GenerateKey(enc.RequiredKeySizeInBits);
-            Assert.Throws<ArgumentException>(() => TryWrapKey_Success(contentEncryptionKey, enc, alg));
-        }
-
         public static IEnumerable<object[]> GetAesWrappingAlgorithms()
         {
             yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.Dir };

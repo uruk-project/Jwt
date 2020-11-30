@@ -317,7 +317,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowArgumentException_StaticKeyNotSupported() => throw CreateArgumentException_StaticKeyNotSupported();
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentException_StaticKeyNotSupported() => new ArgumentException("DIrect encryption does not support the use of static key.", "staticKey");
+        private static Exception CreateArgumentException_StaticKeyNotSupported() => new ArgumentException("Direct encryption does not support the use of static key.", "staticKey");
 
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_InvalidCertificate() => throw CreateInvalidOperationException_InvalidCertificate();

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics;
 
 namespace JsonWebToken.Cryptography
 {
@@ -10,6 +11,7 @@ namespace JsonWebToken.Cryptography
         public DirectKeyWrapper(Jwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
+            Debug.Assert(typeof(SymmetricJwk) == key.GetType());
         }
 
         public override int GetKeyWrapSize()
@@ -17,13 +19,8 @@ namespace JsonWebToken.Cryptography
 
         public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeader header, Span<byte> destination)
         {
-            if (staticKey != null)
-            {
-                ThrowHelper.ThrowArgumentException_StaticKeyNotSupported();
-            }
-
-            ReadOnlySpan<byte> bytes = Key.AsSpan();
-            return SymmetricJwk.FromSpan(bytes, false);
+            Debug.Assert(staticKey is null, "Direct encryption does not support the use of static key.");
+            return (SymmetricJwk)Key;
         }
 
         protected override void Dispose(bool disposing)

@@ -19,8 +19,6 @@ namespace JsonWebToken.Cryptography
         private readonly int _keySizeInBytes;
         private readonly HashAlgorithmName _hashAlgorithm;
 
-        private bool _disposed;
-
         public EcdhKeyWrapper(ECJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
             : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
         {
@@ -90,11 +88,6 @@ namespace JsonWebToken.Cryptography
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
             var partyUInfo = GetPartyInfo(header, JwtHeaderParameterNames.Apu);
             var partyVInfo = GetPartyInfo(header, JwtHeaderParameterNames.Apv);
             var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
@@ -145,7 +138,6 @@ namespace JsonWebToken.Cryptography
 
         protected override void Dispose(bool disposing)
         {
-            _disposed = true;
         }
 
         private static HashAlgorithmName GetHashAlgorithm(EncryptionAlgorithm encryptionAlgorithm)

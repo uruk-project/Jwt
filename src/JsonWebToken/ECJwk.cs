@@ -14,7 +14,7 @@ using CryptographicOperations = JsonWebToken.Cryptography.CryptographicOperation
 
 namespace JsonWebToken
 {
-#nullable disable
+//#nullable disable
     /// <summary>Represents an Elliptic Curve JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.</summary>
     public sealed class ECJwk : AsymmetricJwk, IJwtSerializable
     {

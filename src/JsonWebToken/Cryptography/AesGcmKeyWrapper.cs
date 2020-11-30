@@ -12,8 +12,6 @@ namespace JsonWebToken.Cryptography
         private const int IVSize = 12;
         private const int TagSize = 16;
 
-        private bool _disposed;
-
         public AesGcmKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
@@ -33,11 +31,6 @@ namespace JsonWebToken.Cryptography
         /// <inheritsdoc />
         public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeader header, Span<byte> destination)
         {
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
             var cek = CreateSymmetricKey(EncryptionAlgorithm, (SymmetricJwk?)staticKey);
             Span<byte> nonce = stackalloc byte[IVSize];
             Span<byte> tag = stackalloc byte[TagSize];
@@ -53,7 +46,7 @@ namespace JsonWebToken.Cryptography
                 aesGcm.Encrypt(nonce, keyBytes, destination, tag);
 
                 // TODO : Avoid string allocation
-                header.Add(JwtHeaderParameterNames.IV, Utf8.GetString( Base64Url.Encode(nonce)));
+                header.Add(JwtHeaderParameterNames.IV, Utf8.GetString(Base64Url.Encode(nonce)));
                 header.Add(JwtHeaderParameterNames.Tag, Utf8.GetString(Base64Url.Encode(tag)));
             }
 
@@ -63,7 +56,6 @@ namespace JsonWebToken.Cryptography
         /// <inheritsdoc />
         protected override void Dispose(bool disposing)
         {
-            _disposed = true;
         }
     }
 }

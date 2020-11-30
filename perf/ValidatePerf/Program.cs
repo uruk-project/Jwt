@@ -7,7 +7,7 @@ namespace ValidatePerf
     class Program
     {
         private static readonly Jwk signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
-        private static readonly Jwk encryptionKey = SymmetricJwk.GenerateKey(EncryptionAlgorithm.A128CbcHS256);
+        private static readonly Jwk encryptionKey1 = SymmetricJwk.GenerateKey(EncryptionAlgorithm.A256Gcm);
         private static readonly Jwk encryptionKey2 = ECJwk.GeneratePrivateKey(EllipticalCurve.P256, KeyManagementAlgorithm.EcdhEsA256KW);
         private static readonly Jwk encryptionKey3 = RsaJwk.GeneratePrivateKey(4096, KeyManagementAlgorithm.RsaOaep256);
         private static readonly ReadOnlyMemory<byte> _jws = CreateJws();
@@ -31,9 +31,9 @@ namespace ValidatePerf
 
         private static byte[] Encode6(JwtWriter writer)
         {
-            JweDescriptor descriptor = new JweDescriptor(encryptionKey3, KeyManagementAlgorithm.RsaOaep256, EncryptionAlgorithm.A256Gcm)
+            JweDescriptor descriptor = new JweDescriptor(encryptionKey1, KeyManagementAlgorithm.Dir, EncryptionAlgorithm.A256Gcm)
             {
-                Payload = new JwsDescriptor(signingKey, SignatureAlgorithm.HS256)
+                Payload = new JwsDescriptor(Jwk.None, SignatureAlgorithm.None)
                 {
                     Payload = new JwtPayload
                     {

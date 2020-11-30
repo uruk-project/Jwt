@@ -13,9 +13,7 @@ namespace JsonWebToken.Cryptography
         }
 
         public override int GetKeyUnwrapSize(int wrappedKeySize)
-        {
-            return wrappedKeySize;
-        }
+            => wrappedKeySize;
 
         public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeaderDocument header, out int bytesWritten)
         {

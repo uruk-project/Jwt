@@ -9,8 +9,6 @@ namespace JsonWebToken.Cryptography
 {
     internal sealed class AesGcmKeyUnwrapper : KeyUnwrapper
     {
-        private bool _disposed;
-
         public AesGcmKeyUnwrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
         {
@@ -22,18 +20,11 @@ namespace JsonWebToken.Cryptography
 
         /// <inheritsdoc />
         public override int GetKeyUnwrapSize(int wrappedKeySize)
-        {
-            return wrappedKeySize;
-        }
+            => wrappedKeySize;
 
         /// <inheritsdoc />
         public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeaderDocument header, out int bytesWritten)
         {
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
             if (!header.TryGetHeaderParameter(JwtHeaderParameterNames.IV.EncodedUtf8Bytes,out var encodedIV))
             {
                 ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(JwtHeaderParameterNames.IV);
@@ -72,7 +63,6 @@ namespace JsonWebToken.Cryptography
         /// <inheritsdoc />
         protected override void Dispose(bool disposing)
         {
-            _disposed = true;
         }
     }
 }
