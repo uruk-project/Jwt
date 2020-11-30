@@ -54,7 +54,7 @@ namespace JsonWebToken.Cryptography
                 ThrowHelper.ThrowCryptographicException_KeyWrapFailed();
             }
 #else
-            var result = _rsa.Encrypt(cek.AsSpan().ToArray(), _padding);
+            var result = _rsa.Encrypt(cek.ToArray(), _padding);
             if (destination.Length < result.Length)
             {
                 ThrowHelper.ThrowCryptographicException_KeyWrapFailed();

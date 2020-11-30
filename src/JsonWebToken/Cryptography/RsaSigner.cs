@@ -112,7 +112,11 @@ namespace JsonWebToken.Cryptography
 #if SUPPORT_SPAN_CRYPTO
             return RSA.Create(_parameters);
 #else
+#if NET461 || NET47
             var rsa = new RSACng();
+#else
+            var rsa = RSA.Create();
+#endif
             rsa.ImportParameters(_parameters);
             return rsa;
 #endif

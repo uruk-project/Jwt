@@ -8,6 +8,30 @@ using BenchmarkDotNet.Order;
 namespace JsonWebToken.Performance
 {
     [MemoryDiagnoser]
+    [LongRunJob]
+    public class TryParseBenchmark
+    {
+        public static string Token = "eyJhbGciOiJub25lIn0.eyJpc3MiOiJodHRwOi8vc2VydmVyLmV4YW1wbGUuY29tIiwic3ViIjoiMjQ4Mjg5NzYxMDAxIiwiYXVkIjoiczZCaGRSa3F0MyIsImV4cCI6MTMxMTI4MTk3MCwiaWF0IjoxMzExMjgwOTcwfQ.";
+        public static TokenValidationPolicy policy = new TokenValidationPolicyBuilder()
+            .AcceptUnsecureToken("http://server.example.com").Build();
+
+        [Benchmark(Baseline = false)]
+        public bool TryParse_NoDispose()
+        {
+            bool result = Jwt.TryParse(Token, policy, out var jwt);
+            return result;
+        }
+
+        [Benchmark(Baseline = true)]
+        public bool TryParse_Dispose()
+        {
+            bool result = Jwt.TryParse(Token, policy, out var jwt);
+            jwt.Dispose();
+            return result;
+        }
+    }
+
+    [MemoryDiagnoser]
     [MarkdownExporterAttribute.GitHub]
     [Orderer(SummaryOrderPolicy.FastestToSlowest)]
     public class SignatureBenchmark
@@ -405,6 +429,6 @@ namespace JsonWebToken.Performance
         {
             return EncryptionAlgorithm._algorithms.Select(a => a.ToString());
         }
-  
+
     }
 }
