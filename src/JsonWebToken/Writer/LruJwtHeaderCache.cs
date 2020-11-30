@@ -35,6 +35,7 @@ namespace JsonWebToken
         /// <param name="typ"></param>
         /// <param name="base64UrlHeader"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetHeader(JwtHeader header, SignatureAlgorithm alg, JsonEncodedText kid, string? typ, [NotNullWhen(true)] out byte[]? base64UrlHeader)
         {
             return _jwsCache.TryGetHeader(header, alg, kid, typ, out base64UrlHeader);
@@ -46,6 +47,7 @@ namespace JsonWebToken
         /// <param name="kid"></param>
         /// <param name="typ"></param>
         /// <param name="base64UrlHeader"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddHeader(JwtHeader header, SignatureAlgorithm alg, JsonEncodedText kid, string? typ, ReadOnlySpan<byte> base64UrlHeader)
         {
             _jwsCache.AddHeader(header, alg, kid, typ, base64UrlHeader);
@@ -61,12 +63,14 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetHeader(JwtHeader header, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, JsonEncodedText kid, string? typ, string? cty, [NotNullWhen(true)] out byte[]? base64UrlHeader)
         {
             return _jweCache.TryGetHeader(header, alg, enc, kid, typ, cty, out base64UrlHeader);
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddHeader(JwtHeader header, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, JsonEncodedText kid, string? typ, string? cty, ReadOnlySpan<byte> base64UrlHeader)
         {
             _jweCache.AddHeader(header, alg, enc, kid, typ, cty, base64UrlHeader);
