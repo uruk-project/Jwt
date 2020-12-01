@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace JsonWebToken
 {
+#nullable disable
     internal sealed class PooledByteBufferWriter : IBufferWriter<byte>, IDisposable
     {
         private byte[] _rentedBuffer;
@@ -37,7 +38,7 @@ namespace JsonWebToken
             {
                 Debug.Assert(_rentedBuffer != null);
                 Debug.Assert(_index <= _rentedBuffer.Length);
-                return _rentedBuffer.AsMemory(0, _index);
+                return new ReadOnlyMemory<byte>(_rentedBuffer, 0, _index);
             }
         }
 
@@ -47,7 +48,7 @@ namespace JsonWebToken
             {
                 Debug.Assert(_rentedBuffer != null);
                 Debug.Assert(_index <= _rentedBuffer.Length);
-                return _rentedBuffer.AsSpan(0, _index);
+                return new ReadOnlySpan<byte>(_rentedBuffer, 0, _index);
             }
         }
 
@@ -79,7 +80,7 @@ namespace JsonWebToken
         {
             Debug.Assert(_rentedBuffer != null);
             Debug.Assert(_index <= _rentedBuffer.Length);
-            _rentedBuffer.AsSpan(0, _index).Clear();
+            new Span<byte>(_rentedBuffer, 0, _index).Clear();
             _index = 0;
         }
 
@@ -134,7 +135,7 @@ namespace JsonWebToken
                 Debug.Assert(oldBuffer.Length >= _index);
                 Debug.Assert(_rentedBuffer.Length >= _index);
 
-                Span<byte> previousBuffer = oldBuffer.AsSpan(0, _index);
+                Span<byte> previousBuffer = new Span<byte>(oldBuffer, 0, _index);
                 previousBuffer.CopyTo(_rentedBuffer);
                 previousBuffer.Clear();
                 ArrayPool<byte>.Shared.Return(oldBuffer);
