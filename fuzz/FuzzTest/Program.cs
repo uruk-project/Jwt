@@ -8,7 +8,7 @@ namespace FuzzTest
         private static readonly Jwk SigningKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
         private static readonly Jwk EncryptionKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4T");
         private static readonly TokenValidationPolicy Policy = new TokenValidationPolicyBuilder()
-                                                                    .DefaultSignature(SigningKey, SignatureAlgorithm.HS256)
+                                                                    .RequireSignatureByDefault(SigningKey, SignatureAlgorithm.HS256)
                                                                     .WithDecryptionKey(EncryptionKey)
                                                                     .Build();
 

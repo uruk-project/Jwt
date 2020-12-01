@@ -54,14 +54,14 @@ namespace JsonWebToken.Tests
                     .WithDecryptionKeys(_keys.Jwks);
             if (signed)
             {
-                builder.DefaultSignature(_keys.Jwks);
+                builder.RequireSignatureByDefault(_keys.Jwks);
             }
             else
             {
                 builder.AcceptUnsecureTokenByDefault();
             }
 
-            var result = Jwt.TryParse(sequence, builder, out var jwt);
+            var result = Jwt.TryParse(sequence, builder.Build(), out var jwt);
             Assert.True(result);
             jwt.Dispose();
         }
@@ -82,14 +82,14 @@ namespace JsonWebToken.Tests
                     .WithDecryptionKeys(_keys.Jwks);
             if (signed)
             {
-                builder.DefaultSignature(_keys.Jwks);
+                builder.RequireSignatureByDefault(_keys.Jwks);
             }
             else
             {
                 builder.AcceptUnsecureTokenByDefault();
             }
 
-            var result = Jwt.TryParse(sequence, builder, out var jwt);
+            var result = Jwt.TryParse(sequence, builder.Build(), out var jwt);
             Assert.True(result);
             jwt.Dispose();
         }
@@ -106,14 +106,14 @@ namespace JsonWebToken.Tests
                     .WithDecryptionKeys(_keys.Jwks);
             if (signed)
             {
-                builder.DefaultSignature(_keys.Jwks);
+                builder.RequireSignatureByDefault(_keys.Jwks);
             }
             else
             {
                 builder.AcceptUnsecureTokenByDefault();
             }
 
-            var result = Jwt.TryParse(value, builder, out var jwt);
+            var result = Jwt.TryParse(value, builder.Build(), out var jwt);
 
             Assert.True(result);
             Assert.True(jwt.Payload.TryGetClaim("aud", out var aud));
@@ -134,7 +134,7 @@ namespace JsonWebToken.Tests
                     .WithDecryptionKeys(_keys.Jwks);
             builder.AcceptUnsecureTokenByDefault();
 
-            var result = Jwt.TryParse(token, builder, out var jwt);
+            var result = Jwt.TryParse(token, builder.Build(), out var jwt);
 
             Assert.True(result);
             Assert.True(jwt.Payload.TryGetClaim("aud", out var aud));
@@ -152,7 +152,7 @@ namespace JsonWebToken.Tests
         public void ReadJwt_Invalid(string token, TokenValidationStatus expectedStatus)
         {
             var policy = new TokenValidationPolicyBuilder()
-                    .DefaultSignature(_keys.SigningKey)
+                    .RequireSignatureByDefault(_keys.SigningKey)
                     .EnableLifetimeValidation()
                     .RequireAudience("636C69656E745F6964")
                     .DefaultIssuer("https://idp.example.com/")
@@ -173,7 +173,7 @@ namespace JsonWebToken.Tests
                 Sender = BackchannelRequestToken
             };
             var policy = new TokenValidationPolicyBuilder()
-                    .DefaultSignature("https://demo.identityserver.io/.well-known/openid-configuration/jwks", handler: httpHandler)
+                    .RequireSignatureByDefault("https://demo.identityserver.io/.well-known/openid-configuration/jwks", handler: httpHandler)
                     .Build();
 
             var token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjZiYmRjYTc4MGFmM2E2NzE2M2NhNzUzMTU0NWRhN2E5IiwidHlwIjoiSldUIn0.eyJuYmYiOjE1Mjc5NzMyNDIsImV4cCI6MTUyNzk3Njg0MiwiaXNzIjoiaHR0cHM6Ly9kZW1vLmlkZW50aXR5c2VydmVyLmlvIiwiYXVkIjpbImh0dHBzOi8vZGVtby5pZGVudGl0eXNlcnZlci5pby9yZXNvdXJjZXMiLCJhcGkiXSwiY2xpZW50X2lkIjoiY2xpZW50Iiwic2NvcGUiOlsiYXBpIl19.PFI6Fl8J6nlk3MyDwUemy6e4GjtyNoDabuQcUdOoQRGUjVAhv0UKqSOujg4Y_g23nPCGGMNOVNDiyK9StV4NdUrPemdShR6gykKd-FE1n7uHEwN6vsTDV_EeoF5ZdQsqEVo8zxfWoCIVP2Llj7TTwaoNpnhl9fkHvCc75XqYyF7SkiQAXGGGTExNh12kEI_Hb_rZvjJN2HCw1BsMx9-KFM69oFhT8ClAXeG3j3YsQ9ffjoZXV31S2Llzk-5Mf6BrR5CpCUHWWbfnEU21ko2NH7Y_aBJOwVAxyadj-89RR3-Ixpz3mUDxsZ4nmhLJDbrM9e1SRUq-oPmljIp53j-NXg";
@@ -223,7 +223,7 @@ namespace JsonWebToken.Tests
                 policy.DisableHeaderCache();
             }
 
-            var result = Jwt.TryParse(token, policy, out var jwt);
+            var result = Jwt.TryParse(token, policy.Build(), out var jwt);
             Assert.False(result);
             Assert.Equal(expected, jwt.Error.Status);
             jwt.Dispose();

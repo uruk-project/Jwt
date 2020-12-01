@@ -45,7 +45,7 @@ namespace JsonWebToken.Tests
             var token = writer.WriteToken(descriptor);
 
             var policy = new TokenValidationPolicyBuilder()
-                .DefaultSignature(_signingKey)
+                .RequireSignatureByDefault(_signingKey)
                 .WithDecryptionKey(_privateRsa2048Key)
                 .Build();
 

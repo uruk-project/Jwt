@@ -19,7 +19,7 @@ namespace JsonWebToken
             var config = retriever.GetConfiguration(metadataAddress, new HttpDocumentRetriever(), CancellationToken.None);
 
             builder.DefaultIssuer(config.Issuer);
-            return builder.DefaultSignature(config.JwksUri);
+            return builder.RequireSignatureByDefault(config.JwksUri);
         }
     }
 }

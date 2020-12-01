@@ -14,7 +14,7 @@ namespace JsonWebToken.Performance
     {
         private static readonly TokenValidationPolicy _policy = new TokenValidationPolicyBuilder()
                                                 .WithDecryptionKeys(Tokens.EncryptionKey)
-                                                .DefaultSignature(Tokens.SigningKey)
+                                                .RequireSignatureByDefault(Tokens.SigningKey)
                                                 .Build();
 
         //[Benchmark(Baseline = false)]

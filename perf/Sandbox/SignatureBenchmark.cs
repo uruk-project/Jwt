@@ -186,7 +186,7 @@ namespace JsonWebToken.Performance
                     }
             };
             var policy = new TokenValidationPolicyBuilder()
-                .RequireIssuer("https://idp.example.com/", jwk, algorithm)
+                .RequireSignature("https://idp.example.com/", jwk, algorithm)
                 .Build();
 
 

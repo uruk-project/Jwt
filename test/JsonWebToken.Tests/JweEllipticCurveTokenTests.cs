@@ -36,7 +36,7 @@ namespace JsonWebToken.Tests
             var token = writer.WriteToken(descriptor);
 
             var policy = new TokenValidationPolicyBuilder()
-                .DefaultSignature(_signingKey)
+                .RequireSignatureByDefault(_signingKey)
                 .WithDecryptionKey(_bobKey)
                 .Build();
 

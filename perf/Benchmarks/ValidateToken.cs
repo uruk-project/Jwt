@@ -29,7 +29,7 @@ namespace JsonWebToken.Performance
 
         protected static readonly TokenValidationPolicy tokenValidationPolicy
             = new TokenValidationPolicyBuilder()
-                .DefaultSignature(SymmetricKey)
+                .RequireSignatureByDefault(SymmetricKey)
                 .RequireAudience("636C69656E745F6964")
                 .DefaultIssuer("https://idp.example.com/")
                 .EnableLifetimeValidation()
