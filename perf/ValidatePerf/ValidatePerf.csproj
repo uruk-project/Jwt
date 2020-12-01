@@ -5,6 +5,8 @@
     <TargetFramework>net5</TargetFramework>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <IsPackable>false</IsPackable>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>../../jwt.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>

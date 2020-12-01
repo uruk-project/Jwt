@@ -16,6 +16,7 @@ namespace JsonWebToken
     /// impact in high-usage scenarios. Failure to properly Dispose this object will result in
     /// the memory not being returned to the pool.
     /// </remarks>
+    // Based on https://github.com/dotnet/runtime/blob/master/src/libraries/System.Text.Json/src/System/Text/Json/Document/JsonDocument.cs
     public sealed class JwtPayloadDocument : IDisposable
     {
         internal static readonly JwtPayloadDocument Empty = new JwtPayloadDocument(new JwtDocument(), 0, -1);

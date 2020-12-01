@@ -9,6 +9,7 @@ namespace JsonWebToken
     /// <summary>
     ///   Represents a specific JWT value within a <see cref="JwtDocument"/>.
     /// </summary>
+    // Based on https://github.com/dotnet/runtime/blob/master/src/libraries/System.Text.Json/src/System/Text/Json/Document/JsonElement.cs
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public readonly struct JwtElement
     {
