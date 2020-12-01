@@ -75,22 +75,18 @@ namespace JsonWebToken
                             goto Error;
                         }
 
-                        // Adding 1 to skip the start quote will never overflow
                         Debug.Assert(tokenStart < int.MaxValue);
-
                         database.Append(JsonTokenType.PropertyName, tokenStart + 1, reader.ValueSpan.Length);
                         ReadOnlySpan<byte> memberName = reader.ValueSpan;
                         if (memberName.IndexOf((byte)'\\') != -1)
                         {
-                            database.SetHasComplexChildren(database.Length - JsonRow.Size);
+                            database.SetNeedUnescaping(database.Length - JsonRow.Size);
                         }
 
                         reader.Read();
                         tokenType = reader.TokenType;
                         tokenStart = (int)reader.TokenStartIndex;
 
-                        // Since the input payload is contained within a Span,
-                        // token start index can never be larger than int.MaxValue (i.e. utf8JsonSpan.Length).
                         Debug.Assert(reader.TokenStartIndex <= int.MaxValue);
                         if (tokenType == JsonTokenType.String)
                         {
@@ -109,7 +105,6 @@ namespace JsonWebToken
                                 }
                             }
 
-                            // Adding 1 to skip the start quote will never overflow
                             Debug.Assert(tokenStart < int.MaxValue);
                             database.Append(JsonTokenType.String, tokenStart + 1, reader.ValueSpan.Length);
                         }

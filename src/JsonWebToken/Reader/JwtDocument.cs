@@ -144,7 +144,7 @@ namespace JsonWebToken
 
                 ReadOnlySpan<byte> currentPropertyName = documentSpan.Slice(row.Location, row.Length);
 
-                if (row.HasComplexChildren)
+                if (row.NeedUnescaping)
                 {
                     // An escaped property name will be longer than an unescaped candidate, so only unescape
                     // when the lengths are compatible.
@@ -431,7 +431,7 @@ namespace JsonWebToken
                 return false;
             }
 
-            if (row.HasComplexChildren && shouldUnescape)
+            if (row.NeedUnescaping && shouldUnescape)
             {
                 if (otherUtf8Text.Length < segment.Length / JsonConstants.MaxExpansionFactorWhileEscaping)
                 {
@@ -582,11 +582,8 @@ namespace JsonWebToken
                 throw new IndexOutOfRangeException();
             }
 
-            if (!row.HasComplexChildren)
+            if (!row.NeedUnescaping)
             {
-                // Since we wouldn't be here without having completed the document parse, and we
-                // already vetted the index against the length, this new index will always be
-                // within the table.
                 return new JwtElement(this, currentIndex + ((arrayIndex + 1) * JsonRow.Size));
             }
 

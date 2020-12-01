@@ -13,7 +13,7 @@ namespace JsonWebToken
         // Sign bit is currently unassigned
         private readonly int _location;
 
-        // Sign bit is used for "HasComplexChildren" (StartArray)
+        // Sign bit is used for "NeedUnescaping" (StartArray)
         private readonly int _lengthUnion;
 
         // Top nybble is JsonTokenType
@@ -29,10 +29,7 @@ namespace JsonWebToken
 
         internal bool IsUnknownSize => _lengthUnion == UnknownSize;
 
-        // String/PropertyName: Unescaping is required.
-        // Array: At least one element is an object/array.
-        // Otherwise; false
-        internal bool HasComplexChildren => _lengthUnion < 0;
+        internal bool NeedUnescaping => _lengthUnion < 0;
 
         internal int NumberOfRows =>
             _numberOfRowsAndTypeUnion & 0x0FFFFFFF; // Number of rows that the current JSON element occupies within the database

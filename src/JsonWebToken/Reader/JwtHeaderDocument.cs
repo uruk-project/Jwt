@@ -68,7 +68,7 @@ namespace JsonWebToken
                         database.Append(JsonTokenType.PropertyName, tokenStart + 1, reader.ValueSpan.Length);
                         if (reader.ValueSpan.IndexOf((byte)'\\') != -1)
                         {
-                            database.SetHasComplexChildren(database.Length - JsonRow.Size);
+                            database.SetNeedUnescaping(database.Length - JsonRow.Size);
                         }
 
                         ReadOnlySpan<byte> memberName = reader.ValueSpan;

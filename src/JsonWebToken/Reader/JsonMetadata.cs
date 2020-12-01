@@ -132,11 +132,11 @@ namespace JsonWebToken
             MemoryMarshal.Write(dataPos, ref value);
         }
 
-        internal void SetHasComplexChildren(int index)
+        internal void SetNeedUnescaping(int index)
         {
             AssertValidIndex(index);
 
-            // The HasComplexChildren bit is the most significant bit of "SizeOrLength"
+            // The NeedEscaping bit is the most significant bit of "SizeOrLength"
             Span<byte> dataPos = _data.AsSpan(index + SizeOrLengthOffset);
             int current = MemoryMarshal.Read<int>(dataPos);
 
