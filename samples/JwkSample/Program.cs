@@ -62,7 +62,6 @@ namespace JwkSample
 
         private static void ReadSymmetricKeyFromByteArray()
         {
-
             // The SymmetricJwk.FromBase64Url method accept a Base64-URL encoded string as input
             var binaryKey = new byte[32] { 71, 211, 50, 89, 161, 40, 202, 35, 24, 86, 37, 86, 163, 193, 100, 225, 53, 6, 90, 36, 168, 105, 110, 148, 214, 115, 170, 94, 184, 188, 253, 117 };
             var binarySymmetricKey = SymmetricJwk.FromByteArray(binaryKey);
@@ -74,7 +73,6 @@ namespace JwkSample
 
         private static void ReadKeyFromPem()
         {
-
             // The Jwk.FromPem method accept a PEM-encoded string as input
             string pem = File.ReadAllText(@".\private_rsa_key.pem");
             var keyFromPem = Jwk.FromPem(pem);
@@ -86,7 +84,7 @@ namespace JwkSample
 
         private static void ReadKeyFromX509Certificate()
         {
-            // The Jwk.FromPem method accept a PEM-encoded string as input
+            // The X509Certificate2 could be also read form the store certificate
             X509Certificate2 certificate = new X509Certificate2(@".\ValidbasicConstraintsNotCriticalTest4EE.crt");
             var keyFromCertificate = Jwk.FromX509Certificate(certificate, false);
             keyFromCertificate.Kid = "X509";
