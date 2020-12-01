@@ -33,7 +33,7 @@ namespace JsonWebToken.Cryptography
             _padding = contentEncryptionAlgorithm.Id switch
             {
                 AlgorithmId.RsaOaep => RSAEncryptionPadding.OaepSHA1,
-                AlgorithmId.RsaPkcs1 => RSAEncryptionPadding.Pkcs1,
+                AlgorithmId.Rsa1_5 => RSAEncryptionPadding.Pkcs1,
                 AlgorithmId.RsaOaep256 => RSAEncryptionPadding.OaepSHA256,
                 AlgorithmId.RsaOaep384 => RSAEncryptionPadding.OaepSHA384,
                 AlgorithmId.RsaOaep512 => RSAEncryptionPadding.OaepSHA512,

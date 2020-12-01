@@ -11,12 +11,12 @@ namespace JsonWebToken.Cryptography
         {
             return algorithm.Id switch
             {
-                AlgorithmId.RsaSha256 => RSASignaturePadding.Pkcs1,
-                AlgorithmId.RsaSha384 => RSASignaturePadding.Pkcs1,
-                AlgorithmId.RsaSha512 => RSASignaturePadding.Pkcs1,
-                AlgorithmId.RsaSsaPssSha256 => RSASignaturePadding.Pss,
-                AlgorithmId.RsaSsaPssSha384 => RSASignaturePadding.Pss,
-                AlgorithmId.RsaSsaPssSha512 => RSASignaturePadding.Pss,
+                AlgorithmId.RS256 => RSASignaturePadding.Pkcs1,
+                AlgorithmId.RS384 => RSASignaturePadding.Pkcs1,
+                AlgorithmId.RS512 => RSASignaturePadding.Pkcs1,
+                AlgorithmId.PS256 => RSASignaturePadding.Pss,
+                AlgorithmId.PS384 => RSASignaturePadding.Pss,
+                AlgorithmId.PS512 => RSASignaturePadding.Pss,
                 _ => throw ThrowHelper.CreateNotSupportedException_Algorithm(algorithm)
             };
         }

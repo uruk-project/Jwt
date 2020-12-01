@@ -43,28 +43,28 @@ namespace JsonWebToken
         internal static readonly KeyManagementAlgorithm Empty = new KeyManagementAlgorithm(id: 0, "Empty", AlgorithmCategory.None, produceEncryptedKey: false);
 
         /// <summary>'dir'</summary>
-        public static readonly KeyManagementAlgorithm Dir = new KeyManagementAlgorithm(id: AlgorithmId.Direct, "dir", AlgorithmCategory.Direct, produceEncryptedKey: false);
+        public static readonly KeyManagementAlgorithm Dir = new KeyManagementAlgorithm(id: AlgorithmId.Dir, "dir", AlgorithmCategory.Direct, produceEncryptedKey: false);
 
         /// <summary>'A128KW'</summary>
-        public static readonly KeyManagementAlgorithm A128KW = new KeyManagementAlgorithm(id: AlgorithmId.Aes128KW, "A128KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 128);
+        public static readonly KeyManagementAlgorithm A128KW = new KeyManagementAlgorithm(id: AlgorithmId.A128KW, "A128KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 128);
 
         /// <summary>'A192KW'</summary>
-        public static readonly KeyManagementAlgorithm A192KW = new KeyManagementAlgorithm(id: AlgorithmId.Aes192KW, "A192KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 192);
+        public static readonly KeyManagementAlgorithm A192KW = new KeyManagementAlgorithm(id: AlgorithmId.A192KW, "A192KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 192);
 
         /// <summary>'A256KW'</summary>
-        public static readonly KeyManagementAlgorithm A256KW = new KeyManagementAlgorithm(id: AlgorithmId.Aes256KW, "A256KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 256);
+        public static readonly KeyManagementAlgorithm A256KW = new KeyManagementAlgorithm(id: AlgorithmId.A256KW, "A256KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 256);
 
         /// <summary>'A128GCMKW'</summary>
-        public static readonly KeyManagementAlgorithm A128GcmKW = new KeyManagementAlgorithm(id: AlgorithmId.Aes128GcmKW, "A128GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 128);
+        public static readonly KeyManagementAlgorithm A128GcmKW = new KeyManagementAlgorithm(id: AlgorithmId.A128GcmKW, "A128GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 128);
 
         /// <summary>'A192GCMKW'</summary>
-        public static readonly KeyManagementAlgorithm A192GcmKW = new KeyManagementAlgorithm(id: AlgorithmId.Aes192GcmKW, "A192GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 192);
+        public static readonly KeyManagementAlgorithm A192GcmKW = new KeyManagementAlgorithm(id: AlgorithmId.A192GcmKW, "A192GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 192);
 
         /// <summary>'A256GCMKW'</summary>
-        public static readonly KeyManagementAlgorithm A256GcmKW = new KeyManagementAlgorithm(id: AlgorithmId.Aes256GcmKW, "A256GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 256);
+        public static readonly KeyManagementAlgorithm A256GcmKW = new KeyManagementAlgorithm(id: AlgorithmId.A256GcmKW, "A256GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 256);
 
         /// <summary>'RSA1_5'. This algorithm is deprecated.</summary>
-        public static readonly KeyManagementAlgorithm Rsa1_5 = new KeyManagementAlgorithm(id: AlgorithmId.RsaPkcs1, "RSA1_5", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
+        public static readonly KeyManagementAlgorithm Rsa1_5 = new KeyManagementAlgorithm(id: AlgorithmId.Rsa1_5, "RSA1_5", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
 
         /// <summary>'RSA-OAEP'</summary>
         public static readonly KeyManagementAlgorithm RsaOaep = new KeyManagementAlgorithm(id: AlgorithmId.RsaOaep, "RSA-OAEP", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
@@ -82,13 +82,13 @@ namespace JsonWebToken
         public static readonly KeyManagementAlgorithm EcdhEs = new KeyManagementAlgorithm(id: AlgorithmId.EcdhEs, "ECDH-ES", AlgorithmCategory.EllipticCurve | AlgorithmCategory.Direct, produceEncryptedKey: false);
 
         /// <summary>'ECDH-ES+A128KW'</summary>
-        public static readonly KeyManagementAlgorithm EcdhEsA128KW = new KeyManagementAlgorithm(id: AlgorithmId.EcdhEsAes128KW, "ECDH-ES+A128KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: A128KW);
+        public static readonly KeyManagementAlgorithm EcdhEsA128KW = new KeyManagementAlgorithm(id: AlgorithmId.EcdhEsA128KW, "ECDH-ES+A128KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: A128KW);
 
         /// <summary>'ECDH-ES+A192KW'</summary>
-        public static readonly KeyManagementAlgorithm EcdhEsA192KW = new KeyManagementAlgorithm(id: AlgorithmId.EcdhEsAes192KW, "ECDH-ES+A192KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: A192KW);
+        public static readonly KeyManagementAlgorithm EcdhEsA192KW = new KeyManagementAlgorithm(id: AlgorithmId.EcdhEsA192KW, "ECDH-ES+A192KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: A192KW);
 
         /// <summary>'ECDH-ES+A256KW'</summary>
-        public static readonly KeyManagementAlgorithm EcdhEsA256KW = new KeyManagementAlgorithm(id: AlgorithmId.EcdhEsAes256KW, "ECDH-ES+A256KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: A256KW);
+        public static readonly KeyManagementAlgorithm EcdhEsA256KW = new KeyManagementAlgorithm(id: AlgorithmId.EcdhEsA256KW, "ECDH-ES+A256KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: A256KW);
 
         private readonly AlgorithmId _id;
         private readonly ushort _requiredKeySizeInBits;
