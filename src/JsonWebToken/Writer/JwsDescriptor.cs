@@ -27,17 +27,38 @@ namespace JsonWebToken
             _alg = alg ?? throw new ArgumentNullException(nameof(alg));
             _signingKey = signingKey ?? throw new ArgumentNullException(nameof(signingKey));
             _payload = new JwtPayload();
-            Header.Add(JwtHeaderParameterNames.Alg, alg.Name);
-            if (!signingKey.Kid.EncodedUtf8Bytes.IsEmpty)
+            var kid = signingKey.Kid;
+            if (!kid.EncodedUtf8Bytes.IsEmpty)
             {
-                _kid = signingKey.Kid;
-                Header.Add(JwtHeaderParameterNames.Kid, _kid);
+                _kid = kid;
+                if (typ != null)
+                {
+                    _typ = typ;
+                    Header.FastAdd(
+                        new JwtMember(JwtHeaderParameterNames.Alg, alg.Name),
+                        new JwtMember(JwtHeaderParameterNames.Kid, kid),
+                        new JwtMember(JwtHeaderParameterNames.Typ, typ));
+                }
+                else
+                {
+                    Header.FastAdd(
+                        new JwtMember(JwtHeaderParameterNames.Alg, alg.Name),
+                        new JwtMember(JwtHeaderParameterNames.Kid, kid));
+                }
             }
-
-            if (typ != null)
+            else
             {
-                _typ = typ;
-                Header.Add(JwtHeaderParameterNames.Typ, typ);
+                if (typ != null)
+                {
+                    _typ = typ;
+                    Header.FastAdd(
+                        new JwtMember(JwtHeaderParameterNames.Alg, alg.Name),
+                        new JwtMember(JwtHeaderParameterNames.Typ, typ));
+                }
+                else
+                {
+                    Header.Add(JwtHeaderParameterNames.Alg, alg.Name);
+                }
             }
 
             if (cty != null)

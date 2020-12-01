@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -19,6 +20,7 @@ namespace JsonWebToken
         /// Beyond 16 items, the implementation will switch to a <see cref="Dictionary{TKey, TValue}"/>.
         /// </summary>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MemberStore CreateFastGrowingStore()
             => new MemberStore(FastGrowingEmptyMap.Empty);
 
@@ -28,8 +30,9 @@ namespace JsonWebToken
         /// Beyond 16 items, the implementation will switch to a <see cref="Dictionary{TKey, TValue}"/>.
         /// </summary>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MemberStore CreateSlowGrowingStore()
-            => new MemberStore(SlowGrowingEmptyMap.Empty);
+                => new MemberStore(SlowGrowingEmptyMap.Empty);
 
         private IMap _map;
 
@@ -93,8 +96,41 @@ namespace JsonWebToken
             => _map.ContainsKey(key);
 
         IEnumerator IEnumerable.GetEnumerator()
+            => GetEnumerator();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void FastAdd(JwtMember value1, JwtMember value2)
+            => _map = new TwoElementMap(value1, value2);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void FastAdd(JwtMember value1, JwtMember value2, JwtMember value3)
+            => _map = new ThreeElementMap(value1, value2, value3);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void FastAdd(JwtMember value1, JwtMember value2, JwtMember value3, JwtMember value4)
+            => _map = new FourElementMap(value1, value2, value3, value4);
+
+        internal void FastAdd(JwtMember value1, JwtMember value2, JwtMember value3, JwtMember value4, JwtMember value5)
         {
-            return GetEnumerator();
+            var map = new MultiElementMap(5);
+            map.UnsafeStore(0, value1);
+            map.UnsafeStore(1, value2);
+            map.UnsafeStore(2, value3);
+            map.UnsafeStore(3, value4);
+            map.UnsafeStore(4, value5);
+            _map = map;
+        }
+
+        internal void FastAdd(JwtMember value1, JwtMember value2, JwtMember value3, JwtMember value4, JwtMember value5, JwtMember value6)
+        {
+            var map = new MultiElementMap(6);
+            map.UnsafeStore(0, value1);
+            map.UnsafeStore(1, value2);
+            map.UnsafeStore(2, value3);
+            map.UnsafeStore(3, value4);
+            map.UnsafeStore(4, value5);
+            map.UnsafeStore(5, value6);
+            _map = map;
         }
 
         private interface IMap : IEnumerable<JwtMember>

@@ -37,30 +37,96 @@ namespace JsonWebToken
             _alg = alg ?? throw new ArgumentNullException(nameof(alg));
             _enc = enc ?? throw new ArgumentNullException(nameof(enc));
             _zip = zip ?? CompressionAlgorithm.NoCompression;
-            Header.Add(JwtHeaderParameterNames.Alg, alg.Name);
-            Header.Add(JwtHeaderParameterNames.Enc, enc.Name);
 
-            if (zip != null)
+            var kid = encryptionKey.Kid;
+            if (!kid.EncodedUtf8Bytes.IsEmpty)
             {
-                Header.Add(JwtHeaderParameterNames.Zip, zip.Name);
+                _kid = kid;
+                if (zip != null)
+                {
+                    if (cty != null)
+                    {
+                        _cty = cty;
+                        Header.FastAdd(
+                            new JwtMember(JwtHeaderParameterNames.Alg, alg.Name),
+                            new JwtMember(JwtHeaderParameterNames.Enc, enc.Name),
+                            new JwtMember(JwtHeaderParameterNames.Kid, kid),
+                            new JwtMember(JwtHeaderParameterNames.Zip, zip.Name),
+                            new JwtMember(JwtHeaderParameterNames.Cty, cty));
+                    }
+                    else
+                    {
+                        Header.FastAdd(
+                            new JwtMember(JwtHeaderParameterNames.Alg, alg.Name),
+                            new JwtMember(JwtHeaderParameterNames.Enc, enc.Name),
+                            new JwtMember(JwtHeaderParameterNames.Kid, kid),
+                            new JwtMember(JwtHeaderParameterNames.Zip, zip.Name));
+                    }
+                }
+                else
+                {
+                    if (cty != null)
+                    {
+                        _cty = cty;
+                        Header.FastAdd(
+                            new JwtMember(JwtHeaderParameterNames.Alg, alg.Name),
+                            new JwtMember(JwtHeaderParameterNames.Enc, enc.Name),
+                            new JwtMember(JwtHeaderParameterNames.Kid, kid),
+                            new JwtMember(JwtHeaderParameterNames.Cty, cty));
+                    }
+                    else
+                    {
+                        Header.FastAdd(
+                            new JwtMember(JwtHeaderParameterNames.Alg, alg.Name),
+                            new JwtMember(JwtHeaderParameterNames.Enc, enc.Name),
+                            new JwtMember(JwtHeaderParameterNames.Kid, kid));
+                    }
+                }
             }
-
-            if (!encryptionKey.Kid.EncodedUtf8Bytes.IsEmpty)
+            else
             {
-                _kid = encryptionKey.Kid;
-                Header.Add(JwtHeaderParameterNames.Kid, encryptionKey.Kid);
+                if (zip != null)
+                {
+                    if (cty != null)
+                    {
+                        _cty = cty;
+                        Header.FastAdd(
+                            new JwtMember(JwtHeaderParameterNames.Alg, alg.Name),
+                            new JwtMember(JwtHeaderParameterNames.Enc, enc.Name),
+                            new JwtMember(JwtHeaderParameterNames.Zip, zip.Name),
+                            new JwtMember(JwtHeaderParameterNames.Cty, cty));
+                    }
+                    else
+                    {
+                        Header.FastAdd(
+                            new JwtMember(JwtHeaderParameterNames.Alg, alg.Name),
+                            new JwtMember(JwtHeaderParameterNames.Enc, enc.Name),
+                            new JwtMember(JwtHeaderParameterNames.Zip, zip.Name));
+                    }
+                }
+                else
+                {
+                    if (cty != null)
+                    {
+                        _cty = cty;
+                        Header.FastAdd(
+                            new JwtMember(JwtHeaderParameterNames.Alg, alg.Name),
+                            new JwtMember(JwtHeaderParameterNames.Enc, enc.Name),
+                            new JwtMember(JwtHeaderParameterNames.Cty, cty));
+                    }
+                    else
+                    {
+                        Header.FastAdd(
+                            new JwtMember(JwtHeaderParameterNames.Alg, alg.Name),
+                            new JwtMember(JwtHeaderParameterNames.Enc, enc.Name));
+                    }
+                }
             }
 
             if (typ != null)
             {
                 _typ = typ;
                 Header.Add(JwtHeaderParameterNames.Typ, typ);
-            }
-
-            if (cty != null)
-            {
-                _cty = cty;
-                Header.Add(JwtHeaderParameterNames.Cty, cty);
             }
         }
 

@@ -4,6 +4,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -149,6 +150,26 @@ namespace JsonWebToken
         /// <summary>Adds the value of type <see cref="bool"/> to the current <see cref="JsonObject"/>.</summary>
         public void Add(JsonEncodedText name, bool value)
             => _store.Add(new JwtMember(name, value));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void FastAdd(JwtMember value1, JwtMember value2)
+            => _store.FastAdd(value1, value2);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void FastAdd(JwtMember value1, JwtMember value2, JwtMember value3)
+            => _store.FastAdd(value1, value2, value3);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void FastAdd(JwtMember value1, JwtMember value2, JwtMember value3, JwtMember value4)
+            => _store.FastAdd(value1, value2, value3, value4);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void FastAdd(JwtMember value1, JwtMember value2, JwtMember value3, JwtMember value4, JwtMember value5)
+            => _store.FastAdd(value1, value2, value3, value4, value5);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void FastAdd(JwtMember value1, JwtMember value2, JwtMember value3, JwtMember value4, JwtMember value5, JwtMember value6)
+            => _store.FastAdd(value1, value2, value3, value4, value5, value6);
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator()
