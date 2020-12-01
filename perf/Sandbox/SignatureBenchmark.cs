@@ -37,7 +37,7 @@ namespace JsonWebToken.Performance
     public class SignatureBenchmark
     {
         [ParamsSource(nameof(GetDescriptor))]
-        public JwsDescriptorWrapper Descriptor { get; set; }
+        public JwsDescriptorWrapper Descriptor { get; set; } = null!;
 
         private static readonly JwtWriter _writer = new JwtWriter();
 
@@ -113,7 +113,7 @@ namespace JsonWebToken.Performance
     public class SignatureValidationBenchmark
     {
         [ParamsSource(nameof(GetDescriptor))]
-        public JwsWrapper Token { get; set; }
+        public JwsWrapper Token { get; set; } = null!;
 
         [Benchmark(Baseline = true)]
         public bool Parse()
@@ -201,21 +201,13 @@ namespace JsonWebToken.Performance
     [Orderer(SummaryOrderPolicy.FastestToSlowest)]
     public class DecryptionBenchmark
     {
-        public DecryptionBenchmark()
-        {
-            if (Wrappers is null)
-            {
-                Wrappers = CreateDescriptors();
-            }
-        }
-
         public static Dictionary<string, Dictionary<string, JweWrapper>> Wrappers { get; set; } = CreateDescriptors();
 
         [ParamsSource(nameof(GetAlg))]
-        public string Alg { get; set; }
+        public string Alg { get; set; } = null!;
 
         [ParamsSource(nameof(GetEnc))]
-        public string Enc { get; set; }
+        public string Enc { get; set; } = null!;
 
         [Benchmark]
         public bool Parse()
@@ -378,7 +370,6 @@ namespace JsonWebToken.Performance
                 }
             }
         }
-
     }
 
     public class JweDescriptorWrapper
@@ -405,10 +396,10 @@ namespace JsonWebToken.Performance
     public class EncryptionBenchmark
     {
         [ParamsSource(nameof(GetAlg))]
-        public string Alg { get; set; }
+        public string Alg { get; set; } = null!;
 
         [ParamsSource(nameof(GetEnc))]
-        public string Enc { get; set; }
+        public string Enc { get; set; } = null!;
 
         private static readonly JwtWriter _writer = new JwtWriter();
 
@@ -419,7 +410,6 @@ namespace JsonWebToken.Performance
             return _writer.WriteToken(wrapper.Descriptor);
         }
 
-
         public static IEnumerable<string> GetAlg()
         {
             return KeyManagementAlgorithm._algorithms.Select(a => a.ToString());
@@ -429,6 +419,5 @@ namespace JsonWebToken.Performance
         {
             return EncryptionAlgorithm._algorithms.Select(a => a.ToString());
         }
-
     }
 }

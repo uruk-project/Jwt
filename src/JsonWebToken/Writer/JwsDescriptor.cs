@@ -3,13 +3,14 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 
 namespace JsonWebToken
 {
     /// <summary>Defines a signed JWT with a JSON payload.</summary>
-    public class JwsDescriptor : JwtDescriptor<JwtPayload>
+    public partial class JwsDescriptor : JwtDescriptor<JwtPayload>
     {
         private readonly SignatureAlgorithm _alg;
         private readonly Jwk _signingKey;

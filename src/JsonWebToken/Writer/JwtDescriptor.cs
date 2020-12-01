@@ -3,13 +3,12 @@
 
 using System.Diagnostics;
 using System.Text.Json;
-using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
     /// <summary>Defines an abstract class for representing a JWT.</summary>
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
-    public abstract class JwtDescriptor
+    public abstract partial class JwtDescriptor
     {
         private JwtHeader _header;
 

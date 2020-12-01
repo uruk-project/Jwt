@@ -1,10 +1,12 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
+using System;
+
 namespace JsonWebToken
 {
     /// <summary>Defines an encrypted JWT with a <typeparamref name="TDescriptor"/> as payload.</summary>
-    public abstract class JweDescriptorBase<TDescriptor> : JweDescriptor<TDescriptor> where TDescriptor : JwsDescriptor
+    public abstract partial class JweDescriptorBase<TDescriptor> : JweDescriptor<TDescriptor> where TDescriptor : JwsDescriptor
     {
         private TDescriptor? _payload;
 

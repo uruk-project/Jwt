@@ -12,7 +12,7 @@ namespace JsonWebToken
         /// <summary>'HS256'</summary>
         [Obsolete("This property is obsolete. Use property " + nameof(HS256) + " instead.", error: true)]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static readonly SignatureAlgorithm HmacSha256 ;
+        public static readonly SignatureAlgorithm HmacSha256;
 
         /// <summary>'HS384'</summary>
         [Obsolete("This property is obsolete. Use property " + nameof(HS384) + " instead.", error: true)]

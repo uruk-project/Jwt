@@ -1,26 +1,27 @@
 ﻿using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    ///   Represents the structure of a JWT value in a read-only form.
-    /// </summary>
+    /// <summary>Represents the structure of a JWT value in a read-only form.</summary>
     /// <remarks>
-    ///   This class utilizes resources from pooled memory to minimize the garbage collector (GC)
-    ///   impact in high-usage scenarios. Failure to properly Dispose this object will result in
-    ///   the memory not being returned to the pool, which will cause an increase in GC impact across
-    ///   various parts of the framework.
+    /// This class utilizes resources from pooled memory to minimize the garbage collector (GC)
+    /// impact in high-usage scenarios. Failure to properly Dispose this object will result in
+    /// the memory not being returned to the pool, which will cause an increase in GC impact across
+    /// various parts of the framework.
     /// </remarks>
     // Inspired from https://github.com/dotnet/runtime/tree/master/src/libraries/System.Text.Json/src/System/Text/Json/Document
-    public sealed class Jwt : IDisposable
+    public sealed partial class Jwt : IDisposable
     {
         private ReadOnlyMemory<byte> _rawValue;
         private byte[]? _rented;
@@ -82,39 +83,25 @@ namespace JsonWebToken
             _rented = rented;
         }
 
-        /// <summary>
-        /// Gets the eventual error of the current <see cref="Jwt"/>.
-        /// </summary>
+        /// <summary>Gets the eventual error of the current <see cref="Jwt"/>.</summary>
         public TokenValidationError? Error => _error;
 
-        /// <summary>
-        /// Gets the header of the current <see cref="Jwt"/>.
-        /// </summary>
+        /// <summary>Gets the header of the current <see cref="Jwt"/>.</summary>
         public JwtHeaderDocument Header => _header;
 
-        /// <summary>
-        /// Gets the payload of the current <see cref="Jwt"/>.
-        /// </summary>
+        /// <summary>Gets the payload of the current <see cref="Jwt"/>.</summary>
         public JwtPayloadDocument? Payload => _payload;
 
-        /// <summary>
-        /// Gets the nested <see cref="Jwt"/> of the current <see cref="Jwt"/>, if any.
-        /// </summary>
+        /// <summary>Gets the nested <see cref="Jwt"/> of the current <see cref="Jwt"/>, if any.</summary>
         public Jwt? Nested => _nested;
 
-        /// <summary>
-        /// Gets the raw binary value of the current <see cref="Jwt"/>.
-        /// </summary>
+        /// <summary>Gets the raw binary value of the current <see cref="Jwt"/>.</summary>
         public ReadOnlyMemory<byte> RawValue => _rawValue;
 
-        /// <summary>
-        /// Gets the <see cref="string"/> representation of the current <see cref="Jwt"/>.
-        /// </summary>
+        /// <summary>Gets the <see cref="string"/> representation of the current <see cref="Jwt"/>.</summary>
         public string Plaintext => Utf8.GetString(_rawValue.Span);
 
-        /// <summary>
-        /// Parses and validates a JWT encoded as a JWS or JWE in compact serialized format.
-        /// </summary>
+        /// <summary>Parses and validates a JWT encoded as a JWS or JWE in compact serialized format.</summary>
         /// <param name="token">The JWT encoded as JWE or JWS</param>
         /// <param name="policy">The validation policy.</param>
         /// <param name="jwt">The resulting <see cref="Jwt"/>.</param>
@@ -161,9 +148,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Parses and validates a JWT encoded as a JWS or JWE in compact serialized format.
-        /// </summary>
+        /// <summary>Parses and validates a JWT encoded as a JWS or JWE in compact serialized format.</summary>
         /// <param name="utf8Token">The JWT encoded as JWE or JWS.</param>
         /// <param name="policy">The validation policy.</param>
         /// <param name="jwt">The resulting <see cref="Jwt"/>.</param>
@@ -177,9 +162,7 @@ namespace JsonWebToken
             return TryParse(utf8Token.ToArray(), policy, out jwt);
         }
 
-        /// <summary>
-        /// Parses and validates a JWT encoded as a JWS or JWE in compact serialized format.
-        /// </summary>
+        /// <summary>Parses and validates a JWT encoded as a JWS or JWE in compact serialized format.</summary>
         /// <param name="utf8Token">The JWT encoded as JWE or JWS</param>
         /// <param name="policy">The validation policy.</param>
         /// <param name="jwt">The resulting <see cref="Jwt"/>.</param>
@@ -242,7 +225,7 @@ namespace JsonWebToken
                         {
                             goto TokenError;
                         }
-                        
+
                         policy.HeaderCache.AddHeader(rawHeader, header);
                     }
                     else
@@ -319,7 +302,7 @@ namespace JsonWebToken
             TokenSegment payloadSegment = Unsafe.Add(ref segments, 1);
             TokenSegment signatureSegment = Unsafe.Add(ref segments, 2);
             var rawPayload = utf8Token.Slice(payloadSegment.Start, payloadSegment.Length);
- 
+
             int jsonBufferLength = Base64Url.GetArraySizeRequiredToDecode(payloadSegment.Length);
             byte[] jsonBuffer = ArrayPool<byte>.Shared.Rent(jsonBufferLength);
 
@@ -409,7 +392,7 @@ namespace JsonWebToken
                 goto Error;
             }
 
-            if (!JwtReaderHelper.TryGetContentEncryptionKeys(header, utf8Token.Slice(encryptionKeySegment.Start, encryptionKeySegment.Length), encryptionAlgorithm, policy.DecryptionKeyProviders, out var keys))
+            if (!TryGetContentEncryptionKeys(header, utf8Token.Slice(encryptionKeySegment.Start, encryptionKeySegment.Length), encryptionAlgorithm, policy.DecryptionKeyProviders, out var keys))
             {
                 error = TokenValidationError.EncryptionKeyNotFound();
                 goto Error;
@@ -422,7 +405,7 @@ namespace JsonWebToken
             int ciphertextBufferLength = Base64Url.GetArraySizeRequiredToDecode(ciphertextSegment.Length);
             byte[] ciphertextBuffer = ArrayPool<byte>.Shared.Rent(ciphertextBufferLength);
             Span<byte> decryptedBytes = new Span<byte>(ciphertextBuffer, 0, ciphertextBufferLength);
-            if (JwtReaderHelper.TryDecryptToken(keys, rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, encryptionAlgorithm, decryptedBytes, out int bytesWritten))
+            if (TryDecryptToken(keys, rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, encryptionAlgorithm, decryptedBytes, out int bytesWritten))
             {
                 decryptedBytes = decryptedBytes.Slice(0, bytesWritten);
             }
@@ -507,6 +490,193 @@ namespace JsonWebToken
             document = new Jwt(error);
         CompleteError:
             return false;
+        }
+
+        private static bool TryDecryptToken(
+            List<SymmetricJwk> keys,
+            ReadOnlySpan<byte> rawHeader,
+            ReadOnlySpan<byte> rawCiphertext,
+            ReadOnlySpan<byte> rawInitializationVector,
+            ReadOnlySpan<byte> rawAuthenticationTag,
+            EncryptionAlgorithm encryptionAlgorithm,
+            Span<byte> decryptedBytes,
+            out int bytesWritten)
+        {
+            int ciphertextLength = Base64Url.GetArraySizeRequiredToDecode(rawCiphertext.Length);
+            int initializationVectorLength = Base64Url.GetArraySizeRequiredToDecode(rawInitializationVector.Length);
+            int authenticationTagLength = Base64Url.GetArraySizeRequiredToDecode(rawAuthenticationTag.Length);
+            int headerLength = rawHeader.Length;
+            int bufferLength = ciphertextLength + headerLength + initializationVectorLength + authenticationTagLength;
+            byte[]? arrayToReturn = null;
+            Span<byte> buffer = bufferLength < Constants.MaxStackallocBytes
+                ? stackalloc byte[bufferLength]
+                : (arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength));
+
+            Span<byte> ciphertext = buffer.Slice(0, ciphertextLength);
+            Span<byte> header = buffer.Slice(ciphertextLength, headerLength);
+            Span<byte> initializationVector = buffer.Slice(ciphertextLength + headerLength, initializationVectorLength);
+            Span<byte> authenticationTag = buffer.Slice(ciphertextLength + headerLength + initializationVectorLength, authenticationTagLength);
+            try
+            {
+                Base64Url.Decode(rawCiphertext, ciphertext, out int _, out int ciphertextBytesWritten);
+                Debug.Assert(ciphertext.Length == ciphertextBytesWritten);
+
+                char[]? headerArrayToReturn = null;
+                try
+                {
+                    int utf8HeaderLength = Utf8.GetMaxCharCount(header.Length);
+                    Span<char> utf8Header = utf8HeaderLength < Constants.MaxStackallocBytes
+                        ? stackalloc char[utf8HeaderLength]
+                        : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(utf8HeaderLength));
+
+                    utf8HeaderLength = Utf8.GetChars(rawHeader, utf8Header);
+                    Ascii.GetBytes(utf8Header.Slice(0, utf8HeaderLength), header);
+                }
+                finally
+                {
+                    if (headerArrayToReturn != null)
+                    {
+                        ArrayPool<char>.Shared.Return(headerArrayToReturn);
+                    }
+                }
+
+                Base64Url.Decode(rawInitializationVector, initializationVector, out int _, out int ivBytesWritten);
+                Debug.Assert(initializationVector.Length == ivBytesWritten);
+
+                Base64Url.Decode(rawAuthenticationTag, authenticationTag, out int _, out int authenticationTagBytesWritten);
+                Debug.Assert(authenticationTag.Length == authenticationTagBytesWritten);
+
+                bytesWritten = 0;
+                var decryptor = encryptionAlgorithm.Decryptor;
+
+                for (int i = 0; i < keys.Count; i++)
+                {
+                    var key = keys[i];
+                    if (decryptor.TryDecrypt(
+                        key.K,
+                        ciphertext,
+                        header,
+                        initializationVector,
+                        authenticationTag,
+                        decryptedBytes,
+                        out bytesWritten))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            finally
+            {
+                if (arrayToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturn);
+                }
+            }
+        }
+
+        private static bool TryGetContentEncryptionKeys(JwtHeaderDocument header, ReadOnlySpan<byte> rawEncryptedKey, EncryptionAlgorithm enc, IKeyProvider[] encryptionKeyProviders, [NotNullWhen(true)] out List<SymmetricJwk>? keys)
+        {
+            var alg = header.Alg;
+            if (alg.IsEmpty)
+            {
+                keys = null;
+                return false;
+            }
+            else if (alg.ValueEquals(KeyManagementAlgorithm.Dir.Utf8Name))
+            {
+                keys = new List<SymmetricJwk>(1);
+                for (int i = 0; i < encryptionKeyProviders.Length; i++)
+                {
+                    var keySet = encryptionKeyProviders[i].GetKeys(header);
+                    for (int j = 0; j < keySet.Length; j++)
+                    {
+                        var key = keySet[j];
+                        if (key is SymmetricJwk symJwk && symJwk.CanUseForKeyWrapping(alg))
+                        {
+                            keys.Add(symJwk);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (KeyManagementAlgorithm.TryParse(alg, out var algorithm))
+                {
+                    int decodedSize = Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length);
+
+                    byte[]? encryptedKeyToReturnToPool = null;
+                    byte[]? unwrappedKeyToReturnToPool = null;
+                    Span<byte> encryptedKey = decodedSize <= Constants.MaxStackallocBytes ?
+                        stackalloc byte[decodedSize] :
+                        encryptedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(decodedSize);
+
+                    try
+                    {
+                        var operationResult = Base64Url.Decode(rawEncryptedKey, encryptedKey, out _, out int bytesWritten);
+                        Debug.Assert(operationResult == OperationStatus.Done);
+                        encryptedKey = encryptedKey.Slice(0, bytesWritten);
+
+                        var keyUnwrappers = new List<(int, KeyUnwrapper)>(1);
+                        int maxKeyUnwrapSize = 0;
+                        for (int i = 0; i < encryptionKeyProviders.Length; i++)
+                        {
+                            var keySet = encryptionKeyProviders[i].GetKeys(header);
+                            for (int j = 0; j < keySet.Length; j++)
+                            {
+                                var key = keySet[j];
+                                if (key.CanUseForKeyWrapping(alg))
+                                {
+                                    if (key.TryGetKeyUnwrapper(enc, algorithm, out var keyUnwrapper))
+                                    {
+                                        int keyUnwrapSize = keyUnwrapper.GetKeyUnwrapSize(encryptedKey.Length);
+                                        keyUnwrappers.Add((keyUnwrapSize, keyUnwrapper));
+                                        if (maxKeyUnwrapSize < keyUnwrapSize)
+                                        {
+                                            maxKeyUnwrapSize = keyUnwrapSize;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        keys = new List<SymmetricJwk>(1);
+                        Span<byte> unwrappedKey = maxKeyUnwrapSize <= Constants.MaxStackallocBytes ?
+                            stackalloc byte[maxKeyUnwrapSize] :
+                            unwrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(maxKeyUnwrapSize);
+                        for (int i = 0; i < keyUnwrappers.Count; i++)
+                        {
+                            var kpv = keyUnwrappers[i];
+                            var temporaryUnwrappedKey = unwrappedKey.Length != kpv.Item1 ? unwrappedKey.Slice(0, kpv.Item1) : unwrappedKey;
+                            if (kpv.Item2.TryUnwrapKey(encryptedKey, temporaryUnwrappedKey, header, out int keyUnwrappedBytesWritten))
+                            {
+                                var jwk = SymmetricJwk.FromByteArray(unwrappedKey.Slice(0, keyUnwrappedBytesWritten).ToArray(), false);
+                                keys.Add(jwk);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        if (encryptedKeyToReturnToPool != null)
+                        {
+                            ArrayPool<byte>.Shared.Return(encryptedKeyToReturnToPool, true);
+                        }
+
+                        if (unwrappedKeyToReturnToPool != null)
+                        {
+                            ArrayPool<byte>.Shared.Return(unwrappedKeyToReturnToPool, true);
+                        }
+                    }
+                }
+                else
+                {
+                    keys = null;
+                    return false;
+                }
+            }
+
+            return keys.Count != 0;
         }
 
         /// <inheritdoc />
