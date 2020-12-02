@@ -1291,22 +1291,6 @@ namespace JsonWebToken
                 document = null;
                 return false;
             }
-
-            //private static int SkipArray(ref Utf8JsonReader reader)
-            //{
-            //    int count = 0;
-            //    int depth = reader.CurrentDepth;
-            //    int depth1 = depth + 1;
-            //    do
-            //    {
-            //        if (depth1 == reader.CurrentDepth)
-            //        {
-            //            count++;
-            //        }
-            //    }
-            //    while (reader.Read() && depth < reader.CurrentDepth);
-            //    return count;
-            //}
         }
     }
 }

@@ -247,7 +247,7 @@ namespace JsonWebToken
                 return index + JsonRow.Size;
             }
 
-            int endIndex = index + JsonRow.Size * row.NumberOfRows;
+            int endIndex = index + JsonRow.Size * row.NumberOfItems;
 
             if (includeEndElement)
             {
@@ -362,10 +362,10 @@ namespace JsonWebToken
 
             ReadOnlySpan<byte> data = _utf8Json.Span;
             ReadOnlySpan<byte> segment = data.Slice(row.Location, row.Length);
-            string?[] array = new string[row.NumberOfRows];
+            string?[] array = new string[row.NumberOfItems];
             var reader = new Utf8JsonReader(segment);
             reader.Read();
-            for (int i = 0; i < row.NumberOfRows; i++)
+            for (int i = 0; i < row.NumberOfItems; i++)
             {
                 if (reader.Read())
                 {
@@ -566,7 +566,7 @@ namespace JsonWebToken
 
             CheckExpectedType(JsonTokenType.StartObject, row.TokenType);
 
-            return row.NumberOfRows;
+            return row.NumberOfItems;
         }
 
         internal JwtElement GetArrayIndexElement(int currentIndex, int arrayIndex)
@@ -601,7 +601,7 @@ namespace JsonWebToken
 
                 if (!row.IsSimpleValue)
                 {
-                    objectOffset += JsonRow.Size * row.NumberOfRows;
+                    objectOffset += JsonRow.Size * row.NumberOfItems;
                 }
 
                 elementCount++;
