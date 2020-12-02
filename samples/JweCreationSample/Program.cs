@@ -7,27 +7,26 @@ namespace JweCreationSample
     {
         static void Main()
         {
-            // Creates a symmetric key defined for the 'HS256' algorithm
-            var signatureKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4TUGWiSoaW6U1nOqXri8_XU");
+            // Generates the symmetric key for AES encryption with the algorithm 'A256GCMKW'
+            var sharedEncryptionKey = SymmetricJwk.GenerateKey(KeyManagementAlgorithm.A256GcmKW);
 
-            // Creates a symmetric key for encryption
-            var encryptionKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4T");
+            // Creates the symmetric key defined for the 'HS256' signature algorithm
+            var signatureKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
 
-            // Creates a JWE descriptor with all its properties
-            var descriptor = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256)
-            {  
+            // Creates the JWE descriptor 
+            // The descriptor sets the 'alg' with value 'A256GCMKW' and 'enc' with value 'A128CBC-HS256'
+            var descriptor = new JweDescriptor(sharedEncryptionKey, KeyManagementAlgorithm.A256GcmKW, EncryptionAlgorithm.A256CbcHS512)
+            {
+                // Creates the JWS payload
                 Payload = new JwsDescriptor(signatureKey, SignatureAlgorithm.HS256)
                 {
                     Payload = new JwtPayload
                     {
-                        // You can use predefined claims
+                        // Defines the JWS claims
                         { JwtClaimNames.Iat, EpochTime.UtcNow },
                         { JwtClaimNames.Exp, EpochTime.UtcNow + EpochTime.OneHour },
                         { JwtClaimNames.Iss, "https://idp.example.com/" },
-                        { JwtClaimNames.Aud, "636C69656E745F6964" },
-
-                        // Or use custom claims 
-                        { "value", "ABCEDF" }
+                        { JwtClaimNames.Aud, "636C69656E745F6964" }
                     }
                 }
             };

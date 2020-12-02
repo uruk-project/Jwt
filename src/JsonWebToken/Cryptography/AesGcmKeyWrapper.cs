@@ -11,6 +11,8 @@ namespace JsonWebToken.Cryptography
     {
         private const int IVSize = 12;
         private const int TagSize = 16;
+        private const int IVB64Size = 16;
+        private const int TagB64Size = 22;
 
         public AesGcmKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(key, encryptionAlgorithm, algorithm)
@@ -33,6 +35,8 @@ namespace JsonWebToken.Cryptography
         {
             var cek = CreateSymmetricKey(EncryptionAlgorithm, (SymmetricJwk?)staticKey);
             Span<byte> nonce = stackalloc byte[IVSize];
+            RandomNumberGenerator.Fill(nonce);
+
             Span<byte> tag = stackalloc byte[TagSize];
 
             using (var aesGcm = new AesGcm(Key.AsSpan()))
@@ -45,9 +49,13 @@ namespace JsonWebToken.Cryptography
 
                 aesGcm.Encrypt(nonce, keyBytes, destination, tag);
 
-                // TODO : Avoid string allocation
-                header.Add(JwtHeaderParameterNames.IV, Utf8.GetString(Base64Url.Encode(nonce)));
-                header.Add(JwtHeaderParameterNames.Tag, Utf8.GetString(Base64Url.Encode(tag)));
+                Span<byte> nonceB64 = stackalloc byte[IVB64Size];
+                Base64Url.Encode(nonce, nonceB64);
+                header.Add(JwtHeaderParameterNames.IV, Utf8.GetString(nonceB64));
+
+                Span<byte> tagB64 = stackalloc byte[TagB64Size];
+                Base64Url.Encode(tag, tagB64);
+                header.Add(JwtHeaderParameterNames.Tag, Utf8.GetString(tagB64));
             }
 
             return cek;
