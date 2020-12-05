@@ -26,7 +26,6 @@ namespace JsonWebToken.Cryptography
         {
             Debug.Assert(SymmetricJwk.SupportedKeyManagement(key.Length << 3, algorithm));
             Debug.Assert(algorithm.Category == AlgorithmCategory.Aes);
-
 #if SUPPORT_SIMD
             if (System.Runtime.Intrinsics.X86.Aes.IsSupported && EncryptionAlgorithm.EnabledAesInstructionSet)
             {

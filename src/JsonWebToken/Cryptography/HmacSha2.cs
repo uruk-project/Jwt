@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 
 namespace JsonWebToken.Cryptography
 {
@@ -48,10 +49,7 @@ namespace JsonWebToken.Cryptography
         /// <param name="key"></param>
         public HmacSha2(Sha2 sha2, ReadOnlySpan<byte> key)
         {
-            if (sha2 is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.sha);
-            }
+            Debug.Assert(sha2 != null);
 
             Sha2 = sha2;
             int blockSize = sha2.BlockSize;

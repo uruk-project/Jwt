@@ -29,7 +29,7 @@ namespace JsonWebToken.Cryptography
             Debug.Assert(decryptor != null);
 
             _encryptionAlgorithm = encryptionAlgorithm;
-            _decryptor = decryptor!;
+            _decryptor = decryptor;
         }
 
         /// <summary>

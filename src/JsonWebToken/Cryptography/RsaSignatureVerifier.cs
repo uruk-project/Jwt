@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
 
 namespace JsonWebToken.Cryptography
@@ -19,15 +20,8 @@ namespace JsonWebToken.Cryptography
         public RsaSignatureVerifier(RsaJwk key, SignatureAlgorithm algorithm)
             : base(algorithm)
         {
-            if (key is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
-            if (!key.SupportSignature(algorithm))
-            {
-                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(algorithm, key);
-            }
+            Debug.Assert(key != null);
+            Debug.Assert(key.SupportSignature(algorithm));
 
             if (key.KeySizeInBits < 1024)
             {

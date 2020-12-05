@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics;
 
 namespace JsonWebToken.Cryptography
 {
@@ -30,14 +31,11 @@ namespace JsonWebToken.Cryptography
         public SymmetricSignatureVerifier(ReadOnlySpan<byte> key, SignatureAlgorithm algorithm)
             : base(algorithm)
         {
+            Debug.Assert(algorithm.Category == AlgorithmCategory.Hmac);
+
             if (key.Length << 3 < MinimumKeySizeInBits)
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException_AlgorithmRequireMinimumKeySize(key.Length << 3, algorithm.Name.ToString(), MinimumKeySizeInBits);
-            }
-
-            if (algorithm.Category != AlgorithmCategory.Hmac)
-            {
-                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(algorithm);
             }
 
             _hashSizeInBytes = Algorithm.RequiredKeySizeInBits >> 2;

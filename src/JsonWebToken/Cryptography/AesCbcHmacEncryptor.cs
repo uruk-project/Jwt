@@ -31,7 +31,7 @@ namespace JsonWebToken.Cryptography
 
             _encryptionAlgorithm = encryptionAlgorithm;
             _keyLength = encryptionAlgorithm.RequiredKeySizeInBytes >> 1;
-            _encryptor = encryptor!;
+            _encryptor = encryptor;
         }
 
         /// <summary>

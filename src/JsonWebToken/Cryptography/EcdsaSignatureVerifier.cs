@@ -3,6 +3,7 @@
 
 #if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
 
 namespace JsonWebToken.Cryptography
@@ -18,15 +19,8 @@ namespace JsonWebToken.Cryptography
         public EcdsaSignatureVerifier(ECJwk key, SignatureAlgorithm algorithm)
             : base(algorithm)
         {
-            if (key is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
-            if (key.KeySizeInBits != algorithm.RequiredKeySizeInBits)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_InvalidSigningKeySize(key, algorithm.RequiredKeySizeInBits);
-            }
+            Debug.Assert(key != null);
+            Debug.Assert(key.KeySizeInBits == algorithm.RequiredKeySizeInBits);
 
             _sha = algorithm.Sha;
             _hashSize = key.Crv.HashSize;

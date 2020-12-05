@@ -27,7 +27,7 @@ namespace JsonWebToken.Cryptography
                 var feedback = nonce.AsVector128<byte>();
                 ref byte inputEnd = ref Unsafe.AddByteOffset(ref input, (IntPtr)ciphertext.Length - BlockSize + 1);
 
-                var keys = new AesDecryption192Keys(key);
+                var keys = new Aes192DecryptionKeys(key);
                 try
                 {
                     while (Unsafe.IsAddressLessThan(ref input, ref inputEnd))

@@ -10,7 +10,7 @@ using System.Runtime.Intrinsics.X86;
 
 namespace JsonWebToken.Cryptography
 {
-    internal struct AesDecryption192Keys
+    internal struct Aes192DecryptionKeys
     {
         private const int Count = 13;
 
@@ -28,7 +28,7 @@ namespace JsonWebToken.Cryptography
         public Vector128<byte> Key11;
         public Vector128<byte> Key12;
 
-        public AesDecryption192Keys(ReadOnlySpan<byte> key)
+        public Aes192DecryptionKeys(ReadOnlySpan<byte> key)
         {
             if (key.Length < 24)
             {
@@ -72,7 +72,7 @@ namespace JsonWebToken.Cryptography
 
         public void Clear()
         {
-            ref byte that = ref Unsafe.As<AesDecryption192Keys, byte>(ref Unsafe.AsRef(this));
+            ref byte that = ref Unsafe.As<Aes192DecryptionKeys, byte>(ref Unsafe.AsRef(this));
             Unsafe.InitBlock(ref that, 0, Count * 16);
         }
 
