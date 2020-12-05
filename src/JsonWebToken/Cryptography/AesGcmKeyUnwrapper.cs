@@ -3,19 +3,21 @@
 
 #if SUPPORT_AESGCM
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
 
 namespace JsonWebToken.Cryptography
 {
     internal sealed class AesGcmKeyUnwrapper : KeyUnwrapper
     {
+        private readonly SymmetricJwk _key;
+
         public AesGcmKeyUnwrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
-            : base(key, encryptionAlgorithm, algorithm)
+            : base(encryptionAlgorithm, algorithm)
         {
-            if (algorithm.Category != AlgorithmCategory.AesGcm)
-            {
-                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-            }
+            Debug.Assert(key.SupportKeyManagement(algorithm));
+            Debug.Assert(algorithm.Category == AlgorithmCategory.AesGcm);
+            _key = key;
         }
 
         /// <inheritsdoc />
@@ -43,7 +45,7 @@ namespace JsonWebToken.Cryptography
             {
                 Base64Url.Decode(rawIV.Span, nonce);
                 Base64Url.Decode(rawTag.Span, tag);
-                using var aesGcm = new AesGcm(Key.AsSpan());
+                using var aesGcm = new AesGcm(_key.K);
                 if (destination.Length > keyBytes.Length)
                 {
                     destination = destination.Slice(0, keyBytes.Length);

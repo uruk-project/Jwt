@@ -2,15 +2,13 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics;
 
 namespace JsonWebToken.Cryptography
 {
     /// <summary>Provides key unwrapping services.</summary>
     public abstract class KeyUnwrapper : IDisposable
     {
-        /// <summary>Gets the <see cref="Jwk"/> that is being used.</summary>
-        public Jwk Key { get; }
-
         /// <summary>Gets the <see cref="KeyManagementAlgorithm"/> that is being used.</summary>
         public KeyManagementAlgorithm Algorithm { get; }
 
@@ -18,34 +16,13 @@ namespace JsonWebToken.Cryptography
         public EncryptionAlgorithm EncryptionAlgorithm { get; }
 
         /// <summary>Initializes a new instance of the <see cref="KeyUnwrapper"/> class.</summary>
-        /// <param name="key"></param>
-        /// <param name="encryptionAlgorithm"></param>
-        /// <param name="algorithm"></param>
-        protected KeyUnwrapper(Jwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        protected KeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
-            if (key is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
-            if (!key.SupportKeyManagement(algorithm))
-            {
-                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-            }
-
-            if (algorithm is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.algorithm);
-            }
-
-            if (encryptionAlgorithm is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
-            }
+            Debug.Assert(algorithm != null);
+            Debug.Assert(encryptionAlgorithm != null);
 
             Algorithm = algorithm;
             EncryptionAlgorithm = encryptionAlgorithm;
-            Key = key;
         }
 
         /// <summary>Calls <see cref="Dispose(bool)"/> and <see cref="GC.SuppressFinalize"/></summary>

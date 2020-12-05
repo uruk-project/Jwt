@@ -3,6 +3,7 @@
 
 #if SUPPORT_AESGCM
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
 
 namespace JsonWebToken.Cryptography
@@ -13,14 +14,14 @@ namespace JsonWebToken.Cryptography
         private const int TagSize = 16;
         private const int IVB64Size = 16;
         private const int TagB64Size = 22;
+        private readonly SymmetricJwk _key;
 
         public AesGcmKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
-            : base(key, encryptionAlgorithm, algorithm)
+            : base(encryptionAlgorithm, algorithm)
         {
-            if (algorithm.Category != AlgorithmCategory.AesGcm)
-            {
-                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-            }
+            Debug.Assert(key.SupportKeyManagement(algorithm));
+            Debug.Assert(algorithm.Category == AlgorithmCategory.AesGcm);
+            _key = key;
         }
 
         /// <inheritsdoc />
@@ -39,7 +40,7 @@ namespace JsonWebToken.Cryptography
 
             Span<byte> tag = stackalloc byte[TagSize];
 
-            using (var aesGcm = new AesGcm(Key.AsSpan()))
+            using (var aesGcm = new AesGcm(_key.K))
             {
                 var keyBytes = cek.AsSpan();
                 if (destination.Length > keyBytes.Length)

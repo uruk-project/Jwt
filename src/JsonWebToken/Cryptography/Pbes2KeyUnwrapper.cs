@@ -16,16 +16,18 @@ namespace JsonWebToken.Cryptography
         private readonly Sha2 _hashAlgorithm;
         private readonly byte[] _password;
 
-        internal Pbes2KeyUnwrapper(PasswordBasedJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
-            : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
+        internal Pbes2KeyUnwrapper(PasswordBasedJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+            : base(encryptionAlgorithm, algorithm)
         {
-            Debug.Assert(contentEncryptionAlgorithm.WrappedAlgorithm != null);
-            Debug.Assert(contentEncryptionAlgorithm.HashAlgorithm != null);
+            Debug.Assert(key.SupportKeyManagement(algorithm));
+            Debug.Assert(algorithm.Category == AlgorithmCategory.Pbkdf2);
+            Debug.Assert(algorithm.WrappedAlgorithm != null);
+            Debug.Assert(algorithm.HashAlgorithm != null);
 
-            _algorithm = contentEncryptionAlgorithm.Name;
-            _keySizeInBytes = contentEncryptionAlgorithm.WrappedAlgorithm.RequiredKeySizeInBits >> 3;
+            _algorithm = algorithm.Name;
+            _keySizeInBytes = algorithm.WrappedAlgorithm.RequiredKeySizeInBits >> 3;
             _algorithmNameLength = _algorithm.EncodedUtf8Bytes.Length;
-            _hashAlgorithm = contentEncryptionAlgorithm.HashAlgorithm;
+            _hashAlgorithm = algorithm.HashAlgorithm;
             _password = key.ToArray();
         }
 

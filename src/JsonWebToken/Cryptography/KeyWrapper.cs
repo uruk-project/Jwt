@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace JsonWebToken.Cryptography
@@ -9,9 +10,6 @@ namespace JsonWebToken.Cryptography
     /// <summary>Provides key wrapping services.</summary>
     public abstract class KeyWrapper : IDisposable
     {
-        /// <summary>Gets the <see cref="Jwk"/> that is being used.</summary>
-        public Jwk Key { get; }
-
         /// <summary>Gets the <see cref="KeyManagementAlgorithm"/> that is being used.</summary>
         public KeyManagementAlgorithm Algorithm { get; }
 
@@ -19,34 +17,13 @@ namespace JsonWebToken.Cryptography
         public EncryptionAlgorithm EncryptionAlgorithm { get; }
 
         /// <summary>Initializes a new instance of the <see cref="KeyWrapper"/> class.</summary>
-        /// <param name="key"></param>
-        /// <param name="encryptionAlgorithm"></param>
-        /// <param name="algorithm"></param>
-        protected KeyWrapper(Jwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        protected KeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
         {
-            if (key is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
-            if (!key.SupportKeyManagement(algorithm))
-            {
-                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-            }
-
-            if (algorithm is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.algorithm);
-            }
-
-            if (encryptionAlgorithm is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
-            }
+            Debug.Assert(algorithm != null);
+            Debug.Assert(encryptionAlgorithm != null);
 
             Algorithm = algorithm;
             EncryptionAlgorithm = encryptionAlgorithm;
-            Key = key;
         }
 
         /// <summary>Calls <see cref="Dispose(bool)"/> and <see cref="GC.SuppressFinalize"/></summary>

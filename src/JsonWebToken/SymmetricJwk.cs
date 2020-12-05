@@ -292,7 +292,10 @@ namespace JsonWebToken
 
         /// <inheritsdoc />
         public override bool SupportKeyManagement(KeyManagementAlgorithm algorithm)
-            => ((algorithm.Category & AlgorithmCategory.Aes) != 0 && algorithm.RequiredKeySizeInBits == KeySizeInBits) || (algorithm == KeyManagementAlgorithm.Dir);
+            => SupportedKeyManagement(KeySizeInBits, algorithm);
+
+        internal static bool SupportedKeyManagement(int keySizeInBits, KeyManagementAlgorithm algorithm)
+            => ((algorithm.Category & AlgorithmCategory.Aes) != 0 && keySizeInBits == algorithm.RequiredKeySizeInBits) || (algorithm == KeyManagementAlgorithm.Dir);
 
         /// <inheritsdoc />
         public override bool SupportSignature(SignatureAlgorithm algorithm)
@@ -315,7 +318,7 @@ namespace JsonWebToken
         {
             KeyWrapper value = algorithm.Category switch
             {
-                AlgorithmCategory.Aes => new AesKeyWrapper(this, encryptionAlgorithm, algorithm),
+                AlgorithmCategory.Aes => new AesKeyWrapper(K, encryptionAlgorithm, algorithm),
 #if SUPPORT_AESGCM
                 AlgorithmCategory.AesGcm => new AesGcmKeyWrapper(this, encryptionAlgorithm, algorithm),
 #endif

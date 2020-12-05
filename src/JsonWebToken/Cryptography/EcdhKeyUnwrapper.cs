@@ -5,6 +5,7 @@
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
 
@@ -18,19 +19,23 @@ namespace JsonWebToken.Cryptography
         private readonly int _algorithmNameLength;
         private readonly int _keySizeInBytes;
         private readonly HashAlgorithmName _hashAlgorithm;
+        private readonly ECJwk _key;
 
-        public EcdhKeyUnwrapper(ECJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
-            : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
+        public EcdhKeyUnwrapper(ECJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+            : base(encryptionAlgorithm, algorithm)
         {
-            if (contentEncryptionAlgorithm.WrappedAlgorithm is null)
+            Debug.Assert(key.SupportKeyManagement(algorithm));
+            Debug.Assert(algorithm.Category == AlgorithmCategory.EllipticCurve);
+            _key = key;
+            if (algorithm.WrappedAlgorithm is null)
             {
                 _algorithm = encryptionAlgorithm.Name;
                 _keySizeInBytes = encryptionAlgorithm.RequiredKeySizeInBytes;
             }
             else
             {
-                _algorithm = contentEncryptionAlgorithm.Name;
-                _keySizeInBytes = contentEncryptionAlgorithm.WrappedAlgorithm.RequiredKeySizeInBits >> 3;
+                _algorithm = algorithm.Name;
+                _keySizeInBytes = algorithm.WrappedAlgorithm.RequiredKeySizeInBits >> 3;
             }
 
             _algorithmNameLength = _algorithm.EncodedUtf8Bytes.Length;
@@ -56,7 +61,7 @@ namespace JsonWebToken.Cryptography
             byte[] exchangeHash;
             using (var ephemeralKey = ECDiffieHellman.Create(ECJwk.FromJwtElement(epk).ExportParameters()))
             {
-                var privateKey = ((ECJwk)Key).CreateEcdhKey();
+                var privateKey = _key.CreateEcdhKey();
                 if (ephemeralKey.KeySize != privateKey.KeySize)
                 {
                     return ThrowHelper.TryWriteError(out bytesWritten);

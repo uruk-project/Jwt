@@ -22,8 +22,9 @@ namespace JsonWebToken.Cryptography
         private bool _disposed;
 
         public AesKeyUnwrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
-            : base(key, encryptionAlgorithm, algorithm)
+            : base(encryptionAlgorithm, algorithm)
         {
+            Debug.Assert(key.SupportKeyManagement(algorithm));
             Debug.Assert(algorithm.Category == AlgorithmCategory.Aes);
 #if SUPPORT_SIMD
             if (System.Runtime.Intrinsics.X86.Aes.IsSupported && EncryptionAlgorithm.EnabledAesInstructionSet)

@@ -35,7 +35,8 @@ namespace JsonWebToken.Tests
                 { JwtHeaderParameterNames.Apv, Utf8.GetString(Base64Url.Encode("Bob")) }
             };
 
-            var cek = kwp.WrapKey(_aliceKey, header, null);
+            Span<byte> wrappedKey = stackalloc byte[kwp.GetKeyWrapSize()];
+            var cek = kwp.WrapKey(_aliceKey, header, wrappedKey);
 
             var expected = new byte[] { 86, 170, 141, 234, 248, 35, 109, 32, 92, 34, 40, 205, 113, 167, 16, 26 };
             Assert.Equal(expected, cek.AsSpan().ToArray());

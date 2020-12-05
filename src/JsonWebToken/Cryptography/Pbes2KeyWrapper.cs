@@ -16,19 +16,23 @@ namespace JsonWebToken.Cryptography
         private readonly int _algorithmNameLength;
         private readonly int _keySizeInBytes;
         private readonly Sha2 _hashAlgorithm;
+        private readonly KeyManagementAlgorithm _keyManagementAlgorithm;
         private readonly byte[] _password;
         private readonly ISaltGenerator _saltGenerator;
 
-        public Pbes2KeyWrapper(PasswordBasedJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm, ISaltGenerator saltGenerator)
-            : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
+        public Pbes2KeyWrapper(PasswordBasedJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm, ISaltGenerator saltGenerator)
+            : base(encryptionAlgorithm, algorithm)
         {
-            Debug.Assert(contentEncryptionAlgorithm.WrappedAlgorithm != null);
-            Debug.Assert(contentEncryptionAlgorithm.HashAlgorithm != null);
+            Debug.Assert(key.SupportKeyManagement(algorithm));
+            Debug.Assert(algorithm.Category == AlgorithmCategory.Pbkdf2);
+            Debug.Assert(algorithm.WrappedAlgorithm != null);
+            Debug.Assert(algorithm.HashAlgorithm != null);
 
-            _algorithm = contentEncryptionAlgorithm.Name;
-            _keySizeInBytes = contentEncryptionAlgorithm.WrappedAlgorithm.RequiredKeySizeInBits >> 3;
+            _algorithm = algorithm.Name;
+            _keySizeInBytes = algorithm.WrappedAlgorithm.RequiredKeySizeInBits >> 3;
             _algorithmNameLength = _algorithm.EncodedUtf8Bytes.Length;
-            _hashAlgorithm = contentEncryptionAlgorithm.HashAlgorithm;
+            _hashAlgorithm = algorithm.HashAlgorithm;
+            _keyManagementAlgorithm = algorithm.WrappedAlgorithm;
             _password = key.ToArray();
             _saltGenerator = saltGenerator;
         }
@@ -62,31 +66,8 @@ namespace JsonWebToken.Cryptography
             header.Add(JwtHeaderParameterNames.P2s, Utf8.GetString(Base64Url.Encode(salt.Slice(_algorithmNameLength + 1, 16))));
             header.Add(JwtHeaderParameterNames.P2c, IterationCount);
 
-            SymmetricJwk? kek = null;
-            try
-            {
-                kek = SymmetricJwk.FromSpan(derivedKey, false);
-                if (kek.TryGetKeyWrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm, out var keyWrapper))
-                {
-                    contentEncryptionKey = keyWrapper.WrapKey(contentEncryptionKey, header, destination);
-                }
-                else
-                {
-                    ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(Algorithm.WrappedAlgorithm);
-                    return SymmetricJwk.Empty;
-                }
-
-                kek = null;
-            }
-            finally
-            {
-                if (kek != null)
-                {
-                    kek.Dispose();
-                }
-            }
-
-            return contentEncryptionKey;
+            using var keyWrapper = new AesKeyWrapper(derivedKey, EncryptionAlgorithm, _keyManagementAlgorithm);
+            return keyWrapper.WrapKey(contentEncryptionKey, header, destination);
         }
 
         private static HashAlgorithmName GetHashAlgorithm(EncryptionAlgorithm encryptionAlgorithm)

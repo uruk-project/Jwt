@@ -13,7 +13,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void WrapUnwrap()
         {
-            var kwp = new AesKeyWrapper(_key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.A128KW);
+            var kwp = new AesKeyWrapper(_key.K, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.A128KW);
             byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
             var cek = kwp.WrapKey(_keyToWrap, (JwtHeader)null, wrappedKey);
 
