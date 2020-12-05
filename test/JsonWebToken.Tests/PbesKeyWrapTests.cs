@@ -17,7 +17,13 @@ namespace JsonWebToken.Tests
             var staticKey = new byte[] { 111, 27, 25, 52, 66, 29, 20, 78, 92, 176, 56, 240, 65, 208, 82, 112, 161, 131, 36, 55, 202, 236, 185, 172, 129, 23, 153, 194, 195, 48, 253, 182 };
 
             var expectedEncryptedKey = new byte[] { 78, 186, 151, 59, 11, 141, 81, 240, 213, 245, 83, 211, 53, 188, 134, 188, 66, 125, 36, 200, 222, 124, 5, 103, 249, 52, 117, 184, 140, 81, 246, 158, 161, 177, 20, 33, 245, 57, 59, 4 };
-            var kwp = new Pbes2KeyWrapper(PasswordBasedJwk.FromPassPhrase(_password), EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.Pbes2HS256A128KW, new StubSaltGenerator(salt));
+            var kwp = new Pbes2KeyWrapper(
+                PasswordBasedJwk.FromPassphrase(_password), 
+                EncryptionAlgorithm.A128CbcHS256, 
+                KeyManagementAlgorithm.Pbes2HS256A128KW, 
+                4096, 
+                8, 
+                new StubSaltGenerator(salt));
 
             var header = new JwtHeader
             {
@@ -42,7 +48,7 @@ namespace JsonWebToken.Tests
             var parsed = JwtHeaderDocument.TryParseHeader(Encoding.UTF8.GetBytes($"{{\"p2s\":\"2WCTcJZ1Rvd_CJuJripQ1w\",\"p2c\":4096}}"), null, TokenValidationPolicy.NoValidation, out var jwtHeader, out var error);
             Assert.True(parsed);
 
-            var kuwp = new Pbes2KeyUnwrapper(PasswordBasedJwk.FromPassPhrase(_password), EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.Pbes2HS256A128KW);
+            var kuwp = new Pbes2KeyUnwrapper(PasswordBasedJwk.FromPassphrase(_password), EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.Pbes2HS256A128KW);
 
             byte[] unwrappedKey = new byte[kuwp.GetKeyUnwrapSize(wrappedKey.Length)];
             var unwrapped = kuwp.TryUnwrapKey(wrappedKey, unwrappedKey, jwtHeader, out _);

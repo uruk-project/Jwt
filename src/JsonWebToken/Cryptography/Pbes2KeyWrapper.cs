@@ -10,17 +10,17 @@ namespace JsonWebToken.Cryptography
 {
     internal sealed class Pbes2KeyWrapper : KeyWrapper
     {
-        private const int IterationCount = 4096;
-
         private readonly JsonEncodedText _algorithm;
         private readonly int _algorithmNameLength;
         private readonly int _keySizeInBytes;
         private readonly Sha2 _hashAlgorithm;
         private readonly KeyManagementAlgorithm _keyManagementAlgorithm;
         private readonly byte[] _password;
+        private readonly uint _iterationCount;
+        private readonly int _saltSizeInBytes;
         private readonly ISaltGenerator _saltGenerator;
 
-        public Pbes2KeyWrapper(PasswordBasedJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm, ISaltGenerator saltGenerator)
+        public Pbes2KeyWrapper(PasswordBasedJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm, uint iterationCount, uint saltSizeInBytes, ISaltGenerator saltGenerator)
             : base(encryptionAlgorithm, algorithm)
         {
             Debug.Assert(key.SupportKeyManagement(algorithm));
@@ -34,6 +34,8 @@ namespace JsonWebToken.Cryptography
             _hashAlgorithm = algorithm.HashAlgorithm;
             _keyManagementAlgorithm = algorithm.WrappedAlgorithm;
             _password = key.ToArray();
+            _iterationCount = iterationCount;
+            _saltSizeInBytes = (int)saltSizeInBytes;
             _saltGenerator = saltGenerator;
         }
 
@@ -55,16 +57,16 @@ namespace JsonWebToken.Cryptography
             }
 
             var contentEncryptionKey = CreateSymmetricKey(EncryptionAlgorithm, (SymmetricJwk?)staticKey);
-            Span<byte> salt = stackalloc byte[16 + 1 + _algorithmNameLength];
+            Span<byte> salt = stackalloc byte[_saltSizeInBytes + 1 + _algorithmNameLength];
             _saltGenerator.Generate(salt.Slice(_algorithmNameLength + 1));
             salt[_algorithmNameLength] = 0x00;
             _algorithm.EncodedUtf8Bytes.CopyTo(salt);
 
             Span<byte> derivedKey = stackalloc byte[_keySizeInBytes];
-            Pbkdf2.DeriveKey(_password, salt, _hashAlgorithm, IterationCount, derivedKey);
+            Pbkdf2.DeriveKey(_password, salt, _hashAlgorithm, _iterationCount, derivedKey);
 
-            header.Add(JwtHeaderParameterNames.P2s, Utf8.GetString(Base64Url.Encode(salt.Slice(_algorithmNameLength + 1, 16))));
-            header.Add(JwtHeaderParameterNames.P2c, IterationCount);
+            header.Add(JwtHeaderParameterNames.P2s, Utf8.GetString(Base64Url.Encode(salt.Slice(_algorithmNameLength + 1, _saltSizeInBytes))));
+            header.Add(JwtHeaderParameterNames.P2c, _iterationCount);
 
             using var keyWrapper = new AesKeyWrapper(derivedKey, EncryptionAlgorithm, _keyManagementAlgorithm);
             return keyWrapper.WrapKey(contentEncryptionKey, header, destination);

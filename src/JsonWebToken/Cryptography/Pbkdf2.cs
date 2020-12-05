@@ -14,11 +14,10 @@ namespace JsonWebToken.Cryptography
     // http://csrc.nist.gov/publications/nistpubs/800-132/nist-sp800-132.pdf
     internal static class Pbkdf2
     {
-        public static void DeriveKey(byte[] password, ReadOnlySpan<byte> salt, Sha2 prf, int iterationCount, Span<byte> destination)
+        public static void DeriveKey(byte[] password, ReadOnlySpan<byte> salt, Sha2 prf, uint iterationCount, Span<byte> destination)
         {
             Debug.Assert(password != null);
             Debug.Assert(salt != null);
-            Debug.Assert(iterationCount > 0);
             Debug.Assert(destination.Length > 0);
 
             int numBytesWritten = 0;

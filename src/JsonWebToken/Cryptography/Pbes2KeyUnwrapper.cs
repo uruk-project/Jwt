@@ -60,7 +60,7 @@ namespace JsonWebToken.Cryptography
             _algorithm.EncodedUtf8Bytes.CopyTo(saltSpan);
 
             Span<byte> derivedKey = stackalloc byte[_keySizeInBytes];
-            Pbkdf2.DeriveKey(_password, salt, _hashAlgorithm, iterationCount, derivedKey);
+            Pbkdf2.DeriveKey(_password, salt, _hashAlgorithm, (uint)iterationCount, derivedKey);
 
             using SymmetricJwk? kek = SymmetricJwk.FromSpan(derivedKey, false);
             if (kek.TryGetKeyUnwrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm, out var keyUnwrapper))
