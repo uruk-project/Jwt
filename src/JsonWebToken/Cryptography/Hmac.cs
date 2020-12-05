@@ -9,32 +9,19 @@ namespace JsonWebToken.Cryptography
 {
     internal readonly ref struct Hmac
     {
-        /// <summary>
-        /// The hash algorithm.
-        /// </summary>
+        /// <summary>The hash algorithm.</summary>
         public Sha2 Sha2 { get; }
 
-        /// <summary>
-        /// The inner &amp; outer pad keys.
-        /// </summary>
+        /// <summary>The inner &amp; outer pad keys.</summary>
         private readonly Span<byte> _keys;
 
-        /// <summary>
-        /// The block size.
-        /// </summary>
+        /// <summary>The block size.</summary>
         public int BlockSize => Sha2.BlockSize;
 
-        /// <summary>
-        /// The size of the resulting hash.
-        /// </summary>
+        /// <summary>The size of the resulting hash.</summary>
         public int HashSize => Sha2.HashSize;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HmacSha2"/> class.
-        /// </summary>
-        /// <param name="sha2"></param>
-        /// <param name="key"></param>
-        /// <param name="hmacKey"></param>
+        /// <summary>Initializes a new instance of the <see cref="HmacSha2"/> class.</summary>
         public Hmac(Sha2 sha2, ReadOnlySpan<byte> key, Span<byte> hmacKey)
         {
             Debug.Assert(sha2 != null);
@@ -55,11 +42,7 @@ namespace JsonWebToken.Cryptography
             }
         }
 
-        /// <summary>
-        /// Computes the hash value.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="destination"></param>
+        /// <summary>Computes the hash value.</summary>
         public void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination)
         {
             // hash(o_key_pad ∥ hash(i_key_pad ∥ message));         
@@ -81,6 +64,15 @@ namespace JsonWebToken.Cryptography
                     ArrayPool<byte>.Shared.Return(arrayToReturn);
                 }
             }
+        }
+
+        /// <summary>Computes the hash value.</summary>
+        public void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination, Span<byte> W)
+        {
+            // hash(o_key_pad ∥ hash(i_key_pad ∥ message));         
+            int blockSize = Sha2.BlockSize;
+            Sha2.ComputeHash(source, _keys.Slice(0, blockSize), destination, W);
+            Sha2.ComputeHash(destination, _keys.Slice(blockSize, blockSize), destination, W);
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Text;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using JsonWebToken.Cryptography;
+using System;
 
 namespace JsonWebToken.Tests
 {

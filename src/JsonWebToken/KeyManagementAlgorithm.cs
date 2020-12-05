@@ -90,12 +90,22 @@ namespace JsonWebToken
         /// <summary>'ECDH-ES+A256KW'</summary>
         public static readonly KeyManagementAlgorithm EcdhEsA256KW = new KeyManagementAlgorithm(id: AlgorithmId.EcdhEsA256KW, "ECDH-ES+A256KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: A256KW);
 
+        /// <summary>'PBES2-HS256+A128KW'</summary>
+        public static readonly KeyManagementAlgorithm Pbes2HS256A128KW = new KeyManagementAlgorithm(id: AlgorithmId.Pbes2HS256A128KW, "PBES2-HS256+A128KW", AlgorithmCategory.Pbkdf2, wrappedAlgorithm: A128KW, sha2: Sha256.Shared);
+
+        /// <summary>'PBES2-HS394+A192KW'</summary>
+        public static readonly KeyManagementAlgorithm Pbes2HS384A192KW = new KeyManagementAlgorithm(id: AlgorithmId.Pbes2HS384A192KW, "PBES2-HS384+A192KW", AlgorithmCategory.Pbkdf2, wrappedAlgorithm: A192KW, sha2: Sha384.Shared);
+
+        /// <summary>'PBES2-HS512+A256KW'</summary>
+        public static readonly KeyManagementAlgorithm Pbes2HS512A256KW = new KeyManagementAlgorithm(id: AlgorithmId.Pbes2HS512A256KW, "PBES2-HS512+A256KW", AlgorithmCategory.Pbkdf2, wrappedAlgorithm: A256KW, sha2: Sha512.Shared);
+
         private readonly AlgorithmId _id;
         private readonly ushort _requiredKeySizeInBits;
         private readonly KeyManagementAlgorithm? _wrappedAlgorithm;
         private readonly JsonEncodedText _utf8Name;
         private readonly AlgorithmCategory _category;
         private readonly bool _produceEncryptionKey;
+        private readonly Sha2? _sha2;
 
         /// <summary>Gets the algorithm identifier. </summary>
         public AlgorithmId Id => _id;
@@ -109,6 +119,9 @@ namespace JsonWebToken
         /// <summary>Gets the wrapped algorithm.</summary>
         public KeyManagementAlgorithm? WrappedAlgorithm => _wrappedAlgorithm;
 
+        /// <summary>Gets the hash algorithm.</summary>
+        public Sha2? HashAlgorithm => _sha2;
+
         /// <summary>Gets the name of the key management algorithm.</summary>
         public JsonEncodedText Name => _utf8Name;
 
@@ -121,39 +134,41 @@ namespace JsonWebToken
         internal static readonly KeyManagementAlgorithm[] _algorithms = new[]
         {
             EcdhEsA128KW,
-            EcdhEsA192KW,
             EcdhEsA256KW,
+            EcdhEsA192KW,
             EcdhEs,
             A128KW,
-            A192KW,
             A256KW,
+            A192KW,
             A128GcmKW,
-            A192GcmKW,
             A256GcmKW,
+            A192GcmKW,
             Dir,
             RsaOaep,
             Rsa1_5,
             RsaOaep256,
+            RsaOaep512,
             RsaOaep384,
-            RsaOaep512
+            Pbes2HS256A128KW,
+            Pbes2HS512A256KW,
+            Pbes2HS384A192KW
         };
 
         /// <summary>Initializes a new instance of <see cref="KeyManagementAlgorithm"/>. </summary>
-        /// <param name="id"></param>
-        /// <param name="name"></param>
-        /// <param name="keyType"></param>
         public KeyManagementAlgorithm(AlgorithmId id, string name, AlgorithmCategory keyType)
-            : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm: null, produceEncryptedKey: true)
+            : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm: null, sha2: null, produceEncryptedKey: true)
         {
         }
 
         /// <summary>Initializes a new instance of <see cref="KeyManagementAlgorithm"/>. </summary>
-        /// <param name="id"></param>
-        /// <param name="name"></param>
-        /// <param name="keyType"></param>
-        /// <param name="wrappedAlgorithm"></param>
-        public KeyManagementAlgorithm(AlgorithmId id, string name, AlgorithmCategory keyType, KeyManagementAlgorithm? wrappedAlgorithm)
-                : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm, produceEncryptedKey: true)
+        public KeyManagementAlgorithm(AlgorithmId id, string name, AlgorithmCategory keyType, KeyManagementAlgorithm wrappedAlgorithm)
+                : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm, sha2: null, produceEncryptedKey: true)
+        {
+        }
+
+        /// <summary>Initializes a new instance of <see cref="KeyManagementAlgorithm"/>. </summary>
+        public KeyManagementAlgorithm(AlgorithmId id, string name, AlgorithmCategory keyType, KeyManagementAlgorithm wrappedAlgorithm, Sha2 sha2)
+                : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm, sha2: sha2, produceEncryptedKey: true)
         {
         }
 
@@ -163,28 +178,18 @@ namespace JsonWebToken
         /// <param name="keyType"></param>
         /// <param name="requiredKeySizeInBits"></param>
         public KeyManagementAlgorithm(AlgorithmId id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits)
-            : this(id, name, keyType, requiredKeySizeInBits, wrappedAlgorithm: null, produceEncryptedKey: true)
+            : this(id, name, keyType, requiredKeySizeInBits, wrappedAlgorithm: null, sha2: null, produceEncryptedKey: true)
         {
         }
 
         /// <summary>Initializes a new instance of <see cref="KeyManagementAlgorithm"/>. </summary>
-        /// <param name="id"></param>
-        /// <param name="name"></param>
-        /// <param name="keyType"></param>
-        /// <param name="produceEncryptedKey"></param>
         public KeyManagementAlgorithm(AlgorithmId id, string name, AlgorithmCategory keyType, bool produceEncryptedKey)
-            : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm: null, produceEncryptedKey)
+            : this(id, name, keyType, requiredKeySizeInBits: 0, wrappedAlgorithm: null, sha2: null, produceEncryptedKey)
         {
         }
 
         /// <summary>Initializes a new instance of <see cref="KeyManagementAlgorithm"/>. </summary>
-        /// <param name="id"></param>
-        /// <param name="name"></param>
-        /// <param name="keyType"></param>
-        /// <param name="requiredKeySizeInBits"></param>
-        /// <param name="wrappedAlgorithm"></param>
-        /// <param name="produceEncryptedKey"></param>
-        public KeyManagementAlgorithm(AlgorithmId id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, KeyManagementAlgorithm? wrappedAlgorithm, bool produceEncryptedKey)
+        public KeyManagementAlgorithm(AlgorithmId id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, KeyManagementAlgorithm? wrappedAlgorithm, Sha2? sha2, bool produceEncryptedKey)
         {
             _id = id;
             _utf8Name = JsonEncodedText.Encode(name, Constants.JsonEncoder);
@@ -192,6 +197,7 @@ namespace JsonWebToken
             _requiredKeySizeInBits = requiredKeySizeInBits;
             _wrappedAlgorithm = wrappedAlgorithm;
             _produceEncryptionKey = produceEncryptedKey;
+            _sha2 = sha2;
         }
 
         /// <summary>Determines whether this instance and a specified object, which must also be a<see cref="KeyManagementAlgorithm"/> object, have the same value.
@@ -407,6 +413,23 @@ namespace JsonWebToken
                     }
                     break;
 
+                // 'PBES2-HS384+A192KW' 
+                case 18 when IntegerMarshal.ReadUInt64(value) == 6001096197639848528uL /* PBES2-HS 384+A192KW*/
+                        && IntegerMarshal.ReadUInt16(value, 16) == _KW:
+                    switch (IntegerMarshal.ReadUInt64(value, 8))
+                    {
+                        case 4049353170927105330uL:
+                            algorithm = Pbes2HS256A128KW;
+                            goto Found;
+                        case 3618977931536382003uL:
+                            algorithm = Pbes2HS384A192KW;
+                            goto Found;
+                        case 3906083507292746037:
+                            algorithm = Pbes2HS512A256KW;
+                            goto Found;
+                    }
+                    break;
+
                 // Special case for escaped 'ECDH-ES\u002bAxxxKW' 
                 case 19 when IntegerMarshal.ReadUInt64(value) == _ECDH_ES_UTF8 /* ECDH-ES\ */ :
                     switch (IntegerMarshal.ReadUInt64(value, 8) | u002bUpperMask)
@@ -414,10 +437,10 @@ namespace JsonWebToken
                         case _u002bA12 when IntegerMarshal.ReadUInt32(value, 15) == __28KW:
                             algorithm = EcdhEsA128KW;
                             goto Found;
-                        case _u002bA19 when IntegerMarshal.ReadUInt32(value, 15)== __92KW:
+                        case _u002bA19 when IntegerMarshal.ReadUInt32(value, 15) == __92KW:
                             algorithm = EcdhEsA192KW;
                             goto Found;
-                        case _u002bA25 when IntegerMarshal.ReadUInt32(value, 15)== __56KW:
+                        case _u002bA25 when IntegerMarshal.ReadUInt32(value, 15) == __56KW:
                             algorithm = EcdhEsA256KW;
                             goto Found;
                     }
@@ -484,6 +507,15 @@ namespace JsonWebToken
                     goto Found;
                 case "ECDH-ES+A256KW":
                     algorithm = EcdhEsA256KW;
+                    goto Found;
+                case "PBES2-HS256+A128KW":
+                    algorithm = Pbes2HS256A128KW;
+                    goto Found;
+                case "PBES2-HS384+A192KW":
+                    algorithm = Pbes2HS384A192KW;
+                    goto Found;
+                case "PBES2-HS512+A256KW":
+                    algorithm = Pbes2HS512A256KW;
                     goto Found;
             }
 
@@ -578,6 +610,21 @@ namespace JsonWebToken
                 algorithm = EcdhEsA256KW;
                 goto Found;
             }
+            else if (value.ValueEquals(Pbes2HS256A128KW._utf8Name.EncodedUtf8Bytes))
+            {
+                algorithm = Pbes2HS256A128KW;
+                goto Found;
+            }
+            else if (value.ValueEquals(Pbes2HS384A192KW._utf8Name.EncodedUtf8Bytes))
+            {
+                algorithm = Pbes2HS384A192KW;
+                goto Found;
+            }
+            else if (value.ValueEquals(Pbes2HS512A256KW._utf8Name.EncodedUtf8Bytes))
+            {
+                algorithm = Pbes2HS512A256KW;
+                goto Found;
+            }
 
             algorithm = null;
             return false;
@@ -670,6 +717,21 @@ namespace JsonWebToken
                 algorithm = EcdhEsA256KW;
                 goto Found;
             }
+            else if (value.ValueEquals(Pbes2HS256A128KW._utf8Name.EncodedUtf8Bytes))
+            {
+                algorithm = Pbes2HS256A128KW;
+                goto Found;
+            }
+            else if (value.ValueEquals(Pbes2HS384A192KW._utf8Name.EncodedUtf8Bytes))
+            {
+                algorithm = Pbes2HS384A192KW;
+                goto Found;
+            }
+            else if (value.ValueEquals(Pbes2HS512A256KW._utf8Name.EncodedUtf8Bytes))
+            {
+                algorithm = Pbes2HS512A256KW;
+                goto Found;
+            }
 
             algorithm = null;
             return false;
@@ -692,6 +754,6 @@ namespace JsonWebToken
         }
 
         internal static KeyManagementAlgorithm Create(string name)
-            => new KeyManagementAlgorithm(AlgorithmId.Undefined, name, AlgorithmCategory.None, 0, null, false);
+            => new KeyManagementAlgorithm(AlgorithmId.Undefined, name, AlgorithmCategory.None, 0, null, null, false);
     }
 }

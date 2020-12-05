@@ -63,6 +63,6 @@ namespace JsonWebToken
         [Obsolete("This property is obsolete. Use property " + nameof(EcdhEsA256KW) + " instead.", error: true)]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static readonly KeyManagementAlgorithm EcdhEsAes256KW;
-#pragma warning restore CS8618 
+#pragma warning restore CS8618
     }
 }

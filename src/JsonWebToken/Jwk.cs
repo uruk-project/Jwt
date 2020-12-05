@@ -42,7 +42,7 @@ namespace JsonWebToken
 
         private bool? _isSigningKey;
         private bool? _isEncryptionKey;
-        private JsonEncodedText _algorithm;
+        private JsonEncodedText _alg;
         private SignatureAlgorithm? _signatureAlgorithm;
         private KeyManagementAlgorithm? _keyManagementAlgorithm;
         private JsonEncodedText _use;
@@ -63,7 +63,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.algorithm);
             }
 
-            _algorithm = alg.Name;
+            _alg = alg.Name;
             _signatureAlgorithm = alg;
         }
 
@@ -76,12 +76,12 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.algorithm);
             }
 
-            _algorithm = alg.Name;
+            _alg = alg.Name;
             _keyManagementAlgorithm = alg;
         }
 
         /// <summary>Gets or sets the 'alg' (KeyType).</summary>
-        public JsonEncodedText Alg => _algorithm;
+        public JsonEncodedText Alg => _alg;
 
         /// <summary>Gets the 'key_ops' (Key Operations).</summary>
         public IList<JsonEncodedText> KeyOps
@@ -116,7 +116,7 @@ namespace JsonWebToken
         }
 
         /// <summary>Gets the 'x5c' collection (X.509 Certificate Chain).</summary>
-        public List<byte[]>? X5c
+        public List<byte[]> X5c
         {
             get
             {
@@ -571,11 +571,11 @@ namespace JsonWebToken
 
         /// <summary>Compute the normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2, and writes it to the <paramref name="buffer"/>.</summary>
         /// <returns></returns>
-        protected abstract void Canonicalize(Span<byte> buffer);
+        protected internal abstract void Canonicalize(Span<byte> buffer);
 
         /// <summary>Returns the required size for representing a canonicalized key.</summary>
         /// <returns></returns>
-        protected abstract int GetCanonicalizeSize();
+        protected internal abstract int GetCanonicalizeSize();
 
         /// <summary>Compute a hash as defined by https://tools.ietf.org/html/rfc7638.</summary>
         /// <returns></returns>
@@ -778,15 +778,15 @@ namespace JsonWebToken
                 case alg:
                     if (SignatureAlgorithm.TryParse(ref reader, out var signatureAlgorithm))
                     {
-                        key._algorithm = signatureAlgorithm.Name;
+                        key._alg = signatureAlgorithm.Name;
                     }
                     else if (KeyManagementAlgorithm.TryParse(ref reader, out var keyManagementAlgorithm))
                     {
-                        key._algorithm = keyManagementAlgorithm.Name;
+                        key._alg = keyManagementAlgorithm.Name;
                     }
                     else
                     {
-                        key._algorithm = JsonEncodedText.Encode(reader.ValueSpan, Constants.JsonEncoder);
+                        key._alg = JsonEncodedText.Encode(reader.ValueSpan, Constants.JsonEncoder);
                     }
 
                     break;
@@ -824,7 +824,7 @@ namespace JsonWebToken
                 writer.WriteString(JwkParameterNames.Use, _use);
             }
 
-            if (!_algorithm.EncodedUtf8Bytes.IsEmpty)
+            if (!_alg.EncodedUtf8Bytes.IsEmpty)
             {
                 writer.WriteString(JwkParameterNames.Alg, Alg);
             }
@@ -974,11 +974,11 @@ namespace JsonWebToken
             public override ReadOnlySpan<byte> AsSpan()
                 => ReadOnlySpan<byte>.Empty;
 
-            protected override void Canonicalize(Span<byte> bufferWriter)
+            protected internal override void Canonicalize(Span<byte> bufferWriter)
             {
             }
 
-            protected override int GetCanonicalizeSize()
+            protected internal override int GetCanonicalizeSize()
                 => 0;
 
             public override bool SupportSignature(SignatureAlgorithm algorithm)

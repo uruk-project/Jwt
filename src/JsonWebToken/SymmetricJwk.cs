@@ -4,7 +4,6 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -452,7 +451,7 @@ namespace JsonWebToken
         private static ReadOnlySpan<byte> EndCanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'k', (byte)'t', (byte)'y', (byte)'"', (byte)':', (byte)'"', (byte)'o', (byte)'c', (byte)'t', (byte)'"', (byte)'}' };
 
         /// <inheritdoc />      
-        protected override void Canonicalize(Span<byte> buffer)
+        protected internal override void Canonicalize(Span<byte> buffer)
         {
             // {"k":"XXXX","kty":"oct"}
             int offset = StartCanonicalizeValue.Length;
@@ -462,7 +461,7 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />      
-        protected override int GetCanonicalizeSize()
+        protected internal override int GetCanonicalizeSize()
         {
             // 20 = StartCanonicalizeValue.Length + EndCanonicalizeValue.Length
             Debug.Assert(20 == StartCanonicalizeValue.Length + EndCanonicalizeValue.Length);

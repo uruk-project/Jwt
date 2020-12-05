@@ -38,10 +38,10 @@ namespace JsonWebToken
         public override bool SupportEncryption(EncryptionAlgorithm algorithm) => throw new NotImplementedException();
 
         /// <inheritdoc />
-        protected override void Canonicalize(Span<byte> buffer) => throw new NotImplementedException();
+        protected internal override void Canonicalize(Span<byte> buffer) => throw new NotImplementedException();
 
         /// <inheritdoc />
-        protected override int GetCanonicalizeSize() => throw new NotImplementedException();  
+        protected internal override int GetCanonicalizeSize() => throw new NotImplementedException();  
 
         /// <inheritsdoc />
         protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm) => throw new NotImplementedException();

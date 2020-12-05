@@ -42,8 +42,13 @@ namespace JsonWebToken.Cryptography
         Hmac = 0x08,
 
         /// <summary>
-        /// HMAC algorithm
+        /// Direct encyrption algorithm
         /// </summary>
-        Direct = 0x10
+        Direct = 0x10,
+
+        /// <summary>
+        /// PBKDF2
+        /// </summary>
+        Pbkdf2 = 0x20
     }
 }

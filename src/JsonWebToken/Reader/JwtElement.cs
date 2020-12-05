@@ -425,7 +425,7 @@ namespace JsonWebToken
             => _parent.GetRawValueAsString(_idx);
 
         /// <summary>
-        ///   Gets the original input data backing this value, returning it as a <see cref="string"/>.
+        ///   Gets the original input data backing this value, returning it as a <see cref="ReadOnlyMemory{T}"/> of byte.
         /// </summary>
         /// <returns>
         ///   The original input data backing this value, returning it as a <see cref="string"/>.

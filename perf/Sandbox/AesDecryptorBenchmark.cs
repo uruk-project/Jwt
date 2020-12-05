@@ -32,8 +32,6 @@ namespace JsonWebToken.Performance
 #endif
         }
 
-
-
         public static IEnumerable<Item> GetData()
         {
             yield return new Item(GetCiphertext(Encoding.UTF8.GetBytes(Enumerable.Repeat('a', 1).ToArray())));

@@ -1025,7 +1025,7 @@ namespace JsonWebToken
         private static ReadOnlySpan<byte> EndCanonicalizeValue => new byte[] { (byte)'"', (byte)'}' };
 
         /// <inheritdoc />
-        protected override void Canonicalize(Span<byte> buffer)
+        protected internal override void Canonicalize(Span<byte> buffer)
         {
             // {"e":"XXXX","kty":"RSA","n":"XXXX"}
             int offset = StartCanonicalizeValue.Length;
@@ -1038,7 +1038,7 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc />
-        protected override int GetCanonicalizeSize()
+        protected internal override int GetCanonicalizeSize()
         {
             Debug.Assert(27 == StartCanonicalizeValue.Length + MiddleCanonicalizeValue.Length + EndCanonicalizeValue.Length);
             return 27

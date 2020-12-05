@@ -77,5 +77,11 @@ namespace JsonWebToken
 
         /// <summary>see:https://tools.ietf.org/html/rfc7518#section-4.7</summary>
         public static readonly JsonEncodedText Tag = JsonEncodedText.Encode("tag");
+
+        /// <summary>see:https://tools.ietf.org/html/rfc7518#section-4.8.1</summary>
+        public static readonly JsonEncodedText P2s = JsonEncodedText.Encode("p2s");
+
+        /// <summary>see:https://tools.ietf.org/html/rfc7518#section-4.8.1</summary>
+        public static readonly JsonEncodedText P2c = JsonEncodedText.Encode("p2c");
     }
 }

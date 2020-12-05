@@ -4,12 +4,12 @@
 		<TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net5.0;netstandard2.0;netcoreapp2.1;netcoreapp3.1;net461;net47</TargetFrameworks>
 		<TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net5.0;netstandard2.0;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
 		<LangVersion>8.0</LangVersion>
-		<Nullable>enable</Nullable>
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>../../jwt.snk</AssemblyOriginatorKeyFile>
-		<NoWarn>3021</NoWarn>
+		<NoWarn>3021;IDE0057</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -88,24 +88,28 @@
   -->
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net461'">
 		<DefineConstants>$(DefineConstants);SUPPORT_JAVASCRIPT_ENCODER</DefineConstants>
-	</PropertyGroup>
+    <NoWarn>CS8601;CS8602;CS8618</NoWarn>
+  </PropertyGroup>
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net47'">
 		<DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING</DefineConstants>
 		<DefineConstants>$(DefineConstants);SUPPORT_JAVASCRIPT_ENCODER</DefineConstants>
-	</PropertyGroup>
+    <NoWarn>CS8601;CS8602;CS8618</NoWarn>
+  </PropertyGroup>
 	<PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
 		<DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE</DefineConstants>
-	</PropertyGroup>
+    <NoWarn>CS8601;CS8602;CS8618</NoWarn>
+  </PropertyGroup>
 	<PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
 		<DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING</DefineConstants>
 		<DefineConstants>$(DefineConstants);SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO;SUPPORT_SPAN_STREAM</DefineConstants>
-	</PropertyGroup>
+    <NoWarn>CS8601;CS8602;CS8618</NoWarn>
+  </PropertyGroup>
 	<PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
 		<DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING;SUPPORT_SIMD</DefineConstants>
 		<DefineConstants>$(DefineConstants);SUPPORT_AESGCM;SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO;SUPPORT_RUNE;SUPPORT_SPAN_STREAM</DefineConstants>
-	</PropertyGroup>
+  </PropertyGroup>
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net5.0'">
 		<DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING;SUPPORT_SIMD</DefineConstants>
 		<DefineConstants>$(DefineConstants);SUPPORT_AESGCM;SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO;SUPPORT_RUNE;SUPPORT_SPAN_STREAM;SUPPORT_SKIPLOCALINIT</DefineConstants>
-	</PropertyGroup>
+  </PropertyGroup>
 </Project>
