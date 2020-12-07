@@ -84,9 +84,7 @@ namespace JsonWebToken
 
         /// <summary>Decodes the span of UTF-8 base64url-encoded text into binary data.</summary>
         public static OperationStatus Decode(ReadOnlySpan<byte> base64Url, Span<byte> data, out int bytesConsumed, out int bytesWritten)
-        {
-            return Base64.Url.Decode(base64Url, data, out bytesConsumed, out bytesWritten);
-        }
+            => Base64.Url.Decode(base64Url, data, out bytesConsumed, out bytesWritten);
 
         /// <summary>Encodes a span of UTF-8 text into a span of bytes.</summary>
         /// <returns>The number of the bytes written to <paramref name="base64Url"/>.</returns>

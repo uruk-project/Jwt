@@ -21,25 +21,25 @@ namespace JsonWebToken.Cryptography
         private readonly AesBlockDecryptor _decryptor;
         private bool _disposed;
 
-        public AesKeyUnwrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        public AesKeyUnwrapper(ReadOnlySpan<byte> key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base(encryptionAlgorithm, algorithm)
         {
-            Debug.Assert(key.SupportKeyManagement(algorithm));
+            Debug.Assert(SymmetricJwk.SupportedKeyManagement(key.Length << 3, algorithm));
             Debug.Assert(algorithm.Category == AlgorithmCategory.Aes);
 #if SUPPORT_SIMD
             if (System.Runtime.Intrinsics.X86.Aes.IsSupported && EncryptionAlgorithm.EnabledAesInstructionSet)
             {
                 if (algorithm == KeyManagementAlgorithm.A128KW)
                 {
-                    _decryptor = new Aes128BlockDecryptor(key.K);
+                    _decryptor = new Aes128BlockDecryptor(key);
                 }
                 else if (algorithm == KeyManagementAlgorithm.A256KW)
                 {
-                    _decryptor = new Aes256BlockDecryptor(key.K);
+                    _decryptor = new Aes256BlockDecryptor(key);
                 }
                 else if (algorithm == KeyManagementAlgorithm.A192KW)
                 {
-                    _decryptor = new Aes192BlockDecryptor(key.K);
+                    _decryptor = new Aes192BlockDecryptor(key);
                 }
                 else
                 {
@@ -49,10 +49,10 @@ namespace JsonWebToken.Cryptography
             }
             else
             {
-                _decryptor = new DefaultAesBlockDecryptor(key.K);
+                _decryptor = new DefaultAesBlockDecryptor(key);
             }
 #else
-            _decryptor = new DefaultAesBlockDecryptor(key.K);
+            _decryptor = new DefaultAesBlockDecryptor(key);
 #endif
         }
 

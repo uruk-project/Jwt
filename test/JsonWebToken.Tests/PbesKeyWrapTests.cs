@@ -21,13 +21,13 @@ namespace JsonWebToken.Tests
                 PasswordBasedJwk.FromPassphrase(_password), 
                 EncryptionAlgorithm.A128CbcHS256, 
                 KeyManagementAlgorithm.Pbes2HS256A128KW, 
-                4096, 
-                8, 
+                4096,
+                (uint)salt.Length, 
                 new StubSaltGenerator(salt));
 
             var header = new JwtHeader
             {
-                { JwtHeaderParameterNames.Alg, "PBES2-HS256+A128KW" },
+                { JwtHeaderParameterNames.Alg, KeyManagementAlgorithm.Pbes2HS256A128KW.Name },
                 { JwtHeaderParameterNames.Enc, EncryptionAlgorithm.A128CbcHS256.Name }
             };
             var destination = new byte[kwp.GetKeyWrapSize()];
@@ -37,7 +37,7 @@ namespace JsonWebToken.Tests
             Assert.True(header.TryGetValue("p2s", out var jwtMember));
             Assert.Equal("2WCTcJZ1Rvd_CJuJripQ1w", (string)jwtMember.Value);
             Assert.True(header.TryGetValue("p2c", out jwtMember));
-            Assert.Equal(4096, (int)jwtMember.Value);
+            Assert.Equal(4096u, (uint)jwtMember.Value);
         }
 
         [Fact]

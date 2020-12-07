@@ -211,6 +211,8 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override int KeySizeInBits => _k.Length << 3;
 
+        internal int Length => _k.Length;
+
         internal byte[] ToArray()
             => _k;
 
@@ -333,7 +335,7 @@ namespace JsonWebToken
         {
             KeyUnwrapper value = algorithm.Category switch
             {
-                AlgorithmCategory.Aes => new AesKeyUnwrapper(this, encryptionAlgorithm, algorithm),
+                AlgorithmCategory.Aes => new AesKeyUnwrapper(K, encryptionAlgorithm, algorithm),
 #if SUPPORT_AESGCM
                 AlgorithmCategory.AesGcm => new AesGcmKeyUnwrapper(this, encryptionAlgorithm, algorithm),
 #endif
@@ -431,7 +433,7 @@ namespace JsonWebToken
         /// <returns></returns>
         public static SymmetricJwk GenerateKey(KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
             => FromByteArray(GenerateKeyBytes(algorithm.RequiredKeySizeInBits), algorithm, computeThumbprint: computeThumbprint);
-        
+
         /// <summary>Generates a new <see cref="SymmetricJwk"/>.</summary>
         /// <param name="algorithm"></param>
         /// <param name="computeThumbprint">Indicates if the 'kid' should be generated.</param>
@@ -499,7 +501,7 @@ namespace JsonWebToken
 
             writer.WriteEndObject();
         }
-        
+
         /// <inheritsdoc />
         public override void Dispose()
         {

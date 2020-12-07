@@ -18,6 +18,7 @@ namespace JsonWebToken.Cryptography
         private readonly JsonEncodedText _algorithm;
         private readonly int _algorithmNameLength;
         private readonly int _keySizeInBytes;
+        private readonly KeyManagementAlgorithm? _keyManagementAlgorithm;
         private readonly HashAlgorithmName _hashAlgorithm;
         private readonly ECJwk _key;
 
@@ -36,6 +37,7 @@ namespace JsonWebToken.Cryptography
             {
                 _algorithm = algorithm.Name;
                 _keySizeInBytes = algorithm.WrappedAlgorithm.RequiredKeySizeInBits >> 3;
+                _keyManagementAlgorithm = algorithm.WrappedAlgorithm;
             }
 
             _algorithmNameLength = _algorithm.EncodedUtf8Bytes.Length;
@@ -58,7 +60,7 @@ namespace JsonWebToken.Cryptography
             header.TryGetHeaderParameter(JwtHeaderParameterNames.Apv.EncodedUtf8Bytes, out JwtElement apv);
             byte[] secretAppend = BuildSecretAppend(apu, apv);
 
-            byte[] exchangeHash;
+            ReadOnlySpan<byte> exchangeHash;
             using (var ephemeralKey = ECDiffieHellman.Create(ECJwk.FromJwtElement(epk).ExportParameters()))
             {
                 var privateKey = _key.CreateEcdhKey();
@@ -67,24 +69,17 @@ namespace JsonWebToken.Cryptography
                     return ThrowHelper.TryWriteError(out bytesWritten);
                 }
 
-                exchangeHash = privateKey.DeriveKeyFromHash(ephemeralKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
+                exchangeHash = new ReadOnlySpan<byte>(privateKey.DeriveKeyFromHash(ephemeralKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend), 0, _keySizeInBytes);
             }
 
             if (Algorithm.ProduceEncryptionKey)
             {
-                using var key = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
-                if (key.TryGetKeyUnwrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm, out var keyUnwrapper))
-                {
-                    return keyUnwrapper.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
-                }
-                else
-                {
-                    return ThrowHelper.TryWriteError(out bytesWritten);
-                }
+                using var keyUnwrapper = new AesKeyUnwrapper(exchangeHash, EncryptionAlgorithm, _keyManagementAlgorithm!);
+                return keyUnwrapper.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
             }
             else
             {
-                new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes).CopyTo(destination);
+                exchangeHash.CopyTo(destination);
                 bytesWritten = destination.Length;
                 return true;
             }

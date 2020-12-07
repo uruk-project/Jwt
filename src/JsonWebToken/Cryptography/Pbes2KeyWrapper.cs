@@ -57,15 +57,18 @@ namespace JsonWebToken.Cryptography
             }
 
             var contentEncryptionKey = CreateSymmetricKey(EncryptionAlgorithm, (SymmetricJwk?)staticKey);
-            Span<byte> salt = stackalloc byte[_saltSizeInBytes + 1 + _algorithmNameLength];
-            _saltGenerator.Generate(salt.Slice(_algorithmNameLength + 1));
-            salt[_algorithmNameLength] = 0x00;
-            _algorithm.EncodedUtf8Bytes.CopyTo(salt);
+            Span<byte> buffer = stackalloc byte[_saltSizeInBytes + 1 + _algorithmNameLength];
+            _saltGenerator.Generate(buffer.Slice(_algorithmNameLength + 1));
+            buffer[_algorithmNameLength] = 0x00;
+            _algorithm.EncodedUtf8Bytes.CopyTo(buffer);
 
             Span<byte> derivedKey = stackalloc byte[_keySizeInBytes];
-            Pbkdf2.DeriveKey(_password, salt, _hashAlgorithm, _iterationCount, derivedKey);
+            Pbkdf2.DeriveKey(_password, buffer, _hashAlgorithm, _iterationCount, derivedKey);
 
-            header.Add(JwtHeaderParameterNames.P2s, Utf8.GetString(Base64Url.Encode(salt.Slice(_algorithmNameLength + 1, _saltSizeInBytes))));
+            Span<byte> salt = buffer.Slice(_algorithmNameLength + 1, _saltSizeInBytes);
+            Span<byte> b64Salt = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(salt.Length)];
+            Base64Url.Encode(salt, b64Salt);
+            header.Add(JwtHeaderParameterNames.P2s, Utf8.GetString(b64Salt));
             header.Add(JwtHeaderParameterNames.P2c, _iterationCount);
 
             using var keyWrapper = new AesKeyWrapper(derivedKey, EncryptionAlgorithm, _keyManagementAlgorithm);

@@ -379,7 +379,8 @@ namespace JsonWebToken
             TokenSegment ivSegment = Unsafe.Add(ref segments, 2);
             TokenSegment ciphertextSegment = Unsafe.Add(ref segments, 3);
             TokenSegment authenticationTagSegment = Unsafe.Add(ref segments, 4);
-            if (!header.TryGetHeaderParameter(JwtHeaderParameterNames.Enc.EncodedUtf8Bytes, out var enc))
+            var enc = header.Enc;
+            if (enc.IsEmpty)
             {
                 error = TokenValidationError.MissingEncryptionAlgorithm();
                 goto Error;
@@ -583,22 +584,6 @@ namespace JsonWebToken
             {
                 keys = null;
                 return false;
-            }
-            else if (alg.ValueEquals(KeyManagementAlgorithm.Dir.Utf8Name))
-            {
-                keys = new List<SymmetricJwk>(1);
-                for (int i = 0; i < encryptionKeyProviders.Length; i++)
-                {
-                    var keySet = encryptionKeyProviders[i].GetKeys(header);
-                    for (int j = 0; j < keySet.Length; j++)
-                    {
-                        var key = keySet[j];
-                        if (key is SymmetricJwk symJwk && symJwk.CanUseForKeyWrapping(alg))
-                        {
-                            keys.Add(symJwk);
-                        }
-                    }
-                }
             }
             else
             {

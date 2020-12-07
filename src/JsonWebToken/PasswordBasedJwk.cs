@@ -46,7 +46,7 @@ namespace JsonWebToken
         internal byte[] ToArray()
             => _inner.ToArray();
 
-        /// <summary>Returns a new instance of <see cref="SymmetricJwk"/>.</summary>
+        /// <summary>Returns a new instance of <see cref="PasswordBasedJwk"/>.</summary>
         /// <remarks>The passphrase should not be longer that 128 bytes, and at least 16 bytes for "PBES2-HS256+A128KW", 
         /// 24 bytes for "PBES2-HS384+A192KW" and 32 bytes for "PBES2-HS512+A256KW". The salt size should be at least 8 bytes.</remarks>
         /// <param name="passphrase">The passphrase used for the key derivation. 
@@ -66,7 +66,7 @@ namespace JsonWebToken
             return new PasswordBasedJwk(innerKey, iterationCount, saltSizeInBytes);
         }
 
-        /// <summary>Returns a new instance of <see cref="SymmetricJwk"/>.</summary>
+        /// <summary>Returns a new instance of <see cref="PasswordBasedJwk"/>.</summary>
         /// <remarks>The passphrase should not be longer that 128 bytes, and at least 16 bytes for "PBES2-HS256+A128KW", 
         /// 24 bytes for "PBES2-HS384+A192KW" and 32 bytes for "PBES2-HS512+A256KW"</remarks>
         /// <param name="passphrase">The passphrase used for the key derivation. 

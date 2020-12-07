@@ -25,7 +25,7 @@ namespace JsonWebToken.Cryptography
                 ThrowHelper.ThrowArgumentOutOfRangeException_MustBeAtLeast(ExceptionArgument.ciphertext, GetCiphertextLength(plaintext.Length));
             }
 
-            var keys = new AesEncryption192Keys(key);
+            var keys = new Aes192EncryptionKeys(key);
             var state = nonce.AsVector128<byte>();
             int left = plaintext.Length & BlockSize - 1;
             ref byte output = ref MemoryMarshal.GetReference(ciphertext);

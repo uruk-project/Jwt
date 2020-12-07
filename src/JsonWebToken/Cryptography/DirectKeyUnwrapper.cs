@@ -8,20 +8,29 @@ namespace JsonWebToken.Cryptography
 {
     internal sealed class DirectKeyUnwrapper : KeyUnwrapper
     {
-        public DirectKeyUnwrapper(Jwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+        private SymmetricJwk _key;
+
+        public DirectKeyUnwrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             : base( encryptionAlgorithm, algorithm)
         {
-            Debug.Assert(key.SupportKeyManagement(algorithm));
             Debug.Assert(algorithm.Category == AlgorithmCategory.Direct);
+            _key = key;
         }
 
         public override int GetKeyUnwrapSize(int wrappedKeySize)
-            => wrappedKeySize;
+            => _key.Length;
 
         public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeaderDocument header, out int bytesWritten)
         {
-            keyBytes.CopyTo(destination);
-            bytesWritten = keyBytes.Length;
+            // Direct key encryption does not support key wrapping
+            if (keyBytes.Length > 0)
+            {
+                bytesWritten = 0;
+                return false;
+            }
+
+            _key.K.CopyTo(destination);
+            bytesWritten = _key.K.Length;
             return true;
         }
 

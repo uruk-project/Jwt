@@ -14,6 +14,7 @@ namespace JsonWebToken.Cryptography
         private readonly int _algorithmNameLength;
         private readonly int _keySizeInBytes;
         private readonly Sha2 _hashAlgorithm;
+        private readonly KeyManagementAlgorithm _keyManagementAlgorithm;
         private readonly byte[] _password;
 
         internal Pbes2KeyUnwrapper(PasswordBasedJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
@@ -28,6 +29,7 @@ namespace JsonWebToken.Cryptography
             _keySizeInBytes = algorithm.WrappedAlgorithm.RequiredKeySizeInBits >> 3;
             _algorithmNameLength = _algorithm.EncodedUtf8Bytes.Length;
             _hashAlgorithm = algorithm.HashAlgorithm;
+            _keyManagementAlgorithm = algorithm.WrappedAlgorithm;
             _password = key.ToArray();
         }
 
@@ -53,24 +55,16 @@ namespace JsonWebToken.Cryptography
             int p2sLength = Base64Url.GetArraySizeRequiredToDecode(b64p2s.Length);
 
 
-            byte[] salt = new byte[p2sLength + 1 + _algorithmNameLength];
-            var saltSpan = new Span<byte>(salt);
-            Base64Url.Decode(b64p2s.Span, saltSpan.Slice(_algorithmNameLength + 1));
-            saltSpan[_algorithmNameLength] = 0x00;
-            _algorithm.EncodedUtf8Bytes.CopyTo(saltSpan);
+            Span<byte> salt = stackalloc byte[p2sLength + 1 + _algorithmNameLength];
+            Base64Url.Decode(b64p2s.Span, salt.Slice(_algorithmNameLength + 1));
+            salt[_algorithmNameLength] = 0x00;
+            _algorithm.EncodedUtf8Bytes.CopyTo(salt);
 
             Span<byte> derivedKey = stackalloc byte[_keySizeInBytes];
             Pbkdf2.DeriveKey(_password, salt, _hashAlgorithm, (uint)iterationCount, derivedKey);
 
-            using SymmetricJwk? kek = SymmetricJwk.FromSpan(derivedKey, false);
-            if (kek.TryGetKeyUnwrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm, out var keyUnwrapper))
-            {
-                return keyUnwrapper.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
-            }
-            else
-            {
-                return ThrowHelper.TryWriteError(out bytesWritten);
-            }
+            using var keyUnwrapper = new AesKeyUnwrapper(derivedKey, EncryptionAlgorithm, _keyManagementAlgorithm);
+            return keyUnwrapper.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
         }
 
         protected override void Dispose(bool disposing)

@@ -15,10 +15,11 @@ namespace JsonWebToken
     // Based on https://github.com/dotnet/runtime/blob/master/src/libraries/System.Text.Json/src/System/Text/Json/Document/JsonDocument.cs
     public sealed class JwtHeaderDocument : IDisposable
     {
-        internal static readonly JwtHeaderDocument Empty = new JwtHeaderDocument(new JwtDocument(), -1, -1);
+        internal static readonly JwtHeaderDocument Empty = new JwtHeaderDocument(new JwtDocument(), -1, -1, -1);
 
         private readonly JwtDocument _document;
         private readonly JwtElement _alg;
+        private readonly JwtElement _enc;
         private readonly JwtElement _kid;
 
         /// <inheritdoc/>
@@ -26,10 +27,13 @@ namespace JsonWebToken
 
         internal JwtElement Alg => _alg;
 
-        private JwtHeaderDocument(JwtDocument document, int algIdx, int kidIdx)
+        internal JwtElement Enc => _enc;
+
+        private JwtHeaderDocument(JwtDocument document, int algIdx, int encIdx, int kidIdx)
         {
             _document = document;
             _alg = algIdx < 0 ? default : new JwtElement(_document, algIdx);
+            _enc = encIdx < 0 ? default : new JwtElement(_document, encIdx);
             _kid = kidIdx < 0 ? default : new JwtElement(_document, kidIdx);
         }
 
@@ -38,6 +42,7 @@ namespace JsonWebToken
             ReadOnlySpan<byte> utf8JsonSpan = utf8Payload.Span;
             var database = new JsonMetadata(utf8Payload.Length);
             int algIdx = -1;
+            int encIdx = -1;
             int kidIdx = -1;
 
             var reader = new Utf8JsonReader(utf8JsonSpan);
@@ -88,6 +93,9 @@ namespace JsonWebToken
                                 {
                                     case JwtHeaderParameters.Alg:
                                         algIdx = database.Length;
+                                        break;
+                                    case JwtHeaderParameters.Enc:
+                                        encIdx = database.Length;
                                         break;
                                     case JwtHeaderParameters.Kid:
                                         kidIdx = database.Length;
@@ -142,7 +150,7 @@ namespace JsonWebToken
             Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
             database.CompleteAllocations();
 
-            header = new JwtHeaderDocument(new JwtDocument(utf8Payload, database, buffer), algIdx, kidIdx);
+            header = new JwtHeaderDocument(new JwtDocument(utf8Payload, database, buffer), algIdx, encIdx, kidIdx);
             error = null;
             return true;
 
@@ -227,6 +235,7 @@ namespace JsonWebToken
             => new JwtHeaderDocument(
                 _document.Clone(),
                 _alg.ValueKind == JsonValueKind.Undefined ? -1 : _alg.Idx,
+                _enc.ValueKind == JsonValueKind.Undefined ? -1 : _enc.Idx,
                 _kid.ValueKind == JsonValueKind.Undefined ? -1 : _kid.Idx);
 
         /// <summary>Determines whether the <see cref="JwtHeaderDocument"/> contains the specified header parameter.</summary>

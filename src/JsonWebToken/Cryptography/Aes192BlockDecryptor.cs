@@ -12,11 +12,11 @@ namespace JsonWebToken.Cryptography
 {
     internal sealed class Aes192BlockDecryptor : AesBlockDecryptor
     {
-        private readonly AesDecryption192Keys _keys;
+        private readonly Aes192DecryptionKeys _keys;
 
         public Aes192BlockDecryptor(ReadOnlySpan<byte> key)
         {
-            _keys = new AesDecryption192Keys(key);
+            _keys = new Aes192DecryptionKeys(key);
         }
 
         public override void Dispose()
