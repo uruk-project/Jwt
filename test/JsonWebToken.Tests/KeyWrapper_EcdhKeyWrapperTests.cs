@@ -1,8 +1,8 @@
 ﻿#if NETCOREAPP
 using System;
 using System.Collections.Generic;
-using Xunit;
 using JsonWebToken.Cryptography;
+using Xunit;
 
 namespace JsonWebToken.Tests
 {
@@ -32,18 +32,6 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetEcdhWrappingAlgorithms()
         {
-            //foreach (var enc in new[] {
-            //    EncryptionAlgorithm.Aes128CbcHmacSha256,
-            //    EncryptionAlgorithm.Aes192CbcHmacSha384,
-            //    EncryptionAlgorithm.Aes256CbcHmacSha512
-            //})
-            //{
-            //    yield return new object[] { enc, KeyManagementAlgorithm.EcdhEs };
-            //    yield return new object[] { enc, KeyManagementAlgorithm.EcdhEsAes128KW };
-            //    yield return new object[] { enc, KeyManagementAlgorithm.EcdhEsAes192KW };
-            //    yield return new object[] { enc, KeyManagementAlgorithm.EcdhEsAes256KW };
-            //}
-
             yield return new object[] { EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.EcdhEsA128KW };
             yield return new object[] { EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.EcdhEsA192KW };
             yield return new object[] { EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.EcdhEsA256KW };
@@ -55,21 +43,6 @@ namespace JsonWebToken.Tests
         {
             Jwk cek = TryWrapKey_Success(null, enc, alg);
             Assert.NotNull(cek);
-        }
-
-        [Fact]
-        public void WrapKey_Failure()
-        {
-            var keyEncryptionKey = ECJwk.GeneratePrivateKey(EllipticalCurve.P256);
-            var wrapper = new EcdhKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.EcdhEs);
-            var destination = new byte[0];
-            var header = new JwtHeader();
-            Jwk cek = null;
-            Assert.Throws<ArgumentNullException>(() => wrapper.WrapKey(null, null, destination));
-            wrapper.Dispose();
-
-            Assert.Equal(0, header.Count);
-            Assert.Null(cek);
         }
     }
 }

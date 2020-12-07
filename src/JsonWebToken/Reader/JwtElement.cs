@@ -13,6 +13,14 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public readonly struct JwtElement
     {
+        //TODO : add private void CheckValidInstance()
+        //{
+        //    if (_parent == null)
+        //    {
+        //        throw new InvalidOperationException();
+        //    }
+        //}
+
         private readonly JwtDocument _parent;
         private readonly int _idx;
 
@@ -22,6 +30,7 @@ namespace JsonWebToken
             // on the enumerators (when initialized as `default`) can
             // get here with a null.
             Debug.Assert(idx >= 0);
+            Debug.Assert(parent != null);
 
             _parent = parent;
             _idx = idx;
@@ -39,15 +48,10 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        ///   The <see cref="JsonValueKind"/> that the value is.
-        /// </summary>
+        /// <summary>The <see cref="JsonValueKind"/> that the value is.</summary>
         public JsonValueKind ValueKind => ToValueKind(TokenType);
 
-        /// <summary>
-        ///   Get the value at a specified index when the current value is a
-        ///   <see cref="JsonValueKind.Array"/>.
-        /// </summary>
+        /// <summary>Get the value at a specified index when the current value is a <see cref="JsonValueKind.Array"/>.</summary>
         /// <exception cref="InvalidOperationException">
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Array"/>.
         /// </exception>
@@ -792,7 +796,7 @@ namespace JsonWebToken
         ///   An enumerable and enumerator for the properties of a JSON object.
         /// </summary>
         [DebuggerDisplay("{Current,nq}")]
-        public struct ObjectEnumerator : IEnumerable<JwtMemberElement>, IEnumerator<JwtMemberElement>
+        public struct ObjectEnumerator
         {
             private int _curIdx;
             private readonly JwtDocument _document;
@@ -848,9 +852,6 @@ namespace JsonWebToken
             }
 
             /// <inheritdoc />
-            IEnumerator<JwtMemberElement> IEnumerable<JwtMemberElement>.GetEnumerator() => GetEnumerator();
-
-            /// <inheritdoc />
             public void Dispose()
             {
                 _curIdx = _endIdxOrVersion;
@@ -861,12 +862,6 @@ namespace JsonWebToken
             {
                 _curIdx = -1;
             }
-
-            /// <inheritdoc />
-            object System.Collections.IEnumerator.Current => Current;
-
-            /// <inheritdoc />
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
             /// <inheritdoc />
             public bool MoveNext()
@@ -980,7 +975,7 @@ namespace JsonWebToken
         ///   An enumerable and enumerator for the contents of a JSON array.
         /// </summary>
         [DebuggerDisplay("{Current,nq}")]
-        public ref struct ArrayEnumerator
+        public struct ArrayEnumerator
         {
             private int _curIdx;
             private readonly JwtDocument _document;
