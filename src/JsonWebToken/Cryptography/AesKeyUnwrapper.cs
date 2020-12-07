@@ -81,11 +81,6 @@ namespace JsonWebToken.Cryptography
                 ThrowHelper.ThrowArgumentException_KeySizeMustBeMultipleOf64(key);
             }
 
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
             ref byte input = ref MemoryMarshal.GetReference(key);
             ulong a = Unsafe.ReadUnaligned<ulong>(ref input);
             // The number of input blocks

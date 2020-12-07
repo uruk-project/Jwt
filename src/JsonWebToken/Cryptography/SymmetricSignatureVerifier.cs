@@ -23,11 +23,6 @@ namespace JsonWebToken.Cryptography
         private readonly int _base64HashSizeInBytes;
         private int _minimumKeySizeInBits = DefaultMinimumSymmetricKeySizeInBits;
 
-        public SymmetricSignatureVerifier(SymmetricJwk key, SignatureAlgorithm algorithm)
-            : this(key.AsSpan(), algorithm)
-        {
-        }
-
         public SymmetricSignatureVerifier(ReadOnlySpan<byte> key, SignatureAlgorithm algorithm)
             : base(algorithm)
         {
@@ -72,10 +67,7 @@ namespace JsonWebToken.Cryptography
         /// <inheritsdoc />
         public override bool Verify(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
         {
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
+            Debug.Assert(!_disposed);
 
             Span<byte> hash = stackalloc byte[_hashSizeInBytes];
             _hashAlgorithm.ComputeHash(input, hash);
@@ -85,10 +77,7 @@ namespace JsonWebToken.Cryptography
         /// <inheritsdoc />
         public override bool VerifyHalf(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
         {
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
+            Debug.Assert(!_disposed);
 
             Span<byte> hash = stackalloc byte[_hashSizeInBytes];
             _hashAlgorithm.ComputeHash(input, hash);

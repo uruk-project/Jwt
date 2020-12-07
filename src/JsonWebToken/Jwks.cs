@@ -164,36 +164,92 @@ namespace JsonWebToken
         {
             if (_identifiedKeys is null)
             {
-                if (_keys.Count == 1)
+                _identifiedKeys = InitializeIdentifiedKeys();
+            }
+
+            return _identifiedKeys;
+        }
+
+        private KeyValuePair<JsonEncodedText, Jwk[]>[] InitializeIdentifiedKeys()
+        {
+            KeyValuePair<JsonEncodedText, Jwk[]>[] keys;
+            if (_keys.Count == 1)
+            {
+                var key1 = _keys[0];
+                if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
                 {
-                    var key1 = _keys[0];
+                    keys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
+                }
+                else
+                {
+                    keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                    {
+                        new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 })
+                    };
+                }
+            }
+            else if (_keys.Count == 2)
+            {
+                var key2 = _keys[1];
+                var key1 = _keys[0];
+                if (key1.Kid.Equals(key2.Kid))
+                {
                     if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
                     {
-                        _identifiedKeys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
+                        keys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
                     }
                     else
                     {
-                        _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                        keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
                         {
-                                new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 })
+                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 })
                         };
                     }
                 }
-                else if (_keys.Count == 2)
+                else
                 {
-                    var key2 = _keys[1];
-                    var key1 = _keys[0];
-                    if (key1.Kid.Equals(key2.Kid))
+                    if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                    {
+                        keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                        {
+                            new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key1 })
+                        };
+                    }
+                    else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
+                    {
+                        keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                        {
+                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 })
+                        };
+                    }
+                    else
+                    {
+                        keys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                        {
+                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 }),
+                            new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2 })
+                        };
+                    }
+                }
+            }
+            else if (_keys.Count == 3)
+            {
+                var key3 = _keys[2];
+                var key2 = _keys[1];
+                var key1 = _keys[0];
+                if (key1.Kid.Equals(key2.Kid))
+                {
+                    if (key1.Kid.Equals(key3.Kid))
                     {
                         if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
                         {
-                            _identifiedKeys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
+                            keys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
                         }
                         else
                         {
-                            _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                            keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
                             {
-                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 })
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2, key3 })
                             };
                         }
                     }
@@ -201,185 +257,136 @@ namespace JsonWebToken
                     {
                         if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
                         {
-                            _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                            keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
                             {
-                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key1 })
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3, key1, key2 })
+                            };
+                        }
+                        else if (key3.Kid.EncodedUtf8Bytes.IsEmpty)
+                        {
+                            keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                            {
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2, key3 })
+                            };
+                        }
+                        else
+                        {
+                            keys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                            {
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 }),
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3 })
+                            };
+                        }
+                    }
+                }
+                else
+                {
+                    if (key2.Kid.Equals(key3.Kid))
+                    {
+                        if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                        {
+                            keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                            {
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key3, key1 })
                             };
                         }
                         else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
                         {
-                            _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                            keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
                             {
-                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 })
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2, key3 })
                             };
                         }
                         else
                         {
-                            _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                            keys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
                             {
-                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 }),
-                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2 })
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 }),
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key3 })
                             };
                         }
                     }
-                }
-                else if (_keys.Count == 3)
-                {
-                    var key3 = _keys[2];
-                    var key2 = _keys[1];
-                    var key1 = _keys[0];
-                    if (key1.Kid.Equals(key2.Kid))
+                    else
                     {
                         if (key1.Kid.Equals(key3.Kid))
                         {
                             if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
                             {
-                                _identifiedKeys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
-                            }
-                            else
-                            {
-                                _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                                keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
                                 {
-                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2, key3 })
-                                };
-                            }
-                        }
-                        else
-                        {
-                            if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
-                            {
-                                _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
-                                {
-                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3, key1, key2 })
-                                };
-                            }
-                            else if (key3.Kid.EncodedUtf8Bytes.IsEmpty)
-                            {
-                                _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
-                                {
-                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2, key3 })
-                                };
-                            }
-                            else
-                            {
-                                _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
-                                {
-                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 }),
-                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3 })
-                                };
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (key2.Kid.Equals(key3.Kid))
-                        {
-                            if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
-                            {
-                                _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
-                                {
-                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key3, key1 })
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key1, key3 })
                                 };
                             }
                             else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
                             {
-                                _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                                keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
                                 {
-                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2, key3 })
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key3, key2 })
                                 };
                             }
                             else
                             {
-                                _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                                keys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
                                 {
-                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 }),
-                                        new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key3 })
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key3 }),
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2 })
                                 };
                             }
                         }
                         else
                         {
-                            if (key1.Kid.Equals(key3.Kid))
+                            if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
                             {
-                                if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                                keys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
                                 {
-                                    _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
-                                    {
-                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key1, key3 })
-                                    };
-                                }
-                                else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key1 }),
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3, key1 })
+                                };
+                            }
+                            else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
+                            {
+                                keys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
                                 {
-                                    _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
-                                    {
-                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key3, key2 })
-                                    };
-                                }
-                                else
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 }),
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3, key2 })
+                                };
+                            }
+                            else if (key3.Kid.EncodedUtf8Bytes.IsEmpty)
+                            {
+                                keys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
                                 {
-                                    _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
-                                    {
-                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key3 }),
-                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2 })
-                                    };
-                                }
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key3 }),
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key3 })
+                                };
                             }
                             else
                             {
-                                if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                                keys = new KeyValuePair<JsonEncodedText, Jwk[]>[3]
                                 {
-                                    _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
-                                    {
-                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key1 }),
-                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3, key1 })
-                                    };
-                                }
-                                else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
-                                {
-                                    _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
-                                    {
-                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 }),
-                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3, key2 })
-                                    };
-                                }
-                                else if (key3.Kid.EncodedUtf8Bytes.IsEmpty)
-                                {
-                                    _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
-                                    {
-                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key3 }),
-                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key3 })
-                                    };
-                                }
-                                else
-                                {
-                                    _identifiedKeys = new KeyValuePair<JsonEncodedText, Jwk[]>[3]
-                                    {
-                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 }),
-                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2 }),
-                                            new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3 })
-                                    };
-                                }
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 }),
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2 }),
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3 })
+                                };
                             }
                         }
                     }
                 }
-                else if (_keys.Count == 0)
-                {
-                    _identifiedKeys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
-                }
-                else
-                {
-                    var unidentified = _keys.Where(jwk => jwk.Kid.EncodedUtf8Bytes.IsEmpty);
-                    _identifiedKeys = _keys
-                                        .GroupBy(k => k.Kid)
-                                        .Where(k => !k.Key.EncodedUtf8Bytes.IsEmpty)
-                                        .ToDictionary(k => k.Key, k => k.Concat(unidentified).ToArray())
-                                        .ToArray();
-
-                }
+            }
+            else if (_keys.Count == 0)
+            {
+                keys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
+            }
+            else
+            {
+                var unidentified = _keys.Where(jwk => jwk.Kid.EncodedUtf8Bytes.IsEmpty);
+                keys = _keys
+                        .GroupBy(k => k.Kid)
+                        .Where(k => !k.Key.EncodedUtf8Bytes.IsEmpty)
+                        .ToDictionary(k => k.Key, k => k.Concat(unidentified).ToArray())
+                        .ToArray();
             }
 
-            return _identifiedKeys;
+            return keys;
         }
 
         /// <summary>Gets the number of keys contained in the <see cref="Jwks"/>.</summary>

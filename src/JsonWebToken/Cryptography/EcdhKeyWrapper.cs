@@ -90,10 +90,7 @@ namespace JsonWebToken.Cryptography
         /// <inheritsdoc />
         public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeader header, Span<byte> destination)
         {
-            if (header is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
-            }
+            Debug.Assert(header != null);
 
             var partyUInfo = GetPartyInfo(header, JwtHeaderParameterNames.Apu);
             var partyVInfo = GetPartyInfo(header, JwtHeaderParameterNames.Apv);
@@ -137,10 +134,7 @@ namespace JsonWebToken.Cryptography
 
         private static HashAlgorithmName GetHashAlgorithm(EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (encryptionAlgorithm.SignatureAlgorithm is null)
-            {
-                goto Sha256;
-            }
+            Debug.Assert(encryptionAlgorithm.SignatureAlgorithm != null);
 
             var hashAlgorithm = encryptionAlgorithm.SignatureAlgorithm.HashAlgorithm;
             if (hashAlgorithm == default)

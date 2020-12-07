@@ -47,6 +47,7 @@ namespace JsonWebToken.Cryptography
         /// <inheritsdoc />
         public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeader header, Span<byte> destination)
         {
+            Debug.Assert(header != null);
             if (_disposed)
             {
                 ThrowHelper.ThrowObjectDisposedException(GetType());
@@ -54,10 +55,12 @@ namespace JsonWebToken.Cryptography
 
             var cek = CreateSymmetricKey(EncryptionAlgorithm, (SymmetricJwk?)staticKey);
 #if SUPPORT_SPAN_CRYPTO
-            if (!_rsa.TryEncrypt(cek.AsSpan(), destination, _padding, out int bytesWritten) || bytesWritten != destination.Length)
+            if (!_rsa.TryEncrypt(cek.AsSpan(), destination, _padding, out int bytesWritten))
             {
                 ThrowHelper.ThrowCryptographicException_KeyWrapFailed();
             }
+
+            Debug.Assert(bytesWritten == destination.Length);
 #else
             var result = _rsa.Encrypt(cek.ToArray(), _padding);
             if (destination.Length < result.Length)

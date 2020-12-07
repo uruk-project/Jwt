@@ -37,6 +37,7 @@ namespace JsonWebToken.Cryptography
         /// <inheritsdoc />
         public override bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
         {
+            Debug.Assert(!_disposed);
             if (data.IsEmpty)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
@@ -45,11 +46,6 @@ namespace JsonWebToken.Cryptography
             if (signature.IsEmpty)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.signature);
-            }
-
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             var ecdsa = _ecdsaPool.Get();

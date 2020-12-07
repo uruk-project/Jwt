@@ -37,14 +37,10 @@ namespace JsonWebToken.Cryptography
         /// <inheritsdoc />
         public override bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
         {
+            Debug.Assert(!_disposed);
             if (data.IsEmpty)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
-            }
-
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
             }
 
             var ecdsa = _ecdsaPool.Get();

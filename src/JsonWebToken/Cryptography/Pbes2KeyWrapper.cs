@@ -77,11 +77,7 @@ namespace JsonWebToken.Cryptography
 
         private static HashAlgorithmName GetHashAlgorithm(EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (encryptionAlgorithm.SignatureAlgorithm is null)
-            {
-                goto Sha256;
-            }
-
+            Debug.Assert(encryptionAlgorithm.SignatureAlgorithm != null);
             var hashAlgorithm = encryptionAlgorithm.SignatureAlgorithm.HashAlgorithm;
             if (hashAlgorithm == default)
             {

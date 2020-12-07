@@ -309,11 +309,11 @@ namespace JsonWebToken
 
         /// <inheritdoc />
         protected override Signer CreateSigner(SignatureAlgorithm algorithm)
-            => new SymmetricSigner(this, algorithm);
+            => new SymmetricSigner(K, algorithm);
 
         /// <inheritdoc />
         protected override SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm)
-            => new SymmetricSignatureVerifier(this, algorithm);
+            => new SymmetricSignatureVerifier(K, algorithm);
 
         /// <inheritsdoc />
         protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)

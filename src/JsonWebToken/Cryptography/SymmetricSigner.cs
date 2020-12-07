@@ -23,11 +23,6 @@ namespace JsonWebToken.Cryptography
         private readonly int _base64HashSizeInBytes;
         private int _minimumKeySizeInBits = DefaultMinimumSymmetricKeySizeInBits;
 
-        public SymmetricSigner(SymmetricJwk key, SignatureAlgorithm algorithm)
-            : this(key.AsSpan(), algorithm)
-        {
-        }
-
         public SymmetricSigner(ReadOnlySpan<byte> key, SignatureAlgorithm algorithm)
             : base(algorithm)
         {
@@ -71,10 +66,7 @@ namespace JsonWebToken.Cryptography
         /// <inheritsdoc />
         public override bool TrySign(ReadOnlySpan<byte> input, Span<byte> destination, out int bytesWritten)
         {
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
+            Debug.Assert(!_disposed);
 
             _hashAlgorithm.ComputeHash(input, destination);
             bytesWritten = destination.Length;

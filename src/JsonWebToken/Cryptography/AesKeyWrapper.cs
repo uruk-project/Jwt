@@ -77,11 +77,6 @@ namespace JsonWebToken.Cryptography
         /// <param name="destination"></param>
         public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeader header, Span<byte> destination)
         {
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
             if (destination.Length < GetKeyWrapSize())
             {
                 ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, GetKeyWrapSize());

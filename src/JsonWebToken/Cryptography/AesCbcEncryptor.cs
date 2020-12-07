@@ -12,15 +12,8 @@ namespace JsonWebToken.Cryptography
 
         public AesCbcEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (encryptionAlgorithm is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
-            }
-
-            if (encryptionAlgorithm.Category != EncryptionType.AesHmac)
-            {
-                ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-            }
+            Debug.Assert(encryptionAlgorithm != null);
+            Debug.Assert(encryptionAlgorithm.Category == EncryptionType.AesHmac);
 
             _encryptionAlgorithm = encryptionAlgorithm;
         }

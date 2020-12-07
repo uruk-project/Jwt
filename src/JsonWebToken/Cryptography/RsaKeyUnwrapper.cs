@@ -49,14 +49,10 @@ namespace JsonWebToken.Cryptography
         /// <inheritsdoc />
         public override bool TryUnwrapKey(ReadOnlySpan<byte> key, Span<byte> destination, JwtHeaderDocument header, out int bytesWritten)
         {
+            Debug.Assert(header != null);
             if (key.IsEmpty)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
-            if (header == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
             if (_disposed)

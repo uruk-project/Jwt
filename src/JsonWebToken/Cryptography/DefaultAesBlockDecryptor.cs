@@ -31,7 +31,6 @@ namespace JsonWebToken.Cryptography
         {
             var block = _decryptor.TransformFinalBlock(ciphertext.ToArray(), 0, 16);
             block.CopyTo(plaintext);
-
         }
 
         public override void Dispose()

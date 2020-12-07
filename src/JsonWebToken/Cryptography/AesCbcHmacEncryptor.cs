@@ -45,27 +45,19 @@ namespace JsonWebToken.Cryptography
 
         /// <inheritdoc />
         public override int GetCiphertextSize(int plaintextSize)
-        {
-            return (plaintextSize + 16) & ~15;
-        }
+            => (plaintextSize + 16) & ~15;
 
         /// <inheritdoc />
         public override int GetNonceSize()
-        {
-            return 16;
-        }
+            => 16;
 
         /// <inheritdoc />
         public override int GetBase64NonceSize()
-        {
-            return 22;
-        }
+            => 22;
 
         /// <inheritdoc />
         public override int GetTagSize()
-        {
-            return _encryptionAlgorithm.SignatureAlgorithm.RequiredKeySizeInBits >> 2;
-        }
+            => _encryptionAlgorithm.SignatureAlgorithm.RequiredKeySizeInBits >> 2;
 
         /// <inheritdoc />
         public override void Encrypt(
