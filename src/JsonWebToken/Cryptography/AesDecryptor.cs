@@ -14,7 +14,7 @@ namespace JsonWebToken.Cryptography
     /// <summary>
     /// Provides AES decryption.
     /// </summary>
-    public abstract class AesDecryptor
+    internal abstract class AesDecryptor
     {
         /// <summary>
         /// The size of the AES block.

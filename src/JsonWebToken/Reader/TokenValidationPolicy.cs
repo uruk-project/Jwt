@@ -202,10 +202,10 @@ namespace JsonWebToken
         {
             if (!IgnoreCriticalHeader)
             {
-                if (header.TryGetHeaderParameter(JwtHeaderParameterNames.CritUtf8, out var crit))
+                if (!header.Crit.IsEmpty)
                 {
                     var handlers = CriticalHandlers;
-                    foreach (var critHeader in crit.EnumerateArray<string>())
+                    foreach (var critHeader in header.Crit.EnumerateArray<string>())
                     {
                         var critHeaderName = critHeader.GetString()!;
                         if (!handlers.TryGetValue(critHeaderName, out var handler))

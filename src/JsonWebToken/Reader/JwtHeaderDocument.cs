@@ -15,12 +15,13 @@ namespace JsonWebToken
     // Based on https://github.com/dotnet/runtime/blob/master/src/libraries/System.Text.Json/src/System/Text/Json/Document/JsonDocument.cs
     public sealed class JwtHeaderDocument : IDisposable
     {
-        internal static readonly JwtHeaderDocument Empty = new JwtHeaderDocument(new JwtDocument(), -1, -1, -1);
+        internal static readonly JwtHeaderDocument Empty = new JwtHeaderDocument(new JwtDocument(), -1, -1, -1, -1);
 
         private readonly JwtDocument _document;
         private readonly JwtElement _alg;
         private readonly JwtElement _enc;
         private readonly JwtElement _kid;
+        private readonly JwtElement _crit;
 
         /// <inheritdoc/>
         internal JwtElement Kid => _kid;
@@ -29,12 +30,15 @@ namespace JsonWebToken
 
         internal JwtElement Enc => _enc;
 
-        private JwtHeaderDocument(JwtDocument document, int algIdx, int encIdx, int kidIdx)
+        internal JwtElement Crit => _crit;
+
+        private JwtHeaderDocument(JwtDocument document, int algIdx, int encIdx, int kidIdx, int critIdx)
         {
             _document = document;
             _alg = algIdx < 0 ? default : new JwtElement(_document, algIdx);
             _enc = encIdx < 0 ? default : new JwtElement(_document, encIdx);
             _kid = kidIdx < 0 ? default : new JwtElement(_document, kidIdx);
+            _crit = critIdx < 0 ? default : new JwtElement(_document, critIdx);
         }
 
         internal static bool TryParseHeader(ReadOnlyMemory<byte> utf8Payload, byte[]? buffer, TokenValidationPolicy policy, [NotNullWhen(true)] out JwtHeaderDocument? header, [NotNullWhen(false)] out TokenValidationError? error)
@@ -44,6 +48,7 @@ namespace JsonWebToken
             int algIdx = -1;
             int encIdx = -1;
             int kidIdx = -1;
+            int critIdx = -1;
 
             var reader = new Utf8JsonReader(utf8JsonSpan);
 
@@ -122,6 +127,7 @@ namespace JsonWebToken
                                 && (JwtHeaderParameters)IntegerMarshal.ReadUInt32(memberName) == JwtHeaderParameters.Crit
                                 && !policy.IgnoreCriticalHeader)
                             {
+                                critIdx = database.Length;
                                 if (!TryCheckCrit(ref reader, out count))
                                 {
                                     error = TokenValidationError.MalformedToken("The 'crit' header parameter must be an array of string.");
@@ -150,7 +156,7 @@ namespace JsonWebToken
             Debug.Assert(reader.BytesConsumed == utf8JsonSpan.Length);
             database.CompleteAllocations();
 
-            header = new JwtHeaderDocument(new JwtDocument(utf8Payload, database, buffer), algIdx, encIdx, kidIdx);
+            header = new JwtHeaderDocument(new JwtDocument(utf8Payload, database, buffer), algIdx, encIdx, kidIdx, critIdx);
             error = null;
             return true;
 
@@ -236,7 +242,8 @@ namespace JsonWebToken
                 _document.Clone(),
                 _alg.ValueKind == JsonValueKind.Undefined ? -1 : _alg.Idx,
                 _enc.ValueKind == JsonValueKind.Undefined ? -1 : _enc.Idx,
-                _kid.ValueKind == JsonValueKind.Undefined ? -1 : _kid.Idx);
+                _kid.ValueKind == JsonValueKind.Undefined ? -1 : _kid.Idx,
+                _crit.ValueKind == JsonValueKind.Undefined ? -1 : _crit.Idx);
 
         /// <summary>Determines whether the <see cref="JwtHeaderDocument"/> contains the specified header parameter.</summary>
         /// <param name="headerParameterName"></param>

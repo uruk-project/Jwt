@@ -61,22 +61,22 @@ namespace JsonWebToken.Cryptography
         /// <summary>
         /// The 128 bits shuffle mask for reverting endianness of 2 Int64.
         /// </summary>
-        protected static readonly Vector128<byte> EndiannessMask128UInt64 = ReadVector128(LittleEndianUInt64);
+        private protected static readonly Vector128<byte> EndiannessMask128UInt64 = ReadVector128(LittleEndianUInt64);
 
         /// <summary>
         /// The 256 bits shuffle mask for reverting endianness of 4 Int64.
         /// </summary>
-        protected static readonly Vector256<byte> EndiannessMask256UInt64 = ReadVector256(LittleEndianUInt64);
+        private protected static readonly Vector256<byte> EndiannessMask256UInt64 = ReadVector256(LittleEndianUInt64);
 
         /// <summary>
         /// The 128 bits shuffle mask for reverting endianness of 4 Int32.
         /// </summary>
-        protected static readonly Vector128<byte> EndiannessMask128UInt32 = ReadVector128(LittleEndianUInt32);
+        private protected static readonly Vector128<byte> EndiannessMask128UInt32 = ReadVector128(LittleEndianUInt32);
 
         /// <summary>
         /// The 256 bits shuffle mask for reverting endianness of 8 Int32.
         /// </summary>
-        protected static readonly Vector256<byte> EndianessnMask256UInt32 = ReadVector256(LittleEndianUInt32);
+        private protected static readonly Vector256<byte> EndianessnMask256UInt32 = ReadVector256(LittleEndianUInt32);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector256<byte> ReadVector256(ReadOnlySpan<byte> data)
